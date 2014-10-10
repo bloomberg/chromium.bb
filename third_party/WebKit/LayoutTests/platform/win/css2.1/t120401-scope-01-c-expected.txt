@@ -8,7 +8,7 @@ layer at (0,0) size 800x94
           text run at (0,0) width 284: "The following two lines should be the same:"
       RenderBlock {DIV} at (0,34) size 784x18
         RenderInline {SPAN} at (0,0) size 491x17
-          RenderInline (pseudo:before) at (0,0) size 24x17
+          RenderInline {<pseudo:before>} at (0,0) size 24x17
             RenderTextFragment at (0,0) size 11x17
               text run at (0,0) width 11: "B"
             RenderCounter at (10,0) size 9x17
@@ -16,7 +16,7 @@ layer at (0,0) size 800x94
             RenderTextFragment at (18,0) size 6x17
               text run at (18,0) width 6: "-"
           RenderInline {SPAN} at (0,0) size 442x17
-            RenderInline (pseudo:before) at (0,0) size 24x17
+            RenderInline {<pseudo:before>} at (0,0) size 24x17
               RenderTextFragment at (24,0) size 11x17
                 text run at (24,0) width 11: "B"
               RenderCounter at (34,0) size 9x17
@@ -24,7 +24,7 @@ layer at (0,0) size 800x94
               RenderTextFragment at (42,0) size 6x17
                 text run at (42,0) width 6: "-"
             RenderInline {SPAN} at (0,0) size 219x17
-              RenderInline (pseudo:before) at (0,0) size 36x17
+              RenderInline {<pseudo:before>} at (0,0) size 36x17
                 RenderTextFragment at (48,0) size 11x17
                   text run at (48,0) width 11: "B"
                 RenderCounter at (58,0) size 21x17
@@ -32,14 +32,14 @@ layer at (0,0) size 800x94
                 RenderTextFragment at (78,0) size 6x17
                   text run at (78,0) width 6: "-"
               RenderInline {SPAN} at (0,0) size 73x17
-                RenderInline (pseudo:before) at (0,0) size 36x17
+                RenderInline {<pseudo:before>} at (0,0) size 36x17
                   RenderTextFragment at (84,0) size 11x17
                     text run at (84,0) width 11: "B"
                   RenderCounter at (94,0) size 21x17
                     text run at (94,0) width 21: "2.2"
                   RenderTextFragment at (114,0) size 6x17
                     text run at (114,0) width 6: "-"
-                RenderInline (pseudo:after) at (0,0) size 37x17
+                RenderInline {<pseudo:after>} at (0,0) size 37x17
                   RenderTextFragment at (120,0) size 12x17
                     text run at (120,0) width 12: "A"
                   RenderCounter at (131,0) size 21x17
@@ -47,21 +47,21 @@ layer at (0,0) size 800x94
                   RenderTextFragment at (151,0) size 6x17
                     text run at (151,0) width 6: "-"
               RenderInline {SPAN} at (0,0) size 74x17
-                RenderInline (pseudo:before) at (0,0) size 37x17
+                RenderInline {<pseudo:before>} at (0,0) size 37x17
                   RenderTextFragment at (156,0) size 12x17
                     text run at (156,0) width 12: "B"
                   RenderCounter at (167,0) size 21x17
                     text run at (167,0) width 21: "2.4"
                   RenderTextFragment at (187,0) size 6x17
                     text run at (187,0) width 6: "-"
-                RenderInline (pseudo:after) at (0,0) size 38x17
+                RenderInline {<pseudo:after>} at (0,0) size 38x17
                   RenderTextFragment at (192,0) size 13x17
                     text run at (192,0) width 13: "A"
                   RenderCounter at (204,0) size 21x17
                     text run at (204,0) width 21: "2.5"
                   RenderTextFragment at (224,0) size 6x17
                     text run at (224,0) width 6: "-"
-              RenderInline (pseudo:after) at (0,0) size 38x17
+              RenderInline {<pseudo:after>} at (0,0) size 38x17
                 RenderTextFragment at (229,0) size 13x17
                   text run at (229,0) width 13: "A"
                 RenderCounter at (241,0) size 21x17
@@ -69,7 +69,7 @@ layer at (0,0) size 800x94
                 RenderTextFragment at (261,0) size 6x17
                   text run at (261,0) width 6: "-"
             RenderInline {SPAN} at (0,0) size 155x17
-              RenderInline (pseudo:before) at (0,0) size 37x17
+              RenderInline {<pseudo:before>} at (0,0) size 37x17
                 RenderTextFragment at (266,0) size 12x17
                   text run at (266,0) width 12: "B"
                 RenderCounter at (277,0) size 21x17
@@ -77,35 +77,35 @@ layer at (0,0) size 800x94
                 RenderTextFragment at (297,0) size 6x17
                   text run at (297,0) width 6: "-"
               RenderInline {SPAN} at (0,0) size 74x17
-                RenderInline (pseudo:before) at (0,0) size 37x17
+                RenderInline {<pseudo:before>} at (0,0) size 37x17
                   RenderTextFragment at (302,0) size 12x17
                     text run at (302,0) width 12: "B"
                   RenderCounter at (313,0) size 21x17
                     text run at (313,0) width 21: "2.8"
                   RenderTextFragment at (333,0) size 6x17
                     text run at (333,0) width 6: "-"
-                RenderInline (pseudo:after) at (0,0) size 38x17
+                RenderInline {<pseudo:after>} at (0,0) size 38x17
                   RenderTextFragment at (338,0) size 13x17
                     text run at (338,0) width 13: "A"
                   RenderCounter at (350,0) size 21x17
                     text run at (350,0) width 21: "2.9"
                   RenderTextFragment at (370,0) size 6x17
                     text run at (370,0) width 6: "-"
-              RenderInline (pseudo:after) at (0,0) size 46x17
+              RenderInline {<pseudo:after>} at (0,0) size 46x17
                 RenderTextFragment at (375,0) size 13x17
                   text run at (375,0) width 13: "A"
                 RenderCounter at (387,0) size 29x17
                   text run at (387,0) width 29: "2.10"
                 RenderTextFragment at (415,0) size 6x17
                   text run at (415,0) width 6: "-"
-            RenderInline (pseudo:after) at (0,0) size 46x17
+            RenderInline {<pseudo:after>} at (0,0) size 46x17
               RenderTextFragment at (420,0) size 12x17
                 text run at (420,0) width 12: "A"
               RenderCounter at (431,0) size 29x17
                 text run at (431,0) width 29: "2.11"
               RenderTextFragment at (459,0) size 7x17
                 text run at (459,0) width 7: "-"
-          RenderInline (pseudo:after) at (0,0) size 26x17
+          RenderInline {<pseudo:after>} at (0,0) size 26x17
             RenderTextFragment at (465,0) size 12x17
               text run at (465,0) width 12: "A"
             RenderCounter at (476,0) size 9x17

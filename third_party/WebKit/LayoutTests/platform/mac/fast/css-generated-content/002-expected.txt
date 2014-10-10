@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x576
       RenderBlock {P} at (0,0) size 784x16
-        RenderInline (pseudo:before) at (0,0) size 56x16
+        RenderInline {<pseudo:before>} at (0,0) size 56x16
           RenderInline (generated) at (0,0) size 9x16 [color=#FFD800]
             RenderTextFragment at (0,0) size 9x16
               text run at (0,0) width 9: "S"
@@ -13,6 +13,6 @@ layer at (0,0) size 800x600
         RenderText {#text} at (55,0) size 605x16
           text run at (55,0) width 223: "The \"S\" to the left should be gold. "
           text run at (277,0) width 383: "This is testing :before used in conjunction with :first-letter. "
-        RenderInline (pseudo:after) at (0,0) size 66x16
+        RenderInline {<pseudo:after>} at (0,0) size 66x16
           RenderTextFragment at (659,0) size 66x16
             text run at (659,0) width 66: "[The End]"

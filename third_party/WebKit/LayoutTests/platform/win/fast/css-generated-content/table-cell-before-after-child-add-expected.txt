@@ -9,14 +9,14 @@ layer at (0,0) size 800x600
       RenderTable {DIV} at (0,34) size 188x18
         RenderTableSection (anonymous) at (0,0) size 188x18
           RenderTableRow (anonymous) at (0,0) size 188x18
-            RenderTableCell (anonymous) at (0,0) size 62x18 [r=0 c=0 rs=1 cs=1]
+            RenderTableCell (anonymous) {<pseudo:before>} at (0,0) size 62x18 [r=0 c=0 rs=1 cs=1]
               RenderTextFragment at (0,0) size 62x17
                 text run at (0,0) width 62: "BEFORE"
             RenderTableCell (anonymous) at (62,0) size 75x18 [r=0 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (0,0) size 75x18
                 RenderText {#text} at (0,0) size 75x17
                   text run at (0,0) width 75: "CONTENT"
-            RenderTableCell (anonymous) at (137,0) size 51x18 [r=0 c=2 rs=1 cs=1]
+            RenderTableCell (anonymous) {<pseudo:after>} at (137,0) size 51x18 [r=0 c=2 rs=1 cs=1]
               RenderTextFragment at (0,0) size 51x17
                 text run at (0,0) width 51: "AFTER"
       RenderBlock (anonymous) at (0,52) size 784x18

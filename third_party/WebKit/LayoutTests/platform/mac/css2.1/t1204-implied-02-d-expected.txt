@@ -8,32 +8,32 @@ layer at (0,0) size 800x88
           text run at (0,0) width 283: "The following two lines should be identical:"
       RenderBlock {DIV} at (0,32) size 784x16
         RenderInline {SPAN} at (0,0) size 35x16
-          RenderInline (pseudo:before) at (0,0) size 11x16
+          RenderInline {<pseudo:before>} at (0,0) size 11x16
             RenderTextFragment at (0,0) size 11x16
               text run at (0,0) width 11: "B"
           RenderInline {SPAN} at (0,0) size 13x16
-            RenderInline (pseudo:before) at (0,0) size 13x16
+            RenderInline {<pseudo:before>} at (0,0) size 13x16
               RenderCounter at (10,0) size 9x16
                 text run at (10,0) width 9: "1"
               RenderTextFragment at (18,0) size 5x16
                 text run at (18,0) width 5: " "
           RenderInline {SPAN} at (0,0) size 13x16
             RenderInline {SPAN} at (0,0) size 13x16
-              RenderInline (pseudo:before) at (0,0) size 13x16
+              RenderInline {<pseudo:before>} at (0,0) size 13x16
                 RenderCounter at (22,0) size 9x16
                   text run at (22,0) width 9: "0"
                 RenderTextFragment at (30,0) size 5x16
                   text run at (30,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 33x16
           RenderInline {SPAN} at (0,0) size 13x16
-            RenderInline (pseudo:before) at (0,0) size 13x16
+            RenderInline {<pseudo:before>} at (0,0) size 13x16
               RenderCounter at (34,0) size 9x16
                 text run at (34,0) width 9: "1"
               RenderTextFragment at (42,0) size 5x16
                 text run at (42,0) width 5: " "
           RenderInline {SPAN} at (0,0) size 21x16
             RenderInline {SPAN} at (0,0) size 21x16
-              RenderInline (pseudo:before) at (0,0) size 21x16
+              RenderInline {<pseudo:before>} at (0,0) size 21x16
                 RenderCounter at (46,0) size 21x16
                   text run at (46,0) width 21: "1.0"
                 RenderTextFragment at (0,0) size 0x0

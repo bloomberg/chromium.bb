@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 406x16
           text run at (0,0) width 406: "Tests list item numbering when there are anonymous list items."
       RenderBlock {OL} at (0,32) size 784x16
-        RenderListItem at (40,0) size 744x16
+        RenderListItem {<pseudo:after>} at (40,0) size 744x16
           RenderListMarker at (-20,0) size 16x16: "1"
           RenderTextFragment at (0,0) size 33x16
             text run at (0,0) width 33: "ONE"
@@ -16,17 +16,17 @@ layer at (0,0) size 800x600
           RenderListMarker at (-20,0) size 16x16: "1"
           RenderText {#text} at (0,0) size 24x16
             text run at (0,0) width 24: "one"
-        RenderListItem at (40,16) size 744x16
+        RenderListItem {<pseudo:after>} at (40,16) size 744x16
           RenderListMarker at (-20,0) size 16x16: "2"
           RenderTextFragment at (0,0) size 37x16
             text run at (0,0) width 37: "TWO"
       RenderBlock {OL} at (0,112) size 784x16
-        RenderListItem at (40,0) size 744x16
+        RenderListItem {<pseudo:before>} at (40,0) size 744x16
           RenderListMarker at (-20,0) size 16x16: "1"
           RenderTextFragment at (0,0) size 33x16
             text run at (0,0) width 33: "ONE"
       RenderBlock {OL} at (0,144) size 784x32
-        RenderListItem at (40,0) size 744x16
+        RenderListItem {<pseudo:before>} at (40,0) size 744x16
           RenderListMarker at (-20,0) size 16x16: "1"
           RenderTextFragment at (0,0) size 33x16
             text run at (0,0) width 33: "ONE"
@@ -43,7 +43,7 @@ layer at (0,0) size 800x600
           RenderBlock (anonymous) at (0,0) size 744x16
             RenderText {#text} at (0,0) size 21x16
               text run at (0,0) width 21: "div"
-          RenderListItem at (0,16) size 744x16
+          RenderListItem {<pseudo:after>} at (0,16) size 744x16
             RenderListMarker at (-20,0) size 16x16: "2"
             RenderTextFragment at (0,0) size 37x16
               text run at (0,0) width 37: "TWO"
@@ -57,7 +57,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 24x16
             text run at (0,0) width 24: "one"
         RenderBlock {DIV} at (40,16) size 744x32
-          RenderListItem at (0,0) size 744x16
+          RenderListItem {<pseudo:before>} at (0,0) size 744x16
             RenderListMarker at (-20,0) size 16x16: "2"
             RenderTextFragment at (0,0) size 37x16
               text run at (0,0) width 37: "TWO"

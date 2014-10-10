@@ -8,241 +8,241 @@ layer at (0,0) size 800x104
           text run at (0,0) width 272: "The following two lines should look the same:"
       RenderBlock {DIV} at (0,36) size 784x22
         RenderInline {SPAN} at (0,0) size 18x19
-          RenderInline (pseudo:before) at (0,0) size 18x19
+          RenderInline {<pseudo:before>} at (0,0) size 18x19
             RenderCounter at (0,2) size 18x19
               text run at (0,2) width 18: "\x{10D0}.\x{10D0}"
         RenderText {#text} at (18,2) size 4x19
           text run at (18,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (22,2) size 19x19
               text run at (22,2) width 19: "\x{10D0}.\x{10D1}"
         RenderText {#text} at (41,2) size 4x19
           text run at (41,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (45,2) size 19x19
               text run at (45,2) width 19: "\x{10D0}.\x{10D2}"
         RenderText {#text} at (64,2) size 4x19
           text run at (64,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 25x19
-          RenderInline (pseudo:before) at (0,0) size 25x19
+          RenderInline {<pseudo:before>} at (0,0) size 25x19
             RenderCounter at (68,2) size 25x19
               text run at (68,2) width 25: "\x{10D0}.\x{10D3}"
         RenderText {#text} at (93,2) size 4x19
           text run at (93,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (97,2) size 19x19
               text run at (97,2) width 19: "\x{10D0}.\x{10D4}"
         RenderText {#text} at (116,2) size 4x19
           text run at (116,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (120,2) size 19x19
               text run at (120,2) width 19: "\x{10D0}.\x{10D5}"
         RenderText {#text} at (139,2) size 4x19
           text run at (139,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x19
-          RenderInline (pseudo:before) at (0,0) size 23x19
+          RenderInline {<pseudo:before>} at (0,0) size 23x19
             RenderCounter at (143,2) size 23x19
               text run at (143,2) width 23: "\x{10D0}.\x{10D6}"
         RenderText {#text} at (166,2) size 4x19
           text run at (166,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 21x19
-          RenderInline (pseudo:before) at (0,0) size 21x19
+          RenderInline {<pseudo:before>} at (0,0) size 21x19
             RenderCounter at (170,2) size 21x19
               text run at (170,2) width 21: "\x{10D0}.\x{10F1}"
         RenderText {#text} at (191,2) size 4x19
           text run at (191,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 25x19
-          RenderInline (pseudo:before) at (0,0) size 25x19
+          RenderInline {<pseudo:before>} at (0,0) size 25x19
             RenderCounter at (195,2) size 25x19
               text run at (195,2) width 25: "\x{10D0}.\x{10D7}"
         RenderText {#text} at (220,2) size 4x19
           text run at (220,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 20x19
-          RenderInline (pseudo:before) at (0,0) size 20x19
+          RenderInline {<pseudo:before>} at (0,0) size 20x19
             RenderCounter at (224,2) size 20x19
               text run at (224,2) width 20: "\x{10D0}.\x{10D8}"
         RenderText {#text} at (244,2) size 4x19
           text run at (244,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 27x19
-          RenderInline (pseudo:before) at (0,0) size 27x19
+          RenderInline {<pseudo:before>} at (0,0) size 27x19
             RenderCounter at (248,2) size 27x19
               text run at (248,2) width 27: "\x{10D0}.\x{10D8}\x{10D0}"
         RenderText {#text} at (275,2) size 4x19
           text run at (275,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 28x19
-          RenderInline (pseudo:before) at (0,0) size 28x19
+          RenderInline {<pseudo:before>} at (0,0) size 28x19
             RenderCounter at (279,2) size 28x19
               text run at (279,2) width 28: "\x{10D0}.\x{10D8}\x{10D1}"
         RenderText {#text} at (307,2) size 4x19
           text run at (307,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 18x19
-          RenderInline (pseudo:before) at (0,0) size 18x19
+          RenderInline {<pseudo:before>} at (0,0) size 18x19
             RenderCounter at (311,2) size 18x19
               text run at (311,2) width 18: "\x{10D0}.\x{10D9}"
         RenderText {#text} at (329,2) size 4x19
           text run at (329,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 26x19
-          RenderInline (pseudo:before) at (0,0) size 26x19
+          RenderInline {<pseudo:before>} at (0,0) size 26x19
             RenderCounter at (333,2) size 26x19
               text run at (333,2) width 26: "\x{10D0}.\x{10DA}"
         RenderText {#text} at (359,2) size 4x19
           text run at (359,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (363,2) size 19x19
               text run at (363,2) width 19: "\x{10D0}.\x{10DB}"
         RenderText {#text} at (382,2) size 4x19
           text run at (382,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (386,2) size 19x19
               text run at (386,2) width 19: "\x{10D0}.\x{10DC}"
         RenderText {#text} at (405,2) size 4x19
           text run at (405,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 20x19
-          RenderInline (pseudo:before) at (0,0) size 20x19
+          RenderInline {<pseudo:before>} at (0,0) size 20x19
             RenderCounter at (409,2) size 20x19
               text run at (409,2) width 20: "\x{10D0}.\x{10F2}"
         RenderText {#text} at (429,2) size 4x19
           text run at (429,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 22x19
-          RenderInline (pseudo:before) at (0,0) size 22x19
+          RenderInline {<pseudo:before>} at (0,0) size 22x19
             RenderCounter at (433,2) size 22x19
               text run at (433,2) width 22: "\x{10D0}.\x{10DD}"
         RenderText {#text} at (455,2) size 4x19
           text run at (455,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (459,2) size 19x19
               text run at (459,2) width 19: "\x{10D0}.\x{10DE}"
         RenderText {#text} at (478,2) size 4x19
           text run at (478,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (482,2) size 19x19
               text run at (482,2) width 19: "\x{10D0}.\x{10DF}"
         RenderText {#text} at (501,2) size 4x19
           text run at (501,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 22x19
-          RenderInline (pseudo:before) at (0,0) size 22x19
+          RenderInline {<pseudo:before>} at (0,0) size 22x19
             RenderCounter at (505,2) size 22x19
               text run at (505,2) width 22: "\x{10D0}.\x{10E0}"
         RenderText {#text} at (527,2) size 4x19
           text run at (527,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (531,2) size 19x19
               text run at (531,2) width 19: "\x{10D0}.\x{10E1}"
         RenderText {#text} at (550,2) size 4x19
           text run at (550,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x19
-          RenderInline (pseudo:before) at (0,0) size 23x19
+          RenderInline {<pseudo:before>} at (0,0) size 23x19
             RenderCounter at (554,2) size 23x19
               text run at (554,2) width 23: "\x{10D0}.\x{10E2}"
         RenderText {#text} at (577,2) size 4x19
           text run at (577,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (581,2) size 19x19
               text run at (581,2) width 19: "\x{10D0}.\x{10F3}"
         RenderText {#text} at (600,2) size 4x19
           text run at (600,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 22x19
-          RenderInline (pseudo:before) at (0,0) size 22x19
+          RenderInline {<pseudo:before>} at (0,0) size 22x19
             RenderCounter at (604,2) size 22x19
               text run at (604,2) width 22: "\x{10D0}.\x{10E4}"
         RenderText {#text} at (626,2) size 4x19
           text run at (626,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 18x19
-          RenderInline (pseudo:before) at (0,0) size 18x19
+          RenderInline {<pseudo:before>} at (0,0) size 18x19
             RenderCounter at (630,2) size 18x19
               text run at (630,2) width 18: "\x{10D0}.\x{10E5}"
         RenderText {#text} at (648,2) size 4x19
           text run at (648,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 22x19
-          RenderInline (pseudo:before) at (0,0) size 22x19
+          RenderInline {<pseudo:before>} at (0,0) size 22x19
             RenderCounter at (652,2) size 22x19
               text run at (652,2) width 22: "\x{10D0}.\x{10E6}"
         RenderText {#text} at (674,2) size 4x19
           text run at (674,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (678,2) size 19x19
               text run at (678,2) width 19: "\x{10D0}.\x{10E7}"
         RenderText {#text} at (697,2) size 4x19
           text run at (697,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (701,2) size 19x19
               text run at (701,2) width 19: "\x{10D0}.\x{10E8}"
         RenderText {#text} at (720,2) size 4x19
           text run at (720,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (724,2) size 19x19
               text run at (724,2) width 19: "\x{10D0}.\x{10E9}"
         RenderText {#text} at (743,2) size 4x19
           text run at (743,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 20x19
-          RenderInline (pseudo:before) at (0,0) size 20x19
+          RenderInline {<pseudo:before>} at (0,0) size 20x19
             RenderCounter at (747,2) size 20x19
               text run at (747,2) width 20: "\x{10D0}.\x{10EA}"
         RenderText {#text} at (767,2) size 4x19
           text run at (767,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (771,2) size 19x19
               text run at (771,2) width 19: "\x{10D0}.\x{10EB}"
         RenderText {#text} at (790,2) size 4x19
           text run at (790,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (794,2) size 19x19
               text run at (794,2) width 19: "\x{10D0}.\x{10EC}"
         RenderText {#text} at (813,2) size 4x19
           text run at (813,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 20x19
-          RenderInline (pseudo:before) at (0,0) size 20x19
+          RenderInline {<pseudo:before>} at (0,0) size 20x19
             RenderCounter at (817,2) size 20x19
               text run at (817,2) width 20: "\x{10D0}.\x{10ED}"
         RenderText {#text} at (837,2) size 4x19
           text run at (837,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (841,2) size 19x19
               text run at (841,2) width 19: "\x{10D0}.\x{10EE}"
         RenderText {#text} at (860,2) size 4x19
           text run at (860,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (864,2) size 19x19
               text run at (864,2) width 19: "\x{10D0}.\x{10F4}"
         RenderText {#text} at (883,2) size 4x19
           text run at (883,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 22x19
-          RenderInline (pseudo:before) at (0,0) size 22x19
+          RenderInline {<pseudo:before>} at (0,0) size 22x19
             RenderCounter at (887,2) size 22x19
               text run at (887,2) width 22: "\x{10D0}.\x{10EF}"
         RenderText {#text} at (909,2) size 4x19
           text run at (909,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 19x19
-          RenderInline (pseudo:before) at (0,0) size 19x19
+          RenderInline {<pseudo:before>} at (0,0) size 19x19
             RenderCounter at (913,2) size 19x19
               text run at (913,2) width 19: "\x{10D0}.\x{10F0}"
         RenderText {#text} at (932,2) size 4x19
           text run at (932,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 20x19
-          RenderInline (pseudo:before) at (0,0) size 20x19
+          RenderInline {<pseudo:before>} at (0,0) size 20x19
             RenderCounter at (936,2) size 20x19
               text run at (936,2) width 20: "\x{10D0}.\x{10F5}"
         RenderText {#text} at (956,2) size 4x19
           text run at (956,2) width 4: " "
         RenderInline {SPAN} at (0,0) size 58x19
-          RenderInline (pseudo:before) at (0,0) size 58x19
+          RenderInline {<pseudo:before>} at (0,0) size 58x19
             RenderCounter at (960,2) size 58x19
               text run at (960,2) width 58: "\x{10D0}.\x{10F5}\x{10F0}\x{10E8}\x{10DF}\x{10D7}"
         RenderText {#text} at (0,0) size 0x0

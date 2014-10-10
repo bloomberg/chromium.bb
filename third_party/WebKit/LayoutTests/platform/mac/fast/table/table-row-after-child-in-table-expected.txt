@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               RenderInline {SPAN} at (0,0) size 75x16
                 RenderText {#text} at (0,0) size 75x16
                   text run at (0,0) width 75: "CONTENT"
-          RenderTableRow (anonymous) at (0,16) size 75x16 [border: (3px solid #0000FF)]
+          RenderTableRow (anonymous) {<pseudo:after>} at (0,16) size 75x16 [border: (3px solid #0000FF)]
             RenderTableCell (anonymous) at (0,16) size 75x16 [r=1 c=0 rs=1 cs=1]
               RenderTextFragment at (0,0) size 51x16
                 text run at (0,0) width 51: "AFTER"

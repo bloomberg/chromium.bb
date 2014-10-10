@@ -62,7 +62,7 @@ layer at (0,0) size 800x600
           RenderBlock (anonymous) at (0,0) size 744x18
             RenderListMarker at (-17,0) size 7x17: bullet
             RenderInline {SPAN} at (0,0) size 41x17
-              RenderInline (pseudo:before) at (0,0) size 41x17
+              RenderInline {<pseudo:before>} at (0,0) size 41x17
                 RenderTextFragment at (0,0) size 41x17
                   text run at (0,0) width 41: "before"
               RenderText {#text} at (0,0) size 0x0

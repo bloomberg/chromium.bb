@@ -14,27 +14,27 @@ layer at (0,0) size 800x226
         RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
           RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "1"
-          RenderInline (pseudo:after) at (0,0) size 54x16
+          RenderInline {<pseudo:after>} at (0,0) size 54x16
             RenderTextFragment at (8,0) size 54x16
               text run at (8,0) width 54: "(href=1)"
       RenderBlock {P} at (0,114) size 784x16
         RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
           RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "2"
-          RenderInline (pseudo:after) at (0,0) size 54x16
+          RenderInline {<pseudo:after>} at (0,0) size 54x16
             RenderTextFragment at (8,0) size 54x16
               text run at (8,0) width 54: "(href=2)"
       RenderBlock {P} at (0,146) size 784x16
         RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
           RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "3"
-          RenderInline (pseudo:after) at (0,0) size 54x16
+          RenderInline {<pseudo:after>} at (0,0) size 54x16
             RenderTextFragment at (8,0) size 54x16
               text run at (8,0) width 54: "(href=3)"
       RenderBlock {P} at (0,178) size 784x16
         RenderInline {A} at (0,0) size 62x16 [color=#0000EE]
           RenderText {#text} at (0,0) size 8x16
             text run at (0,0) width 8: "4"
-          RenderInline (pseudo:after) at (0,0) size 54x16
+          RenderInline {<pseudo:after>} at (0,0) size 54x16
             RenderTextFragment at (8,0) size 54x16
               text run at (8,0) width 54: "(href=4)"

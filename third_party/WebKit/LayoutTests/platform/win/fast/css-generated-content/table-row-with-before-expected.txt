@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
             RenderListMarker at (-17,0) size 7x17: bullet
           RenderTable at (0,18) size 32x18
             RenderTableSection (anonymous) at (0,0) size 32x18
-              RenderTableRow (anonymous) at (0,0) size 32x18
+              RenderTableRow (anonymous) {<pseudo:before>} at (0,0) size 32x18
                 RenderTableCell (anonymous) at (0,0) size 32x18 [r=0 c=0 rs=1 cs=1]
                   RenderTextFragment at (0,0) size 32x17
                     text run at (0,0) width 32: "hello"

@@ -6,7 +6,7 @@ layer at (0,0) size 800x68
       RenderBlock {p} at (0,0) size 784x36
         RenderText {#text} at (0,0) size 624x17
           text run at (0,0) width 624: "You should see after this paragraph the words GENERATED CONTENT over green background"
-        RenderInline (pseudo:after) at (0,0) size 720x35 [bgcolor=#00FF00]
+        RenderInline {<pseudo:after>} at (0,0) size 720x35 [bgcolor=#00FF00]
           RenderTextFragment at (623,0) size 720x35
             text run at (623,0) width 97: "GENERATED"
             text run at (0,18) width 75: "CONTENT"

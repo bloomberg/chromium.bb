@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
           RenderBlock (anonymous) at (0,0) size 744x16
             RenderListMarker at (-16,0) size 6x16: bullet
           RenderTable at (0,16) size 32x16
-            RenderTableSection (anonymous) at (0,0) size 32x16
+            RenderTableSection (anonymous) {<pseudo:before>} at (0,0) size 32x16
               RenderTableRow (anonymous) at (0,0) size 32x16
                 RenderTableCell (anonymous) at (0,0) size 32x16 [r=0 c=0 rs=1 cs=1]
                   RenderTextFragment at (0,0) size 32x16

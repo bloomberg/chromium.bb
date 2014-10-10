@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         RenderTableSection (anonymous) at (0,0) size 75x54
           RenderTableRow (anonymous) at (0,0) size 75x54
             RenderTableCell (anonymous) at (0,0) size 75x54 [r=0 c=0 rs=1 cs=1]
-              RenderTable at (0,0) size 62x18
+              RenderTable {<pseudo:before>} at (0,0) size 62x18
                 RenderTableSection (anonymous) at (0,0) size 62x18
                   RenderTableRow (anonymous) at (0,0) size 62x18
                     RenderTableCell (anonymous) at (0,0) size 62x18 [r=0 c=0 rs=1 cs=1]
@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
               RenderBlock {DIV} at (0,18) size 75x18
                 RenderText {#text} at (0,0) size 75x17
                   text run at (0,0) width 75: "CONTENT"
-              RenderTable at (0,36) size 51x18
+              RenderTable {<pseudo:after>} at (0,36) size 51x18
                 RenderTableSection (anonymous) at (0,0) size 51x18
                   RenderTableRow (anonymous) at (0,0) size 51x18
                     RenderTableCell (anonymous) at (0,0) size 51x18 [r=0 c=0 rs=1 cs=1]

@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {H1} at (0,0) size 784x37
-        RenderInline (pseudo:before) at (0,0) size 207x36
+        RenderInline {<pseudo:before>} at (0,0) size 207x36
           RenderTextFragment at (0,0) size 207x36
             text run at (0,0) width 207: "First Chapter: "
         RenderText {#text} at (207,0) size 105x36
@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 225x19
           text run at (0,0) width 225: "Should read: \"First Chapter: TEST 1\""
       RenderBlock {H2} at (0,98.34) size 784x27
-        RenderInline (pseudo:before) at (0,0) size 99x26
+        RenderInline {<pseudo:before>} at (0,0) size 99x26
           RenderTextFragment at (0,0) size 99x26
             text run at (0,0) width 99: "Chapter: "
         RenderText {#text} at (99,0) size 77x26
@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 194x19
           text run at (0,0) width 194: "Should read: \"Chapter: TEST 2\""
       RenderBlock {H3} at (0,183.97) size 784x23
-        RenderInline (pseudo:before) at (0,0) size 116x22
+        RenderInline {<pseudo:before>} at (0,0) size 116x22
           RenderTextFragment at (0,0) size 116x22
             text run at (0,0) width 116: "Chapter One: "
         RenderText {#text} at (116,0) size 65x22
@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 224x19
           text run at (0,0) width 224: "Should read: \"Chapter One: TEST 3\""
       RenderBlock {H4} at (0,266.95) size 784x20
-        RenderInline (pseudo:before) at (0,0) size 63x19
+        RenderInline {<pseudo:before>} at (0,0) size 63x19
           RenderTextFragment at (0,0) size 63x19
             text run at (0,0) width 63: "Chapter: "
         RenderText {#text} at (63,0) size 51x19

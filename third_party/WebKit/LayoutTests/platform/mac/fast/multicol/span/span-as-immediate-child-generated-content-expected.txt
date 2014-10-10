@@ -11,7 +11,7 @@ layer at (8,16) size 760x382
           text run at (0,0) width 277: "This is a spanning element."
 layer at (13,21) size 750x16
   RenderBlock (anonymous multi-column) at (5,5) size 750x16
-    RenderBlock (pseudo:before) at (0,0) size 367x16 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:before>} at (0,0) size 367x16 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 168x16
         text run at (0,0) width 168: "Before Generated Content"
 layer at (13,101) size 750x292
@@ -56,7 +56,7 @@ layer at (13,101) size 750x292
         text run at (278,516) width 86: "Lorem ipsum"
         text run at (0,532) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
         text run at (0,548) width 76: "enim ac mi."
-    RenderBlock (pseudo:after) at (0,564) size 367x20 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:after>} at (0,564) size 367x20 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 159x16
         text run at (0,0) width 159: "After Generated Content"
 layer at (8,414) size 760x378
@@ -67,7 +67,7 @@ layer at (8,414) size 760x378
           text run at (0,0) width 277: "This is a spanning element."
 layer at (13,419) size 750x288
   RenderBlock (anonymous multi-column) at (5,5) size 750x288
-    RenderBlock (pseudo:before) at (0,0) size 367x16 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:before>} at (0,0) size 367x16 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 168x16
         text run at (0,0) width 168: "Before Generated Content"
     RenderBlock (anonymous) at (0,16) size 367x560
@@ -112,7 +112,7 @@ layer at (13,419) size 750x288
         text run at (0,544) width 76: "enim ac mi."
 layer at (13,771) size 750x16
   RenderBlock (anonymous multi-column) at (5,356.81) size 750x16
-    RenderBlock (pseudo:after) at (0,0) size 367x20 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:after>} at (0,0) size 367x20 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 159x16
         text run at (0,0) width 159: "After Generated Content"
 layer at (8,808) size 760x413
@@ -123,7 +123,7 @@ layer at (8,808) size 760x413
           text run at (0,0) width 277: "This is a spanning element."
 layer at (13,813) size 750x128
   RenderBlock (anonymous multi-column) at (5,5) size 750x128
-    RenderBlock (pseudo:before) at (0,0) size 367x16 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:before>} at (0,0) size 367x16 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 168x16
         text run at (0,0) width 168: "Before Generated Content"
     RenderBlock {P} at (0,32) size 367x208
@@ -169,7 +169,7 @@ layer at (13,1004) size 750x212
         text run at (0,308) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (0,324) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,340) width 275: "dolor sit amet, consectetuer adipiscing elit."
-    RenderBlock (pseudo:after) at (0,388) size 367x20 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:after>} at (0,388) size 367x20 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 159x16
         text run at (0,0) width 159: "After Generated Content"
 layer at (8,1237) size 760x398
@@ -180,7 +180,7 @@ layer at (8,1237) size 760x398
           text run at (0,0) width 277: "This is a spanning element."
 layer at (13,1242) size 750x112
   RenderBlock (anonymous multi-column) at (5,5) size 750x112
-    RenderBlock (pseudo:before) at (0,0) size 367x16 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:before>} at (0,0) size 367x16 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 168x16
         text run at (0,0) width 168: "Before Generated Content"
     RenderBlock (anonymous) at (0,16) size 367x208
@@ -230,7 +230,7 @@ layer at (13,1418) size 750x212
         text run at (0,132) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (0,148) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,164) width 275: "dolor sit amet, consectetuer adipiscing elit."
-    RenderBlock (pseudo:after) at (0,388) size 367x20 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:after>} at (0,388) size 367x20 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 159x16
         text run at (0,0) width 159: "After Generated Content"
 layer at (8,1651) size 760x398
@@ -241,7 +241,7 @@ layer at (8,1651) size 760x398
           text run at (0,0) width 277: "This is a spanning element."
 layer at (13,1656) size 750x208
   RenderBlock (anonymous multi-column) at (5,5) size 750x208
-    RenderBlock (pseudo:before) at (0,0) size 367x16 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:before>} at (0,0) size 367x16 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 168x16
         text run at (0,0) width 168: "Before Generated Content"
     RenderBlock (anonymous) at (0,16) size 367x176
@@ -294,7 +294,7 @@ layer at (13,1928) size 750x116
         text run at (0,132) width 351: "condimentum vestibulum. Suspendisse hendrerit quam"
         text run at (0,148) width 333: "nec felis. Sed varius turpis vitae pede. Lorem ipsum"
         text run at (0,164) width 275: "dolor sit amet, consectetuer adipiscing elit."
-    RenderBlock (pseudo:after) at (0,212) size 367x20 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:after>} at (0,212) size 367x20 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 159x16
         text run at (0,0) width 159: "After Generated Content"
 layer at (8,2065) size 760x446
@@ -309,7 +309,7 @@ layer at (8,2065) size 760x446
           text run at (0,0) width 158: "Nulla varius enim ac mi."
 layer at (13,2070) size 750x240
   RenderBlock (anonymous multi-column) at (5,5) size 750x240
-    RenderBlock (pseudo:before) at (0,0) size 367x16 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:before>} at (0,0) size 367x16 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 168x16
         text run at (0,0) width 168: "Before Generated Content"
     RenderBlock {P} at (0,32) size 367x176
@@ -363,6 +363,6 @@ layer at (13,2406) size 750x100
           text run at (0,132) width 339: "varius turpis vitae pede. Lorem ipsum dolor sit amet,"
           text run at (0,148) width 179: "consectetuer adipiscing elit."
       RenderText {#text} at (0,0) size 0x0
-    RenderBlock (pseudo:after) at (0,164) size 367x20 [bgcolor=#FFFF00]
+    RenderBlock {<pseudo:after>} at (0,164) size 367x20 [bgcolor=#FFFF00]
       RenderTextFragment at (0,0) size 159x16
         text run at (0,0) width 159: "After Generated Content"

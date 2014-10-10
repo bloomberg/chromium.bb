@@ -16,6 +16,6 @@ layer at (0,0) size 800x600
                     text run at (0,0) width 300: "There should be a fourth dot bellow..."
               RenderBlock (anonymous) at (0,40.72) size 300x18
                 RenderInline {FORM} at (0,0) size 0x0
-                RenderInline (pseudo:after) at (0,0) size 4x17
+                RenderInline {<pseudo:after>} at (0,0) size 4x17
                   RenderTextFragment at (0,0) size 4x17
                     text run at (0,0) width 4: "."

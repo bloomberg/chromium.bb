@@ -8,7 +8,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 226x16
             RenderText {#text} at (21,0) size 226x16
               text run at (21,0) width 226: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (246,0) size 6x16
               text run at (246,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18
@@ -57,7 +57,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 237x16
             RenderText {#text} at (15,0) size 237x16
               text run at (15,0) width 237: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (251,0) size 7x16
               text run at (251,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 273x19
@@ -106,7 +106,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 237x16
             RenderText {#text} at (15,0) size 237x16
               text run at (15,0) width 237: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (251,0) size 7x16
               text run at (251,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18
@@ -155,7 +155,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 240x16
             RenderText {#text} at (14,0) size 240x16
               text run at (14,0) width 240: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (253,0) size 6x16
               text run at (253,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x19
@@ -204,7 +204,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 238x16
             RenderText {#text} at (16,0) size 238x16
               text run at (16,0) width 238: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (253,0) size 6x16
               text run at (253,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x18
@@ -253,7 +253,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 219x16
             RenderText {#text} at (25,0) size 219x16
               text run at (25,0) width 219: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (243,0) size 6x16
               text run at (243,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x18
@@ -302,7 +302,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 220x16
             RenderText {#text} at (24,0) size 220x16
               text run at (24,0) width 220: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (243,0) size 7x16
               text run at (243,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18
@@ -351,7 +351,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 223x16
             RenderText {#text} at (23,0) size 223x16
               text run at (23,0) width 223: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (245,0) size 7x16
               text run at (245,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 274x19
@@ -400,7 +400,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 242x16
             RenderText {#text} at (14,0) size 242x16
               text run at (14,0) width 242: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}none\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (255,0) size 6x16
               text run at (255,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x19
@@ -449,7 +449,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 239x16
             RenderText {#text} at (14,0) size 239x16
               text run at (14,0) width 239: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (252,0) size 7x16
               text run at (252,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -498,7 +498,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 250x16
             RenderText {#text} at (9,0) size 250x16
               text run at (9,0) width 250: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (258,0) size 6x16
               text run at (258,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x19 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -547,7 +547,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 250x16
             RenderText {#text} at (9,0) size 250x16
               text run at (9,0) width 250: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (258,0) size 6x16
               text run at (258,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -596,7 +596,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 252x16
             RenderText {#text} at (8,0) size 252x16
               text run at (8,0) width 252: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (259,0) size 6x16
               text run at (259,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x19 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -645,7 +645,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 250x16
             RenderText {#text} at (10,0) size 250x16
               text run at (10,0) width 250: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (259,0) size 6x16
               text run at (259,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x18 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -694,7 +694,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 231x16
             RenderText {#text} at (19,0) size 231x16
               text run at (19,0) width 231: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (249,0) size 6x16
               text run at (249,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x18 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -743,7 +743,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 233x16
             RenderText {#text} at (18,0) size 233x16
               text run at (18,0) width 233: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (250,0) size 6x16
               text run at (250,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -792,7 +792,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 235x16
             RenderText {#text} at (17,0) size 235x16
               text run at (17,0) width 235: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (251,0) size 7x16
               text run at (251,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 274x19 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -841,7 +841,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 255x16
             RenderText {#text} at (7,0) size 255x16
               text run at (7,0) width 255: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}groups\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (261,0) size 7x16
               text run at (261,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 274x19 [border: (1px solid #808080) none (1px solid #808080) none]
@@ -890,7 +890,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 224x16
             RenderText {#text} at (22,0) size 224x16
               text run at (22,0) width 224: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (245,0) size 6x16
               text run at (245,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18
@@ -939,7 +939,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 235x16
             RenderText {#text} at (16,0) size 235x16
               text run at (16,0) width 235: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (250,0) size 7x16
               text run at (250,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 273x19
@@ -988,7 +988,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 235x16
             RenderText {#text} at (16,0) size 235x16
               text run at (16,0) width 235: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (250,0) size 7x16
               text run at (250,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18
@@ -1037,7 +1037,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 238x16
             RenderText {#text} at (15,0) size 238x16
               text run at (15,0) width 238: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (252,0) size 6x16
               text run at (252,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x19
@@ -1086,7 +1086,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 236x16
             RenderText {#text} at (17,0) size 236x16
               text run at (17,0) width 236: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (252,0) size 6x16
               text run at (252,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x18
@@ -1135,7 +1135,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 217x16
             RenderText {#text} at (26,0) size 217x16
               text run at (26,0) width 217: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (242,0) size 6x16
               text run at (242,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x18
@@ -1184,7 +1184,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 219x16
             RenderText {#text} at (25,0) size 219x16
               text run at (25,0) width 219: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (243,0) size 6x16
               text run at (243,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 273x18
@@ -1233,7 +1233,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 221x16
             RenderText {#text} at (24,0) size 221x16
               text run at (24,0) width 221: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (244,0) size 7x16
               text run at (244,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 274x19
@@ -1282,7 +1282,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 240x16
             RenderText {#text} at (15,0) size 240x16
               text run at (15,0) width 240: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}rows\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (254,0) size 6x16
               text run at (254,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 274x19
@@ -1331,7 +1331,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 219x16
             RenderText {#text} at (25,0) size 219x16
               text run at (25,0) width 219: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (243,0) size 7x16
               text run at (243,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 275x18
@@ -1380,7 +1380,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 230x16
             RenderText {#text} at (20,0) size 230x16
               text run at (20,0) width 230: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (249,0) size 6x16
               text run at (249,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 275x19
@@ -1429,7 +1429,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 230x16
             RenderText {#text} at (20,0) size 230x16
               text run at (20,0) width 230: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (249,0) size 6x16
               text run at (249,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 275x18
@@ -1478,7 +1478,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 232x16
             RenderText {#text} at (19,0) size 232x16
               text run at (19,0) width 232: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (250,0) size 6x16
               text run at (250,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 275x19
@@ -1527,7 +1527,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 231x16
             RenderText {#text} at (20,0) size 231x16
               text run at (20,0) width 231: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (250,0) size 7x16
               text run at (250,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 276x18
@@ -1576,7 +1576,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 211x16
             RenderText {#text} at (30,0) size 211x16
               text run at (30,0) width 211: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (240,0) size 6x16
               text run at (240,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 276x18
@@ -1625,7 +1625,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 213x16
             RenderText {#text} at (29,0) size 213x16
               text run at (29,0) width 213: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (241,0) size 6x16
               text run at (241,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 275x18
@@ -1674,7 +1674,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 216x16
             RenderText {#text} at (28,0) size 216x16
               text run at (28,0) width 216: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (243,0) size 6x16
               text run at (243,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 276x19
@@ -1723,7 +1723,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 235x16
             RenderText {#text} at (18,0) size 235x16
               text run at (18,0) width 235: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}cols\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (252,0) size 7x16
               text run at (252,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 276x19
@@ -1772,7 +1772,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 210x16
             RenderText {#text} at (30,0) size 210x16
               text run at (30,0) width 210: "Frame=\x{201C}void\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (239,0) size 6x16
               text run at (239,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 275x18
@@ -1821,7 +1821,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 221x16
             RenderText {#text} at (24,0) size 221x16
               text run at (24,0) width 221: "Frame=\x{201C}above\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (244,0) size 7x16
               text run at (244,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 275x19
@@ -1870,7 +1870,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 221x16
             RenderText {#text} at (24,0) size 221x16
               text run at (24,0) width 221: "Frame=\x{201C}below\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (244,0) size 7x16
               text run at (244,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 275x18
@@ -1919,7 +1919,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 224x16
             RenderText {#text} at (23,0) size 224x16
               text run at (23,0) width 224: "Frame=\x{201C}hsides\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (246,0) size 6x16
               text run at (246,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 275x19
@@ -1968,7 +1968,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 222x16
             RenderText {#text} at (25,0) size 222x16
               text run at (25,0) width 222: "Frame=\x{201C}vsides\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (246,0) size 6x16
               text run at (246,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 276x18
@@ -2017,7 +2017,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 203x16
             RenderText {#text} at (34,0) size 203x16
               text run at (34,0) width 203: "Frame=\x{201C}lhs\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (236,0) size 6x16
               text run at (236,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 276x18
@@ -2066,7 +2066,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 204x16
             RenderText {#text} at (33,0) size 204x16
               text run at (33,0) width 204: "Frame=\x{201C}rhs\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (236,0) size 7x16
               text run at (236,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 275x18
@@ -2115,7 +2115,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 207x16
             RenderText {#text} at (32,0) size 207x16
               text run at (32,0) width 207: "Frame=\x{201C}box\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 7x16
+          RenderInline {<pseudo:after>} at (0,0) size 7x16
             RenderTextFragment at (238,0) size 7x16
               text run at (238,0) width 7: ":"
         RenderTableSection {THEAD} at (0,16) size 276x19
@@ -2164,7 +2164,7 @@ layer at (0,0) size 785x7068
           RenderInline {A} at (0,0) size 226x16
             RenderText {#text} at (23,0) size 226x16
               text run at (23,0) width 226: "Frame=\x{201C}border\x{201D} and Rules=\x{201C}all\x{201D}"
-          RenderInline (pseudo:after) at (0,0) size 6x16
+          RenderInline {<pseudo:after>} at (0,0) size 6x16
             RenderTextFragment at (248,0) size 6x16
               text run at (248,0) width 6: ":"
         RenderTableSection {THEAD} at (0,16) size 276x19
@@ -2214,7 +2214,7 @@ layer at (393,24) size 392x150
       RenderBlock {CAPTION} at (0,0) size 359x16
         RenderText {#text} at (56,0) size 242x16
           text run at (56,0) width 242: "Local links to specific testcase tables"
-        RenderInline (pseudo:after) at (0,0) size 6x16
+        RenderInline {<pseudo:after>} at (0,0) size 6x16
           RenderTextFragment at (297,0) size 6x16
             text run at (297,0) width 6: ":"
       RenderTableCol {COLGROUP} at (0,0) size 0x0

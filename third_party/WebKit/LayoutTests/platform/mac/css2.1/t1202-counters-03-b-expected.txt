@@ -13,73 +13,73 @@ layer at (0,0) size 800x94
           text run at (328,0) width 66: " the same:"
       RenderBlock {DIV} at (0,32) size 784x19
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (0,3) size 23x16
               text run at (0,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (22,3) size 5x16
           text run at (22,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (26,3) size 23x16
               text run at (26,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (49,3) size 4x16
           text run at (49,3) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (53,3) size 23x16
               text run at (53,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (75,3) size 5x16
           text run at (75,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (79,3) size 23x16
               text run at (79,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (102,3) size 4x16
           text run at (102,3) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (106,3) size 23x16
               text run at (106,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (128,3) size 5x16
           text run at (128,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (132,3) size 23x16
               text run at (132,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (155,3) size 4x16
           text run at (155,3) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (159,3) size 23x16
               text run at (159,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (181,3) size 5x16
           text run at (181,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (185,3) size 23x16
               text run at (185,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (208,3) size 4x16
           text run at (208,3) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (212,3) size 23x16
               text run at (212,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (234,3) size 5x16
           text run at (234,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (238,3) size 23x16
               text run at (238,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (261,3) size 4x16
           text run at (261,3) width 4: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (265,3) size 23x16
               text run at (265,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (287,3) size 5x16
           text run at (287,3) width 5: " "
         RenderInline {SPAN} at (0,0) size 23x16
-          RenderInline (pseudo:before) at (0,0) size 23x16
+          RenderInline {<pseudo:before>} at (0,0) size 23x16
             RenderCounter at (291,3) size 23x16
               text run at (291,3) width 23: "\x{25E6}.\x{25E6}"
         RenderText {#text} at (0,0) size 0x0

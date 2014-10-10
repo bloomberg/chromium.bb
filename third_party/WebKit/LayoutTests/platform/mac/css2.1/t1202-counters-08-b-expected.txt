@@ -8,115 +8,115 @@ layer at (0,0) size 800x88
           text run at (0,0) width 298: "The following two lines should look the same:"
       RenderBlock {DIV} at (0,32) size 784x16
         RenderInline {SPAN} at (0,0) size 15x16
-          RenderInline (pseudo:before) at (0,0) size 15x16
+          RenderInline {<pseudo:before>} at (0,0) size 15x16
             RenderCounter at (0,0) size 15x16
               text run at (0,0) width 15: "I.I"
         RenderText {#text} at (14,0) size 5x16
           text run at (14,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 21x16
-          RenderInline (pseudo:before) at (0,0) size 21x16
+          RenderInline {<pseudo:before>} at (0,0) size 21x16
             RenderCounter at (18,0) size 21x16
               text run at (18,0) width 21: "I.II"
         RenderText {#text} at (38,0) size 5x16
           text run at (38,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 26x16
-          RenderInline (pseudo:before) at (0,0) size 26x16
+          RenderInline {<pseudo:before>} at (0,0) size 26x16
             RenderCounter at (42,0) size 26x16
               text run at (42,0) width 26: "I.III"
         RenderText {#text} at (67,0) size 5x16
           text run at (67,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 28x16
-          RenderInline (pseudo:before) at (0,0) size 28x16
+          RenderInline {<pseudo:before>} at (0,0) size 28x16
             RenderCounter at (71,0) size 28x16
               text run at (71,0) width 28: "I.IV"
         RenderText {#text} at (98,0) size 5x16
           text run at (98,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 22x16
-          RenderInline (pseudo:before) at (0,0) size 22x16
+          RenderInline {<pseudo:before>} at (0,0) size 22x16
             RenderCounter at (102,0) size 22x16
               text run at (102,0) width 22: "I.V"
         RenderText {#text} at (123,0) size 5x16
           text run at (123,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 27x16
-          RenderInline (pseudo:before) at (0,0) size 27x16
+          RenderInline {<pseudo:before>} at (0,0) size 27x16
             RenderCounter at (127,0) size 27x16
               text run at (127,0) width 27: "I.VI"
         RenderText {#text} at (153,0) size 5x16
           text run at (153,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 32x16
-          RenderInline (pseudo:before) at (0,0) size 32x16
+          RenderInline {<pseudo:before>} at (0,0) size 32x16
             RenderCounter at (157,0) size 32x16
               text run at (157,0) width 32: "I.VII"
         RenderText {#text} at (188,0) size 5x16
           text run at (188,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 38x16
-          RenderInline (pseudo:before) at (0,0) size 38x16
+          RenderInline {<pseudo:before>} at (0,0) size 38x16
             RenderCounter at (192,0) size 38x16
               text run at (192,0) width 38: "I.VIII"
         RenderText {#text} at (229,0) size 5x16
           text run at (229,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 27x16
-          RenderInline (pseudo:before) at (0,0) size 27x16
+          RenderInline {<pseudo:before>} at (0,0) size 27x16
             RenderCounter at (233,0) size 27x16
               text run at (233,0) width 27: "I.IX"
         RenderText {#text} at (259,0) size 5x16
           text run at (259,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 22x16
-          RenderInline (pseudo:before) at (0,0) size 22x16
+          RenderInline {<pseudo:before>} at (0,0) size 22x16
             RenderCounter at (263,0) size 22x16
               text run at (263,0) width 22: "I.X"
         RenderText {#text} at (284,0) size 5x16
           text run at (284,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 27x16
-          RenderInline (pseudo:before) at (0,0) size 27x16
+          RenderInline {<pseudo:before>} at (0,0) size 27x16
             RenderCounter at (288,0) size 27x16
               text run at (288,0) width 27: "I.XI"
         RenderText {#text} at (314,0) size 5x16
           text run at (314,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 33x16
-          RenderInline (pseudo:before) at (0,0) size 33x16
+          RenderInline {<pseudo:before>} at (0,0) size 33x16
             RenderCounter at (318,0) size 33x16
               text run at (318,0) width 33: "I.XII"
         RenderText {#text} at (350,0) size 5x16
           text run at (350,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 49x16
-          RenderInline (pseudo:before) at (0,0) size 49x16
+          RenderInline {<pseudo:before>} at (0,0) size 49x16
             RenderCounter at (354,0) size 49x16
               text run at (354,0) width 49: "I.XLIX"
         RenderText {#text} at (402,0) size 5x16
           text run at (402,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 20x16
-          RenderInline (pseudo:before) at (0,0) size 20x16
+          RenderInline {<pseudo:before>} at (0,0) size 20x16
             RenderCounter at (406,0) size 20x16
               text run at (406,0) width 20: "I.L"
         RenderText {#text} at (425,0) size 5x16
           text run at (425,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 103x16
-          RenderInline (pseudo:before) at (0,0) size 103x16
+          RenderInline {<pseudo:before>} at (0,0) size 103x16
             RenderCounter at (429,0) size 103x16
               text run at (429,0) width 103: "I.CCCLXXXIX"
         RenderText {#text} at (531,0) size 5x16
           text run at (531,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 65x16
-          RenderInline (pseudo:before) at (0,0) size 65x16
+          RenderInline {<pseudo:before>} at (0,0) size 65x16
             RenderCounter at (535,0) size 65x16
               text run at (535,0) width 65: "I.CCCXC"
         RenderText {#text} at (599,0) size 5x16
           text run at (599,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 136x16
-          RenderInline (pseudo:before) at (0,0) size 136x16
+          RenderInline {<pseudo:before>} at (0,0) size 136x16
             RenderCounter at (603,0) size 136x16
               text run at (603,0) width 136: "I.MMMCDLXXXIX"
         RenderText {#text} at (738,0) size 5x16
           text run at (738,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 98x16
-          RenderInline (pseudo:before) at (0,0) size 98x16
+          RenderInline {<pseudo:before>} at (0,0) size 98x16
             RenderCounter at (742,0) size 98x16
               text run at (742,0) width 98: "I.MMMCDXC"
         RenderText {#text} at (839,0) size 5x16
           text run at (839,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 103x16
-          RenderInline (pseudo:before) at (0,0) size 103x16
+          RenderInline {<pseudo:before>} at (0,0) size 103x16
             RenderCounter at (843,0) size 103x16
               text run at (843,0) width 103: "I.MMMCDXCI"
         RenderText {#text} at (0,0) size 0x0

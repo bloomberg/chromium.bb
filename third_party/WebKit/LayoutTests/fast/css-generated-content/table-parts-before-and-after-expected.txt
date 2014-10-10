@@ -4,7 +4,7 @@ layer at (0,0) size 785x736
   RenderBlock {HTML} at (0,0) size 785x736
     RenderBody {BODY} at (8,8) size 769x720
       RenderBlock {DIV} at (0,0) size 769x120
-        RenderTable at (0,0) size 40x40
+        RenderTable {<pseudo:before>} at (0,0) size 40x40
           RenderTableSection (anonymous) at (0,0) size 40x40
             RenderTableRow (anonymous) at (0,0) size 40x40
               RenderTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
@@ -16,11 +16,11 @@ layer at (0,0) size 785x736
         RenderTable at (0,80) size 120x40
           RenderTableSection (anonymous) at (0,0) size 120x40
             RenderTableRow (anonymous) at (0,0) size 120x40
-              RenderTableCell (anonymous) at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              RenderTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       RenderBlock {DIV} at (0,120) size 769x120 [color=#0000FF]
-        RenderTable at (0,0) size 40x40
+        RenderTable {<pseudo:before>} at (0,0) size 40x40
           RenderTableSection (anonymous) at (0,0) size 40x40
             RenderTableRow (anonymous) at (0,0) size 40x40
               RenderTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
@@ -32,12 +32,12 @@ layer at (0,0) size 785x736
         RenderTable at (0,80) size 120x40
           RenderTableSection (anonymous) at (0,0) size 120x40
             RenderTableRow (anonymous) at (0,0) size 120x40
-              RenderTableCell (anonymous) at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              RenderTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       RenderBlock {DIV} at (0,240) size 769x120
         RenderTable at (0,0) size 40x40
-          RenderTableSection (anonymous) at (0,0) size 40x40
+          RenderTableSection (anonymous) {<pseudo:before>} at (0,0) size 40x40
             RenderTableRow (anonymous) at (0,0) size 40x40
               RenderTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 40x40
@@ -48,12 +48,12 @@ layer at (0,0) size 785x736
         RenderTable at (0,80) size 120x40
           RenderTableSection (anonymous) at (0,0) size 120x40
             RenderTableRow (anonymous) at (0,0) size 120x40
-              RenderTableCell (anonymous) at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              RenderTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       RenderBlock {DIV} at (0,360) size 769x120 [color=#0000FF]
         RenderTable at (0,0) size 40x40
-          RenderTableSection (anonymous) at (0,0) size 40x40
+          RenderTableSection (anonymous) {<pseudo:before>} at (0,0) size 40x40
             RenderTableRow (anonymous) at (0,0) size 40x40
               RenderTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 40x40
@@ -64,13 +64,13 @@ layer at (0,0) size 785x736
         RenderTable at (0,80) size 120x40
           RenderTableSection (anonymous) at (0,0) size 120x40
             RenderTableRow (anonymous) at (0,0) size 120x40
-              RenderTableCell (anonymous) at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              RenderTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       RenderBlock {DIV} at (0,480) size 769x120
         RenderTable at (0,0) size 40x40
           RenderTableSection (anonymous) at (0,0) size 40x40
-            RenderTableRow (anonymous) at (0,0) size 40x40
+            RenderTableRow (anonymous) {<pseudo:before>} at (0,0) size 40x40
               RenderTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 40x40
                   text run at (0,0) width 40: "1"
@@ -80,13 +80,13 @@ layer at (0,0) size 785x736
         RenderTable at (0,80) size 120x40
           RenderTableSection (anonymous) at (0,0) size 120x40
             RenderTableRow (anonymous) at (0,0) size 120x40
-              RenderTableCell (anonymous) at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              RenderTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"
       RenderBlock {DIV} at (0,600) size 769x120 [color=#0000FF]
         RenderTable at (0,0) size 40x40
           RenderTableSection (anonymous) at (0,0) size 40x40
-            RenderTableRow (anonymous) at (0,0) size 40x40
+            RenderTableRow (anonymous) {<pseudo:before>} at (0,0) size 40x40
               RenderTableCell (anonymous) at (0,0) size 40x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 40x40
                   text run at (0,0) width 40: "1"
@@ -96,6 +96,6 @@ layer at (0,0) size 785x736
         RenderTable at (0,80) size 120x40
           RenderTableSection (anonymous) at (0,0) size 120x40
             RenderTableRow (anonymous) at (0,0) size 120x40
-              RenderTableCell (anonymous) at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
+              RenderTableCell (anonymous) {<pseudo:after>} at (0,0) size 120x40 [r=0 c=0 rs=1 cs=1]
                 RenderTextFragment at (0,0) size 120x40
                   text run at (0,0) width 120: "333"

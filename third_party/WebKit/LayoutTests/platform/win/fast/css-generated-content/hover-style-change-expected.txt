@@ -6,7 +6,7 @@ layer at (0,0) size 800x208
       RenderBlock {DIV} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 85x17
           text run at (0,0) width 85: "This is a test "
-        RenderInline (pseudo:after) at (0,0) size 182x17
+        RenderInline {<pseudo:after>} at (0,0) size 182x17
           RenderTextFragment at (84,0) size 182x17
             text run at (84,0) width 182: "and generated hover content"
       RenderBlock {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]

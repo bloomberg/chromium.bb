@@ -13,7 +13,7 @@ layer at (0,0) size 800x100
           text run at (309,0) width 60: " the same:"
       RenderBlock {DIV} at (0,36) size 784x20
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (0,0) size 4x19
               text run at (0,0) width 4: "."
             RenderTextFragment at (4,0) size 6x19
@@ -21,7 +21,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (10,0) size 4x19
           text run at (10,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (14,0) size 4x19
               text run at (14,0) width 4: "."
             RenderTextFragment at (18,0) size 6x19
@@ -29,7 +29,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (24,0) size 4x19
           text run at (24,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (28,0) size 4x19
               text run at (28,0) width 4: "."
             RenderTextFragment at (32,0) size 6x19
@@ -37,7 +37,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (38,0) size 4x19
           text run at (38,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (42,0) size 4x19
               text run at (42,0) width 4: "."
             RenderTextFragment at (46,0) size 6x19
@@ -45,7 +45,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (52,0) size 4x19
           text run at (52,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (56,0) size 4x19
               text run at (56,0) width 4: "."
             RenderTextFragment at (60,0) size 6x19
@@ -53,7 +53,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (66,0) size 4x19
           text run at (66,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (70,0) size 4x19
               text run at (70,0) width 4: "."
             RenderTextFragment at (74,0) size 6x19
@@ -61,7 +61,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (80,0) size 4x19
           text run at (80,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (84,0) size 4x19
               text run at (84,0) width 4: "."
             RenderTextFragment at (88,0) size 6x19
@@ -69,7 +69,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (94,0) size 4x19
           text run at (94,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (98,0) size 4x19
               text run at (98,0) width 4: "."
             RenderTextFragment at (102,0) size 6x19
@@ -77,7 +77,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (108,0) size 4x19
           text run at (108,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (112,0) size 4x19
               text run at (112,0) width 4: "."
             RenderTextFragment at (116,0) size 6x19
@@ -85,7 +85,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (122,0) size 4x19
           text run at (122,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (126,0) size 4x19
               text run at (126,0) width 4: "."
             RenderTextFragment at (130,0) size 6x19
@@ -93,7 +93,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (136,0) size 4x19
           text run at (136,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (140,0) size 4x19
               text run at (140,0) width 4: "."
             RenderTextFragment at (144,0) size 6x19
@@ -101,7 +101,7 @@ layer at (0,0) size 800x100
         RenderText {#text} at (150,0) size 4x19
           text run at (150,0) width 4: " "
         RenderInline {SPAN} at (0,0) size 10x19
-          RenderInline (pseudo:before) at (0,0) size 10x19
+          RenderInline {<pseudo:before>} at (0,0) size 10x19
             RenderCounter at (154,0) size 4x19
               text run at (154,0) width 4: "."
             RenderTextFragment at (158,0) size 6x19

@@ -5,27 +5,27 @@ layer at (0,0) size 800x216
     RenderBody {BODY} at (8,8) size 784x192
       RenderBlock {DIV} at (0,0) size 784x96
         RenderBlock {DIV} at (0,0) size 784x16
-          RenderInline (pseudo:before) at (0,0) size 39x16
+          RenderInline {<pseudo:before>} at (0,0) size 39x16
             RenderTextFragment at (0,0) size 39x16
               text run at (0,0) width 39: "PASS"
         RenderBlock {DIV} at (0,16) size 784x16
-          RenderInline (pseudo:before) at (0,0) size 39x16
+          RenderInline {<pseudo:before>} at (0,0) size 39x16
             RenderTextFragment at (0,0) size 39x16
               text run at (0,0) width 39: "PASS"
         RenderBlock {DIV} at (0,32) size 784x16
-          RenderInline (pseudo:before) at (0,0) size 39x16
+          RenderInline {<pseudo:before>} at (0,0) size 39x16
             RenderTextFragment at (0,0) size 39x16
               text run at (0,0) width 39: "PASS"
         RenderBlock {DIV} at (0,48) size 784x16
-          RenderInline (pseudo:before) at (0,0) size 39x16
+          RenderInline {<pseudo:before>} at (0,0) size 39x16
             RenderTextFragment at (0,0) size 39x16
               text run at (0,0) width 39: "PASS"
         RenderBlock {DIV} at (0,64) size 784x16
-          RenderInline (pseudo:before) at (0,0) size 39x16
+          RenderInline {<pseudo:before>} at (0,0) size 39x16
             RenderTextFragment at (0,0) size 39x16
               text run at (0,0) width 39: "PASS"
         RenderBlock {DIV} at (0,80) size 784x16
-          RenderInline (pseudo:before) at (0,0) size 39x16
+          RenderInline {<pseudo:before>} at (0,0) size 39x16
             RenderTextFragment at (0,0) size 39x16
               text run at (0,0) width 39: "PASS"
       RenderBlock {DIV} at (0,112) size 784x80

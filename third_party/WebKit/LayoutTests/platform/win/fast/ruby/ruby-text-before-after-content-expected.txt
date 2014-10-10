@@ -6,12 +6,12 @@ layer at (0,0) size 800x86
       RenderRuby (inline) {RUBY} at (0,0) size 209x36
         RenderRubyRun (anonymous) at (0,17) size 186.67x37
           RenderRubyText {RT} at (0,-17) size 186.67x18
-            RenderInline (pseudo:before) at (0,0) size 62x17
+            RenderInline {<pseudo:before>} at (0,0) size 62x17
               RenderTextFragment at (0,0) size 62x17
                 text run at (0,0) width 62: "BEFORE"
             RenderText {#text} at (61,0) size 76x17
               text run at (61,0) width 76: "CONTENT"
-            RenderInline (pseudo:after) at (0,0) size 52x17
+            RenderInline {<pseudo:after>} at (0,0) size 52x17
               RenderTextFragment at (136,0) size 52x17
                 text run at (136,0) width 52: "AFTER"
           RenderRubyBase (anonymous) at (0,0) size 186.67x37

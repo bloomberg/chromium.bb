@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (10,32) size 764x51 [border: (1px solid #000000)]
         RenderText {#text} at (11,24) size 46x16
           text run at (11,24) width 46: "Inline: "
-        RenderInline (pseudo:after) at (0,0) size 491x16
+        RenderInline {<pseudo:after>} at (0,0) size 491x16
           RenderTextFragment at (56,24) size 239x16
             text run at (56,24) width 239: "This should be before the green box. "
           RenderImage at (294.92,11) size 25x25
@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (10,93) size 764x83 [border: (1px solid #000000)]
         RenderText {#text} at (11,56) size 87x16
           text run at (11,56) width 87: "Inline-block: "
-        RenderBlock (pseudo:after) at (97.64,11) size 200x61
+        RenderBlock {<pseudo:after>} at (97.64,11) size 200x61
           RenderTextFragment at (0,0) size 163x45
             text run at (0,0) width 163: "This should be before the"
             text run at (0,29) width 72: "green box. "
@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
         RenderBlock (anonymous) at (11,11) size 742x16
           RenderText {#text} at (0,0) size 43x16
             text run at (0,0) width 43: "Block:"
-        RenderBlock (pseudo:after) at (11,27) size 200x61
+        RenderBlock {<pseudo:after>} at (11,27) size 200x61
           RenderTextFragment at (0,0) size 163x45
             text run at (0,0) width 163: "This should be before the"
             text run at (0,29) width 72: "green box. "

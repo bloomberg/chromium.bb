@@ -10,6 +10,6 @@ layer at (0,0) size 800x600
               RenderBlock {DIV} at (1,1) size 164x20
                 RenderText {#text} at (0,0) size 160x19
                   text run at (0,0) width 160: "This text should not break "
-                RenderInline (pseudo:after) at (0,0) size 4x19
+                RenderInline {<pseudo:after>} at (0,0) size 4x19
                   RenderTextFragment at (160,0) size 4x19
                     text run at (160,0) width 4: "."

@@ -13,7 +13,7 @@ layer at (0,0) size 800x88
           text run at (328,0) width 66: " the same:"
       RenderBlock {DIV} at (0,32) size 784x16
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (0,0) size 4x16
               text run at (0,0) width 4: "."
             RenderTextFragment at (4,0) size 8x16
@@ -21,7 +21,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (11,0) size 5x16
           text run at (11,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (15,0) size 5x16
               text run at (15,0) width 5: "."
             RenderTextFragment at (19,0) size 8x16
@@ -29,7 +29,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (26,0) size 5x16
           text run at (26,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (30,0) size 5x16
               text run at (30,0) width 5: "."
             RenderTextFragment at (34,0) size 8x16
@@ -37,7 +37,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (41,0) size 5x16
           text run at (41,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (45,0) size 5x16
               text run at (45,0) width 5: "."
             RenderTextFragment at (49,0) size 8x16
@@ -45,7 +45,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (56,0) size 5x16
           text run at (56,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (60,0) size 5x16
               text run at (60,0) width 5: "."
             RenderTextFragment at (64,0) size 8x16
@@ -53,7 +53,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (71,0) size 5x16
           text run at (71,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (75,0) size 5x16
               text run at (75,0) width 5: "."
             RenderTextFragment at (79,0) size 8x16
@@ -61,7 +61,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (86,0) size 5x16
           text run at (86,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (90,0) size 5x16
               text run at (90,0) width 5: "."
             RenderTextFragment at (94,0) size 8x16
@@ -69,7 +69,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (101,0) size 5x16
           text run at (101,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (105,0) size 5x16
               text run at (105,0) width 5: "."
             RenderTextFragment at (109,0) size 8x16
@@ -77,7 +77,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (116,0) size 5x16
           text run at (116,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (120,0) size 5x16
               text run at (120,0) width 5: "."
             RenderTextFragment at (124,0) size 8x16
@@ -85,7 +85,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (131,0) size 5x16
           text run at (131,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 13x16
-          RenderInline (pseudo:before) at (0,0) size 13x16
+          RenderInline {<pseudo:before>} at (0,0) size 13x16
             RenderCounter at (135,0) size 5x16
               text run at (135,0) width 5: "."
             RenderTextFragment at (139,0) size 9x16
@@ -93,7 +93,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (147,0) size 5x16
           text run at (147,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (151,0) size 5x16
               text run at (151,0) width 5: "."
             RenderTextFragment at (155,0) size 8x16
@@ -101,7 +101,7 @@ layer at (0,0) size 800x88
         RenderText {#text} at (162,0) size 5x16
           text run at (162,0) width 5: " "
         RenderInline {SPAN} at (0,0) size 12x16
-          RenderInline (pseudo:before) at (0,0) size 12x16
+          RenderInline {<pseudo:before>} at (0,0) size 12x16
             RenderCounter at (166,0) size 5x16
               text run at (166,0) width 5: "."
             RenderTextFragment at (170,0) size 8x16

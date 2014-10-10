@@ -12,6 +12,6 @@ layer at (0,0) size 800x294
           text run at (0,0) width 395: "Tests that a 3D transform on a generated node does not crash."
       RenderBlock {DIV} at (0,68) size 202x202 [border: (1px solid #000000)]
 layer at (9,85) size 200x200
-  RenderBlock (pseudo:after) at (1,1) size 200x200
+  RenderBlock {<pseudo:after>} at (1,1) size 200x200
     RenderTextFragment at (0,0) size 66x17
       text run at (0,0) width 66: "Generated"
