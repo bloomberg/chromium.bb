@@ -7,7 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 
 namespace mojo {

@@ -24,10 +24,10 @@ shared_library("mojo_aura_demo") {
     "//ui/gfx/geometry",
     "//mojo/application",
     "//mojo/common",
+    "//mojo/converters/geometry",
     "//mojo/aura",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/interfaces/geometry",
-    "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/view_manager",
   ]
 

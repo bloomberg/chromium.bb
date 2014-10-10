@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
-#define MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#ifndef MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#define MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
 
-#include "mojo/services/public/cpp/geometry/mojo_geometry_export.h"
+#include "mojo/converters/geometry/mojo_geometry_export.h"
 #include "mojo/services/public/interfaces/geometry/geometry.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -71,4 +71,4 @@ struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Transform, TransformPtr> {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#endif  // MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_

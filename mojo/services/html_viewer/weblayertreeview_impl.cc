@@ -11,7 +11,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "mojo/cc/context_provider_mojo.h"
 #include "mojo/cc/output_surface_mojo.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 

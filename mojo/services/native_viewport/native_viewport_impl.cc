@@ -9,14 +9,14 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/services/native_viewport/platform_viewport_headless.h"
 #include "mojo/services/native_viewport/viewport_surface.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 #include "ui/events/event.h"
 
 namespace mojo {

@@ -5,8 +5,8 @@
 #include "mojo/services/native_viewport/gpu_impl.h"
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "ui/gl/gl_share_group.h"
 
 namespace mojo {

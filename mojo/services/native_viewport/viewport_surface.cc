@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_utils.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_utils.h"
 #include "ui/gfx/transform.h"
 
 namespace mojo {

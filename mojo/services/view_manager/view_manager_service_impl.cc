@@ -5,9 +5,9 @@
 #include "mojo/services/view_manager/view_manager_service_impl.h"
 
 #include "base/bind.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/services/view_manager/connection_manager.h"
 #include "mojo/services/view_manager/default_access_policy.h"
 #include "mojo/services/view_manager/server_view.h"

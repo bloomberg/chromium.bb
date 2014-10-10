@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 #endif
 
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/input_events/lib/mojo_extended_key_event_data.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/input_events/mojo_extended_key_event_data.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -63,7 +63,7 @@ EventType TypeConverter<EventType, ui::EventType>::Convert(ui::EventType type) {
 #define MOJO_INPUT_EVENT_NAME(name) case ui::ET_##name: return EVENT_TYPE_##name
 
   switch (type) {
-#include "mojo/services/public/cpp/input_events/lib/input_event_names.h"
+#include "mojo/converters/input_events/input_event_names.h"
     case ui::ET_LAST:
       NOTREACHED();
       break;
@@ -80,7 +80,7 @@ ui::EventType TypeConverter<ui::EventType, EventType>::Convert(EventType type) {
 #define MOJO_INPUT_EVENT_NAME(name) case EVENT_TYPE_##name: return ui::ET_##name
 
   switch (type) {
-#include "mojo/services/public/cpp/input_events/lib/input_event_names.h"
+#include "mojo/converters/input_events/input_event_names.h"
   }
 
 #undef MOJO_INPUT_EVENT_NAME

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PUBLIC_CPP_INPUT_EVENTS_LIB_MOJO_EXTENDED_KEY_EVENT_DATA_H_
-#define MOJO_SERVICES_PUBLIC_CPP_INPUT_EVENTS_LIB_MOJO_EXTENDED_KEY_EVENT_DATA_H_
+#ifndef MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
+#define MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
 
+#include "mojo/converters/input_events/mojo_input_events_export.h"
 #include "ui/events/event.h"
-#include "mojo/services/public/cpp/input_events/mojo_input_events_export.h"
 
 namespace mojo {
 
@@ -36,4 +36,4 @@ class MOJO_INPUT_EVENTS_EXPORT MojoExtendedKeyEventData
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_PUBLIC_CPP_INPUT_EVENTS_LIB_MOJO_EXTENDED_KEY_EVENT_DATA_H_
+#endif  // MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_

@@ -15,6 +15,7 @@
   },
   'includes': [
     'mojo_apps.gypi',
+    'mojo_converters.gypi',
     'mojo_examples.gypi',
     'mojo_services.gypi',
     'mojo_variables.gypi',

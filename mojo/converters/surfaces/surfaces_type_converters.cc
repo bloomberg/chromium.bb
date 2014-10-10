@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
@@ -16,7 +16,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace mojo {
 

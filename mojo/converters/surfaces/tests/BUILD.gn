@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_services.gypi:mojo_surfaces_lib_unittests
+# GYP version: mojo/mojo_converters.gypi:mojo_surfaces_lib_unittests
 test("mojo_surfaces_lib_unittests") {
   deps = [
     "//base",
@@ -10,10 +10,10 @@ test("mojo_surfaces_lib_unittests") {
     "//cc",
     "//cc/surfaces",
     "//gpu",
+    "//mojo/converters/geometry",
+    "//mojo/converters/surfaces",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
-    "//mojo/services/public/cpp/geometry",
-    "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/surfaces",
     "//skia",

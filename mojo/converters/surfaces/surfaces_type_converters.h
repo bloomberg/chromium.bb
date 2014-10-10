@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PUBLIC_CPP_SURFACES_SURFACES_TYPE_CONVERTERS_H_
-#define MOJO_SERVICES_PUBLIC_CPP_SURFACES_SURFACES_TYPE_CONVERTERS_H_
+#ifndef MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
+#define MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/returned_resource.h"
@@ -11,7 +11,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "mojo/services/public/cpp/surfaces/mojo_surfaces_export.h"
+#include "mojo/converters/surfaces/mojo_surfaces_export.h"
 #include "mojo/services/public/interfaces/surfaces/quads.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
@@ -154,4 +154,4 @@ TypeConverter<scoped_ptr<cc::CompositorFrame>, FramePtr> {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_PUBLIC_CPP_SURFACES_SURFACES_TYPE_CONVERTERS_H_
+#endif  // MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_

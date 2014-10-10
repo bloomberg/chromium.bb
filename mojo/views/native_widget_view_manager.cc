@@ -5,7 +5,7 @@
 #include "mojo/views/native_widget_view_manager.h"
 
 #include "mojo/aura/window_tree_host_mojo.h"
-#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"

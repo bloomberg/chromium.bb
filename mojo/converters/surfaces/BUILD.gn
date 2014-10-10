@@ -2,22 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_services.gypi:mojo_surfaces_lib
+# GYP version: mojo/mojo_converters.gypi:mojo_surfaces_lib
 component("surfaces") {
   output_name = "mojo_surfaces_lib"
 
   sources = [
-    "lib/surfaces_type_converters.cc",
-    "lib/surfaces_utils.cc",
     "mojo_surfaces_export.h",
+    "surfaces_type_converters.cc",
     "surfaces_type_converters.h",
+    "surfaces_utils.cc",
     "surfaces_utils.h",
   ]
 
   defines = [ "MOJO_SURFACES_IMPLEMENTATION" ]
 
   public_deps = [
-    "//mojo/services/public/cpp/geometry",
+    "//mojo/converters/geometry",
     "//ui/gfx",
   ]
 

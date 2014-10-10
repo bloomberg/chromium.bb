@@ -6,8 +6,8 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mojo {
 

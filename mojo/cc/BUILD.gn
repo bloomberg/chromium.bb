@@ -10,8 +10,8 @@ source_set("cc") {
     "//cc/surfaces",
     "//skia",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//mojo/converters/surfaces",
     "//mojo/public/gles2:for_shared_library",
-    "//mojo/services/public/cpp/surfaces",
     "//mojo/services/public/interfaces/surfaces",
   ]
 

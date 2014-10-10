@@ -9,8 +9,8 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/cc/context_provider_mojo.h"
-#include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
-#include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mojo {
 

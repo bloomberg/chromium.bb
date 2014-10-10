@@ -3,6 +3,8 @@ include_rules = [
   "-cc/blink",
   "+mojo/application",
   "+mojo/cc",
+  "+mojo/converters/geometry",
+  "+mojo/converters/surfaces",
   "+mojo/services/gles2",
   "+mojo/services/public",
 ]

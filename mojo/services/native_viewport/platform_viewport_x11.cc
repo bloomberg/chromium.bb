@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/services/public/cpp/input_events/lib/mojo_extended_key_event_data.h"
+#include "mojo/converters/input_events/mojo_extended_key_event_data.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"

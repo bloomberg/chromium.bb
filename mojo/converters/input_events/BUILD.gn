@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: mojo/mojo_converters.gypi:mojo_input_events_lib
 component("input_events") {
   sources = [
-    "lib/input_events_type_converters.cc",
-    "lib/mojo_extended_key_event_data.cc",
-    "lib/mojo_extended_key_event_data.h",
+    "input_events_type_converters.cc",
+    "mojo_extended_key_event_data.cc",
+    "mojo_extended_key_event_data.h",
     "mojo_input_events_export.h",
   ]
 
@@ -18,10 +19,10 @@ component("input_events") {
     "//base",
     "//ui/events",
     "//ui/gfx/geometry",
+    "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//mojo/services/public/interfaces/input_events",
     "//mojo/services/public/interfaces/geometry",
-    "//mojo/services/public/cpp/geometry",
   ]
 }
