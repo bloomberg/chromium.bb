@@ -92,11 +92,6 @@ void ShellDevToolsFrontend::WebContentsDestroyed() {
   delete this;
 }
 
-void ShellDevToolsFrontend::RenderProcessGone(base::TerminationStatus status) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    WebKitTestController::Get()->DevToolsProcessCrashed();
-}
-
 void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
   std::string method;
