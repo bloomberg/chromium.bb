@@ -116,9 +116,10 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(jank), 1)
     self.assertGreater(jank[0].GetRepresentativeNumber(), 0)
 
-    mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
-    self.assertEquals(len(mostly_smooth), 1)
-    self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
+    percentage_smooth = results.FindAllPageSpecificValuesNamed(
+        'percentage_smooth')
+    self.assertEquals(len(percentage_smooth), 1)
+    self.assertGreaterEqual(percentage_smooth[0].GetRepresentativeNumber(), 0)
 
     mean_input_event_latency = results.FindAllPageSpecificValuesNamed(
         'mean_input_event_latency')
@@ -136,9 +137,10 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
-    mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
-    self.assertEquals(len(mostly_smooth), 1)
-    self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
+    percentage_smooth = results.FindAllPageSpecificValuesNamed(
+        'percentage_smooth')
+    self.assertEquals(len(percentage_smooth), 1)
+    self.assertGreaterEqual(percentage_smooth[0].GetRepresentativeNumber(), 0)
 
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(smoothness.Smoothness, self._options)

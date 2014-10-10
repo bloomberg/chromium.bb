@@ -50,9 +50,10 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(jank), 1)
     self.assertGreater(jank[0].GetRepresentativeNumber(), 0)
 
-    mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
-    self.assertEquals(len(mostly_smooth), 1)
-    self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
+    percentage_smooth = results.FindAllPageSpecificValuesNamed(
+        'percentage_smooth')
+    self.assertEquals(len(percentage_smooth), 1)
+    self.assertGreaterEqual(percentage_smooth[0].GetRepresentativeNumber(), 0)
 
   @test.Disabled('android')
   def testCleanUpTrace(self):
