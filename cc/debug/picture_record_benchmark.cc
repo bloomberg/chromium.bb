@@ -31,13 +31,13 @@ PictureRecordBenchmark::PictureRecordBenchmark(
   if (!value)
     return;
 
-  base::ListValue* list = NULL;
+  base::ListValue* list = nullptr;
   value->GetAsList(&list);
   if (!list)
     return;
 
   for (base::ListValue::iterator it = list->begin(); it != list->end(); ++it) {
-    base::DictionaryValue* dictionary = NULL;
+    base::DictionaryValue* dictionary = nullptr;
     (*it)->GetAsDictionary(&dictionary);
     if (!dictionary ||
         !dictionary->HasKey("width") ||

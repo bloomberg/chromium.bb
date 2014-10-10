@@ -25,7 +25,7 @@ namespace cc_blink {
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
     blink::WebExternalTextureLayerClient* client)
     : client_(client) {
-  cc::TextureLayerClient* cc_client = client_ ? this : NULL;
+  cc::TextureLayerClient* cc_client = client_ ? this : nullptr;
   scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(cc_client);
   layer->SetIsDrawable(true);
   layer_.reset(new WebLayerImpl(layer));
@@ -67,7 +67,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   blink::WebExternalTextureMailbox client_mailbox;
-  WebExternalBitmapImpl* bitmap = NULL;
+  WebExternalBitmapImpl* bitmap = nullptr;
 
   if (use_shared_memory)
     bitmap = AllocateBitmap();

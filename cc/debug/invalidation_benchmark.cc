@@ -28,7 +28,7 @@ InvalidationBenchmark::InvalidationBenchmark(
     scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback)
     : MicroBenchmark(callback), seed_(0) {
-  base::DictionaryValue* settings = NULL;
+  base::DictionaryValue* settings = nullptr;
   value->GetAsDictionary(&settings);
   if (!settings)
     return;
@@ -111,7 +111,7 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
 }
 
 bool InvalidationBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
-  base::DictionaryValue* message = NULL;
+  base::DictionaryValue* message = nullptr;
   value->GetAsDictionary(&message);
   if (!message)
     return false;

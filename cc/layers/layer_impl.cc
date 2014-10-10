@@ -35,15 +35,15 @@
 
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
-    : parent_(NULL),
-      scroll_parent_(NULL),
-      clip_parent_(NULL),
+    : parent_(nullptr),
+      scroll_parent_(nullptr),
+      clip_parent_(nullptr),
       mask_layer_id_(-1),
       replica_layer_id_(-1),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
-      scroll_offset_delegate_(NULL),
-      scroll_clip_layer_(NULL),
+      scroll_offset_delegate_(nullptr),
+      scroll_clip_layer_(nullptr),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
@@ -544,7 +544,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
 
-  LayerImpl* scroll_parent = NULL;
+  LayerImpl* scroll_parent = nullptr;
   if (scroll_parent_) {
     scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
     DCHECK(scroll_parent);
@@ -564,10 +564,10 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
     }
     layer->SetScrollChildren(scroll_children);
   } else {
-    layer->SetScrollChildren(NULL);
+    layer->SetScrollChildren(nullptr);
   }
 
-  LayerImpl* clip_parent = NULL;
+  LayerImpl* clip_parent = nullptr;
   if (clip_parent_) {
     clip_parent = layer->layer_tree_impl()->LayerById(
         clip_parent_->id());
@@ -582,7 +582,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       clip_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
     layer->SetClipChildren(clip_children);
   } else {
-    layer->SetClipChildren(NULL);
+    layer->SetClipChildren(nullptr);
   }
 
   layer->PassCopyRequests(&copy_requests_);
@@ -848,7 +848,7 @@ scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
 }
 
 ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {
-  return NULL;
+  return nullptr;
 }
 
 void LayerImpl::SetDrawsContent(bool draws_content) {
@@ -1343,7 +1343,7 @@ void LayerImpl::ClearScrollbars() {
   if (!scrollbars_)
     return;
 
-  scrollbars_.reset(NULL);
+  scrollbars_.reset(nullptr);
 }
 
 void LayerImpl::AddScrollbar(ScrollbarLayerImplBase* layer) {
@@ -1526,7 +1526,7 @@ void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
     scoped_ptr<base::Value> debug_info_value(json_reader.ReadToValue(str));
 
     if (debug_info_value->IsType(base::Value::TYPE_DICTIONARY)) {
-      base::DictionaryValue* dictionary_value = NULL;
+      base::DictionaryValue* dictionary_value = nullptr;
       bool converted_to_dictionary =
           debug_info_value->GetAsDictionary(&dictionary_value);
       DCHECK(converted_to_dictionary);

@@ -67,7 +67,7 @@ class DelegatedFrameProviderTest
     resource_collection_->SetClient(this);
   }
 
-  virtual void TearDown() override { resource_collection_->SetClient(NULL); }
+  virtual void TearDown() override { resource_collection_->SetClient(nullptr); }
 
   virtual void UnusedResourcesAreAvailable() override {
     resources_available_ = true;
@@ -106,7 +106,7 @@ TEST_F(DelegatedFrameProviderTest, SameResources) {
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(0u, resources_.size());
 
-  frame_provider_ = NULL;
+  frame_provider_ = nullptr;
 
   EXPECT_TRUE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(1u, resources_.size());
@@ -132,7 +132,7 @@ TEST_F(DelegatedFrameProviderTest, ReplaceResources) {
   EXPECT_EQ(444u, resources_[0].id);
   resources_.clear();
 
-  frame_provider_ = NULL;
+  frame_provider_ = nullptr;
 
   EXPECT_TRUE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(1u, resources_.size());
@@ -272,11 +272,11 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProviderUntilDestroy) {
 
   // Releasing all references to the frame provider will release
   // the frame.
-  observer1 = NULL;
-  observer2 = NULL;
+  observer1 = nullptr;
+  observer2 = nullptr;
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
 
-  frame_provider_ = NULL;
+  frame_provider_ = nullptr;
 
   EXPECT_TRUE(ReturnAndResetResourcesAvailable());
   EXPECT_EQ(1u, resources_.size());
@@ -386,7 +386,7 @@ TEST_F(DelegatedFrameProviderTest, NothingReturnedAfterLoss) {
   EXPECT_TRUE(ReturnAndResetResourcesAvailable());
   resources_.clear();
 
-  frame_provider_ = NULL;
+  frame_provider_ = nullptr;
 
   // Nothing is returned twice.
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());

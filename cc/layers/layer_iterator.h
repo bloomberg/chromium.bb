@@ -108,7 +108,7 @@ class LayerIterator {
   typedef typename LayerType::RenderSurfaceType RenderSurfaceType;
 
  public:
-  LayerIterator() : render_surface_layer_list_(NULL) {}
+  LayerIterator() : render_surface_layer_list_(nullptr) {}
 
   static LayerIteratorType Begin(
       const RenderSurfaceLayerList* render_surface_layer_list) {

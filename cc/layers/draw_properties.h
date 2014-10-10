@@ -23,7 +23,7 @@ struct CC_EXPORT DrawProperties {
         screen_space_transform_is_animating(false),
         can_use_lcd_text(false),
         is_clipped(false),
-        render_target(NULL),
+        render_target(nullptr),
         contents_scale_x(1.f),
         contents_scale_y(1.f),
         num_unclipped_descendants(0),

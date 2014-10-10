@@ -23,7 +23,7 @@ VideoFrameProviderClientImpl::~VideoFrameProviderClientImpl() {}
 
 VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(
     VideoFrameProvider* provider)
-    : active_video_layer_(NULL), provider_(provider) {
+    : active_video_layer_(nullptr), provider_(provider) {
   // This only happens during a commit on the compositor thread while the main
   // thread is blocked. That makes this a thread-safe call to set the video
   // frame provider client that does not require a lock. The same is true of
@@ -42,15 +42,15 @@ VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(
 void VideoFrameProviderClientImpl::Stop() {
   if (!provider_)
     return;
-  provider_->SetVideoFrameProviderClient(NULL);
-  provider_ = NULL;
+  provider_->SetVideoFrameProviderClient(nullptr);
+  provider_ = nullptr;
 }
 
 scoped_refptr<media::VideoFrame>
 VideoFrameProviderClientImpl::AcquireLockAndCurrentFrame() {
   provider_lock_.Acquire();  // Balanced by call to ReleaseLock().
   if (!provider_)
-    return NULL;
+    return nullptr;
 
   return provider_->GetCurrentFrame();
 }
@@ -70,7 +70,7 @@ void VideoFrameProviderClientImpl::StopUsingProvider() {
   // Block the provider from shutting down until this client is done
   // using the frame.
   base::AutoLock locker(provider_lock_);
-  provider_ = NULL;
+  provider_ = nullptr;
 }
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {

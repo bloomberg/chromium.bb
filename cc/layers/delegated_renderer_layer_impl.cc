@@ -387,8 +387,8 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     AppendQuadsData* append_quads_data,
     const RenderPass* delegated_render_pass,
     const gfx::Size& frame_size) const {
-  const SharedQuadState* delegated_shared_quad_state = NULL;
-  SharedQuadState* output_shared_quad_state = NULL;
+  const SharedQuadState* delegated_shared_quad_state = nullptr;
+  SharedQuadState* output_shared_quad_state = nullptr;
 
   for (const auto& delegated_quad : delegated_render_pass->quad_list) {
     bool is_root_delegated_render_pass =

@@ -41,7 +41,9 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
 VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* tree_impl,
                                int id,
                                media::VideoRotation video_rotation)
-    : LayerImpl(tree_impl, id), frame_(NULL), video_rotation_(video_rotation) {
+    : LayerImpl(tree_impl, id),
+      frame_(nullptr),
+      video_rotation_(video_rotation) {
 }
 
 VideoLayerImpl::~VideoLayerImpl() {
@@ -351,7 +353,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   }
 
   provider_client_impl_->PutCurrentFrame(frame_);
-  frame_ = NULL;
+  frame_ = nullptr;
 
   provider_client_impl_->ReleaseLock();
 }

@@ -57,7 +57,7 @@ const int kTileRoundUp = 64;
 
 namespace cc {
 
-PictureLayerImpl::Pair::Pair() : active(NULL), pending(NULL) {
+PictureLayerImpl::Pair::Pair() : active(nullptr), pending(nullptr) {
 }
 
 PictureLayerImpl::Pair::Pair(PictureLayerImpl* active_layer,
@@ -70,7 +70,7 @@ PictureLayerImpl::Pair::~Pair() {
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
-      twin_layer_(NULL),
+      twin_layer_(nullptr),
       pile_(PicturePileImpl::Create()),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
@@ -112,8 +112,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   // When the pending tree pushes to the active tree, the pending twin
   // becomes recycled.
-  layer_impl->twin_layer_ = NULL;
-  twin_layer_ = NULL;
+  layer_impl->twin_layer_ = nullptr;
+  twin_layer_ = nullptr;
 
   layer_impl->pile_ = pile_;
 
@@ -636,7 +636,7 @@ const Region* PictureLayerImpl::GetInvalidation() {
 const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
     const PictureLayerTiling* tiling) const {
   if (!twin_layer_)
-    return NULL;
+    return nullptr;
   return twin_layer_->tilings_->TilingAtScale(tiling->contents_scale());
 }
 
@@ -644,7 +644,7 @@ PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
     const PictureLayerTiling* tiling) {
   PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
   if (!recycled_twin || !recycled_twin->tilings_)
-    return NULL;
+    return nullptr;
   return recycled_twin->tilings_->TilingAtScale(tiling->contents_scale());
 }
 
@@ -895,10 +895,10 @@ inline float PositiveRatio(float float1, float float2) {
 }  // namespace
 
 void PictureLayerImpl::AddTilingsForRasterScale() {
-  PictureLayerTiling* high_res = NULL;
-  PictureLayerTiling* low_res = NULL;
+  PictureLayerTiling* high_res = nullptr;
+  PictureLayerTiling* low_res = nullptr;
 
-  PictureLayerTiling* previous_low_res = NULL;
+  PictureLayerTiling* previous_low_res = nullptr;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
     if (tiling->contents_scale() == raster_contents_scale_)
@@ -1401,7 +1401,7 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
 }
 
 PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator()
-    : layer_(NULL), current_stage_(arraysize(stages_)) {
+    : layer_(nullptr), current_stage_(arraysize(stages_)) {
 }
 
 PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator(
@@ -1520,7 +1520,7 @@ void PictureLayerImpl::LayerRasterTileIterator::AdvanceToNextStage() {
 }
 
 PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator()
-    : layer_(NULL),
+    : layer_(nullptr),
       tree_priority_(SAME_PRIORITY_FOR_BOTH_TREES),
       current_category_(PictureLayerTiling::EVENTUALLY),
       current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),

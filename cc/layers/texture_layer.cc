@@ -45,7 +45,7 @@ TextureLayer::~TextureLayer() {
 void TextureLayer::ClearClient() {
   if (rate_limit_context_ && client_ && layer_tree_host())
     layer_tree_host()->StopRateLimiter();
-  client_ = NULL;
+  client_ = nullptr;
   ClearTexture();
   UpdateDrawsContent(HasDrawableContent());
 }

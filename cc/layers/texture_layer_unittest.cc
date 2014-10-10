@@ -51,7 +51,7 @@ gpu::Mailbox MailboxFromChar(char value) {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, NULL, LayerTreeSettings()) {
+      : LayerTreeHost(client, nullptr, LayerTreeSettings()) {
     InitializeSingleThreaded(client, base::MessageLoopProxy::current());
   }
 
@@ -184,7 +184,7 @@ class TextureLayerTest : public testing::Test {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
 
-    layer_tree_host_->SetRootLayer(NULL);
+    layer_tree_host_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
   }
 
@@ -196,7 +196,8 @@ class TextureLayerTest : public testing::Test {
 };
 
 TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   EXPECT_SET_NEEDS_COMMIT(1, layer_tree_host_->SetRootLayer(test_layer));
 
   // Test properties that should call SetNeedsCommit.  All properties need to
@@ -215,7 +216,7 @@ TEST_F(TextureLayerTest, VisibleContentOpaqueRegion) {
   const gfx::Rect layer_rect(layer_bounds);
   const Region layer_region(layer_rect);
 
-  scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(nullptr);
   layer->SetBounds(layer_bounds);
   layer->draw_properties().visible_content_rect = layer_rect;
   layer->SetBlendBackgroundColor(true);
@@ -283,7 +284,7 @@ TEST_F(TextureLayerTest, RateLimiter) {
   // Stop rate limiter when we're removed from the tree.
   EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  layer_tree_host_->SetRootLayer(NULL);
+  layer_tree_host_->SetRootLayer(nullptr);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
@@ -310,7 +311,8 @@ class TextureLayerWithMailboxTest : public TextureLayerTest {
 };
 
 TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
@@ -371,7 +373,8 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
 }
 
 TEST_F(TextureLayerTest, SetTextureMailboxWithoutReleaseCallback) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
   // These use the same gpu::Mailbox, but different sync points.
@@ -452,7 +455,8 @@ class TextureLayerMailboxHolderTest : public TextureLayerTest {
 };
 
 TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
   main_thread_.message_loop()->PostTask(
@@ -507,7 +511,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
 }
 
 TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleaseBetween) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
   main_thread_.message_loop()->PostTask(
@@ -563,7 +568,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleaseBetween) {
 }
 
 TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleasedFirst) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
   main_thread_.message_loop()->PostTask(
@@ -619,7 +625,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleasedFirst) {
 }
 
 TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
-  scoped_refptr<TextureLayer> test_layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
   ASSERT_TRUE(test_layer.get());
 
   main_thread_.message_loop()->PostTask(
@@ -728,7 +735,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     root_ = Layer::Create();
     root_->SetBounds(bounds);
 
-    layer_ = TextureLayer::CreateForMailbox(NULL);
+    layer_ = TextureLayer::CreateForMailbox(nullptr);
     layer_->SetIsDrawable(true);
     layer_->SetBounds(bounds);
 
@@ -851,7 +858,7 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
     root_ = Layer::Create();
     root_->SetBounds(bounds);
 
-    layer_ = TextureLayer::CreateForMailbox(NULL);
+    layer_ = TextureLayer::CreateForMailbox(nullptr);
     layer_->SetIsDrawable(true);
     layer_->SetBounds(bounds);
 
@@ -1414,7 +1421,7 @@ class TextureLayerReleaseResourcesAfterCommit
     : public TextureLayerReleaseResourcesBase {
  public:
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    LayerTreeImpl* tree = NULL;
+    LayerTreeImpl* tree = nullptr;
     if (host_impl->settings().impl_side_painting)
       tree = host_impl->pending_tree();
     else
@@ -1460,7 +1467,7 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
     root_ = Layer::Create();
     root_->SetBounds(bounds);
 
-    layer_ = TextureLayer::CreateForMailbox(NULL);
+    layer_ = TextureLayer::CreateForMailbox(nullptr);
     layer_->SetIsDrawable(true);
     layer_->SetBounds(bounds);
 
@@ -1487,7 +1494,7 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
         // Delete the TextureLayer on the main thread while the mailbox is in
         // the impl tree.
         layer_->RemoveFromParent();
-        layer_ = NULL;
+        layer_ = nullptr;
         break;
     }
   }
@@ -1531,7 +1538,7 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
     root_ = Layer::Create();
     root_->SetBounds(bounds);
 
-    layer_ = TextureLayer::CreateForMailbox(NULL);
+    layer_ = TextureLayer::CreateForMailbox(nullptr);
     layer_->SetIsDrawable(true);
     layer_->SetBounds(bounds);
 
@@ -1561,7 +1568,7 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
         layer_->RemoveFromParent();
         break;
       case 2:
-        layer_ = NULL;
+        layer_ = nullptr;
         break;
     }
   }

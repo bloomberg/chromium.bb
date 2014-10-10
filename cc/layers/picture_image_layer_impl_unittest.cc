@@ -47,7 +47,7 @@ class PictureImageLayerImplTest : public testing::Test {
 
   scoped_ptr<TestablePictureImageLayerImpl> CreateLayer(int id,
                                                         WhichTree which_tree) {
-    LayerTreeImpl* tree = NULL;
+    LayerTreeImpl* tree = nullptr;
     switch (which_tree) {
       case ACTIVE_TREE:
         tree = host_impl_.active_tree();
@@ -148,9 +148,9 @@ TEST_F(PictureImageLayerImplTest, IgnoreIdealContentScale) {
       gfx::Rect(active_layer->bounds());
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer->DidDraw(NULL);
+  active_layer->DidDraw(nullptr);
 
   EXPECT_EQ(DrawQuad::TILED_CONTENT, render_pass->quad_list.front()->material);
 

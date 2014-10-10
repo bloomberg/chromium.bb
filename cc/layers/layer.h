@@ -100,7 +100,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // This requests the layer and its subtree be rendered and given to the
   // callback. If the copy is unable to be produced (the layer is destroyed
-  // first), then the callback is called with a NULL/empty result.
+  // first), then the callback is called with a nullptr/empty result.
   void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> request);
   bool HasCopyRequest() const {
     return !copy_requests_.empty();

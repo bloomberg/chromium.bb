@@ -94,9 +94,9 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, NULL));
+    EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, nullptr));
     layer->AppendQuads(render_pass.get(), Occlusion(), &data);
-    layer->DidDraw(NULL);
+    layer->DidDraw(nullptr);
     unsigned num_tiles = num_tiles_x * num_tiles_y;
     EXPECT_EQ(render_pass->quad_list.size(), num_tiles);
   }
@@ -109,7 +109,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
 
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
-    EXPECT_FALSE(layer->WillDraw(DRAW_MODE_HARDWARE, NULL));
+    EXPECT_FALSE(layer->WillDraw(DRAW_MODE_HARDWARE, nullptr));
   }
 
   // Layer with non-intersecting visible layer rect produces no quads
@@ -123,9 +123,9 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, NULL));
+    EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, nullptr));
     layer->AppendQuads(render_pass.get(), Occlusion(), &data);
-    layer->DidDraw(NULL);
+    layer->DidDraw(nullptr);
     EXPECT_EQ(render_pass->quad_list.size(), 0u);
   }
 

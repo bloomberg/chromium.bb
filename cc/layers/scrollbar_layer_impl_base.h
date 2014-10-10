@@ -24,8 +24,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   }
 
   void SetScrollLayerAndClipLayerByIds(int scroll_layer_id, int clip_layer_id);
-  void ClearScrollLayer() { scroll_layer_ = NULL; }
-  void ClearClipLayer() { clip_layer_ = NULL; }
+  void ClearScrollLayer() { scroll_layer_ = nullptr; }
+  void ClearClipLayer() { clip_layer_ = nullptr; }
 
   float current_pos() const { return current_pos_; }
   bool SetCurrentPos(float current_pos);

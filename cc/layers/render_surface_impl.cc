@@ -34,7 +34,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
       is_clipped_(false),
       contributes_to_drawn_surface_(false),
       draw_opacity_(1),
-      nearest_occlusion_immune_ancestor_(NULL),
+      nearest_occlusion_immune_ancestor_(nullptr),
       target_render_surface_layer_index_history_(0),
       current_layer_index_history_(0) {
   damage_tracker_ = DamageTracker::Create();
@@ -184,13 +184,13 @@ void RenderSurfaceImpl::AppendQuads(
   LayerImpl* mask_layer = owning_layer_->mask_layer();
   if (mask_layer &&
       (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))
-    mask_layer = NULL;
+    mask_layer = nullptr;
 
   if (!mask_layer && for_replica) {
     mask_layer = owning_layer_->replica_layer()->mask_layer();
     if (mask_layer &&
         (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))
-      mask_layer = NULL;
+      mask_layer = nullptr;
   }
 
   gfx::RectF mask_uv_rect(0.f, 0.f, 1.f, 1.f);

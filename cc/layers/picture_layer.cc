@@ -184,7 +184,7 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
   int height = bounds().height();
 
   SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(width, height, NULL, 0);
+  SkCanvas* canvas = recorder.beginRecording(width, height, nullptr, 0);
   client_->PaintContents(canvas,
                          gfx::Rect(width, height),
                          ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
@@ -197,7 +197,7 @@ bool PictureLayer::IsSuitableForGpuRasterization() const {
 }
 
 void PictureLayer::ClearClient() {
-  client_ = NULL;
+  client_ = nullptr;
   UpdateDrawsContent(HasDrawableContent());
 }
 

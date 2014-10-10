@@ -37,9 +37,9 @@ RasterizeAndRecordBenchmark::RasterizeAndRecordBenchmark(
       record_repeat_count_(kDefaultRecordRepeatCount),
       settings_(value.Pass()),
       main_thread_benchmark_done_(false),
-      host_(NULL),
+      host_(nullptr),
       weak_ptr_factory_(this) {
-  base::DictionaryValue* settings = NULL;
+  base::DictionaryValue* settings = nullptr;
   settings_->GetAsDictionary(&settings);
   if (!settings)
     return;
@@ -74,7 +74,7 @@ void RasterizeAndRecordBenchmark::RecordRasterResults(
     scoped_ptr<base::Value> results_value) {
   DCHECK(main_thread_benchmark_done_);
 
-  base::DictionaryValue* results = NULL;
+  base::DictionaryValue* results = nullptr;
   results_value->GetAsDictionary(&results);
   DCHECK(results);
 

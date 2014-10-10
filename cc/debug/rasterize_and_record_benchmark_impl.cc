@@ -57,9 +57,9 @@ class BenchmarkRasterTask : public Task {
         PicturePileImpl::Analysis analysis;
 
         picture_pile_->AnalyzeInRect(
-            content_rect_, contents_scale_, &analysis, NULL);
+            content_rect_, contents_scale_, &analysis, nullptr);
         picture_pile_->RasterToBitmap(
-            &canvas, content_rect_, contents_scale_, NULL);
+            &canvas, content_rect_, contents_scale_, nullptr);
 
         is_solid_color_ = analysis.is_solid_color;
 
@@ -154,7 +154,7 @@ RasterizeAndRecordBenchmarkImpl::RasterizeAndRecordBenchmarkImpl(
     const MicroBenchmarkImpl::DoneCallback& callback)
     : MicroBenchmarkImpl(callback, origin_loop),
       rasterize_repeat_count_(kDefaultRasterizeRepeatCount) {
-  base::DictionaryValue* settings = NULL;
+  base::DictionaryValue* settings = nullptr;
   value->GetAsDictionary(&settings);
   if (!settings)
     return;

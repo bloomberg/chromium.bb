@@ -56,7 +56,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
 }
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
-  LayerImpl* page_scale_application_layer = NULL;
+  LayerImpl* page_scale_application_layer = nullptr;
   ExecuteCalculateDrawProperties(
       root_layer, 1.f, 1.f, page_scale_application_layer, false);
 }

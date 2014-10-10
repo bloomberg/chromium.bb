@@ -45,7 +45,7 @@ class LayerPerfTest : public testing::Test {
   }
 
   virtual void TearDown() override {
-    layer_tree_host_->SetRootLayer(NULL);
+    layer_tree_host_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
   }
 

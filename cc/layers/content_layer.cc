@@ -44,7 +44,7 @@ ContentLayer::ContentLayer(ContentLayerClient* client)
 ContentLayer::~ContentLayer() {}
 
 void ContentLayer::ClearClient() {
-  client_ = NULL;
+  client_ = nullptr;
   UpdateDrawsContent(HasDrawableContent());
 }
 
@@ -62,7 +62,7 @@ void ContentLayer::SetLayerTreeHost(LayerTreeHost* host) {
     updater_->set_rendering_stats_instrumentation(
         host->rendering_stats_instrumentation());
   } else {
-    updater_->set_rendering_stats_instrumentation(NULL);
+    updater_->set_rendering_stats_instrumentation(nullptr);
   }
 }
 
@@ -147,7 +147,7 @@ skia::RefPtr<SkPicture> ContentLayer::GetPicture() const {
   int height = bounds().height();
 
   SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(width, height, NULL, 0);
+  SkCanvas* canvas = recorder.beginRecording(width, height, nullptr, 0);
   client_->PaintContents(canvas,
                          gfx::Rect(width, height),
                          ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);

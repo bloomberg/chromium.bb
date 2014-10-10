@@ -340,7 +340,7 @@ void HeadsUpDisplayLayerImpl::DrawGraphLines(SkCanvas* canvas,
                    bounds.right(),
                    bounds.top() + indicator_top,
                    *paint);
-  paint->setXfermode(NULL);
+  paint->setXfermode(nullptr);
 }
 
 SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(

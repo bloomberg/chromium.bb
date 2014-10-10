@@ -21,7 +21,8 @@ namespace cc {
 class CC_EXPORT LayerClient {
  public:
   // Returns a pointer to a debug info object, if one has been computed.
-  // If not, returns NULL. If the returned pointer is non-NULL, the caller takes
+  // If not, returns nullptr.
+  // If the returned pointer is non-nullptr, the caller takes
   // ownership of the pointer.
   virtual scoped_refptr<base::debug::ConvertableToTraceFormat>
       TakeDebugInfo() = 0;

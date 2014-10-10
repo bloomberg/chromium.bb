@@ -236,7 +236,7 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
 
 PrioritizedResourceManager* TiledLayer::ResourceManager() {
   if (!layer_tree_host())
-    return NULL;
+    return nullptr;
   return layer_tree_host()->contents_texture_manager();
 }
 
@@ -244,7 +244,7 @@ const PrioritizedResource* TiledLayer::ResourceAtForTesting(int i,
                                                             int j) const {
   UpdatableTile* tile = TileAt(i, j);
   if (!tile)
-    return NULL;
+    return nullptr;
   return tile->managed_resource();
 }
 
@@ -712,7 +712,7 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
                                      &top,
                                      &right,
                                      &bottom);
-    UpdateTiles(left, top, right, bottom, queue, NULL, &updated);
+    UpdateTiles(left, top, right, bottom, queue, nullptr, &updated);
     if (updated)
       return updated;
     // This was an attempt to paint the entire layer so if we fail it's okay,
@@ -743,7 +743,7 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
     return updated;
 
   // Prepaint anything that was occluded but inside the layer's visible region.
-  if (!UpdateTiles(left, top, right, bottom, queue, NULL, &updated) ||
+  if (!UpdateTiles(left, top, right, bottom, queue, nullptr, &updated) ||
       updated)
     return updated;
 
@@ -773,7 +773,7 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
       while (bottom < prepaint_bottom) {
         ++bottom;
         if (!UpdateTiles(
-                left, bottom, right, bottom, queue, NULL, &updated) ||
+                left, bottom, right, bottom, queue, nullptr, &updated) ||
             updated)
           return updated;
       }
@@ -781,8 +781,7 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
     if (deltas[i].y() < 0) {
       while (top > prepaint_top) {
         --top;
-        if (!UpdateTiles(
-                left, top, right, top, queue, NULL, &updated) ||
+        if (!UpdateTiles(left, top, right, top, queue, nullptr, &updated) ||
             updated)
           return updated;
       }
@@ -790,8 +789,7 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
     if (deltas[i].x() < 0) {
       while (left > prepaint_left) {
         --left;
-        if (!UpdateTiles(
-                left, top, left, bottom, queue, NULL, &updated) ||
+        if (!UpdateTiles(left, top, left, bottom, queue, nullptr, &updated) ||
             updated)
           return updated;
       }
@@ -799,8 +797,7 @@ bool TiledLayer::Update(ResourceUpdateQueue* queue,
     if (deltas[i].x() > 0) {
       while (right < prepaint_right) {
         ++right;
-        if (!UpdateTiles(
-                right, top, right, bottom, queue, NULL, &updated) ||
+        if (!UpdateTiles(right, top, right, bottom, queue, nullptr, &updated) ||
             updated)
           return updated;
       }

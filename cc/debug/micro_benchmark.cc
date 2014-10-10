@@ -54,7 +54,7 @@ scoped_ptr<MicroBenchmarkImpl> MicroBenchmark::GetBenchmarkImpl(
 
 scoped_ptr<MicroBenchmarkImpl> MicroBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::MessageLoopProxy> origin_loop) {
-  return make_scoped_ptr<MicroBenchmarkImpl>(NULL);
+  return make_scoped_ptr<MicroBenchmarkImpl>(nullptr);
 }
 
 }  // namespace cc

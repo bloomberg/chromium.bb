@@ -10,9 +10,7 @@
 namespace cc {
 
 DelegatedFrameResourceCollection::DelegatedFrameResourceCollection()
-    : client_(NULL),
-      lost_all_resources_(false),
-      weak_ptr_factory_(this) {
+    : client_(nullptr), lost_all_resources_(false), weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 }
 

@@ -59,9 +59,9 @@ class PictureLayerImplTest : public testing::Test {
       : proxy_(base::MessageLoopProxy::current()),
         host_impl_(LowResTilingsSettings(), &proxy_, &shared_bitmap_manager_),
         id_(7),
-        pending_layer_(NULL),
-        old_pending_layer_(NULL),
-        active_layer_(NULL) {}
+        pending_layer_(nullptr),
+        old_pending_layer_(nullptr),
+        active_layer_(nullptr) {}
 
   explicit PictureLayerImplTest(const LayerTreeSettings& settings)
       : proxy_(base::MessageLoopProxy::current()),
@@ -95,7 +95,7 @@ class PictureLayerImplTest : public testing::Test {
     CHECK(!host_impl_.pending_tree());
     CHECK(host_impl_.recycle_tree());
     old_pending_layer_ = pending_layer_;
-    pending_layer_ = NULL;
+    pending_layer_ = nullptr;
     active_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.active_tree()->LayerById(id_));
   }
@@ -258,7 +258,7 @@ class PictureLayerImplTest : public testing::Test {
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       MockCanvas mock_canvas(1000, 1000);
       active_pile->RasterDirect(
-          &mock_canvas, (*tile_iter)->content_rect(), 1.0f, NULL);
+          &mock_canvas, (*tile_iter)->content_rect(), 1.0f, nullptr);
 
       // This test verifies that when drawing the contents of a specific tile
       // at content scale 1.0, the playback canvas never receives content from
@@ -1381,9 +1381,9 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   AddDefaultTilingsWithInvalidation(invalidation);
 
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   ASSERT_EQ(1U, render_pass->quad_list.size());
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT,
@@ -1521,9 +1521,9 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   // All tiles in activation rect is ready to draw.
   EXPECT_EQ(0u, data.num_missing_tiles);
@@ -1556,9 +1556,9 @@ TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   // All high res tiles drew, nothing was incomplete.
   EXPECT_EQ(9u, render_pass->quad_list.size());
@@ -1588,9 +1588,9 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncomplete) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   EXPECT_EQ(1u, render_pass->quad_list.size());
   EXPECT_EQ(1u, data.num_missing_tiles);
@@ -1622,9 +1622,9 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncompleteLowResComplete) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   EXPECT_EQ(1u, render_pass->quad_list.size());
   EXPECT_EQ(0u, data.num_missing_tiles);
@@ -1663,9 +1663,9 @@ TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   // The missing high res tile was replaced by a low res tile.
   EXPECT_EQ(9u, render_pass->quad_list.size());
@@ -1725,9 +1725,9 @@ TEST_F(PictureLayerImplTest,
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   // All high res tiles drew, and the one ideal res tile drew.
   ASSERT_GT(render_pass->quad_list.size(), 9u);
@@ -2169,8 +2169,8 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   // other words we want the pending layer to sync from the active layer.
   pending_layer_->SetBounds(gfx::Size(1, 1));
   pending_layer_->SetNeedsPostCommitInitialization();
-  pending_layer_->set_twin_layer(NULL);
-  active_layer_->set_twin_layer(NULL);
+  pending_layer_->set_twin_layer(nullptr);
+  active_layer_->set_twin_layer(nullptr);
   EXPECT_TRUE(pending_layer_->needs_post_commit_initialization());
 
   // Update the draw properties: sync from active tree should happen here.
@@ -2789,7 +2789,7 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
   float expected_scales[] = {2.0f, 0.3f, 0.7f, low_res_factor, 1.0f};
   size_t scale_index = 0;
   bool reached_visible = false;
-  Tile* last_tile = NULL;
+  Tile* last_tile = nullptr;
   for (it = PictureLayerImpl::LayerEvictionTileIterator(
            pending_layer_, SAME_PRIORITY_FOR_BOTH_TREES);
        it;
@@ -3618,9 +3618,9 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_HARDWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_HARDWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   // Even when OOM, quads should be produced, and should be different material
   // from quads with resource.
@@ -3648,7 +3648,7 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
          ++priority_count) {
       TreePriority tree_priority = static_cast<TreePriority>(priority_count);
       size_t occluded_tile_count = 0u;
-      Tile* last_tile = NULL;
+      Tile* last_tile = nullptr;
 
       for (PictureLayerImpl::LayerEvictionTileIterator it =
                PictureLayerImpl::LayerEvictionTileIterator(layer,
@@ -4334,9 +4334,9 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
-  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
-  active_layer_->DidDraw(NULL);
+  active_layer_->DidDraw(nullptr);
 
   DrawQuad::Material expected = test_for_solid
                                     ? DrawQuad::Material::SOLID_COLOR

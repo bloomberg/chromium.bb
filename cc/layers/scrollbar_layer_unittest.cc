@@ -226,9 +226,9 @@ TEST(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
   scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
 
   scrollbar_layer->UpdateThumbAndTrackGeometry();
-  LayerImpl* root_clip_layer_impl = NULL;
-  LayerImpl* root_layer_impl = NULL;
-  PaintedScrollbarLayerImpl* scrollbar_layer_impl = NULL;
+  LayerImpl* root_clip_layer_impl = nullptr;
+  LayerImpl* root_layer_impl = nullptr;
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(10, 0, 4, 10).ToString(),
@@ -270,9 +270,9 @@ TEST(ScrollbarLayerTest, ThumbRect) {
   scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
   scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
   scrollbar_layer->UpdateThumbAndTrackGeometry();
-  LayerImpl* root_clip_layer_impl = NULL;
-  LayerImpl* root_layer_impl = NULL;
-  PaintedScrollbarLayerImpl* scrollbar_layer_impl = NULL;
+  LayerImpl* root_clip_layer_impl = nullptr;
+  LayerImpl* root_layer_impl = nullptr;
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
 
   // Thumb is at the edge of the scrollbar (should be inset to
   // the start of the track within the scrollbar layer's
@@ -628,7 +628,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
  public:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                     const LayerTreeSettings& settings)
-      : LayerTreeHost(client, NULL, settings),
+      : LayerTreeHost(client, nullptr, settings),
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {
@@ -667,7 +667,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
     UIResourceBitmapMap::iterator iter = ui_resource_bitmap_map_.find(id);
     if (iter != ui_resource_bitmap_map_.end())
       return &iter->second;
-    return NULL;
+    return nullptr;
   }
 
  private:

@@ -692,8 +692,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
-  const SharedQuadState* root_delegated_shared_quad_state = NULL;
-  const SharedQuadState* contrib_delegated_shared_quad_state = NULL;
+  const SharedQuadState* root_delegated_shared_quad_state = nullptr;
+  const SharedQuadState* contrib_delegated_shared_quad_state = nullptr;
   VerifyRenderPasses(
       frame,
       2,
@@ -747,8 +747,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
-  const SharedQuadState* root_delegated_shared_quad_state = NULL;
-  const SharedQuadState* contrib_delegated_shared_quad_state = NULL;
+  const SharedQuadState* root_delegated_shared_quad_state = nullptr;
+  const SharedQuadState* contrib_delegated_shared_quad_state = nullptr;
   VerifyRenderPasses(
       frame,
       2,
@@ -808,8 +808,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
-  const SharedQuadState* root_delegated_shared_quad_state = NULL;
-  const SharedQuadState* contrib_delegated_shared_quad_state = NULL;
+  const SharedQuadState* root_delegated_shared_quad_state = nullptr;
+  const SharedQuadState* contrib_delegated_shared_quad_state = nullptr;
   VerifyRenderPasses(
       frame,
       3,
@@ -856,8 +856,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
-  const SharedQuadState* root_delegated_shared_quad_state = NULL;
-  const SharedQuadState* contrib_delegated_shared_quad_state = NULL;
+  const SharedQuadState* root_delegated_shared_quad_state = nullptr;
+  const SharedQuadState* contrib_delegated_shared_quad_state = nullptr;
   VerifyRenderPasses(
       frame,
       3,
@@ -903,8 +903,8 @@ TEST_F(DelegatedRendererLayerImplTestTransform, MismatchedDeviceScaleFactor) {
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
-  const SharedQuadState* root_delegated_shared_quad_state = NULL;
-  const SharedQuadState* contrib_delegated_shared_quad_state = NULL;
+  const SharedQuadState* root_delegated_shared_quad_state = nullptr;
+  const SharedQuadState* contrib_delegated_shared_quad_state = nullptr;
   VerifyRenderPasses(frame,
                      2,
                      &root_delegated_shared_quad_state,

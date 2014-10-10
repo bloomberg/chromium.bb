@@ -527,7 +527,7 @@ TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
   EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 
-  layer()->SetScrollOffsetDelegate(NULL);
+  layer()->SetScrollOffsetDelegate(nullptr);
 
   EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
@@ -574,7 +574,7 @@ TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 
-  layer()->SetScrollOffsetDelegate(NULL);
+  layer()->SetScrollOffsetDelegate(nullptr);
 
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 80), layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());

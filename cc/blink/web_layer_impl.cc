@@ -47,19 +47,19 @@ bool g_impl_side_painting_enabled = false;
 }  // namespace
 
 WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {
-  web_layer_client_ = NULL;
+  web_layer_client_ = nullptr;
   layer_->SetLayerClient(this);
 }
 
 WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer) : layer_(layer) {
-  web_layer_client_ = NULL;
+  web_layer_client_ = nullptr;
   layer_->SetLayerClient(this);
 }
 
 WebLayerImpl::~WebLayerImpl() {
   layer_->ClearRenderSurface();
-  layer_->set_layer_animation_delegate(NULL);
-  web_layer_client_ = NULL;
+  layer_->set_layer_animation_delegate(nullptr);
+  web_layer_client_ = nullptr;
 }
 
 // static
@@ -459,25 +459,25 @@ class TracedDebugInfo : public base::debug::ConvertableToTraceFormat {
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 WebLayerImpl::TakeDebugInfo() {
   if (!web_layer_client_)
-    return NULL;
+    return nullptr;
   blink::WebGraphicsLayerDebugInfo* debug_info =
       web_layer_client_->takeDebugInfoFor(this);
 
   if (debug_info)
     return new TracedDebugInfo(debug_info);
   else
-    return NULL;
+    return nullptr;
 }
 
 void WebLayerImpl::setScrollParent(blink::WebLayer* parent) {
-  cc::Layer* scroll_parent = NULL;
+  cc::Layer* scroll_parent = nullptr;
   if (parent)
     scroll_parent = static_cast<WebLayerImpl*>(parent)->layer();
   layer_->SetScrollParent(scroll_parent);
 }
 
 void WebLayerImpl::setClipParent(blink::WebLayer* parent) {
-  cc::Layer* clip_parent = NULL;
+  cc::Layer* clip_parent = nullptr;
   if (parent)
     clip_parent = static_cast<WebLayerImpl*>(parent)->layer();
   layer_->SetClipParent(clip_parent);

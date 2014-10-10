@@ -22,7 +22,7 @@ DelegatedRendererLayer::DelegatedRendererLayer(
     : Layer(),
       frame_provider_(frame_provider),
       should_collect_new_frame_(true),
-      frame_data_(NULL),
+      frame_data_(nullptr),
       weak_ptrs_(this) {
   frame_provider_->AddObserver(this);
 }
@@ -69,7 +69,7 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
 
   if (frame_data_)
     delegated_impl->SetFrameData(frame_data_, frame_damage_);
-  frame_data_ = NULL;
+  frame_data_ = nullptr;
   frame_damage_ = gfx::RectF();
 }
 

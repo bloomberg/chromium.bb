@@ -33,8 +33,8 @@ class DelegatedFrameResourceCollectionTest
 
   void DestroyResourceCollection() {
     if (resource_collection_.get()) {
-      resource_collection_->SetClient(NULL);
-      resource_collection_ = NULL;
+      resource_collection_->SetClient(nullptr);
+      resource_collection_ = nullptr;
     }
   }
 
@@ -151,7 +151,7 @@ TEST_F(DelegatedFrameResourceCollectionTest, Thread) {
   EXPECT_TRUE(returned_resources_[0].lost);
   returned_resources_.clear();
 
-  base::WaitableEvent* null_event = NULL;
+  base::WaitableEvent* null_event = nullptr;
   thread.message_loop()->PostTask(FROM_HERE,
                                   base::Bind(&ReturnResourcesOnThread,
                                              return_callback,

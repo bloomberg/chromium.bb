@@ -19,7 +19,7 @@ UnittestOnlyBenchmark::UnittestOnlyBenchmark(scoped_ptr<base::Value> value,
   if (!value)
     return;
 
-  base::DictionaryValue* settings = NULL;
+  base::DictionaryValue* settings = nullptr;
   value->GetAsDictionary(&settings);
   if (!settings)
     return;
@@ -37,7 +37,7 @@ void UnittestOnlyBenchmark::DidUpdateLayers(LayerTreeHost* host) {
 }
 
 bool UnittestOnlyBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {
-  base::DictionaryValue* message = NULL;
+  base::DictionaryValue* message = nullptr;
   value->GetAsDictionary(&message);
   bool can_handle;
   if (message->HasKey("can_handle")) {
@@ -55,11 +55,11 @@ void UnittestOnlyBenchmark::RecordImplResults(scoped_ptr<base::Value> results) {
 scoped_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::MessageLoopProxy> origin_loop) {
   if (!create_impl_benchmark_)
-    return make_scoped_ptr<MicroBenchmarkImpl>(NULL);
+    return make_scoped_ptr<MicroBenchmarkImpl>(nullptr);
 
   return make_scoped_ptr(new UnittestOnlyBenchmarkImpl(
       origin_loop,
-      NULL,
+      nullptr,
       base::Bind(&UnittestOnlyBenchmark::RecordImplResults,
                  weak_ptr_factory_.GetWeakPtr())));
 }

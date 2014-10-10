@@ -40,7 +40,7 @@ namespace {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, NULL, LayerTreeSettings()) {
+      : LayerTreeHost(client, nullptr, LayerTreeSettings()) {
     InitializeSingleThreaded(client, base::MessageLoopProxy::current());
   }
 
@@ -69,15 +69,15 @@ class LayerTest : public testing::Test {
   virtual void TearDown() override {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AnyNumber());
-    parent_ = NULL;
-    child1_ = NULL;
-    child2_ = NULL;
-    child3_ = NULL;
-    grand_child1_ = NULL;
-    grand_child2_ = NULL;
-    grand_child3_ = NULL;
+    parent_ = nullptr;
+    child1_ = nullptr;
+    child2_ = nullptr;
+    child3_ = nullptr;
+    grand_child1_ = nullptr;
+    grand_child2_ = nullptr;
+    grand_child3_ = nullptr;
 
-    layer_tree_host_->SetRootLayer(NULL);
+    layer_tree_host_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
   }
 
@@ -151,7 +151,7 @@ TEST_F(LayerTest, BasicCreateAndDestroy) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
-  test_layer->SetLayerTreeHost(NULL);
+  test_layer->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {
@@ -234,7 +234,7 @@ TEST_F(LayerTest, InsertChild) {
   EXPECT_EQ(child4, parent->children()[3]);
   EXPECT_EQ(parent.get(), child4->parent());
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 
 TEST_F(LayerTest, InsertChildPastEndOfList) {
@@ -283,7 +283,7 @@ TEST_F(LayerTest, InsertSameChildTwice) {
   EXPECT_EQ(child2, parent->children()[0]);
   EXPECT_EQ(child1, parent->children()[1]);
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 
 TEST_F(LayerTest, ReplaceChildWithNewChild) {
@@ -357,11 +357,11 @@ TEST_F(LayerTest, DeleteRemovedScrollParent) {
 
   child1->reset_needs_push_properties_for_testing();
 
-  EXPECT_SET_NEEDS_COMMIT(1, child2 = NULL);
+  EXPECT_SET_NEEDS_COMMIT(1, child2 = nullptr);
 
   EXPECT_TRUE(child1->needs_push_properties());
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 
 TEST_F(LayerTest, DeleteRemovedScrollChild) {
@@ -386,11 +386,11 @@ TEST_F(LayerTest, DeleteRemovedScrollChild) {
 
   child2->reset_needs_push_properties_for_testing();
 
-  EXPECT_SET_NEEDS_COMMIT(1, child1 = NULL);
+  EXPECT_SET_NEEDS_COMMIT(1, child1 = nullptr);
 
   EXPECT_TRUE(child2->needs_push_properties());
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 
 TEST_F(LayerTest, ReplaceChildWithSameChild) {
@@ -444,7 +444,7 @@ TEST_F(LayerTest, SetChildren) {
   EXPECT_EQ(new_parent.get(), child1->parent());
   EXPECT_EQ(new_parent.get(), child2->parent());
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(NULL));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 
 TEST_F(LayerTest, HasAncestor) {
@@ -845,15 +845,15 @@ TEST_F(LayerTest, MaskAndReplicaHasParent) {
   EXPECT_EQ(replica.get(), replica_mask->parent());
 
   replica->SetMaskLayer(replica_mask_replacement.get());
-  EXPECT_EQ(NULL, replica_mask->parent());
+  EXPECT_EQ(nullptr, replica_mask->parent());
   EXPECT_EQ(replica.get(), replica_mask_replacement->parent());
 
   child->SetMaskLayer(mask_replacement.get());
-  EXPECT_EQ(NULL, mask->parent());
+  EXPECT_EQ(nullptr, mask->parent());
   EXPECT_EQ(child.get(), mask_replacement->parent());
 
   child->SetReplicaLayer(replica_replacement.get());
-  EXPECT_EQ(NULL, replica->parent());
+  EXPECT_EQ(nullptr, replica->parent());
   EXPECT_EQ(child.get(), replica_replacement->parent());
 
   EXPECT_EQ(replica.get(), replica->mask_layer()->parent());
@@ -978,7 +978,7 @@ TEST(LayerLayerTreeHostTest, EnteringTree) {
   child->SetReplicaLayer(replica.get());
   replica->SetMaskLayer(replica_mask.get());
 
-  AssertLayerTreeHostMatchesForSubtree(parent.get(), NULL);
+  AssertLayerTreeHostMatchesForSubtree(parent.get(), nullptr);
 
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();
@@ -990,9 +990,9 @@ TEST(LayerLayerTreeHostTest, EnteringTree) {
 
   // Clearing the root layer should also clear out the host pointers for all
   // layers in the tree.
-  layer_tree_host->SetRootLayer(NULL);
+  layer_tree_host->SetRootLayer(nullptr);
 
-  AssertLayerTreeHostMatchesForSubtree(parent.get(), NULL);
+  AssertLayerTreeHostMatchesForSubtree(parent.get(), nullptr);
 }
 
 TEST(LayerLayerTreeHostTest, AddingLayerSubtree) {
@@ -1021,7 +1021,7 @@ TEST(LayerLayerTreeHostTest, AddingLayerSubtree) {
   parent->AddChild(child);
   AssertLayerTreeHostMatchesForSubtree(parent.get(), layer_tree_host.get());
 
-  layer_tree_host->SetRootLayer(NULL);
+  layer_tree_host->SetRootLayer(nullptr);
 }
 
 TEST(LayerLayerTreeHostTest, ChangeHost) {
@@ -1052,7 +1052,7 @@ TEST(LayerLayerTreeHostTest, ChangeHost) {
   AssertLayerTreeHostMatchesForSubtree(parent.get(),
                                        second_layer_tree_host.get());
 
-  second_layer_tree_host->SetRootLayer(NULL);
+  second_layer_tree_host->SetRootLayer(nullptr);
 }
 
 TEST(LayerLayerTreeHostTest, ChangeHostInSubtree) {
@@ -1087,8 +1087,8 @@ TEST(LayerLayerTreeHostTest, ChangeHostInSubtree) {
             second_grand_child->layer_tree_host());
 
   // Test over, cleanup time.
-  first_layer_tree_host->SetRootLayer(NULL);
-  second_layer_tree_host->SetRootLayer(NULL);
+  first_layer_tree_host->SetRootLayer(nullptr);
+  second_layer_tree_host->SetRootLayer(nullptr);
 }
 
 TEST(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
@@ -1113,16 +1113,16 @@ TEST(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
 
   // Replacing the mask should clear out the old mask's subtree's host pointers.
   parent->SetMaskLayer(mask_replacement.get());
-  EXPECT_EQ(NULL, mask->layer_tree_host());
-  EXPECT_EQ(NULL, mask_child->layer_tree_host());
+  EXPECT_EQ(nullptr, mask->layer_tree_host());
+  EXPECT_EQ(nullptr, mask_child->layer_tree_host());
 
   // Same for replacing a replica layer.
   parent->SetReplicaLayer(replica_replacement.get());
-  EXPECT_EQ(NULL, replica->layer_tree_host());
-  EXPECT_EQ(NULL, replica_child->layer_tree_host());
+  EXPECT_EQ(nullptr, replica->layer_tree_host());
+  EXPECT_EQ(nullptr, replica_child->layer_tree_host());
 
   // Test over, cleanup time.
-  layer_tree_host->SetRootLayer(NULL);
+  layer_tree_host->SetRootLayer(nullptr);
 }
 
 TEST(LayerLayerTreeHostTest, DestroyHostWithNonNullRootLayer) {
