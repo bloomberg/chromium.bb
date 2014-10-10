@@ -10,4 +10,6 @@ gypi_values = exec_script(
 
 sources = gypi_values.main_schema_files
 
+uncompiled_sources = gypi_values.main_non_compiled_schema_files
+
 root_namespace = "extensions::core_api::%(namespace)s"
