@@ -12,7 +12,7 @@ namespace chrome {
 
 class ChromeContentPluginClient : public content::ContentPluginClient {
  public:
-  virtual void PreSandboxInitialization() OVERRIDE;
+  virtual void PreSandboxInitialization() override;
 };
 
 }  // namespace chrome

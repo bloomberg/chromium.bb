@@ -39,19 +39,19 @@ class UIOverridesHandler : public ManifestHandler {
   UIOverridesHandler();
   virtual ~UIOverridesHandler();
 
-  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) override;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
-                        std::vector<InstallWarning>* warnings) const OVERRIDE;
+                        std::vector<InstallWarning>* warnings) const override;
 
-  virtual ManifestPermission* CreatePermission() OVERRIDE;
+  virtual ManifestPermission* CreatePermission() override;
   virtual ManifestPermission* CreateInitialRequiredPermission(
-      const Extension* extension) OVERRIDE;
+      const Extension* extension) override;
 
  private:
   class ManifestPermissionImpl;
 
-  virtual const std::vector<std::string> Keys() const OVERRIDE;
+  virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UIOverridesHandler);
 };

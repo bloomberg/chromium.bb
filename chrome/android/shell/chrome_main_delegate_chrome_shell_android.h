@@ -12,7 +12,7 @@ class ChromeMainDelegateChromeShellAndroid : public ChromeMainDelegateAndroid {
   ChromeMainDelegateChromeShellAndroid();
   virtual ~ChromeMainDelegateChromeShellAndroid();
 
-  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
+  virtual bool BasicStartupComplete(int* exit_code) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateChromeShellAndroid);

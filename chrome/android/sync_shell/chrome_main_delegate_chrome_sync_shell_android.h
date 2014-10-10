@@ -13,9 +13,9 @@ class ChromeMainDelegateChromeSyncShellAndroid
   ChromeMainDelegateChromeSyncShellAndroid();
   virtual ~ChromeMainDelegateChromeSyncShellAndroid();
 
-  virtual bool RegisterApplicationNativeMethods(JNIEnv* env) OVERRIDE;
+  virtual bool RegisterApplicationNativeMethods(JNIEnv* env) override;
 
-  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
+  virtual bool BasicStartupComplete(int* exit_code) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateChromeSyncShellAndroid);

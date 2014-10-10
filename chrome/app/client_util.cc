@@ -355,10 +355,10 @@ class ChromeDllLoader : public MainDllLoader {
 
 class ChromiumDllLoader : public MainDllLoader {
  protected:
-  virtual void OnBeforeLaunch(const base::string16& dll_path) OVERRIDE {
+  virtual void OnBeforeLaunch(const base::string16& dll_path) override {
   }
   virtual int OnBeforeExit(int return_code,
-                           const base::string16& dll_path) OVERRIDE {
+                           const base::string16& dll_path) override {
     return return_code;
   }
 };

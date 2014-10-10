@@ -36,7 +36,7 @@ class SignatureValidatorTest : public testing::Test {
  protected:
   SignatureValidatorTest() {}
 
-  void SetUp() OVERRIDE {
+  void SetUp() override {
     test_roots_ = net::TestRootCerts::GetInstance();
     base::FilePath cert_path =
         GetTestCertsDirectory().Append(L"AuthorityCert.cer");
@@ -49,7 +49,7 @@ class SignatureValidatorTest : public testing::Test {
     SetExpectedHash(GetTestCertsDirectory().Append(L"ValidCert.cer"));
   }
 
-  void TearDown() OVERRIDE {
+  void TearDown() override {
     test_roots_->Clear();
     EXPECT_TRUE(test_roots_->IsEmpty());
   }

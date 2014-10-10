@@ -119,8 +119,8 @@ class AppShimController : public IPC::Listener {
 
  private:
   // IPC::Listener implemetation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   // If Chrome failed to launch the app, |success| will be false and the app
   // shim process should die.

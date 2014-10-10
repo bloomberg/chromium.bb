@@ -25,32 +25,32 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 
  protected:
   // content::ContentMainDelegate implementation:
-  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
-  virtual void PreSandboxStartup() OVERRIDE;
-  virtual void SandboxInitialized(const std::string& process_type) OVERRIDE;
+  virtual bool BasicStartupComplete(int* exit_code) override;
+  virtual void PreSandboxStartup() override;
+  virtual void SandboxInitialized(const std::string& process_type) override;
   virtual int RunProcess(
       const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) OVERRIDE;
-  virtual void ProcessExiting(const std::string& process_type) OVERRIDE;
+      const content::MainFunctionParams& main_function_params) override;
+  virtual void ProcessExiting(const std::string& process_type) override;
 #if defined(OS_MACOSX)
   virtual bool ProcessRegistersWithSystemProcess(
-      const std::string& process_type) OVERRIDE;
-  virtual bool ShouldSendMachPort(const std::string& process_type) OVERRIDE;
+      const std::string& process_type) override;
+  virtual bool ShouldSendMachPort(const std::string& process_type) override;
   virtual bool DelaySandboxInitialization(
-      const std::string& process_type) OVERRIDE;
+      const std::string& process_type) override;
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   virtual void ZygoteStarting(
-      ScopedVector<content::ZygoteForkDelegate>* delegates) OVERRIDE;
-  virtual void ZygoteForked() OVERRIDE;
+      ScopedVector<content::ZygoteForkDelegate>* delegates) override;
+  virtual void ZygoteForked() override;
 #elif defined(OS_WIN)
-  virtual bool ShouldEnableTerminationOnHeapCorruption() OVERRIDE;
+  virtual bool ShouldEnableTerminationOnHeapCorruption() override;
 #endif
 
-  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
-  virtual content::ContentPluginClient* CreateContentPluginClient() OVERRIDE;
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() override;
+  virtual content::ContentPluginClient* CreateContentPluginClient() override;
   virtual content::ContentRendererClient*
-      CreateContentRendererClient() OVERRIDE;
-  virtual content::ContentUtilityClient* CreateContentUtilityClient() OVERRIDE;
+      CreateContentRendererClient() override;
+  virtual content::ContentUtilityClient* CreateContentUtilityClient() override;
 
 #if defined(OS_MACOSX)
   void InitMacCrashReporter(const base::CommandLine& command_line,

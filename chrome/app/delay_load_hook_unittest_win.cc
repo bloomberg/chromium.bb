@@ -23,7 +23,7 @@ class ChromeDelayLoadHookTest : public testing::Test {
   ChromeDelayLoadHookTest() : proc_ptr_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     SetupInfo("kernel32.dll");
   }
 
