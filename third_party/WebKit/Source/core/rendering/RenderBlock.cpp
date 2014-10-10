@@ -1676,8 +1676,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
         r = *it;
 
-        // FIXME: this should only be set from clearNeedsLayout crbug.com/361250
-        r->setLayoutDidGetCalled(true);
+        r->setMayNeedPaintInvalidation(true);
 
         SubtreeLayoutScope layoutScope(*r);
         // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So

@@ -1007,16 +1007,9 @@ public:
 
     virtual void clearPaintInvalidationState(const PaintInvalidationState&);
 
-    // layoutDidGetCalled indicates whether this render object was re-laid-out
-    // since the last call to setLayoutDidGetCalled(false) on this object.
-    bool layoutDidGetCalled() const { return m_bitfields.layoutDidGetCalled(); }
-    void setLayoutDidGetCalled(bool b)
-    {
-        m_bitfields.setLayoutDidGetCalled(b);
-
-        if (b)
-            markContainingBlockChainForPaintInvalidation();
-    }
+    // Indicates whether this render object was re-laid-out since the last frame.
+    // The flag will be cleared during invalidateTreeIfNeeded.
+    bool layoutDidGetCalledSinceLastFrame() const { return m_bitfields.layoutDidGetCalledSinceLastFrame(); }
 
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation(bool b)
@@ -1049,7 +1042,7 @@ public:
 
     bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() const
     {
-        return layoutDidGetCalled() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
+        return layoutDidGetCalledSinceLastFrame() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
     }
 
     bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransform() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
@@ -1116,6 +1109,16 @@ protected:
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
 
 private:
+    void setLayoutDidGetCalledSinceLastFrame()
+    {
+        m_bitfields.setLayoutDidGetCalledSinceLastFrame(true);
+
+        // Make sure our parent is marked as needing invalidation.
+        // This would be unneeded if we allowed sub-tree invalidation (akin to sub-tree layouts).
+        markContainingBlockChainForPaintInvalidation();
+    }
+    void clearLayoutDidGetCalledSinceLastFrame() { m_bitfields.setLayoutDidGetCalledSinceLastFrame(false); }
+
     void invalidatePaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
 
     const RenderLayerModelObject* enclosingCompositedContainer() const;
@@ -1208,7 +1211,7 @@ private:
             , m_hasCounterNodeMap(false)
             , m_everHadLayout(false)
             , m_ancestorLineBoxDirty(false)
-            , m_layoutDidGetCalled(false)
+            , m_layoutDidGetCalledSinceLastFrame(false)
             , m_hasPendingResourceUpdate(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
@@ -1253,7 +1256,7 @@ private:
         ADD_BOOLEAN_BITFIELD(everHadLayout, EverHadLayout);
         ADD_BOOLEAN_BITFIELD(ancestorLineBoxDirty, AncestorLineBoxDirty);
 
-        ADD_BOOLEAN_BITFIELD(layoutDidGetCalled, LayoutDidGetCalled);
+        ADD_BOOLEAN_BITFIELD(layoutDidGetCalledSinceLastFrame, LayoutDidGetCalledSinceLastFrame);
 
         ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
 
@@ -1397,7 +1400,7 @@ inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior
 inline void RenderObject::clearNeedsLayout()
 {
     setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
-    setLayoutDidGetCalled(true);
+    setLayoutDidGetCalledSinceLastFrame();
     setSelfNeedsLayout(false);
     setEverHadLayout(true);
     setPosChildNeedsLayout(false);

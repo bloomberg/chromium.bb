@@ -3073,7 +3073,7 @@ void RenderObject::clearPaintInvalidationState(const PaintInvalidationState& pai
     clearShouldDoFullPaintInvalidation();
     setNeededLayoutBecauseOfChildren(false);
     setShouldInvalidateOverflowForPaint(false);
-    setLayoutDidGetCalled(false);
+    clearLayoutDidGetCalledSinceLastFrame();
     setMayNeedPaintInvalidation(false);
     clearShouldInvalidateSelection();
 }

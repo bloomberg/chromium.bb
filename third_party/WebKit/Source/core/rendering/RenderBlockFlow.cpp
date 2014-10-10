@@ -1043,8 +1043,7 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
         RenderBox* child = next;
         next = child->nextSiblingBox();
 
-        // FIXME: this should only be set from clearNeedsLayout crbug.com/361250
-        child->setLayoutDidGetCalled(true);
+        child->setMayNeedPaintInvalidation(true);
 
         if (childToExclude == child)
             continue; // Skip this child, since it will be positioned by the specialized subclass (fieldsets and ruby runs).

@@ -1013,11 +1013,10 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
 
     debugInfo.currentLayoutRects().clear();
     for (RenderObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
-        if (renderer->layoutDidGetCalled()) {
+        if (renderer->layoutDidGetCalledSinceLastFrame()) {
             FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousPaintInvalidationRect()));
             LayoutRect rect = quad.enclosingBoundingBox();
             debugInfo.currentLayoutRects().append(rect);
-            renderer->setLayoutDidGetCalled(false);
         }
     }
 }
