@@ -232,9 +232,7 @@ void* GLContextCGL::GetHandle() {
 
 void GLContextCGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  LOG(WARNING) << "GLContex: GLContextCGL::SetSwapInterval is ignored.";
 }
-
 
 bool GLContextCGL::GetTotalGpuMemory(size_t* bytes) {
   DCHECK(bytes);
