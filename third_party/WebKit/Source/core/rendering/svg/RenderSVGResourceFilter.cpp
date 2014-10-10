@@ -104,6 +104,7 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
 static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
 {
     context->beginRecording(filterData->boundaries);
+    context->setShouldSmoothFonts(false);
     // We pass the boundaries to SkPictureImageFilter so it knows the
     // world-space position of the filter primitives. It gets them
     // from the DisplayList, which also applies the inverse translate

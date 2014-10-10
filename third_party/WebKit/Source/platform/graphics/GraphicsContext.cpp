@@ -70,12 +70,13 @@ struct GraphicsContext::CanvasSaveState {
 };
 
 struct GraphicsContext::RecordingState {
-    RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix,
+    RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix, bool currentShouldSmoothFonts,
         PassRefPtr<DisplayList> displayList, RegionTrackingMode trackingMode)
         : m_displayList(displayList)
         , m_recorder(recorder)
         , m_savedCanvas(currentCanvas)
         , m_savedMatrix(currentMatrix)
+        , m_savedShouldSmoothFonts(currentShouldSmoothFonts)
         , m_regionTrackingMode(trackingMode) { }
 
     ~RecordingState() { }
@@ -84,6 +85,7 @@ struct GraphicsContext::RecordingState {
     SkPictureRecorder* m_recorder;
     SkCanvas* m_savedCanvas;
     const SkMatrix m_savedMatrix;
+    bool m_savedShouldSmoothFonts;
     RegionTrackingMode m_regionTrackingMode;
 };
 
@@ -508,7 +510,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
         }
     }
 
-    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, displayList,
+    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, m_shouldSmoothFonts, displayList,
         static_cast<RegionTrackingMode>(m_regionTrackingMode)));
 
     // Disable region tracking during recording.
@@ -525,6 +527,7 @@ PassRefPtr<DisplayList> GraphicsContext::endRecording()
 
     m_canvas = recording.m_savedCanvas;
     setRegionTrackingMode(recording.m_regionTrackingMode);
+    setShouldSmoothFonts(recording.m_savedShouldSmoothFonts);
     delete recording.m_recorder;
     m_recordingStateStack.removeLast();
 
