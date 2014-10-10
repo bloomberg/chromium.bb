@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import urllib2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -456,14 +457,20 @@ class Builder(object):
 
   def CleanOutput(self, out):
     if IsFile(out):
-      # Since you cannot remove a file opened by somebody else on Windows,
-      # we will retry removal.
-      for _ in range(5):
+      # Since nobody can remove a file opened by somebody else on Windows,
+      # we will retry removal.  After trying certain times, we gives up
+      # and reraise the WindowsError.
+      retry = 0
+      while True:
         try:
           RemoveFile(out)
           return
-        except WindowsError:
-          pass
+        except WindowsError, inst:
+          retry += 1
+          if retry > 5:
+            raise
+          self.Log('WindowsError %s while removing %s retry=%d' %
+                   (inst, out, retry))
         time.sleep(1)
 
   def FixWindowsPath(self, path):
