@@ -1,7 +1,7 @@
 {
-  "config_version": "star-admob-com-v2",
+  "config_version": "star-admob-tw-v1",
   "config_valid_until": 1432944000,
-  "monitored_domain": "*.admob.com",
+  "monitored_domain": "*.admob.tw",
   "collectors": [
     {
       "upload_url": "https://clients2.google.com/domainreliability/upload"
@@ -12,7 +12,7 @@
   ],
   "monitored_resources": [
     {
-      "resource_name": "star-admob-com-other",
+      "resource_name": "star-admob-tw-other",
       "url_patterns": ["*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
