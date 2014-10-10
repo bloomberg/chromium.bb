@@ -69,6 +69,10 @@
        ]
     }
   ],
+  "appview": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "audioCapture": [
     {
       "channel": "stable",

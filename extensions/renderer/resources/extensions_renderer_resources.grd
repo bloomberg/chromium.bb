@@ -9,6 +9,8 @@
   <release seq="1">
     <includes>
       <!-- Extension libraries. -->
+      <include name="IDR_APP_VIEW_DENY_JS" file="app_view_deny.js" type="BINDATA" />
+      <include name="IDR_APP_VIEW_JS" file="app_view.js" type="BINDATA" />
       <include name="IDR_ASYNC_WAITER_JS" file="async_waiter.js" type="BINDATA" />
       <include name="IDR_DATA_RECEIVER_JS" file="data_receiver.js" type="BINDATA" />
       <include name="IDR_DATA_SENDER_JS" file="data_sender.js" type="BINDATA" />

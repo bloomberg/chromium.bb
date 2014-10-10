@@ -32,6 +32,8 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
   APIPermissionInfo::InitInfo permissions_to_register[] = {
       {APIPermission::kAlphaEnabled, "app.window.alpha"},
       {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
+      {APIPermission::kAppView, "appview",
+        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kAudioCapture, "audioCapture",
        APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
        PermissionMessage::kAudioCapture},

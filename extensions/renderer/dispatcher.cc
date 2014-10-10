@@ -324,6 +324,12 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
   }
 
+  if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
+    module_system->Require("appView");
+  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("denyAppView");
+  }
+
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
   if (context->GetAvailability("webViewInternal").is_available()) {
@@ -513,6 +519,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   std::vector<std::pair<std::string, int> > resources;
 
   // Libraries.
+  resources.push_back(std::make_pair("appView", IDR_APP_VIEW_JS));
+  resources.push_back(std::make_pair("denyAppView", IDR_APP_VIEW_DENY_JS));
   resources.push_back(std::make_pair("entryIdManager", IDR_ENTRY_ID_MANAGER));
   resources.push_back(std::make_pair(kEventBindings, IDR_EVENT_BINDINGS_JS));
   resources.push_back(std::make_pair("imageUtil", IDR_IMAGE_UTIL_JS));
