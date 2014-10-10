@@ -9,8 +9,8 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_input.h"
@@ -69,9 +69,11 @@ void ACMatchClassificationsToTags(
 class OmniboxResult : public SearchResult {
  public:
   OmniboxResult(Profile* profile,
+                AppListControllerDelegate* list_controller,
                 AutocompleteController* autocomplete_controller,
                 const AutocompleteMatch& match)
       : profile_(profile),
+        list_controller_(list_controller),
         autocomplete_controller_(autocomplete_controller),
         match_(match) {
     if (match_.search_terms_args) {
@@ -94,16 +96,15 @@ class OmniboxResult : public SearchResult {
   // SearchResult overrides:
   virtual void Open(int event_flags) override {
     RecordHistogram(OMNIBOX_SEARCH_RESULT);
-    chrome::NavigateParams params(profile_,
-                                  match_.destination_url,
-                                  match_.transition);
-    params.disposition = ui::DispositionFromEventFlags(event_flags);
-    chrome::Navigate(&params);
+    list_controller_->OpenURL(profile_,
+                              match_.destination_url,
+                              match_.transition,
+                              ui::DispositionFromEventFlags(event_flags));
   }
 
   virtual scoped_ptr<SearchResult> Duplicate() override {
-    return scoped_ptr<SearchResult>(
-        new OmniboxResult(profile_, autocomplete_controller_, match_));
+    return scoped_ptr<SearchResult>(new OmniboxResult(
+        profile_, list_controller_, autocomplete_controller_, match_));
   }
 
  private:
@@ -135,6 +136,7 @@ class OmniboxResult : public SearchResult {
   }
 
   Profile* profile_;
+  AppListControllerDelegate* list_controller_;
   AutocompleteController* autocomplete_controller_;
   AutocompleteMatch match_;
 
@@ -143,8 +145,10 @@ class OmniboxResult : public SearchResult {
 
 }  // namespace
 
-OmniboxProvider::OmniboxProvider(Profile* profile)
+OmniboxProvider::OmniboxProvider(Profile* profile,
+                                 AppListControllerDelegate* list_controller)
     : profile_(profile),
+      list_controller_(list_controller),
       controller_(new AutocompleteController(
           profile,
           TemplateURLServiceFactory::GetForProfile(profile),
@@ -175,7 +179,7 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
       continue;
 
     Add(scoped_ptr<SearchResult>(
-        new OmniboxResult(profile_, controller_.get(), *it)));
+        new OmniboxResult(profile_, list_controller_, controller_.get(), *it)));
   }
 }
 

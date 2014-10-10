@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "extensions/common/extension.h"
 #include "ui/app_list/views/app_list_view.h"
 
@@ -84,6 +85,15 @@ void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,
     ChromeLauncherController::instance()->CreateNewIncognitoWindow();
   else
     ChromeLauncherController::instance()->CreateNewWindow();
+}
+
+void AppListControllerDelegateAsh::OpenURL(Profile* profile,
+                                           const GURL& url,
+                                           ui::PageTransition transition,
+                                           WindowOpenDisposition disposition) {
+  chrome::NavigateParams params(profile, url, transition);
+  params.disposition = disposition;
+  chrome::Navigate(&params);
 }
 
 void AppListControllerDelegateAsh::ActivateApp(

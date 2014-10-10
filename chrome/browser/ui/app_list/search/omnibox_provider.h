@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "ui/app_list/search_provider.h"
 
+class AppListControllerDelegate;
 class AutocompleteController;
 class AutocompleteResult;
 class Profile;
@@ -20,7 +21,8 @@ namespace app_list {
 class OmniboxProvider : public SearchProvider,
                         public AutocompleteControllerDelegate {
  public:
-  explicit OmniboxProvider(Profile* profile);
+  explicit OmniboxProvider(Profile* profile,
+                           AppListControllerDelegate* list_controller);
   virtual ~OmniboxProvider();
 
   // SearchProvider overrides:
@@ -35,6 +37,7 @@ class OmniboxProvider : public SearchProvider,
   virtual void OnResultChanged(bool default_match_changed) override;
 
   Profile* profile_;
+  AppListControllerDelegate* list_controller_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.

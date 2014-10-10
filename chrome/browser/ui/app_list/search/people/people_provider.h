@@ -33,7 +33,7 @@ class SearchResult;
 class PeopleProvider : public WebserviceSearchProvider,
                        public OAuth2TokenService::Consumer {
  public:
-  explicit PeopleProvider(Profile* profile);
+  PeopleProvider(Profile* profile, AppListControllerDelegate* controller);
   virtual ~PeopleProvider();
 
   // SearchProvider overrides:
@@ -73,6 +73,7 @@ class PeopleProvider : public WebserviceSearchProvider,
   void SetupForTest(const base::Closure& people_search_fetched_callback,
                     const GURL& people_search_url);
 
+  AppListControllerDelegate* controller_;
   scoped_ptr<JSONResponseFetcher> people_search_;
   base::Closure people_search_fetched_callback_;
 

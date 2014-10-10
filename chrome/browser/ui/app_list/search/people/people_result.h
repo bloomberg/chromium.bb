@@ -12,6 +12,7 @@
 #include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 
+class AppListControllerDelegate;
 class Profile;
 
 namespace app_list {
@@ -20,7 +21,9 @@ struct Person;
 
 class PeopleResult : public SearchResult {
  public:
-  PeopleResult(Profile* profile, scoped_ptr<Person> person);
+  PeopleResult(Profile* profile,
+               AppListControllerDelegate* controller,
+               scoped_ptr<Person> person);
   virtual ~PeopleResult();
 
   // SearchResult overrides:
@@ -42,6 +45,7 @@ class PeopleResult : public SearchResult {
   void RefreshHangoutsExtensionId();
 
   Profile* profile_;
+  AppListControllerDelegate* controller_;
   scoped_ptr<Person> person_;
 
   gfx::ImageSkia image_;

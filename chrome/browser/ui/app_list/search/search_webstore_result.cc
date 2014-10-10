@@ -6,8 +6,8 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension_urls.h"
@@ -18,9 +18,12 @@
 
 namespace app_list {
 
-SearchWebstoreResult::SearchWebstoreResult(Profile* profile,
-                                           const std::string& query)
+SearchWebstoreResult::SearchWebstoreResult(
+    Profile* profile,
+    AppListControllerDelegate* controller,
+    const std::string& query)
     : profile_(profile),
+      controller_(controller),
       query_(query),
       launch_url_(extension_urls::GetWebstoreSearchPageUrl(query)) {
   set_id(launch_url_.spec());
@@ -49,15 +52,15 @@ void SearchWebstoreResult::Open(int event_flags) {
       extension_urls::kWebstoreSourceField,
       extension_urls::kLaunchSourceAppListSearch);
 
-  chrome::NavigateParams params(profile_,
-                                store_url,
-                                ui::PAGE_TRANSITION_LINK);
-  params.disposition = ui::DispositionFromEventFlags(event_flags);
-  chrome::Navigate(&params);
+  controller_->OpenURL(profile_,
+                       store_url,
+                       ui::PAGE_TRANSITION_LINK,
+                       ui::DispositionFromEventFlags(event_flags));
 }
 
 scoped_ptr<SearchResult> SearchWebstoreResult::Duplicate() {
-  return scoped_ptr<SearchResult>(new SearchWebstoreResult(profile_, query_));
+  return scoped_ptr<SearchResult>(
+      new SearchWebstoreResult(profile_, controller_, query_));
 }
 
 }  // namespace app_list

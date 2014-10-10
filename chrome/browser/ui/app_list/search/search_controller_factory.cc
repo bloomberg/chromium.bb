@@ -25,16 +25,20 @@ scoped_ptr<SearchController> CreateSearchController(
   scoped_ptr<SearchController> controller(new SearchController(
       search_box, results, HistoryFactory::GetForBrowserContext(profile)));
 
-  controller->AddProvider(Mixer::MAIN_GROUP, scoped_ptr<SearchProvider>(
-      new AppSearchProvider(profile, list_controller)).Pass());
-  controller->AddProvider(Mixer::OMNIBOX_GROUP, scoped_ptr<SearchProvider>(
-      new OmniboxProvider(profile)).Pass());
-  controller->AddProvider(Mixer::WEBSTORE_GROUP, scoped_ptr<SearchProvider>(
-      new WebstoreProvider(profile, list_controller)).Pass());
+  controller->AddProvider(Mixer::MAIN_GROUP,
+                          scoped_ptr<SearchProvider>(
+                              new AppSearchProvider(profile, list_controller)));
+  controller->AddProvider(Mixer::OMNIBOX_GROUP,
+                          scoped_ptr<SearchProvider>(
+                              new OmniboxProvider(profile, list_controller)));
+  controller->AddProvider(Mixer::WEBSTORE_GROUP,
+                          scoped_ptr<SearchProvider>(
+                              new WebstoreProvider(profile, list_controller)));
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisablePeopleSearch)) {
-    controller->AddProvider(Mixer::PEOPLE_GROUP, scoped_ptr<SearchProvider>(
-        new PeopleProvider(profile)).Pass());
+    controller->AddProvider(Mixer::PEOPLE_GROUP,
+                            scoped_ptr<SearchProvider>(
+                                new PeopleProvider(profile, list_controller)));
   }
 
   return controller.Pass();

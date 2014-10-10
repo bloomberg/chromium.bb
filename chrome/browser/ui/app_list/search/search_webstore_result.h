@@ -11,6 +11,7 @@
 #include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 
+class AppListControllerDelegate;
 class Profile;
 
 namespace app_list {
@@ -18,7 +19,9 @@ namespace app_list {
 // A "search in webstore" result.
 class SearchWebstoreResult : public SearchResult {
  public:
-  SearchWebstoreResult(Profile* profile, const std::string& query);
+  SearchWebstoreResult(Profile* profile,
+                       AppListControllerDelegate* controller,
+                       const std::string& query);
   virtual ~SearchWebstoreResult();
 
   // SearchResult overrides:
@@ -27,6 +30,7 @@ class SearchWebstoreResult : public SearchResult {
 
  private:
   Profile* profile_;
+  AppListControllerDelegate* controller_;
   const std::string query_;
   GURL launch_url_;
 

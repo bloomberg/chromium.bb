@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_installer.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -112,11 +111,10 @@ void WebstoreResult::Open(int event_flags) {
       extension_urls::kWebstoreSourceField,
       extension_urls::kLaunchSourceAppListSearch);
 
-  chrome::NavigateParams params(profile_,
-                                store_url,
-                                ui::PAGE_TRANSITION_LINK);
-  params.disposition = ui::DispositionFromEventFlags(event_flags);
-  chrome::Navigate(&params);
+  controller_->OpenURL(profile_,
+                       store_url,
+                       ui::PAGE_TRANSITION_LINK,
+                       ui::DispositionFromEventFlags(event_flags));
 }
 
 void WebstoreResult::InvokeAction(int action_index, int event_flags) {

@@ -42,11 +42,13 @@ const char kPeopleSearchOAuth2Scope[] =
 
 }  // namespace
 
-PeopleProvider::PeopleProvider(Profile* profile)
-  : WebserviceSearchProvider(profile),
-    OAuth2TokenService::Consumer("people_provider"),
-    people_search_url_(kPeopleSearchUrl),
-    skip_request_token_for_test_(false) {
+PeopleProvider::PeopleProvider(Profile* profile,
+                               AppListControllerDelegate* controller)
+    : WebserviceSearchProvider(profile),
+      OAuth2TokenService::Consumer("people_provider"),
+      controller_(controller),
+      people_search_url_(kPeopleSearchUrl),
+      skip_request_token_for_test_(false) {
   oauth2_scope_.insert(kPeopleSearchOAuth2Scope);
 }
 
@@ -192,7 +194,7 @@ scoped_ptr<SearchResult> PeopleProvider::CreateResult(
   if (!person)
     return result.Pass();
 
-  result.reset(new PeopleResult(profile_, person.Pass()));
+  result.reset(new PeopleResult(profile_, controller_, person.Pass()));
   return result.Pass();
 }
 

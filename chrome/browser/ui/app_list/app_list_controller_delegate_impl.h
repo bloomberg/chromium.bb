@@ -39,6 +39,10 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   virtual void DoCreateShortcutsFlow(Profile* profile,
                                      const std::string& extension_id) override;
   virtual void CreateNewWindow(Profile* profile, bool incognito) override;
+  virtual void OpenURL(Profile* profile,
+                       const GURL& url,
+                       ui::PageTransition transition,
+                       WindowOpenDisposition disposition) override;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            AppListSource source,

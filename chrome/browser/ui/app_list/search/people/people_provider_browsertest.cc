@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/people/people_provider.h"
+#include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
@@ -174,7 +175,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
                    base::Unretained(this)));
 
     people_provider_.reset(new PeopleProvider(
-        ProfileManager::GetActiveUserProfile()));
+        ProfileManager::GetActiveUserProfile(), &test_controller_));
 
     people_provider_->SetupForTest(
         base::Bind(&PeopleProviderTest::OnSearchResultsFetched,
@@ -242,6 +243,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
   std::string mock_server_response_;
 
   scoped_ptr<PeopleProvider> people_provider_;
+  ::test::TestAppListControllerDelegate test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleProviderTest);
 };

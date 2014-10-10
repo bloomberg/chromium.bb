@@ -1854,6 +1854,8 @@
           'sources': [
             'browser/ui/app_list/test/chrome_app_list_test_support.cc',
             'browser/ui/app_list/test/chrome_app_list_test_support.h',
+            'browser/ui/app_list/test/test_app_list_controller_delegate.cc',
+            'browser/ui/app_list/test/test_app_list_controller_delegate.cc',
           ],
         }],
         ['enable_webrtc==1', {

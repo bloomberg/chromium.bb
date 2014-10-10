@@ -8,6 +8,8 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_constants.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -99,6 +101,12 @@ class AppListControllerDelegate {
   // Handle the "create window" context menu items of Chrome App.
   // |incognito| is true to create an incognito window.
   virtual void CreateNewWindow(Profile* profile, bool incognito) = 0;
+
+  // Opens the URL.
+  virtual void OpenURL(Profile* profile,
+                       const GURL& url,
+                       ui::PageTransition transition,
+                       WindowOpenDisposition disposition) = 0;
 
   // Show the app's most recent window, or launch it if it is not running.
   virtual void ActivateApp(Profile* profile,
