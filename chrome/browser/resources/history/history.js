@@ -489,10 +489,8 @@ Visit.prototype.showMoreFromSite_ = function() {
  */
 Visit.prototype.handleKeydown_ = function(e) {
   // Delete or Backspace should delete the entry if allowed.
-  if ((e.keyIdentifier == 'U+0008' || e.keyIdentifier == 'U+007F') &&
-      !this.model_.isDeletingVisits()) {
+  if (e.keyIdentifier == 'U+0008' || e.keyIdentifier == 'U+007F')
     this.removeEntryFromHistory_(e);
-  }
 };
 
 /**
@@ -501,8 +499,10 @@ Visit.prototype.handleKeydown_ = function(e) {
  * @private
  */
 Visit.prototype.removeEntryFromHistory_ = function(e) {
-  if (!this.model_.deletingHistoryAllowed)
+  if (!this.model_.deletingHistoryAllowed || this.model_.isDeletingVisits() ||
+      this.domNode_.classList.contains('fade-out')) {
     return;
+  }
 
   this.model_.getView().onBeforeRemove(this);
   this.removeFromHistory();
@@ -1219,8 +1219,10 @@ HistoryView.prototype.removeVisit = function(visit) {
 HistoryView.prototype.onEntryRemoved = function() {
   this.updateSelectionEditButtons();
 
-  if (this.model_.getSize() == 0)
+  if (this.model_.getSize() == 0) {
+    this.clear_();
     this.onModelReady(true);  // Shows "No entries" message.
+  }
 };
 
 /**
