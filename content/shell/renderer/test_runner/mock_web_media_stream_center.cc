@@ -69,22 +69,6 @@ MockWebMediaStreamCenter::MockWebMediaStreamCenter(
 MockWebMediaStreamCenter::~MockWebMediaStreamCenter() {
 }
 
-bool MockWebMediaStreamCenter::getMediaStreamTrackSources(
-    const blink::WebMediaStreamTrackSourcesRequest& request) {
-  size_t size = 2;
-  blink::WebVector<blink::WebSourceInfo> results(size);
-  results[0].initialize("MockAudioDevice#1",
-                        blink::WebSourceInfo::SourceKindAudio,
-                        "Mock audio device",
-                        blink::WebSourceInfo::VideoFacingModeNone);
-  results[1].initialize("MockVideoDevice#1",
-                        blink::WebSourceInfo::SourceKindVideo,
-                        "Mock video device",
-                        blink::WebSourceInfo::VideoFacingModeEnvironment);
-  request.requestSucceeded(results);
-  return true;
-}
-
 void MockWebMediaStreamCenter::didEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   track.source().setReadyState(blink::WebMediaStreamSource::ReadyStateLive);

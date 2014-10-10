@@ -1043,8 +1043,6 @@
       'browser/renderer_host/media/audio_renderer_host.h',
       'browser/renderer_host/media/audio_sync_reader.cc',
       'browser/renderer_host/media/audio_sync_reader.h',
-      'browser/renderer_host/media/device_request_message_filter.cc',
-      'browser/renderer_host/media/device_request_message_filter.h',
       'browser/renderer_host/media/media_capture_devices_impl.cc',
       'browser/renderer_host/media/media_capture_devices_impl.h',
       'browser/renderer_host/media/media_stream_dispatcher_host.cc',

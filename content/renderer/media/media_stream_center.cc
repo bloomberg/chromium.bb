@@ -86,19 +86,9 @@ void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
 
 MediaStreamCenter::MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
                                      PeerConnectionDependencyFactory* factory)
-    : rtc_factory_(factory), next_request_id_(0) {}
+    : rtc_factory_(factory) {}
 
 MediaStreamCenter::~MediaStreamCenter() {}
-
-bool MediaStreamCenter::getMediaStreamTrackSources(
-    const blink::WebMediaStreamTrackSourcesRequest& request) {
-  int request_id = next_request_id_++;
-  requests_.insert(std::make_pair(request_id, request));
-  RenderThread::Get()->Send(new MediaStreamHostMsg_GetSources(
-      request_id,
-      GURL(request.origin().utf8())));
-  return true;
-}
 
 void MediaStreamCenter::didCreateMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
@@ -201,50 +191,6 @@ bool MediaStreamCenter::didRemoveMediaStreamTrack(
   DVLOG(1) << "MediaStreamCenter::didRemoveMediaStreamTrack";
   MediaStream* native_stream = MediaStream::GetMediaStream(stream);
   return native_stream->RemoveTrack(track);
-}
-
-bool MediaStreamCenter::OnControlMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaStreamCenter, message)
-    IPC_MESSAGE_HANDLER(MediaStreamMsg_GetSourcesACK,
-                        OnGetSourcesComplete)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void MediaStreamCenter::OnGetSourcesComplete(
-    int request_id,
-    const content::StreamDeviceInfoArray& devices) {
-  RequestMap::iterator request_it = requests_.find(request_id);
-  DCHECK(request_it != requests_.end());
-
-  blink::WebVector<blink::WebSourceInfo> sourceInfos(devices.size());
-  for (size_t i = 0; i < devices.size(); ++i) {
-    const MediaStreamDevice& device = devices[i].device;
-    DCHECK(device.type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-           device.type == MEDIA_DEVICE_VIDEO_CAPTURE);
-    blink::WebSourceInfo::VideoFacingMode video_facing;
-    switch (device.video_facing) {
-      case MEDIA_VIDEO_FACING_USER:
-        video_facing = blink::WebSourceInfo::VideoFacingModeUser;
-        break;
-      case MEDIA_VIDEO_FACING_ENVIRONMENT:
-        video_facing = blink::WebSourceInfo::VideoFacingModeEnvironment;
-        break;
-      default:
-        video_facing = blink::WebSourceInfo::VideoFacingModeNone;
-    }
-
-    sourceInfos[i]
-        .initialize(blink::WebString::fromUTF8(device.id),
-                    device.type == MEDIA_DEVICE_AUDIO_CAPTURE
-                        ? blink::WebSourceInfo::SourceKindAudio
-                        : blink::WebSourceInfo::SourceKindVideo,
-                    blink::WebString::fromUTF8(device.name),
-                    video_facing);
-  }
-  request_it->second.requestSucceeded(sourceInfos);
 }
 
 }  // namespace content

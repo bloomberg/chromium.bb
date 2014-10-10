@@ -78,8 +78,7 @@ IPC_MESSAGE_ROUTED2(MediaStreamMsg_DeviceStopped,
 
 // The browser has enumerated devices. If no devices are found
 // |device_list| is empty.
-// Used by Pepper.
-// TODO(vrk,wjia): Move this to pepper code.
+// Used by Pepper and WebRTC.
 IPC_MESSAGE_ROUTED2(MediaStreamMsg_DevicesEnumerated,
                     int /* request id */,
                     content::StreamDeviceInfoArray /* device_list */)
@@ -95,11 +94,6 @@ IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
 // The browser has failed to open a device.
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
                     int /* request id */)
-
-// Response to enumerate devices request.
-IPC_MESSAGE_CONTROL2(MediaStreamMsg_GetSourcesACK,
-                     int /* request id */,
-                     content::StreamDeviceInfoArray /* device_list */)
 
 // Messages sent from the renderer to the browser.
 
@@ -120,11 +114,6 @@ IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelGenerateStream,
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_StopStreamDevice,
                      int /* render frame id */,
                      std::string /*device_id*/)
-
-// Request to enumerate devices.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_GetSources,
-                     int /* request id */,
-                     GURL /* origin */)
 
 // Request to enumerate devices.
 // Used by Pepper and WebRTC.

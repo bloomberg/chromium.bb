@@ -1446,7 +1446,6 @@ blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     if (!media_stream_center_) {
       scoped_ptr<MediaStreamCenter> media_stream_center(
           new MediaStreamCenter(client, GetPeerConnectionDependencyFactory()));
-      AddObserver(media_stream_center.get());
       media_stream_center_ = media_stream_center.release();
     }
   }

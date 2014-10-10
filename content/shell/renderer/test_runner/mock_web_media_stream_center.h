@@ -25,8 +25,6 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
                            TestInterfaces* interfaces);
   virtual ~MockWebMediaStreamCenter();
 
-  virtual bool getMediaStreamTrackSources(
-      const blink::WebMediaStreamTrackSourcesRequest& request);
   virtual void didEnableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track);
   virtual void didDisableMediaStreamTrack(
