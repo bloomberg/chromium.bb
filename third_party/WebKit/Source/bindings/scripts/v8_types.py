@@ -501,7 +501,7 @@ def v8_conversion_is_trivial(idl_type):
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, needs_type_check, index, isolate):
     if idl_type.name == 'void':
         return ''
 
@@ -532,9 +532,12 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
             'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
     elif idl_type.is_dictionary:
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, exceptionState)'
-    else:
+    elif needs_type_check:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')
+    else:
+        cpp_expression_format = (
+            'V8{idl_type}::toImpl(v8::Handle<v8::Object>::Cast({v8_value}))')
 
     return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, isolate=isolate)
 
@@ -560,7 +563,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, needs_type_check=True, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     # FIXME: Support union type.
@@ -573,7 +576,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     if idl_type.base_type in ('void', 'object', 'EventHandler', 'EventListener'):
         return '/* no V8 -> C++ conversion for IDL type: %s */' % idl_type.name
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolate)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, needs_type_check, index, isolate)
     if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
         # Types that need error handling and use one of a group of (C++) macros
         # to take care of this.

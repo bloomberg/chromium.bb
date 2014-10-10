@@ -192,6 +192,17 @@ def argument_context(interface, method, argument, index):
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 
+    type_checking_interface = (
+        (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
+         has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
+        idl_type.is_wrapper_type)
+
+    type_checked = (type_checking_interface and
+                    # These allow null and undefined values, so a type-check is still required.
+                    not idl_type.is_nullable and
+                    not (argument.is_optional and
+                         'Default' in extended_attributes))
+
     if ('ImplementedInPrivateScript' in extended_attributes and
         not idl_type.is_wrapper_type and
         not idl_type.is_basic_type):
@@ -209,10 +220,7 @@ def argument_context(interface, method, argument, index):
         'handle': '%sHandle' % argument.name,
         # FIXME: remove once [Default] removed and just use argument.default_value
         'has_default': 'Default' in extended_attributes or default_cpp_value,
-        'has_type_checking_interface':
-            (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
-             has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
-            idl_type.is_wrapper_type,
+        'has_type_checking_interface': type_checking_interface,
         'has_type_checking_unrestricted':
             (has_extended_attribute_value(interface, 'TypeChecking', 'Unrestricted') or
              has_extended_attribute_value(method, 'TypeChecking', 'Unrestricted')) and
@@ -234,7 +242,7 @@ def argument_context(interface, method, argument, index):
             creation_context='scriptState->context()->Global()'),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
-        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, return_promise=method.returns_promise),
+        'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index, type_checked, return_promise=method.returns_promise),
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
     }
 
@@ -362,14 +370,14 @@ def v8_value_to_local_cpp_variadic_value(argument, index, return_promise):
     return '%s%s(%s)' % (macro, suffix, ', '.join(macro_args))
 
 
-def v8_value_to_local_cpp_value(argument, index, return_promise=False):
+def v8_value_to_local_cpp_value(argument, index, type_checked, return_promise=False):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
         return v8_value_to_local_cpp_variadic_value(argument, index, return_promise)
     return idl_type.v8_value_to_local_cpp_value(extended_attributes, 'info[%s]' % index,
-                                                name, index=index, declare_variable=False, return_promise=return_promise)
+                                                name, needs_type_check=not type_checked, index=index, declare_variable=False, return_promise=return_promise)
 
 
 ################################################################################
