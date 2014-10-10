@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/filename_util.h"
 
@@ -98,12 +97,6 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
 bool ShellDownloadManagerDelegate::ShouldOpenDownload(
       DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree) &&
-      WebKitTestController::Get()->IsMainWindow(item->GetWebContents()) &&
-      item->GetMimeType() == "text/html") {
-    WebKitTestController::Get()->OpenURL(
-        net::FilePathToFileURL(item->GetFullPath()));
-  }
   return true;
 }
 

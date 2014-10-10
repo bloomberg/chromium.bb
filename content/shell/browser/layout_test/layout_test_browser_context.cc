@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/browser/resource_context.h"
-#include "content/shell/browser/shell_download_manager_delegate.h"
+#include "content/shell/browser/layout_test/layout_test_download_manager_delegate.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 
 #if defined(OS_WIN)
@@ -35,11 +35,9 @@ LayoutTestBrowserContext::~LayoutTestBrowserContext() {
 DownloadManagerDelegate*
 LayoutTestBrowserContext::GetDownloadManagerDelegate() {
   if (!download_manager_delegate_.get()) {
-    download_manager_delegate_.reset(new ShellDownloadManagerDelegate());
+    download_manager_delegate_.reset(new LayoutTestDownloadManagerDelegate());
     download_manager_delegate_->SetDownloadManager(
         BrowserContext::GetDownloadManager(this));
-    // TODO(mkwst): We can avoid this bit in the future by defining a
-    // LayoutTestDownloadManagerDelegate.
     download_manager_delegate_->SetDownloadBehaviorForTesting(
         GetPath().Append(FILE_PATH_LITERAL("downloads")));
   }

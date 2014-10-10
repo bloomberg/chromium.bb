@@ -43,6 +43,8 @@ static_library("content_shell_lib") {
     "browser/ipc_echo_message_filter.h",
     "browser/layout_test/layout_test_browser_context.cc",
     "browser/layout_test/layout_test_browser_context.h",
+    "browser/layout_test/layout_test_download_manager_delegate.cc",
+    "browser/layout_test/layout_test_download_manager_delegate.h",
     "browser/layout_test/layout_test_devtools_frontend.cc",
     "browser/layout_test/layout_test_devtools_frontend.h",
     "browser/layout_test/layout_test_javascript_dialog_manager.cc",
