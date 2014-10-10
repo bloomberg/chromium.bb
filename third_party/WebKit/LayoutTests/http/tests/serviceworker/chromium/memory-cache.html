@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<title>Service Worker: Memory Cache</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<script>
+var callback;
+
+function getJSONP(url) {
+  var sc = document.createElement('script');
+  sc.src = url;
+  document.body.appendChild(sc);
+  return new Promise(function(resolve) {
+      // This callback function is called by appending a script element.
+      callback = function(data) { resolve(data); }
+    });
+}
+
+async_test(function(t) {
+  var scope = 'resources/memory-cache-controlled.html';
+  var worker = 'resources/memory-cache-worker.js';
+  var json_url = '/serviceworker/chromium/resources/memory-cache.jsonp';
+  var registration;
+  var frame;
+  var promises = [];
+
+  service_worker_unregister_and_register(t, worker, scope)
+    .then(function(r) {
+        registration = r;
+        return wait_for_activated(t, registration);
+      })
+    .then(function() { return with_iframe(scope); })
+    .then(function(f) {
+        frame = f;
+        // Request a json file from controlled page.
+        promises.push(frame.contentWindow.getJSONP(json_url));
+        // Request a json file from non-controlled page.
+        promises.push(getJSONP(json_url));
+        return Promise.all(promises);
+      })
+    .then(function(results) {
+        assert_equals(
+          results[0].src,
+          'service worker',
+          'Response for controlled page should be served by Service Worker');
+        assert_equals(
+          results[1].src,
+          'network',
+          'Response for non-controlled page should be served by network');
+        unload_iframe(frame);
+        return registration.unregister();
+      })
+    .then(function() {
+        t.done();
+      })
+    .catch(unreached_rejection(t));
+  }, 'Non-controlled page should not use a cache filled by Service Worker');
+</script>
