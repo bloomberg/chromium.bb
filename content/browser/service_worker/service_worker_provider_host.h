@@ -83,6 +83,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SetDocumentUrl(const GURL& url);
   const GURL& document_url() const { return document_url_; }
 
+  void SetTopmostFrameUrl(const GURL& url);
+  const GURL& topmost_frame_url() const { return topmost_frame_url_; }
+
   // Associates to |registration| to listen for its version change events.
   void AssociateRegistration(ServiceWorkerRegistration* registration);
 
@@ -151,6 +154,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int process_id_;
   const int provider_id_;
   GURL document_url_;
+  GURL topmost_frame_url_;
 
   std::vector<GURL> associated_patterns_;
   scoped_refptr<ServiceWorkerRegistration> associated_registration_;

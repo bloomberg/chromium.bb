@@ -82,8 +82,10 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     return;
 
   if (skip_service_worker) {
-    if (ServiceWorkerUtils::IsMainResourceType(resource_type))
+    if (ServiceWorkerUtils::IsMainResourceType(resource_type)) {
       provider_host->SetDocumentUrl(net::SimplifyUrlForRequest(request->url()));
+      provider_host->SetTopmostFrameUrl(request->first_party_for_cookies());
+    }
     return;
   }
 

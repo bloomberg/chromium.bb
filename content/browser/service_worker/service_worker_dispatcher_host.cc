@@ -18,6 +18,8 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -31,6 +33,7 @@ namespace {
 
 const char kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
+const char kDisabledErrorMessage[] = "The browser has disabled Service Worker.";
 
 const uint32 kFilteredMessageClasses[] = {
   ServiceWorkerMsgStart,
@@ -52,24 +55,18 @@ bool OriginCanAccessServiceWorkers(const GURL& url) {
 bool CanRegisterServiceWorker(const GURL& document_url,
                               const GURL& pattern,
                               const GURL& script_url) {
-  // TODO: Respect Chrome's content settings, if we add a setting for
-  // controlling whether Service Worker is allowed.
   return AllOriginsMatch(document_url, pattern, script_url) &&
          OriginCanAccessServiceWorkers(document_url);
 }
 
 bool CanUnregisterServiceWorker(const GURL& document_url,
                                 const GURL& pattern) {
-  // TODO: Respect Chrome's content settings, if we add a setting for
-  // controlling whether Service Worker is allowed.
   return document_url.GetOrigin() == pattern.GetOrigin() &&
          OriginCanAccessServiceWorkers(document_url);
 }
 
 bool CanGetRegistration(const GURL& document_url,
                         const GURL& given_document_url) {
-  // TODO: Respect Chrome's content settings, if we add a setting for
-  // controlling whether Service Worker is allowed.
   return document_url.GetOrigin() == given_document_url.GetOrigin() &&
          OriginCanAccessServiceWorkers(document_url);
 }
@@ -78,11 +75,13 @@ bool CanGetRegistration(const GURL& document_url,
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     int render_process_id,
-    MessagePortMessageFilter* message_port_message_filter)
+    MessagePortMessageFilter* message_port_message_filter,
+    ResourceContext* resource_context)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       message_port_message_filter_(message_port_message_filter),
+      resource_context_(resource_context),
       channel_ready_(false) {
 }
 
@@ -258,6 +257,17 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     BadMessageReceived();
     return;
   }
+
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          pattern, provider_host->topmost_frame_url(), resource_context_)) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeDisabled,
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
+    return;
+  }
+
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
                            "ServiceWorkerDispatcherHost::RegisterServiceWorker",
                            request_id,
@@ -310,6 +320,16 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
 
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          pattern, provider_host->topmost_frame_url(), resource_context_)) {
+    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeDisabled,
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
+    return;
+  }
+
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
       "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
@@ -356,6 +376,18 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
 
   if (!CanGetRegistration(provider_host->document_url(), document_url)) {
     BadMessageReceived();
+    return;
+  }
+
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          provider_host->document_url(),
+          provider_host->topmost_frame_url(),
+          resource_context_)) {
+    Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::ErrorTypeDisabled,
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
 

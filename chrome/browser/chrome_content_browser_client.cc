@@ -1460,6 +1460,16 @@ bool ChromeContentBrowserClient::AllowAppCache(
       IsSettingCookieAllowed(manifest_url, first_party);
 }
 
+bool ChromeContentBrowserClient::AllowServiceWorker(
+    const GURL& scope,
+    const GURL& first_party_url,
+    content::ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+  return io_data->GetCookieSettings()->
+      IsSettingCookieAllowed(scope, first_party_url);
+}
+
 bool ChromeContentBrowserClient::AllowGetCookie(
     const GURL& url,
     const GURL& first_party,

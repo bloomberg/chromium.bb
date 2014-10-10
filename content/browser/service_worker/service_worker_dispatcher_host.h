@@ -19,6 +19,7 @@ struct EmbeddedWorkerHostMsg_ReportConsoleMessage_Params;
 namespace content {
 
 class MessagePortMessageFilter;
+class ResourceContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
@@ -32,7 +33,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
   ServiceWorkerDispatcherHost(
       int render_process_id,
-      MessagePortMessageFilter* message_port_message_filter);
+      MessagePortMessageFilter* message_port_message_filter,
+      ResourceContext* resource_context);
 
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
@@ -158,6 +160,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   int render_process_id_;
   MessagePortMessageFilter* const message_port_message_filter_;
+  ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 
   IDMap<ServiceWorkerHandle, IDMapOwnPointer> handles_;

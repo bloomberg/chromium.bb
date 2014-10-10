@@ -838,8 +838,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(message_port_message_filter_.get());
 
   scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
-      new ServiceWorkerDispatcherHost(GetID(),
-                                      message_port_message_filter_.get());
+      new ServiceWorkerDispatcherHost(
+          GetID(), message_port_message_filter_.get(), resource_context);
   service_worker_filter->Init(
       storage_partition_impl_->GetServiceWorkerContext());
   AddFilter(service_worker_filter.get());

@@ -60,7 +60,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   typedef ServiceWorkerControlleeRequestHandler self;
 
   // For main resource case.
-  void PrepareForMainResource(const GURL& url);
+  void PrepareForMainResource(const net::URLRequest* request);
   void DidLookupRegistrationForMainResource(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);

@@ -123,6 +123,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
                              content::ResourceContext* context) OVERRIDE;
+  virtual bool AllowServiceWorker(const GURL& scope,
+                                  const GURL& first_party,
+                                  content::ResourceContext* context) OVERRIDE;
   virtual bool AllowGetCookie(const GURL& url,
                               const GURL& first_party,
                               const net::CookieList& cookie_list,

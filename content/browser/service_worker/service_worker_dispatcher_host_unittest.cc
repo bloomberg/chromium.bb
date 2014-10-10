@@ -16,7 +16,9 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -28,8 +30,9 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
   TestingServiceWorkerDispatcherHost(
       int process_id,
       ServiceWorkerContextWrapper* context_wrapper,
+      ResourceContext* resource_context,
       EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id, NULL),
+      : ServiceWorkerDispatcherHost(process_id, NULL, resource_context),
         bad_messages_received_count_(0),
         helper_(helper) {
     Init(context_wrapper);
@@ -60,7 +63,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   virtual void SetUp() {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
-        kRenderProcessId, context_wrapper(), helper_.get());
+        kRenderProcessId, context_wrapper(), &resource_context_, helper_.get());
   }
 
   virtual void TearDown() {
@@ -120,9 +123,46 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
+  content::MockResourceContext resource_context_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<TestingServiceWorkerDispatcherHost> dispatcher_host_;
 };
+
+class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
+ public:
+  ServiceWorkerTestContentBrowserClient() {}
+  virtual bool AllowServiceWorker(const GURL& scope,
+                                  const GURL& first_party,
+                                  content::ResourceContext* context) OVERRIDE {
+    return false;
+  }
+};
+
+TEST_F(ServiceWorkerDispatcherHostTest,
+       Register_ContentSettingsDisallowsServiceWorker) {
+  ServiceWorkerTestContentBrowserClient test_browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&test_browser_client);
+
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  Register(kProviderId,
+           GURL("https://www.example.com/"),
+           GURL("https://www.example.com/bar"),
+           ServiceWorkerMsg_ServiceWorkerRegistrationError::ID);
+  Unregister(kProviderId,
+             GURL("https://www.example.com/"),
+             ServiceWorkerMsg_ServiceWorkerUnregistrationError::ID);
+  GetRegistration(kProviderId,
+                  GURL("https://www.example.com/"),
+                  ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
+
+  SetBrowserClientForTesting(old_browser_client);
+}
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_HTTPS) {
   const int64 kProviderId = 99;  // Dummy value

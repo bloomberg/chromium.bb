@@ -94,7 +94,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
                                         frame_type_,
                                         body_);
   if (is_main_resource_load_)
-    PrepareForMainResource(request->url());
+    PrepareForMainResource(request);
   else
     PrepareForSubResource();
 
@@ -131,7 +131,7 @@ void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
-    const GURL& url) {
+    const net::URLRequest* request) {
   DCHECK(job_.get());
   DCHECK(context_);
   DCHECK(provider_host_);
@@ -139,7 +139,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
       job_.get(),
-      "URL", url.spec());
+      "URL", request->url().spec());
   // The corresponding provider_host may already have associated a registration
   // in redirect case, unassociate it now.
   provider_host_->DisassociateRegistration();
@@ -148,8 +148,9 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // registration while we're finding an existing registration.
   provider_host_->SetAllowAssociation(false);
 
-  GURL stripped_url = net::SimplifyUrlForRequest(url);
+  GURL stripped_url = net::SimplifyUrlForRequest(request->url());
   provider_host_->SetDocumentUrl(stripped_url);
+  provider_host_->SetTopmostFrameUrl(request->first_party_for_cookies());
   context_->storage()->FindRegistrationForDocument(
       stripped_url,
       base::Bind(&self::DidLookupRegistrationForMainResource,

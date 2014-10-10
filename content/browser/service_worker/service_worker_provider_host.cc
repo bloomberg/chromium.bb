@@ -60,6 +60,10 @@ void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
   document_url_ = url;
 }
 
+void ServiceWorkerProviderHost::SetTopmostFrameUrl(const GURL& url) {
+  topmost_frame_url_ = url;
+}
+
 void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     ServiceWorkerVersion* version) {
   if (version == controlling_version_.get())

@@ -116,6 +116,13 @@ bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
   return true;
 }
 
+bool ContentBrowserClient::AllowServiceWorker(
+    const GURL& scope,
+    const GURL& document_url,
+    content::ResourceContext* context) {
+  return true;
+}
+
 bool ContentBrowserClient::AllowGetCookie(const GURL& url,
                                           const GURL& first_party,
                                           const net::CookieList& cookie_list,
