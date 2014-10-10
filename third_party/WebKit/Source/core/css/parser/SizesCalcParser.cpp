@@ -203,11 +203,11 @@ static bool operateOnStack(Vector<SizesCalcValue>& stack, UChar operation)
 bool SizesCalcParser::calculate()
 {
     Vector<SizesCalcValue> stack;
-    for (Vector<SizesCalcValue>::iterator it = m_valueList.begin(); it != m_valueList.end(); ++it) {
-        if (it->operation == 0) {
-            stack.append(*it);
+    for (const auto& value : m_valueList) {
+        if (value.operation == 0) {
+            stack.append(value);
         } else {
-            if (!operateOnStack(stack, it->operation))
+            if (!operateOnStack(stack, value.operation))
                 return false;
         }
     }

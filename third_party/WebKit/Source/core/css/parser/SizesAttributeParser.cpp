@@ -123,13 +123,13 @@ bool SizesAttributeParser::parse(Vector<CSSParserToken>& tokens)
     CSSParserTokenIterator startToken = tokens.begin();
     CSSParserTokenIterator endToken;
     // Split on a comma token, and send the result tokens to be parsed as (media-condition, length) pairs
-    for (CSSParserTokenIterator token = tokens.begin(); token != tokens.end(); ++token) {
-        m_blockWatcher.handleToken(*token);
-        if (token->type() == CommaToken && !m_blockWatcher.blockLevel()) {
-            endToken = token;
+    for (auto& token : tokens) {
+        m_blockWatcher.handleToken(token);
+        if (token.type() == CommaToken && !m_blockWatcher.blockLevel()) {
+            endToken = &token;
             if (parseMediaConditionAndLength(startToken, endToken))
                 return true;
-            startToken = token;
+            startToken = &token;
             ++startToken;
         }
     }
@@ -152,4 +152,3 @@ unsigned SizesAttributeParser::effectiveSizeDefaultValue()
 }
 
 } // namespace
-
