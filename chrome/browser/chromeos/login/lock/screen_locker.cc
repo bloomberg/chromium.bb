@@ -159,6 +159,11 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
 }
 
 void ScreenLocker::Init() {
+  input_method::InputMethodManager* imm =
+      input_method::InputMethodManager::Get();
+  saved_ime_state_ = imm->GetActiveIMEState();
+  imm->SetState(saved_ime_state_->Clone());
+
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   extended_authenticator_ = new ExtendedAuthenticator(this);
   delegate_.reset(new WebUIScreenLocker(this));
@@ -497,11 +502,9 @@ void ScreenLocker::ScreenLockReady() {
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
 
-  input_method::InputMethodManager* imm =
-      input_method::InputMethodManager::Get();
-  saved_ime_state_ = imm->GetActiveIMEState();
-  imm->SetState(saved_ime_state_->Clone());
-  imm->GetActiveIMEState()->EnableLockScreenLayouts();
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->EnableLockScreenLayouts();
 
   bool state = true;
   VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
