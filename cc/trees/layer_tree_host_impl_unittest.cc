@@ -4399,8 +4399,9 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   context_provider->BindToCurrentThread();
   context_provider->TestContext3d()->set_have_post_sub_buffer(true);
 
-  scoped_ptr<OutputSurface> output_surface(
+  scoped_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::Create3d(context_provider));
+  FakeOutputSurface* fake_output_surface = output_surface.get();
 
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
@@ -4439,8 +4440,9 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   layer_tree_host_impl->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  EXPECT_EQ(TestContextSupport::SWAP,
-            context_provider->support()->last_swap_type());
+  gfx::Rect expected_swap_rect(0, 0, 500, 500);
+  EXPECT_EQ(expected_swap_rect.ToString(),
+            fake_output_surface->last_swap_rect().ToString());
 
   // Second frame, only the damaged area should get swapped. Damage should be
   // the union of old and new child rects.
@@ -4456,12 +4458,9 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // Make sure that partial swap is constrained to the viewport dimensions
   // expected damage rect: gfx::Rect(500, 500);
   // expected swap rect: flipped damage rect, but also clamped to viewport
-  EXPECT_EQ(TestContextSupport::PARTIAL_SWAP,
-            context_provider->support()->last_swap_type());
-  gfx::Rect expected_swap_rect(0, 500-28, 26, 28);
+  expected_swap_rect = gfx::Rect(0, 500-28, 26, 28);
   EXPECT_EQ(expected_swap_rect.ToString(),
-            context_provider->support()->
-                last_partial_swap_rect().ToString());
+            fake_output_surface->last_swap_rect().ToString());
 
   layer_tree_host_impl->SetViewportSize(gfx::Size(10, 10));
   // This will damage everything.
@@ -4472,8 +4471,9 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
 
-  EXPECT_EQ(TestContextSupport::SWAP,
-            context_provider->support()->last_swap_type());
+  expected_swap_rect = gfx::Rect(0, 0, 10, 10);
+  EXPECT_EQ(expected_swap_rect.ToString(),
+            fake_output_surface->last_swap_rect().ToString());
 }
 
 TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {

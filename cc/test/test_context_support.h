@@ -48,24 +48,10 @@ class TestContextSupport : public gpu::ContextSupport {
   void SetScheduleOverlayPlaneCallback(
       const ScheduleOverlayPlaneCallback& schedule_overlay_plane_callback);
 
-  enum SwapType {
-    NO_SWAP,
-    SWAP,
-    PARTIAL_SWAP
-  };
-
-  SwapType last_swap_type() const { return last_swap_type_; }
-  gfx::Rect last_partial_swap_rect() const {
-    return last_partial_swap_rect_;
-  }
-
  private:
   std::vector<base::Closure> sync_point_callbacks_;
   SurfaceVisibleCallback set_visible_callback_;
   ScheduleOverlayPlaneCallback schedule_overlay_plane_callback_;
-
-  SwapType last_swap_type_;
-  gfx::Rect last_partial_swap_rect_;
 
   base::WeakPtrFactory<TestContextSupport> weak_ptr_factory_;
 

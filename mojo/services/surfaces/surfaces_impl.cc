@@ -9,6 +9,7 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/cc/context_provider_mojo.h"
+#include "mojo/cc/direct_output_surface.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
@@ -77,7 +78,7 @@ void SurfacesImpl::CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
   if (!display_) {
     display_.reset(new cc::Display(this, manager_, NULL));
     client_->SetDisplay(display_.get());
-    display_->Initialize(make_scoped_ptr(new cc::OutputSurface(
+    display_->Initialize(make_scoped_ptr(new DirectOutputSurface(
         new ContextProviderMojo(command_buffer_handle_.Pass()))));
   }
   factory_.Create(cc_id, size.To<gfx::Size>());

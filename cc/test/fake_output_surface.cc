@@ -73,13 +73,13 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
     }
 
     ++num_sent_frames_;
-    PostSwapBuffersComplete();
-    client_->DidSwapBuffers();
   } else {
-    OutputSurface::SwapBuffers(frame);
+    last_swap_rect_ = frame->gl_frame_data->sub_buffer_rect;
     frame->AssignTo(&last_sent_frame_);
     ++num_sent_frames_;
   }
+  PostSwapBuffersComplete();
+  client_->DidSwapBuffers();
 }
 
 void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {

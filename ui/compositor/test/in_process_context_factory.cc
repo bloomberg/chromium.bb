@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/threading/thread.h"
-#include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/reflector.h"
@@ -61,7 +61,7 @@ scoped_ptr<cc::OutputSurface> InProcessContextFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderInProcess> context_provider =
       ContextProviderInProcess::Create(context3d.Pass(), "UICompositor");
 
-  return make_scoped_ptr(new cc::OutputSurface(context_provider));
+  return make_scoped_ptr(new cc::PixelTestOutputSurface(context_provider));
 }
 
 scoped_refptr<Reflector> InProcessContextFactory::CreateReflector(

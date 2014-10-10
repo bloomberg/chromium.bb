@@ -102,10 +102,18 @@ class OverlayOutputSurface : public OutputSurface {
   explicit OverlayOutputSurface(scoped_refptr<ContextProvider> context_provider)
       : OutputSurface(context_provider) {}
 
+  // OutputSurface implementation
+  virtual void SwapBuffers(CompositorFrame* frame) override;
+
   void InitWithSingleOverlayValidator() {
     overlay_candidate_validator_.reset(new SingleOverlayValidator);
   }
 };
+
+void OverlayOutputSurface::SwapBuffers(CompositorFrame* frame) {
+  client_->DidSwapBuffers();
+  client_->DidSwapBuffersComplete();
+}
 
 scoped_ptr<RenderPass> CreateRenderPass() {
   RenderPassId id(1, 0);

@@ -18,6 +18,8 @@ source_set("cc") {
   sources = [
     "context_provider_mojo.cc",
     "context_provider_mojo.h",
+    "direct_output_surface.cc",
+    "direct_output_surface.h",
     "output_surface_mojo.cc",
     "output_surface_mojo.h",
   ]

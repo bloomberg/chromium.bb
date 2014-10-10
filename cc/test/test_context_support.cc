@@ -10,8 +10,7 @@
 namespace cc {
 
 TestContextSupport::TestContextSupport()
-    : last_swap_type_(NO_SWAP),
-      weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this) {
 }
 
 TestContextSupport::~TestContextSupport() {}
@@ -59,7 +58,6 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
 }
 
 void TestContextSupport::Swap() {
-  last_swap_type_ = SWAP;
 }
 
 uint32 TestContextSupport::InsertFutureSyncPointCHROMIUM() {
@@ -72,8 +70,6 @@ void TestContextSupport::RetireSyncPointCHROMIUM(uint32 sync_point) {
 }
 
 void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
-  last_swap_type_ = PARTIAL_SWAP;
-  last_partial_swap_rect_ = sub_buffer;
 }
 
 void TestContextSupport::ScheduleOverlayPlane(

@@ -28,4 +28,9 @@ bool PixelTestOutputSurface::HasExternalStencilTest() const {
   return external_stencil_test_;
 }
 
+void PixelTestOutputSurface::SwapBuffers(CompositorFrame* frame) {
+  PostSwapBuffersComplete();
+  client_->DidSwapBuffers();
+}
+
 }  // namespace cc

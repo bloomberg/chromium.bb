@@ -11,7 +11,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
-#include "cc/output/output_surface.h"
+#include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/test/test_blink_web_unit_test_support.h"
@@ -151,7 +151,7 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
 void WebLayerTreeViewImplForTesting::RequestNewOutputSurface(
     bool fallback) {
   layer_tree_host_->SetOutputSurface(make_scoped_ptr(
-      new cc::OutputSurface(cc::TestContextProvider::Create())));
+      new cc::PixelTestOutputSurface(cc::TestContextProvider::Create())));
 }
 
 void WebLayerTreeViewImplForTesting::registerViewportLayers(

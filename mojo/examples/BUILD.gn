@@ -9,7 +9,6 @@ group("examples") {
 
   deps = [
     "//mojo/examples/apptest",
-    "//mojo/examples/compositor_app",
     "//mojo/examples/content_handler_demo",
     "//mojo/examples/echo",
     "//mojo/examples/http_server",

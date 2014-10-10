@@ -4,33 +4,16 @@
 
 #include "cc/output/output_surface.h"
 
-#include <algorithm>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
-#include "cc/scheduler/delay_based_time_source.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-using std::set;
-using std::string;
-using std::vector;
 
 namespace cc {
 
@@ -220,35 +203,6 @@ gfx::Size OutputSurface::SurfaceSize() const {
 void OutputSurface::BindFramebuffer() {
   DCHECK(context_provider_.get());
   context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void OutputSurface::SwapBuffers(CompositorFrame* frame) {
-  // TODO(sievers): Make OutputSurface::SwapBuffers() pure virtual.
-  // The implementation here is used for tests only.
-  if (frame->software_frame_data) {
-    PostSwapBuffersComplete();
-    client_->DidSwapBuffers();
-    return;
-  }
-
-  DCHECK(context_provider_.get());
-  DCHECK(frame->gl_frame_data);
-
-  if (frame->gl_frame_data->sub_buffer_rect ==
-      gfx::Rect(frame->gl_frame_data->size)) {
-    context_provider_->ContextSupport()->Swap();
-  } else {
-    context_provider_->ContextSupport()->PartialSwapBuffers(
-        frame->gl_frame_data->sub_buffer_rect);
-  }
-  uint32_t sync_point =
-      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
-  context_provider_->ContextSupport()->SignalSyncPoint(
-      sync_point,
-      base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  client_->DidSwapBuffers();
 }
 
 void OutputSurface::PostSwapBuffersComplete() {

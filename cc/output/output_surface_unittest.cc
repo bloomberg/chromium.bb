@@ -32,6 +32,11 @@ class TestOutputSurface : public OutputSurface {
                     scoped_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(context_provider, software_device.Pass()) {}
 
+  virtual void SwapBuffers(CompositorFrame* frame) override {
+    client_->DidSwapBuffers();
+    client_->DidSwapBuffersComplete();
+  }
+
   bool InitializeNewContext3d(
       scoped_refptr<ContextProvider> new_context_provider) {
     return InitializeAndSetContext3d(new_context_provider);

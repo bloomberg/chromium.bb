@@ -33,7 +33,6 @@
         'mojo_base.gyp:mojo_base',
         'mojo_clipboard',
         'mojo_clipboard_unittests',
-        'mojo_compositor_app',
         'mojo_content_handler_demo',
         'mojo_echo_client',
         'mojo_echo_service',
@@ -374,6 +373,8 @@
       'sources': [
         'cc/context_provider_mojo.cc',
         'cc/context_provider_mojo.h',
+        'cc/direct_output_surface.cc',
+        'cc/direct_output_surface.h',
         'cc/output_surface_mojo.cc',
         'cc/output_surface_mojo.h',
       ],

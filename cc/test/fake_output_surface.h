@@ -119,6 +119,10 @@ class FakeOutputSurface : public OutputSurface {
   void SetMemoryPolicyToSetAtBind(
       scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind);
 
+  gfx::Rect last_swap_rect() const {
+    return last_swap_rect_;
+  }
+
  protected:
   FakeOutputSurface(
       scoped_refptr<ContextProvider> context_provider,
@@ -142,6 +146,7 @@ class FakeOutputSurface : public OutputSurface {
   bool has_external_stencil_test_;
   TransferableResourceArray resources_held_by_parent_;
   scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
+  gfx::Rect last_swap_rect_;
 
   base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;
 };

@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/rolling_time_delta_history.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
@@ -113,8 +112,10 @@ class CC_EXPORT OutputSurface {
 
   // The implementation may destroy or steal the contents of the CompositorFrame
   // passed in (though it will not take ownership of the CompositorFrame
-  // itself).
-  virtual void SwapBuffers(CompositorFrame* frame);
+  // itself). For successful swaps, the implementation must call
+  // OutputSurfaceClient::DidSwapBuffers() and eventually
+  // DidSwapBuffersComplete().
+  virtual void SwapBuffers(CompositorFrame* frame) = 0;
   virtual void OnSwapBuffersComplete();
 
   // Notifies frame-rate smoothness preference. If true, all non-critical

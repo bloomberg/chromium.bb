@@ -156,40 +156,6 @@
       'includes': [ 'build/package_app.gypi' ],
     },
     {
-      # GN version: //mojo/examples/compositor_app
-      'target_name': 'mojo_compositor_app',
-      'type': 'loadable_module',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../cc/cc.gyp:cc',
-        '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
-        'mojo_base.gyp:mojo_application_chromium',
-        'mojo_base.gyp:mojo_common_lib',
-        'mojo_cc_support',
-        'mojo_geometry_lib',
-        'services/public/mojo_services_public.gyp:mojo_geometry_bindings',
-        'services/public/mojo_services_public.gyp:mojo_gpu_bindings',
-        'services/public/mojo_services_public.gyp:mojo_native_viewport_bindings',
-        '<(mojo_system_for_loadable_module)',
-      ],
-      'includes': [
-        'mojo_public_gles2_for_loadable_module.gypi',
-      ],
-      'sources': [
-        'examples/compositor_app/compositor_app.cc',
-        'examples/compositor_app/compositor_host.cc',
-        'examples/compositor_app/compositor_host.h',
-      ],
-    },
-    {
-      'target_name': 'package_mojo_compositor_app',
-      'variables': {
-        'app_name': 'mojo_compositor_app',
-      },
-      'includes': [ 'build/package_app.gypi' ],
-    },
-    {
       # GN version: //mojo/examples/http_server
       'target_name': 'mojo_http_server',
       'type': 'loadable_module',

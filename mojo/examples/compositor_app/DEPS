@@ -1,6 +1,0 @@
-include_rules = [
-  "+cc",
-  "-cc/blink",
-  "+ui/gfx",
-  "+gpu/command_buffer/client",
-]
