@@ -1508,16 +1508,15 @@ cr.define('options', function() {
      * @param {boolean} managed
      */
     setWallpaperManaged_: function(managed) {
-      var button = $('set-wallpaper');
-      button.disabled = !!managed;
+      if (managed)
+        $('set-wallpaper').disabled = true;
+      else
+        this.enableElementIfPossible_($('set-wallpaper'));
 
       // Create a synthetic pref change event decorated as
       // CoreOptionsHandler::CreateValueForPref() does.
       var event = new Event('wallpaper');
-      if (managed)
-        event.value = { controlledBy: 'policy' };
-      else
-        event.value = {};
+      event.value = managed ? { controlledBy: 'policy' } : {};
       $('wallpaper-indicator').handlePrefChange(event);
     },
 
@@ -1967,6 +1966,18 @@ cr.define('options', function() {
      */
     handleSetTime_: function() {
       chrome.send('showSetTime');
+    },
+
+    /**
+     * Enables the given element if possible; on Chrome OS, it won't enable
+     * an element that must stay disabled for the session type.
+     * @param {!Element} element Element to enable.
+     */
+    enableElementIfPossible_: function(element) {
+      if (cr.isChromeOS)
+        UIAccountTweaks.enableElementIfPossible(element);
+      else
+        element.disabled = false;
     },
   };
 

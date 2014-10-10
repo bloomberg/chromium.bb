@@ -57,6 +57,26 @@ cr.define('uiAccountTweaks', function() {
   };
 
   /**
+   * Enables an element unless it should be disabled for the session type.
+   *
+   * @param {!Element} element Element that should be enabled.
+   */
+  UIAccountTweaks.enableElementIfPossible = function(element) {
+    var sessionType;
+    if (UIAccountTweaks.loggedInAsGuest())
+      sessionType = SESSION_TYPE_GUEST;
+    else if (UIAccountTweaks.loggedInAsPublicAccount())
+      sessionType = SESSION_TYPE_PUBLIC;
+
+    if (sessionType &&
+        element.getAttribute(sessionType + '-visibility') == 'disabled') {
+      return;
+    }
+
+    element.disabled = false;
+  }
+
+  /**
    * Disables or hides some elements in specified type of session in ChromeOS.
    * All elements within given document with *sessionType*-visibility
    * attribute are either hidden (for *sessionType*-visibility="hidden")
@@ -68,10 +88,10 @@ cr.define('uiAccountTweaks', function() {
    */
   UIAccountTweaks.applySessionTypeVisibility_ = function(document,
                                                          sessionType) {
-    var elements = document.querySelectorAll('['+ sessionType +'-visibility]');
+    var elements = document.querySelectorAll('['+ sessionType + '-visibility]');
     for (var i = 0; i < elements.length; i++) {
       var element = elements[i];
-      var visibility = element.getAttribute(sessionType +'-visibility');
+      var visibility = element.getAttribute(sessionType + '-visibility');
       if (visibility == 'hidden')
         element.hidden = true;
       else if (visibility == 'disabled')
@@ -86,7 +106,7 @@ cr.define('uiAccountTweaks', function() {
    * @param {Document} document Document that should processed.
    */
   UIAccountTweaks.applyGuestSessionVisibility = function(document) {
-    if (!cr.isChromeOS || !UIAccountTweaks.loggedInAsGuest())
+    if (!UIAccountTweaks.loggedInAsGuest())
       return;
     UIAccountTweaks.applySessionTypeVisibility_(document, SESSION_TYPE_GUEST);
   }
@@ -98,7 +118,7 @@ cr.define('uiAccountTweaks', function() {
    * @param {Document} document Document that should processed.
    */
   UIAccountTweaks.applyPublicSessionVisibility = function(document) {
-    if (!cr.isChromeOS || !UIAccountTweaks.loggedInAsPublicAccount())
+    if (!UIAccountTweaks.loggedInAsPublicAccount())
       return;
     UIAccountTweaks.applySessionTypeVisibility_(document, SESSION_TYPE_PUBLIC);
   }
