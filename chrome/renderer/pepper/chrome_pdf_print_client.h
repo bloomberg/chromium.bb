@@ -15,8 +15,8 @@ class ChromePDFPrintClient : public pdf::PPB_PDF_Impl::PrintClient {
 
  private:
   // pdf::PPB_PDF_Impl::PrintClient:
-  virtual bool IsPrintingEnabled(PP_Instance instance_id) OVERRIDE;
-  virtual bool Print(PP_Instance instance_id) OVERRIDE;
+  virtual bool IsPrintingEnabled(PP_Instance instance_id) override;
+  virtual bool Print(PP_Instance instance_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePDFPrintClient);
 };

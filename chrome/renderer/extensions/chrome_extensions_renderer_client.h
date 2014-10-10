@@ -18,8 +18,8 @@ class ChromeExtensionsRendererClient
   static ChromeExtensionsRendererClient* GetInstance();
 
   // extensions::ExtensionsRendererClient implementation.
-  virtual bool IsIncognitoProcess() const OVERRIDE;
-  virtual int GetLowestIsolatedWorldId() const OVERRIDE;
+  virtual bool IsIncognitoProcess() const override;
+  virtual int GetLowestIsolatedWorldId() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsRendererClient);

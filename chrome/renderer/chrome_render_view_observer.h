@@ -53,12 +53,12 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidStartLoading() override;
+  virtual void DidStopLoading() override;
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
-  virtual void Navigate(const GURL& url) OVERRIDE;
+                                        bool is_new_navigation) override;
+  virtual void Navigate(const GURL& url) override;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   void OnWebUIJavaScript(const base::string16& javascript);

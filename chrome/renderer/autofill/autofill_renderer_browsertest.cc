@@ -45,7 +45,7 @@ class AutofillRendererTest : public ChromeRenderViewTest {
   virtual ~AutofillRendererTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
     // Don't want any delay for form state sync changes. This will still post a
@@ -254,7 +254,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
   virtual ~RequestAutocompleteRendererTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AutofillRendererTest::SetUp();
 
     // Bypass the HTTPS-only restriction to show requestAutocomplete.
@@ -295,7 +295,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
     render_thread_->sink().ClearMessages();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     invoking_form_.reset();
     AutofillRendererTest::TearDown();
   }

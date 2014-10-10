@@ -37,7 +37,7 @@ class SearchBouncer : public content::RenderProcessObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchBouncerTest, SetSearchURLs);
 
   // From RenderProcessObserver:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // URLs to bounce back to the browser.
   std::vector<GURL> search_urls_;

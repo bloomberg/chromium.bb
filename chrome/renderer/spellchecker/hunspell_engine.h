@@ -25,15 +25,15 @@ class HunspellEngine : public SpellingEngine {
   HunspellEngine();
   virtual ~HunspellEngine();
 
-  virtual void Init(base::File file) OVERRIDE;
+  virtual void Init(base::File file) override;
 
-  virtual bool InitializeIfNeeded() OVERRIDE;
-  virtual bool IsEnabled() OVERRIDE;
+  virtual bool InitializeIfNeeded() override;
+  virtual bool IsEnabled() override;
   virtual bool CheckSpelling(const base::string16& word_to_check,
-                             int tag) OVERRIDE;
+                             int tag) override;
   virtual void FillSuggestionList(
       const base::string16& wrong_word,
-      std::vector<base::string16>* optional_suggestions) OVERRIDE;
+      std::vector<base::string16>* optional_suggestions) override;
 
  private:
   // Initializes the Hunspell dictionary, or does nothing if |hunspell_| is

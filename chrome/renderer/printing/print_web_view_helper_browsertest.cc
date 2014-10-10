@@ -110,7 +110,7 @@ class DidPreviewPageListener : public IPC::Listener {
   explicit DidPreviewPageListener(base::RunLoop* run_loop)
       : run_loop_(run_loop) {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID ||
         message.type() == PrintHostMsg_PrintPreviewFailed::ID ||
         message.type() == PrintHostMsg_PrintPreviewCancelled::ID)
@@ -228,7 +228,7 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
   PrintWebViewHelperTest() {}
   virtual ~PrintWebViewHelperTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewTest::SetUp();
   }
 

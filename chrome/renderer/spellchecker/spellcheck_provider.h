@@ -55,8 +55,8 @@ class SpellCheckProvider
   void EnableSpellcheck(bool enabled);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) override;
 
  private:
   friend class TestingSpellCheckProvider;
@@ -72,24 +72,24 @@ class SpellCheckProvider
       const blink::WebString& text,
       int& offset,
       int& length,
-      blink::WebVector<blink::WebString>* optional_suggestions) OVERRIDE;
+      blink::WebVector<blink::WebString>* optional_suggestions) override;
   virtual void checkTextOfParagraph(
       const blink::WebString& text,
       blink::WebTextCheckingTypeMask mask,
-      blink::WebVector<blink::WebTextCheckingResult>* results) OVERRIDE;
+      blink::WebVector<blink::WebTextCheckingResult>* results) override;
 
   virtual void requestCheckingOfText(
       const blink::WebString& text,
       const blink::WebVector<uint32>& markers,
       const blink::WebVector<unsigned>& marker_offsets,
-      blink::WebTextCheckingCompletion* completion) OVERRIDE;
+      blink::WebTextCheckingCompletion* completion) override;
 
   virtual blink::WebString autoCorrectWord(
-      const blink::WebString& misspelled_word) OVERRIDE;
-  virtual void showSpellingUI(bool show) OVERRIDE;
-  virtual bool isShowingSpellingUI() OVERRIDE;
+      const blink::WebString& misspelled_word) override;
+  virtual void showSpellingUI(bool show) override;
+  virtual bool isShowingSpellingUI() override;
   virtual void updateSpellingUIWithMisspelledWord(
-      const blink::WebString& word) OVERRIDE;
+      const blink::WebString& word) override;
 
 #if !defined(OS_MACOSX)
   void OnRespondSpellingService(

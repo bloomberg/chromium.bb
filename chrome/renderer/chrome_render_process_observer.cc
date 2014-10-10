@@ -70,7 +70,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   virtual content::RequestPeer* OnRequestComplete(
       content::RequestPeer* current_peer,
       content::ResourceType resource_type,
-      int error_code) OVERRIDE {
+      int error_code) override {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
     if (!weak_factory_.HasWeakPtrs()) {
@@ -93,7 +93,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   virtual content::RequestPeer* OnReceivedResponse(
       content::RequestPeer* current_peer,
       const std::string& mime_type,
-      const GURL& url) OVERRIDE {
+      const GURL& url) override {
 #if defined(ENABLE_EXTENSIONS)
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
         current_peer, RenderThread::Get(), mime_type, url);

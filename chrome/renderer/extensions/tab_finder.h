@@ -26,7 +26,7 @@ class TabFinder : public content::RenderViewVisitor {
   virtual ~TabFinder();
 
   // content::RenderViewVisitor implementation.
-  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+  virtual bool Visit(content::RenderView* render_view) override;
 
   int tab_id_;
   content::RenderView* view_;

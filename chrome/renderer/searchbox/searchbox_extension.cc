@@ -343,7 +343,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // in this class for window.chrome.
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate*,
-      v8::Handle<v8::String> name) OVERRIDE;
+      v8::Handle<v8::String> name) override;
 
   // Helper function to find the RenderView. May return NULL.
   static content::RenderView* GetRenderView();

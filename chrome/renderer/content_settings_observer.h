@@ -51,32 +51,32 @@ class ContentSettingsObserver
   // blink::WebPermissionClient implementation.
   virtual bool allowDatabase(const blink::WebString& name,
                              const blink::WebString& display_name,
-                             unsigned long estimated_size) OVERRIDE;
+                             unsigned long estimated_size) override;
   virtual void requestFileSystemAccessAsync(
-      const blink::WebPermissionCallbacks& callbacks) OVERRIDE;
+      const blink::WebPermissionCallbacks& callbacks) override;
   virtual bool allowImage(bool enabled_per_settings,
-                          const blink::WebURL& image_url) OVERRIDE;
+                          const blink::WebURL& image_url) override;
   virtual bool allowIndexedDB(const blink::WebString& name,
-                              const blink::WebSecurityOrigin& origin) OVERRIDE;
-  virtual bool allowPlugins(bool enabled_per_settings) OVERRIDE;
-  virtual bool allowScript(bool enabled_per_settings) OVERRIDE;
+                              const blink::WebSecurityOrigin& origin) override;
+  virtual bool allowPlugins(bool enabled_per_settings) override;
+  virtual bool allowScript(bool enabled_per_settings) override;
   virtual bool allowScriptFromSource(bool enabled_per_settings,
-                                     const blink::WebURL& script_url) OVERRIDE;
-  virtual bool allowStorage(bool local) OVERRIDE;
-  virtual bool allowReadFromClipboard(bool default_value) OVERRIDE;
-  virtual bool allowWriteToClipboard(bool default_value) OVERRIDE;
-  virtual bool allowMutationEvents(bool default_value) OVERRIDE;
-  virtual bool allowPushState() OVERRIDE;
-  virtual void didNotAllowPlugins() OVERRIDE;
-  virtual void didNotAllowScript() OVERRIDE;
+                                     const blink::WebURL& script_url) override;
+  virtual bool allowStorage(bool local) override;
+  virtual bool allowReadFromClipboard(bool default_value) override;
+  virtual bool allowWriteToClipboard(bool default_value) override;
+  virtual bool allowMutationEvents(bool default_value) override;
+  virtual bool allowPushState() override;
+  virtual void didNotAllowPlugins() override;
+  virtual void didNotAllowScript() override;
   virtual bool allowDisplayingInsecureContent(
       bool allowed_per_settings,
       const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url) OVERRIDE;
+      const blink::WebURL& url) override;
   virtual bool allowRunningInsecureContent(
       bool allowed_per_settings,
       const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url) OVERRIDE;
+      const blink::WebURL& url) override;
 
   // This is used for cases when the NPAPI plugins malfunction if used.
   bool AreNPAPIPluginsBlocked() const;
@@ -88,8 +88,8 @@ class ContentSettingsObserver
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, PluginsTemporarilyAllowed);
 
   // RenderFrameObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation) override;
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);

@@ -24,13 +24,13 @@ class PrefetchHelper : public content::RenderFrameObserver,
   // blink::WebURLLoaderClient implementation
   virtual void didFinishLoading(blink::WebURLLoader* loader,
                                 double finishTime,
-                                int64_t totalEncodedDataLength) OVERRIDE;
+                                int64_t totalEncodedDataLength) override;
   virtual void didFail(blink::WebURLLoader* loader,
-                       const blink::WebURLError& error) OVERRIDE;
+                       const blink::WebURLError& error) override;
 
  private:
   // RenderViewObserver implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnPrefetch(const GURL& url);
 

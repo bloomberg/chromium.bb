@@ -32,21 +32,21 @@ class CastTransportSenderIPC
   virtual void InitializeAudio(
       const media::cast::CastTransportRtpConfig& config,
       const media::cast::RtcpCastMessageCallback& cast_message_cb,
-      const media::cast::RtcpRttCallback& rtt_cb) OVERRIDE;
+      const media::cast::RtcpRttCallback& rtt_cb) override;
   virtual void InitializeVideo(
       const media::cast::CastTransportRtpConfig& config,
       const media::cast::RtcpCastMessageCallback& cast_message_cb,
-      const media::cast::RtcpRttCallback& rtt_cb) OVERRIDE;
+      const media::cast::RtcpRttCallback& rtt_cb) override;
   virtual void InsertFrame(uint32 ssrc,
-      const media::cast::EncodedFrame& frame) OVERRIDE;
+      const media::cast::EncodedFrame& frame) override;
   virtual void SendSenderReport(
       uint32 ssrc,
       base::TimeTicks current_time,
-      uint32 current_time_as_rtp_timestamp) OVERRIDE;
+      uint32 current_time_as_rtp_timestamp) override;
   virtual void CancelSendingFrames(
       uint32 ssrc,
-      const std::vector<uint32>& frame_ids) OVERRIDE;
-  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) OVERRIDE;
+      const std::vector<uint32>& frame_ids) override;
+  virtual void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override;
 
   void OnNotifyStatusChange(
       media::cast::CastTransportStatus status);

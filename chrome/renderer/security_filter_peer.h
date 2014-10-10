@@ -30,22 +30,22 @@ class SecurityFilterPeer : public content::RequestPeer {
       int os_error);
 
   // content::RequestPeer methods.
-  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
+  virtual void OnUploadProgress(uint64 position, uint64 size) override;
   virtual bool OnReceivedRedirect(
       const net::RedirectInfo& redirect_info,
-      const content::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) override;
   virtual void OnReceivedResponse(
-      const content::ResourceResponseInfo& info) OVERRIDE;
-  virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {}
+      const content::ResourceResponseInfo& info) override;
+  virtual void OnDownloadedData(int len, int encoded_data_length) override {}
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length) OVERRIDE;
+                              int encoded_data_length) override;
   virtual void OnCompletedRequest(int error_code,
                                   bool was_ignored_by_handler,
                                   bool stale_copy_in_cache,
                                   const std::string& security_info,
                                   const base::TimeTicks& completion_time,
-                                  int64 total_transfer_size) OVERRIDE;
+                                  int64 total_transfer_size) override;
 
  protected:
   explicit SecurityFilterPeer(content::RequestPeer* peer);
@@ -65,17 +65,17 @@ class BufferedPeer : public SecurityFilterPeer {
 
   // content::RequestPeer Implementation.
   virtual void OnReceivedResponse(
-      const content::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) override;
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length) OVERRIDE;
+                              int encoded_data_length) override;
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time,
-      int64 total_transfer_size) OVERRIDE;
+      int64 total_transfer_size) override;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -108,17 +108,17 @@ class ReplaceContentPeer : public SecurityFilterPeer {
 
   // content::RequestPeer Implementation.
   virtual void OnReceivedResponse(
-      const content::ResourceResponseInfo& info) OVERRIDE;
+      const content::ResourceResponseInfo& info) override;
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length) OVERRIDE;
+                              int encoded_data_length) override;
   virtual void OnCompletedRequest(
       int error_code,
       bool was_ignored_by_handler,
       bool stale_copy_in_cache,
       const std::string& security_info,
       const base::TimeTicks& completion_time,
-      int64 total_transfer_size) OVERRIDE;
+      int64 total_transfer_size) override;
 
  private:
   content::ResourceResponseInfo response_info_;

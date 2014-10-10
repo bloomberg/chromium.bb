@@ -50,24 +50,24 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   virtual ~ChromePluginPlaceholder();
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
+  virtual void BindWebFrame(blink::WebFrame* frame) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // content::RenderViewObserver (via PluginPlaceholder) override:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
-  virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
+  virtual void ShowContextMenu(const blink::WebMouseEvent&) override;
 
   // content::RenderProcessObserver methods:
-  virtual void PluginListChanged() OVERRIDE;
+  virtual void PluginListChanged() override;
 
   // content::ContextMenuClient methods:
-  virtual void OnMenuAction(int request_id, unsigned action) OVERRIDE;
-  virtual void OnMenuClosed(int request_id) OVERRIDE;
+  virtual void OnMenuAction(int request_id, unsigned action) override;
+  virtual void OnMenuClosed(int request_id) override;
 
   // Javascript callback opens chrome://plugins in a new tab.
   void OpenAboutPluginsCallback();

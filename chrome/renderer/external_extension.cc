@@ -45,7 +45,7 @@ class ExternalExtensionWrapper : public v8::Extension {
   // in this class for window.external.
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) OVERRIDE;
+      v8::Handle<v8::String> name) override;
 
   // Helper function to find the RenderView. May return NULL.
   static RenderView* GetRenderView();

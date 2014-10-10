@@ -34,7 +34,7 @@ class ChromeWebRtcLogMessageDelegate
   virtual ~ChromeWebRtcLogMessageDelegate();
 
   // content::WebRtcLogMessageDelegate implementation.
-  virtual void LogMessage(const std::string& message) OVERRIDE;
+  virtual void LogMessage(const std::string& message) override;
 
   void OnFilterRemoved();
 

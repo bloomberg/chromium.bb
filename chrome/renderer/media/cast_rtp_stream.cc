@@ -359,7 +359,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   virtual void OnData(const int16* audio_data,
                       int sample_rate,
                       int number_of_channels,
-                      int number_of_frames) OVERRIDE {
+                      int number_of_frames) override {
     scoped_ptr<media::AudioBus> input_bus;
     if (resampler_) {
       input_bus = ResampleData(
@@ -416,7 +416,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   }
 
   // Called on real-time audio thread.
-  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE {
+  virtual void OnSetFormat(const media::AudioParameters& params) override {
     if (params.sample_rate() == output_sample_rate_)
       return;
     fifo_.reset(new media::AudioFifo(

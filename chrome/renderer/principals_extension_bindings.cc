@@ -25,7 +25,7 @@ class PrincipalsExtensionWrapper : public v8::Extension {
   // v8::Extension overrides.
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) OVERRIDE;
+      v8::Handle<v8::String> name) override;
 
   static RenderView* GetRenderView();
 

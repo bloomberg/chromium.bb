@@ -102,11 +102,11 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
   }
 
  private:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     ChromeRenderViewTest::TearDown();
   }
 

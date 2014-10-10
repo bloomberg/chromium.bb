@@ -115,7 +115,7 @@ class SpellCheck : public content::RenderProcessObserver,
        RequestSpellCheckMultipleTimesWithoutInitialization);
 
   // RenderProcessObserver implementation:
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
   void OnInit(IPC::PlatformFileForTransit bdict_file,

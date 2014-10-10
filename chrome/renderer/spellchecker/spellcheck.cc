@@ -31,7 +31,7 @@ namespace {
 class UpdateSpellcheckEnabled : public content::RenderViewVisitor {
  public:
   explicit UpdateSpellcheckEnabled(bool enabled) : enabled_(enabled) {}
-  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+  virtual bool Visit(content::RenderView* render_view) override;
 
  private:
   bool enabled_;  // New spellcheck-enabled state.
@@ -50,7 +50,7 @@ class DocumentMarkersCollector : public content::RenderViewVisitor {
   DocumentMarkersCollector() {}
   virtual ~DocumentMarkersCollector() {}
   const std::vector<uint32>& markers() const { return markers_; }
-  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+  virtual bool Visit(content::RenderView* render_view) override;
 
  private:
   std::vector<uint32> markers_;
@@ -71,8 +71,8 @@ bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
 class DocumentMarkersRemover : public content::RenderViewVisitor {
  public:
   explicit DocumentMarkersRemover(const std::vector<std::string>& words);
-  virtual ~DocumentMarkersRemover() OVERRIDE {}
-  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+  virtual ~DocumentMarkersRemover() override {}
+  virtual bool Visit(content::RenderView* render_view) override;
 
  private:
   WebVector<WebString> words_;

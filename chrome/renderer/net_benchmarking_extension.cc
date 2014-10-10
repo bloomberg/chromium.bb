@@ -45,7 +45,7 @@ class NetBenchmarkingWrapper : public v8::Extension {
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) OVERRIDE {
+      v8::Handle<v8::String> name) override {
     if (name->Equals(v8::String::NewFromUtf8(isolate, "ClearCache"))) {
       return v8::FunctionTemplate::New(isolate, ClearCache);
     } else if (name->Equals(v8::String::NewFromUtf8(

@@ -39,7 +39,7 @@ class PepperFlashRendererHost : public ppapi::host::ResourceHost {
   // ppapi::host::ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   int32_t OnGetProxyForURL(ppapi::host::HostMessageContext* host_context,

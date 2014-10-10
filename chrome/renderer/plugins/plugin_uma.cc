@@ -38,7 +38,7 @@ const char* kShockwaveFlashExtensions[] = {".spl", ".swf"};
 class UMASenderImpl : public PluginUMAReporter::UMASender {
   virtual void SendPluginUMA(
       PluginUMAReporter::ReportType report_type,
-      PluginUMAReporter::PluginType plugin_type) OVERRIDE;
+      PluginUMAReporter::PluginType plugin_type) override;
 };
 
 void UMASenderImpl::SendPluginUMA(PluginUMAReporter::ReportType report_type,

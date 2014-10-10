@@ -32,7 +32,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
 
   // content::RenderThread overrides.
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
-      OVERRIDE;
+      override;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
@@ -59,7 +59,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
  private:
   // Overrides base class implementation to add custom handling for
   // print and extensions.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
   // The callee expects to be returned a valid channel_id.
   void OnOpenChannelToExtension(int routing_id,

@@ -28,7 +28,7 @@ class TestTranslateHelper : public translate::TranslateHelper {
             extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
             extensions::kExtensionScheme) {}
 
-  virtual base::TimeDelta AdjustDelay(int delayInMs) OVERRIDE {
+  virtual base::TimeDelta AdjustDelay(int delayInMs) override {
     // Just returns base::TimeDelta() which has initial value 0.
     // Tasks doesn't need to be delayed in tests.
     return base::TimeDelta();
@@ -61,12 +61,12 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
   TranslateHelperBrowserTest() : translate_helper_(NULL) {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewTest::SetUp();
     translate_helper_ = new TestTranslateHelper(view_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     delete translate_helper_;
     ChromeRenderViewTest::TearDown();
   }

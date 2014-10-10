@@ -26,7 +26,7 @@ class RendererPermissionsPolicyDelegateTest : public testing::Test {
   RendererPermissionsPolicyDelegateTest() {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing::Test::SetUp();
     render_thread_.reset(new content::MockRenderThread());
     renderer_client_.reset(new TestExtensionsRendererClient);

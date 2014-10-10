@@ -26,7 +26,7 @@ class PrerenderHelper
 
  private:
   // RenderViewObserver implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnSetIsPrerendering(bool is_prerendering);
 

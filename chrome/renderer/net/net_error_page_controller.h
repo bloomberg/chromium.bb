@@ -45,12 +45,12 @@ class NetErrorPageController
 
   // gin::WrappableBase
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
-      v8::Isolate* isolate) OVERRIDE;
+      v8::Isolate* isolate) override;
 
   // RenderFrameObserver.  Overridden to avoid being destroyed when RenderFrame
   // goes away; NetErrorPageController objects are owned by the JS
   // garbage collector.
-  virtual void OnDestruct() OVERRIDE;
+  virtual void OnDestruct() override;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorPageController);
 };

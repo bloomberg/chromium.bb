@@ -24,7 +24,7 @@ class PhishingClassifierFilter : public content::RenderProcessObserver {
   static PhishingClassifierFilter* Create();
   virtual ~PhishingClassifierFilter();
 
-  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:
   PhishingClassifierFilter();
@@ -60,7 +60,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   // cancelled.  However, if the navigation is within the same page, we
   // continue running the current classification.
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
+                                        bool is_new_navigation) override;
 
  private:
   friend class PhishingClassifierDelegateTest;
@@ -81,7 +81,7 @@ class PhishingClassifierDelegate : public content::RenderViewObserver {
   void CancelPendingClassification(CancelClassificationReason reason);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // Called by the RenderView when it receives a StartPhishingDetection IPC
   // from the browser.  This signals that it is ok to begin classification

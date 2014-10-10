@@ -46,18 +46,18 @@ class NetErrorHelper
   void MoreButtonPressed();
 
   // RenderFrameObserver implementation.
-  virtual void DidStartProvisionalLoad() OVERRIDE;
-  virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
-  virtual void DidFinishLoad() OVERRIDE;
-  virtual void OnStop() OVERRIDE;
-  virtual void WasShown() OVERRIDE;
-  virtual void WasHidden() OVERRIDE;
+  virtual void DidStartProvisionalLoad() override;
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation) override;
+  virtual void DidFinishLoad() override;
+  virtual void OnStop() override;
+  virtual void WasShown() override;
+  virtual void WasHidden() override;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // RenderProcessObserver implementation.
-  virtual void NetworkStateChanged(bool online) OVERRIDE;
+  virtual void NetworkStateChanged(bool online) override;
 
   // Examines |frame| and |error| to see if this is an error worthy of a DNS
   // probe.  If it is, initializes |error_strings| based on |error|,
@@ -87,21 +87,21 @@ class NetErrorHelper
       scoped_ptr<LocalizedError::ErrorPageParams> params,
       bool* reload_button_shown,
       bool* load_stale_button_shown,
-      std::string* html) const OVERRIDE;
+      std::string* html) const override;
   virtual void LoadErrorPageInMainFrame(const std::string& html,
-                                        const GURL& failed_url) OVERRIDE;
-  virtual void EnablePageHelperFunctions() OVERRIDE;
+                                        const GURL& failed_url) override;
+  virtual void EnablePageHelperFunctions() override;
   virtual void UpdateErrorPage(const blink::WebURLError& error,
-                               bool is_failed_post) OVERRIDE;
+                               bool is_failed_post) override;
   virtual void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
-      const std::string& navigation_correction_request_body) OVERRIDE;
-  virtual void CancelFetchNavigationCorrections() OVERRIDE;
+      const std::string& navigation_correction_request_body) override;
+  virtual void CancelFetchNavigationCorrections() override;
   virtual void SendTrackingRequest(
       const GURL& tracking_url,
-      const std::string& tracking_request_body) OVERRIDE;
-  virtual void ReloadPage() OVERRIDE;
-  virtual void LoadPageFromCache(const GURL& page_url) OVERRIDE;
+      const std::string& tracking_request_body) override;
+  virtual void ReloadPage() override;
+  virtual void LoadPageFromCache(const GURL& page_url) override;
 
   void OnNetErrorInfo(int status);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,

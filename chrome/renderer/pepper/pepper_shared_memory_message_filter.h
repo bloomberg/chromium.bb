@@ -28,7 +28,7 @@ class PepperSharedMemoryMessageFilter
   virtual ~PepperSharedMemoryMessageFilter();
 
   // InstanceMessageFilter:
-  virtual bool OnInstanceMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual bool OnInstanceMessageReceived(const IPC::Message& msg) override;
 
   bool Send(IPC::Message* msg);
 

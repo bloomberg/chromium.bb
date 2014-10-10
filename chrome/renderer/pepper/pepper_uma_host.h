@@ -35,7 +35,7 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
   // ppapi::host::ResourceMessageHandler implementation.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   bool IsPluginWhitelisted();

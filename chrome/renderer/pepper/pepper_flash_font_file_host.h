@@ -36,7 +36,7 @@ class PepperFlashFontFileHost : public ppapi::host::ResourceHost {
 
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
-      ppapi::host::HostMessageContext* context) OVERRIDE;
+      ppapi::host::HostMessageContext* context) override;
 
  private:
   int32_t OnGetFontTable(ppapi::host::HostMessageContext* context,

@@ -18,8 +18,8 @@ class PageLoadHistograms : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
-  virtual void ClosePage() OVERRIDE;
+  virtual void FrameWillClose(blink::WebFrame* frame) override;
+  virtual void ClosePage() override;
 
   // Dump all page load histograms appropriate for the given frame.
   //

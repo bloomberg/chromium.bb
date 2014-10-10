@@ -47,10 +47,10 @@ class WebRtcLoggingMessageFilter : public IPC::MessageFilter {
 
  private:
   // IPC::MessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnFilterAdded(IPC::Sender* sender) OVERRIDE;
-  virtual void OnFilterRemoved() OVERRIDE;
-  virtual void OnChannelClosing() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnFilterAdded(IPC::Sender* sender) override;
+  virtual void OnFilterRemoved() override;
+  virtual void OnChannelClosing() override;
 
   void CreateLoggingHandler();
 
