@@ -1,4 +1,4 @@
-importScripts('worker-test-harness.js');
+importScripts('worker-testharness.js');
 importScripts('test-helpers.js');
 
 async_test(function(t) {

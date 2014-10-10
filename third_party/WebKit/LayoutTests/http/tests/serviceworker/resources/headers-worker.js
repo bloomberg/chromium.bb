@@ -1,4 +1,4 @@
-importScripts('worker-test-harness.js');
+importScripts('worker-testharness.js');
 
 test(function() {
     function size(headers) {

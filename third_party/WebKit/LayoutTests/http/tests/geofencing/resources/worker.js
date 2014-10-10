@@ -1,4 +1,5 @@
-importScripts('../../serviceworker/resources/worker-test-harness.js');
+importScripts('../../serviceworker/resources/worker-testharness.js');
+importScripts('../../resources/testharness-helpers.js');
 
 promise_test(function(test) {
     return navigator.geofencing.registerRegion(
