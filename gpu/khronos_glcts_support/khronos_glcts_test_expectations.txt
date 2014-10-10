@@ -27,6 +27,9 @@
 // Chromium implements GL_ARB_texture_rectangle which makes this test fail
 139729 DEBUG RELEASE : ES2_CTS_gtf_GL_build_Texture_Rectangle_Samplers_frag = FAIL
 
+// eglGetCurrentDisplay() returns EGL_NO_DISPLAY which causes this test to fail.
+421568 DEBUG RELEASE : ES2_CTS_gtf_GL2ExtensionTests_egl_create_context_egl_create_context = FAIL
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temporary entries: they should be removed once the bugs are fixed.
