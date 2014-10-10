@@ -44,6 +44,15 @@ const float kCpuSkewportTargetTimeInFrames = 60.0f;
 // TileManager::BinFromTilePriority).
 const float kGpuSkewportTargetTimeInFrames = 0.0f;
 
+// Even for really wide viewports, at some point GPU raster should use
+// less than 4 tiles to fill the viewport. This is set to 128 as a
+// sane minimum for now, but we might want to increase with tuning.
+const int kMinHeightForGpuRasteredTile = 128;
+
+// When making odd-sized tiles, round them up to increase the chances
+// of using the same tile size.
+const int kTileRoundUp = 64;
+
 }  // namespace
 
 namespace cc {
@@ -677,48 +686,64 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     return content_bounds;
   }
 
-  gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
+  int default_tile_width = 0;
+  int default_tile_height = 0;
   if (layer_tree_impl()->use_gpu_rasterization()) {
-    // TODO(ernstm) crbug.com/365877: We need a unified way to override the
-    // default-tile-size.
-    default_tile_size =
-        gfx::Size(layer_tree_impl()->device_viewport_size().width(),
-                  layer_tree_impl()->device_viewport_size().height() / 4);
-  }
-  default_tile_size.SetToMin(gfx::Size(max_texture_size, max_texture_size));
+    // For GPU rasterization, we pick an ideal tile size using the viewport
+    // so we don't need any settings. The current approach uses 4 tiles
+    // to cover the viewport vertically.
+    int viewport_width = layer_tree_impl()->device_viewport_size().width();
+    int viewport_height = layer_tree_impl()->device_viewport_size().height();
+    default_tile_width = viewport_width;
+    default_tile_height = viewport_height / 4;
+    default_tile_height =
+        std::max(default_tile_height, kMinHeightForGpuRasteredTile);
 
-  gfx::Size max_untiled_content_size =
-      layer_tree_impl()->settings().max_untiled_layer_size;
-  max_untiled_content_size.SetToMin(
-      gfx::Size(max_texture_size, max_texture_size));
+    // Increase the tile-height proportionally when the content width
+    // drops below half the viewport width.
+    if (content_bounds.width() <= viewport_width / 2)
+      default_tile_height *= 2;
+  } else {
+    // For CPU rasterization we use tile-size settings.
+    const LayerTreeSettings& settings = layer_tree_impl()->settings();
+    int max_untiled_content_width = settings.max_untiled_layer_size.width();
+    int max_untiled_content_height = settings.max_untiled_layer_size.height();
+    default_tile_width = settings.default_tile_size.width();
+    default_tile_height = settings.default_tile_size.height();
 
-  bool any_dimension_too_large =
-      content_bounds.width() > max_untiled_content_size.width() ||
-      content_bounds.height() > max_untiled_content_size.height();
-
-  bool any_dimension_one_tile =
-      content_bounds.width() <= default_tile_size.width() ||
-      content_bounds.height() <= default_tile_size.height();
-
-  // If long and skinny, tile at the max untiled content size, and clamp
-  // the smaller dimension to the content size, e.g. 1000x12 layer with
-  // 500x500 max untiled size would get 500x12 tiles.  Also do this
-  // if the layer is small.
-  if (any_dimension_one_tile || !any_dimension_too_large) {
-    int width = std::min(
-        std::max(max_untiled_content_size.width(), default_tile_size.width()),
-        content_bounds.width());
-    int height = std::min(
-        std::max(max_untiled_content_size.height(), default_tile_size.height()),
-        content_bounds.height());
-    // Round up to the closest multiple of 64. This improves recycling and
-    // avoids odd texture sizes.
-    width = RoundUp(width, 64);
-    height = RoundUp(height, 64);
-    return gfx::Size(width, height);
+    // If the content width is small, increase tile size vertically.
+    // If the content height is small, increase tile size horizontally.
+    // If both are less than the untiled-size, use a single tile.
+    if (content_bounds.width() < default_tile_width)
+      default_tile_height = max_untiled_content_height;
+    if (content_bounds.height() < default_tile_height)
+      default_tile_width = max_untiled_content_width;
+    if (content_bounds.width() < max_untiled_content_width &&
+        content_bounds.height() < max_untiled_content_height) {
+      default_tile_height = max_untiled_content_height;
+      default_tile_width = max_untiled_content_width;
+    }
   }
 
-  return default_tile_size;
+  int tile_width = default_tile_width;
+  int tile_height = default_tile_height;
+
+  // Clamp the tile width/height to the content width/height to save space.
+  if (content_bounds.width() < default_tile_width) {
+    tile_width = std::min(tile_width, content_bounds.width());
+    tile_width = RoundUp(tile_width, kTileRoundUp);
+    tile_width = std::min(tile_width, default_tile_width);
+  }
+  if (content_bounds.height() < default_tile_height) {
+    tile_height = std::min(tile_height, content_bounds.height());
+    tile_height = RoundUp(tile_height, kTileRoundUp);
+    tile_height = std::min(tile_height, default_tile_height);
+  }
+
+  // Under no circumstance should we be larger than the max texture size.
+  tile_width = std::min(tile_width, max_texture_size);
+  tile_height = std::min(tile_height, max_texture_size);
+  return gfx::Size(tile_width, tile_height);
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {

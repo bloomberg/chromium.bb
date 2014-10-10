@@ -4424,5 +4424,73 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
 }
 
+class TileSizeSettings : public ImplSidePaintingSettings {
+ public:
+  TileSizeSettings() {
+    default_tile_size = gfx::Size(100, 100);
+    max_untiled_layer_size = gfx::Size(200, 200);
+  }
+};
+
+class TileSizeTest : public PictureLayerImplTest {
+ public:
+  TileSizeTest() : PictureLayerImplTest(TileSizeSettings()) {}
+};
+
+TEST_F(TileSizeTest, TileSizes) {
+  host_impl_.CreatePendingTree();
+
+  LayerTreeImpl* pending_tree = host_impl_.pending_tree();
+  scoped_ptr<FakePictureLayerImpl> layer =
+      FakePictureLayerImpl::Create(pending_tree, id_);
+
+  gfx::Size viewport_size = gfx::Size(1000, 1000);
+  host_impl_.SetViewportSize(viewport_size);
+  gfx::Size result;
+
+  host_impl_.SetUseGpuRasterization(false);
+
+  // Default tile-size for large layers.
+  result = layer->CalculateTileSize(gfx::Size(10000, 10000));
+  EXPECT_EQ(result.width(), 100);
+  EXPECT_EQ(result.height(), 100);
+  // Don't tile and round-up, when under max_untiled_layer_size.
+  result = layer->CalculateTileSize(gfx::Size(42, 42));
+  EXPECT_EQ(result.width(), 64);
+  EXPECT_EQ(result.height(), 64);
+  result = layer->CalculateTileSize(gfx::Size(184, 184));
+  EXPECT_EQ(result.width(), 192);
+  EXPECT_EQ(result.height(), 192);
+  result = layer->CalculateTileSize(gfx::Size(199, 199));
+  EXPECT_EQ(result.width(), 200);
+  EXPECT_EQ(result.height(), 200);
+
+  host_impl_.SetUseGpuRasterization(true);
+
+  // Gpu-rasterization uses 25% viewport-height tiles.
+  result = layer->CalculateTileSize(gfx::Size(10000, 10000));
+  EXPECT_EQ(result.width(), 1000);
+  EXPECT_EQ(result.height(), 250);
+
+  // Clamp and round-up, when smaller than viewport.
+  result = layer->CalculateTileSize(gfx::Size(831, 10000));
+  EXPECT_EQ(result.width(), 832);
+  EXPECT_EQ(result.height(), 250);
+
+  // Tile-height doubles to 50% when width shrinks to <= 50%.
+  result = layer->CalculateTileSize(gfx::Size(447, 10000));
+  EXPECT_EQ(result.width(), 448);
+  EXPECT_EQ(result.height(), 500);
+
+  // Largest layer is 50% of viewport width (rounded up), and
+  // 50% of viewport in height.
+  result = layer->CalculateTileSize(gfx::Size(447, 400));
+  EXPECT_EQ(result.width(), 448);
+  EXPECT_EQ(result.height(), 448);
+  result = layer->CalculateTileSize(gfx::Size(500, 499));
+  EXPECT_EQ(result.width(), 512);
+  EXPECT_EQ(result.height(), 500);
+}
+
 }  // namespace
 }  // namespace cc
