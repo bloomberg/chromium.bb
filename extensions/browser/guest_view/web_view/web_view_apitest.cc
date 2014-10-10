@@ -36,6 +36,7 @@ namespace {
 const char kEmptyResponsePath[] = "/close-socket";
 const char kRedirectResponsePath[] = "/server-redirect";
 const char kRedirectResponseFullPath[] = "/guest_redirect.html";
+const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestServerPort[] = "testServer.port";
 const char kTestWebSocketPort[] = "testWebSocketPort";
@@ -46,6 +47,28 @@ class EmptyHttpResponse : public net::test_server::HttpResponse {
     return std::string();
   }
 };
+
+// Handles |request| by serving a redirect response if the |User-Agent| is
+// foobar.
+static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
+    const std::string& path,
+    const GURL& redirect_target,
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(path, request.relative_url, true))
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  std::map<std::string, std::string>::const_iterator it =
+        request.headers.find("User-Agent");
+  EXPECT_TRUE(it != request.headers.end());
+  if (!StartsWithASCII("foobar", it->second, true))
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", redirect_target.spec());
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
 
 // Handles |request| by serving a redirect response.
 scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
@@ -147,6 +170,12 @@ void WebViewAPITest::StartTestServer() {
 
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&EmptyResponseHandler, kEmptyResponsePath));
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(
+          &UserAgentResponseHandler,
+          kUserAgentRedirectResponsePath,
+          embedded_test_server()->GetURL(kRedirectResponseFullPath)));
 }
 
 void WebViewAPITest::StopTestServer() {
@@ -466,6 +495,12 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestTerminateAfterExit) {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPI) {
   StartTestServer();
   RunTest("testWebRequestAPI", "web_view/apitest");
+  StopTestServer();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIWithHeaders) {
+  StartTestServer();
+  RunTest("testWebRequestAPIWithHeaders", "web_view/apitest");
   StopTestServer();
 }
 

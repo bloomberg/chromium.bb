@@ -24,6 +24,7 @@ embedder.setUp_ = function(config) {
       '/extensions/platform_apps/web_view/shim/guest.html';
   embedder.noReferrerGuestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/guest_noreferrer.html';
+  embedder.detectUserAgentURL = embedder.baseGuestURL + '/detect-user-agent';
   embedder.redirectGuestURL = embedder.baseGuestURL + '/server-redirect';
   embedder.redirectGuestURLDest = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/guest_redirect.html';
@@ -1083,6 +1084,52 @@ function testWebRequestAPI() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the WebRequest API onBeforeSendHeaders event fires on
+// webview and supports headers. This tests verifies that we can modify HTTP
+// headers via the WebRequest API and those modified headers will be sent to the
+// HTTP server.
+function testWebRequestAPIWithHeaders() {
+  var webview = new WebView();
+  var requestFilter = {
+    urls: ['<all_urls>']
+  };
+  var extraInfoSpec = ['requestHeaders', 'blocking'];
+  webview.request.onBeforeSendHeaders.addListener(function(details) {
+    var headers = details.requestHeaders;
+    for( var i = 0, l = headers.length; i < l; ++i ) {
+      if (headers[i].name == 'User-Agent') {
+        headers[i].value = 'foobar';
+        break;
+      }
+    }
+    var blockingResponse = {};
+    blockingResponse.requestHeaders = headers;
+    return blockingResponse;
+  }, requestFilter, extraInfoSpec);
+
+  var loadstartCalled = false;
+  webview.addEventListener('loadstart', function(e) {
+    embedder.test.assertTrue(e.isTopLevel);
+    embedder.test.assertEq(embedder.detectUserAgentURL, e.url);
+    loadstartCalled = true;
+  });
+
+  webview.addEventListener('loadredirect', function(e) {
+    embedder.test.assertTrue(e.isTopLevel);
+    embedder.test.assertEq(embedder.detectUserAgentURL,
+        e.oldUrl.replace('127.0.0.1', 'localhost'));
+    embedder.test.assertEq(embedder.redirectGuestURLDest,
+        e.newUrl.replace('127.0.0.1', 'localhost'));
+    if (loadstartCalled) {
+      embedder.test.succeed();
+    } else {
+      embedder.test.fail();
+    }
+  });
+  webview.src = embedder.detectUserAgentURL;
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the basic use cases of the declarative WebRequest API
 // work as expected. This test demonstrates that rules can be added prior to
 // navigation and attachment.
@@ -1976,6 +2023,7 @@ embedder.test.testList = {
   'testDeclarativeWebRequestAPISendMessage':
       testDeclarativeWebRequestAPISendMessage,
   'testWebRequestAPI': testWebRequestAPI,
+  'testWebRequestAPIWithHeaders': testWebRequestAPIWithHeaders,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
   'testWebRequestListenerSurvivesReparenting':
       testWebRequestListenerSurvivesReparenting,
