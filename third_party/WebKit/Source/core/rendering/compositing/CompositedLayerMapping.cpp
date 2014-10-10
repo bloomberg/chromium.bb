@@ -2133,6 +2133,14 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, paintInfo.renderLayer->subpixelAccumulation());
         LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (RenderView* view = paintInfo.renderLayer->renderer()->view()) {
+                const PaintCommandList& paintCommandList = view->viewDisplayList().paintCommandList();
+                for (PaintCommandList::const_iterator it = paintCommandList.begin(); it != paintCommandList.end(); ++it)
+                    context->drawDisplayList(it->get()->displayList.get());
+            }
+        }
+
         if (paintInfo.renderLayer->containsDirtyOverlayScrollbars())
             LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags | PaintLayerPaintingOverlayScrollbars);
     } else {

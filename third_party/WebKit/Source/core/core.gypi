@@ -1554,6 +1554,8 @@
             'paint/TableSectionPainter.h',
             'paint/VideoPainter.cpp',
             'paint/VideoPainter.h',
+            'paint/ViewDisplayList.cpp',
+            'paint/ViewDisplayList.h',
             'paint/ViewPainter.cpp',
             'paint/ViewPainter.h',
             'plugins/DOMMimeType.cpp',

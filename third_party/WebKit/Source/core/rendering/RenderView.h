@@ -23,10 +23,12 @@
 #define RenderView_h
 
 #include "core/frame/FrameView.h"
+#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/PaintInvalidationState.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/PODFreeListArena.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/OwnPtr.h"
 
@@ -163,6 +165,14 @@ public:
     void popLayoutState();
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
 
+    ViewDisplayList& viewDisplayList()
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+        if (!m_viewDisplayList)
+            m_viewDisplayList = adoptPtr(new ViewDisplayList());
+        return *m_viewDisplayList;
+    }
+
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const override;
@@ -199,6 +209,7 @@ private:
     unsigned m_renderCounterCount;
 
     unsigned m_hitTestCount;
+    OwnPtr<ViewDisplayList> m_viewDisplayList;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());

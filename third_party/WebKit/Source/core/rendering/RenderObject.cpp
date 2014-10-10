@@ -1151,6 +1151,9 @@ LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObje
 
 void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        view()->viewDisplayList().invalidate(this);
+
     if (r.isEmpty())
         return;
 
