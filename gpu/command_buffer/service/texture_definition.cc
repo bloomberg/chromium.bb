@@ -374,21 +374,22 @@ TextureDefinition::TextureDefinition(
       usage_(texture->usage()),
       immutable_(texture->IsImmutable()) {
   // TODO
-  DCHECK(!texture->level_infos_.empty());
-  DCHECK(!texture->level_infos_[0].empty());
+  DCHECK(!texture->face_infos_.empty());
+  DCHECK(!texture->face_infos_[0].level_infos.empty());
   DCHECK(!texture->NeedsMips());
-  DCHECK(texture->level_infos_[0][0].width);
-  DCHECK(texture->level_infos_[0][0].height);
+  DCHECK(texture->face_infos_[0].level_infos[0].width);
+  DCHECK(texture->face_infos_[0].level_infos[0].height);
 
+  const Texture::FaceInfo& first_face = texture->face_infos_[0];
   scoped_refptr<gfx::GLImage> gl_image(
       new GLImageSync(image_buffer_,
-                      gfx::Size(texture->level_infos_[0][0].width,
-                                texture->level_infos_[0][0].height)));
+                      gfx::Size(first_face.level_infos[0].width,
+                                first_face.level_infos[0].height)));
   texture->SetLevelImage(NULL, target, 0, gl_image.get());
 
   // TODO: all levels
   level_infos_.clear();
-  const Texture::LevelInfo& level = texture->level_infos_[0][0];
+  const Texture::LevelInfo& level = first_face.level_infos[0];
   LevelInfo info(level.target,
                  level.internal_format,
                  level.width,
@@ -435,13 +436,13 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
   // though.
   glFlush();
 
-  texture->level_infos_.resize(1);
+  texture->face_infos_.resize(1);
   for (size_t i = 0; i < level_infos_.size(); i++) {
     const LevelInfo& base_info = level_infos_[i][0];
     const size_t levels_needed = TextureManager::ComputeMipMapCount(
         base_info.target, base_info.width, base_info.height, base_info.depth);
     DCHECK(level_infos_.size() <= levels_needed);
-    texture->level_infos_[0].resize(levels_needed);
+    texture->face_infos_[0].level_infos.resize(levels_needed);
     for (size_t n = 0; n < level_infos_.size(); n++) {
       const LevelInfo& info = level_infos_[i][n];
       texture->SetLevelInfo(NULL,
