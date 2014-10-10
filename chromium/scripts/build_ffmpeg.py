@@ -452,7 +452,7 @@ def main(argv):
                   configure_flags['Chrome'] +
                   configure_args)
 
-  if target_os == 'linux':
+  if target_os in ['linux', 'linux-noasm']:
     do_build_ffmpeg('ChromiumOS',
                     configure_flags['Common'] +
                     configure_flags['Chromium'] +
