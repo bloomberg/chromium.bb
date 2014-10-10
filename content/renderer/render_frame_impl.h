@@ -41,7 +41,6 @@ struct FrameMsg_CommitNavigation_Params;
 
 namespace blink {
 class WebGeolocationClient;
-class WebInputEvent;
 class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
@@ -450,7 +449,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool allowWebGL(blink::WebLocalFrame* frame, bool default_value);
   virtual void didLoseWebGLContext(blink::WebLocalFrame* frame,
                                    int arb_robustness_status_code);
-  virtual void forwardInputEvent(const blink::WebInputEvent* event);
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
   virtual bool isControlledByServiceWorker(blink::WebDataSource&);
   virtual void postAccessibilityEvent(const blink::WebAXObject& obj,

@@ -3161,10 +3161,6 @@ void RenderFrameImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
       arb_robustness_status_code));
 }
 
-void RenderFrameImpl::forwardInputEvent(const blink::WebInputEvent* event) {
-  Send(new FrameHostMsg_ForwardInputEvent(routing_id_, event));
-}
-
 blink::WebScreenOrientationClient*
     RenderFrameImpl::webScreenOrientationClient() {
   if (!screen_orientation_dispatcher_)

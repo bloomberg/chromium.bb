@@ -17,6 +17,10 @@
 struct FrameMsg_BuffersSwapped_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
 
+namespace blink {
+class WebInputEvent;
+}
+
 namespace content {
 
 class ChildFrameCompositingHelper;
@@ -104,6 +108,7 @@ class CONTENT_EXPORT RenderFrameProxy
       float scale_factor);
   virtual void navigate(const blink::WebURLRequest& request,
                         bool should_replace_current_entry);
+  virtual void forwardInputEvent(const blink::WebInputEvent* event);
 
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
