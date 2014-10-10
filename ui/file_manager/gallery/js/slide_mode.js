@@ -197,12 +197,12 @@ SlideMode.prototype.initDom_ = function() {
 
   this.editButton_ = this.toolbar_.querySelector('button.edit');
   this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
-  this.editButton_.setAttribute('disabled', '');  // Disabled by default.
+  this.editButton_.disabled = true;  // Disabled by default.
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
   this.printButton_ = this.toolbar_.querySelector('button.print');
   this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
-  this.printButton_.setAttribute('disabled', '');  // Disabled by default.
+  this.printButton_.disabled = true;  // Disabled by default.
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
   this.editBarSpacer_ = this.toolbar_.querySelector('.edit-bar-spacer');
@@ -354,8 +354,8 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
   }
 
   // Disable the slide-mode only buttons when leaving.
-  this.editButton_.setAttribute('disabled', '');
-  this.printButton_.setAttribute('disabled', '');
+  this.editButton_.disabled = true;
+  this.printButton_.disabled = true;
 
   // Disable touch operation.
   this.touchHandlers_.enabled = false;
@@ -435,7 +435,7 @@ SlideMode.prototype.toggleFullScreen_ = function() {
  */
 SlideMode.prototype.onSelection_ = function() {
   if (this.selectionModel_.selectedIndexes.length === 0)
-    return;  // Temporary empty selection.
+    return;  // Ignore temporary empty selection.
 
   // Forget the saved selection if the user changed the selection manually.
   if (!this.isSlideshowOn_())
@@ -581,9 +581,12 @@ SlideMode.prototype.onSplice_ = function(event) {
       // Removed item is the rightmost, but there are more items.
       this.select(event.index - 1);  // Select the new last index.
     } else {
-      // No items left. Unload the image and show the banner.
+      // No items left. Unload the image, disable edit and print button, and
+      // show the banner.
       this.commitItem_(function() {
         this.unloadImage_();
+        this.printButton_.disabled = true;
+        this.editButton_.disabled = true;
         this.errorBanner_.show('GALLERY_NO_IMAGES');
       }.bind(this));
     }
@@ -717,11 +720,11 @@ SlideMode.prototype.loadItem_ = function(
 
     // Enable or disable buttons for editing and printing.
     if (error) {
-      this.editButton_.setAttribute('disabled', '');
-      this.printButton_.setAttribute('disabled', '');
+      this.editButton_.disabled = true;
+      this.printButton_.disabled = true;
     } else {
-      this.editButton_.removeAttribute('disabled');
-      this.printButton_.removeAttribute('disabled');
+      this.editButton_.disabled = false;
+      this.printButton_.disabled = false;
     }
 
     // For once edited image, disallow the 'overwrite' setting change.
@@ -856,12 +859,12 @@ SlideMode.prototype.onKeyDown = function(event) {
 
   switch (keyID) {
     case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
-      if (!this.printButton_.hasAttribute('disabled'))
+      if (!this.printButton_.disabled)
         this.print_();
       break;
 
     case 'U+0045':  // 'e' toggles the editor.
-      if (!this.editButton_.hasAttribute('disabled'))
+      if (!this.editButton_.disabled)
         this.toggleEditor(event);
       break;
 
