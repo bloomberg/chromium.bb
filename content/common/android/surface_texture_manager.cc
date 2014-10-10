@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/surface_texture_lookup.h"
+#include "content/common/android/surface_texture_manager.h"
 
 #include "base/logging.h"
 
 namespace content {
-
 namespace {
-SurfaceTextureLookup* g_instance = NULL;
+
+SurfaceTextureManager* g_instance = NULL;
+
 }  // namespace
 
 // static
-SurfaceTextureLookup* SurfaceTextureLookup::GetInstance() {
+SurfaceTextureManager* SurfaceTextureManager::GetInstance() {
   DCHECK(g_instance);
   return g_instance;
 }
 
 // static
-void SurfaceTextureLookup::InitInstance(SurfaceTextureLookup* instance) {
+void SurfaceTextureManager::InitInstance(SurfaceTextureManager* instance) {
   DCHECK(!g_instance || !instance);
   g_instance = instance;
 }

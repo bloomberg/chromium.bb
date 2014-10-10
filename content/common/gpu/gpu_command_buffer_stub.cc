@@ -950,14 +950,6 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
     uint32 height,
     uint32 internalformat) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterGpuMemoryBuffer");
-#if defined(OS_ANDROID)
-  // Verify that renderer is not trying to use a surface texture it doesn't own.
-  if (handle.type == gfx::SURFACE_TEXTURE_BUFFER &&
-      handle.surface_texture_id.secondary_id != channel()->client_id()) {
-    LOG(ERROR) << "Illegal surface texture ID for renderer.";
-    return;
-  }
-#endif
 
   if (!decoder_)
     return;

@@ -49,13 +49,6 @@ class CONTENT_EXPORT CompositorImpl
 
   static bool IsInitialized();
 
-  // Creates a surface texture and returns a surface texture id. Returns -1 on
-  // failure.
-  static int CreateSurfaceTexture(int child_process_id);
-
-  // Destroy all surface textures associated with |child_process_id|.
-  static void DestroyAllSurfaceTextures(int child_process_id);
-
   void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
 
  private:

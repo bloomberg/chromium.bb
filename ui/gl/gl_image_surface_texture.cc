@@ -6,7 +6,6 @@
 
 #include "base/debug/trace_event.h"
 #include "ui/gl/android/surface_texture.h"
-#include "ui/gl/android/surface_texture_tracker.h"
 
 namespace gfx {
 
@@ -19,14 +18,10 @@ GLImageSurfaceTexture::~GLImageSurfaceTexture() {
   DCHECK_EQ(0, texture_id_);
 }
 
-bool GLImageSurfaceTexture::Initialize(
-    const gfx::GpuMemoryBufferHandle& handle) {
+bool GLImageSurfaceTexture::Initialize(SurfaceTexture* surface_texture) {
   DCHECK(!surface_texture_.get());
-  surface_texture_ =
-      SurfaceTextureTracker::GetInstance()->AcquireSurfaceTexture(
-          handle.surface_texture_id.primary_id,
-          handle.surface_texture_id.secondary_id);
-  return !!surface_texture_.get();
+  surface_texture_ = surface_texture;
+  return true;
 }
 
 void GLImageSurfaceTexture::Destroy(bool have_context) {

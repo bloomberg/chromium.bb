@@ -5,9 +5,9 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 
 #include "base/logging.h"
+#include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
-#include "ui/gl/gl_image_surface_texture.h"
 
 namespace content {
 namespace {
@@ -20,12 +20,25 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::Size& size,
       unsigned internalformat,
       unsigned usage) override {
-    NOTREACHED();
-    return gfx::GpuMemoryBufferHandle();
+    switch (handle.type) {
+      case gfx::SURFACE_TEXTURE_BUFFER:
+        return surface_texture_factory_.CreateGpuMemoryBuffer(
+            handle.global_id, size, internalformat);
+      default:
+        NOTREACHED();
+        return gfx::GpuMemoryBufferHandle();
+    }
   }
   virtual void DestroyGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle) override {
-    NOTREACHED();
+    switch (handle.type) {
+      case gfx::SURFACE_TEXTURE_BUFFER:
+        surface_texture_factory_.DestroyGpuMemoryBuffer(handle.global_id);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
@@ -42,18 +55,21 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
         return image;
       }
       case gfx::SURFACE_TEXTURE_BUFFER: {
-        scoped_refptr<gfx::GLImageSurfaceTexture> image(
-            new gfx::GLImageSurfaceTexture(size));
-        if (!image->Initialize(handle))
-          return NULL;
+        // Verify that client is the owner of the buffer we're about to use.
+        if (handle.global_id.secondary_id != client_id)
+          return scoped_refptr<gfx::GLImage>();
 
-        return image;
+        return surface_texture_factory_.CreateImageForGpuMemoryBuffer(
+            handle.global_id, size, internalformat);
       }
       default:
         NOTREACHED();
         return scoped_refptr<gfx::GLImage>();
     }
   }
+
+ private:
+  GpuMemoryBufferFactorySurfaceTexture surface_texture_factory_;
 };
 
 }  // namespace

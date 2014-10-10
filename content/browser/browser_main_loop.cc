@@ -76,7 +76,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "content/browser/android/browser_startup_controller.h"
-#include "content/browser/android/surface_texture_peer_browser_impl.h"
+#include "content/browser/android/browser_surface_texture_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/public/browser/screen_orientation_provider.h"
@@ -539,8 +539,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
 #if defined(OS_ANDROID)
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTexturePeer");
-    SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl());
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTextureManager");
+    SurfaceTextureManager::InitInstance(new BrowserSurfaceTextureManager);
   }
 
   {

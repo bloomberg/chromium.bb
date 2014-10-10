@@ -154,8 +154,8 @@
       'common/android/gin_java_bridge_value.h',
       'common/android/hash_set.cc',
       'common/android/hash_set.h',
-      'common/android/surface_texture_lookup.cc',
-      'common/android/surface_texture_lookup.h',
+      'common/android/surface_texture_manager.cc',
+      'common/android/surface_texture_manager.h',
       'common/android/surface_texture_peer.cc',
       'common/android/surface_texture_peer.h',
       'common/appcache_interfaces.cc',
@@ -669,6 +669,8 @@
       'sources': [
         'common/gpu/client/gpu_memory_buffer_impl_surface_texture.cc',
         'common/gpu/client/gpu_memory_buffer_impl_surface_texture.h',
+        'common/gpu/gpu_memory_buffer_factory_surface_texture.cc',
+        'common/gpu/gpu_memory_buffer_factory_surface_texture.h',
       ],
       'link_settings': {
         'libraries': [

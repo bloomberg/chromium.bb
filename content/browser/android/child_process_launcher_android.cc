@@ -18,7 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "jni/ChildProcessLauncher_jni.h"
 #include "media/base/android/media_player_android.h"
-#include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ToJavaArrayOfStrings;
@@ -197,21 +197,32 @@ void UnregisterViewSurface(int surface_id) {
   Java_ChildProcessLauncher_unregisterViewSurface(env, surface_id);
 }
 
-void RegisterChildProcessSurfaceTexture(int surface_texture_id,
-                                        int child_process_id,
-                                        jobject j_surface_texture) {
+void CreateSurfaceTextureSurface(int surface_texture_id,
+                                 int client_id,
+                                 gfx::SurfaceTexture* surface_texture) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  Java_ChildProcessLauncher_registerSurfaceTexture(
-      env, surface_texture_id, child_process_id, j_surface_texture);
+  Java_ChildProcessLauncher_createSurfaceTextureSurface(
+      env,
+      surface_texture_id,
+      client_id,
+      surface_texture->j_surface_texture().obj());
 }
 
-void UnregisterChildProcessSurfaceTexture(int surface_texture_id,
-                                          int child_process_id) {
+void DestroySurfaceTextureSurface(int surface_texture_id, int client_id) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  Java_ChildProcessLauncher_unregisterSurfaceTexture(
-      env, surface_texture_id, child_process_id);
+  Java_ChildProcessLauncher_destroySurfaceTextureSurface(
+      env, surface_texture_id, client_id);
+}
+
+gfx::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
+                                                int client_id) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  return gfx::ScopedJavaSurface::AcquireExternalSurface(
+      Java_ChildProcessLauncher_getSurfaceTextureSurface(
+          env, surface_texture_id, client_id).obj());
 }
 
 jboolean IsSingleProcess(JNIEnv* env, jclass clazz) {

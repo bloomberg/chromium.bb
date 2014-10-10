@@ -15,6 +15,13 @@ void GpuMemoryBufferImpl::Create(const gfx::Size& size,
                                  unsigned usage,
                                  int client_id,
                                  const CreationCallback& callback) {
+  if (GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(
+          internalformat, usage)) {
+    GpuMemoryBufferImplSurfaceTexture::Create(
+        size, internalformat, usage, client_id, callback);
+    return;
+  }
+
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
     GpuMemoryBufferImplSharedMemory::Create(
@@ -33,6 +40,13 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
     base::ProcessHandle child_process,
     int child_client_id,
     const AllocationCallback& callback) {
+  if (GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(
+          internalformat, usage)) {
+    GpuMemoryBufferImplSurfaceTexture::AllocateForChildProcess(
+        size, internalformat, usage, child_client_id, callback);
+    return;
+  }
+
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
     GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(

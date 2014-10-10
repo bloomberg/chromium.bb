@@ -22,7 +22,6 @@
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
-#include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/battery_status/battery_status_manager_android.h"
@@ -43,8 +42,6 @@
 #include "content/browser/vibration/vibration_provider_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "mojo/android/system/core_impl.h"
-
-using content::SurfaceTexturePeerBrowserImpl;
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {

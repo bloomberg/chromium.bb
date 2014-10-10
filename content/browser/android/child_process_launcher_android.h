@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/process/process.h"
 #include "content/public/browser/file_descriptor_info.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace content {
 
@@ -37,12 +38,14 @@ void RegisterViewSurface(int surface_id, jobject j_surface);
 
 void UnregisterViewSurface(int surface_id);
 
-void RegisterChildProcessSurfaceTexture(int surface_texture_id,
-                                        int child_process_id,
-                                        jobject j_surface_texture);
+void CreateSurfaceTextureSurface(int surface_texture_id,
+                                 int client_id,
+                                 gfx::SurfaceTexture* surface_texture);
 
-void UnregisterChildProcessSurfaceTexture(int surface_texture_id,
-                                          int child_process_id);
+void DestroySurfaceTextureSurface(int surface_texture_id, int client_id);
+
+gfx::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
+                                                int client_id);
 
 bool RegisterChildProcessLauncher(JNIEnv* env);
 

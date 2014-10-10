@@ -26,18 +26,6 @@ enum GpuMemoryBufferType {
   GPU_MEMORY_BUFFER_TYPE_LAST = OZONE_NATIVE_BUFFER
 };
 
-// TODO(alexst): Merge this with GpuMemoryBufferId as part of switchover to
-// the new API for GpuMemoryBuffer allocation when it's done.
-#if defined(OS_ANDROID)
-struct SurfaceTextureId {
-  SurfaceTextureId() : primary_id(0), secondary_id(0) {}
-  SurfaceTextureId(int32 primary_id, int32 secondary_id)
-      : primary_id(primary_id), secondary_id(secondary_id) {}
-  int32 primary_id;
-  int32 secondary_id;
-};
-#endif
-
 struct GpuMemoryBufferId {
   GpuMemoryBufferId() : primary_id(0), secondary_id(0) {}
   GpuMemoryBufferId(int32 primary_id, int32 secondary_id)
@@ -54,10 +42,6 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferId global_id;
 #if defined(OS_MACOSX)
   uint32 io_surface_id;
-#endif
-#if defined(OS_ANDROID)
-  long buffer_id;
-  SurfaceTextureId surface_texture_id;
 #endif
 #if defined(USE_X11)
   XID pixmap;

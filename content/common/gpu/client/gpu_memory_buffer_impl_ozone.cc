@@ -46,6 +46,7 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
         size, internalformat, usage, child_client_id, callback);
     return;
   }
+
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
           size, internalformat, usage)) {
     GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(

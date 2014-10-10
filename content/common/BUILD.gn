@@ -130,6 +130,8 @@ source_set("common") {
     sources += [
       "gpu/client/gpu_memory_buffer_impl_surface_texture.cc",
       "gpu/client/gpu_memory_buffer_impl_surface_texture.h",
+      "gpu/gpu_memory_buffer_factory_surface_texture.cc",
+      "gpu/gpu_memory_buffer_factory_surface_texture.h",
     ]
 
     deps += [
