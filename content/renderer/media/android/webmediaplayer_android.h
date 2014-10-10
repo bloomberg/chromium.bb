@@ -144,6 +144,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual bool hasVideo() const;
   virtual bool hasAudio() const;
 
+  virtual bool isRemote() const;
+
   // Dimensions of the video.
   virtual blink::WebSize naturalSize() const;
 

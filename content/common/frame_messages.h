@@ -710,10 +710,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SetSelectedColorInColorChooser,
                     SkColor /* color */)
 
 // Notifies the browser that media has started/stopped playing.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_MediaPlayingNotification,
+IPC_MESSAGE_ROUTED4(FrameHostMsg_MediaPlayingNotification,
                     int64 /* player_cookie, distinguishes instances */,
                     bool /* has_video */,
-                    bool /* has_audio */)
+                    bool /* has_audio */,
+                    bool /* is_remote */)
 
 IPC_MESSAGE_ROUTED1(FrameHostMsg_MediaPausedNotification,
                     int64 /* player_cookie, distinguishes instances */)

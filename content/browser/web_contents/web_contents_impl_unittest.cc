@@ -2701,6 +2701,7 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   const int kPlayerAudioVideoId = 15;
   const int kPlayerAudioOnlyId = -15;
   const int kPlayerVideoOnlyId = 30;
+  const int kPlayerRemoteId = -30;
 
   EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
   EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
@@ -2728,7 +2729,7 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   // should be created.  If audio stream monitoring is available, an audio power
   // save blocker should be created too.
   rfh->OnMessageReceived(FrameHostMsg_MediaPlayingNotification(
-      0, kPlayerAudioVideoId, true, true));
+      0, kPlayerAudioVideoId, true, true, false));
   EXPECT_TRUE(contents()->has_video_power_save_blocker_for_testing());
   EXPECT_EQ(contents()->has_audio_power_save_blocker_for_testing(),
             !AudioStreamMonitor::monitoring_available());
@@ -2741,7 +2742,7 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   // the power save blockers.  The notification should take into account the
   // visibility state of the WebContents.
   rfh->OnMessageReceived(FrameHostMsg_MediaPlayingNotification(
-      0, kPlayerVideoOnlyId, true, false));
+      0, kPlayerVideoOnlyId, true, false, false));
   EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
   EXPECT_EQ(contents()->has_audio_power_save_blocker_for_testing(),
             !AudioStreamMonitor::monitoring_available());
@@ -2753,7 +2754,15 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   // Start another player that only has audio.  There should be no change in
   // the power save blockers.
   rfh->OnMessageReceived(FrameHostMsg_MediaPlayingNotification(
-      0, kPlayerAudioOnlyId, false, true));
+      0, kPlayerAudioOnlyId, false, true, false));
+  EXPECT_TRUE(contents()->has_video_power_save_blocker_for_testing());
+  EXPECT_EQ(contents()->has_audio_power_save_blocker_for_testing(),
+            !AudioStreamMonitor::monitoring_available());
+
+  // Start a remote player. There should be no change in the power save
+  // blockers.
+  rfh->OnMessageReceived(FrameHostMsg_MediaPlayingNotification(
+      0, kPlayerRemoteId, true, true, true));
   EXPECT_TRUE(contents()->has_video_power_save_blocker_for_testing());
   EXPECT_EQ(contents()->has_audio_power_save_blocker_for_testing(),
             !AudioStreamMonitor::monitoring_available());
@@ -2775,6 +2784,12 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
   // Destroy the video only player.  No power save blockers should remain.
   rfh->OnMessageReceived(
       FrameHostMsg_MediaPausedNotification(0, kPlayerVideoOnlyId));
+  EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
+  EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
+
+  // Destroy the remote player. No power save blockers should remain.
+  rfh->OnMessageReceived(
+      FrameHostMsg_MediaPausedNotification(0, kPlayerRemoteId));
   EXPECT_FALSE(contents()->has_video_power_save_blocker_for_testing());
   EXPECT_FALSE(contents()->has_audio_power_save_blocker_for_testing());
 }

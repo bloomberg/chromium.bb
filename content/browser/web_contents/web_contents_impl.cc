@@ -3105,7 +3105,12 @@ void WebContentsImpl::MaybeReleasePowerSaveBlockers() {
 
 void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
                                                  bool has_video,
-                                                 bool has_audio) {
+                                                 bool has_audio,
+                                                 bool is_remote) {
+  // Ignore the videos playing remotely and don't hold the wake lock for the
+  // screen.
+  if (is_remote) return;
+
   if (has_audio) {
     AddMediaPlayerEntry(player_cookie, &active_audio_players_);
 

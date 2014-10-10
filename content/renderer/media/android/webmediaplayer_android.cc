@@ -456,6 +456,10 @@ bool WebMediaPlayerAndroid::hasAudio() const {
   return false;
 }
 
+bool WebMediaPlayerAndroid::isRemote() const {
+  return is_remote_;
+}
+
 bool WebMediaPlayerAndroid::paused() const {
   return !is_playing_;
 }

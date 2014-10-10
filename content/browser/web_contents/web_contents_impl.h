@@ -827,7 +827,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnFirstVisuallyNonEmptyPaint();
   void OnMediaPlayingNotification(int64 player_cookie,
                                   bool has_video,
-                                  bool has_audio);
+                                  bool has_audio,
+                                  bool is_remote);
   void OnMediaPausedNotification(int64 player_cookie);
   void OnShowValidationMessage(const gfx::Rect& anchor_in_root_view,
                                const base::string16& main_text,
