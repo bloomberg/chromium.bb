@@ -1939,11 +1939,16 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   NSInteger buttonCount = [buttons_ count];
   if (buttonCount) {
     BookmarkButton* subButton = [folderController_ parentButton];
+    NSInteger targetIndex = 0;
     for (NSButton* aButton in buttons_.get()) {
-      // If this button is showing its menu then we need to move the menu, too.
-      if (aButton == subButton)
-        [folderController_
-            offsetFolderMenuWindow:NSMakeSize(0.0, chrome::kBookmarkBarHeight)];
+      targetIndex++;
+      // If this button is showing its menu and is below the removed button,
+      // i.e its index is greater, then we need to move the menu too.
+      if (aButton == subButton && targetIndex > buttonIndex) {
+          [folderController_ offsetFolderMenuWindow:NSMakeSize(0.0,
+                                 bookmarks::kBookmarkFolderButtonHeight)];
+          break;
+      }
     }
   } else if (parentButton_ != [barController_ otherBookmarksButton]) {
     // If all nodes have been removed from this folder then add in the
