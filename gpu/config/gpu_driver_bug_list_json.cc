@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.5",
+  "version": "7.6",
   "entries": [
     {
       "id": 1,
@@ -824,18 +824,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "use_virtualized_gl_contexts"
       ]
     },
-    {
-      "id": 73,
-      "description": "Using D3D11 causes browser crashes on certain Intel GPUs",
-      "cr_bugs": [310808],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "disable_d3d11"
-      ]
-    },
 )  // LONG_STRING_CONST macro
 // Avoid C2026 (string too big) error on VisualStudio.
 LONG_STRING_CONST(
@@ -1023,6 +1011,22 @@ LONG_STRING_CONST(
       "gl_renderer": "PowerVR SGX 5.*",
       "features": [
         "etc1_power_of_two_only"
+      ]
+    },
+    {
+      "id": 92,
+      "description": "Old Intel drivers cannot reliably support D3D11",
+      "cr_bugs": [363721],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "8.16"
+      },
+      "features": [
+        "disable_d3d11"
       ]
     }
   ]
