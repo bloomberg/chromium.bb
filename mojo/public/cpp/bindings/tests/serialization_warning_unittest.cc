@@ -44,7 +44,8 @@ class SerializationWarningTest : public testing::Test {
 
  protected:
   template <typename T>
-  void TestWarning(T obj, mojo::internal::ValidationError expected_warning) {
+  void TestWarning(StructPtr<T> obj,
+                   mojo::internal::ValidationError expected_warning) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::FixedBuffer buf(GetSerializedSize_(obj));

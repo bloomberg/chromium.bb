@@ -146,7 +146,7 @@ def GetFieldType(kind, field=None):
     return '_descriptor.%s(%s)' % (array_type, ', '.join(arguments))
 
   if mojom.IsStructKind(kind):
-    arguments = [ GetStructClass(kind) ]
+    arguments = [ 'lambda: %s' % GetStructClass(kind) ]
     if mojom.IsNullableKind(kind):
       arguments.append('nullable=True')
     return '_descriptor.StructType(%s)' % ', '.join(arguments)

@@ -24,6 +24,11 @@ struct IsConst : FalseType {};
 template <class T>
 struct IsConst<const T> : TrueType {};
 
+template <class T>
+struct IsPointer : FalseType {};
+template <class T>
+struct IsPointer<T*> : TrueType {};
+
 template <bool B, typename T = void>
 struct EnableIf {};
 
@@ -90,6 +95,13 @@ struct IsBaseOf {
  public:
   static bool const value = sizeof Check(CreateDerived()) == 1 &&
                             !IsSame<Base const, void const>::value;
+};
+
+template <class T>
+struct RemovePointer {};
+template <class T>
+struct RemovePointer<T*> {
+  typedef T type;
 };
 
 }  // namespace internal

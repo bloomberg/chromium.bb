@@ -10,6 +10,7 @@ import mojo.system
 
 # Generated files
 # pylint: disable=F0401
+import regression_tests_mojom
 import sample_import_mojom
 import sample_import2_mojom
 import sample_service_mojom
@@ -206,3 +207,11 @@ class StructBindingsTest(unittest.TestCase):
       p = sample_import_mojom.Point(0, x=0)
     with self.assertRaises(TypeError):
       p = sample_import_mojom.Point(c=0)
+
+  def testCyclicDefinition(self):
+    a = regression_tests_mojom.A()
+    b = regression_tests_mojom.B()
+    self.assertIsNone(a.b)
+    self.assertIsNone(b.a)
+    a.b = b
+    self.assertIs(a.b, b)

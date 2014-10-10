@@ -34,4 +34,23 @@ enum EnumWithK {
   K = 0
 };
 
+struct Edge {
+  Vertex? v;
+};
+
+struct Vertex {
+  EmptyStruct? e;
+};
+
+struct EmptyStruct {
+};
+
+struct A {
+  B? b;
+};
+
+struct B {
+  A? a;
+};
+
 }  // module imported

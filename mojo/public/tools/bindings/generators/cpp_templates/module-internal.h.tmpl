@@ -32,6 +32,11 @@ class {{struct.name}};
 
 namespace internal {
 
+{#--- Internal forward declarations #}
+{%  for struct in structs %}
+class {{struct.name}}_Data;
+{%- endfor %}
+
 #pragma pack(push, 1)
 
 {#--- Class declarations #}

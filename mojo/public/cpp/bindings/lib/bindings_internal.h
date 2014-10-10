@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDINGS_INTERNAL_H_
 
 #include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -79,6 +80,14 @@ struct WrapperTraits<T, false> {
 template <typename H>
 struct WrapperTraits<ScopedHandleBase<H>, true> {
   typedef H DataType;
+};
+template <typename S>
+struct WrapperTraits<StructPtr<S>, true> {
+  typedef typename S::Data_* DataType;
+};
+template <typename S>
+struct WrapperTraits<InlinedStructPtr<S>, true> {
+  typedef typename S::Data_* DataType;
 };
 template <typename S>
 struct WrapperTraits<S, true> {

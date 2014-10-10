@@ -372,10 +372,17 @@ class NativeArrayType(BaseArrayType):
 class StructType(PointerType):
   """Type object for structs."""
 
-  def __init__(self, struct_type, nullable=False):
+  def __init__(self, struct_type_getter, nullable=False):
     PointerType.__init__(self)
-    self.struct_type = struct_type
+    self._struct_type_getter = struct_type_getter
+    self._struct_type = None
     self.nullable = nullable
+
+  @property
+  def struct_type(self):
+    if not self._struct_type:
+      self._struct_type = self._struct_type_getter()
+    return self._struct_type
 
   def Convert(self, value):
     if value is None or isinstance(value, self.struct_type):
