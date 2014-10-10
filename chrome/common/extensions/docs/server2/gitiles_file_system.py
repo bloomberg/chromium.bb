@@ -53,9 +53,18 @@ class GitilesFileSystem(FileSystem):
   '''Class to fetch filesystem data from the Chromium project's gitiles
   service.
   '''
-  @staticmethod
-  def Create(branch='master', commit=None):
+  _logged_tokens = set()
+
+  @classmethod
+  def Create(cls, branch='master', commit=None):
     token, _ = app_identity.get_access_token(GITILES_OAUTH2_SCOPE)
+
+    # Log the access token (once per token) so that it can be sneakily re-used
+    # in development.
+    if token not in cls._logged_tokens:
+      logging.info('Got token %s for scope %s' % (token, GITILES_OAUTH2_SCOPE))
+      cls._logged_tokens.add(token)
+
     path_prefix = '' if token is None else _AUTH_PATH_PREFIX
     if commit:
       base_url = '%s%s/%s/%s' % (
