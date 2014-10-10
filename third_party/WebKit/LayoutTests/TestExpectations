@@ -343,9 +343,6 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 virtual/threaded/animations/timing-properties-do-not-update-running-animation.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cross-fade-background-image.html [ Pass ImageOnlyFailure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
-crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/blendmode-transitions.html [ Pass Timeout ]
-crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/cubic-bezier-overflow-svg-length.html [ Pass Timeout ]
-crbug.com/248938 [ Win Debug ] virtual/threaded/animations/compositor-start-event-timing.html [ Pass Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transform.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
 crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
@@ -1628,3 +1625,7 @@ crbug.com/414283 [ Win ] fast/dynamic/anchor-lock.html [ NeedsRebaseline ]
 crbug.com/414283 fast/overflow/scrollRevealButton.html [ NeedsRebaseline ]
 crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure ]
 
+# Updating Javascript spec.
+crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ Pass Failure ]
+crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ Pass Failure ]
+crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ Pass Failure ]
