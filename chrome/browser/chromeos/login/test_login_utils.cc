@@ -17,11 +17,6 @@ TestLoginUtils::TestLoginUtils(const UserContext& user_context)
 
 TestLoginUtils::~TestLoginUtils() {}
 
-void TestLoginUtils::RespectLocalePreference(Profile* profile,
-                                             const base::Closure& callback) {
-  callback.Run();
-}
-
 void TestLoginUtils::PrepareProfile(
     const UserContext& user_context,
     bool has_auth_cookies,

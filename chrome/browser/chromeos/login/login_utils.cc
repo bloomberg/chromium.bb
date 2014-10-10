@@ -185,8 +185,6 @@ class LoginUtilsImpl : public LoginUtils,
   }
 
   // LoginUtils implementation:
-  virtual void RespectLocalePreference(Profile* profile,
-                                       const base::Closure& callback) override;
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) override;
   virtual void PrepareProfile(
@@ -211,6 +209,10 @@ class LoginUtilsImpl : public LoginUtils,
   void DoBrowserLaunchInternal(Profile* profile,
                                LoginDisplayHost* login_host,
                                bool locale_pref_checked);
+
+  // Switch to the locale that |profile| wishes to use and invoke |callback|.
+  virtual void RespectLocalePreference(Profile* profile,
+                                       const base::Closure& callback);
 
   static void RunCallbackOnLocaleLoaded(
       const base::Closure& callback,

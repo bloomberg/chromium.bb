@@ -31,11 +31,6 @@ FakeLoginUtils::FakeLoginUtils() : should_launch_browser_(false) {}
 
 FakeLoginUtils::~FakeLoginUtils() {}
 
-void FakeLoginUtils::RespectLocalePreference(Profile*,
-                                             const base::Closure& callback) {
-  callback.Run();
-}
-
 void FakeLoginUtils::DoBrowserLaunch(Profile* profile,
                                      LoginDisplayHost* login_host) {
   if (!ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {

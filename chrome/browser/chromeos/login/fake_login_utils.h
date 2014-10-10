@@ -21,8 +21,6 @@ class FakeLoginUtils : public LoginUtils {
  public:
   FakeLoginUtils();
   virtual ~FakeLoginUtils();
-  virtual void RespectLocalePreference(Profile*,
-                                       const base::Closure& callback) override;
   virtual void DoBrowserLaunch(Profile* profile,
                                LoginDisplayHost* login_host) override;
   virtual void PrepareProfile(const UserContext& user_context,
