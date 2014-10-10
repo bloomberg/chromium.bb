@@ -1025,7 +1025,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/rule-styl
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/rules-with-border-before.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/unsplittable-inline-block.html [ Skip ]
 
-crbug.com/420593 fast/text/international/bidi-neutral-run.html [ NeedsManualRebaseline ]
 crbug.com/420593 fast/pagination/div-x-horizontal-bt-ltr.html [ Pass Failure ImageOnlyFailure ]
 
 # Fails on Mac in region based multicol implementation.
@@ -1384,7 +1383,7 @@ crbug.com/418091 [ SnowLeopard Debug ] media/track/track-cue-rendering-rtl.html 
 crbug.com/418091 [ Mac ] virtual/antialiasedtext/fast/text/international/bidi-neutral-run.html [ Pass Crash Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Pass Crash ]
-#crbug.com/418091 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Pass Crash ]
+crbug.com/418091 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/atsui-bidi-control.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] fast/text/text-shadow-no-default-color.html [ Pass Failure ]
