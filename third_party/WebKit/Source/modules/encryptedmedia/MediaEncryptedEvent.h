@@ -23,11 +23,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    EventConstructor,
-    RuntimeEnabled=EncryptedMedia
-] interface MediaKeyNeededEvent : Event {
-    readonly attribute DOMString contentType;
-    readonly attribute Uint8Array initData;
+#ifndef MediaEncryptedEvent_h
+#define MediaEncryptedEvent_h
+
+#include "modules/EventModules.h"
+#include "wtf/ArrayBuffer.h"
+
+namespace blink {
+
+struct MediaEncryptedEventInit : public EventInit {
+    MediaEncryptedEventInit();
+
+    String initDataType;
+    RefPtr<ArrayBuffer> initData;
 };
 
+class MediaEncryptedEvent final : public Event {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    virtual ~MediaEncryptedEvent();
+
+    static PassRefPtrWillBeRawPtr<MediaEncryptedEvent> create()
+    {
+        return adoptRefWillBeNoop(new MediaEncryptedEvent);
+    }
+
+    static PassRefPtrWillBeRawPtr<MediaEncryptedEvent> create(const AtomicString& type, const MediaEncryptedEventInit& initializer)
+    {
+        return adoptRefWillBeNoop(new MediaEncryptedEvent(type, initializer));
+    }
+
+    virtual const AtomicString& interfaceName() const override;
+
+    String initDataType() const { return m_initDataType; }
+    ArrayBuffer* initData() const { return m_initData.get(); }
+
+    virtual void trace(Visitor*) override;
+
+private:
+    MediaEncryptedEvent();
+    MediaEncryptedEvent(const AtomicString& type, const MediaEncryptedEventInit& initializer);
+
+    String m_initDataType;
+    RefPtr<ArrayBuffer> m_initData;
+};
+
+} // namespace blink
+
+#endif // MediaEncryptedEvent_h

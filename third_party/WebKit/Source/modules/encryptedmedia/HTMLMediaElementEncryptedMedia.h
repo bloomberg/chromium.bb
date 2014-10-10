@@ -39,12 +39,12 @@ public:
     // encrypted media extensions (WD)
     static MediaKeys* mediaKeys(HTMLMediaElement&);
     static ScriptPromise setMediaKeys(ScriptState*, HTMLMediaElement&, MediaKeys*);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(needkey);
+    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted);
 
     static void keyAdded(HTMLMediaElement&, const String& keySystem, const String& sessionId);
     static void keyError(HTMLMediaElement&, const String& keySystem, const String& sessionId, WebMediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode);
     static void keyMessage(HTMLMediaElement&, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL);
-    static void keyNeeded(HTMLMediaElement&, const String& contentType, const unsigned char* initData, unsigned initDataLength);
+    static void encrypted(HTMLMediaElement&, const String& initDataType, const unsigned char* initData, unsigned initDataLength);
     static void playerDestroyed(HTMLMediaElement&);
     static WebContentDecryptionModule* contentDecryptionModule(HTMLMediaElement&);
 

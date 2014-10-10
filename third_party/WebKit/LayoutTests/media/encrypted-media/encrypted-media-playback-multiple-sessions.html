@@ -27,13 +27,13 @@
                 var videoKey = new Uint8Array([0x7A, 0x7A, 0x62, 0xF1, 0x68, 0x14, 0xD2, 0x7B,
                                                0x68, 0xEF, 0x12, 0x2A, 0xFC, 0xE4, 0xAE, 0x0A]);
 
-                function onNeedKey(event)
+                function onEncrypted(event)
                 {
-                    var keyId = String.fromCharCode.apply(null, event.initData);
+                    var keyId = String.fromCharCode.apply(null, new Uint8Array(event.initData));
 
                     var mediaKeySession = video.mediaKeys.createSession();
                     waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
-                    mediaKeySession.generateRequest(event.contentType, event.initData).then(function() {
+                    mediaKeySession.generateRequest(event.initDataType, event.initData).then(function() {
                         if (keyId == videoKeyId) {
                             assert_equals(videoMediaKeySession, null);
                             videoMediaKeySession = mediaKeySession;
@@ -91,7 +91,7 @@
                 }
 
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
-                    waitForEventAndRunStep('needkey', video, onNeedKey, test);
+                    waitForEventAndRunStep('encrypted', video, onEncrypted, test);
                     waitForEventAndRunStep('playing', video, onPlaying, test);
                     video.src = '../content/test-encrypted-different-av-keys.webm';
                     return video.setMediaKeys(mediaKeys);

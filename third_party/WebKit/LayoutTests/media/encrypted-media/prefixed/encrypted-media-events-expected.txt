@@ -3,7 +3,7 @@ Test all the key-related events.
 EXPECTED (messageEvent != 'null') OK
 EXPECTED (messageEvent instanceof window.MediaKeyMessageEvent == 'true') OK
 EXPECTED (keyNeededEvent != 'null') OK
-EXPECTED (keyNeededEvent instanceof window.MediaKeyNeededEvent == 'true') OK
+EXPECTED (keyNeededEvent instanceof window.MediaKeyEvent == 'true') OK
 
 *** Verify the presence of on* attributes. These would return undefined if they are not present. ***
 EXPECTED (video.onwebkitkeyadded === 'null') OK
