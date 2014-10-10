@@ -155,9 +155,7 @@ if env.Bit('bitcode'):
 
   # TODO(mcgrathr): Remove after fix for ARM:
   # https://code.google.com/p/nativeclient/issues/detail?id=3143
-  # Also broken on x86_32:
-  # https://code.google.com/p/nativeclient/issues/detail?id=3650
-  is_broken = env.Bit('target_arm') or env.Bit('target_x86_32')
+  is_broken = env.Bit('target_arm')
   AddTest(base_env, 'callingconv', envlist, settings, is_broken)
 else:
   # For NNaCl toolchain, just test self-consistency.

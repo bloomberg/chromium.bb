@@ -190,6 +190,21 @@ class NONTRIV_CLASS_I32_I32 {
   int32_t y;
 };
 
+class NONTRIV_CLASS_BASE1 {
+ public:
+  NONTRIV_CLASS_BASE1(int a, int b) : a(a), b(b) {
+  }
+  NONTRIV_CLASS_BASE1(const NONTRIV_CLASS_BASE1 &other)
+      : a(other.a), b(other.b) {
+    fprintf(stderr, "CLASS_BASE1 Copy constructor!\n");
+  }
+  virtual int bar(void) {
+    return a + b;
+  }
+  int a;
+  int b;
+};
+
 class NONTRIV_CLASS_DOUBLE_DOUBLE {
  public:
   NONTRIV_CLASS_DOUBLE_DOUBLE(double x_ = 0.0, double y_ = 0.0) :
@@ -209,10 +224,11 @@ class NONTRIV_CLASS_DOUBLE_DOUBLE {
 };
 
 class NONTRIV_CLASS_DOUBLE_DOUBLE2
-    : public NONTRIV_CLASS_DOUBLE_DOUBLE {
+    : public NONTRIV_CLASS_BASE1,
+      public NONTRIV_CLASS_DOUBLE_DOUBLE {
  public:
   NONTRIV_CLASS_DOUBLE_DOUBLE2(double x_ = 0.0, double y_ = 0.0) :
-      NONTRIV_CLASS_DOUBLE_DOUBLE(x_, y_) { }
+      NONTRIV_CLASS_BASE1(1, 2), NONTRIV_CLASS_DOUBLE_DOUBLE(x_, y_) { }
 
   virtual double foo(void) {
     return KDOUBLE2;
@@ -242,6 +258,17 @@ typedef struct {
   pointer_to_member_func x;
   pointer_to_member_func y;
 } MEMBER_FUN_PTRS;
+
+/* Test the case where a pointer_to_member_func might straddle an 8-byte. */
+typedef struct {
+  int32_t x;
+  pointer_to_member_func y;
+} I32_MEMBER_FUN_PTR;
+typedef struct {
+  int32_t x;
+  pointer_to_member_func y;
+  int32_t z;
+} I32_MEMBER_FUN_PTR_I32;
 
 /*--- test vectors ---*/
 
@@ -600,6 +627,32 @@ static const MEMBER_FUN_PTRS kMEMBER_FUN_PTRS = {
               "(CHECK_MEMBER_FUN_PTRS, instance2, x)");     \
     ASSERT_EQ((some_instance2.*(s.y))(), KDOUBLE2,          \
               "(CHECK_MEMBER_FUN_PTRS, instance2, y)");     \
+  } while (0)
+
+static const I32_MEMBER_FUN_PTR kI32_MEMBER_FUN_PTR = {
+  KI321,
+  &NONTRIV_CLASS_DOUBLE_DOUBLE::foo,
+};
+#define CHECK_I32_MEMBER_FUN_PTR(s)                         \
+  do {                                                      \
+    ASSERT_EQ(s.x, KI321, "(CHECK_I32_MEMBER_FUN_PTR, x)"); \
+    NONTRIV_CLASS_DOUBLE_DOUBLE2 some_instance(0.0, 0.0);   \
+    ASSERT_EQ((some_instance.*(s.y))(), KDOUBLE2,           \
+              "(CHECK_I32_MEMBER_FUN_PTR, instance, y)");   \
+  } while (0)
+
+static const I32_MEMBER_FUN_PTR_I32 kI32_MEMBER_FUN_PTR_I32 = {
+  KI322,
+  &NONTRIV_CLASS_DOUBLE_DOUBLE::foo,
+  KI321
+};
+#define CHECK_I32_MEMBER_FUN_PTR_I32(s)                         \
+  do {                                                          \
+    ASSERT_EQ(s.x, KI322, "(CHECK_I32_MEMBER_FUN_PTR_I32, x)"); \
+    NONTRIV_CLASS_DOUBLE_DOUBLE2 some_instance(0.0, 0.0);       \
+    ASSERT_EQ((some_instance.*(s.y))(), KDOUBLE2,               \
+              "(CHECK_I32_MEMBER_FUN_PTR_I32, instance, y)");   \
+    ASSERT_EQ(s.z, KI321, "(CHECK_I32_MEMBER_FUN_PTR_I32, z)"); \
   } while (0)
 
 /*--- Test vectors ---*/
