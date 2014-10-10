@@ -6,30 +6,33 @@ import("//third_party/protobuf/proto_library.gni")
 
 source_set("pairing") {
   sources = [
-    "pairing/bluetooth_controller_pairing_controller.cc",
-    "pairing/bluetooth_controller_pairing_controller.h",
-    "pairing/bluetooth_host_pairing_controller.cc",
-    "pairing/bluetooth_host_pairing_controller.h",
-    "pairing/bluetooth_pairing_constants.cc",
-    "pairing/bluetooth_pairing_constants.h",
-    "pairing/controller_pairing_controller.cc",
-    "pairing/controller_pairing_controller.h",
-    "pairing/fake_controller_pairing_controller.cc",
-    "pairing/fake_controller_pairing_controller.h",
-    "pairing/fake_host_pairing_controller.cc",
-    "pairing/fake_host_pairing_controller.h",
-    "pairing/host_pairing_controller.cc",
-    "pairing/host_pairing_controller.h",
-    "pairing/message_buffer.cc",
-    "pairing/message_buffer.h",
-    "pairing/proto_decoder.cc",
-    "pairing/proto_decoder.h",
+    "bluetooth_controller_pairing_controller.cc",
+    "bluetooth_controller_pairing_controller.h",
+    "bluetooth_host_pairing_controller.cc",
+    "bluetooth_host_pairing_controller.h",
+    "bluetooth_pairing_constants.cc",
+    "bluetooth_pairing_constants.h",
+    "controller_pairing_controller.cc",
+    "controller_pairing_controller.h",
+    "fake_controller_pairing_controller.cc",
+    "fake_controller_pairing_controller.h",
+    "fake_host_pairing_controller.cc",
+    "fake_host_pairing_controller.h",
+    "host_pairing_controller.cc",
+    "host_pairing_controller.h",
+    "message_buffer.cc",
+    "message_buffer.h",
+    "proto_decoder.cc",
+    "proto_decoder.h",
+    "shark_connection_listener.cc",
+    "shark_connection_listener.h",
   ]
 
   deps = [
     "//base",
     "//device/bluetooth",
     "//net",
+    ":proto",
   ]
 }
 
