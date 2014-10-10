@@ -103,6 +103,24 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
     }
   };
 
+  function {{interface.name}}DelegatingStub() {
+  }
+
+  {{interface.name}}DelegatingStub.prototype =
+      Object.create({{interface.name}}Stub.prototype);
+
+  {{interface.name}}DelegatingStub.prototype.callDelegateMethod$ = function(methodName, args) {
+    var method = this.delegate$ && this.delegate$[methodName];
+    return method && method.apply(this.delegate$, args);
+  }
+
+{%- for method in interface.methods %}
+{%-   set method_name = method.name|stylize_method %}
+  {{interface.name}}DelegatingStub.prototype.{{method_name}} = function() {
+    return this.callDelegateMethod$("{{method_name}}", arguments);
+  }
+{%- endfor %}
+
 {#--- Validation #}
 
   function validate{{interface.name}}Request(messageValidator) {
@@ -156,6 +174,7 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
     name: '{{namespace|replace(".","::")}}::{{interface.name}}',
     proxyClass: {{interface.name}}Proxy,
     stubClass: {{interface.name}}Stub,
+    delegatingStubClass: {{interface.name}}DelegatingStub,
     validateRequest: validate{{interface.name}}Request,
 {%- if interface|has_callbacks %}
     validateResponse: validate{{interface.name}}Response,

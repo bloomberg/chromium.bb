@@ -26,7 +26,7 @@ source_set("js_apps") {
   sources = [
     "application_delegate_impl.cc",
     "js_app.cc",
-    "mojo_module.cc",
+    "mojo_bridge_module.cc",
   ]
 
   public_deps = [

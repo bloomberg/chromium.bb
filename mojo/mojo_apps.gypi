@@ -96,7 +96,7 @@
       'sources': [
         'apps/js/application_delegate_impl.cc',
         'apps/js/js_app.cc',
-        'apps/js/mojo_module.cc',
+        'apps/js/mojo_bridge_module.cc',
       ],
     },
     {

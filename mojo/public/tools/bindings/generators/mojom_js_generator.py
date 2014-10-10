@@ -260,6 +260,7 @@ class Generator(generator.Generator):
       "module": self.module,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "interfaces": self.module.interfaces,
+      "imported_interfaces": self.GetImportedInterfaces(),
     }
 
   def GenerateFiles(self, args):
@@ -273,3 +274,12 @@ class Generator(generator.Generator):
       each["unique_name"] = "import" + str(counter)
       counter += 1
     return self.module.imports
+
+  def GetImportedInterfaces(self):
+    interface_to_import = {};
+    for each_import in self.module.imports:
+      for each_interface in each_import["module"].interfaces:
+        name = each_interface.name
+        interface_to_import[name] = each_import["unique_name"] + "." + name
+    return interface_to_import;
+

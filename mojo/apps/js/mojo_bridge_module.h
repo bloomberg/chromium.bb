@@ -13,7 +13,10 @@ namespace apps {
 
 class JSApp;
 
-class Mojo {
+// The JavaScript "mojo/apps/js/mojo" module depends on this built-in module.
+// It provides the bridge between the JSApp class and JavaScript.
+
+class MojoInternals {
  public:
   static const char kModuleName[];
   static v8::Local<v8::Value> GetModule(JSApp* js_app, v8::Isolate* isolate);

@@ -35,7 +35,7 @@ class JSApp {
   // be called from this app's thread.
   virtual bool Load(std::string* source, std::string* file_name) = 0;
 
-  // Called by the JS mojo module to quit this JS app. See mojo_module.cc.
+  // Called by the JS mojo module to quit this JS app. See mojo.js.
   void Quit();
 
   // Called by the JS mojo module to connect to a Mojo service.

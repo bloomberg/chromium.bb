@@ -8,7 +8,7 @@
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "mojo/apps/js/application_delegate_impl.h"
-#include "mojo/apps/js/mojo_module.h"
+#include "mojo/apps/js/mojo_bridge_module.h"
 
 namespace mojo {
 namespace apps {
@@ -19,8 +19,8 @@ JSApp::JSApp(ApplicationDelegateImpl* app_delegate_impl)
       app_delegate_impl_task_runner_(
           base::MessageLoop::current()->task_runner()) {
   CHECK(on_app_delegate_impl_thread());
-  runner_delegate_.AddBuiltinModule(Mojo::kModuleName,
-                                    base::Bind(Mojo::GetModule, this));
+  runner_delegate_.AddBuiltinModule(MojoInternals::kModuleName,
+                                    base::Bind(MojoInternals::GetModule, this));
 }
 
 JSApp::~JSApp() {

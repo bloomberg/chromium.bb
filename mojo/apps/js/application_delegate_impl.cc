@@ -38,7 +38,7 @@ void ApplicationDelegateImpl::QuitJSApp(JSApp* app) {
   if (itr != app_vector_.end())
     app_vector_.erase(itr);
   if (app_vector_.empty())
-    base::MessageLoop::current()->QuitWhenIdle();
+    base::MessageLoop::current()->QuitNow();
 }
 
 void ApplicationDelegateImpl::ConnectToService(
