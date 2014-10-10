@@ -529,8 +529,8 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
       is_visit_database_observer_(false),
-      weak_factory_(this),
-      prefetch_list_(new PrefetchList()) {
+      prefetch_list_(new PrefetchList()),
+      weak_factory_(this) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (base::MessageLoop::current()) {
     timer_.Start(FROM_HERE,

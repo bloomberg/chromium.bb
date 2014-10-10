@@ -233,9 +233,9 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver,
 
   base::hash_set<int64> url_whitelist_;
 
-  base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
-
   scoped_ptr<PrefetchList> prefetch_list_;
+
+  base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };
