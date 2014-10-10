@@ -97,6 +97,13 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
         RunClosure(quit_closure));
     frame_writer.Run(image.get(), 10);
     run_loop.Run();
+    // Run all pending tasks to let the the test clean up before the test ends.
+    // This is due to that
+    // FrameWriterDelegate::FrameWriterDelegate::DeliverFrame use
+    // PostTaskAndReply to the IO thread and expects the reply to process
+    // on the main render thread to clean up its resources. However, the
+    // QuitClosure above ends before that.
+    base::MessageLoop::current()->RunUntilIdle();
   }
   EXPECT_EQ(1, sink.number_of_frames());
   native_track->RemoveSink(&sink);
