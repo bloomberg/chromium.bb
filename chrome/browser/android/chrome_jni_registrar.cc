@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_base.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
+#include "chrome/browser/ui/android/website_settings_popup_legacy_android.h"
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
@@ -188,6 +189,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "VoiceSearchTabHelper", RegisterVoiceSearchTabHelper },
   { "WebsiteSettingsPopupAndroid",
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
+  { "WebsiteSettingsPopupLegacyAndroid",
+    WebsiteSettingsPopupLegacyAndroid::
+        RegisterWebsiteSettingsPopupLegacyAndroid },
 #if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
   { "PrintingContext",
     printing::PrintingContextAndroid::RegisterPrintingContext},

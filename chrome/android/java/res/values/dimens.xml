@@ -9,6 +9,14 @@
     <dimen name="certificate_viewer_padding_wide">24dp</dimen>
     <dimen name="certificate_viewer_padding_thin">16dp</dimen>
 
+    <!-- Website Settings Popup Dimensions -->
+    <dimen name="website_settings_margin_top">16dp</dimen>
+    <dimen name="website_settings_margin_sides">16dp</dimen>
+    <dimen name="website_settings_margin_bottom">18dp</dimen>
+    <dimen name="website_settings_margin_below_url">10dp</dimen>
+    <dimen name="website_settings_url_title_size">16dp</dimen>
+    <dimen name="website_settings_url_description_size">12dp</dimen>
+
     <!-- Accessibility tab switcher -->
     <dimen name="accessibility_tab_height">65dp</dimen>
 
@@ -21,10 +29,10 @@
     <!-- The amount to fade the edges of the menu to indicate more content is available
          via scrolling. -->
     <dimen name="menu_vertical_fade_distance">15dp</dimen>
-    
+
     <!-- Menu button dragging related dimensions -->
     <dimen name="auto_scroll_full_velocity">500dp</dimen>
-    
+
     <!-- Infobar dimensions -->
     <!-- Text size of the infobar message. -->
     <dimen name="infobar_text_size">16sp</dimen>

@@ -62,6 +62,8 @@
       'browser/ui/android/tab_restore_service_delegate_android.cc',
       'browser/ui/android/website_settings_popup_android.cc',
       'browser/ui/android/website_settings_popup_android.h',
+      'browser/ui/android/website_settings_popup_legacy_android.cc',
+      'browser/ui/android/website_settings_popup_legacy_android.h',
       'browser/ui/android/window_android_helper.cc',
       'browser/ui/android/window_android_helper.h',
       'browser/ui/app_list/app_list_service.h',

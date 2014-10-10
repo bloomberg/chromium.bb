@@ -29,9 +29,19 @@
     <color name="app_banner_open_button_fg">#777777</color>
     <color name="app_banner_card_highlight">#33999999</color>
 
-    <!--  Website Settings Popup colors -->
+    <!--  Website Settings Popup Legacy colors -->
     <color name="website_settings_popup_text_link">#5595fe</color>
     <color name="website_settings_popup_reset_cert_decisions_button">#000000</color>
+
+    <!--  Website Settings Popup colors -->
+    <color name="website_settings_popup_background">#f2f2f2</color>
+    <color name="website_settings_popup_text">#333333</color>
+    <color name="website_settings_popup_url">#666666</color>
+    <color name="website_settings_popup_url_domain">#333333</color>
+    <color name="website_settings_popup_url_scheme_http">#666666</color>
+    <color name="website_settings_popup_url_scheme_https">#1ac222</color>
+    <color name="website_settings_popup_url_scheme_mixed">#eba200</color>
+    <color name="website_settings_popup_url_scheme_broken">#db4437</color>
 
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>

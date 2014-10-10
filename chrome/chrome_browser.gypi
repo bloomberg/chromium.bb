@@ -2760,6 +2760,7 @@
       'android/java/src/org/chromium/chrome/browser/UrlUtilities.java',
       'android/java/src/org/chromium/chrome/browser/VoiceSearchTabHelper.java',
       'android/java/src/org/chromium/chrome/browser/WebsiteSettingsPopup.java',
+      'android/java/src/org/chromium/chrome/browser/WebsiteSettingsPopupLegacy.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AutoLoginDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/DataReductionProxyInfoBarDelegate.java',

@@ -8,31 +8,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:background="@color/website_settings_popup_background"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/website_settings_margin_bottom"
+    android:paddingEnd="@dimen/website_settings_margin_sides"
+    android:paddingStart="@dimen/website_settings_margin_sides"
+    android:paddingTop="@dimen/website_settings_margin_top" >
 
-    <ImageView
-        android:id="@+id/website_settings_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:id="@+id/website_settings_text_layout"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/website_settings_url"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="@dimen/certificate_viewer_padding_thin" >
+        android:paddingBottom="@dimen/website_settings_margin_below_url"
+        android:textColor="@color/website_settings_popup_url"
+        android:textSize="@dimen/website_settings_url_title_size" />
 
-        <TextView
-            android:id="@+id/website_settings_headline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/certificate_viewer_padding_thin"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/website_settings_description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/website_settings_permission_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/website_settings_popup_text"
+        android:textSize="@dimen/website_settings_url_description_size" />
 
 </LinearLayout>

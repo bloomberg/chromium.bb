@@ -7,68 +7,78 @@ package org.chromium.chrome.browser;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
-import android.provider.Browser;
-import android.text.TextUtils;
+import android.graphics.drawable.ColorDrawable;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CommandLine;
+import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content_public.browser.WebContents;
 
-import java.net.URISyntaxException;
-
 /**
  * Java side of Android implementation of the website settings UI.
  */
-public class WebsiteSettingsPopup implements OnClickListener {
-    private static final String HELP_URL =
-            "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
-    private static final int DESCRIPTION_TEXT_SIZE_SP = 12;
+public class WebsiteSettingsPopup {
     private final Context mContext;
-    private final Dialog mDialog;
-    private final LinearLayout mContainer;
     private final WebContents mWebContents;
-    private final int mPaddingWide, mPaddingThin;
-    private final long mNativeWebsiteSettingsPopup;
-    private TextView mCertificateViewer, mMoreInfoLink;
-    private ViewGroup mCertificateLayout, mDescriptionLayout;
-    private Button mResetCertDecisionsButton;
-    private String mLinkUrl;
 
+    // A pointer to the C++ object for this UI.
+    private final long mNativeWebsiteSettingsPopup;
+
+    // The outer container, filled with the layout from website_settings.xml.
+    private final LinearLayout mContainer;
+
+    // UI elements in the dialog.
+    private final TextView mUrlTitle;
+    private final TextView mUrlConnectionMessage;
+
+    // The dialog the container is placed in.
+    private final Dialog mDialog;
+
+    /**
+     * Creates the WebsiteSettingsPopup, but does not display it. Also
+     * initializes the corresponding C++ object and saves a pointer to it.
+     */
     private WebsiteSettingsPopup(Context context, WebContents webContents) {
         mContext = context;
         mWebContents = webContents;
 
-        mContainer = new LinearLayout(mContext);
-        mContainer.setOrientation(LinearLayout.VERTICAL);
-        mContainer.setBackgroundColor(Color.WHITE);
-        mPaddingWide = (int) context.getResources().getDimension(
-                R.dimen.certificate_viewer_padding_wide);
-        mPaddingThin = (int) context.getResources().getDimension(
-                R.dimen.certificate_viewer_padding_thin);
-        mContainer.setPadding(mPaddingWide, mPaddingWide + mPaddingThin, mPaddingWide,
-                mPaddingWide);
+        // Find the container and all it's important subviews.
+        mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(
+                R.layout.website_settings, null);
 
+        mUrlTitle = (TextView) mContainer
+                .findViewById(R.id.website_settings_url);
+        mUrlConnectionMessage = (TextView) mContainer
+                .findViewById(R.id.website_settings_permission_message);
+
+        // Create the dialog.
         mDialog = new Dialog(mContext);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.setCanceledOnTouchOutside(true);
+
+        // Place the dialog at the top of the screen, and remove its border.
+        Window window = mDialog.getWindow();
+        window.setGravity(Gravity.TOP);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
         // This needs to come after other member initialization.
         mNativeWebsiteSettingsPopup = nativeInit(this, webContents);
-        final WebContentsObserverAndroid webContentsObserver =
-                new WebContentsObserverAndroid(mWebContents) {
+        final WebContentsObserverAndroid webContentsObserver = new WebContentsObserverAndroid(
+                mWebContents) {
             @Override
             public void navigationEntryCommitted() {
                 // If a navigation is committed (e.g. from in-page redirect), the data we're
@@ -87,157 +97,110 @@ public class WebsiteSettingsPopup implements OnClickListener {
     }
 
     /**
-     * Adds certificate section, which contains an icon, a headline, a
-     * description and a label for certificate info link.
+     * Sets the URL in the title to: (scheme)://(domain)(path). Also colors
+     * different parts of the URL depending on connectionType.
+     * connectionType should be a valid PageInfoConnectionType.
      */
     @CalledByNative
-    private void addCertificateSection(int enumeratedIconId, String headline, String description,
-            String label) {
-        View section = addSection(enumeratedIconId, headline, description);
-        assert mCertificateLayout == null;
-        mCertificateLayout = (ViewGroup) section.findViewById(R.id.website_settings_text_layout);
-        if (label != null && !label.isEmpty()) {
-            setCertificateViewer(label);
+    private void setURLTitle(String scheme, String domain, String path, int connectionType) {
+        boolean makeDomainBold = false;
+        int schemeColorId = R.color.website_settings_popup_url_scheme_broken;
+        switch (connectionType) {
+            case PageInfoConnectionType.CONNECTION_UNKNOWN:
+                schemeColorId = R.color.website_settings_popup_url_scheme_http;
+                makeDomainBold = true;
+                break;
+            case PageInfoConnectionType.CONNECTION_ENCRYPTED:
+                schemeColorId = R.color.website_settings_popup_url_scheme_https;
+                break;
+            case PageInfoConnectionType.CONNECTION_MIXED_CONTENT:
+                schemeColorId = R.color.website_settings_popup_url_scheme_mixed;
+                makeDomainBold = true;
+                break;
+            case PageInfoConnectionType.CONNECTION_UNENCRYPTED:
+                schemeColorId = R.color.website_settings_popup_url_scheme_http;
+                makeDomainBold = true;
+                break;
+            case PageInfoConnectionType.CONNECTION_ENCRYPTED_ERROR:
+                schemeColorId = R.color.website_settings_popup_url_scheme_broken;
+                makeDomainBold = true;
+                break;
+            case PageInfoConnectionType.CONNECTION_INTERNAL_PAGE:
+                schemeColorId = R.color.website_settings_popup_url_scheme_http;
+                break;
+            default:
+                assert false : "Unexpected connection type: " + connectionType;
         }
+
+        SpannableStringBuilder sb = new SpannableStringBuilder(scheme + "://" + domain + path);
+
+        ForegroundColorSpan schemeColorSpan = new ForegroundColorSpan(
+                mContext.getResources().getColor(schemeColorId));
+        sb.setSpan(schemeColorSpan, 0, scheme.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+        int domainStartIndex = scheme.length() + 3;
+        ForegroundColorSpan domainColorSpan = new ForegroundColorSpan(
+                mContext.getResources().getColor(R.color.website_settings_popup_url_domain));
+        sb.setSpan(domainColorSpan, domainStartIndex, domainStartIndex + domain.length(),
+                Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+        if (makeDomainBold) {
+            StyleSpan boldStyleSpan = new StyleSpan(android.graphics.Typeface.BOLD);
+            sb.setSpan(boldStyleSpan, domainStartIndex, domainStartIndex + domain.length(),
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        }
+
+        mUrlTitle.setText(sb);
     }
 
     /**
-     * Adds Description section, which contains an icon, a headline, and a
-     * description. Most likely headline for description is empty
+     * Sets the connection message displayed at the top of the dialog to
+     * connectionMessage (e.g. "Could not securely connect to this site").
      */
     @CalledByNative
-    private void addDescriptionSection(int enumeratedIconId, String headline, String description) {
-        View section = addSection(enumeratedIconId, headline, description);
-        assert mDescriptionLayout == null;
-        mDescriptionLayout = (ViewGroup) section.findViewById(R.id.website_settings_text_layout);
-    }
-
-    private View addSection(int enumeratedIconId, String headline, String description) {
-        View section = LayoutInflater.from(mContext).inflate(R.layout.website_settings, null);
-        ImageView i = (ImageView) section.findViewById(R.id.website_settings_icon);
-        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-        i.setImageResource(drawableId);
-
-        TextView h = (TextView) section.findViewById(R.id.website_settings_headline);
-        h.setText(headline);
-        if (TextUtils.isEmpty(headline)) h.setVisibility(View.GONE);
-
-        TextView d = (TextView) section.findViewById(R.id.website_settings_description);
-        d.setText(description);
-        d.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
-        if (TextUtils.isEmpty(description)) d.setVisibility(View.GONE);
-
-        mContainer.addView(section);
-        return section;
-    }
-
-    private void setCertificateViewer(String label) {
-        assert mCertificateViewer == null;
-        mCertificateViewer = new TextView(mContext);
-        mCertificateViewer.setText(label);
-        mCertificateViewer.setTextColor(
-                mContext.getResources().getColor(R.color.website_settings_popup_text_link));
-        mCertificateViewer.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
-        mCertificateViewer.setOnClickListener(this);
-        mCertificateViewer.setPadding(0, mPaddingWide, 0, mPaddingWide);
-        mCertificateLayout.addView(mCertificateViewer);
-    }
-
-    @CalledByNative
-    private void addResetCertDecisionsButton(String label) {
-        assert mNativeWebsiteSettingsPopup != 0;
-        assert mResetCertDecisionsButton == null;
-
-        mResetCertDecisionsButton = new Button(mContext);
-        mResetCertDecisionsButton.setText(label);
-        ApiCompatibilityUtils.setBackgroundForView(mResetCertDecisionsButton,
-                mContext.getResources().getDrawable(
-                        R.drawable.website_settings_reset_cert_decisions));
-        mResetCertDecisionsButton.setTextColor(
-                mContext.getResources().getColor(
-                R.color.website_settings_popup_reset_cert_decisions_button));
-        mResetCertDecisionsButton.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
-        mResetCertDecisionsButton.setOnClickListener(this);
-
-        LinearLayout container = new LinearLayout(mContext);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.addView(mResetCertDecisionsButton);
-        container.setPadding(0, 0, 0, mPaddingWide);
-        mContainer.addView(container);
-    }
-
-    @CalledByNative
-    private void addMoreInfoLink(String linkText) {
-        addUrl(linkText, HELP_URL);
-    }
-
-    /** Adds a section containing a description and a hyperlink. */
-    private void addUrl(String label, String url) {
-        mMoreInfoLink = new TextView(mContext);
-        mLinkUrl = url;
-        mMoreInfoLink.setText(label);
-        mMoreInfoLink.setTextColor(
-                mContext.getResources().getColor(R.color.website_settings_popup_text_link));
-        mMoreInfoLink.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
-        mMoreInfoLink.setPadding(0, mPaddingWide + mPaddingThin, 0, mPaddingWide);
-        mMoreInfoLink.setOnClickListener(this);
-        mDescriptionLayout.addView(mMoreInfoLink);
+    private void setConnectionMessage(String connectionMessage) {
+        mUrlConnectionMessage.setText(connectionMessage);
     }
 
     /** Displays the WebsiteSettingsPopup. */
     @CalledByNative
     private void showDialog() {
+        // Wrap the dialog in a ScrollView in case the content is too long.
         ScrollView scrollView = new ScrollView(mContext);
         scrollView.addView(mContainer);
-        mDialog.addContentView(scrollView,
-                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.MATCH_PARENT));
+        mDialog.addContentView(scrollView, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT));
+
+        // Make the dialog fill the width of the screen. This must be called
+        // after addContentView, or it won't fully fill to the edge.
+        Window window = mDialog.getWindow();
+        window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
         mDialog.show();
     }
 
-    @Override
-    public void onClick(View v) {
-        mDialog.dismiss();
-        if (mResetCertDecisionsButton == v) {
-            nativeResetCertDecisions(mNativeWebsiteSettingsPopup, mWebContents);
-        } else if (mCertificateViewer == v) {
-            byte[][] certChain = nativeGetCertificateChain(mWebContents);
-            if (certChain == null) {
-                // The WebContents may have been destroyed/invalidated. If so,
-                // ignore this request.
-                return;
-            }
-            CertificateViewer.showCertificateChain(mContext, certChain);
-        } else if (mMoreInfoLink == v) {
-            try {
-                Intent i = Intent.parseUri(mLinkUrl, Intent.URI_INTENT_SCHEME);
-                i.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-                i.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
-                mContext.startActivity(i);
-            } catch (URISyntaxException ex) {
-                // Do nothing intentionally.
-            }
-        }
-    }
-
     /**
-     * Shows a WebsiteSettings dialog for the provided WebContents.
-     *
-     * The popup adds itself to the view hierarchy which owns the reference while it's
+     * Shows a WebsiteSettings dialog for the provided WebContents. The popup
+     * adds itself to the view hierarchy which owns the reference while it's
      * visible.
      *
      * @param context Context which is used for launching a dialog.
-     * @param webContents The WebContents for which to show Website information. This
-     *         information is retrieved for the visible entry.
+     * @param webContents The WebContents for which to show Website information.
+     *                    This information is retrieved for the visible entry.
      */
     @SuppressWarnings("unused")
     public static void show(Context context, WebContents webContents) {
-        new WebsiteSettingsPopup(context, webContents);
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_NEW_WEBSITE_SETTINGS)) {
+            new WebsiteSettingsPopup(context, webContents);
+        } else {
+            WebsiteSettingsPopupLegacy.show(context, webContents);
+        }
     }
 
-    private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
+    private static native long nativeInit(WebsiteSettingsPopup popup,
+            WebContents webContents);
+
     private native void nativeDestroy(long nativeWebsiteSettingsPopupAndroid);
-    private native void nativeResetCertDecisions(
-            long nativeWebsiteSettingsPopupAndroid, WebContents webContents);
-    private native byte[][] nativeGetCertificateChain(WebContents webContents);
 }

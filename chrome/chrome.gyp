@@ -585,6 +585,7 @@
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
             'profile_account_management_metrics_java',
+            'page_info_connection_type_java',
             'profile_sync_service_model_type_selection_java',
             'resource_id_java',
             'toolbar_model_security_levels_java',
@@ -627,6 +628,14 @@
           'includes': [
             '../build/java_strings_grd.gypi',
           ],
+        },
+        {
+          'target_name': 'page_info_connection_type_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/ui/android/website_settings_popup_android.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
       ], # 'targets'
       'includes': [

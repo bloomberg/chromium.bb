@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -335,4 +336,26 @@ const gfx::Image& WebsiteSettingsUI::GetFirstVisitIcon(
     const base::string16& first_visit) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(GetFirstVisitIconID(first_visit));
+}
+
+// static
+int WebsiteSettingsUI::GetConnectionSummaryMessageID(
+    WebsiteSettings::SiteConnectionStatus status) {
+  switch (status) {
+    case WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN:
+      return IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED:
+      return IDS_PAGE_INFO_ENCRYPTED_CONNECTION_SUMMARY_TEXT;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT:
+      return IDS_PAGE_INFO_MIXED_CONTENT_CONNECTION_SUMMARY_TEXT;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED:
+      return IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
+      return IDS_PAGE_INFO_UNENCRYPTED_CONNECTION_SUMMARY_TEXT;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_INTERNAL_PAGE:
+      return IDS_PAGE_INFO_INTERNAL_PAGE;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
