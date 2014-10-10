@@ -19,6 +19,9 @@ const char* GeofencingStatusToString(GeofencingStatus status) {
     case GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE:
       return "Operation failed - geofencing not available";
 
+    case GEOFENCING_STATUS_UNREGISTRATION_FAILED_NOT_REGISTERED:
+      return "Unregistration failed - no region registered with given ID";
+
     case GEOFENCING_STATUS_ERROR:
       return "Operation has failed (unspecified reason)";
   }

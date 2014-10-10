@@ -17,6 +17,9 @@ enum GeofencingStatus {
   // Operation failed because geofencing is not available.
   GEOFENCING_STATUS_OPERATION_FAILED_SERVICE_NOT_AVAILABLE,
 
+  // Unregistering failed because region was not registered.
+  GEOFENCING_STATUS_UNREGISTRATION_FAILED_NOT_REGISTERED,
+
   // Generic error.
   GEOFENCING_STATUS_ERROR,
 

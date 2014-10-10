@@ -890,7 +890,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(OS_ANDROID)
   AddFilter(new ScreenOrientationMessageFilterAndroid());
 #endif
-  AddFilter(new GeofencingDispatcherHost());
+  AddFilter(new GeofencingDispatcherHost(browser_context_));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
