@@ -245,6 +245,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
+  void OnRootLayerDelegatedScrollOffsetChanged();
   void UpdateScrollOffsetDelegate();
   gfx::ScrollOffset GetDelegatedScrollOffset(LayerImpl* layer);
 

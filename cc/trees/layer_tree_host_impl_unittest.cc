@@ -3462,7 +3462,11 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
 
   // Check scroll delta reflected in layer.
-  DrawFrame();
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_FALSE(frame.has_no_damage);
   CheckLayerScrollDelta(scroll_layer, ScrollOffsetToVector2dF(scroll_offset));
 
   host_impl_->SetRootLayerScrollOffsetDelegate(NULL);

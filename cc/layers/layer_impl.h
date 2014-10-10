@@ -376,6 +376,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetContentsScale(float contents_scale_x, float contents_scale_y);
 
   void SetScrollOffsetDelegate(ScrollOffsetDelegate* scroll_offset_delegate);
+  void DidScroll();
   bool IsExternalFlingActive() const;
 
   void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);

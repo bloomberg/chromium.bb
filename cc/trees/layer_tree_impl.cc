@@ -928,6 +928,16 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
   }
 }
 
+void LayerTreeImpl::OnRootLayerDelegatedScrollOffsetChanged() {
+  DCHECK(root_layer_scroll_offset_delegate_);
+  if (inner_viewport_scroll_layer_) {
+    inner_viewport_scroll_layer_->DidScroll();
+  }
+  if (outer_viewport_scroll_layer_) {
+    outer_viewport_scroll_layer_->DidScroll();
+  }
+}
+
 void LayerTreeImpl::UpdateScrollOffsetDelegate() {
   DCHECK(InnerViewportScrollLayer());
   DCHECK(root_layer_scroll_offset_delegate_);

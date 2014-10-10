@@ -1079,6 +1079,11 @@ bool LayerImpl::IsExternalFlingActive() const {
          scroll_offset_delegate_->IsExternalFlingActive();
 }
 
+void LayerImpl::DidScroll() {
+  NoteLayerPropertyChangedForSubtree();
+  ScrollbarParametersDidChange(false);
+}
+
 void LayerImpl::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   SetScrollOffsetAndDelta(scroll_offset, ScrollDelta());
 }
@@ -1122,8 +1127,7 @@ void LayerImpl::SetScrollOffsetAndDelta(const gfx::ScrollOffset& scroll_offset,
   }
 
   if (changed) {
-    NoteLayerPropertyChangedForSubtree();
-    ScrollbarParametersDidChange(false);
+    DidScroll();
   }
 }
 
