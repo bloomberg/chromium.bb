@@ -20,7 +20,6 @@ import android.webkit.ValueCallback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentVideoView;
-import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Adapts the AwWebContentsDelegate interface to the AwContentsClient interface.
@@ -30,12 +29,14 @@ import org.chromium.content.browser.ContentViewCore;
 class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     private static final String TAG = "AwWebContentsDelegateAdapter";
 
+    final AwContents mAwContents;
     final AwContentsClient mContentsClient;
     View mContainerView;
     final Context mContext;
 
-    public AwWebContentsDelegateAdapter(AwContentsClient contentsClient,
+    public AwWebContentsDelegateAdapter(AwContents awContents, AwContentsClient contentsClient,
             View containerView, Context context) {
+        mAwContents = awContents;
         mContentsClient = contentsClient;
         setContainerView(containerView);
         mContext = context;
@@ -135,7 +136,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     }
 
     @Override
-    public void showRepostFormWarningDialog(final ContentViewCore contentViewCore) {
+    public void showRepostFormWarningDialog() {
         // TODO(mkosiba) We should be using something akin to the JsResultReceiver as the
         // callback parameter (instead of ContentViewCore) and implement a way of converting
         // that to a pair of messages.
@@ -147,17 +148,15 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         final Handler handler = new Handler(ThreadUtils.getUiThreadLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                if (contentViewCore.getWebContents() == null) return;
+                if (mAwContents.getNavigationController() == null) return;
 
                 switch(msg.what) {
                     case msgContinuePendingReload: {
-                        contentViewCore.getWebContents().getNavigationController()
-                                .continuePendingReload();
+                        mAwContents.getNavigationController().continuePendingReload();
                         break;
                     }
                     case msgCancelPendingReload: {
-                        contentViewCore.getWebContents().getNavigationController()
-                                .cancelPendingReload();
+                        mAwContents.getNavigationController().cancelPendingReload();
                         break;
                     }
                     default:

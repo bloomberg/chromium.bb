@@ -8,7 +8,6 @@ import android.view.KeyEvent;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Java peer of the native class of the same name.
@@ -141,7 +140,7 @@ public class WebContentsDelegateAndroid {
      * either of ContentViewCore.ContinuePendingReload or ContentViewCore.CancelPendingReload.
      */
     @CalledByNative
-    public void showRepostFormWarningDialog(ContentViewCore contentViewCore) {
+    public void showRepostFormWarningDialog() {
     }
 
     @CalledByNative

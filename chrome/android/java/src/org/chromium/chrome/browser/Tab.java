@@ -209,7 +209,7 @@ public class Tab implements NavigationClient {
         }
 
         @Override
-        public void showRepostFormWarningDialog(final ContentViewCore contentViewCore) {
+        public void showRepostFormWarningDialog() {
             RepostFormWarningDialog warningDialog = new RepostFormWarningDialog(
                     new Runnable() {
                         @Override

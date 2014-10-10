@@ -318,12 +318,7 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jobject> content_view_core =
-      content::ContentViewCore::FromWebContents(source)->GetJavaObject();
-  if (content_view_core.is_null())
-    return;
-  Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj.obj(),
-      content_view_core.obj());
+  Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj.obj());
 }
 
 void WebContentsDelegateAndroid::ToggleFullscreenModeForTab(
