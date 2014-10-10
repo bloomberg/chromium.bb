@@ -6,6 +6,7 @@
 #define ATHENA_MAIN_PUBLIC_ATHENA_LAUNCHER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class TaskRunner;
@@ -22,6 +23,7 @@ class BrowserContext;
 namespace athena {
 class ActivityFactory;
 class AppModelBuilder;
+class SearchControllerFactory;
 
 // Starts down the athena shell environment.
 void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner);
@@ -32,7 +34,8 @@ void CreateVirtualKeyboardWithContext(content::BrowserContext* context);
 
 // Starts the athena session.
 void StartAthenaSession(ActivityFactory* activity_factory,
-                        AppModelBuilder* app_model_builder);
+                        scoped_ptr<AppModelBuilder> app_model_builder,
+                        scoped_ptr<SearchControllerFactory> search_factory);
 
 void ShutdownAthena();
 

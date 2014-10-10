@@ -6,10 +6,7 @@
 #define ATHENA_HOME_PUBLIC_HOME_CARD_H_
 
 #include "athena/athena_export.h"
-
-namespace app_list {
-class SearchProvider;
-}
+#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class Rect;
@@ -17,6 +14,7 @@ class Rect;
 
 namespace athena {
 class AppModelBuilder;
+class SearchControllerFactory;
 
 class ATHENA_EXPORT HomeCard {
  public:
@@ -38,7 +36,8 @@ class ATHENA_EXPORT HomeCard {
 
   // Creates/deletes/gets the singleton object of the HomeCard
   // implementation. Takes the ownership of |model_builder|.
-  static HomeCard* Create(AppModelBuilder* model_builder);
+  static HomeCard* Create(scoped_ptr<AppModelBuilder> model_builder,
+                          scoped_ptr<SearchControllerFactory> search_factory);
   static void Shutdown();
   static HomeCard* Get();
 
@@ -47,11 +46,6 @@ class ATHENA_EXPORT HomeCard {
   // Updates/gets the current state of the home card.
   virtual void SetState(State state) = 0;
   virtual State GetState() = 0;
-
-  // Registers a search_provider to the HomeCard. Receiver will take
-  // the ownership of the specified provider.
-  virtual void RegisterSearchProvider(
-      app_list::SearchProvider* search_provider) = 0;
 
   // Called when the virtual keyboard changed has changed to |bounds|. An empty
   // |bounds| indicates that the virtual keyboard is not visible anymore.

@@ -46,8 +46,6 @@
         'placeholder.cc',
         'placeholder.h',
         'public/athena_launcher.h',
-        'url_search_provider.cc',
-        'url_search_provider.h',
       ],
     },
     {

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/main/url_search_provider.h"
+#include "athena/extensions/shell/url_search_provider.h"
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
-#include "athena/content/public/scheme_classifier_factory.h"
+#include "athena/extensions/shell/athena_shell_scheme_classifier.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -34,9 +34,7 @@ const int kScoreForWhatYouTypedResult = 1203;
 class AthenaSearchTermsData : public SearchTermsData {
  public:
   // SearchTermsData:
-  virtual std::string GetSuggestClient() const override {
-    return "chrome";
-  }
+  virtual std::string GetSuggestClient() const override { return "chrome"; }
 };
 
 // The templateURLServiceClient for Athena. Mainly for the interaction with
@@ -67,8 +65,7 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
   explicit AthenaAutocompleteProviderClient(
       content::BrowserContext* browser_context)
-      : browser_context_(browser_context),
-        scheme_classifier_(CreateSchemeClassifier(browser_context)) {}
+      : browser_context_(browser_context) {}
   virtual ~AthenaAutocompleteProviderClient() {}
 
   virtual net::URLRequestContextGetter* RequestContext() override {
@@ -84,7 +81,7 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
   virtual bool SearchSuggestEnabled() override { return true; }
   virtual bool ShowBookmarkBar() override { return false; }
   virtual const AutocompleteSchemeClassifier& SchemeClassifier() override {
-    return *scheme_classifier_;
+    return scheme_classifier_;
   }
   virtual void Classify(
       const base::string16& text,
@@ -102,7 +99,7 @@ class AthenaAutocompleteProviderClient : public AutocompleteProviderClient {
 
  private:
   content::BrowserContext* browser_context_;
-  scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier_;
+  AthenaShellSchemeClassifier scheme_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaAutocompleteProviderClient);
 };
@@ -120,10 +117,9 @@ int ACMatchStyleToTagStyle(int styles) {
 }
 
 // Translates ACMatchClassifications into SearchResult tags.
-void ACMatchClassificationsToTags(
-    const base::string16& text,
-    const ACMatchClassifications& text_classes,
-    app_list::SearchResult::Tags* tags) {
+void ACMatchClassificationsToTags(const base::string16& text,
+                                  const ACMatchClassifications& text_classes,
+                                  app_list::SearchResult::Tags* tags) {
   int tag_styles = app_list::SearchResult::Tag::NONE;
   size_t tag_start = 0;
 
@@ -145,8 +141,8 @@ void ACMatchClassificationsToTags(
   }
 
   if (tag_styles != app_list::SearchResult::Tag::NONE) {
-    tags->push_back(app_list::SearchResult::Tag(
-        tag_styles, tag_start, text.length()));
+    tags->push_back(
+        app_list::SearchResult::Tag(tag_styles, tag_start, text.length()));
   }
 }
 
@@ -154,8 +150,7 @@ class UrlSearchResult : public app_list::SearchResult {
  public:
   UrlSearchResult(content::BrowserContext* browser_context,
                   const AutocompleteMatch& match)
-      : browser_context_(browser_context),
-        match_(match) {
+      : browser_context_(browser_context), match_(match) {
     set_id(match_.destination_url.spec());
 
     // Derive relevance from omnibox relevance and normalize it to [0, 1].
@@ -189,16 +184,14 @@ class UrlSearchResult : public app_list::SearchResult {
   void UpdateTitleAndDetails() {
     set_title(match_.contents);
     SearchResult::Tags title_tags;
-    ACMatchClassificationsToTags(match_.contents,
-                                 match_.contents_class,
-                                 &title_tags);
+    ACMatchClassificationsToTags(
+        match_.contents, match_.contents_class, &title_tags);
     set_title_tags(title_tags);
 
     set_details(match_.description);
     SearchResult::Tags details_tags;
-    ACMatchClassificationsToTags(match_.description,
-                                 match_.description_class,
-                                 &details_tags);
+    ACMatchClassificationsToTags(
+        match_.description, match_.description_class, &details_tags);
     set_details_tags(details_tags);
   }
 
@@ -213,16 +206,15 @@ class UrlSearchResult : public app_list::SearchResult {
 UrlSearchProvider::UrlSearchProvider(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       // TODO(mukai): introduce the real parameters when it's necessary.
-      template_url_service_(
-          new TemplateURLService(NULL /* prefs */,
-                                 scoped_ptr<SearchTermsData>(
-                                     new AthenaSearchTermsData()),
-                                 NULL /* KeywordWebDataService */,
-                                 scoped_ptr<TemplateURLServiceClient>(
-                                     new AthenaTemplateURLServiceClient()),
-                                 NULL /*GoogleURLTracker */,
-                                 NULL /* RapporService */,
-                                 base::Closure() /* dsp_change_callback */)),
+      template_url_service_(new TemplateURLService(
+          NULL /* prefs */,
+          scoped_ptr<SearchTermsData>(new AthenaSearchTermsData()),
+          NULL /* KeywordWebDataService */,
+          scoped_ptr<TemplateURLServiceClient>(
+              new AthenaTemplateURLServiceClient()),
+          NULL /*GoogleURLTracker */,
+          NULL /* RapporService */,
+          base::Closure() /* dsp_change_callback */)),
       provider_(new ::SearchProvider(
           this,
           template_url_service_.get(),
@@ -236,8 +228,6 @@ UrlSearchProvider::~UrlSearchProvider() {
 
 void UrlSearchProvider::Start(const base::string16& query) {
   const bool minimal_changes = query == input_.text();
-  scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier(
-      CreateSchemeClassifier(browser_context_));
   input_ = AutocompleteInput(query,
                              base::string16::npos /* cursor_position */,
                              std::string() /* desired_tld */,
@@ -247,7 +237,7 @@ void UrlSearchProvider::Start(const base::string16& query) {
                              false /* prefer_keyword */,
                              true /* allow_extract_keyword_match */,
                              true /* want_asynchronous_matches */,
-                             *scheme_classifier);
+                             AthenaShellSchemeClassifier());
 
   // Clearing results here may cause unexpected results.
   // TODO(mukai): fix this by fixing crbug.com/415500
@@ -261,8 +251,8 @@ void UrlSearchProvider::Start(const base::string16& query) {
     what_you_typed_match.destination_url = input_.canonicalized_url();
     what_you_typed_match.contents = input_.text();
     what_you_typed_match.relevance = kScoreForWhatYouTypedResult;
-    Add(scoped_ptr<app_list::SearchResult>(new UrlSearchResult(
-        browser_context_, what_you_typed_match)));
+    Add(scoped_ptr<app_list::SearchResult>(
+        new UrlSearchResult(browser_context_, what_you_typed_match)));
   }
 
   provider_->Start(input_, minimal_changes);
@@ -282,8 +272,8 @@ void UrlSearchProvider::OnProviderUpdate(bool updated_matches) {
     if (!it->destination_url.is_valid())
       continue;
 
-    Add(scoped_ptr<app_list::SearchResult>(new UrlSearchResult(
-        browser_context_, *it)));
+    Add(scoped_ptr<app_list::SearchResult>(
+        new UrlSearchResult(browser_context_, *it)));
   }
 }
 

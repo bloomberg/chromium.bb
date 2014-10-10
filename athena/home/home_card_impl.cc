@@ -16,7 +16,6 @@
 #include "athena/screen/public/screen_manager.h"
 #include "athena/util/container_priorities.h"
 #include "athena/wm/public/window_manager.h"
-#include "ui/app_list/search_provider.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/aura/layout_manager.h"
@@ -222,8 +221,10 @@ class HomeCardView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(HomeCardView);
 };
 
-HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
-    : model_builder_(model_builder),
+HomeCardImpl::HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
+                           scoped_ptr<SearchControllerFactory> search_factory)
+    : model_builder_(model_builder.Pass()),
+      search_factory_(search_factory.Pass()),
       state_(HIDDEN),
       original_state_(VISIBLE_MINIMIZED),
       home_card_widget_(NULL),
@@ -245,7 +246,6 @@ HomeCardImpl::~HomeCardImpl() {
   // Reset the view delegate first as it access search provider during
   // shutdown.
   view_delegate_.reset();
-  search_provider_.reset();
   instance = NULL;
 }
 
@@ -259,9 +259,8 @@ void HomeCardImpl::Init() {
   container->SetLayoutManager(layout_manager_);
   wm::SetChildWindowVisibilityChangesAnimated(container);
 
-  view_delegate_.reset(new AppListViewDelegate(model_builder_.get()));
-  if (search_provider_)
-    view_delegate_->RegisterSearchProvider(search_provider_.get());
+  view_delegate_.reset(
+      new AppListViewDelegate(model_builder_.get(), search_factory_.get()));
 
   home_card_view_ = new HomeCardView(view_delegate_.get(), container, this);
   home_card_widget_ = new views::Widget();
@@ -337,13 +336,6 @@ void HomeCardImpl::SetState(HomeCard::State state) {
 
 HomeCard::State HomeCardImpl::GetState() {
   return state_;
-}
-
-void HomeCardImpl::RegisterSearchProvider(
-    app_list::SearchProvider* search_provider) {
-  DCHECK(!search_provider_);
-  search_provider_.reset(search_provider);
-  view_delegate_->RegisterSearchProvider(search_provider_.get());
 }
 
 void HomeCardImpl::UpdateVirtualKeyboardBounds(
@@ -437,8 +429,9 @@ void HomeCardImpl::OnWindowActivated(aura::Window* gained_active,
 }
 
 // static
-HomeCard* HomeCard::Create(AppModelBuilder* model_builder) {
-  (new HomeCardImpl(model_builder))->Init();
+HomeCard* HomeCard::Create(scoped_ptr<AppModelBuilder> model_builder,
+                           scoped_ptr<SearchControllerFactory> search_factory) {
+  (new HomeCardImpl(model_builder.Pass(), search_factory.Pass()))->Init();
   DCHECK(instance);
   return instance;
 }

@@ -9,14 +9,15 @@
 #include "athena/content/public/app_registry.h"
 #include "athena/content/public/content_activity_factory_creator.h"
 #include "athena/env/public/athena_env.h"
+#include "athena/extensions/public/apps_search_controller_factory.h"
 #include "athena/extensions/public/extension_app_model_builder.h"
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/home/public/home_card.h"
+#include "athena/home/public/search_controller_factory.h"
 #include "athena/input/public/input_manager.h"
 #include "athena/main/athena_views_delegate.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/placeholder.h"
-#include "athena/main/url_search_provider.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/public/system_ui.h"
@@ -128,10 +129,10 @@ void CreateVirtualKeyboardWithContext(content::BrowserContext* context) {
 
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
   athena::ExtensionsDelegate::CreateExtensionsDelegate(context);
-  StartAthenaSession(athena::CreateContentActivityFactory(),
-                     new athena::ExtensionAppModelBuilder(context));
-  athena::HomeCard::Get()->RegisterSearchProvider(
-      new athena::UrlSearchProvider(context));
+  StartAthenaSession(
+      athena::CreateContentActivityFactory(),
+      make_scoped_ptr(new athena::ExtensionAppModelBuilder(context)),
+      athena::CreateSearchControllerFactory(context));
   AthenaEnvState* env_state =
       athena::ScreenManager::Get()->GetContext()->GetProperty(
           kAthenaEnvStateKey);
@@ -140,11 +141,13 @@ void StartAthenaSessionWithContext(content::BrowserContext* context) {
   CreateTestPages(context);
 }
 
-void StartAthenaSession(athena::ActivityFactory* activity_factory,
-                        athena::AppModelBuilder* app_model_builder) {
+void StartAthenaSession(
+    athena::ActivityFactory* activity_factory,
+    scoped_ptr<athena::AppModelBuilder> app_model_builder,
+    scoped_ptr<athena::SearchControllerFactory> search_factory) {
   DCHECK(!session_started);
   session_started = true;
-  athena::HomeCard::Create(app_model_builder);
+  athena::HomeCard::Create(app_model_builder.Pass(), search_factory.Pass());
   athena::ActivityManager::Create();
   athena::ResourceManager::Create();
   athena::ActivityFactory::RegisterActivityFactory(activity_factory);

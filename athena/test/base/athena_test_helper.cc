@@ -5,7 +5,9 @@
 #include "athena/test/base/athena_test_helper.h"
 
 #include "athena/env/public/athena_env.h"
+#include "athena/extensions/public/apps_search_controller_factory.h"
 #include "athena/extensions/public/extensions_delegate.h"
+#include "athena/home/public/search_controller_factory.h"
 #include "athena/main/public/athena_launcher.h"
 #include "athena/test/base/sample_activity_factory.h"
 #include "athena/test/base/test_app_model_builder.h"
@@ -64,7 +66,8 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   athena::StartAthenaEnv(file_thread_->message_loop_proxy());
   athena::ExtensionsDelegate::CreateExtensionsDelegateForTest();
   athena::StartAthenaSession(new SampleActivityFactory(),
-                             new TestAppModelBuilder());
+                             make_scoped_ptr(new TestAppModelBuilder()),
+                             CreateSearchControllerFactory(NULL));
 }
 
 void AthenaTestHelper::TearDown() {

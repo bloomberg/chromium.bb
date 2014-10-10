@@ -8,13 +8,10 @@
 #include "athena/athena_export.h"
 #include "athena/home/home_card_gesture_manager.h"
 #include "athena/home/public/home_card.h"
+#include "athena/home/public/search_controller_factory.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
-
-namespace app_list {
-class SearchProvider;
-}
 
 namespace aura {
 class Window;
@@ -49,7 +46,8 @@ class ATHENA_EXPORT HomeCardImpl
       public WindowManagerObserver,
       public aura::client::ActivationChangeObserver {
  public:
-  explicit HomeCardImpl(AppModelBuilder* model_builder);
+  HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
+               scoped_ptr<SearchControllerFactory> search_factory);
   virtual ~HomeCardImpl();
 
   void Init();
@@ -65,8 +63,6 @@ class ATHENA_EXPORT HomeCardImpl
   // Overridden from HomeCard:
   virtual void SetState(HomeCard::State state) override;
   virtual State GetState() override;
-  virtual void RegisterSearchProvider(
-      app_list::SearchProvider* search_provider) override;
   virtual void UpdateVirtualKeyboardBounds(
       const gfx::Rect& bounds) override;
 
@@ -94,6 +90,7 @@ class ATHENA_EXPORT HomeCardImpl
                                  aura::Window* lost_active) override;
 
   scoped_ptr<AppModelBuilder> model_builder_;
+  scoped_ptr<SearchControllerFactory> search_factory_;
 
   HomeCard::State state_;
 
@@ -107,10 +104,6 @@ class ATHENA_EXPORT HomeCardImpl
   HomeCardLayoutManager* layout_manager_;
   aura::client::ActivationClient* activation_client_;  // Not owned
   scoped_ptr<ui::LayerOwner> minimized_home_;
-
-  // Right now HomeCard allows only one search provider.
-  // TODO(mukai): port app-list's SearchController and Mixer.
-  scoped_ptr<app_list::SearchProvider> search_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_MAIN_URL_SEARCH_PROVIDER_H_
-#define ATHENA_MAIN_URL_SEARCH_PROVIDER_H_
+#ifndef ATHENA_EXTENSIONS_SHELL_URL_SEARCH_PROVIDER_H_
+#define ATHENA_EXTENSIONS_SHELL_URL_SEARCH_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,4 +48,4 @@ class UrlSearchProvider : public app_list::SearchProvider,
 
 }  // namespace athena
 
-#endif  // ATHENA_MAIN_URL_SEARCH_PROVIDER_H_
+#endif  // ATHENA_EXTENSIONS_SHELL_URL_SEARCH_PROVIDER_H_

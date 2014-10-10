@@ -10,22 +10,20 @@
 #include "ui/app_list/app_list_view_delegate.h"
 
 namespace app_list {
-class SearchProvider;
+class SearchController;
 }
 
 namespace athena {
 class AppModelBuilder;
+class SearchControllerFactory;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
-  explicit AppListViewDelegate(AppModelBuilder* model_builder);
+  AppListViewDelegate(AppModelBuilder* model_builder,
+                      SearchControllerFactory* search_factory);
   virtual ~AppListViewDelegate();
 
-  void RegisterSearchProvider(app_list::SearchProvider* search_provider);
-
  private:
-  void SearchResultChanged();
-
   // Overridden from app_list::AppListViewDelegate:
   virtual bool ForceNativeDesktop() const override;
   virtual void SetProfileByPath(const base::FilePath& profile_path) override;
@@ -64,8 +62,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   scoped_ptr<app_list::AppListModel> model_;
   scoped_ptr<app_list::SpeechUIModel> speech_ui_;
   Users users_;
-
-  std::vector<app_list::SearchProvider*> search_providers_;
+  scoped_ptr<app_list::SearchController> search_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };
