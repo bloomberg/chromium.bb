@@ -49,9 +49,9 @@ ShellBrowserContext::ShellResourceContext::GetRequestContext() {
 ShellBrowserContext::ShellBrowserContext(bool off_the_record,
                                          net::NetLog* net_log)
     : resource_context_(new ShellResourceContext),
+      ignore_certificate_errors_(false),
       off_the_record_(off_the_record),
       net_log_(net_log),
-      ignore_certificate_errors_(false),
       guest_manager_(NULL) {
   InitWhileIOAllowed();
 }
@@ -65,10 +65,8 @@ ShellBrowserContext::~ShellBrowserContext() {
 
 void ShellBrowserContext::InitWhileIOAllowed() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors) ||
-      cmd_line->HasSwitch(switches::kDumpRenderTree)) {
+  if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors))
     ignore_certificate_errors_ = true;
-  }
   if (cmd_line->HasSwitch(switches::kContentShellDataPath)) {
     path_ = cmd_line->GetSwitchValuePath(switches::kContentShellDataPath);
     return;
@@ -106,16 +104,10 @@ bool ShellBrowserContext::IsOffTheRecord() const {
 }
 
 DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
-  DownloadManager* manager = BrowserContext::GetDownloadManager(this);
-
   if (!download_manager_delegate_.get()) {
     download_manager_delegate_.reset(new ShellDownloadManagerDelegate());
-    download_manager_delegate_->SetDownloadManager(manager);
-    CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-    if (cmd_line->HasSwitch(switches::kDumpRenderTree)) {
-      download_manager_delegate_->SetDownloadBehaviorForTesting(
-          path_.Append(FILE_PATH_LITERAL("downloads")));
-    }
+    download_manager_delegate_->SetDownloadManager(
+        BrowserContext::GetDownloadManager(this));
   }
 
   return download_manager_delegate_.get();

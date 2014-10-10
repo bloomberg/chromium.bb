@@ -95,19 +95,18 @@ class ShellBrowserContext : public BrowserContext {
   }
 
   scoped_ptr<ShellResourceContext> resource_context_;
+  bool ignore_certificate_errors_;
+  scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
 
  private:
-
   // Performs initialization of the ShellBrowserContext while IO is still
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
   bool off_the_record_;
   net::NetLog* net_log_;
-  bool ignore_certificate_errors_;
   base::FilePath path_;
   BrowserPluginGuestManager* guest_manager_;
-  scoped_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
