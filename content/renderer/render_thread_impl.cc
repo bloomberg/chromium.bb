@@ -851,7 +851,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   blink_platform_impl_.reset(new RendererBlinkPlatformImpl);
   blink::initialize(blink_platform_impl_.get());
-  main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
@@ -860,6 +859,14 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableBlinkScheduler)) {
+    main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
+  } else {
+    main_thread_compositor_task_runner_ =
+        make_scoped_refptr(new SchedulerProxyTaskRunner<
+            &blink::WebSchedulerProxy::postCompositorTask>());
+  }
 
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {
