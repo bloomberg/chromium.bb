@@ -13,7 +13,6 @@
 #include "core/xml/XMLHttpRequest.h"
 #include "modules/serviceworkers/FetchManager.h"
 #include "modules/serviceworkers/RequestInit.h"
-#include "platform/NotImplemented.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/Referrer.h"

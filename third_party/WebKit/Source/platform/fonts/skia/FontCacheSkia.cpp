@@ -36,7 +36,6 @@
 #include "SkFontMgr.h"
 #include "SkStream.h"
 #include "SkTypeface.h"
-#include "platform/NotImplemented.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"

@@ -32,7 +32,6 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "platform/NotImplemented.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebString.h"
 #include "wtf/ArrayBuffer.h"

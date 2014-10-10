@@ -55,7 +55,6 @@
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/CheckedInt.h"
-#include "platform/NotImplemented.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
 

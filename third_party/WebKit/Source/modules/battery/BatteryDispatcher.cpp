@@ -6,7 +6,6 @@
 #include "modules/battery/BatteryDispatcher.h"
 
 #include "modules/battery/BatteryStatus.h"
-#include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
