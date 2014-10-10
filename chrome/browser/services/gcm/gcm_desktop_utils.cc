@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -69,6 +71,22 @@ GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
   return chrome_build_info;
 }
 
+std::string GetChannelStatusRequestUrl() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return ProfileSyncService::kSyncServerUrl;
+  }
+
+  return ProfileSyncService::kDevServerUrl;
+}
+
+std::string GetUserAgent() {
+  chrome::VersionInfo version_info;
+  return browser_sync::LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
+      version_info);
+}
+
 }  // namespace
 
 scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
@@ -82,17 +100,19 @@ scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
       worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
           worker_pool->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  return scoped_ptr<GCMDriver>(new GCMDriverDesktop(
-      gcm_client_factory.Pass(),
-      GetChromeBuildInfo(),
-      prefs,
-      store_path,
-      request_context,
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO),
-      blocking_task_runner));
+  return scoped_ptr<GCMDriver>(
+      new GCMDriverDesktop(gcm_client_factory.Pass(),
+                           GetChromeBuildInfo(),
+                           GetChannelStatusRequestUrl(),
+                           GetUserAgent(),
+                           prefs,
+                           store_path,
+                           request_context,
+                           content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::UI),
+                           content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::IO),
+                           blocking_task_runner));
 }
 
 }  // namespace gcm

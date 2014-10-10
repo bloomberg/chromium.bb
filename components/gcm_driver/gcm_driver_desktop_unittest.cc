@@ -233,11 +233,13 @@ void GCMDriverTest::CreateDriver(
       new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
   // TODO(johnme): Need equivalent test coverage of GCMDriverAndroid.
   driver_.reset(new GCMDriverDesktop(
-      scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
-          gcm_client_start_mode,
-          base::MessageLoopProxy::current(),
-          io_thread_.message_loop_proxy())).Pass(),
+      scoped_ptr<GCMClientFactory>(
+          new FakeGCMClientFactory(gcm_client_start_mode,
+                                   base::MessageLoopProxy::current(),
+                                   io_thread_.message_loop_proxy())).Pass(),
       GCMClient::ChromeBuildInfo(),
+      "http://channel.status.request.url",
+      "user-agent-string",
       &prefs_,
       temp_dir_.path(),
       request_context,

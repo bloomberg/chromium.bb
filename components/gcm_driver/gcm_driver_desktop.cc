@@ -335,6 +335,8 @@ void GCMDriverDesktop::IOWorker::RemoveAccountMapping(
 GCMDriverDesktop::GCMDriverDesktop(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
     const GCMClient::ChromeBuildInfo& chrome_build_info,
+    const std::string& channel_status_request_url,
+    const std::string& user_agent,
     PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
@@ -342,7 +344,11 @@ GCMDriverDesktop::GCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : gcm_channel_status_syncer_(
-          new GCMChannelStatusSyncer(this, prefs, request_context)),
+          new GCMChannelStatusSyncer(this,
+                                     prefs,
+                                     channel_status_request_url,
+                                     user_agent,
+                                     request_context)),
       signed_in_(false),
       gcm_started_(false),
       gcm_enabled_(true),

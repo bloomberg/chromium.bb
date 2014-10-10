@@ -71,9 +71,13 @@ int GCMChannelStatusSyncer::first_time_delay_seconds() {
 GCMChannelStatusSyncer::GCMChannelStatusSyncer(
     GCMDriver* driver,
     PrefService* prefs,
+    const std::string& channel_status_request_url,
+    const std::string& user_agent,
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : driver_(driver),
       prefs_(prefs),
+      channel_status_request_url_(channel_status_request_url),
+      user_agent_(user_agent),
       request_context_(request_context),
       gcm_enabled_(true),
       poll_interval_seconds_(
@@ -150,6 +154,8 @@ void GCMChannelStatusSyncer::StartRequest() {
 
   request_.reset(new GCMChannelStatusRequest(
       request_context_,
+      channel_status_request_url_,
+      user_agent_,
       base::Bind(&GCMChannelStatusSyncer::OnRequestCompleted,
                  weak_ptr_factory_.GetWeakPtr())));
   request_->Start();

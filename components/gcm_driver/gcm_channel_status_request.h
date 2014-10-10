@@ -31,6 +31,8 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
 
   GCMChannelStatusRequest(
       const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      const std::string& channel_status_request_url,
+      const std::string& user_agent,
       const GCMChannelStatusRequestCallback& callback);
   virtual ~GCMChannelStatusRequest();
 
@@ -47,6 +49,8 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
   void RetryWithBackoff(bool update_backoff);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const std::string channel_status_request_url_;
+  const std::string user_agent_;
   GCMChannelStatusRequestCallback callback_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   net::BackoffEntry backoff_entry_;

@@ -19,8 +19,6 @@ namespace gcm {
 
 namespace {
 
-const char kGCMChannelStatusRequestURL[] =
-    "https://clients4.google.com/chrome-sync/command/";
 const char kRequestContentType[] = "application/octet-stream";
 const char kGCMChannelTag[] = "gcm_channel";
 const int kDefaultPollIntervalSeconds = 60 * 60;  // 60 minutes.
@@ -30,8 +28,12 @@ const int kMinPollIntervalSeconds = 30 * 60;  // 30 minutes.
 
 GCMChannelStatusRequest::GCMChannelStatusRequest(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const std::string& channel_status_request_url,
+    const std::string& user_agent,
     const GCMChannelStatusRequestCallback& callback)
     : request_context_getter_(request_context_getter),
+      channel_status_request_url_(channel_status_request_url),
+      user_agent_(user_agent),
       callback_(callback),
       backoff_entry_(&(GetGCMBackoffPolicy())),
       weak_ptr_factory_(this) {
@@ -53,7 +55,7 @@ int GCMChannelStatusRequest::min_poll_interval_seconds() {
 void GCMChannelStatusRequest::Start() {
   DCHECK(!url_fetcher_.get());
 
-  GURL request_url(kGCMChannelStatusRequestURL);
+  GURL request_url(channel_status_request_url_);
 
   sync_pb::ExperimentStatusRequest proto_data;
   proto_data.add_experiment_name(kGCMChannelTag);
@@ -63,6 +65,7 @@ void GCMChannelStatusRequest::Start() {
   url_fetcher_.reset(
       net::URLFetcher::Create(request_url, net::URLFetcher::POST, this));
   url_fetcher_->SetRequestContext(request_context_getter_.get());
+  url_fetcher_->AddExtraRequestHeader("User-Agent: " + user_agent_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);

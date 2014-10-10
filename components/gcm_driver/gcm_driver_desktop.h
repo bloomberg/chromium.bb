@@ -48,6 +48,8 @@ class GCMDriverDesktop : public GCMDriver {
   GCMDriverDesktop(
       scoped_ptr<GCMClientFactory> gcm_client_factory,
       const GCMClient::ChromeBuildInfo& chrome_build_info,
+      const std::string& channel_status_request_url,
+      const std::string& user_agent,
       PrefService* prefs,
       const base::FilePath& store_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,

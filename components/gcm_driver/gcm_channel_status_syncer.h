@@ -38,6 +38,8 @@ class GCMChannelStatusSyncer {
   GCMChannelStatusSyncer(
       GCMDriver* driver,
       PrefService* prefs,
+      const std::string& channel_status_request_url,
+      const std::string& user_agent,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   ~GCMChannelStatusSyncer();
 
@@ -72,6 +74,8 @@ class GCMChannelStatusSyncer {
   // GCMDriver owns GCMChannelStatusSyncer instance.
   GCMDriver* driver_;
   PrefService* prefs_;
+  const std::string channel_status_request_url_;
+  const std::string user_agent_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_ptr<GCMChannelStatusRequest> request_;

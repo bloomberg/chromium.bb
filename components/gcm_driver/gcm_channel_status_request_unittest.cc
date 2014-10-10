@@ -54,6 +54,8 @@ GCMChannelStatusRequestTest::~GCMChannelStatusRequestTest() {
 void GCMChannelStatusRequestTest::StartRequest() {
   request_.reset(new GCMChannelStatusRequest(
       url_request_context_getter_.get(),
+      "http://channel.status.request.com/",
+      "user agent string",
       base::Bind(&GCMChannelStatusRequestTest::OnRequestCompleted,
                  base::Unretained(this))));
   request_->Start();
