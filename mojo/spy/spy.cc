@@ -22,12 +22,9 @@
 #include "mojo/spy/common.h"
 #include "mojo/spy/public/spy.mojom.h"
 #include "mojo/spy/spy_server_impl.h"
-#include "mojo/spy/websocket_server.h"
 #include "url/gurl.h"
 
 namespace {
-
-mojo::WebSocketServer* ws_server = NULL;
 
 const size_t kMessageBufSize = 2 * 1024;
 const size_t kHandleBufSize = 64;
@@ -43,9 +40,11 @@ void CloseHandles(MojoHandle* handles, size_t count) {
 class MessageProcessor :
     public base::RefCountedThreadSafe<MessageProcessor> {
  public:
-  MessageProcessor(base::MessageLoopProxy* control_loop_proxy)
+  MessageProcessor(mojo::Spy::WebSocketDelegate* websocket_delegate,
+                   base::MessageLoopProxy* control_loop_proxy)
       : last_result_(MOJO_RESULT_OK),
         bytes_transfered_(0),
+        websocket_delegate_(websocket_delegate),
         control_loop_proxy_(control_loop_proxy) {
     message_count_[0] = 0;
     message_count_[1] = 0;
@@ -115,10 +114,10 @@ class MessageProcessor :
             base::WorkerPool::PostTask(
                 FROM_HERE,
                 base::Bind(&MessageProcessor::Start,
-                            this,
-                            base::Passed(&message_pipe_handle),
-                              base::Passed(&interceptor),
-                            url),
+                           this,
+                           base::Passed(&message_pipe_handle),
+                           base::Passed(&interceptor),
+                           url),
                 true);
             hbuf.get()[i] = faux_client.release().value();
           }
@@ -203,14 +202,19 @@ class MessageProcessor :
   }
 
   void LogMessageInfo(void* data, const GURL& url) {
+    if (!websocket_delegate_)
+      return;
+
     mojo::MojoMessageData* message_data =
         reinterpret_cast<mojo::MojoMessageData*>(data);
     if (IsValidMessage(message_data->header)) {
       control_loop_proxy_->PostTask(
           FROM_HERE,
-          base::Bind(&mojo::WebSocketServer::LogMessageInfo,
-                      base::Unretained(ws_server),
-                      message_data->header, url, base::Time::Now()));
+          base::Bind(&mojo::Spy::WebSocketDelegate::OnMessage,
+                     base::Unretained(websocket_delegate_),
+                     message_data,
+                     url,
+                     base::Time::Now()));
     }
   }
 
@@ -218,6 +222,7 @@ class MessageProcessor :
   uint32_t bytes_transfered_;
   uint32_t message_count_[2];
   uint32_t handle_count_[2];
+  mojo::Spy::WebSocketDelegate* websocket_delegate_;
   scoped_refptr<base::MessageLoopProxy> control_loop_proxy_;
 };
 
@@ -226,10 +231,12 @@ class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
  public:
   explicit SpyInterceptor(
       scoped_refptr<mojo::SpyServerImpl> spy_server,
-      const scoped_refptr<base::MessageLoopProxy>& control_loop_proxy)
+      const scoped_refptr<base::MessageLoopProxy>& control_loop_proxy,
+      mojo::Spy::WebSocketDelegate* websocket_delegate)
       : spy_server_(spy_server),
         proxy_(base::MessageLoopProxy::current()),
-        control_loop_proxy_(control_loop_proxy) {}
+        control_loop_proxy_(control_loop_proxy),
+        websocket_delegate_(websocket_delegate) {}
 
  private:
   virtual mojo::ServiceProviderPtr OnConnectToClient(
@@ -247,7 +254,7 @@ class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
       CreateMessagePipe(NULL, &faux_client, &interceptor);
 
       scoped_refptr<MessageProcessor> processor =
-          new MessageProcessor(control_loop_proxy_.get());
+          new MessageProcessor(websocket_delegate_, control_loop_proxy_.get());
       mojo::ScopedMessagePipeHandle real_handle = real_client.PassMessagePipe();
       base::WorkerPool::PostTask(
           FROM_HERE,
@@ -273,13 +280,12 @@ class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
   scoped_refptr<mojo::SpyServerImpl> spy_server_;
   scoped_refptr<base::MessageLoopProxy> proxy_;
   scoped_refptr<base::MessageLoopProxy> control_loop_proxy_;
+  mojo::Spy::WebSocketDelegate* websocket_delegate_;
 };
 
-void StartWebServer(int port, mojo::ScopedMessagePipeHandle pipe) {
-  // TODO(cpu) figure out lifetime of the server. See Spy() dtor.
-  ws_server = new mojo::WebSocketServer(port, pipe.Pass());
-  ws_server->Start();
-}
+}  // namespace
+
+namespace mojo {
 
 struct SpyOptions {
   int websocket_port;
@@ -306,33 +312,38 @@ SpyOptions ProcessOptions(const std::string& options) {
   return spy_options;
 }
 
-}  // namespace
-
-namespace mojo {
-
 Spy::Spy(mojo::ApplicationManager* application_manager,
-         const std::string& options) {
-  SpyOptions spy_options = ProcessOptions(options);
-
+         const std::string& options)
+    : websocket_delegate_(NULL),
+      application_manager_(application_manager),
+      spy_options_(NULL) {
+  spy_options_ = new SpyOptions(ProcessOptions(options));
   spy_server_ = new SpyServerImpl();
 
   // Start the tread what will accept commands from the frontend.
   control_thread_.reset(new base::Thread("mojo_spy_control_thread"));
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   control_thread_->StartWithOptions(thread_options);
-  control_thread_->message_loop_proxy()->PostTask(
-      FROM_HERE, base::Bind(&StartWebServer,
-                            spy_options.websocket_port,
-                            base::Passed(spy_server_->ServerPipe())));
-
-  // Start intercepting mojo services.
-  application_manager->SetInterceptor(
-      new SpyInterceptor(spy_server_, control_thread_->message_loop_proxy()));
 }
 
 Spy::~Spy() {
   // TODO(cpu): Do not leak the interceptor. Lifetime between the
   // application_manager and the spy is still unclear hence the leak.
+}
+
+void Spy::SetWebSocketDelegate(WebSocketDelegate* websocket_delegate) {
+  DCHECK(websocket_delegate_ == NULL);
+  websocket_delegate_ = websocket_delegate;
+
+  control_thread_->message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebSocketDelegate::Start,
+                 base::Unretained(websocket_delegate_),
+                 spy_options_->websocket_port,
+                 base::Passed(spy_server_->ServerPipe())));
+  // Start intercepting mojo services.
+  application_manager_->SetInterceptor(new SpyInterceptor(
+      spy_server_, control_thread_->message_loop_proxy(), websocket_delegate_));
 }
 
 }  // namespace mojo

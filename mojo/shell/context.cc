@@ -219,6 +219,9 @@ void Context::Init() {
     spy_.reset(
         new mojo::Spy(&application_manager_,
                       command_line->GetSwitchValueASCII(switches::kSpy)));
+    // TODO(cpu): the spy can snoop, but can't tell anybody until
+    // the Spy::WebSocketDelegate is implemented. In the original repo this
+    // was implemented by src\mojo\spy\websocket_server.h and .cc.
   }
 
 #if defined(OS_ANDROID)
