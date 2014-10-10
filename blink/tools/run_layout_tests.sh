@@ -7,9 +7,9 @@
 exec_dir=$(dirname $0)
 
 if [ "$OSTYPE" = "cygwin" ]; then
-  SCRIPT=$(cygpath -wa "$exec_dir/run_webkit_tests.py")
+  SCRIPT=$(cygpath -wa "$exec_dir/run_layout_tests.py")
 else
-  SCRIPT="$exec_dir/run_webkit_tests.py"
+  SCRIPT="$exec_dir/run_layout_tests.py"
 fi
 
 PYTHON_PROG=python
