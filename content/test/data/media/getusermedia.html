@@ -388,9 +388,8 @@
     var maxLightGreenPixelsX = 0;
     var maxLightGreenPixelsY = 0;
 
-    // TODO(phoglund): don't iterate 10 times - too slow on Windows.
-    var iterations = 0;
-    var maxIterations = 10;
+    var attempt = 0;
+    var maxAttempts = 10;
 
     var detectorFunction = function() {
       var width = videoElement.videoWidth;
@@ -427,23 +426,27 @@
       if (lightGreenPixelsY > maxLightGreenPixelsY)
         maxLightGreenPixelsY = lightGreenPixelsY;
 
-      if (++iterations > maxIterations) {
-        clearInterval(detectorInterval);
-        // Allow maxLightGreenPixelsY = maxLightGreenPixelsX +-1 due to
-        // possible subpixel rendering on Mac and Android.
-        if (maxLightGreenPixelsY > maxLightGreenPixelsX + 1 ||
-            maxLightGreenPixelsY < maxLightGreenPixelsX -1 ||
-            maxLightGreenPixelsY == 0 ||
-            maxLightGreenPixelsX == width / 2 ||
-            maxLightGreenPixelsY == height / 2) {
+      // Allow maxLightGreenPixelsY = maxLightGreenPixelsX +-1 due to
+      // possible subpixel rendering on Mac and Android.
+      if (maxLightGreenPixelsY > maxLightGreenPixelsX + 1 ||
+          maxLightGreenPixelsY < maxLightGreenPixelsX -1 ||
+          maxLightGreenPixelsY == 0 ||
+          maxLightGreenPixelsX == width / 2 ||
+          maxLightGreenPixelsY == height / 2) {
+        if (++attempt > maxAttempts) {
+          clearInterval(detectorInterval);
           failTest("Aspect ratio corrupted. X " + maxLightGreenPixelsX  +
-            " Y " + maxLightGreenPixelsY);
+                   " Y " + maxLightGreenPixelsY);
         }
-
-        var result = "w=" + width + ":h=" + height;
-        console.log(result);
-        callback(result);
+        else {
+          // We have a bad aspect ratio now; give a chance to shape up.
+          return;
+        }
       }
+
+      clearInterval(detectorInterval);
+      var result = "w=" + width + ":h=" + height;
+      callback(result);
     }
     var detectorInterval = setInterval(detectorFunction, 50);
   }
