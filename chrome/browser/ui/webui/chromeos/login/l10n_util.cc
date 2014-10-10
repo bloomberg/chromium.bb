@@ -432,18 +432,22 @@ void ResolveUILanguageList(
   scoped_ptr<std::string> new_language_list_locale(new std::string);
   scoped_ptr<std::string> new_selected_language(new std::string);
 
-  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
-      FROM_HERE,
+  base::Closure resolve_on_pool =
       base::Bind(&ResolveLanguageListOnBlockingPool,
                  base::Owned(language_switch_result.release()),
                  base::Unretained(new_language_list.get()),
                  base::Unretained(new_language_list_locale.get()),
-                 base::Unretained(new_selected_language.get())),
+                 base::Unretained(new_selected_language.get()));
+
+  base::Closure on_language_list_resolved =
       base::Bind(&OnLanguageListResolved,
                  callback,
                  base::Passed(new_language_list.Pass()),
                  base::Passed(new_language_list_locale.Pass()),
-                 base::Passed(new_selected_language.Pass())));
+                 base::Passed(new_selected_language.Pass()));
+
+  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
+      FROM_HERE, resolve_on_pool, on_language_list_resolved);
 }
 
 scoped_ptr<base::ListValue> GetMinimalUILanguageList() {
