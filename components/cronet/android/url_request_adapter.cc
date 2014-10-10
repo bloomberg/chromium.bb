@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/url_request_context_adapter.h"
 #include "components/cronet/android/wrapped_channel_upload_element_reader.h"
-#include "net/base/element_upload_data_stream.h"
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_status_code.h"
