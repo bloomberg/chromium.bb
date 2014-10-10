@@ -237,7 +237,7 @@ Gallery.prototype.__proto__ = cr.EventTarget.prototype;
  * @const
  * @type {number}
  */
-Gallery.FADE_TIMEOUT = 3000;
+Gallery.FADE_TIMEOUT = 2000;
 
 /**
  * First time tools fade-out timeout in milliseconds.
