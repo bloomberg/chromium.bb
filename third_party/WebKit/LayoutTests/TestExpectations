@@ -1404,14 +1404,14 @@ crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/emphasi
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/emphasis-overlap.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/fake-italic.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/fixed-pitch-control-characters.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/justify-nbsp.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/justify-padding-distribution.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/selection-painted-separately.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/setData-dirty-lines.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hyphen-2.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hyphen-3.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/justify-nbsp.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/justify-padding-distribution.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/selection-painted-separately.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/setData-dirty-lines.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-2.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-3.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
 
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
@@ -1457,4 +1457,3 @@ crbug.com/415031 [ Mac ] compositing/overflow/scroll-parent-with-non-stacking-co
 crbug.com/415031 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 
 crbug.com/416371 http/tests/serviceworker/fetch-event.html [ NeedsRebaseline ]
-
