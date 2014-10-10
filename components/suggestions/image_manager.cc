@@ -5,13 +5,8 @@
 #include "components/suggestions/image_manager.h"
 
 #include "base/bind.h"
-#include "components/suggestions/image_fetcher.h"
-
-#if defined(OS_IOS)
-#include "components/suggestions/image_encoder_ios.h"
-#else
 #include "components/suggestions/image_encoder.h"
-#endif
+#include "components/suggestions/image_fetcher.h"
 
 using leveldb_proto::ProtoDatabase;
 

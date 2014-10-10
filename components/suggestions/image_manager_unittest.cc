@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "components/suggestions/image_encoder.h"
 #include "components/suggestions/image_fetcher.h"
 #include "components/suggestions/image_fetcher_delegate.h"
 #include "components/suggestions/image_manager.h"
@@ -16,12 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
-
-#if defined(OS_IOS)
-#include "components/suggestions/image_encoder_ios.h"
-#else
-#include "components/suggestions/image_encoder.h"
-#endif
 
 using ::testing::Return;
 using ::testing::StrictMock;

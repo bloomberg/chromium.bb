@@ -24,6 +24,7 @@
       'sources': [
         'suggestions/blacklist_store.cc',
         'suggestions/blacklist_store.h',
+        'suggestions/image_encoder.h',
         'suggestions/image_fetcher.h',
         'suggestions/image_fetcher_delegate.h',
         'suggestions/image_manager.cc',
@@ -46,13 +47,11 @@
       'conditions': [
         ['OS == "ios"', {
           'sources': [
-            'suggestions/image_encoder_ios.h',
             'suggestions/image_encoder_ios.mm',
           ]
         }, { # 'OS != "ios"'
           'sources': [
             'suggestions/image_encoder.cc',
-            'suggestions/image_encoder.h',
           ]
         }
       ]]
