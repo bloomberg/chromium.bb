@@ -25,8 +25,18 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     # Fails on all platforms
-    self.Fail('conformance/glsl/misc/shaders-with-uniform-structs.html',
-        bug=351396)
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        bug=421710)
+    self.Fail('conformance/glsl/misc/struct-unary-operators.html',
+        bug=421709)
+    self.Fail('conformance/renderbuffers/feedback-loop.html',
+        bug=421695)
+    # This one might be causing itself and all tests afterwards to timeout
+    # on Windows Debug.
+    self.Skip('conformance/textures/texture-copying-feedback-loops.html',
+        bug=421695)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas.html',
+        bug=420357)
 
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
@@ -39,6 +49,18 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=402195)
     self.Fail('conformance/attribs/gl-bindAttribLocation-matrix.html',
         ['win'], bug=415688)
+    self.Fail('conformance/attribs/gl-bindAttribLocation-aliasing.html',
+        ['win'], bug=415688)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgb565.html',
+        ['win'], bug=420357)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgba4444.html',
+        ['win'], bug=420357)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgba5551.html',
+        ['win'], bug=420357)
+    self.Fail('conformance/glsl/misc/ternary-operators-in-global-initializers.html',
+        ['win'], bug=415694)
+    self.Fail('conformance/glsl/misc/ternary-operators-in-initializers.html',
+        ['win'], bug=415694)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -129,6 +151,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=393331)
     self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
         ['lion', 'intel'], bug=393331)
+
+    # Linux failures
+    self.Fail('conformance/textures/default-texture.html',
+        ['linux', ('nvidia', 0x104a)], bug=422152)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
