@@ -19,7 +19,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
@@ -27,7 +26,6 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.lib import commandline
-from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -817,18 +815,6 @@ class PreCQSyncStage(SyncStage):
 
     if len(self.pool.changes) == 0:
       cros_build_lib.Die('No changes have been applied.')
-
-    # Mark changes with pre-cq status inflight in database.
-    # This will be replaced by a call to UpdateCLPreCQStatus in a future CL.
-    if (cidb.CIDBConnectionFactory.IsCIDBSetup() and
-        cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()):
-      build_id = self._run.attrs.metadata.GetValue('build_id')
-      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-      for change in self.pool.changes:
-        db.InsertCLActions(
-            build_id,
-            [metadata_lib.GetCLActionTuple(
-                change, constants.CL_ACTION_PRE_CQ_INFLIGHT)])
 
 
 class PreCQLauncherStage(SyncStage):
