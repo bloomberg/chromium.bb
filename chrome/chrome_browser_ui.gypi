@@ -2412,8 +2412,6 @@
       'browser/ui/ash/session_state_delegate_chromeos.h',
       'browser/ui/ash/solid_color_user_wallpaper_delegate.cc',
       'browser/ui/ash/solid_color_user_wallpaper_delegate.h',
-      'browser/ui/ash/stub_user_accounts_delegate.cc',
-      'browser/ui/ash/stub_user_accounts_delegate.h',
       'browser/ui/ash/system_tray_delegate_chromeos.cc',
       'browser/ui/ash/system_tray_delegate_chromeos.h',
       'browser/ui/ash/system_tray_delegate_linux.cc',
