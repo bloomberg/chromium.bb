@@ -33,6 +33,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/render_text.h"
@@ -529,7 +530,8 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
       BrowserView::GetBrowserViewForBrowser(bubble_.browser());
 
   views::View* reference_view = NULL;
-  if (bubble_.type() == bubble_.BROWSER_ACTION) {
+  if (bubble_.type() == bubble_.BROWSER_ACTION ||
+      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     BrowserActionsContainer* container =
         browser_view->GetToolbarView()->browser_actions();
     if (container->animating())
@@ -595,7 +597,8 @@ gfx::Rect ExtensionInstalledBubbleView::GetAnchorRect() const {
 }
 
 void ExtensionInstalledBubbleView::WindowClosing() {
-  if (bubble_.extension() && bubble_.type() == bubble_.PAGE_ACTION) {
+  if (bubble_.extension() && bubble_.type() == bubble_.PAGE_ACTION &&
+      !extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(bubble_.browser());
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
