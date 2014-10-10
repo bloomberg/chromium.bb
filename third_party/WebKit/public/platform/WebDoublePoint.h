@@ -31,6 +31,12 @@
 #ifndef WebDoublePoint_h
 #define WebDoublePoint_h
 
+#include "WebCommon.h"
+
+#if INSIDE_BLINK
+#include "platform/geometry/DoublePoint.h"
+#endif
+
 namespace blink {
 
 struct WebDoublePoint {
@@ -48,6 +54,20 @@ struct WebDoublePoint {
         , y(y)
     {
     }
+
+#if INSIDE_BLINK
+    WebDoublePoint(const DoublePoint& p)
+        : x(p.x())
+        , y(p.y())
+    {
+    }
+
+    operator DoublePoint() const
+    {
+        return DoublePoint(x, y);
+    }
+#endif
+
 };
 
 inline bool operator==(const WebDoublePoint& a, const WebDoublePoint& b)

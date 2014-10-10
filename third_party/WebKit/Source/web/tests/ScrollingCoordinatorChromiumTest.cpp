@@ -462,7 +462,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
     ASSERT_TRUE(webScrollLayer->scrollable());
 
     int expectedScrollPosition = 958 + (innerFrameView->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
-    ASSERT_EQ(expectedScrollPosition, webScrollLayer->scrollPosition().x);
+    ASSERT_EQ(expectedScrollPosition, webScrollLayer->scrollPositionDouble().x);
 }
 
 TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldNotCrash)

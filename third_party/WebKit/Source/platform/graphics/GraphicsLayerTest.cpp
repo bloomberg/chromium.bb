@@ -146,10 +146,12 @@ public:
     }
 
     virtual void setScrollOffset(const IntPoint& scrollOffset) override { m_scrollPosition = scrollOffset; }
-    virtual IntPoint scrollPosition() const override { return m_scrollPosition; }
+    virtual void setScrollOffset(const DoublePoint& scrollOffset) override { m_scrollPosition = scrollOffset; }
+    virtual DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
+    virtual IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }
 
 private:
-    IntPoint m_scrollPosition;
+    DoublePoint m_scrollPosition;
 };
 
 TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
@@ -157,11 +159,12 @@ TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
     FakeScrollableArea scrollableArea;
     m_graphicsLayer->setScrollableArea(&scrollableArea, false);
 
-    WebPoint scrollPosition(7, 9);
-    m_platformLayer->setScrollPosition(scrollPosition);
+    WebDoublePoint scrollPosition(7.2, 9.6);
+    m_platformLayer->setScrollPositionDouble(scrollPosition);
     m_graphicsLayer->didScroll();
 
-    EXPECT_EQ(scrollPosition, WebPoint(scrollableArea.scrollPosition()));
+    EXPECT_FLOAT_EQ(scrollPosition.x, scrollableArea.scrollPositionDouble().x());
+    EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea.scrollPositionDouble().y());
 }
 
 } // namespace

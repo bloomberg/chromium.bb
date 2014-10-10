@@ -1056,8 +1056,11 @@ void GraphicsLayer::notifyAnimationFinished(double, WebCompositorAnimation::Targ
 
 void GraphicsLayer::didScroll()
 {
-    if (m_scrollableArea)
-        m_scrollableArea->scrollToOffsetWithoutAnimation(m_scrollableArea->minimumScrollPosition() + toIntSize(m_layer->layer()->scrollPosition()));
+    if (m_scrollableArea) {
+        DoublePoint newPosition = m_scrollableArea->minimumScrollPosition() + toDoubleSize(m_layer->layer()->scrollPositionDouble());
+        // FIXME: Remove the toFloatPoint(). crbug.com/414283.
+        m_scrollableArea->scrollToOffsetWithoutAnimation(toFloatPoint(newPosition));
+    }
 }
 
 } // namespace blink
