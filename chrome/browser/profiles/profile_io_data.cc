@@ -864,9 +864,7 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 }
 
 bool ProfileIOData::IsDataReductionProxyEnabled() const {
-  return data_reduction_proxy_enabled_.GetValue() ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-            data_reduction_proxy::switches::kEnableDataReductionProxy);
+  return false;
 }
 
 base::WeakPtr<net::HttpServerProperties>
@@ -1023,8 +1021,6 @@ void ProfileIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_safesearch_);
-  network_delegate->set_data_reduction_proxy_enabled_pref(
-      &data_reduction_proxy_enabled_);
   network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
   network_delegate_.reset(network_delegate);
 
@@ -1202,7 +1198,6 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_metrics_.Destroy();
 #endif
   safe_browsing_enabled_.Destroy();
-  data_reduction_proxy_enabled_.Destroy();
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();

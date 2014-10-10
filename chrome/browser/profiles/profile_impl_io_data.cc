@@ -114,6 +114,7 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
+  io_data_->data_reduction_proxy_enabled()->Destroy();
   io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
@@ -333,6 +334,7 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (initialized_)
     return;
 
@@ -438,6 +440,8 @@ void ProfileImplIOData::InitializeInternal(
   data_reduction_proxy_usage_stats()->set_unavailable_callback(
       data_reduction_proxy_unavailable_callback());
 
+  network_delegate()->set_data_reduction_proxy_enabled_pref(
+      &data_reduction_proxy_enabled_);
   network_delegate()->set_data_reduction_proxy_params(
       data_reduction_proxy_params());
   network_delegate()->set_data_reduction_proxy_usage_stats(
@@ -829,4 +833,10 @@ void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
   transport_security_state()->DeleteAllDynamicDataSince(time);
   DCHECK(http_server_properties_manager_);
   http_server_properties_manager_->Clear(completion);
+}
+
+bool ProfileImplIOData::IsDataReductionProxyEnabled() const {
+  return data_reduction_proxy_enabled_.GetValue() ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+            data_reduction_proxy::switches::kEnableDataReductionProxy);
 }

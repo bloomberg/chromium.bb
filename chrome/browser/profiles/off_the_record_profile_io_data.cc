@@ -163,13 +163,6 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
-  // TODO(kundaji): Remove data_reduction_proxy_enabled pref for incognito.
-  // Bug http://crbug/412873.
-  io_data_->data_reduction_proxy_enabled()->Init(
-      data_reduction_proxy::prefs::kDataReductionProxyEnabled,
-      profile_->GetPrefs());
-  io_data_->data_reduction_proxy_enabled()->MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   io_data_->InitializeOnUIThread(profile_);
 }
 

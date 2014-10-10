@@ -149,6 +149,12 @@ class ProfileImplIOData : public ProfileIOData {
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
 
+  virtual bool IsDataReductionProxyEnabled() const OVERRIDE;
+
+  BooleanPrefMember* data_reduction_proxy_enabled() const {
+    return &data_reduction_proxy_enabled_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<ProfileImplIOData>;
 
@@ -234,6 +240,8 @@ class ProfileImplIOData : public ProfileIOData {
       domain_reliability_monitor_;
 
   mutable scoped_ptr<net::SdchManager> sdch_manager_;
+
+  mutable BooleanPrefMember data_reduction_proxy_enabled_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;
