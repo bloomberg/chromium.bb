@@ -9,7 +9,7 @@ namespace switches {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Enable use of cross-process CALayers to display content directly from the
 // GPU process on Mac.
-const char kEnableRemoteCoreAnimation[] = "enable-remote-core-animation";
+const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
 #endif
 
 // Disables use of DWM composition for top level windows.

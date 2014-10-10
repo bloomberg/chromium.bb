@@ -5,6 +5,7 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 
 #include "base/command_line.h"
+#include "base/mac/mac_util.h"
 #include "ui/base/ui_base_switches.h"
 
 #include <objc/runtime.h>
@@ -12,10 +13,14 @@
 namespace ui {
 
 bool RemoteLayerAPISupported() {
-  bool enabled_at_command_line =
+  // This API only works on Mac OS 10.9 and later.
+  if (!base::mac::IsOSMavericksOrLater())
+    return false;
+
+  bool disabled_at_command_line =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRemoteCoreAnimation);
-  if (!enabled_at_command_line)
+          switches::kDisableRemoteCoreAnimation);
+  if (disabled_at_command_line)
     return false;
 
   // Verify the GPU process interfaces are present.
