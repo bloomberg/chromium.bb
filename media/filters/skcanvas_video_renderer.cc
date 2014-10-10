@@ -327,31 +327,8 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     if (!SkInstallDiscardablePixelRef(generator_, &last_frame_)) {
       NOTREACHED();
     }
-
-    // TODO(rileya): Perform this rotation on the canvas, rather than allocating
-    // a new bitmap and copying.
-    switch (video_rotation) {
-      case VIDEO_ROTATION_0:
-        break;
-      case VIDEO_ROTATION_90:
-        last_frame_ = SkBitmapOperations::Rotate(
-            last_frame_, SkBitmapOperations::ROTATION_90_CW);
-        break;
-      case VIDEO_ROTATION_180:
-        last_frame_ = SkBitmapOperations::Rotate(
-            last_frame_, SkBitmapOperations::ROTATION_180_CW);
-        break;
-      case VIDEO_ROTATION_270:
-        last_frame_ = SkBitmapOperations::Rotate(
-            last_frame_, SkBitmapOperations::ROTATION_270_CW);
-        break;
-    }
-
-    // We copied the frame into a new bitmap and threw out the old one, so we
-    // no longer have a |generator_| around. This should be removed when the
-    // above TODO is addressed.
-    if (video_rotation != VIDEO_ROTATION_0)
-      generator_ = NULL;
+    DCHECK(video_frame->visible_rect().width() == last_frame_.width() &&
+           video_frame->visible_rect().height() == last_frame_.height());
 
     last_frame_timestamp_ = video_frame->timestamp();
   } else if (generator_) {
@@ -359,10 +336,48 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   }
 
   paint.setXfermodeMode(mode);
-
-  // Paint using |last_frame_|.
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
-  canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);
+
+  bool need_transform =
+      video_rotation != VIDEO_ROTATION_0 ||
+      dest_rect.size() != video_frame->visible_rect().size() ||
+      !dest_rect.origin().IsOrigin();
+  if (need_transform) {
+    canvas->save();
+    canvas->translate(
+        SkFloatToScalar(dest_rect.x() + (dest_rect.width() * 0.5f)),
+        SkFloatToScalar(dest_rect.y() + (dest_rect.height() * 0.5f)));
+    SkScalar angle = SkFloatToScalar(0.0f);
+    switch (video_rotation) {
+      case VIDEO_ROTATION_0:
+        break;
+      case VIDEO_ROTATION_90:
+        angle = SkFloatToScalar(90.0f);
+        break;
+      case VIDEO_ROTATION_180:
+        angle = SkFloatToScalar(180.0f);
+        break;
+      case VIDEO_ROTATION_270:
+        angle = SkFloatToScalar(270.0f);
+        break;
+    }
+    canvas->rotate(angle);
+
+    gfx::SizeF rotated_dest_size = dest_rect.size();
+    if (video_rotation == VIDEO_ROTATION_90 ||
+        video_rotation == VIDEO_ROTATION_270) {
+      rotated_dest_size =
+          gfx::SizeF(rotated_dest_size.height(), rotated_dest_size.width());
+    }
+    canvas->scale(
+        SkFloatToScalar(rotated_dest_size.width() / last_frame_.width()),
+        SkFloatToScalar(rotated_dest_size.height() / last_frame_.height()));
+    canvas->translate(-SkFloatToScalar(last_frame_.width() * 0.5f),
+                      -SkFloatToScalar(last_frame_.height() * 0.5f));
+  }
+  canvas->drawBitmap(last_frame_, 0, 0, &paint);
+  if (need_transform)
+    canvas->restore();
   canvas->flush();
 }
 

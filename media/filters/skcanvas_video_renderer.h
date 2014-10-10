@@ -27,8 +27,8 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   SkCanvasVideoRenderer();
   ~SkCanvasVideoRenderer();
 
-  // Paints |video_frame| on |canvas|, scaling the result to fit dimensions
-  // specified by |dest_rect|.
+  // Paints |video_frame| on |canvas|, scaling and rotating the result to fit
+  // dimensions specified by |dest_rect|.
   //
   // Black will be painted on |canvas| if |video_frame| is null.
   void Paint(const scoped_refptr<VideoFrame>& video_frame,
