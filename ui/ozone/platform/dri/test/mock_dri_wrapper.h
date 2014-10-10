@@ -33,6 +33,7 @@ class MockDriWrapper : public ui::DriWrapper {
   }
   int get_page_flip_call_count() const { return page_flip_call_count_; }
   int get_overlay_flip_call_count() const { return overlay_flip_call_count_; }
+  int get_handle_events_count() const { return handle_events_count_; }
   void fail_init() { fd_ = -1; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
@@ -47,6 +48,11 @@ class MockDriWrapper : public ui::DriWrapper {
 
   const std::vector<skia::RefPtr<SkSurface> > buffers() const {
     return buffers_;
+  }
+
+  // Overwrite the list of controllers used when serving the PageFlip requests.
+  void set_controllers(const std::queue<CrtcController*>& controllers) {
+    controllers_ = controllers;
   }
 
   // DriWrapper:
@@ -103,6 +109,7 @@ class MockDriWrapper : public ui::DriWrapper {
   int remove_framebuffer_call_count_;
   int page_flip_call_count_;
   int overlay_flip_call_count_;
+  int handle_events_count_;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;

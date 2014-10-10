@@ -30,6 +30,7 @@ MockDriWrapper::MockDriWrapper(int fd)
       remove_framebuffer_call_count_(0),
       page_flip_call_count_(0),
       overlay_flip_call_count_(0),
+      handle_events_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
@@ -132,6 +133,7 @@ void MockDriWrapper::HandleEvent(drmEventContext& event) {
   CHECK(!controllers_.empty());
   controllers_.front()->OnPageFlipEvent(0, 0, 0);
   controllers_.pop();
+  handle_events_count_++;
 }
 
 bool MockDriWrapper::CreateDumbBuffer(const SkImageInfo& info,

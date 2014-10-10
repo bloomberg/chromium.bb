@@ -119,7 +119,10 @@ void HardwareDisplayController::WaitForPageFlipEvent() {
   bool has_pending_page_flips = false;
   // Wait for the page-flips to complete.
   for (size_t i = 0; i < crtc_controllers_.size(); ++i) {
-    if (crtc_controllers_[i]->page_flip_pending()) {
+    // In mirror mode the page flip callbacks can happen in different order than
+    // scheduled, so we need to make sure that the event for the current CRTC is
+    // processed before moving to the next CRTC.
+    while (crtc_controllers_[i]->page_flip_pending()) {
       has_pending_page_flips = true;
       crtc_controllers_[i]->drm()->HandleEvent(drm_event);
     }
