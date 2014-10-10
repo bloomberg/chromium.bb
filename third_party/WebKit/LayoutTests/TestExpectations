@@ -1445,8 +1445,6 @@ crbug.com/421298 http/tests/security/subresourceIntegrity/subresource-integrity-
 crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 
-crbug.com/414283 [ Win ] fast/dynamic/anchor-lock.html [ NeedsRebaseline ]
-crbug.com/414283 fast/overflow/scrollRevealButton.html [ NeedsRebaseline ]
 crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure ]
 
 # Updating Javascript spec.
