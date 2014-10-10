@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBRTCPEERCONNECTIONHANDLER_H_
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBRTCPEERCONNECTIONHANDLER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
@@ -26,6 +28,7 @@ class MockWebRTCPeerConnectionHandler
   MockWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
       TestInterfaces* interfaces);
+  virtual ~MockWebRTCPeerConnectionHandler();
 
   // WebRTCPeerConnectionHandler related methods
   virtual bool initialize(
@@ -75,6 +78,12 @@ class MockWebRTCPeerConnectionHandler
  private:
   MockWebRTCPeerConnectionHandler();
 
+  // UpdateRemoteStreams uses the collection of |local_streams_| to create
+  // remote MediaStreams with the same number of tracks and notifies |client_|
+  // about added and removed streams. It's triggered when setRemoteDescription
+  // is called.
+  void UpdateRemoteStreams();
+
   blink::WebRTCPeerConnectionHandlerClient* client_;
   bool stopped_;
   WebTaskList task_list_;
@@ -82,6 +91,9 @@ class MockWebRTCPeerConnectionHandler
   blink::WebRTCSessionDescription remote_description_;
   int stream_count_;
   TestInterfaces* interfaces_;
+  typedef std::map<std::string, blink::WebMediaStream> StreamMap;
+  StreamMap local_streams_;
+  StreamMap remote_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCPeerConnectionHandler);
 };

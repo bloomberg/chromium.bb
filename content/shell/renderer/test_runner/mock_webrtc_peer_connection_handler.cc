@@ -11,6 +11,7 @@
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
@@ -147,6 +148,9 @@ class RemoteDataChannelTask
 MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler() {
 }
 
+MockWebRTCPeerConnectionHandler::~MockWebRTCPeerConnectionHandler() {
+}
+
 MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client,
     TestInterfaces* interfaces)
@@ -223,13 +227,93 @@ void MockWebRTCPeerConnectionHandler::setLocalDescription(
 void MockWebRTCPeerConnectionHandler::setRemoteDescription(
     const WebRTCVoidRequest& request,
     const WebRTCSessionDescription& remote_description) {
+
   if (!remote_description.isNull() && remote_description.sdp() == "remote") {
+    UpdateRemoteStreams();
     remote_description_ = remote_description;
     interfaces_->GetDelegate()->PostTask(
         new RTCVoidRequestTask(this, request, true));
   } else
     interfaces_->GetDelegate()->PostTask(
         new RTCVoidRequestTask(this, request, false));
+}
+
+void MockWebRTCPeerConnectionHandler::UpdateRemoteStreams() {
+  // Find all removed streams.
+  // Set the readyState of the remote tracks to ended, remove them from the
+  // stream and notify the client.
+  StreamMap::iterator removed_it = remote_streams_.begin();
+  while (removed_it != remote_streams_.end()) {
+    if (local_streams_.find(removed_it->first) != local_streams_.end()) {
+      removed_it++;
+      continue;
+    }
+
+    // The stream have been removed. Loop through all tracks and set the
+    // source as ended and remove them from the stream.
+    blink::WebMediaStream stream = removed_it->second;
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+    stream.audioTracks(audio_tracks);
+    for (size_t i = 0; i < audio_tracks.size(); ++i) {
+      audio_tracks[i].source().setReadyState(
+          blink::WebMediaStreamSource::ReadyStateEnded);
+      stream.removeTrack(audio_tracks[i]);
+    }
+
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    stream.videoTracks(video_tracks);
+    for (size_t i = 0; i < video_tracks.size(); ++i) {
+      video_tracks[i].source().setReadyState(
+          blink::WebMediaStreamSource::ReadyStateEnded);
+      stream.removeTrack(video_tracks[i]);
+    }
+    client_->didRemoveRemoteStream(stream);
+    remote_streams_.erase(removed_it++);
+  }
+
+  // Find all new streams;
+  // Create new sources and tracks and notify the client about the new stream.
+  StreamMap::iterator added_it = local_streams_.begin();
+  while (added_it != local_streams_.end()) {
+    if (remote_streams_.find(added_it->first) != remote_streams_.end()) {
+      added_it++;
+      continue;
+    }
+
+    const blink::WebMediaStream& stream = added_it->second;
+
+    blink::WebVector<blink::WebMediaStreamTrack> local_audio_tracks;
+    stream.audioTracks(local_audio_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack>
+        remote_audio_tracks(local_audio_tracks.size());
+
+    for (size_t i = 0; i < local_audio_tracks.size(); ++i) {
+      blink::WebMediaStreamSource webkit_source;
+      webkit_source.initialize(local_audio_tracks[i].id(),
+                               blink::WebMediaStreamSource::TypeAudio,
+                               local_audio_tracks[i].id());
+      remote_audio_tracks[i].initialize(webkit_source);
+    }
+
+    blink::WebVector<blink::WebMediaStreamTrack> local_video_tracks;
+    stream.videoTracks(local_video_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack>
+        remote_video_tracks(local_video_tracks.size());
+    for (size_t i = 0; i < local_video_tracks.size(); ++i) {
+      blink::WebMediaStreamSource webkit_source;
+      webkit_source.initialize(local_video_tracks[i].id(),
+                               blink::WebMediaStreamSource::TypeVideo,
+                               local_video_tracks[i].id());
+      remote_video_tracks[i].initialize(webkit_source);
+    }
+
+    blink::WebMediaStream new_remote_stream;
+    new_remote_stream.initialize(remote_audio_tracks,
+                                 remote_video_tracks);
+    remote_streams_[added_it->first] = new_remote_stream;
+    client_->didAddRemoteStream(new_remote_stream);
+    ++added_it;
+  }
 }
 
 WebRTCSessionDescription MockWebRTCPeerConnectionHandler::localDescription() {
@@ -263,14 +347,18 @@ bool MockWebRTCPeerConnectionHandler::addICECandidate(
 bool MockWebRTCPeerConnectionHandler::addStream(
     const WebMediaStream& stream,
     const WebMediaConstraints& constraints) {
+  if (local_streams_.find(stream.id().utf8()) != local_streams_.end())
+    return false;
   ++stream_count_;
   client_->negotiationNeeded();
+  local_streams_[stream.id().utf8()] = stream;
   return true;
 }
 
 void MockWebRTCPeerConnectionHandler::removeStream(
     const WebMediaStream& stream) {
   --stream_count_;
+  local_streams_.erase(stream.id().utf8());
   client_->negotiationNeeded();
 }
 
