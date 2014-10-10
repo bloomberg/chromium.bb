@@ -584,7 +584,10 @@ void ThreadState::visitStack(Visitor* visitor)
 void ThreadState::visitPersistents(Visitor* visitor)
 {
     m_persistents->trace(visitor);
-    WrapperPersistentRegion::trace(m_liveWrapperPersistents, visitor);
+    {
+        TRACE_EVENT0("blink_gc", "WrapperPersistentRegion::trace");
+        WrapperPersistentRegion::trace(m_liveWrapperPersistents, visitor);
+    }
 }
 
 #if ENABLE(GC_PROFILE_MARKING)
@@ -1056,7 +1059,11 @@ public:
         m_threadState->unregisterSweepingTask();
     }
 
-    virtual void run() { m_heap->sweep(m_stats); }
+    virtual void run()
+    {
+        TRACE_EVENT0("blink_gc", "ThreadState::sweepNonFinalizedHeaps");
+        m_heap->sweep(m_stats);
+    }
 
 private:
     ThreadState* m_threadState;
