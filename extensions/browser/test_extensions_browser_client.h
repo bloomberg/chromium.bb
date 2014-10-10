@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/updater/extension_cache.h"
 
 namespace extensions {
 
@@ -24,6 +25,9 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   }
   void set_extension_system_factory(ExtensionSystemProvider* factory) {
     extension_system_factory_ = factory;
+  }
+  void set_extension_cache(scoped_ptr<ExtensionCache> extension_cache) {
+    extension_cache_ = extension_cache.Pass();
   }
 
   // Associates an incognito context with |main_context_|.
@@ -85,6 +89,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
       const std::string& event_name,
       scoped_ptr<base::ListValue> args) override;
   virtual net::NetLog* GetNetLog() override;
+  virtual ExtensionCache* GetExtensionCache() override;
 
  private:
   content::BrowserContext* main_context_;       // Not owned.
@@ -95,6 +100,8 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // Not owned, defaults to NULL.
   ExtensionSystemProvider* extension_system_factory_;
+
+  scoped_ptr<ExtensionCache> extension_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsBrowserClient);
 };

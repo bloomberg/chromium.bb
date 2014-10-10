@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -132,6 +133,10 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 void ExtensionBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
   observer_.reset(new ExtensionTestNotificationObserver(browser()));
+  if (extension_service()->updater()) {
+    extension_service()->updater()->SetExtensionCacheForTesting(
+        test_extension_cache_.get());
+  }
 }
 
 const Extension* ExtensionBrowserTest::LoadExtension(

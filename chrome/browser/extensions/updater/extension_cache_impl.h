@@ -13,9 +13,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/updater/extension_cache.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/updater/extension_cache.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -28,7 +28,8 @@ class LocalExtensionCache;
 class ExtensionCacheImpl : public ExtensionCache,
                            public content::NotificationObserver {
  public:
-  static ExtensionCacheImpl* GetInstance();
+  ExtensionCacheImpl();
+  virtual ~ExtensionCacheImpl();
 
   // Implementation of ExtensionCache.
   virtual void Start(const base::Closure& callback) override;
@@ -48,11 +49,6 @@ class ExtensionCacheImpl : public ExtensionCache,
                        const content::NotificationDetails& details) override;
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionCacheImpl>;
-
-  ExtensionCacheImpl();
-  virtual ~ExtensionCacheImpl();
-
   // Callback that is called when local cache is ready.
   void OnCacheInitialized();
 

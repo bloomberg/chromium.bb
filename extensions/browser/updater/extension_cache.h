@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_H_
-#define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_CACHE_H_
+#define EXTENSIONS_BROWSER_UPDATER_EXTENSION_CACHE_H_
 
 #include <string>
 
@@ -16,12 +16,12 @@ namespace extensions {
 // between multiple users and profiles on the machine.
 class ExtensionCache {
  public:
-  // Return global singleton instance of ExtensionCache.
-  static ExtensionCache* GetInstance();
-
   // Callback that is invoked when the file placed when PutExtension done.
   typedef base::Callback<void(const base::FilePath& file_path,
                               bool file_ownership_passed)> PutExtensionCallback;
+
+  ExtensionCache() {}
+  virtual ~ExtensionCache() {}
 
   // Initialize cache in background. The |callback| is called when cache ready.
   // Can be called multiple times. The |callback| can be called immediately if
@@ -54,14 +54,10 @@ class ExtensionCache {
                             const std::string& version,
                             const PutExtensionCallback& callback) = 0;
 
- protected:
-  virtual ~ExtensionCache() {}
-
-  // Sets the singleton to the given |cache|. Returns the previous value of
-  // the singleton. Ownership is not transferred.
-  static ExtensionCache* SetForTesting(ExtensionCache* cache);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionCache);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_CACHE_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSION_CACHE_H_

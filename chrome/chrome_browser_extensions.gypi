@@ -783,8 +783,6 @@
       'browser/extensions/unpacked_installer.h',
       'browser/extensions/updater/chrome_extension_downloader_factory.cc',
       'browser/extensions/updater/chrome_extension_downloader_factory.h',
-      'browser/extensions/updater/extension_cache.cc',
-      'browser/extensions/updater/extension_cache.h',
       'browser/extensions/updater/extension_downloader.cc',
       'browser/extensions/updater/extension_downloader.h',
       'browser/extensions/updater/extension_downloader_delegate.cc',

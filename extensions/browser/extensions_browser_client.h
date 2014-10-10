@@ -38,6 +38,7 @@ class ApiActivityMonitor;
 class AppSorting;
 class ComponentExtensionResourceManager;
 class Extension;
+class ExtensionCache;
 class ExtensionHostDelegate;
 class ExtensionPrefsObserver;
 class ExtensionSystem;
@@ -186,6 +187,9 @@ class ExtensionsBrowserClient {
 
   // Returns the embedder's net::NetLog.
   virtual net::NetLog* GetNetLog() = 0;
+
+  // Gets the single ExtensionCache instance shared across the browser process.
+  virtual ExtensionCache* GetExtensionCache() = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

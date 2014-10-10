@@ -35,11 +35,6 @@ const int kMaxCacheAgeDays = 30;
 
 }  // namespace
 
-// static
-ExtensionCacheImpl* ExtensionCacheImpl::GetInstance() {
-  return Singleton<ExtensionCacheImpl>::get();
-}
-
 ExtensionCacheImpl::ExtensionCacheImpl()
   : cache_(new LocalExtensionCache(base::FilePath(kLocalCacheDir),
         kMaxCacheSize,
