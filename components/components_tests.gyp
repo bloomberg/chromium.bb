@@ -670,6 +670,7 @@
                 'proximity_auth/connection_unittest.cc',
                 'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
                 'proximity_auth/proximity_auth_system_unittest.cc',
+                'proximity_auth/remote_status_update_unittest.cc',
                 'proximity_auth/wire_message_unittest.cc',
               ],
               'dependencies': [
