@@ -1,0 +1,11 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser;
+
+public class ChromeVersionConstants {
+    public static final String PRODUCT_NAME = "@PRODUCT_FULLNAME@";
+    public static final String PRODUCT_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
+    public static final boolean IS_OFFICIAL_BUILD = @OFFICIAL_BUILD@ == 1;
+}

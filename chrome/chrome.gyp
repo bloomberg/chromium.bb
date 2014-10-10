@@ -584,6 +584,7 @@
             'app_banner_metrics_ids_java',
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
+            'chrome_version_java',
             'profile_account_management_metrics_java',
             'page_info_connection_type_java',
             'profile_sync_service_model_type_selection_java',

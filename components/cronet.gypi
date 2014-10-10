@@ -76,7 +76,7 @@
                 '<(lastchange_path)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/templates/org/chromium/cronet/Version.java',
+                '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/org/chromium/cronet/Version.java',
               ],
               'action': [
                 'python',

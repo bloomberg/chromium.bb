@@ -105,4 +105,11 @@ public class ChromeVersionInfo {
         }
         return sChannel;
     }
+
+    /**
+     * @return Whether this is an official (i.e. Google Chrome) build.
+     */
+    public static boolean isOfficialBuild() {
+        return ChromeVersionConstants.IS_OFFICIAL_BUILD;
+    }
 }

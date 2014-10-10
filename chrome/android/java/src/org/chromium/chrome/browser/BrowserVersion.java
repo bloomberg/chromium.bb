@@ -15,8 +15,6 @@ public class BrowserVersion {
      * This function depends on the native library being loaded; calling it before then will crash.
      */
     public static boolean isOfficialBuild() {
-        return nativeIsOfficialBuild();
+        return ChromeVersionConstants.IS_OFFICIAL_BUILD;
     }
-
-    private static native boolean nativeIsOfficialBuild();
 }
