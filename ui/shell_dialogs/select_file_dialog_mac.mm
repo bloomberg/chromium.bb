@@ -75,8 +75,6 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
                        const std::vector<base::FilePath>& files,
                        int index);
 
-  bool ShouldEnableFilename(NSSavePanel* dialog, NSString* filename);
-
  protected:
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
@@ -157,16 +155,6 @@ void SelectFileDialogImpl::FileWasSelected(
       listener_->FileSelected(files[0], index, params);
     }
   }
-}
-
-bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
-                                                NSString* filename) {
-  // If this is a single/multiple open file dialog, disable selecting packages.
-  if (type_map_[dialog] != SELECT_OPEN_FILE &&
-      type_map_[dialog] != SELECT_OPEN_MULTI_FILE)
-    return true;
-
-  return ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename];
 }
 
 void SelectFileDialogImpl::SelectFileImpl(
@@ -427,9 +415,7 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
 }
 
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url {
-  if (![url isFileURL])
-    return NO;
-  return selectFileDialogImpl_->ShouldEnableFilename(sender, [url path]);
+  return [url isFileURL];
 }
 
 @end

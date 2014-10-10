@@ -412,6 +412,7 @@
       'browser/favicon/favicon_tab_helper.h',
       'browser/file_select_helper.cc',
       'browser/file_select_helper.h',
+      'browser/file_select_helper_mac.mm',
       'browser/flags_storage.h',
       'browser/fullscreen.h',
       'browser/fullscreen_chromeos.cc',
