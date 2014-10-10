@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Service Worker responds to fetch event with string 
+PASS Service Worker responds to fetch event with blob body 
+PASS Service Worker responds to fetch event with the referrer URL 
+TIMEOUT Service Worker does not respond to fetch event Test timed out
+PASS Service Worker responds to fetch event with null response body 
+TIMEOUT Service Worker fetches other file in fetch event Test timed out
+PASS Service Worker responds to fetch event with POST form 
+TIMEOUT Multiple calls of respondWith must throw InvalidStateErrors Test timed out
+Harness: the test ran to completion.
+

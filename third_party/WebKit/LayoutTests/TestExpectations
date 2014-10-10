@@ -1452,5 +1452,3 @@ crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ NeedsManualRebaseline ]
-
-crbug.com/416371 http/tests/serviceworker/fetch-event.html [ NeedsRebaseline ]
