@@ -30,7 +30,7 @@ source_set("bitmap_uploader") {
     "//mojo/services/public/interfaces/input_events:input_events",
     "//mojo/services/public/interfaces/surfaces:surface_id",
     "//mojo/services/public/interfaces/view_manager",
-    "//mojo/services/public/interfaces/window_manager",
+    "//mojo/services/public/interfaces/window_manager2",
     "//ui/events",
     "//ui/gfx",
   ]

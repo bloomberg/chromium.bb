@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
-#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
+#include "mojo/services/public/interfaces/window_manager2/window_manager2.mojom.h"
 
 namespace mojo {
 
 class WindowManagerApp;
 
-class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
+class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService2> {
  public:
   explicit WindowManagerServiceImpl(WindowManagerApp* manager);
   virtual ~WindowManagerServiceImpl();

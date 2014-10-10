@@ -14,7 +14,7 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
-#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
+#include "mojo/services/public/interfaces/window_manager2/window_manager2.mojom.h"
 
 namespace mojo {
 class Shell;
@@ -25,7 +25,7 @@ class ViewManagerTransaction;
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
                               public InterfaceImpl<ViewManagerClient>,
-                              public WindowManagerClient {
+                              public WindowManagerClient2 {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate, Shell* shell);
   virtual ~ViewManagerClientImpl();
@@ -113,7 +113,7 @@ class ViewManagerClientImpl : public ViewManager,
       InterfaceRequest<ServiceProvider> service_provider) override;
   virtual void DispatchOnViewInputEvent(EventPtr event) override;
 
-    // Overridden from WindowManagerClient:
+    // Overridden from WindowManagerClient2:
   virtual void OnWindowManagerReady() override;
   virtual void OnCaptureChanged(Id old_capture_view_id,
                                 Id new_capture_view_id) override;
@@ -147,7 +147,7 @@ class ViewManagerClientImpl : public ViewManager,
 
   ViewManagerService* service_;
 
-  WindowManagerServicePtr window_manager_;
+  WindowManagerService2Ptr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

@@ -15,7 +15,7 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
-#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
+#include "mojo/services/public/interfaces/window_manager2/window_manager2.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +47,7 @@ bool InitEmbed(ViewManagerInitService* view_manager_init,
   return result;
 }
 
-class TestWindowManagerClient : public WindowManagerClient {
+class TestWindowManagerClient : public WindowManagerClient2 {
  public:
   typedef base::Callback<void(Id, Id)>
       TwoNodeCallback;
@@ -192,7 +192,7 @@ class WindowManagerApiTest : public testing::Test {
     return window_manager_client_.get();
   }
 
-  WindowManagerServicePtr window_manager_;
+  WindowManagerService2Ptr window_manager_;
 
  private:
   // Overridden from testing::Test:

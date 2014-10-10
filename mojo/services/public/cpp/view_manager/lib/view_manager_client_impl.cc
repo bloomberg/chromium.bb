@@ -366,7 +366,7 @@ void ViewManagerClientImpl::DispatchOnViewInputEvent(EventPtr event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, WindowManagerClient implementation:
+// ViewManagerClientImpl, WindowManagerClient2 implementation:
 
 void ViewManagerClientImpl::OnWindowManagerReady() {}
 

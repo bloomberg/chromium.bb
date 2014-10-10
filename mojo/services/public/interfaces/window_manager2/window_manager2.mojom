@@ -4,15 +4,18 @@
 
 module mojo {
 
-[Client=WindowManagerClient]
-interface WindowManagerService {
+// TODO(sky): rethink these, and if we do in fact need it come up with a better
+// name.
+
+[Client=WindowManagerClient2]
+interface WindowManagerService2 {
   SetCapture(uint32 view_id) => (bool success);
   FocusWindow(uint32 view_id) => (bool success);
   ActivateWindow(uint32 view_id) => (bool success);
 };
 
-[Client=WindowManagerService]
-interface WindowManagerClient {
+[Client=WindowManagerService2]
+interface WindowManagerClient2 {
   // Called when the window manager is ready to use (in the event a client
   // connects to it before it has been initialized).
   OnWindowManagerReady();

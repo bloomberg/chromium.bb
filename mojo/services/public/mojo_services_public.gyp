@@ -243,11 +243,11 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/interfaces/window_manager
+      # GN version: //mojo/services/public/interfaces/window_manager2
       'target_name': 'mojo_core_window_manager_bindings',
       'type': 'static_library',
       'sources': [
-        'interfaces/window_manager/window_manager.mojom',
+        'interfaces/window_manager2/window_manager2.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
