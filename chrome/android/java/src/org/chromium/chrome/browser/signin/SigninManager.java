@@ -114,13 +114,6 @@ public class SigninManager {
     }
 
     /**
-     * Same as SignInFlowObserver.
-     * TODO(newt): Remove this interface once all clients inherit from SignInFlowObserver.
-     */
-    public interface Observer extends SignInFlowObserver {
-    }
-
-    /**
      * A helper method for retrieving the application-wide SigninManager.
      * <p/>
      * Can only be accessed on the main thread.
