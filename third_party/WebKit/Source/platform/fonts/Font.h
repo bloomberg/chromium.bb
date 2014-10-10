@@ -131,7 +131,7 @@ public:
     std::pair<GlyphData, GlyphPage*> glyphDataAndPageForCharacter(UChar32&, bool mirror, bool normalizeSpace = false, FontDataVariant = AutoVariant) const;
     bool primaryFontHasGlyphForCharacter(UChar32) const;
 
-    CodePath codePath(const TextRun&) const;
+    CodePath codePath(const TextRunPaintInfo&) const;
 
     PassTextBlobPtr buildTextBlob(const TextRunPaintInfo&, const FloatPoint& textOrigin, bool couldUseLCDRenderedText, CustomFontNotReadyAction = DoNotPaintIfFontNotReady) const;
     void drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint& origin) const;
@@ -167,11 +167,6 @@ private:
     friend class SVGTextRunRenderingContext;
 
 public:
-    // Useful for debugging the different font rendering code paths.
-    static void setCodePath(CodePath);
-    static CodePath codePath();
-    static CodePath s_codePath;
-
     FontSelector* fontSelector() const;
 
     FontFallbackList* fontList() const { return m_fontFallbackList.get(); }

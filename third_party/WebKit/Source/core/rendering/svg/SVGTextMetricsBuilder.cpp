@@ -79,7 +79,7 @@ SVGTextMetricsCalculator::SVGTextMetricsCalculator(RenderSVGInlineText* text)
     , m_totalWidth(0)
 {
     const Font& scaledFont = text->scaledFont();
-    CodePath codePath = scaledFont.codePath(m_run);
+    CodePath codePath = scaledFont.codePath(TextRunPaintInfo(m_run));
     m_isComplexText = codePath == ComplexPath;
     m_run.setCharacterScanForCodePath(!m_isComplexText);
     m_run.setUseComplexCodePath(m_isComplexText);

@@ -50,8 +50,6 @@ using namespace Unicode;
 
 namespace blink {
 
-CodePath Font::s_codePath = AutoPath;
-
 Font::Font()
 {
 }
@@ -110,12 +108,7 @@ float Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, 
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
         return 0;
 
-    CodePath codePathToUse = codePath(runInfo.run);
-    // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
-        codePathToUse = ComplexPath;
-
-    if (codePathToUse != ComplexPath)
+    if (codePath(runInfo) != ComplexPath)
         return drawSimpleText(context, runInfo, point);
 
     return drawComplexText(context, runInfo, point);
@@ -126,12 +119,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     if (shouldSkipDrawing())
         return;
 
-    CodePath codePathToUse = codePath(runInfo.run);
-    // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
-        codePathToUse = ComplexPath;
-
-    if (codePathToUse != ComplexPath)
+    if (codePath(runInfo) != ComplexPath)
         drawEmphasisMarksForSimpleText(context, runInfo, mark, point);
     else
         drawEmphasisMarksForComplexText(context, runInfo, mark, point);
@@ -150,7 +138,7 @@ static inline void updateGlyphOverflowFromBounds(const IntRectExtent& glyphBound
 
 float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
-    CodePath codePathToUse = codePath(run);
+    CodePath codePathToUse = codePath(TextRunPaintInfo(run));
     if (codePathToUse != ComplexPath) {
         // The simple path can optimize the case where glyph overflow is not observable.
         if (codePathToUse != SimpleWithGlyphOverflowPath && (glyphOverflow && !glyphOverflow->computeBounds))
@@ -211,12 +199,7 @@ PassTextBlobPtr Font::buildTextBlob(const TextRunPaintInfo& runInfo, const Float
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
         return nullptr;
 
-    CodePath codePathToUse = codePath(runInfo.run);
-    // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
-        codePathToUse = ComplexPath;
-
-    if (codePathToUse != ComplexPath)
+    if (codePath(runInfo) != ComplexPath)
         return buildTextBlobForSimpleText(runInfo, textOrigin, couldUseLCDRenderedText);
 
     return nullptr;
@@ -297,12 +280,11 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 {
     to = (to == -1 ? run.length() : to);
 
-    CodePath codePathToUse = codePath(run);
-    // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (from || to != run.length()))
-        codePathToUse = ComplexPath;
+    TextRunPaintInfo runInfo(run);
+    runInfo.from = from;
+    runInfo.to = to;
 
-    if (codePathToUse != ComplexPath)
+    if (codePath(runInfo) != ComplexPath)
         return selectionRectForSimpleText(run, point, h, from, to, accountForGlyphBounds);
 
     return selectionRectForComplexText(run, point, h, from, to);
@@ -310,27 +292,18 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 
 int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyphs) const
 {
-    // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePath(run) != ComplexPath && !fontDescription().typesettingFeatures())
+    if (codePath(TextRunPaintInfo(run)) != ComplexPath && !fontDescription().typesettingFeatures())
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
 
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
 }
 
-void Font::setCodePath(CodePath p)
+CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 {
-    s_codePath = p;
-}
+    const TextRun& run = runInfo.run;
 
-CodePath Font::codePath()
-{
-    return s_codePath;
-}
-
-CodePath Font::codePath(const TextRun& run) const
-{
-    if (s_codePath != AutoPath)
-        return s_codePath;
+    if (fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
+        return ComplexPath;
 
 #if ENABLE(SVG_FONTS)
     if (run.renderingContext())
