@@ -34,6 +34,12 @@ readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
 readonly SCONS_NONSFI_NEWLIB="\
     nonsfi_nacl=1 \
     nonsfi_tests_irt"
+# Build with pnacl_generate_pexe=0 to allow using pnacl-clang with
+# direct-to-native mode. This allows assembly to be used in tests.
+readonly SCONS_NONSFI_NEWLIB_NOPNACL_GENERATE_PEXE="\
+    nonsfi_nacl=1 \
+    pnacl_generate_pexe=0 \
+    nonsfi_tests"
 # This uses the host-libc-based nonsfi_loader.
 # Using skip_nonstable_bitcode=1 here disables the tests for zero-cost C++
 # exception handling, which don't pass for Non-SFI mode yet because we
@@ -322,6 +328,8 @@ mode-buildbot-arm() {
 
   # Test Non-SFI Mode.
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI_NEWLIB}"
+  scons-stage-irt "arm" "${qemuflags}" \
+    "${SCONS_NONSFI_NEWLIB_NOPNACL_GENERATE_PEXE}"
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_NONSFI}"
 }
 
@@ -347,6 +355,8 @@ mode-buildbot-arm-hw() {
 
   # Test Non-SFI Mode.
   scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI_NEWLIB}"
+  scons-stage-irt "arm" "${hwflags}" \
+    "${SCONS_NONSFI_NEWLIB_NOPNACL_GENERATE_PEXE}"
   scons-stage-irt "arm" "${hwflags}" "${SCONS_NONSFI}"
 }
 

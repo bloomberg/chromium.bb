@@ -94,6 +94,16 @@ def RunSconsTests(status, context):
                  'nonsfi_tests',
                  'nonsfi_tests_irt'])
 
+    # Build with pnacl_generate_pexe=0 to allow using pnacl-clang with
+    # direct-to-native mode. This allows assembly to be used in tests.
+    with Step('nonsfi_tests_nopnacl_generate_pexe ' + arch,
+              status, halt_on_fail=False):
+      SCons(context, parallel=True, mode=irt_mode,
+            args=flags_run +
+                ['nonsfi_nacl=1',
+                 'pnacl_generate_pexe=0',
+                 'nonsfi_tests'])
+
     # Test nonsfi_loader linked against host's libc.
     with Step('nonsfi_tests_host_libc ' + arch, status, halt_on_fail=False):
       # Using skip_nonstable_bitcode=1 here disables the tests for
