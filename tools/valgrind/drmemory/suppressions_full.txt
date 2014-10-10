@@ -1860,3 +1860,8 @@ pdf.dll!pp::InputEvent_HandleEvent
 ppapi_proxy.dll!ppapi::CallWhileUnlocked<>
 ppapi_proxy.dll!ppapi::proxy::PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent
 
+UNINITIALIZED READ
+name=bug_422164
+...
+content.dll!content::WebRtcLocalAudioTrack::Capture
+*!content::SpeechRecognitionAudioSinkTest*

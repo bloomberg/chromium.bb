@@ -3485,3 +3485,10 @@
    fun:_ZNSt4listI13scoped_refptrIN5media10VideoFrameEESaIS3_EE9push_backERKS3_
    fun:_ZN5media14VideoFramePool8PoolImpl13FrameReleasedERK13scoped_refptrINS_10VideoFrameEE
 }
+{
+   bug_422164
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7content21WebRtcLocalAudioTrack7CaptureEPKsN4base9TimeDeltaEibb
+   fun:_ZN7content30SpeechRecognitionAudioSinkTest*
+}
