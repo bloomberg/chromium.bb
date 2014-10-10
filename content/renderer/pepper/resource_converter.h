@@ -27,8 +27,6 @@ class ScopedPPVar;
 
 namespace content {
 
-class RendererPpapiHost;
-
 // This class is responsible for converting V8 vars to Pepper resources.
 class CONTENT_EXPORT ResourceConverter {
  public:
@@ -65,7 +63,7 @@ class CONTENT_EXPORT ResourceConverter {
 
 class ResourceConverterImpl : public ResourceConverter {
  public:
-  ResourceConverterImpl(PP_Instance instance, RendererPpapiHost* host);
+  explicit ResourceConverterImpl(PP_Instance instance);
   virtual ~ResourceConverterImpl();
 
   // ResourceConverter overrides.
@@ -97,8 +95,6 @@ class ResourceConverterImpl : public ResourceConverter {
 
   // The instance this ResourceConverter is associated with.
   PP_Instance instance_;
-  // The RendererPpapiHost to use to create browser hosts.
-  RendererPpapiHost* host_;
 
   // A list of the messages to create the browser hosts. This is a parallel
   // array to |browser_vars|. It is kept as a parallel array so that it can be

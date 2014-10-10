@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "content/renderer/pepper/v8_var_converter.h"
 #include "gin/handle.h"
 #include "gin/interceptor.h"
 #include "gin/wrappable.h"
@@ -179,6 +180,8 @@ class MessageChannel :
   MessageQueueState plugin_message_queue_state_;
 
   std::map<std::string, ppapi::ScopedPPVar> internal_named_properties_;
+
+  V8VarConverter var_converter_;
 
   // A callback to invoke at shutdown to ensure we unregister ourselves as
   // Observers for sync messages.

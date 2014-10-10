@@ -285,28 +285,17 @@ bool CanHaveChildren(PP_Var var) {
 
 }  // namespace
 
-V8VarConverter::V8VarConverter(PP_Instance instance)
-    : instance_(instance),
-      object_vars_allowed_(kDisallowObjectVars),
-      message_loop_proxy_(base::MessageLoopProxy::current()) {
-  resource_converter_.reset(new ResourceConverterImpl(
-      instance, RendererPpapiHost::GetForPPInstance(instance)));
-}
-
 V8VarConverter::V8VarConverter(PP_Instance instance,
                                AllowObjectVars object_vars_allowed)
     : instance_(instance),
-      object_vars_allowed_(object_vars_allowed),
-      message_loop_proxy_(base::MessageLoopProxy::current()) {
-  resource_converter_.reset(new ResourceConverterImpl(
-      instance, RendererPpapiHost::GetForPPInstance(instance)));
+      object_vars_allowed_(object_vars_allowed) {
+  resource_converter_.reset(new ResourceConverterImpl(instance));
 }
 
 V8VarConverter::V8VarConverter(PP_Instance instance,
                                scoped_ptr<ResourceConverter> resource_converter)
     : instance_(instance),
       object_vars_allowed_(kDisallowObjectVars),
-      message_loop_proxy_(base::MessageLoopProxy::current()),
       resource_converter_(resource_converter.release()) {}
 
 V8VarConverter::~V8VarConverter() {}

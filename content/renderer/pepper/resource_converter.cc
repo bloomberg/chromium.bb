@@ -197,9 +197,8 @@ bool DOMMediaStreamTrackToResource(
 
 ResourceConverter::~ResourceConverter() {}
 
-ResourceConverterImpl::ResourceConverterImpl(PP_Instance instance,
-                                             RendererPpapiHost* host)
-    : instance_(instance), host_(host) {}
+ResourceConverterImpl::ResourceConverterImpl(PP_Instance instance)
+    : instance_(instance) {}
 
 ResourceConverterImpl::~ResourceConverterImpl() {
   // Verify Flush() was called.
@@ -213,6 +212,7 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
                                         bool* was_resource) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
+  RendererPpapiHost* host = RendererPpapiHost::GetForPPInstance(instance_);
 
   *was_resource = false;
 
@@ -223,7 +223,7 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
     scoped_ptr<IPC::Message> create_message;
     scoped_ptr<IPC::Message> browser_host_create_message;
     if (!DOMFileSystemToResource(instance_,
-                                 host_,
+                                 host,
                                  dom_file_system,
                                  &pending_renderer_id,
                                  &create_message,
@@ -246,7 +246,7 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
     int pending_renderer_id;
     scoped_ptr<IPC::Message> create_message;
     if (!DOMMediaStreamTrackToResource(instance_,
-                                       host_,
+                                       host,
                                        dom_media_stream_track,
                                        &pending_renderer_id,
                                        &create_message)) {
@@ -276,7 +276,7 @@ bool ResourceConverterImpl::NeedsFlush() {
 }
 
 void ResourceConverterImpl::Flush(const base::Callback<void(bool)>& callback) {
-  host_->CreateBrowserResourceHosts(
+  RendererPpapiHost::GetForPPInstance(instance_)->CreateBrowserResourceHosts(
       instance_,
       browser_host_create_messages_,
       base::Bind(&FlushComplete, callback, browser_vars_));

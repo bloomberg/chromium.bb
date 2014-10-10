@@ -27,7 +27,6 @@ class CONTENT_EXPORT V8VarConverter {
     kDisallowObjectVars,
     kAllowObjectVars
   };
-  explicit V8VarConverter(PP_Instance instance);
   V8VarConverter(PP_Instance instance, AllowObjectVars object_vars_allowed);
 
   // Constructor for testing.
@@ -83,9 +82,6 @@ class CONTENT_EXPORT V8VarConverter {
 
   // Whether or not to support conversion to PP_VARTYPE_OBJECT.
   AllowObjectVars object_vars_allowed_;
-
-  // The message loop to run the callback to |FromV8Value| from.
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   // The converter to use for converting V8 vars to resources.
   scoped_ptr<ResourceConverter> resource_converter_;

@@ -2304,7 +2304,8 @@ PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
 
-  PepperTryCatchVar try_catch(this, NULL);
+  V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
+  PepperTryCatchVar try_catch(this, &converter, NULL);
   WebLocalFrame* frame = container_->element().document().frame();
   if (!frame) {
     try_catch.SetException("No frame exists for window object.");
@@ -2320,7 +2321,8 @@ PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
 PP_Var PepperPluginInstanceImpl::GetOwnerElementObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
-  PepperTryCatchVar try_catch(this, NULL);
+  V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
+  PepperTryCatchVar try_catch(this, &converter, NULL);
   ScopedPPVar result = try_catch.FromV8(container_->v8ObjectForElement());
   DCHECK(!try_catch.HasException());
   return result.Release();
@@ -2336,7 +2338,8 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   // a reference to ourselves so that we can still process the result after the
   // WebBindings::evaluate() below.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  PepperTryCatchVar try_catch(this, exception);
+  V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
+  PepperTryCatchVar try_catch(this, &converter, exception);
 
   // Check for an exception due to the context being destroyed.
   if (try_catch.HasException())

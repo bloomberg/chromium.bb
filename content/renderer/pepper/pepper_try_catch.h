@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_TRY_CATCH_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/renderer/pepper/v8_var_converter.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "v8/include/v8.h"
@@ -15,6 +15,7 @@
 namespace content {
 
 class PepperPluginInstanceImpl;
+class V8VarConverter;
 
 // Base class for scripting TryCatch helpers.
 class CONTENT_EXPORT PepperTryCatch {
@@ -22,7 +23,7 @@ class CONTENT_EXPORT PepperTryCatch {
   // PepperTryCatch objects should only be used as stack variables. This object
   // takes a reference on the given PepperPluginInstanceImpl.
   PepperTryCatch(PepperPluginInstanceImpl* instance,
-                 V8VarConverter::AllowObjectVars convert_objects);
+                 V8VarConverter* var_converter);
   virtual ~PepperTryCatch();
 
   virtual void SetException(const char* message) = 0;
@@ -45,17 +46,14 @@ class CONTENT_EXPORT PepperTryCatch {
   // shouldn't keep the instance around for too long.
   scoped_refptr<PepperPluginInstanceImpl> instance_;
 
-  // Whether To/FromV8 should convert object vars. If set to
-  // kDisallowObjectVars, an exception should be set if they are encountered
-  // during conversion.
-  V8VarConverter::AllowObjectVars convert_objects_;
+  V8VarConverter* var_converter_;
 };
 
 // Catches var exceptions and emits a v8 exception.
 class PepperTryCatchV8 : public PepperTryCatch {
  public:
   PepperTryCatchV8(PepperPluginInstanceImpl* instance,
-                   V8VarConverter::AllowObjectVars convert_objects,
+                   V8VarConverter* var_converter,
                    v8::Isolate* isolate);
   virtual ~PepperTryCatchV8();
 
@@ -81,6 +79,7 @@ class PepperTryCatchVar : public PepperTryCatch {
   // is responsible for managing the lifetime of the exception. It is valid to
   //  pass NULL for |exception| in which case no exception will be set.
   PepperTryCatchVar(PepperPluginInstanceImpl* instance,
+                    V8VarConverter* var_converter,
                     PP_Var* exception);
   virtual ~PepperTryCatchVar();
 
