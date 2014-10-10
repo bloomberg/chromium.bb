@@ -59,6 +59,9 @@ class CONTENT_EXPORT GestureTextSelector : public ui::SimpleGestureListener {
 
   GestureTextSelectorClient* client_;
   bool text_selection_triggered_;
+  bool secondary_button_pressed_;
+  float anchor_x_;
+  float anchor_y_;
   scoped_ptr<ui::GestureDetector> gesture_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureTextSelector);

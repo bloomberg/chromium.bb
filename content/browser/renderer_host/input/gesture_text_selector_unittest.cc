@@ -42,7 +42,9 @@ class GestureTextSelectorTest : public testing::Test,
   }
 
   virtual void SelectRange(float x1, float y1, float x2, float y2) override {
-    event_log_.push_back("SelectRange");
+    std::stringstream ss;
+    ss << "SelectRange(" << x1 << ", " << y1 << ", " << x2 << ", " << y2 << ")";
+    event_log_.push_back(ss.str());
   }
 
   virtual void LongPress(base::TimeTicks time, float x, float y) override {
@@ -120,7 +122,7 @@ TEST_F(GestureTextSelectorTest, PenDragging) {
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(2u, event_log_.size());
   EXPECT_STREQ("Show", event_log_[0].c_str());
-  EXPECT_STREQ("SelectRange", event_log_[1].c_str());
+  EXPECT_STREQ("SelectRange(50, 30, 100, 90)", event_log_[1].c_str());
 
   // 3. ACTION_UP
   event_time += base::TimeDelta::FromMilliseconds(10);
@@ -129,6 +131,61 @@ TEST_F(GestureTextSelectorTest, PenDragging) {
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   ASSERT_EQ(2u, event_log_.size());  // NO CHANGE
+}
+
+TEST_F(GestureTextSelectorTest, PenDraggingButtonNotPressed) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  float x = 50.0f;
+  float y = 30.0f;
+
+  // 1. ACTION_DOWN with stylus + button
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x, y);
+  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_down.set_button_state(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_down));
+  EXPECT_TRUE(event_log_.empty());
+
+  // 2. ACTION_MOVE
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  x += 20;  // 70
+  y += 20;  // 50
+  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_move));
+  ASSERT_EQ(2u, event_log_.size());
+  EXPECT_STREQ("Show", event_log_[0].c_str());
+  EXPECT_STREQ("SelectRange(50, 30, 70, 50)", event_log_[1].c_str());
+
+  // 3. ACTION_MOVE with stylus + no button
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  x += 20;  // 90
+  y += 20;  // 70
+  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move.set_button_state(0);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_move));
+  EXPECT_EQ(2u, event_log_.size());  // NO CHANGE
+
+  // 4. ACTION_MOVE with stylus + button pressed again
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  x += 20;  // 110
+  y += 20;  // 90
+  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_move));
+  EXPECT_EQ(4u, event_log_.size());
+  EXPECT_STREQ("SelectRange(90, 70, 110, 90)", event_log_.back().c_str());
+
+  // 5. ACTION_UP
+  event_time += base::TimeDelta::FromMilliseconds(10);
+  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x, y);
+  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_up.set_button_state(0);
+  EXPECT_TRUE(selector_->OnTouchEvent(action_up));
+  EXPECT_EQ(4u, event_log_.size());  // NO CHANGE
 }
 
 TEST_F(GestureTextSelectorTest, TapTriggersLongPressSelection) {

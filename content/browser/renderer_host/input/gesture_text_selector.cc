@@ -34,7 +34,11 @@ scoped_ptr<GestureDetector> CreateGestureDetector(
 }  // namespace
 
 GestureTextSelector::GestureTextSelector(GestureTextSelectorClient* client)
-    : client_(client), text_selection_triggered_(false) {
+    : client_(client),
+      text_selection_triggered_(false),
+      secondary_button_pressed_(false),
+      anchor_x_(0.0f),
+      anchor_y_(0.0f) {
   DCHECK(client);
 }
 
@@ -46,10 +50,23 @@ bool GestureTextSelector::OnTouchEvent(const MotionEvent& event) {
     // Only trigger selection on ACTION_DOWN to prevent partial touch or gesture
     // sequences from being forwarded.
     text_selection_triggered_ = ShouldStartTextSelection(event);
+    secondary_button_pressed_ =
+        event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
+    anchor_x_ = event.GetX();
+    anchor_y_ = event.GetY();
   }
 
   if (!text_selection_triggered_)
     return false;
+
+  if (event.GetAction() == MotionEvent::ACTION_MOVE) {
+    secondary_button_pressed_ =
+        event.GetButtonState() == MotionEvent::BUTTON_SECONDARY;
+    if (!secondary_button_pressed_) {
+      anchor_x_ = event.GetX();
+      anchor_y_ = event.GetY();
+    }
+  }
 
   if (!gesture_detector_)
     gesture_detector_ = CreateGestureDetector(this);
@@ -72,11 +89,16 @@ bool GestureTextSelector::OnScroll(const MotionEvent& e1,
                                    float distance_x,
                                    float distance_y) {
   DCHECK(text_selection_triggered_);
+
+  // Return if Stylus button is not pressed.
+  if (!secondary_button_pressed_)
+    return true;
+
   // TODO(changwan): check if we can show handles after the scroll finishes
   // instead. Currently it is not possible as ShowSelectionHandles should
   // be called before we change the selection.
   client_->ShowSelectionHandlesAutomatically();
-  client_->SelectRange(e1.GetX(), e1.GetY(), e2.GetX(), e2.GetY());
+  client_->SelectRange(anchor_x_, anchor_y_, e2.GetX(), e2.GetY());
   return true;
 }
 
