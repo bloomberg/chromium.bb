@@ -861,6 +861,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   }
 
   void HandleTranslationUnit(ASTContext& context) override {
+    // Don't run the plugin if the compilation unit is already invalid.
+    if (diagnostic_.hasErrorOccurred())
+      return;
+
     CollectVisitor visitor;
     visitor.TraverseDecl(context.getTranslationUnitDecl());
 
