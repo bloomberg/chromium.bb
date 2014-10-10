@@ -1800,7 +1800,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 					   seat->keyboard->focus_serial);
 	}
 
-	if (seat->keyboard->focus &&
+	if (seat->keyboard->focus && seat->keyboard->focus->resource &&
 	    wl_resource_get_client(seat->keyboard->focus->resource) == client) {
 		struct weston_surface *surface =
 			(struct weston_surface *) seat->keyboard->focus;
