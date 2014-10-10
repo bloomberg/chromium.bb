@@ -27,6 +27,7 @@
 #define ColorChooserUIController_h
 
 #include "core/html/forms/ColorChooser.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/web/WebColorChooserClient.h"
 #include "wtf/OwnPtr.h"
@@ -37,10 +38,16 @@ class ColorChooserClient;
 class LocalFrame;
 class WebColorChooser;
 
-class ColorChooserUIController : public WebColorChooserClient, public ColorChooser {
+class ColorChooserUIController : public NoBaseWillBeGarbageCollectedFinalized<ColorChooserUIController>, public WebColorChooserClient, public ColorChooser {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
 public:
-    ColorChooserUIController(LocalFrame*, ColorChooserClient*);
+    static PassOwnPtrWillBeRawPtr<ColorChooserUIController> create(LocalFrame* frame, ColorChooserClient* client)
+    {
+        return adoptPtrWillBeNoop(new ColorChooserUIController(frame, client));
+    }
+
     virtual ~ColorChooserUIController();
+    virtual void trace(Visitor*) override;
 
     virtual void openUI();
 
@@ -54,14 +61,16 @@ public:
     virtual void didEndChooser() override final;
 
 protected:
+    ColorChooserUIController(LocalFrame*, ColorChooserClient*);
+
     void openColorChooser();
     OwnPtr<WebColorChooser> m_chooser;
+    RawPtrWillBeMember<ColorChooserClient> m_client;
 
 private:
-    LocalFrame* m_frame;
-    ColorChooserClient* m_client;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
-}
+} // namespace blink
 
 #endif // ColorChooserUIController_h

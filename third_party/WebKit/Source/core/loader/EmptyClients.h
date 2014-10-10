@@ -144,7 +144,7 @@ public:
 
     virtual void enumerateChosenDirectory(FileChooser*) override { }
 
-    virtual PassOwnPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     virtual void openTextDataListChooser(HTMLInputElement&) override;
 

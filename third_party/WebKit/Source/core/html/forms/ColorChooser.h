@@ -30,15 +30,18 @@
 #ifndef ColorChooser_h
 #define ColorChooser_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class AXObject;
 class Color;
 
-class ColorChooser {
+class ColorChooser : public WillBeGarbageCollectedMixin {
 public:
     ColorChooser();
     virtual ~ColorChooser();
+    virtual void trace(Visitor*) { }
 
     virtual void setSelectedColor(const Color&) { }
     virtual void endChooser() { }

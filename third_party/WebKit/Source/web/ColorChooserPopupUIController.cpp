@@ -47,7 +47,6 @@ enum ColorPickerPopupAction {
 ColorChooserPopupUIController::ColorChooserPopupUIController(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
     : ColorChooserUIController(frame, client)
     , m_chromeClient(chromeClient)
-    , m_client(client)
     , m_popup(0)
     , m_locale(Locale::defaultLocale())
 {
@@ -55,6 +54,8 @@ ColorChooserPopupUIController::ColorChooserPopupUIController(LocalFrame* frame, 
 
 ColorChooserPopupUIController::~ColorChooserPopupUIController()
 {
+    closePopup();
+    // ~ColorChooserUIController ends the ColorChooser.
 }
 
 void ColorChooserPopupUIController::openUI()
@@ -69,8 +70,8 @@ void ColorChooserPopupUIController::endChooser()
 {
     if (m_chooser)
         m_chooser->endChooser();
-    if (m_popup)
-        closePopup();
+
+    closePopup();
 }
 
 AXObject* ColorChooserPopupUIController::rootAXObject()

@@ -579,13 +579,13 @@ void ChromeClientImpl::print(LocalFrame* frame)
         m_webView->client()->printPage(WebLocalFrameImpl::fromFrame(frame));
 }
 
-PassOwnPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
-    OwnPtr<ColorChooserUIController> controller;
+    OwnPtrWillBeRawPtr<ColorChooserUIController> controller = nullptr;
     if (RuntimeEnabledFeatures::pagePopupEnabled())
-        controller = adoptPtr(new ColorChooserPopupUIController(frame, this, chooserClient));
+        controller = ColorChooserPopupUIController::create(frame, this, chooserClient);
     else
-        controller = adoptPtr(new ColorChooserUIController(frame, chooserClient));
+        controller = ColorChooserUIController::create(frame, chooserClient);
     controller->openUI();
     return controller.release();
 }

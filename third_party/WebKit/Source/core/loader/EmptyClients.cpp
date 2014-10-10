@@ -82,7 +82,7 @@ PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&
     return adoptRefWillBeNoop(new EmptyPopupMenu());
 }
 
-PassOwnPtr<ColorChooser> EmptyChromeClient::createColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> EmptyChromeClient::createColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
 {
     return nullptr;
 }

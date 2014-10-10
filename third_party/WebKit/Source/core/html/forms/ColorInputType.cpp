@@ -82,7 +82,13 @@ PassRefPtrWillBeRawPtr<InputType> ColorInputType::create(HTMLInputElement& eleme
 
 ColorInputType::~ColorInputType()
 {
-    endColorChooser();
+}
+
+void ColorInputType::trace(Visitor* visitor)
+{
+    visitor->trace(m_chooser);
+    BaseClickableWithKeyInputType::trace(visitor);
+    ColorChooserClient::trace(visitor);
 }
 
 void ColorInputType::countUsage()

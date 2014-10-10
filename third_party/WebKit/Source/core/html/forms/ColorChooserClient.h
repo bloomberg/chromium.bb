@@ -33,17 +33,17 @@
 
 #include "platform/ColorSuggestion.h"
 #include "platform/geometry/IntRect.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class Element;
 
-class ColorChooserClient {
+class ColorChooserClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~ColorChooserClient();
+    virtual void trace(Visitor*) { }
 
     virtual void didChooseColor(const Color&) = 0;
     virtual void didEndChooser() = 0;

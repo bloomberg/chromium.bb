@@ -115,7 +115,7 @@ public:
 
     void print(LocalFrame*);
 
-    PassOwnPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color& initialColor);
+    PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color& initialColor);
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
     void openTextDataListChooser(HTMLInputElement&);
 
@@ -141,6 +141,6 @@ private:
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
 };
 
-}
+} // namespace blink
 
 #endif // Chrome_h

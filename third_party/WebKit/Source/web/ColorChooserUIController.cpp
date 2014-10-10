@@ -38,13 +38,23 @@ namespace blink {
 
 
 ColorChooserUIController::ColorChooserUIController(LocalFrame* frame, ColorChooserClient* client)
-    : m_frame(frame)
-    , m_client(client)
+    : m_client(client)
+    , m_frame(frame)
 {
 }
 
 ColorChooserUIController::~ColorChooserUIController()
 {
+    // The client cannot be accessed when finalizing.
+    m_client = nullptr;
+    endChooser();
+}
+
+void ColorChooserUIController::trace(Visitor* visitor)
+{
+    visitor->trace(m_frame);
+    visitor->trace(m_client);
+    ColorChooser::trace(visitor);
 }
 
 void ColorChooserUIController::openUI()
@@ -77,9 +87,9 @@ void ColorChooserUIController::didChooseColor(const WebColor& color)
 
 void ColorChooserUIController::didEndChooser()
 {
-    ASSERT(m_client);
     m_chooser = nullptr;
-    m_client->didEndChooser();
+    if (m_client)
+        m_client->didEndChooser();
 }
 
 void ColorChooserUIController::openColorChooser()

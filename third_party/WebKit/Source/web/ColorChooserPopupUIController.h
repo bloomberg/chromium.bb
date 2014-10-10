@@ -39,7 +39,11 @@ class PagePopup;
 class ColorChooserPopupUIController final : public ColorChooserUIController, public PagePopupClient  {
 
 public:
-    ColorChooserPopupUIController(LocalFrame*, ChromeClientImpl*, ColorChooserClient*);
+    static PassOwnPtrWillBeRawPtr<ColorChooserPopupUIController> create(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
+    {
+        return adoptPtrWillBeNoop(new ColorChooserPopupUIController(frame, chromeClient, client));
+    }
+
     virtual ~ColorChooserPopupUIController();
 
     // ColorChooserUIController functions:
@@ -60,14 +64,15 @@ public:
     virtual void didClosePopup() override;
 
 private:
+    ColorChooserPopupUIController(LocalFrame*, ChromeClientImpl*, ColorChooserClient*);
+
     void openPopup();
 
     ChromeClientImpl* m_chromeClient;
-    ColorChooserClient* m_client;
     PagePopup* m_popup;
     Locale& m_locale;
 };
 
-}
+} // namespace blink
 
 #endif // ColorChooserPopupUIController_h

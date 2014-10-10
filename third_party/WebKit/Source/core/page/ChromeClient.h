@@ -60,8 +60,6 @@ class IntRect;
 class LocalFrame;
 class Node;
 class Page;
-class PagePopup;
-class PagePopupClient;
 class PagePopupDriver;
 class PopupMenuClient;
 
@@ -159,7 +157,7 @@ public:
 
     virtual bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&) = 0;
 
-    virtual PassOwnPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) = 0;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) = 0;
 
     // This function is used for:
     //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -239,5 +237,6 @@ protected:
     virtual ~ChromeClient() { }
 };
 
-}
+} // namespace blink
+
 #endif // ChromeClient_h
