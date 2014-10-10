@@ -793,6 +793,8 @@ def GetUploadPackageTargets():
   # Direct-to-nacl target libraries
   for arch in DIRECT_TO_NACL_ARCHES:
     common_packages.append('newlib_%s' % arch)
+    common_packages.append('libcxx_%s' % arch)
+    common_packages.append('libs_support_%s' % arch)
 
   # Host components
   host_packages = {}
