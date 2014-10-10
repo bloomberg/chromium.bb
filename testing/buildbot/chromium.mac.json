@@ -87,10 +87,6 @@
       "url_unittests"
     ]
   },
-  "Mac10.6 Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
   "Mac10.7 Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
@@ -177,10 +173,6 @@
         }
       },
       "url_unittests"
-    ]
-  },
-  "Mac10.7 Tests (2)": {
-    "gtest_tests": [
     ]
   },
   "Mac 10.6 Tests (dbg)(1)": {
@@ -271,10 +263,6 @@
       "url_unittests"
     ]
   },
-  "Mac 10.6 Tests (dbg)(2)": {
-    "gtest_tests": [
-    ]
-  },
   "Mac 10.7 Tests (dbg)(1)": {
     "gtest_tests": [
       "accessibility_unittests",
@@ -362,10 +350,6 @@
         }
       },
       "url_unittests"
-    ]
-  },
-  "Mac 10.7 Tests (dbg)(2)": {
-    "gtest_tests": [
     ]
   }
 }

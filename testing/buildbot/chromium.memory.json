@@ -71,14 +71,6 @@
       "url_unittests"
     ]
   },
-  "Linux ASan LSan Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Linux ASan LSan Tests (3)": {
-    "gtest_tests": [
-    ]
-  },
   "Linux ASan Tests (sandboxed)": {
     "gtest_tests": [
       {
@@ -160,14 +152,6 @@
       "url_unittests"
     ]
   },
-  "Mac ASan Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Mac ASan Tests (3)": {
-    "gtest_tests": [
-    ]
-  },
   "Mac ASan 64 Tests (1)": {
     "gtest_tests": [
       "base_unittests",
@@ -233,14 +217,6 @@
         }
       },
       "url_unittests"
-    ]
-  },
-  "Mac ASan 64 Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Mac ASan 64 Tests (3)": {
-    "gtest_tests": [
     ]
   },
   "Linux Chromium OS ASan LSan Tests (1)": {
@@ -326,14 +302,6 @@
       "ui_unittests",
       "url_unittests",
       "views_unittests"
-    ]
-  },
-  "Linux Chromium OS ASan LSan Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Linux Chromium OS ASan LSan Tests (3)": {
-    "gtest_tests": [
     ]
   }
 }

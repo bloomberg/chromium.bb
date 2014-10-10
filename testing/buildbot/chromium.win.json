@@ -93,14 +93,6 @@
       "wm_unittests"
     ]
   },
-  "XP Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "XP Tests (3)": {
-    "gtest_tests": [
-    ]
-  },
   "Vista Tests (1)": {
     "gtest_tests": [
       "interactive_ui_tests",
@@ -268,14 +260,6 @@
       "wm_unittests"
     ]
   },
-  "Win7 Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Win7 Tests (3)": {
-    "gtest_tests": [
-    ]
-  },
   "Win 7 Tests x64 (1)": {
     "gtest_tests": [
       "accessibility_unittests",
@@ -367,14 +351,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ]
-  },
-  "Win 7 Tests x64 (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Win 7 Tests x64 (3)": {
-    "gtest_tests": [
     ]
   },
   "Win7 Tests (dbg)(1)": {
@@ -477,30 +453,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ]
-  },
-  "Win7 Tests (dbg)(2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Win7 Tests (dbg)(3)": {
-    "gtest_tests": [
-     ]
-  },
-  "Win7 Tests (dbg)(4)": {
-    "gtest_tests": [
-    ]
-  },
-  "Win7 Tests (dbg)(5)": {
-    "gtest_tests": [
-    ]
-  },
-  "Win7 Tests (dbg)(6)": {
-    "gtest_tests": [
-    ]
-  },
-  "Interactive Tests (dbg)": {
-    "gtest_tests": [
     ]
   },
   "Win8 Aura": {

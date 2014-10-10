@@ -88,10 +88,6 @@
       "chromevox_tests"
     ]
   },
-  "Linux ChromiumOS Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
   "Linux ChromiumOS Ozone Tests (1)": {
     "gtest_tests": [
       "accessibility_unittests",
@@ -230,14 +226,6 @@
           "shards": 3
         }
       }
-    ]
-  },
-  "Linux ChromiumOS Tests (dbg)(2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Linux ChromiumOS Tests (dbg)(3)": {
-    "gtest_tests": [
     ]
   }
 }
