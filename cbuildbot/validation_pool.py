@@ -1915,8 +1915,11 @@ class ValidationPool(object):
     Returns:
       True if we managed to apply any changes.
     """
+    # applied is a list of applied GerritPatch instances.
+    # failed_tot and failed_inflight are lists of PatchException instances.
     applied = []
-    failed_tot = failed_inflight = {}
+    failed_tot = []
+    failed_inflight = []
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
     if self.is_master:
       try:
@@ -1987,6 +1990,8 @@ class ValidationPool(object):
           'current stack of patches; if this stack fails, they will be tried '
           'in the next run.  Inflight failed changes: %s',
           ' '.join([c.patch.id for c in failed_inflight]))
+      for x in failed_inflight:
+        self._HandleFailedToApplyDueToInflightConflict(x.patch)
 
     self.changes_that_failed_to_apply_earlier.extend(failed_inflight)
     self.changes = applied
@@ -2409,7 +2414,7 @@ class ValidationPool(object):
     """Handles changes that were not able to be applied cleanly.
 
     Args:
-      failures: GerritPatch changes to handle.
+      failures: List of cros_patch.PatchException instances to handle.
     """
     for failure in failures:
       logging.info('Change %s did not apply cleanly.', failure.patch)
@@ -2423,7 +2428,7 @@ class ValidationPool(object):
     to re-upload a rebased change.
 
     Args:
-      failure: GerritPatch instance to operate upon.
+      failure: cros_patch.PatchException instance to operate upon.
     """
     msg = ('%(queue)s failed to apply your change in %(build_log)s .'
            ' %(failure)s')
@@ -2451,6 +2456,21 @@ class ValidationPool(object):
            'marking your commit as ready.')
     self.SendNotification(change, msg)
     self.RemoveCommitReady(change)
+
+  def _HandleFailedToApplyDueToInflightConflict(self, change):
+    """Handler for when a patch conflicts with another patch in the CQ run.
+
+    This handler simply comments on the affected change, explaining why it
+    is being skipped in the current CQ run.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = ('%(queue)s could not apply your change because it conflicts with '
+           'other change(s) that it is testing. If those changes do not pass '
+           'your change will be retried. Otherwise it will be rejected at '
+           'the end of this CQ run.')
+    self.SendNotification(change, msg)
 
   def HandleValidationTimeout(self, changes=None, sanity=True):
     """Handles changes that timed out.

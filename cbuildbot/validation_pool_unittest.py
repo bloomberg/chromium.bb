@@ -785,7 +785,8 @@ class TestCoreLogic(MoxBase):
     kwargs['build_root'] = self.build_root
     pool = MakePool(*args, **kwargs)
     funcs = ['_HandleApplySuccess', '_HandleApplyFailure',
-             '_HandleCouldNotApply', '_HandleCouldNotSubmit']
+             '_HandleCouldNotApply', '_HandleCouldNotSubmit',
+             '_HandleFailedToApplyDueToInflightConflict']
     if handlers:
       for func in funcs:
         self.mox.StubOutWithMock(pool, func)
@@ -809,6 +810,10 @@ class TestCoreLogic(MoxBase):
 
     if tot:
       pool._HandleApplyFailure(tot).AndReturn(None)
+
+    for failure in inflight:
+      pool._HandleFailedToApplyDueToInflightConflict(
+          failure.patch).AndReturn(None)
 
     # We stash this on the pool object so we can reuse it during validation.
     # We could stash this in the test instances, but that would break
