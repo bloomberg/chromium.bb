@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -146,6 +147,11 @@ void WebViewAPITest::RunTestOnMainThreadLoop() {
   GetGuestViewManager()->WaitForAllGuestsDeleted();
 }
 
+void WebViewAPITest::SetUpCommandLine(base::CommandLine* command_line) {
+  AppShellTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+}
+
 void WebViewAPITest::SetUpOnMainThread() {
   AppShellTest::SetUpOnMainThread();
 
@@ -278,6 +284,30 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest,
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDestroyOnEventListener) {
   RunTest("testDestroyOnEventListener", "web_view/apitest");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogAlert) {
+  RunTest("testDialogAlert", "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirm) {
+  RunTest("testDialogConfirm", "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmCancel) {
+  RunTest("testDialogConfirmCancel", "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmDefaultCancel) {
+  RunTest("testDialogConfirmDefaultCancel", "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmDefaultGCCancel) {
+  RunTest("testDialogConfirmDefaultGCCancel", "web_view/dialog");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogPrompt) {
+  RunTest("testDialogPrompt", "web_view/dialog");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewLoad) {

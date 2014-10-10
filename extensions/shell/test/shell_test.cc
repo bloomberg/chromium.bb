@@ -23,6 +23,7 @@ AppShellTest::~AppShellTest() {
 void AppShellTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kTestType, "appshell");
+  SetUpCommandLine(command_line);
   content::BrowserTestBase::SetUp();
 }
 

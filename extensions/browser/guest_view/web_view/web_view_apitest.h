@@ -35,6 +35,7 @@ class WebViewAPITest : public AppShellTest {
 
   // content::BrowserTestBase implementation.
   virtual void RunTestOnMainThreadLoop() override;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
   virtual void SetUpOnMainThread() override;
   virtual void TearDownOnMainThread() override;
 
