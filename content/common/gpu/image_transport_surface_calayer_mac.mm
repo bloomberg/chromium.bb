@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 
+#include <OpenGL/CGLRenderers.h>
+
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/common/gpu/surface_handle_types_mac.h"
@@ -290,6 +292,14 @@ void CALayerStorageProvider::LayerDoDraw() {
   glEnd();
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
+
+  GLint current_renderer_id = 0;
+  if (CGLGetParameter(CGLGetCurrentContext(),
+                      kCGLCPCurrentRendererID,
+                      &current_renderer_id) == kCGLNoError) {
+    current_renderer_id &= kCGLRendererIDMatchingMask;
+    transport_surface_->SetRendererID(current_renderer_id);
+  }
 
   // Allow forward progress in the context now that the swap is complete.
   UnblockBrowserIfNeeded();

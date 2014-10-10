@@ -82,6 +82,7 @@ class ImageTransportSurfaceFBO
   void SendSwapBuffers(uint64 surface_handle,
                        const gfx::Size pixel_size,
                        float scale_factor);
+  void SetRendererID(int renderer_id);
 
  protected:
   // ImageTransportSurface implementation

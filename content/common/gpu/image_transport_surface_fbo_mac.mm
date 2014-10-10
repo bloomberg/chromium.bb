@@ -138,6 +138,11 @@ void ImageTransportSurfaceFBO::SendSwapBuffers(uint64 surface_handle,
   is_swap_buffers_send_pending_ = false;
 }
 
+void ImageTransportSurfaceFBO::SetRendererID(int renderer_id) {
+  if (renderer_id)
+    context_->share_group()->SetRendererID(renderer_id);
+}
+
 bool ImageTransportSurfaceFBO::PostSubBuffer(
     int x, int y, int width, int height) {
   // Mac does not support sub-buffer swaps.
@@ -163,7 +168,7 @@ void* ImageTransportSurfaceFBO::GetDisplay() {
 
 void ImageTransportSurfaceFBO::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
-  context_->share_group()->SetRendererID(params.renderer_id);
+  SetRendererID(params.renderer_id);
   storage_provider_->SwapBuffersAckedByBrowser(params.disable_throttling);
 }
 
