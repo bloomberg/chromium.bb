@@ -3469,3 +3469,12 @@
    fun:_ZN5blink13InlineFlowBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
    fun:_ZN5blink13RootInlineBox5paintERNS_9PaintInfoERKNS_11LayoutPointENS_10LayoutUnitES6_
 }
+{
+   bug_422472a
+   Memcheck:Uninitialized
+   fun:_ZN5mediaL23FromInterleavedInternalIssLs0EEEvPKviiPNS_8AudioBusEff
+   ...
+   fun:_ZN7content30SpeechRecognitionAudioSinkTest12CaptureAudioEj
+   fun:_ZN7content30SpeechRecognitionAudioSinkTest35AssertConsumptionForAudioParametersEiiiij
+   fun:_ZN7content62SpeechRecognitionAudioSinkTest_RecognizerNotifiedOnSocket_Test8TestBodyEv
+}
