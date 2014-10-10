@@ -10,9 +10,7 @@
 // cast extension. This line prevents an exception on using localStorage.
 window.__defineGetter__('localStorage', function() { return {}; });
 
-// THIS IS A TEST APP.
-// TODO(yoshiki): Fix this before launch.
-var APPLICATION_ID = '214CC863';
+var APPLICATION_ID = '4CCB98DA';
 
 util.addPageLoadHandler(function() {
   initialize();
