@@ -42,7 +42,8 @@ NativeMessageProcessHost::NativeMessageProcessHost(
     const std::string& source_extension_id,
     const std::string& native_host_name,
     scoped_ptr<NativeProcessLauncher> launcher)
-    : source_extension_id_(source_extension_id),
+    : client_(NULL),
+      source_extension_id_(source_extension_id),
       native_host_name_(native_host_name),
       launcher_(launcher.Pass()),
       closed_(false),
@@ -56,12 +57,6 @@ NativeMessageProcessHost::NativeMessageProcessHost(
 
   task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
       content::BrowserThread::IO);
-  // It's safe to use base::Unretained() here because NativeMessagePort always
-  // deletes us on the IO thread.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
-                 base::Unretained(this)));
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
@@ -174,7 +169,14 @@ void NativeMessageProcessHost::OnMessage(const std::string& json) {
 
 void NativeMessageProcessHost::Start(Client* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!client_);
   client_ = client;
+  // It's safe to use base::Unretained() here because NativeMessagePort always
+  // deletes us on the IO thread.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
+                 base::Unretained(this)));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
