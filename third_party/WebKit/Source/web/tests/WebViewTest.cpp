@@ -1289,7 +1289,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink)
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
 
     WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
-    FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(), "<a href='http://www.test.com' style='position: absolute; left: 20px; top: 20px; width: 200px; -webkit-transform:translateZ(0);'>A link to highlight</a>", baseURL);
+    FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(), "<a href='http://www.test.com' style='position: absolute; left: 20px; top: 20px; width: 200px; transform:translateZ(0);'>A link to highlight</a>", baseURL);
 
     WebGestureEvent event;
     event.type = WebInputEvent::GestureShowPress;

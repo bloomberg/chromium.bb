@@ -175,7 +175,7 @@ TEST(PopupContainerTest, PopupPosition)
     }
 
     {
-        // Test for --webkit-transform:rotate(53deg).
+        // Test for transform:rotate(53deg).
         IntRect initialRect(100, 700, targetControlWidth, 258);
         MockPopupContent content(initialRect.size());
         IntSize transformOffset(-4, -8);
@@ -185,7 +185,7 @@ TEST(PopupContainerTest, PopupPosition)
     }
 
     {
-        // Test for --webkit-transform:rotate(-53deg).
+        // Test for transform:rotate(-53deg).
         IntRect initialRect(100, 700, targetControlWidth, 258);
         MockPopupContent content(initialRect.size());
         IntSize transformOffset(4, -8);

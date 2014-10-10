@@ -11,7 +11,7 @@
     z-index: auto !important;
     position: static !important;
     opacity: 1 !important;
-    -webkit-transform: none !important;
+    transform: none !important;
     -webkit-mask: none !important;
     clip: none !important;
     -webkit-filter: none !important;
@@ -35,7 +35,7 @@ video:-webkit-full-screen, audio:-webkit-full-screen {
     height: 100% !important;
     flex: 1 !important;
     display: block !important;
-    -webkit-transform: none !important;
+    transform: none !important;
 }
 
 img:-webkit-full-screen {
