@@ -90,6 +90,19 @@ void URLToRequestPath(const GURL& url, std::string* path) {
     path->assign(spec.substr(offset));
 }
 
+// Returns a value of 'Origin:' header for the |request| if the header is set.
+// Otherwise returns an empty string.
+std::string GetOriginHeaderValue(const net::URLRequest* request) {
+  std::string result;
+  if (request->extra_request_headers().GetHeader(
+          net::HttpRequestHeaders::kOrigin, &result))
+    return result;
+  net::HttpRequestHeaders headers;
+  if (request->GetFullRequestHeaders(&headers))
+    headers.GetHeader(net::HttpRequestHeaders::kOrigin, &result);
+  return result;
+}
+
 }  // namespace
 
 // URLRequestChromeJob is a net::URLRequestJob that manages running
@@ -152,6 +165,10 @@ class URLRequestChromeJob : public net::URLRequestJob,
     send_content_type_header_ = send_content_type_header;
   }
 
+  void set_access_control_allow_origin(const std::string& value) {
+    access_control_allow_origin_ = value;
+  }
+
   // Returns true when job was generated from an incognito profile.
   bool is_incognito() const {
     return is_incognito_;
@@ -201,6 +218,10 @@ class URLRequestChromeJob : public net::URLRequestJob,
 
   // If true, sets the "Content-Type: <mime-type>" header.
   bool send_content_type_header_;
+
+  // If not empty, "Access-Control-Allow-Origin:" is set to the value of this
+  // string.
+  std::string access_control_allow_origin_;
 
   // True when job is generated from an incognito profile.
   const bool is_incognito_;
@@ -292,6 +313,12 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
         base::StringPrintf("%s:%s", net::HttpRequestHeaders::kContentType,
                            mime_type_.c_str());
     info->headers->AddHeader(content_type);
+  }
+
+  if (!access_control_allow_origin_.empty()) {
+    info->headers->AddHeader("Access-Control-Allow-Origin: " +
+                             access_control_allow_origin_);
+    info->headers->AddHeader("Vary: Origin");
   }
 }
 
@@ -577,6 +604,15 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
       source->source()->ShouldDenyXFrameOptions());
   job->set_send_content_type_header(
       source->source()->ShouldServeMimeTypeAsContentTypeHeader());
+
+  std::string origin = GetOriginHeaderValue(request);
+  if (!origin.empty()) {
+    std::string header =
+        source->source()->GetAccessControlAllowOriginForOrigin(origin);
+    DCHECK(header.empty() || header == origin || header == "*" ||
+           header == "null");
+    job->set_access_control_allow_origin(header);
+  }
 
   // Look up additional request info to pass down.
   int render_process_id = -1;

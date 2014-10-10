@@ -119,6 +119,15 @@ class CONTENT_EXPORT URLDataSource {
   // is for chrome-devtools.
   virtual bool ShouldServeMimeTypeAsContentTypeHeader() const;
 
+  // This method is called when the request contains "Origin:" header. The value
+  // of the header is passed in |origin| parameter. If the returned value is not
+  // empty, it is used as a value for "Access-Control-Allow-Origin:" response
+  // header, otherwise the header is not set. This method should return either
+  // |origin|, or "*", or "none", or empty string.
+  // Default implementation returns an empty string.
+  virtual std::string GetAccessControlAllowOriginForOrigin(
+      const std::string& origin) const;
+
   // Called to inform the source that StartDataRequest() will be called soon.
   // Gives the source an opportunity to rewrite |path| to incorporate extra
   // information from the URLRequest prior to serving.

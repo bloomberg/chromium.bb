@@ -56,4 +56,9 @@ bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
   return false;
 }
 
+std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
+    const std::string& origin) const {
+  return std::string();
+}
+
 }  // namespace content

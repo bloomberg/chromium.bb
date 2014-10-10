@@ -22,6 +22,8 @@ class SharedResourcesDataSource : public content::URLDataSource {
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
   virtual std::string GetMimeType(const std::string&) const override;
+  virtual std::string GetAccessControlAllowOriginForOrigin(
+      const std::string& origin) const override;
 
  private:
   virtual ~SharedResourcesDataSource();
