@@ -100,6 +100,8 @@ INTERNAL_GERRIT_HOST = GOB_HOST % INTERNAL_GERRIT_INSTANCE
 INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
+GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
+
 REPO_PROJECT = 'external/repo'
 REPO_URL = '%s/%s' % (EXTERNAL_GOB_URL, REPO_PROJECT)
 

@@ -10,6 +10,7 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 from __future__ import print_function
 
 import base64
+import cookielib
 import httplib
 import json
 import logging
@@ -20,6 +21,7 @@ import urllib
 import urlparse
 from cStringIO import StringIO
 
+from chromite.cbuildbot import constants
 from chromite.lib import retry_util
 
 
@@ -58,21 +60,33 @@ def _QueryString(param_dict, first_param=None):
   return '+'.join(q)
 
 
-def GetCookies(_host, _path):
+def GetCookies(host, _path):
   """Returns cookies that should be set on a request.
 
   Used by CreateHttpConn for any requests that do not already specify a Cookie
   header. All requests made by this library are HTTPS.
 
   Args:
-    _host: The hostname of the Gerrit service.
+    host: The hostname of the Gerrit service.
     _path: The path on the Gerrit service, already including /a/ if applicable.
 
   Returns:
     A dict of cookie name to value, with no URL encoding applied.
   """
-  # Default implementation does not use cookies but may be stubbed out in tests.
-  return {}
+  def _IsDomain(x, domain):
+    return x.partition('.')[2] == domain.strip('.')
+
+  # Set cookie file for http authentication
+  cookie_path = constants.GOB_COOKIE_PATH
+  if os.path.isfile(constants.GOB_COOKIE_PATH):
+    jar = cookielib.MozillaCookieJar(cookie_path)
+    jar.load()
+    # Skip checking whether |_path| is a subpath of the path specified
+    # in the cookie because we don't support the granularity.
+    return dict((x.name, urllib.unquote(x.value)) for x in jar
+                if _IsDomain(host, x.domain) and x.path == '/')
+  else:
+    return {}
 
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
