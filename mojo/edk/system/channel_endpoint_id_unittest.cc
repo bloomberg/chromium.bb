@@ -30,6 +30,9 @@ TEST(ChannelEndpointIdTest, Basic) {
   EXPECT_FALSE(invalid.is_valid());
   EXPECT_TRUE(bootstrap.is_valid());
 
+  EXPECT_FALSE(invalid.is_remotely_allocated());
+  EXPECT_FALSE(bootstrap.is_remotely_allocated());
+
   // Test assignment.
   ChannelEndpointId copy;
   copy = bootstrap;
@@ -86,14 +89,17 @@ TEST(LocalChannelEndpointIdGeneratorTest, Basic) {
 // it needs to be friended.
 TEST(LocalChannelEndpointIdGeneratorTest, WrapAround) {
   LocalChannelEndpointIdGenerator gen;
-  gen.next_channel_endpoint_id_.value_ = static_cast<uint32_t>(-1);
+  gen.next_channel_endpoint_id_.value_ =
+      ChannelEndpointId::kRemotelyAllocatedFlag - 1;
 
   ChannelEndpointId id = gen.GetNext();
   EXPECT_TRUE(id.is_valid());
-  EXPECT_EQ(static_cast<uint32_t>(-1), id.value());
+  EXPECT_FALSE(id.is_remotely_allocated());
+  EXPECT_EQ(ChannelEndpointId::kRemotelyAllocatedFlag - 1, id.value());
 
   id = gen.GetNext();
   EXPECT_TRUE(id.is_valid());
+  EXPECT_FALSE(id.is_remotely_allocated());
   EXPECT_EQ(1u, id.value());
 }
 

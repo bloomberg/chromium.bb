@@ -26,6 +26,12 @@ FORWARD_DECLARE_TEST(LocalChannelEndpointIdGeneratorTest, WrapAround);
 
 // Represents an ID for an endpoint (i.e., one side of a message pipe) on a
 // |Channel|. This class must be POD.
+//
+// Note: The terminology "remotely allocated ID" is for destination IDs with
+// respect to the receiver. I.e., a destination ID in a message is remotely
+// allocated if the ID was allocated by the sender (i.e., the remote side with
+// respect to the receiver). Conversely, a source ID is remotely allocated if it
+// was allocated by the receiver.
 class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointId {
  public:
   ChannelEndpointId() : value_(0) {}
@@ -51,6 +57,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointId {
   }
 
   bool is_valid() const { return !!value_; }
+  bool is_remotely_allocated() const {
+    return !!(value_ & kRemotelyAllocatedFlag);
+  }
   uint32_t value() const { return value_; }
 
  private:
@@ -58,6 +67,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointId {
   FRIEND_TEST_ALL_PREFIXES(LocalChannelEndpointIdGeneratorTest, WrapAround);
 
   uint32_t value_;
+
+  static const uint32_t kRemotelyAllocatedFlag = 0x80000000u;
+  static const uint32_t kLocallyAllocatedMask = ~kRemotelyAllocatedFlag;
 
   // Copying and assignment allowed.
 };
