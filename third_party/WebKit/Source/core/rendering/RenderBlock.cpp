@@ -4187,17 +4187,6 @@ const char* RenderBlock::renderName() const
             return "RenderBlock (anonymous multi-column span)";
         if (isAnonymousBlock())
             return "RenderBlock (anonymous)";
-        // FIXME: Cleanup isPseudoElement duplication with other renderName methods.
-        // crbug.com/415653
-        if (isPseudoElement()) {
-            if (style()->styleType() == BEFORE)
-                return "RenderBlock (pseudo:before)";
-            if (style()->styleType() == AFTER)
-                return "RenderBlock (pseudo:after)";
-            if (style()->styleType() == BACKDROP)
-                return "RenderBlock (pseudo:backdrop)";
-            ASSERT_NOT_REACHED();
-        }
     }
     if (isAnonymous())
         return "RenderBlock (generated)";
