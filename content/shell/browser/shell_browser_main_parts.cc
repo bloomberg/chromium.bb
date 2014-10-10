@@ -16,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
-#include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
@@ -129,15 +128,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   }
 #endif
   net_log_.reset(new ShellNetLog("content_shell"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    browser_context_.reset(new LayoutTestBrowserContext(false, net_log_.get()));
-    off_the_record_browser_context_.reset(
-        new LayoutTestBrowserContext(true, net_log_.get()));
-  } else {
-    browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
-    off_the_record_browser_context_.reset(
-        new ShellBrowserContext(true, net_log_.get()));
-  }
+  browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
+  off_the_record_browser_context_.reset(
+      new ShellBrowserContext(true, net_log_.get()));
 
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
