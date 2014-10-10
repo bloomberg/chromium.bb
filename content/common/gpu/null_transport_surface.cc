@@ -64,4 +64,10 @@ void NullTransportSurface::SendVSyncUpdateIfAvailable() {
   NOTREACHED();
 }
 
+bool NullTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+  // Override PassThroughImageTransportSurface default behavior which
+  // sets the swap interval.
+  return true;
+}
+
 }  // namespace content

@@ -20,11 +20,12 @@ class NullTransportSurface : public PassThroughImageTransportSurface {
                        GpuCommandBufferStub* stub,
                        const gfx::GLSurfaceHandle& handle);
 
-  // gfx::GLSurface implementation.
+  // gfx::GLSurfaceAdapter implementation.
   virtual bool Initialize() override;
   virtual void Destroy() override;
   virtual bool SwapBuffers() override;
   virtual bool PostSubBuffer(int x, int y, int width, int height) override;
+  virtual bool OnMakeCurrent(gfx::GLContext* context) override;
 
  protected:
   virtual ~NullTransportSurface();
