@@ -39,6 +39,7 @@ ojan@chromium.org
 # pdr reviews many svg and text autosizing patches.
 pdr@chromium.org
 pfeldman@chromium.org
+# philipj reviews <video>, <track>, WebVTT and Fullscreen.
 philipj@opera.com
 pkasting@chromium.org
 rbyers@chromium.org
