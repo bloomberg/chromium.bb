@@ -1050,16 +1050,17 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
         EasyUnlockScreenlockStateHandler::NO_HARDLOCK);
   }
 
+  EasyUnlockKeyManager* key_manager = GetEasyUnlockKeyManager();
   running_easy_unlock_key_ops_ = true;
   if (device_list) {
-    easy_unlock_key_manager_->RefreshKeys(
+    key_manager->RefreshKeys(
         user_context,
         *device_list,
         base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
                    AsWeakPtr(),
                    user_context.GetUserID()));
   } else {
-    easy_unlock_key_manager_->RemoveKeys(
+    key_manager->RemoveKeys(
         user_context,
         0,
         base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished,
