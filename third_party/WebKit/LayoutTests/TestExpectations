@@ -1456,4 +1456,4 @@ crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ NeedsManualRebasel
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pass Timeout ]
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 
-crbug.com/388375 http/tests/serviceworker/fetch-event.html [ NeedsRebaseline ]
+crbug.com/388375 http/tests/serviceworker/fetch-event.html [ NeedsManualRebaseline ]
