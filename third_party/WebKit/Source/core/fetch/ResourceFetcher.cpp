@@ -614,7 +614,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
     return true;
 }
 
-bool ResourceFetcher::isControlledByServiceWorker()
+bool ResourceFetcher::isControlledByServiceWorker() const
 {
     LocalFrame* localFrame = frame();
     if (!localFrame)
