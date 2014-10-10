@@ -43,11 +43,16 @@ DisplayConnectionType GetDisplayType(drmModeConnector* connector) {
 
 bool IsAspectPreserving(DriWrapper* drm, drmModeConnector* connector) {
   ScopedDrmPropertyPtr property(drm->GetProperty(connector, "scaling mode"));
-  if (property) {
-    for (int j = 0; j < property->count_enums; ++j) {
-      if (property->enums[j].value ==
-              connector->prop_values[property->prop_id] &&
-          strcmp(property->enums[j].name, "Full aspect") == 0)
+  if (!property)
+    return false;
+
+  for (int props_i = 0; props_i < connector->count_props; ++props_i) {
+    if (connector->props[props_i] != property->prop_id)
+      continue;
+
+    for (int enums_i = 0; enums_i < property->count_enums; ++enums_i) {
+      if (property->enums[enums_i].value == connector->prop_values[props_i] &&
+          strcmp(property->enums[enums_i].name, "Full aspect") == 0)
         return true;
     }
   }
