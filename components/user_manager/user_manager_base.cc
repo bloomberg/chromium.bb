@@ -791,7 +791,7 @@ const User* UserManagerBase::FindUserInList(const std::string& user_id) const {
   return NULL;
 }
 
-const bool UserManagerBase::UserExistsInList(const std::string& user_id) const {
+bool UserManagerBase::UserExistsInList(const std::string& user_id) const {
   const base::ListValue* user_list = GetLocalState()->GetList(kRegularUsers);
   for (size_t i = 0; i < user_list->GetSize(); ++i) {
     std::string email;

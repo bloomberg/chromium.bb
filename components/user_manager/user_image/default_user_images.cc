@@ -11,10 +11,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "grit/ui_chromeos_resources.h"
-#include "grit/ui_chromeos_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace user_manager {

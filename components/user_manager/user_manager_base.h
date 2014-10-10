@@ -280,7 +280,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Returns |true| if user with the given id is found in the persistent list.
   // Returns |false| otherwise. Does not trigger user loading.
-  const bool UserExistsInList(const std::string& user_id) const;
+  bool UserExistsInList(const std::string& user_id) const;
 
   // Same as FindUserInList but returns non-const pointer to User object.
   User* FindUserInListAndModify(const std::string& user_id);
