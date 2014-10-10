@@ -172,7 +172,7 @@ TEST_F(WebInputEventTraitsTest, ToString) {
   mouse.type = WebInputEvent::MouseMove;
   EXPECT_FALSE(WebInputEventTraits::ToString(mouse).empty());
 
-  WebMouseEvent mouse_wheel;
+  WebMouseWheelEvent mouse_wheel;
   mouse_wheel.type = WebInputEvent::MouseWheel;
   EXPECT_FALSE(WebInputEventTraits::ToString(mouse_wheel).empty());
 
