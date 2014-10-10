@@ -57,7 +57,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderWidget.h"
+#include "core/rendering/RenderPart.h"
 #include "platform/ContextMenu.h"
 #include "platform/Widget.h"
 #include "platform/text/TextBreakIterator.h"
@@ -272,8 +272,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
             data.mediaFlags |= WebContextMenuData::MediaControls;
     } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
         RenderObject* object = r.innerNonSharedNode()->renderer();
-        if (object && object->isWidget()) {
-            Widget* widget = toRenderWidget(object)->widget();
+        if (object && object->isRenderPart()) {
+            Widget* widget = toRenderPart(object)->widget();
             if (widget && widget->isPluginContainer()) {
                 data.mediaType = WebContextMenuData::MediaTypePlugin;
                 WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);

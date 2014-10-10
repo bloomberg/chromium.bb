@@ -91,7 +91,7 @@ private:
     virtual const QualifiedName& subResourceAttributeName() const override;
     virtual const AtomicString imageSourceURL() const override;
 
-    virtual RenderWidget* existingRenderWidget() const override;
+    virtual RenderPart* existingRenderPart() const override;
 
     virtual void updateWidgetInternal() override;
     void updateDocNamedItem();

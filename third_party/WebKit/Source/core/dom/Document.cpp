@@ -173,8 +173,8 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -312,9 +312,9 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
 static Widget* widgetForElement(const Element& focusedElement)
 {
     RenderObject* renderer = focusedElement.renderer();
-    if (!renderer || !renderer->isWidget())
+    if (!renderer || !renderer->isRenderPart())
         return 0;
-    return toRenderWidget(renderer)->widget();
+    return toRenderPart(renderer)->widget();
 }
 
 static bool acceptsEditingFocus(const Element& element)

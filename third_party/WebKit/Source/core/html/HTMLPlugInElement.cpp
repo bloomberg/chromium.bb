@@ -47,7 +47,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderWidget.h"
+#include "core/rendering/RenderPart.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -100,13 +100,13 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
     if (isDisabledFormControl())
         return false;
     RenderObject* r = renderer();
-    return r && (r->isEmbeddedObject() || r->isWidget());
+    return r && (r->isEmbeddedObject() || r->isRenderPart());
 }
 
 void HTMLPlugInElement::removeAllEventListeners()
 {
     HTMLFrameOwnerElement::removeAllEventListeners();
-    if (RenderWidget* renderer = existingRenderWidget()) {
+    if (RenderPart* renderer = existingRenderPart()) {
         if (Widget* widget = renderer->widget())
             widget->eventListenersRemoved();
     }
@@ -160,7 +160,7 @@ void HTMLPlugInElement::requestPluginCreationWithoutRendererIfPossible()
         || !document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType))
         return;
 
-    if (renderer() && renderer()->isWidget())
+    if (renderer() && renderer()->isRenderPart())
         return;
 
     createPluginWithoutRenderer();
@@ -228,8 +228,8 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 RenderObject* HTMLPlugInElement::createRenderer(RenderStyle* style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
-    // class and all superclasses because createObject won't necessarily
-    // return a RenderEmbeddedObject, RenderPart or even RenderWidget.
+    // class and all superclasses because createObject won't necessarily return
+    // a RenderEmbeddedObject or RenderPart.
     if (useFallbackContent())
         return RenderObject::createObject(this, style);
 
@@ -286,8 +286,8 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
 
 Widget* HTMLPlugInElement::pluginWidget() const
 {
-    if (RenderWidget* renderWidget = renderWidgetForJSBindings())
-        return renderWidget->widget();
+    if (RenderPart* renderPart = renderPartForJSBindings())
+        return renderPart->widget();
     return 0;
 }
 
@@ -330,13 +330,13 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     // code in EventHandler; these code paths should be united.
 
     RenderObject* r = renderer();
-    if (!r || !r->isWidget())
+    if (!r || !r->isRenderPart())
         return;
     if (r->isEmbeddedObject()) {
         if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
             return;
     }
-    RefPtr<Widget> widget = toRenderWidget(r)->widget();
+    RefPtr<Widget> widget = toRenderPart(r)->widget();
     if (!widget)
         return;
     widget->handleEvent(event);
@@ -345,13 +345,13 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     HTMLFrameOwnerElement::defaultEventHandler(event);
 }
 
-RenderWidget* HTMLPlugInElement::renderWidgetForJSBindings() const
+RenderPart* HTMLPlugInElement::renderPartForJSBindings() const
 {
     // Needs to load the plugin immediatedly because this function is called
     // when JavaScript code accesses the plugin.
     // FIXME: Check if dispatching events here is safe.
     document().updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
-    return existingRenderWidget();
+    return existingRenderPart();
 }
 
 bool HTMLPlugInElement::isKeyboardFocusable() const

@@ -66,7 +66,6 @@
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/CompositedSelectionBound.h"
@@ -1052,31 +1051,31 @@ RenderBox* FrameView::embeddedContentBox() const
 }
 
 
-void FrameView::addWidget(RenderWidget* object)
+void FrameView::addPart(RenderPart* object)
 {
-    m_widgets.add(object);
+    m_parts.add(object);
 }
 
-void FrameView::removeWidget(RenderWidget* object)
+void FrameView::removePart(RenderPart* object)
 {
-    m_widgets.remove(object);
+    m_parts.remove(object);
 }
 
 void FrameView::updateWidgetPositions()
 {
-    WillBeHeapVector<RefPtrWillBeMember<RenderWidget> > widgets;
-    copyToVector(m_widgets, widgets);
+    WillBeHeapVector<RefPtrWillBeMember<RenderPart> > parts;
+    copyToVector(m_parts, parts);
 
     // Script or plugins could detach the frame so abort processing if that happens.
 
-    for (size_t i = 0; i < widgets.size() && renderView(); ++i)
-        widgets[i]->updateWidgetPosition();
+    for (size_t i = 0; i < parts.size() && renderView(); ++i)
+        parts[i]->updateWidgetPosition();
 
-    for (size_t i = 0; i < widgets.size() && renderView(); ++i)
-        widgets[i]->widgetPositionsUpdated();
+    for (size_t i = 0; i < parts.size() && renderView(); ++i)
+        parts[i]->widgetPositionsUpdated();
 }
 
-void FrameView::addWidgetToUpdate(RenderEmbeddedObject& object)
+void FrameView::addPartToUpdate(RenderEmbeddedObject& object)
 {
     ASSERT(isInPerformLayout());
     // Tell the DOM element that it needs a widget update.
@@ -1085,7 +1084,7 @@ void FrameView::addWidgetToUpdate(RenderEmbeddedObject& object)
     if (isHTMLObjectElement(*node) || isHTMLEmbedElement(*node))
         toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
 
-    m_widgetUpdateSet.add(&object);
+    m_partUpdateSet.add(&object);
 }
 
 void FrameView::setMediaType(const AtomicString& mediaType)
@@ -1859,13 +1858,13 @@ bool FrameView::updateWidgets()
     // This is always called from updateWidgetsTimerFired.
     // m_updateWidgetsTimer should only be scheduled if we have widgets to update.
     // Thus I believe we can stop checking isEmpty here, and just ASSERT isEmpty:
-    ASSERT(!m_widgetUpdateSet.isEmpty());
-    if (m_nestedLayoutCount > 1 || m_widgetUpdateSet.isEmpty())
+    ASSERT(!m_partUpdateSet.isEmpty());
+    if (m_nestedLayoutCount > 1 || m_partUpdateSet.isEmpty())
         return true;
 
     // Need to swap because script will run inside the below loop and invalidate the iterator.
     EmbeddedObjectSet objects;
-    objects.swap(m_widgetUpdateSet);
+    objects.swap(m_partUpdateSet);
 
     for (EmbeddedObjectSet::iterator it = objects.begin(); it != objects.end(); ++it) {
         RenderEmbeddedObject& object = **it;
@@ -1886,10 +1885,10 @@ bool FrameView::updateWidgets()
 
         // Prevent plugins from causing infinite updates of themselves.
         // FIXME: Do we really need to prevent this?
-        m_widgetUpdateSet.remove(&object);
+        m_partUpdateSet.remove(&object);
     }
 
-    return m_widgetUpdateSet.isEmpty();
+    return m_partUpdateSet.isEmpty();
 }
 
 void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
@@ -1915,7 +1914,7 @@ void FrameView::flushAnyPendingPostLayoutTasks()
 void FrameView::scheduleUpdateWidgetsIfNecessary()
 {
     ASSERT(!isInPerformLayout());
-    if (m_updateWidgetsTimer.isActive() || m_widgetUpdateSet.isEmpty())
+    if (m_updateWidgetsTimer.isActive() || m_partUpdateSet.isEmpty())
         return;
     m_updateWidgetsTimer.startOneShot(0, FROM_HERE);
 }

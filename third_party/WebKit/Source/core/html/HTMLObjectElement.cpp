@@ -75,7 +75,7 @@ void HTMLObjectElement::trace(Visitor* visitor)
     HTMLPlugInElement::trace(visitor);
 }
 
-RenderWidget* HTMLObjectElement::existingRenderWidget() const
+RenderPart* HTMLObjectElement::existingRenderPart() const
 {
     return renderPart(); // This will return 0 if the renderer is not a RenderPart.
 }

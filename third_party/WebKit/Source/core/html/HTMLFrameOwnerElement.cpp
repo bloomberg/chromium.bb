@@ -214,20 +214,20 @@ void HTMLFrameOwnerElement::setWidget(PassRefPtr<Widget> widget)
 
     m_widget = widget;
 
-    RenderWidget* renderWidget = toRenderWidget(renderer());
-    if (!renderWidget)
+    RenderPart* renderPart = toRenderPart(renderer());
+    if (!renderPart)
         return;
 
     if (m_widget) {
-        renderWidget->updateOnWidgetChange();
+        renderPart->updateOnWidgetChange();
 
-        ASSERT(document().view() == renderWidget->frameView());
-        ASSERT(renderWidget->frameView());
-        moveWidgetToParentSoon(m_widget.get(), renderWidget->frameView());
+        ASSERT(document().view() == renderPart->frameView());
+        ASSERT(renderPart->frameView());
+        moveWidgetToParentSoon(m_widget.get(), renderPart->frameView());
     }
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->childrenChanged(renderWidget);
+        cache->childrenChanged(renderPart);
 }
 
 Widget* HTMLFrameOwnerElement::ownedWidget() const

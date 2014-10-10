@@ -80,8 +80,8 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
@@ -1661,7 +1661,7 @@ WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary() const
 {
     // FIXME: This is a temporary method that finds the first localFrame in a traversal.
     // This is equivalent to mainFrame() if the mainFrame is in-process. We need to create
-    // separate WebWidgets to be created by RenderWidgets, which are associated with *all*
+    // separate WebWidgets to be created by RenderParts, which are associated with *all*
     // local frame roots, not just the first one in the tree. Until then, this limits us
     // to having only one functioning connected LocalFrame subtree per process.
     for (Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
@@ -3389,8 +3389,8 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
         return;
 
     RenderObject* object = node->renderer();
-    if (object && object->isWidget()) {
-        Widget* widget = toRenderWidget(object)->widget();
+    if (object && object->isRenderPart()) {
+        Widget* widget = toRenderPart(object)->widget();
         if (widget && widget->isPluginContainer()) {
             WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
             switch (action.type) {

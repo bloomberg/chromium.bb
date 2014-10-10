@@ -22,7 +22,6 @@
 #define RenderMeter_h
 
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderWidget.h"
 
 namespace blink {
 

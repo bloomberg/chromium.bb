@@ -79,9 +79,9 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
@@ -950,14 +950,14 @@ static LocalFrame* subframeForTargetNode(Node* node)
         return 0;
 
     RenderObject* renderer = node->renderer();
-    if (!renderer || !renderer->isWidget())
+    if (!renderer || !renderer->isRenderPart())
         return 0;
 
     // FIXME: This explicit check is needed only until RemoteFrames have RemoteFrameViews.
     if (isHTMLFrameElementBase(node) && toHTMLFrameElementBase(node)->contentFrame() && toHTMLFrameElementBase(node)->contentFrame()->isRemoteFrameTemporary())
         return 0;
 
-    Widget* widget = toRenderWidget(renderer)->widget();
+    Widget* widget = toRenderPart(renderer)->widget();
     if (!widget || !widget->isFrameView())
         return 0;
 
@@ -1997,8 +1997,8 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
         // Figure out which view to send the event to.
         RenderObject* target = node->renderer();
 
-        if (isOverWidget && target && target->isWidget()) {
-            Widget* widget = toRenderWidget(target)->widget();
+        if (isOverWidget && target && target->isRenderPart()) {
+            Widget* widget = toRenderPart(target)->widget();
             if (widget && passWheelEventToWidget(event, widget))
                 RETURN_WHEEL_EVENT_HANDLED();
         }
@@ -2386,10 +2386,10 @@ bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& ge
     if (!m_lastGestureScrollOverWidget)
         return false;
 
-    if (!renderer || !renderer->isWidget())
+    if (!renderer || !renderer->isRenderPart())
         return false;
 
-    Widget* widget = toRenderWidget(renderer)->widget();
+    Widget* widget = toRenderPart(renderer)->widget();
 
     if (!widget || !widget->isFrameView())
         return false;
@@ -3865,7 +3865,7 @@ bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, 
 bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)
 {
     // Figure out which view to send the event to.
-    if (!event.innerNode() || !event.innerNode()->renderer() || !event.innerNode()->renderer()->isWidget())
+    if (!event.innerNode() || !event.innerNode()->renderer() || !event.innerNode()->renderer()->isRenderPart())
         return false;
     return false;
 }

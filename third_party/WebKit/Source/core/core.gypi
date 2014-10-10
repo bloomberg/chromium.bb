@@ -1770,7 +1770,6 @@
             'rendering/RenderVideo.cpp',
             'rendering/RenderVideo.h',
             'rendering/RenderView.cpp',
-            'rendering/RenderWidget.cpp',
             'rendering/RenderWordBreak.cpp',
             'rendering/RenderWordBreak.h',
             'rendering/RootInlineBox.cpp',

@@ -386,7 +386,6 @@ public:
     virtual bool isTextControl() const { return false; }
     virtual bool isTextField() const { return false; }
     virtual bool isVideo() const { return false; }
-    virtual bool isWidget() const { return false; }
 
     bool isDocumentElement() const { return document().documentElement() == m_node; }
     // isBody is called from RenderBox::styleWillChange and is thus quite hot.
@@ -617,7 +616,7 @@ public:
         return isPseudoElement() ? 0 : node();
     }
 
-    // FIXME: Why does RenderWidget need this?
+    // FIXME: Why does RenderPart need this? crbug.com/422457
     void clearNode() { m_node = nullptr; }
 
     // Returns the styled node that caused the generation of this renderer.

@@ -35,7 +35,7 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLAppletElement> create(Document&, bool createdByParser);
 
 protected:
-    virtual RenderWidget* renderWidgetForJSBindings() const override;
+    virtual RenderPart* renderPartForJSBindings() const override;
 
 private:
     HTMLAppletElement(Document&, bool createdByParser);
@@ -47,7 +47,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) override;
     virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual RenderWidget* existingRenderWidget() const override;
+    virtual RenderPart* existingRenderPart() const override;
     virtual void updateWidgetInternal() override;
 
     bool canEmbedJava() const;

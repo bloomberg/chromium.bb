@@ -47,7 +47,6 @@
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
@@ -479,8 +478,8 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
         write(ts, *child, indent + 1, behavior);
     }
 
-    if (o.isWidget()) {
-        Widget* widget = toRenderWidget(o).widget();
+    if (o.isRenderPart()) {
+        Widget* widget = toRenderPart(o).widget();
         if (widget && widget->isFrameView()) {
             FrameView* view = toFrameView(widget);
             RenderView* root = view->renderView();

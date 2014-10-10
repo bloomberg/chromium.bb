@@ -63,10 +63,10 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -470,9 +470,9 @@ bool AXRenderObject::isAttachment() const
     if (!renderer)
         return false;
     // Widgets are the replaced elements that we represent to AX as attachments
-    bool isWidget = renderer->isWidget();
-    ASSERT(!isWidget || (renderer->isReplaced() && !isImage()));
-    return isWidget;
+    bool isRenderPart = renderer->isRenderPart();
+    ASSERT(!isRenderPart || (renderer->isReplaced() && !isImage()));
+    return isRenderPart;
 }
 
 bool AXRenderObject::isFileUploadButton() const
@@ -1588,7 +1588,7 @@ Widget* AXRenderObject::widgetForAttachmentView() const
 {
     if (!isAttachment())
         return 0;
-    return toRenderWidget(m_renderer)->widget();
+    return toRenderPart(m_renderer)->widget();
 }
 
 //

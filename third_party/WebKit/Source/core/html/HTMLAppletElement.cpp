@@ -101,14 +101,14 @@ RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
     return new RenderApplet(this);
 }
 
-RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const
+RenderPart* HTMLAppletElement::renderPartForJSBindings() const
 {
     if (!canEmbedJava())
         return 0;
-    return HTMLPlugInElement::renderWidgetForJSBindings();
+    return HTMLPlugInElement::renderPartForJSBindings();
 }
 
-RenderWidget* HTMLAppletElement::existingRenderWidget() const
+RenderPart* HTMLAppletElement::existingRenderPart() const
 {
     return renderPart();
 }

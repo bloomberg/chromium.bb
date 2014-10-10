@@ -198,7 +198,7 @@ void RenderEmbeddedObject::layout()
     updateLayerTransformAfterLayout();
 
     if (!widget() && frameView())
-        frameView()->addWidgetToUpdate(*this);
+        frameView()->addPartToUpdate(*this);
 
     clearNeedsLayout();
 }

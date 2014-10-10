@@ -42,7 +42,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderWidget.h"
+#include "core/rendering/RenderPart.h"
 #include "platform/Widget.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
@@ -230,8 +230,8 @@ WebPluginContainer* WebNode::pluginContainer() const
     const Node& coreNode = *constUnwrap<Node>();
     if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
         RenderObject* object = coreNode.renderer();
-        if (object && object->isWidget()) {
-            Widget* widget = toRenderWidget(object)->widget();
+        if (object && object->isRenderPart()) {
+            Widget* widget = toRenderPart(object)->widget();
             if (widget && widget->isPluginContainer())
                 return toWebPluginContainerImpl(widget);
         }

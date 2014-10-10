@@ -6085,7 +6085,7 @@ TEST_F(WebFrameTest, DISABLED_FrameViewScrollAccountsForTopControls)
     webView->applyViewportDeltas(WebSize(0, 0), 1.0f, -30.0f);
     EXPECT_POINT_EQ(IntPoint(50, 55), frameView->maximumScrollPosition());
 
-    // Simulate a RenderWidget::resize. The frame is resized to accomodate
+    // Simulate a RenderPart::resize. The frame is resized to accomodate
     // the top controls and Blink's view of the top controls matches that of
     // the CC
     webView->setTopControlsLayoutHeight(10.0f);

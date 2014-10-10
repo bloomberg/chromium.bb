@@ -465,7 +465,7 @@ void TextIterator::advance()
                 bool handledNode = false;
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
                     handledNode = handleTextNode();
-                } else if (renderer && (renderer->isImage() || renderer->isWidget()
+                } else if (renderer && (renderer->isImage() || renderer->isRenderPart()
                     || (m_node && m_node->isHTMLElement()
                     && (isHTMLFormControlElement(toHTMLElement(*m_node))
                     || isHTMLLegendElement(toHTMLElement(*m_node))
@@ -1409,7 +1409,7 @@ void SimplifiedBackwardsTextIterator::advance()
                 // FIXME: What about CDATA_SECTION_NODE?
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleTextNode();
-            } else if (renderer && (renderer->isImage() || renderer->isWidget())) {
+            } else if (renderer && (renderer->isImage() || renderer->isRenderPart())) {
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleReplacedElement();
             } else {

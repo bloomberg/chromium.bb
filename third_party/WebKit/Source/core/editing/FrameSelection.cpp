@@ -65,10 +65,10 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "platform/SecureTextInput.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -1659,9 +1659,9 @@ static bool isFrameElement(const Node* n)
     if (!n)
         return false;
     RenderObject* renderer = n->renderer();
-    if (!renderer || !renderer->isWidget())
+    if (!renderer || !renderer->isRenderPart())
         return false;
-    Widget* widget = toRenderWidget(renderer)->widget();
+    Widget* widget = toRenderPart(renderer)->widget();
     return widget && widget->isFrameView();
 }
 

@@ -56,9 +56,9 @@ class Page;
 class RenderBox;
 class RenderEmbeddedObject;
 class RenderObject;
+class RenderPart;
 class RenderScrollbarPart;
 class RenderView;
-class RenderWidget;
 struct CompositedSelectionBound;
 
 typedef unsigned long long DOMTimeStamp;
@@ -198,11 +198,12 @@ public:
     bool safeToPropagateScrollToParent() const { return m_safeToPropagateScrollToParent; }
     void setSafeToPropagateScrollToParent(bool isSafe) { m_safeToPropagateScrollToParent = isSafe; }
 
-    void addWidget(RenderWidget*);
-    void removeWidget(RenderWidget*);
+    void addPart(RenderPart*);
+    void removePart(RenderPart*);
+
     void updateWidgetPositions();
 
-    void addWidgetToUpdate(RenderEmbeddedObject&);
+    void addPartToUpdate(RenderEmbeddedObject&);
 
     void paintContents(GraphicsContext*, const IntRect& damageRect);
     void setPaintBehavior(PaintBehavior);
@@ -612,7 +613,7 @@ private:
 
     virtual void frameRectsChanged() override;
 
-    friend class RenderWidget;
+    friend class RenderPart;
 
     bool contentsInCompositedLayer() const;
 
@@ -688,10 +689,10 @@ private:
     LayoutSize m_size;
 
     typedef WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > EmbeddedObjectSet;
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > m_widgetUpdateSet;
+    WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > m_partUpdateSet;
 
     // FIXME: These are just "children" of the FrameView and should be RefPtr<Widget> instead.
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderWidget> > m_widgets;
+    WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderPart> > m_parts;
 
     // Oilpan: the use of a persistent back reference 'emulates' the
     // RefPtr-cycle that is kept between the two objects non-Oilpan.

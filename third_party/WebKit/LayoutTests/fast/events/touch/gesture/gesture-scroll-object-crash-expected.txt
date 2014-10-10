@@ -1,4 +1,4 @@
-Verifies that scrolling on top of a RenderWidget with null widget works and doesn't crash.
+Verifies that scrolling on top of a RenderPart with null widget works and doesn't crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

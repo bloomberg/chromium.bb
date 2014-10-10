@@ -56,7 +56,6 @@
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderPart.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/compositing/CompositedSelectionBound.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
@@ -549,8 +548,8 @@ void ChromeClientImpl::mouseDidMoveOverElement(
         && (isHTMLObjectElement(*result.innerNonSharedNode())
             || isHTMLEmbedElement(*result.innerNonSharedNode()))) {
         RenderObject* object = result.innerNonSharedNode()->renderer();
-        if (object && object->isWidget()) {
-            Widget* widget = toRenderWidget(object)->widget();
+        if (object && object->isRenderPart()) {
+            Widget* widget = toRenderPart(object)->widget();
             if (widget && widget->isPluginContainer()) {
                 WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
                 url = plugin->plugin()->linkAtPosition(result.roundedPointInInnerNodeFrame());

@@ -34,7 +34,7 @@ namespace blink {
 class HTMLImageLoader;
 class PluginPlaceholder;
 class RenderEmbeddedObject;
-class RenderWidget;
+class RenderPart;
 class Widget;
 
 enum PreferPlugInsForImagesOption {
@@ -54,7 +54,7 @@ public:
     bool canProcessDrag() const;
     const String& url() const { return m_url; }
 
-    // Public for FrameView::addWidgetToUpdate()
+    // Public for FrameView::addPartToUpdate()
     bool needsWidgetUpdate() const { return m_needsWidgetUpdate; }
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
     void updateWidget();
@@ -80,9 +80,9 @@ protected:
 
     virtual bool hasFallbackContent() const;
     virtual bool useFallbackContent() const;
-    // Create or update the RenderWidget and return it, triggering layout if
+    // Create or update the RenderPart and return it, triggering layout if
     // necessary.
-    virtual RenderWidget* renderWidgetForJSBindings() const;
+    virtual RenderPart* renderPartForJSBindings() const;
 
     bool isImageType();
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
@@ -124,9 +124,9 @@ private:
     virtual bool hasCustomFocusLogic() const override;
     virtual bool isPluginElement() const override final;
 
-    // Return any existing RenderWidget without triggering relayout, or 0 if it
+    // Return any existing RenderPart without triggering relayout, or 0 if it
     // doesn't yet exist.
-    virtual RenderWidget* existingRenderWidget() const = 0;
+    virtual RenderPart* existingRenderPart() const = 0;
     virtual void updateWidgetInternal() = 0;
 
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer);
