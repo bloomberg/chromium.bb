@@ -72,6 +72,8 @@ v8.log
 /chrome/app/theme/default_200_percent/google_chrome
 /chrome/app/theme/google_chrome
 /chrome/browser/autofill/internal
+/chrome/browser/chromeos/login/screenshot_testing/golden_screenshots/*.png
+/chrome/browser/chromeos/login/screenshot_testing/artifacts
 /chrome/browser/extensions/api/ledger/
 /chrome/browser/extensions/default_extensions/chromeos
 /chrome/browser/google/linkdoctor_internal

@@ -56,20 +56,18 @@ bool ScreenshotTester::TryInitialize() {
       switches::kEnableScreenshotTestingWithMode);
   CHECK(mode == kUpdateMode || mode == kTestMode || mode == kPdiffTestMode)
       << "Invalid mode for screenshot testing: " << mode;
+
   CHECK(command_line.HasSwitch(chromeos::switches::kGoldenScreenshotsDir))
-      << "No directory for golden screenshots specified";
+      << "No directory with golden screenshots specified, use "
+         "--golden-screenshots-dir";
 
   golden_screenshots_dir_ =
       command_line.GetSwitchValuePath(switches::kGoldenScreenshotsDir);
 
   if (mode == kTestMode || mode == kPdiffTestMode) {
     test_mode_ = true;
-    if (!command_line.HasSwitch(switches::kArtifactsDir)) {
-      artifacts_dir_ = golden_screenshots_dir_;
-      LOG(WARNING)
-          << "No directory for artifact storing specified. Artifacts will be "
-          << "saved at golden screenshots directory.";
-    } else {
+    generate_artifacts_ = command_line.HasSwitch(switches::kArtifactsDir);
+    if (generate_artifacts_) {
       artifacts_dir_ = command_line.GetSwitchValuePath(switches::kArtifactsDir);
     }
   }
@@ -125,7 +123,7 @@ void ScreenshotTester::Run(const std::string& test_name) {
     Result result = CompareScreenshots(golden_screenshot, current_screenshot);
     VLOG(0) << "Compared";
     LogComparisonResults(result);
-    if (!result.screenshots_match) {
+    if (!result.screenshots_match && generate_artifacts_) {
       // Saving diff imag
       if (!pdiff_enabled_) {
         base::FilePath difference_image_path =

@@ -148,6 +148,9 @@ class ScreenshotTester {
   // be used to compare images.
   bool pdiff_enabled_;
 
+  // Is true when switches specify that artifacts should be saved somewhere.
+  bool generate_artifacts_;
+
   // Vector which holds areas which the comparison ignores because
   // them being different is not a bug (e.g. time on the clock).
   std::vector<SkIRect> ignored_areas_;
