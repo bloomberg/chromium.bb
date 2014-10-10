@@ -1035,6 +1035,9 @@ void TCPSocketWin::DidSignalRead() {
   core_->read_buffer_length_ = 0;
 
   DCHECK_NE(rv, ERR_IO_PENDING);
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("TCPSocketWin::DidSignalRead"));
   base::ResetAndReturn(&read_callback_).Run(rv);
 }
 
