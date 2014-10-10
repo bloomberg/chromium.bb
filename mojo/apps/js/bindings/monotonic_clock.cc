@@ -4,6 +4,7 @@
 
 #include "mojo/apps/js/bindings/monotonic_clock.h"
 
+#include "base/time/time.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
@@ -17,8 +18,8 @@ namespace {
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 double GetMonotonicSeconds() {
-  const double kMicrosecondsPerSecond = 1000000;
-  return static_cast<double>(mojo::GetTimeTicksNow()) / kMicrosecondsPerSecond;
+  return static_cast<double>(mojo::GetTimeTicksNow()) /
+      base::Time::kMicrosecondsPerSecond;
 }
 
 }  // namespace
