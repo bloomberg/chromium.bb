@@ -1671,10 +1671,15 @@ pre_cq = internal_paladin.derive(
   description='Verifies compilation, vm/unit tests, and building an image',
 )
 
-# Pre-CQ targets that only check compilation.
-compile_only_pre_cq = pre_cq.derive(
-  description='Verifies compilation only',
+# Pre-CQ targets that only check compilation and unit tests.
+unittest_only_pre_cq = pre_cq.derive(
+  description='Verifies compilation and unit tests only',
   compilecheck=True,
+)
+
+# Pre-CQ targets that only check compilation.
+compile_only_pre_cq = unittest_only_pre_cq.derive(
+  description='Verifies compilation only',
   unittests=False,
 )
 
@@ -1685,8 +1690,7 @@ compile_only_pre_cq = pre_cq.derive(
 # VMTest and this takes a long time, the remaining boards still finish well
 # before Rambi finishes.
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
-# TODO(davidjames): Revert CL:221326 so daisy_spring and duck can build
-#                   images again
+# TODO(davidjames): Update daisy_spring and duck to build images again.
 _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
@@ -1698,10 +1702,10 @@ _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
 
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
-  # after samus finishes BuildPackages.
-  compile_only_pre_cq.add_config('duck-pre-cq', brillo,
-                                 boards=['duck'],
-                                 build_packages_in_background=False),
+  # after duck finishes BuildPackages.
+  unittest_only_pre_cq.add_config('duck-pre-cq', brillo,
+                                  boards=['duck'],
+                                  build_packages_in_background=False),
 
   # samus w/kernel 3.14.
   compile_only_pre_cq.add_config('samus-pre-cq', boards=['samus']),
