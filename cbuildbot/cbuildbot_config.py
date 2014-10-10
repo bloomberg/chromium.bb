@@ -2085,6 +2085,9 @@ internal_notest_paladin.add_config('urara-paladin',
   boards=['urara'],
   paladin_builder_name='urara paladin',
   important=False,
+  # TODO(benchan): Re-enable 'usepkg_toolchain' when the pre-built toolchain
+  # for MIPS is available (crbug.com/380329).
+  usepkg_toolchain=False,
 )
 
 internal_notest_paladin.add_config('veyron_pinky-paladin',
@@ -2520,6 +2523,9 @@ _non_testable_brillo_release.add_config('urara-release',
   paygen=False,
   signer_tests=False,
   important=False,
+  # TODO(benchan): Re-enable 'usepkg_toolchain' when the pre-built toolchain
+  # for MIPS is available (crbug.com/380329).
+  usepkg_toolchain=False,
 )
 
 _release.add_config('mipsel-o32-generic-release',
