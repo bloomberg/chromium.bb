@@ -72,7 +72,7 @@ def PushAndLaunchAdbReboot(device, target):
   logging.info('  Pushing adb_reboot ...')
   adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
                             'out/%s/adb_reboot' % target)
-  device.PushChangedFiles([(adb_reboot, '/data/local/tmp/')])
+  device.PushChangedFiles(adb_reboot, '/data/local/tmp/')
   # Launch adb_reboot
   logging.info('  Launching adb_reboot ...')
   device.old_interface.GetAndroidToolStatusAndOutput(

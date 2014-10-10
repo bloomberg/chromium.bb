@@ -85,7 +85,6 @@ class MockFileSystem(object):
                             st_size, st_atime, st_mtime, st_ctime)
 
   MOCKED_FUNCTIONS = [
-    ('os.listdir', []),
     ('os.path.abspath', ''),
     ('os.path.dirname', ''),
     ('os.path.exists', False),
@@ -118,23 +117,14 @@ class MockFileSystem(object):
   def addMockDirectory(self, path, **kw):
     self._addMockThing(path, True, **kw)
 
-  def _addMockThing(self, path, is_dir, listdir=None, size=0, stat=None,
-                    walk=None):
-    if listdir is None:
-      listdir = []
+  def _addMockThing(self, path, is_dir, size=0, stat=None, walk=None):
     if stat is None:
       stat = self.osStatResult()
     if walk is None:
       walk = []
-
-    dirname = os.sep.join(path.rstrip(os.sep).split(os.sep)[:-1])
-    if dirname and not dirname in self.mock_file_info:
-      self._addMockThing(dirname, True)
-
     self.mock_file_info[path] = {
-      'os.listdir': listdir,
       'os.path.abspath': path,
-      'os.path.dirname': dirname,
+      'os.path.dirname': '/' + '/'.join(path.strip('/').split('/')[:-1]),
       'os.path.exists': True,
       'os.path.isdir': is_dir,
       'os.path.getsize': size,
@@ -216,24 +206,6 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
   def setUp(self):
     self.device = device_utils.DeviceUtils(
         '0123456789abcdef', default_timeout=1, default_retries=0)
-
-
-class DeviceUtilsNewImplTest(unittest.TestCase):
-
-  def setUp(self):
-    test_serial = '0123456789abcdef'
-    self.adb = mock.Mock(spec=adb_wrapper.AdbWrapper)
-    self.adb.__str__ = mock.Mock(return_value=test_serial)
-    self.adb.GetDeviceSerial.return_value = test_serial
-    self.device = device_utils.DeviceUtils(
-        self.adb, default_timeout=1, default_retries=0)
-
-
-class DeviceUtilsHybridImplTest(DeviceUtilsOldImplTest):
-
-  def setUp(self):
-    super(DeviceUtilsHybridImplTest, self).setUp()
-    self.device.adb = self.adb = mock.Mock(spec=adb_wrapper.AdbWrapper)
 
 
 class DeviceUtilsIsOnlineTest(DeviceUtilsOldImplTest):
@@ -871,95 +843,132 @@ class DeviceUtilsSendKeyEventTest(DeviceUtilsOldImplTest):
       self.device.SendKeyEvent(66)
 
 
-class DeviceUtilsPushChangedFilesIndividuallyTest(DeviceUtilsNewImplTest):
-
-  def testPushChangedFilesIndividually_empty(self):
-    test_files = []
-    self.device._PushChangedFilesIndividually(test_files)
-    self.assertEqual(0, self.adb.Push.call_count)
-
-  def testPushChangedFilesIndividually_single(self):
-    test_files = [('/test/host/path', '/test/device/path')]
-    self.device._PushChangedFilesIndividually(test_files)
-    self.adb.Push.assert_called_once_with(
-        '/test/host/path', '/test/device/path')
-
-  def testPushChangedFilesIndividually_multiple(self):
-    test_files = [
-        ('/test/host/path/file1', '/test/device/path/file1'),
-        ('/test/host/path/file2', '/test/device/path/file2')]
-    self.device._PushChangedFilesIndividually(test_files)
-    self.assertEqual(2, self.adb.Push.call_count)
-    self.adb.Push.assert_any_call(
-        '/test/host/path/file1', '/test/device/path/file1')
-    self.adb.Push.assert_any_call(
-        '/test/host/path/file2', '/test/device/path/file2')
+class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
 
 
-class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
+  def testPushChangedFiles_noHostPath(self):
+    with mock.patch('os.path.exists', return_value=False):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.PushChangedFiles('/test/host/path', '/test/device/path')
 
-  def setUp(self):
-    super(DeviceUtilsPushChangedFilesZippedTest, self).setUp()
-    self.original_install_commands = self.device._InstallCommands
-    self.device._InstallCommands = mock.Mock()
+  def testPushChangedFiles_file_noChange(self):
+    self.device.old_interface._push_if_needed_cache = {}
 
-  def testPushChangedFilesZipped_empty(self):
-    test_files = []
-    self.device._PushChangedFilesZipped(test_files)
-    self.assertEqual(0, self.adb.Push.call_count)
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
 
-  def testPushChangedFilesZipped_single(self):
-    test_files = [('/test/host/path/file1', '/test/device/path/file1')]
+    mock_fs = MockFileSystem()
+    mock_fs.addMockFile(host_file_path, size=100)
 
-    self.device._GetExternalStoragePathImpl = mock.Mock(
-        return_value='/test/device/external_dir')
-    self.device._IsOnlineImpl = mock.Mock(return_value=True)
-    self.device._RunShellCommandImpl = mock.Mock()
-    mock_zip_temp = mock.mock_open()
-    mock_zip_temp.return_value.name = '/test/temp/file/tmp.zip'
-    with mock.patch('multiprocessing.Process') as mock_zip_proc, (
-         mock.patch('tempfile.NamedTemporaryFile', mock_zip_temp)):
-      self.device._PushChangedFilesZipped(test_files)
+    self.device.old_interface.GetFilesChanged = mock.Mock(return_value=[])
 
-    mock_zip_proc.assert_called_once_with(
-        target=device_utils.DeviceUtils._CreateDeviceZip,
-        args=('/test/temp/file/tmp.zip', test_files))
-    self.adb.Push.assert_called_once_with(
-        '/test/temp/file/tmp.zip', '/test/device/external_dir/tmp.zip')
-    self.assertEqual(2, self.device._RunShellCommandImpl.call_count)
-    self.device._RunShellCommandImpl.assert_any_call(
-        ['unzip', '/test/device/external_dir/tmp.zip'],
-        as_root=True, check_return=True,
-        env={'PATH': '$PATH:/data/local/tmp/bin'})
-    self.device._RunShellCommandImpl.assert_any_call(
-        ['rm', '/test/device/external_dir/tmp.zip'])
+    with mock_fs:
+      # GetFilesChanged is mocked, so its adb calls are omitted.
+      with self.assertNoAdbCalls():
+        self.device.PushChangedFiles(host_file_path, device_file_path)
 
-  def testPushChangedFilesZipped_multiple(self):
-    test_files = [('/test/host/path/file1', '/test/device/path/file1'),
-                  ('/test/host/path/file2', '/test/device/path/file2')]
+  def testPushChangedFiles_file_changed(self):
+    self.device.old_interface._push_if_needed_cache = {}
 
-    self.device._GetExternalStoragePathImpl = mock.Mock(
-        return_value='/test/device/external_dir')
-    self.device._IsOnlineImpl = mock.Mock(return_value=True)
-    self.device._RunShellCommandImpl = mock.Mock()
-    mock_zip_temp = mock.mock_open()
-    mock_zip_temp.return_value.name = '/test/temp/file/tmp.zip'
-    with mock.patch('multiprocessing.Process') as mock_zip_proc, (
-         mock.patch('tempfile.NamedTemporaryFile', mock_zip_temp)):
-      self.device._PushChangedFilesZipped(test_files)
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
 
-    mock_zip_proc.assert_called_once_with(
-        target=device_utils.DeviceUtils._CreateDeviceZip,
-        args=('/test/temp/file/tmp.zip', test_files))
-    self.adb.Push.assert_called_once_with(
-        '/test/temp/file/tmp.zip', '/test/device/external_dir/tmp.zip')
-    self.assertEqual(2, self.device._RunShellCommandImpl.call_count)
-    self.device._RunShellCommandImpl.assert_any_call(
-        ['unzip', '/test/device/external_dir/tmp.zip'],
-        as_root=True, check_return=True,
-        env={'PATH': '$PATH:/data/local/tmp/bin'})
-    self.device._RunShellCommandImpl.assert_any_call(
-        ['rm', '/test/device/external_dir/tmp.zip'])
+    mock_fs = MockFileSystem()
+    mock_fs.addMockFile(
+        host_file_path, size=100,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000))
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(
+        return_value=[('/test/host/path', '/test/device/path')])
+
+    with mock_fs:
+      with self.assertCalls('adb -s 0123456789abcdef push '
+          '/test/host/path /test/device/path', '100 B/s (100 B in 1.000s)\r\n'):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testPushChangedFiles_directory_nothingChanged(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_fs = MockFileSystem()
+    mock_fs.addMockDirectory(
+        host_file_path, size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000))
+    mock_fs.addMockFile(
+        host_file_path + '/file1', size=251,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000001))
+    mock_fs.addMockFile(
+        host_file_path + '/file2', size=252,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000002))
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(return_value=[])
+
+    with mock_fs:
+      with self.assertCallsSequence([
+          ("adb -s 0123456789abcdef shell 'mkdir -p \"/test/device/path\"'",
+           '')]):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testPushChangedFiles_directory_somethingChanged(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_fs = MockFileSystem()
+    mock_fs.addMockDirectory(
+        host_file_path, size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000),
+        walk=[('/test/host/path', [], ['file1', 'file2'])])
+    mock_fs.addMockFile(
+        host_file_path + '/file1', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000001))
+    mock_fs.addMockFile(
+        host_file_path + '/file2', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000002))
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(
+        return_value=[('/test/host/path/file1', '/test/device/path/file1')])
+
+    with mock_fs:
+      with self.assertCallsSequence([
+          ("adb -s 0123456789abcdef shell 'mkdir -p \"/test/device/path\"'",
+           ''),
+          ('adb -s 0123456789abcdef push '
+              '/test/host/path/file1 /test/device/path/file1',
+           '256 B/s (256 B in 1.000s)\r\n')]):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
+
+  def testPushChangedFiles_directory_everythingChanged(self):
+    self.device.old_interface._push_if_needed_cache = {}
+
+    host_file_path = '/test/host/path'
+    device_file_path = '/test/device/path'
+
+    mock_fs = MockFileSystem()
+    mock_fs.addMockDirectory(
+        host_file_path, size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000))
+    mock_fs.addMockFile(
+        host_file_path + '/file1', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000001))
+    mock_fs.addMockFile(
+        host_file_path + '/file2', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000002))
+
+    self.device.old_interface.GetFilesChanged = mock.Mock(
+        return_value=[('/test/host/path/file1', '/test/device/path/file1'),
+                      ('/test/host/path/file2', '/test/device/path/file2')])
+
+    with mock_fs:
+      with self.assertCallsSequence([
+          ("adb -s 0123456789abcdef shell 'mkdir -p \"/test/device/path\"'",
+           ''),
+          ('adb -s 0123456789abcdef push /test/host/path /test/device/path',
+           '768 B/s (768 B in 1.000s)\r\n')]):
+        self.device.PushChangedFiles(host_file_path, device_file_path)
 
 
 class DeviceUtilsFileExistsTest(DeviceUtilsOldImplTest):

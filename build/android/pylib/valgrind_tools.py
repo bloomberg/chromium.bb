@@ -172,10 +172,10 @@ class ValgrindTool(BaseTool):
         'rm -r %s; mkdir %s' % (ValgrindTool.VGLOGS_DIR,
                                 ValgrindTool.VGLOGS_DIR))
     files = self.GetFilesForTool()
-    self._device.PushChangedFiles(
-        [((os.path.join(DIR_SOURCE_ROOT, f),
+    for f in files:
+      self._device.PushChangedFiles(
+          os.path.join(DIR_SOURCE_ROOT, f),
           os.path.join(ValgrindTool.VG_DIR, os.path.basename(f)))
-         for f in files)])
 
   def SetupEnvironment(self):
     """Sets up device environment."""

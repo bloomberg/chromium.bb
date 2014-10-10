@@ -44,9 +44,9 @@ class TestPackageApk(TestPackage):
     # GTest expects argv[0] to be the executable path.
     command_line_file.write(self.suite_name + ' ' + options)
     command_line_file.flush()
-    device.PushChangedFiles([(
+    device.PushChangedFiles(
         command_line_file.name,
-        self._package_info.cmdline_file)])
+        self._package_info.cmdline_file)
 
   def _GetFifo(self):
     # The test.fifo path is determined by:
