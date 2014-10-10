@@ -59,6 +59,7 @@ public:
         FontFamilyChange,
         AcceleratedCompositingChange,
         MediaQueryChange,
+        AccessibilityStateChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;

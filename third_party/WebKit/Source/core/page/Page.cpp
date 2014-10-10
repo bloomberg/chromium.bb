@@ -554,6 +554,10 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         }
         setNeedsRecalcStyleInAllFrames();
         break;
+    case SettingsDelegate::AccessibilityStateChange:
+        if (!mainFrame() || !mainFrame()->isLocalFrame())
+            break;
+        deprecatedLocalMainFrame()->document()->axObjectCacheOwner().clearAXObjectCache();
     }
 }
 
