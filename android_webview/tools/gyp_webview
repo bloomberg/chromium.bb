@@ -15,6 +15,10 @@ echo "Generating makefiles for $PLATFORM"
 
 export PYTHONDONTWRITEBYTECODE=1
 
+# Override the calling user's locale sort order as this affects the generated
+# makefiles.
+export LC_COLLATE=C
+
 CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
 GYP="${CHROME_SRC}/build/gyp_chromium"
 
