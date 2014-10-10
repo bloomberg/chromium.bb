@@ -780,9 +780,24 @@ def cleanup():
 
   global g_desktops
   for desktop in g_desktops:
-    if desktop.x_proc:
-      logging.info("Terminating Xvfb")
-      desktop.x_proc.terminate()
+    for proc, name in [(desktop.x_proc, "Xvfb"),
+                       (desktop.session_proc, "session"),
+                       (desktop.host_proc, "host")]:
+      if proc is not None:
+        logging.info("Terminating " + name)
+        try:
+          psutil_proc = psutil.Process(proc.pid)
+          psutil_proc.terminate()
+
+          # Use a short timeout, to avoid delaying service shutdown if the
+          # process refuses to die for some reason.
+          psutil_proc.wait(timeout=10)
+        except psutil.TimeoutExpired:
+          logging.error("Timed out - sending SIGKILL")
+          psutil_proc.kill()
+        except psutil.Error:
+          logging.error("Error terminating process")
+
   g_desktops = []
   if ParentProcessLogger.instance():
     ParentProcessLogger.instance().release_parent()
