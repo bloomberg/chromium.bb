@@ -1556,6 +1556,12 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
     bool swallowClickEvent = false;
     if (m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode) {
+        // Updates distribution because a 'mouseup' event listener can make the
+        // tree dirty at dispatchMouseEvent() invocation above.
+        // Unless distribution is updated, commonAncestor would hit ASSERT.
+        // Both m_clickNode and mev.innerNode() don't need to be updated
+        // because commonAncestor() will exit early if their documents are different.
+        m_clickNode->document().updateDistributionForNodeIfNeeded(m_clickNode.get());
         if (Node* clickTargetNode = mev.innerNode()->commonAncestor(*m_clickNode, parentForClickEvent))
             swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, m_clickCount, mouseEvent, true);
     }
@@ -2267,6 +2273,12 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     bool swallowClickEvent = false;
     if (m_clickNode) {
         if (currentHitTest.innerNode()) {
+            // Updates distribution because a mouseup (or mousedown) event listener can make the
+            // tree dirty at dispatchMouseEvent() invocation above.
+            // Unless distribution is updated, commonAncestor would hit ASSERT.
+            // Both m_clickNode and currentHitTest.innerNode()) don't need to be updated
+            // because commonAncestor() will exit early if their documents are different.
+            m_clickNode->document().updateDistributionForNodeIfNeeded(m_clickNode.get());
             Node* clickTargetNode = currentHitTest.innerNode()->commonAncestor(*m_clickNode, parentForClickEvent);
             swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(), fakeMouseUp, true);
         }
