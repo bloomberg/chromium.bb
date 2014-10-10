@@ -102,14 +102,14 @@ class CONTENT_EXPORT RenderViewHostImpl
   // spec) space. This is useful when restoring contentses, but most callers
   // should pass in NULL which will cause a new SessionStorageNamespace to be
   // created.
-  RenderViewHostImpl(
-      SiteInstance* instance,
-      RenderViewHostDelegate* delegate,
-      RenderWidgetHostDelegate* widget_delegate,
-      int routing_id,
-      int main_frame_routing_id,
-      bool swapped_out,
-      bool hidden);
+  RenderViewHostImpl(SiteInstance* instance,
+                     RenderViewHostDelegate* delegate,
+                     RenderWidgetHostDelegate* widget_delegate,
+                     int routing_id,
+                     int main_frame_routing_id,
+                     bool swapped_out,
+                     bool hidden,
+                     bool has_initialized_audio_host);
   virtual ~RenderViewHostImpl();
 
   // RenderViewHost implementation.

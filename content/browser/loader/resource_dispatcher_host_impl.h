@@ -165,7 +165,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   }
 
   // Called when a RenderViewHost is created.
-  void OnRenderViewHostCreated(int child_id, int route_id, bool is_visible);
+  void OnRenderViewHostCreated(int child_id,
+                               int route_id,
+                               bool is_visible,
+                               bool is_audible);
 
   // Called when a RenderViewHost is deleted.
   void OnRenderViewHostDeleted(int child_id, int route_id);
@@ -180,6 +183,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Called when a RenderViewHost is shown.
   void OnRenderViewHostWasShown(int child_id, int route_id);
+
+  // Called when an AudioRenderHost starts or stops playing.
+  void OnAudioRenderHostStreamStateChanged(int child_id,
+                                           int route_id,
+                                           bool is_playing);
 
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int child_id);

@@ -167,7 +167,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     int routing_id,
     int main_frame_routing_id,
     bool swapped_out,
-    bool hidden)
+    bool hidden,
+    bool has_initialized_audio_host)
     : RenderWidgetHostImpl(widget_delegate,
                            instance->GetProcess(),
                            routing_id,
@@ -196,13 +197,24 @@ RenderViewHostImpl::RenderViewHostImpl(
   GetProcess()->EnableSendQueue();
 
   if (ResourceDispatcherHostImpl::Get()) {
+    bool has_active_audio = false;
+    if (has_initialized_audio_host) {
+      scoped_refptr<AudioRendererHost> arh =
+          static_cast<RenderProcessHostImpl*>(GetProcess())
+              ->audio_renderer_host();
+      if (arh.get())
+        has_active_audio = arh->RenderViewHasActiveAudio(GetRoutingID());
+    }
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+        BrowserThread::IO,
+        FROM_HERE,
         base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostCreated,
                    base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID(), !is_hidden()));
+                   GetProcess()->GetID(),
+                   GetRoutingID(),
+                   !is_hidden(),
+                   has_active_audio));
   }
-
 #if defined(ENABLE_BROWSER_CDMS)
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
 #endif

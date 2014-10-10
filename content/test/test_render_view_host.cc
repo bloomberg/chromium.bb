@@ -7,11 +7,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
@@ -205,7 +207,8 @@ TestRenderViewHost::TestRenderViewHost(
                          routing_id,
                          main_frame_routing_id,
                          swapped_out,
-                         false /* hidden */),
+                         false /* hidden */,
+                         false /* has_initialized_audio_host */),
       render_view_created_(false),
       delete_counter_(NULL),
       opener_route_id_(MSG_ROUTING_NONE) {

@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
@@ -273,20 +275,11 @@ void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
         entry->stream_id(),
         base::Bind(&media::AudioOutputController::ReadCurrentPowerAndClip,
                    entry->controller()));
-    // TODO(dalecurtis): See about using AudioStreamMonitor instead.
-    if (!entry->playing()) {
-      entry->set_playing(true);
-      base::AtomicRefCountInc(&num_playing_streams_);
-    }
   } else {
     AudioStreamMonitor::StopMonitoringStream(
         render_process_id_, entry->render_frame_id(), entry->stream_id());
-    // TODO(dalecurtis): See about using AudioStreamMonitor instead.
-    if (entry->playing()) {
-      entry->set_playing(false);
-      base::AtomicRefCountDec(&num_playing_streams_);
-    }
   }
+  UpdateNumPlayingStreams(entry, is_playing);
 }
 
 RenderViewHost::AudioOutputControllerList
@@ -294,8 +287,9 @@ AudioRendererHost::DoGetOutputControllers(int render_view_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RenderViewHost::AudioOutputControllerList controllers;
-  AudioEntryMap::const_iterator it = audio_entries_.begin();
-  for (; it != audio_entries_.end(); ++it) {
+  for (AudioEntryMap::const_iterator it = audio_entries_.begin();
+       it != audio_entries_.end();
+       ++it) {
     AudioEntry* entry = it->second;
     if (entry->render_view_id() == render_view_id)
       controllers.push_back(entry->controller());
@@ -454,8 +448,7 @@ void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   AudioStreamMonitor::StopMonitoringStream(
       render_process_id_, entry->render_frame_id(), entry->stream_id());
-  if (entry->playing())
-    base::AtomicRefCountDec(&num_playing_streams_);
+  UpdateNumPlayingStreams(entry.get(), false);
 }
 
 void AudioRendererHost::ReportErrorAndClose(int stream_id) {
@@ -480,8 +473,44 @@ AudioRendererHost::AudioEntry* AudioRendererHost::LookupById(int stream_id) {
   return i != audio_entries_.end() ? i->second : NULL;
 }
 
+void AudioRendererHost::UpdateNumPlayingStreams(AudioEntry* entry,
+                                                bool is_playing) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (entry->playing() == is_playing)
+    return;
+
+  bool should_alert_resource_scheduler;
+  if (is_playing) {
+    should_alert_resource_scheduler =
+        !RenderViewHasActiveAudio(entry->render_view_id());
+    entry->set_playing(true);
+    base::AtomicRefCountInc(&num_playing_streams_);
+  } else {
+    entry->set_playing(false);
+    should_alert_resource_scheduler =
+        !RenderViewHasActiveAudio(entry->render_view_id());
+    base::AtomicRefCountDec(&num_playing_streams_);
+  }
+
+  if (should_alert_resource_scheduler && ResourceDispatcherHostImpl::Get()) {
+    ResourceDispatcherHostImpl::Get()->OnAudioRenderHostStreamStateChanged(
+        render_process_id_, entry->render_view_id(), is_playing);
+  }
+}
+
 bool AudioRendererHost::HasActiveAudio() {
   return !base::AtomicRefCountIsZero(&num_playing_streams_);
+}
+
+bool AudioRendererHost::RenderViewHasActiveAudio(int render_view_id) const {
+  for (AudioEntryMap::const_iterator it = audio_entries_.begin();
+       it != audio_entries_.end();
+       ++it) {
+    AudioEntry* entry = it->second;
+    if (entry->render_view_id() == render_view_id && entry->playing())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content

@@ -229,8 +229,10 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client {
  public:
-  explicit Client(ResourceScheduler* scheduler, bool is_visible)
-      : is_audible_(false),
+  explicit Client(ResourceScheduler* scheduler,
+                  bool is_visible,
+                  bool is_audible)
+      : is_audible_(is_audible),
         is_visible_(is_visible),
         is_loaded_(false),
         is_paused_(false),
@@ -786,12 +788,13 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {
 
 void ResourceScheduler::OnClientCreated(int child_id,
                                         int route_id,
-                                        bool is_visible) {
+                                        bool is_visible,
+                                        bool is_audible) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!ContainsKey(client_map_, client_id));
 
-  Client* client = new Client(this, is_visible);
+  Client* client = new Client(this, is_visible, is_audible);
   client_map_[client_id] = client;
 
   // TODO(aiolos): set Client visibility/audibility when signals are added
@@ -821,6 +824,14 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   client_map_.erase(it);
 }
 
+void ResourceScheduler::OnLoadingStateChanged(int child_id,
+                                              int route_id,
+                                              bool is_loaded) {
+  Client* client = GetClient(child_id, route_id);
+  DCHECK(client);
+  client->OnLoadingStateChanged(is_loaded);
+}
+
 void ResourceScheduler::OnVisibilityChanged(int child_id,
                                             int route_id,
                                             bool is_visible) {
@@ -829,12 +840,13 @@ void ResourceScheduler::OnVisibilityChanged(int child_id,
   client->OnVisibilityChanged(is_visible);
 }
 
-void ResourceScheduler::OnLoadingStateChanged(int child_id,
-                                              int route_id,
-                                              bool is_loaded) {
+void ResourceScheduler::OnAudibilityChanged(int child_id,
+                                            int route_id,
+                                            bool is_audible) {
   Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  client->OnLoadingStateChanged(is_loaded);
+  // We might get this call after the client has been deleted.
+  if (client)
+    client->OnAudibilityChanged(is_audible);
 }
 
 void ResourceScheduler::OnNavigate(int child_id, int route_id) {
@@ -878,14 +890,6 @@ void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(
 
   Client* client = client_it->second;
   client->OnReceivedSpdyProxiedHttpResponse();
-}
-
-void ResourceScheduler::OnAudibilityChanged(int child_id,
-                                            int route_id,
-                                            bool is_audible) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  client->OnAudibilityChanged(is_audible);
 }
 
 bool ResourceScheduler::IsClientVisibleForTesting(int child_id, int route_id) {

@@ -89,6 +89,10 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // be called from any thread.
   bool HasActiveAudio();
 
+  // Returns true if any streams managed by the RenderView identified by
+  // |render_view_id| are actively playing. Can be called from any thread.
+  bool RenderViewHasActiveAudio(int render_view_id) const;
+
  private:
   friend class AudioRendererHostTest;
   friend class BrowserThread;
@@ -156,6 +160,10 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // A helper method to look up a AudioEntry identified by |stream_id|.
   // Returns NULL if not found.
   AudioEntry* LookupById(int stream_id);
+
+  // A helper method to update the number of playing streams and alert the
+  // ResourceScheduler when the renderer starts or stops playing an audiostream.
+  void UpdateNumPlayingStreams(AudioEntry* entry, bool is_playing);
 
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;

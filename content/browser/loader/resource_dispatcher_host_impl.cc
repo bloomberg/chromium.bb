@@ -1442,11 +1442,11 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       true);     // is_async
 }
 
-void ResourceDispatcherHostImpl::OnRenderViewHostCreated(
-    int child_id,
-    int route_id,
-    bool is_visible) {
-  scheduler_->OnClientCreated(child_id, route_id, is_visible);
+void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
+                                                         int route_id,
+                                                         bool is_visible,
+                                                         bool is_audible) {
+  scheduler_->OnClientCreated(child_id, route_id, is_visible, is_audible);
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
@@ -1472,6 +1472,13 @@ void ResourceDispatcherHostImpl::OnRenderViewHostWasShown(
     int child_id,
     int route_id) {
   scheduler_->OnVisibilityChanged(child_id, route_id, true);
+}
+
+void ResourceDispatcherHostImpl::OnAudioRenderHostStreamStateChanged(
+    int child_id,
+    int route_id,
+    bool is_playing) {
+  scheduler_->OnAudibilityChanged(child_id, route_id, is_playing);
 }
 
 // This function is only used for saving feature.
