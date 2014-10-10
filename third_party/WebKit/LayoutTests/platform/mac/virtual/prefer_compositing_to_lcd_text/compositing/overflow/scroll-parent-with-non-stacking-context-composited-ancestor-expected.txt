@@ -65,8 +65,17 @@
           "position": [98, 90],
           "children": [
             {
+              "position": [1, 94],
+              "bounds": [93, 7]
+            },
+            {
               "position": [94, 1],
-              "bounds": [7, 100]
+              "bounds": [7, 93]
+            },
+            {
+              "position": [94, 94],
+              "bounds": [7, 7],
+              "drawsContent": true
             }
           ]
         }
