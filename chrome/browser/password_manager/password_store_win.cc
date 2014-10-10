@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/ie7_password_win.h"
@@ -142,6 +143,11 @@ std::vector<PasswordForm*> PasswordStoreWin::DBHandler::GetIE7Results(
 void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
     PasswordWebDataService::Handle handle,
     const WDTypedResult* result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone"));
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   PendingRequestMap::iterator i = pending_requests_.find(handle);
