@@ -247,6 +247,7 @@ public class GamepadList {
     }
 
     private static boolean isGamepadDevice(InputDevice inputDevice) {
+        if (inputDevice == null) return false;
         return ((inputDevice.getSources() & InputDevice.SOURCE_JOYSTICK) ==
                 InputDevice.SOURCE_JOYSTICK);
     }
