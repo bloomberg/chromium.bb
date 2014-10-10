@@ -97,6 +97,16 @@ bool PluginObject::SetNamedProperty(v8::Isolate* isolate,
                              StringVar::StringToPPVar(identifier));
   PepperTryCatchV8 try_catch(instance_, V8VarConverter::kAllowObjectVars,
                              isolate);
+
+  bool has_property =
+      ppp_class_->HasProperty(ppp_class_data_, identifier_var.get(),
+                              try_catch.exception());
+  if (try_catch.ThrowException())
+    return false;
+
+  if (!has_property)
+    return false;
+
   ScopedPPVar var = try_catch.FromV8(value);
   if (try_catch.ThrowException())
     return false;
