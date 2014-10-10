@@ -18,6 +18,7 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'content_settings/core/browser/content_settings_client.h',
         'content_settings/core/browser/content_settings_details.cc',
         'content_settings/core/browser/content_settings_details.h',
         'content_settings/core/browser/content_settings_observer.h',

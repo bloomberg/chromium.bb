@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_LOCAL_SHARED_OBJECTS_COUNTER_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_LOCAL_SHARED_OBJECTS_COUNTER_H_
 
+#include "base/basictypes.h"
+
 class GURL;
 
 // An interface to retrieve counts of browser data objects.
