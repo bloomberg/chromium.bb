@@ -87,12 +87,6 @@ webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
       type, WebRTCCodecToVideoCodecProfile(type), gpu_factories_);
 }
 
-void RTCVideoEncoderFactory::AddObserver(Observer* observer) {
-  // No-op: our codec list is populated on installation.
-}
-
-void RTCVideoEncoderFactory::RemoveObserver(Observer* observer) {}
-
 const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&
 RTCVideoEncoderFactory::codecs() const {
   return codecs_;
