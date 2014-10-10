@@ -920,6 +920,9 @@ ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {
+  // We already have DCHECK() in IDMap. This is for chasing
+  // crbug.com/415059 and can be removed after fixing it.
+  CHECK(!listeners_.Lookup(routing_id));
   listeners_.AddWithID(listener, routing_id);
 }
 
