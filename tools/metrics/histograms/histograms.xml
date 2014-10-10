@@ -21510,6 +21510,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Events seen by the OSX NSException swizzle.</summary>
 </histogram>
 
+<histogram name="OSX.Fullscreen.Enter" enum="OSXFullscreenParameters">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This event is recorded each time a user triggers fullscreen for a browser
+    window. The value's bits reflect different parameters. Bit 0: Fullscreen
+    entry mechanism (AppKit vs Immersive). Bit 1: Whether the window was on the
+    primary screen (Primary vs. Secondary). Bit 2: Whether displays have
+    separate spaces options is enabled (Seperate vs Shared). Bit 3: Whether
+    there are multiple screens.
+  </summary>
+</histogram>
+
 <histogram name="OSX.SystemHotkeyMap.LoadSuccess" enum="BooleanSuccess">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -48312,6 +48324,49 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="EXCEPTION_NSDATADETECTOR_NIL_STRING">
     Whitelisted exception for bug 316759.  Suspect background address detection,
     field unknown.
+  </int>
+</enum>
+
+<enum name="OSXFullscreenParameters" type="int">
+  <int value="0" label="IMMERSIVE_SECONDARY_SHARED_SINGLE">INVALID</int>
+  <int value="1" label="APPKIT_SECONDARY_SHARED_SINGLE">INVALID</int>
+  <int value="2" label="IMMERSIVE_PRIMARY_SHARED_SINGLE">
+    Immersive Mechanism + Primary Screen + Shared Spaces + Single Screen
+  </int>
+  <int value="3" label="APPKIT_PRIMARY_SHARED_SINGLE">
+    AppKit Mechanism + Primary Screen + Shared Spaces + Single Screen
+  </int>
+  <int value="4" label="IMMERSIVE_SECONDARY_SEPARATE_SINGLE">INVALID</int>
+  <int value="5" label="APPKIT_SECONDARY_SEPARATE_SINGLE">INVALID</int>
+  <int value="6" label="IMMERSIVE_PRIMARY_SEPARATE_SINGLE">
+    Immersive Mechanism + Primary Screen + Separate Spaces + Single Screen
+  </int>
+  <int value="7" label="APPKIT_PRIMARY_SEPARATE_SINGLE">
+    AppKit Mechanism + Primary Screen + Separate Spaces + Single Screen
+  </int>
+  <int value="8" label="IMMERSIVE_SECONDARY_SHARED_MULTIPLE">
+    Immersive Mechanism + Secondary Screen + Shared Spaces + Multiple Screens
+  </int>
+  <int value="9" label="APPKIT_SECONDARY_SHARED_MULTIPLE">
+    AppKit Mechanism + Secondary Screen + Shared Spaces + Multiple Screens
+  </int>
+  <int value="10" label="IMMERSIVE_PRIMARY_SHARED_MULTIPLE">
+    Immersive Mechanism + Primary Screen + Shared Spaces + Multiple Screens
+  </int>
+  <int value="11" label="APPKIT_PRIMARY_SHARED_MULTIPLE">
+    AppKit Mechanism + Primary Screen + Shared Spaces + Multiple Screens
+  </int>
+  <int value="12" label="IMMERSIVE_SECONDARY_SEPARATE_MULTIPLE">
+    Immersive Mechanism + Secondary Screen + Separate Spaces + Multiple Screens
+  </int>
+  <int value="13" label="APPKIT_SECONDARY_SEPARATE_MULTIPLE">
+    AppKit Mechanism + Secondary Screen + Separate Spaces + Multiple Screens
+  </int>
+  <int value="14" label="IMMERSIVE_PRIMARY_SEPARATE_MULTIPLE">
+    Immersive Mechanism + Primary Screen + Separate Spaces + Multiple Screens
+  </int>
+  <int value="15" label="APPKIT_PRIMARY_SEPARATE_MULTIPLE">
+    AppKit Mechanism + Primary Screen + Separate Spaces + Multiple Screens
   </int>
 </enum>
 
