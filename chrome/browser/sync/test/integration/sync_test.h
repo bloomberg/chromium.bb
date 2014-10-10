@@ -37,7 +37,6 @@ class FakeServerInvalidationService;
 
 namespace net {
 class FakeURLFetcherFactory;
-class ProxyConfig;
 class ScopedDefaultHostResolverProc;
 class URLFetcherImplFactory;
 class URLRequestContextGetter;
@@ -170,12 +169,6 @@ class SyncTest : public InProcessBrowserTest {
   // Initializes sync clients and profiles if required and syncs each of them.
   virtual bool SetupSync() WARN_UNUSED_RESULT;
 
-  // Enable outgoing network connections for the given profile.
-  virtual void EnableNetwork(Profile* profile);
-
-  // Disable outgoing network connections for the given profile.
-  virtual void DisableNetwork(Profile* profile);
-
   // Sets whether or not the sync clients in this test should respond to
   // notifications of their own commits.  Real sync clients do not do this, but
   // many test assertions require this behavior.
@@ -227,10 +220,6 @@ class SyncTest : public InProcessBrowserTest {
   // for the server to complete it.  This operation is available
   // only if ServerSupportsErrorTriggering() returned true.
   void TriggerMigrationDoneError(syncer::ModelTypeSet model_types);
-
-  // Triggers a transient error on the server. Note the server will stay in
-  // this state until shut down.
-  void TriggerTransientError();
 
   // Triggers an XMPP auth error on the server.  Note the server will
   // stay in this state until shut down.
@@ -328,11 +317,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Helper method used to check if the test server is up and running.
   bool IsTestServerRunning();
-
-  // Used to disable and enable network connectivity by providing and
-  // clearing an invalid proxy configuration.
-  void SetProxyConfig(net::URLRequestContextGetter* context,
-                      const net::ProxyConfig& proxy_config);
 
   void SetupNetwork(net::URLRequestContextGetter* context);
 

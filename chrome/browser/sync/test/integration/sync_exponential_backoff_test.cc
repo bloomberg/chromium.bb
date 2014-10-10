@@ -20,9 +20,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SyncExponentialBackoffTest : public SyncTest {
  public:
-  // TODO(pvalenzuela): Switch to SINGLE_CLIENT once FakeServer
-  // supports this scenario.
-  SyncExponentialBackoffTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
+  SyncExponentialBackoffTest() : SyncTest(SINGLE_CLIENT) {}
   virtual ~SyncExponentialBackoffTest() {}
 
  private:
@@ -70,8 +68,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   ASSERT_TRUE(AddFolder(0, 0, "folder1"));
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  // Trigger a network error at the client side.
-  DisableNetwork(GetProfile(0));
+  GetFakeServer()->DisableNetwork();
 
   // Add a new item to trigger another sync cycle.
   ASSERT_TRUE(AddFolder(0, 0, "folder2"));
@@ -83,8 +80,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   exponential_backoff_checker.Wait();
   ASSERT_FALSE(exponential_backoff_checker.TimedOut());
 
-  // Recover from the network error.
-  EnableNetwork(GetProfile(0));
+  GetFakeServer()->EnableNetwork();
 
   // Verify that sync was able to recover.
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
@@ -98,8 +94,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
   ASSERT_TRUE(AddFolder(0, 0, "folder1"));
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  // Trigger a transient error on the server.
-  TriggerTransientError();
+  GetFakeServer()->TriggerError(sync_pb::SyncEnums::TRANSIENT_ERROR);
 
   // Add a new item to trigger another sync cycle.
   ASSERT_TRUE(AddFolder(0, 0, "folder2"));

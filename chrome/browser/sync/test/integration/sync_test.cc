@@ -66,9 +66,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_config_service_fixed.h"
-#include "net/proxy/proxy_service.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
@@ -140,17 +137,6 @@ void SetupNetworkCallback(
     net::URLRequestContextGetter* url_request_context_getter) {
   url_request_context_getter->GetURLRequestContext()->
       set_cookie_store(new net::CookieMonster(NULL, NULL));
-  done->Signal();
-}
-
-void SetProxyConfigCallback(
-    base::WaitableEvent* done,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const net::ProxyConfig& proxy_config) {
-  net::ProxyService* proxy_service =
-      url_request_context_getter->GetURLRequestContext()->proxy_service();
-  proxy_service->ResetConfigService(
-      new net::ProxyConfigServiceFixed(proxy_config));
   done->Signal();
 }
 
@@ -799,35 +785,6 @@ bool SyncTest::IsTestServerRunning() {
   return delegate.running();
 }
 
-void SyncTest::EnableNetwork(Profile* profile) {
-  // TODO(pvalenzuela): Remove this restriction when FakeServer's observers
-  // (namely FakeServerInvaldationService) are aware of a network disconnect.
-  ASSERT_NE(IN_PROCESS_FAKE_SERVER, server_type_)
-      << "FakeServer does not support EnableNetwork.";
-  SetProxyConfig(profile->GetRequestContext(),
-                 net::ProxyConfig::CreateDirect());
-  if (notifications_enabled_) {
-    EnableNotificationsImpl();
-  }
-  // TODO(rsimha): Remove this line once http://crbug.com/53857 is fixed.
-  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-}
-
-void SyncTest::DisableNetwork(Profile* profile) {
-  // TODO(pvalenzuela): Remove this restriction when FakeServer's observers
-  // (namely FakeServerInvaldationService) are aware of a network disconnect.
-  ASSERT_NE(IN_PROCESS_FAKE_SERVER, server_type_)
-      << "FakeServer does not support DisableNetwork.";
-  DisableNotificationsImpl();
-  // Set the current proxy configuration to a nonexistent proxy to effectively
-  // disable networking.
-  net::ProxyConfig config;
-  config.proxy_rules().ParseFromString("http=127.0.0.1:0");
-  SetProxyConfig(profile->GetRequestContext(), config);
-  // TODO(rsimha): Remove this line once http://crbug.com/53857 is fixed.
-  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-}
-
 bool SyncTest::TestUsesSelfNotifications() {
   return true;
 }
@@ -946,16 +903,6 @@ void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
                     GetTitle()));
 }
 
-void SyncTest::TriggerTransientError() {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
-  std::string path = "chromiumsync/transienterror";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Transient error",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
-}
-
 void SyncTest::TriggerXmppAuthError() {
   ASSERT_TRUE(ServerSupportsErrorTriggering());
   std::string path = "chromiumsync/xmppcred";
@@ -1063,16 +1010,6 @@ void SyncTest::SetupNetwork(net::URLRequestContextGetter* context_getter) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SetupNetworkCallback, &done,
                  make_scoped_refptr(context_getter)));
-  done.Wait();
-}
-
-void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
-                              const net::ProxyConfig& proxy_config) {
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetProxyConfigCallback, &done,
-                 make_scoped_refptr(context_getter), proxy_config));
   done.Wait();
 }
 

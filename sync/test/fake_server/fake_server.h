@@ -94,6 +94,13 @@ class FakeServer {
   // must be called if AddObserver was ever called with |observer|.
   void RemoveObserver(Observer* observer);
 
+  // Undoes the effects of DisableNetwork.
+  void EnableNetwork();
+
+  // Forces every request to fail in a way that simulates a network failure.
+  // This can be used to trigger exponential backoff in the client.
+  void DisableNetwork();
+
  private:
   typedef std::map<std::string, FakeServerEntity*> EntityMap;
 
@@ -168,6 +175,10 @@ class FakeServer {
 
   // FakeServer's observers.
   ObserverList<Observer, true> observers_;
+
+  // When true, the server operates normally. When false, a failure is returned
+  // on every request. This is used to simulate a network failure on the client.
+  bool network_enabled_;
 };
 
 }  // namespace fake_server

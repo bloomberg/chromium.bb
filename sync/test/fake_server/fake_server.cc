@@ -149,7 +149,8 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
 FakeServer::FakeServer() : version_(0),
                            store_birthday_(kDefaultStoreBirthday),
                            authenticated_(true),
-                           error_type_(sync_pb::SyncEnums::SUCCESS) {
+                           error_type_(sync_pb::SyncEnums::SUCCESS),
+                           network_enabled_(true) {
   keystore_keys_.push_back(kDefaultKeystoreKey);
   CHECK(CreateDefaultPermanentItems());
 }
@@ -218,6 +219,11 @@ void FakeServer::SaveEntity(FakeServerEntity* entity) {
 
 void FakeServer::HandleCommand(const string& request,
                                const HandleCommandCallback& callback) {
+  if (!network_enabled_) {
+    callback.Run(net::ERR_FAILED, net::ERR_FAILED, string());
+    return;
+  }
+
   if (!authenticated_) {
     callback.Run(0, net::HTTP_UNAUTHORIZED, string());
     return;
@@ -537,6 +543,14 @@ void FakeServer::AddObserver(Observer* observer) {
 
 void FakeServer::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void FakeServer::EnableNetwork() {
+  network_enabled_ = true;
+}
+
+void FakeServer::DisableNetwork() {
+  network_enabled_ = false;
 }
 
 }  // namespace fake_server
