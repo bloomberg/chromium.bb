@@ -780,7 +780,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
-  return @[];
+  return nil;
 }
 
 - (BOOL)canBecomeKeyView {
@@ -1159,7 +1159,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Add a dummy, empty element so that we don't initially display any
   // focus rings.
   NSButton* dummyFocusButton =
-      [[[DummyWindowFocusButton alloc] initWithFrame:NSZeroRect] autorelease];
+     [[[DummyWindowFocusButton alloc] initWithFrame:NSZeroRect] autorelease];
   [dummyFocusButton setNextKeyView:subView];
   [[self window] makeFirstResponder:dummyFocusButton];
 
