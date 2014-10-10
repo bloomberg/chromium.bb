@@ -41,7 +41,6 @@
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
@@ -62,11 +61,6 @@ MediaStreamCenter::MediaStreamCenter()
 
 MediaStreamCenter::~MediaStreamCenter()
 {
-}
-
-bool MediaStreamCenter::getMediaStreamTrackSources(MediaStreamTrackSourcesRequest* request)
-{
-    return m_private && m_private->getMediaStreamTrackSources(request);
 }
 
 void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamComponent* component)
