@@ -72,7 +72,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   content::WebContents* CreateGuestWithWebContentsParams(
       const std::string& view_type,
       const std::string& embedder_extension_id,
-      int embedder_render_process_id,
+      content::WebContents* embedder_web_contents,
       const content::WebContents::CreateParams& create_params);
 
   content::SiteInstance* GetGuestSiteInstance(
