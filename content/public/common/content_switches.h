@@ -281,7 +281,6 @@ extern const char kDisableCoreAnimationPlugins[];
 // This switch contains the device scale factor passed to certain processes
 // like renderers, etc.
 CONTENT_EXPORT extern const char kDeviceScaleFactor[];
-CONTENT_EXPORT extern const char kDisableDirectWrite[];
 CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
 // This switch will be removed when we enable the win32K lockdown process
 // mitigation.

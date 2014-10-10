@@ -34,9 +34,6 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 
 bool InitTargetServices(sandbox::TargetServices* target_services);
 
-// Returns whether DirectWrite font rendering should be used.
-CONTENT_EXPORT bool ShouldUseDirectWrite();
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SANDBOX_WIN_H_

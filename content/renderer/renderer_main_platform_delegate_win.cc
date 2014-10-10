@@ -11,7 +11,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "content/common/sandbox_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/injection_test_win.h"
 #include "content/public/renderer/render_font_warmup_win.h"
@@ -25,6 +24,7 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/dpi.h"
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
@@ -88,7 +88,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   // malicious code if the renderer gets compromised.
   bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
 
-  bool use_direct_write = ShouldUseDirectWrite();
+  bool use_direct_write = gfx::win::ShouldUseDirectWrite();
   if (!no_sandbox) {
     // ICU DateFormat class (used in base/time_format.cc) needs to get the
     // Olson timezone ID by accessing the registry keys under

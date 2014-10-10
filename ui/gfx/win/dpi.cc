@@ -5,12 +5,10 @@
 #include "ui/gfx/win/dpi.h"
 
 #include <windows.h>
-#include "base/command_line.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
 #include "base/win/registry.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/switches.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"

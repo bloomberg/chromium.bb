@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
-#include "content/common/sandbox_win.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_view.h"
@@ -33,6 +32,7 @@
 #include "content/public/renderer/render_font_warmup_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
+#include "ui/gfx/win/direct_write.h"
 #endif
 
 using blink::WebAudioDevice;
@@ -75,7 +75,7 @@ LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
                  base::Unretained(this)));
 
 #if defined(OS_WIN)
-  if (ShouldUseDirectWrite())
+  if (gfx::win::ShouldUseDirectWrite())
     RegisterSideloadedTypefaces(GetPreSandboxWarmupFontMgr());
 #endif
 }

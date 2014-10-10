@@ -5,6 +5,7 @@
 #ifndef UI_GFX_SWITCHES_H_
 #define UI_GFX_SWITCHES_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace switches {
@@ -14,6 +15,10 @@ GFX_EXPORT extern const char kDisableHarfBuzzRenderText[];
 GFX_EXPORT extern const char kEnableHarfBuzzRenderText[];
 GFX_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
 GFX_EXPORT extern const char kForceDeviceScaleFactor[];
+
+#if defined(OS_WIN)
+GFX_EXPORT extern const char kDisableDirectWrite[];
+#endif
 
 }  // namespace switches
 
