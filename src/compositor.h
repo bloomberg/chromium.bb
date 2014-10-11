@@ -603,6 +603,11 @@ enum weston_capability {
 	WESTON_CAP_VIEW_CLIP_MASK		= 0x0010,
 };
 
+struct weston_backend {
+	void (*destroy)(struct weston_compositor *ec);
+	void (*restore)(struct weston_compositor *ec);
+};
+
 struct weston_compositor {
 	struct wl_signal destroy_signal;
 
@@ -664,8 +669,7 @@ struct weston_compositor {
 
 	pixman_format_code_t read_format;
 
-	void (*destroy)(struct weston_compositor *ec);
-	void (*restore)(struct weston_compositor *ec);
+	struct weston_backend *backend;
 
 	struct weston_launcher *launcher;
 
@@ -1334,7 +1338,7 @@ uint32_t
 weston_compositor_get_time(void);
 
 int
-weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
+weston_compositor_init(struct weston_compositor *ec,
 		       int *argc, char *argv[], struct weston_config *config);
 int
 weston_compositor_set_presentation_clock(struct weston_compositor *compositor,
@@ -1539,10 +1543,10 @@ weston_output_mode_switch_to_native(struct weston_output *output);
 int
 noop_renderer_init(struct weston_compositor *ec);
 
-struct weston_compositor *
-backend_init(struct wl_display *display, int *argc, char *argv[],
+int
+backend_init(struct weston_compositor *c,
+	     int *argc, char *argv[],
 	     struct weston_config *config);
-
 int
 module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[]);

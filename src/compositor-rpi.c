@@ -60,7 +60,7 @@
 #define DBG(...) do {} while (0)
 #endif
 
-struct rpi_compositor;
+struct rpi_backend;
 struct rpi_output;
 
 struct rpi_flippipe {
@@ -71,7 +71,7 @@ struct rpi_flippipe {
 };
 
 struct rpi_output {
-	struct rpi_compositor *compositor;
+	struct rpi_backend *backend;
 	struct weston_output base;
 	int single_buffer;
 
@@ -90,8 +90,9 @@ struct rpi_seat {
 	char *seat_id;
 };
 
-struct rpi_compositor {
-	struct weston_compositor base;
+struct rpi_backend {
+	struct weston_backend base;
+	struct weston_compositor *compositor;
 	uint32_t prev_state;
 
 	struct udev *udev;
@@ -113,10 +114,10 @@ to_rpi_seat(struct weston_seat *base)
 	return container_of(base, struct rpi_seat, base);
 }
 
-static inline struct rpi_compositor *
-to_rpi_compositor(struct weston_compositor *base)
+static inline struct rpi_backend *
+to_rpi_backend(struct weston_compositor *c)
 {
-	return container_of(base, struct rpi_compositor, base);
+	return container_of(c->backend, struct rpi_backend, base);
 }
 
 static void
@@ -191,9 +192,9 @@ rpi_flippipe_init(struct rpi_flippipe *flippipe, struct rpi_output *output)
 
 	flippipe->readfd = fd[0];
 	flippipe->writefd = fd[1];
-	flippipe->clk_id = output->compositor->base.presentation_clock;
+	flippipe->clk_id = output->base.compositor->presentation_clock;
 
-	loop = wl_display_get_event_loop(output->compositor->base.wl_display);
+	loop = wl_display_get_event_loop(output->base.compositor->wl_display);
 	flippipe->source = wl_event_loop_add_fd(loop, flippipe->readfd,
 						WL_EVENT_READABLE,
 						rpi_flippipe_handler, output);
@@ -229,8 +230,8 @@ static int
 rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct rpi_output *output = to_rpi_output(base);
-	struct rpi_compositor *compositor = output->compositor;
-	struct weston_plane *primary_plane = &compositor->base.primary_plane;
+	struct weston_compositor *compositor = output->backend->compositor;
+	struct weston_plane *primary_plane = &compositor->primary_plane;
 	DISPMANX_UPDATE_HANDLE_T update;
 
 	DBG("frame update start\n");
@@ -241,7 +242,7 @@ rpi_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 	update = vc_dispmanx_update_start(1);
 
 	rpi_renderer_set_update_handle(&output->base, update);
-	compositor->base.renderer->repaint_output(&output->base, damage);
+	compositor->renderer->repaint_output(&output->base, damage);
 
 	pixman_region32_subtract(&primary_plane->damage,
 				 &primary_plane->damage, damage);
@@ -291,7 +292,7 @@ rpi_output_destroy(struct weston_output *base)
 }
 
 static int
-rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
+rpi_output_create(struct rpi_backend *backend, uint32_t transform)
 {
 	struct rpi_output *output;
 	DISPMANX_MODEINFO_T modeinfo;
@@ -302,8 +303,8 @@ rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 	if (output == NULL)
 		return -1;
 
-	output->compositor = compositor;
-	output->single_buffer = compositor->single_buffer;
+	output->backend = backend;
+	output->single_buffer = backend->single_buffer;
 
 	if (rpi_flippipe_init(&output->flippipe, output) < 0) {
 		weston_log("Creating message pipe failed.\n");
@@ -354,14 +355,14 @@ rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 	mm_width  = modeinfo.width * (25.4f / 96.0f);
 	mm_height = modeinfo.height * (25.4f / 96.0f);
 
-	weston_output_init(&output->base, &compositor->base,
+	weston_output_init(&output->base, backend->compositor,
 			   0, 0, round(mm_width), round(mm_height),
 			   transform, 1);
 
 	if (rpi_renderer_output_create(&output->base, output->display) < 0)
 		goto out_output;
 
-	weston_compositor_add_output(&compositor->base, &output->base);
+	weston_compositor_add_output(backend->compositor, &output->base);
 
 	weston_log("Raspberry Pi HDMI output %dx%d px\n",
 		   output->mode.width, output->mode.height);
@@ -391,38 +392,39 @@ out_free:
 }
 
 static void
-rpi_compositor_destroy(struct weston_compositor *base)
+rpi_backend_destroy(struct weston_compositor *base)
 {
-	struct rpi_compositor *compositor = to_rpi_compositor(base);
+	struct rpi_backend *backend = to_rpi_backend(base);
 
-	udev_input_destroy(&compositor->input);
+	udev_input_destroy(&backend->input);
 
 	/* destroys outputs, too */
-	weston_compositor_shutdown(&compositor->base);
+	weston_compositor_shutdown(base);
 
-	weston_launcher_destroy(compositor->base.launcher);
+	weston_launcher_destroy(base->launcher);
 
 	bcm_host_deinit();
-	free(compositor);
+	free(backend);
 }
 
 static void
 session_notify(struct wl_listener *listener, void *data)
 {
-	struct rpi_compositor *compositor = data;
+	struct weston_compositor *compositor = data;
+	struct rpi_backend *backend = to_rpi_backend(compositor);
 	struct weston_output *output;
 
-	if (compositor->base.session_active) {
+	if (compositor->session_active) {
 		weston_log("activating session\n");
-		compositor->base.state = compositor->prev_state;
-		weston_compositor_damage_all(&compositor->base);
-		udev_input_enable(&compositor->input);
+		compositor->state = backend->prev_state;
+		weston_compositor_damage_all(compositor);
+		udev_input_enable(&backend->input);
 	} else {
 		weston_log("deactivating session\n");
-		udev_input_disable(&compositor->input);
+		udev_input_disable(&backend->input);
 
-		compositor->prev_state = compositor->base.state;
-		weston_compositor_offscreen(&compositor->base);
+		backend->prev_state = compositor->state;
+		weston_compositor_offscreen(compositor);
 
 		/* If we have a repaint scheduled (either from a
 		 * pending pageflip or the idle handler), make sure we
@@ -433,7 +435,7 @@ session_notify(struct wl_listener *listener, void *data)
 		 * pending frame callbacks. */
 
 		wl_list_for_each(output,
-				 &compositor->base.output_list, link) {
+				 &compositor->output_list, link) {
 			output->repaint_needed = 0;
 		}
 	};
@@ -459,56 +461,56 @@ struct rpi_parameters {
 	uint32_t output_transform;
 };
 
-static struct weston_compositor *
-rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
-		      struct weston_config *config,
-		      struct rpi_parameters *param)
+static struct rpi_backend *
+rpi_backend_create(struct weston_compositor *compositor,
+		   struct rpi_parameters *param,
+		   int *argc, char *argv[],
+		   struct weston_config *config)
 {
-	struct rpi_compositor *compositor;
+	struct rpi_backend *backend;
 	uint32_t key;
 
 	weston_log("initializing Raspberry Pi backend\n");
 
-	compositor = zalloc(sizeof *compositor);
-	if (compositor == NULL)
+	backend = zalloc(sizeof *backend);
+	if (backend == NULL)
 		return NULL;
 
-	if (weston_compositor_init(&compositor->base, display, argc, argv,
+	if (weston_compositor_init(compositor, argc, argv,
 				   config) < 0)
 		goto out_free;
 
 	if (weston_compositor_set_presentation_clock_software(
-							&compositor->base) < 0)
+							compositor) < 0)
 		goto out_compositor;
 
-	compositor->udev = udev_new();
-	if (compositor->udev == NULL) {
+	backend->udev = udev_new();
+	if (backend->udev == NULL) {
 		weston_log("Failed to initialize udev context.\n");
 		goto out_compositor;
 	}
 
-	compositor->session_listener.notify = session_notify;
-	wl_signal_add(&compositor->base.session_signal,
-		      &compositor ->session_listener);
-	compositor->base.launcher = weston_launcher_connect(&compositor->base,
-							    param->tty, "seat0",
-							    false);
-	if (!compositor->base.launcher) {
+	backend->session_listener.notify = session_notify;
+	wl_signal_add(&compositor->session_signal,
+		      &backend->session_listener);
+	compositor->launcher =
+		weston_launcher_connect(compositor, param->tty, "seat0", false);
+	if (!compositor->launcher) {
 		weston_log("Failed to initialize tty.\n");
 		goto out_udev;
 	}
 
-	compositor->base.destroy = rpi_compositor_destroy;
-	compositor->base.restore = rpi_restore;
+	backend->base.destroy = rpi_backend_destroy;
+	backend->base.restore = rpi_restore;
 
-	compositor->prev_state = WESTON_COMPOSITOR_ACTIVE;
-	compositor->single_buffer = param->renderer.single_buffer;
+	backend->prev_state = WESTON_COMPOSITOR_ACTIVE;
+	backend->single_buffer = param->renderer.single_buffer;
 
 	weston_log("Dispmanx planes are %s buffered.\n",
-		   compositor->single_buffer ? "single" : "double");
+		   backend->single_buffer ? "single" : "double");
 
 	for (key = KEY_F1; key < KEY_F9; key++)
-		weston_compositor_add_key_binding(&compositor->base, key,
+		weston_compositor_add_key_binding(compositor, key,
 						  MODIFIER_CTRL | MODIFIER_ALT,
 						  switch_vt_binding, compositor);
 
@@ -521,45 +523,47 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	 */
 	bcm_host_init();
 
-	if (rpi_renderer_create(&compositor->base, &param->renderer) < 0)
+	if (rpi_renderer_create(compositor, &param->renderer) < 0)
 		goto out_launcher;
 
-	if (rpi_output_create(compositor, param->output_transform) < 0)
+	if (rpi_output_create(backend, param->output_transform) < 0)
 		goto out_renderer;
 
-	if (udev_input_init(&compositor->input,
-			    &compositor->base,
-			    compositor->udev, "seat0") != 0) {
+	if (udev_input_init(&backend->input,
+			    compositor,
+			    backend->udev, "seat0") != 0) {
 		weston_log("Failed to initialize udev input.\n");
 		goto out_renderer;
 	}
 
-	return &compositor->base;
+	return backend;
 
 out_renderer:
-	compositor->base.renderer->destroy(&compositor->base);
+	compositor->renderer->destroy(compositor);
 
 out_launcher:
-	weston_launcher_destroy(compositor->base.launcher);
+	weston_launcher_destroy(compositor->launcher);
 
 out_udev:
-	udev_unref(compositor->udev);
+	udev_unref(backend->udev);
 
 out_compositor:
-	weston_compositor_shutdown(&compositor->base);
+	weston_compositor_shutdown(compositor);
 
 out_free:
 	bcm_host_deinit();
-	free(compositor);
+	free(backend);
 
 	return NULL;
 }
 
-WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, int *argc, char *argv[],
+WL_EXPORT int
+backend_init(struct weston_compositor *compositor,
+	     int *argc, char *argv[],
 	     struct weston_config *config)
 {
 	const char *transform = "normal";
+	struct rpi_backend *b;
 
 	struct rpi_parameters param = {
 		.tty = 0, /* default to current tty */
@@ -582,5 +586,8 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	if (weston_parse_transform(transform, &param.output_transform) < 0)
 		weston_log("invalid transform \"%s\"\n", transform);
 
-	return rpi_compositor_create(display, argc, argv, config, &param);
+	b = rpi_backend_create(compositor, &param, argc, argv, config);
+	if (b == NULL)
+		return -1;
+	return 0;
 }

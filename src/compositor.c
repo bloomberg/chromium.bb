@@ -4502,7 +4502,6 @@ timeline_key_binding_handler(struct weston_seat *seat, uint32_t time,
 
 WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
-		       struct wl_display *display,
 		       int *argc, char *argv[],
 		       struct weston_config *config)
 {
@@ -4511,7 +4510,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	struct weston_config_section *s;
 
 	ec->config = config;
-	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
 	wl_signal_init(&ec->create_surface_signal);
 	wl_signal_init(&ec->activate_signal);
@@ -4531,11 +4529,11 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	ec->output_id_pool = 0;
 
-	if (!wl_global_create(display, &wl_compositor_interface, 3,
+	if (!wl_global_create(ec->wl_display, &wl_compositor_interface, 3,
 			      ec, compositor_bind))
 		return -1;
 
-	if (!wl_global_create(display, &wl_subcompositor_interface, 1,
+	if (!wl_global_create(ec->wl_display, &wl_subcompositor_interface, 1,
 			      ec, bind_subcompositor))
 		return -1;
 
@@ -4584,7 +4582,7 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	wl_data_device_manager_init(ec->wl_display);
 
-	wl_display_init_shm(display);
+	wl_display_init_shm(ec->wl_display);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
@@ -4900,7 +4898,7 @@ on_caught_signal(int s, siginfo_t *siginfo, void *context)
 
 	print_backtrace();
 
-	segv_compositor->restore(segv_compositor);
+	segv_compositor->backend->restore(segv_compositor);
 
 	raise(SIGTRAP);
 }
@@ -5281,10 +5279,9 @@ int main(int argc, char *argv[])
 	struct weston_compositor *ec;
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
-	struct weston_compositor
-		*(*backend_init)(struct wl_display *display,
-				 int *argc, char *argv[],
-				 struct weston_config *config);
+	int (*backend_init)(struct weston_compositor *c,
+			    int *argc, char *argv[],
+			    struct weston_config *config);
 	int i, fd;
 	char *backend = NULL;
 	char *shell = NULL;
@@ -5373,9 +5370,16 @@ int main(int argc, char *argv[])
 	if (!backend_init)
 		goto out_signals;
 
-	ec = backend_init(display, &argc, argv, config);
+	ec = zalloc(sizeof *ec);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
+		goto out_signals;
+	}
+
+	ec->wl_display = display;
+	if (backend_init(ec, &argc, argv, config) < 0) {
+		weston_log("fatal: failed to create compositor backend\n");
+		ret = EXIT_FAILURE;
 		goto out_signals;
 	}
 
@@ -5466,7 +5470,8 @@ out:
 
 	weston_compositor_xkb_destroy(ec);
 
-	ec->destroy(ec);
+	ec->backend->destroy(ec);
+	free(ec);
 
 out_signals:
 	for (i = ARRAY_LENGTH(signals) - 1; i >= 0; i--)
