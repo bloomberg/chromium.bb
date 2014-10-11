@@ -1303,14 +1303,14 @@ HRESULT ChromeAppViewAsh::OnWindowActivated(
     // the same.
     if (state == winui::Core::CoreWindowActivationState_CodeActivated ||
         state == winui::Core::CoreWindowActivationState_PointerActivated) {
-      if (text_service_)
-        text_service_->OnWindowActivated();
       ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(false));
     }
   } else {
     // On Windows 7, we force a repaint when the window is activated.
     ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(true));
   }
+  if (text_service_)
+    text_service_->OnWindowActivated();
   return S_OK;
 }
 
