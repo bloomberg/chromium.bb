@@ -9,7 +9,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
 
-import org.chromium.chromoting.jni.JniInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +41,7 @@ public class HostListLoader {
 
     /** Path from which to download a user's host list JSON object. */
     private static final String HOST_LIST_PATH =
-            "https://www.googleapis.com/chromoting/v1/@me/hosts?key=";
+            "https://www.googleapis.com/chromoting/v1/@me/hosts";
 
     /** Callback handler to be used for network operations. */
     private Handler mNetworkThread;
@@ -86,10 +85,7 @@ public class HostListLoader {
         HttpURLConnection link = null;
         String response = null;
         try {
-            link = (HttpURLConnection)
-                    new URL(HOST_LIST_PATH + JniInterface.nativeGetApiKey()).openConnection();
-            link.addRequestProperty("client_id", JniInterface.nativeGetClientId());
-            link.addRequestProperty("client_secret", JniInterface.nativeGetClientSecret());
+            link = (HttpURLConnection) new URL(HOST_LIST_PATH).openConnection();
             link.setRequestProperty("Authorization", "OAuth " + authToken);
 
             // Listen for the server to respond.
