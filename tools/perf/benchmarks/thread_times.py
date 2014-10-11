@@ -16,17 +16,6 @@ class ThreadTimesKeySilkCases(benchmark.Benchmark):
   page_set = page_sets.KeySilkCasesPageSet
 
 
-@benchmark.Enabled('android')
-class ThreadTimesFastPathKeySilkCases(benchmark.Benchmark):
-  """Measures timeline metrics while performing smoothness action on key silk
-  cases using bleeding edge rendering fast paths."""
-  tag = 'fast_path'
-  test = thread_times.ThreadTimes
-  page_set = page_sets.KeySilkCasesPageSet
-  def CustomizeBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForFastPath(options)
-
-
 @benchmark.Disabled
 class LegacySilkBenchmark(ThreadTimesKeySilkCases):
   """Same as thread_times.key_silk_cases but with the old name."""

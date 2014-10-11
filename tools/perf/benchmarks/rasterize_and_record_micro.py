@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from benchmarks import silk_flags
 from measurements import rasterize_and_record_micro
 import page_sets
 from telemetry import benchmark
@@ -35,22 +34,6 @@ class RasterizeAndRecordMicroKeySilkCases(benchmark.Benchmark):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record_micro.RasterizeAndRecordMicro
   page_set = page_sets.KeySilkCasesPageSet
-
-
-@benchmark.Disabled('mac', 'win')
-class RasterizeAndRecordMicroFastPathGpuRasterizationKeySilkCases(
-    benchmark.Benchmark):
-  """Measures rasterize and record performance on the silk sites.
-
-  Uses GPU rasterization together with bleeding edge rendering fast paths.
-
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  tag = 'fast_path_gpu_rasterization'
-  test = rasterize_and_record_micro.RasterizeAndRecordMicro
-  page_set = page_sets.KeySilkCasesPageSet
-  def CustomizeBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForFastPath(options)
-    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
 @benchmark.Enabled('android')
