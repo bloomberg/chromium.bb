@@ -24,7 +24,7 @@ gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };
 gin::Handle<WaitingCallback> WaitingCallback::Create(
     v8::Isolate* isolate,
     v8::Handle<v8::Function> callback,
-    gin::Handle<gin::HandleWrapper> handle_wrapper,
+    gin::Handle<HandleWrapper> handle_wrapper,
     MojoHandleSignals signals) {
   gin::Handle<WaitingCallback> waiting_callback = gin::CreateHandle(
       isolate, new WaitingCallback(isolate, callback, handle_wrapper));
@@ -49,7 +49,7 @@ void WaitingCallback::Cancel() {
 
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback,
-                                 gin::Handle<gin::HandleWrapper> handle_wrapper)
+                                 gin::Handle<HandleWrapper> handle_wrapper)
     : wait_id_(0), handle_wrapper_(handle_wrapper.get()) {
   handle_wrapper_->AddCloseObserver(this);
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();

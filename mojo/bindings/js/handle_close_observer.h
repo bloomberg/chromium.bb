@@ -5,7 +5,8 @@
 #ifndef MOJO_BINDINGS_JS_HANDLE_CLOSE_OBSERVER_H_
 #define MOJO_BINDINGS_JS_HANDLE_CLOSE_OBSERVER_H_
 
-namespace gin {
+namespace mojo {
+namespace js {
 
 class HandleCloseObserver {
  public:
@@ -15,6 +16,7 @@ class HandleCloseObserver {
   virtual ~HandleCloseObserver() {}
 };
 
-}  // namespace gin
+}  // namespace js
+}  // namespace mojo
 
 #endif  // MOJO_BINDINGS_JS_HANDLE_CLOSE_OBSERVER_H_

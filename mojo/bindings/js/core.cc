@@ -24,7 +24,7 @@ namespace js {
 
 namespace {
 
-MojoResult CloseHandle(gin::Handle<gin::HandleWrapper> handle) {
+MojoResult CloseHandle(gin::Handle<HandleWrapper> handle) {
   if (!handle->get().is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
   handle->Close();
@@ -84,7 +84,7 @@ gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
 MojoResult WriteMessage(
     mojo::Handle handle,
     const gin::ArrayBufferView& buffer,
-    const std::vector<gin::Handle<gin::HandleWrapper> >& handles,
+    const std::vector<gin::Handle<HandleWrapper> >& handles,
     MojoWriteMessageFlags flags) {
   std::vector<MojoHandle> raw_handles(handles.size());
   for (size_t i = 0; i < handles.size(); ++i)
@@ -231,7 +231,7 @@ gin::Dictionary ReadData(const gin::Arguments& args,
 // The drainData data pipe handle argument is closed automatically.
 
 v8::Handle<v8::Value> DoDrainData(gin::Arguments* args,
-                                  gin::Handle<gin::HandleWrapper> handle) {
+                                  gin::Handle<HandleWrapper> handle) {
   return (new DrainData(args->isolate(), handle->release()))->GetPromise();
 }
 

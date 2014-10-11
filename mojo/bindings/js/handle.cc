@@ -6,7 +6,8 @@
 
 #include "mojo/bindings/js/handle_close_observer.h"
 
-namespace gin {
+namespace mojo {
+namespace js {
 
 gin::WrapperInfo HandleWrapper::kWrapperInfo = { gin::kEmbedderNativeGin };
 
@@ -38,11 +39,16 @@ void HandleWrapper::NotifyCloseObservers() {
   FOR_EACH_OBSERVER(HandleCloseObserver, close_observers_, OnWillCloseHandle());
 }
 
+}  // namespace js
+}  // namespace mojo
+
+namespace gin {
+
 v8::Handle<v8::Value> Converter<mojo::Handle>::ToV8(v8::Isolate* isolate,
                                                     const mojo::Handle& val) {
   if (!val.is_valid())
     return v8::Null(isolate);
-  return HandleWrapper::Create(isolate, val.value()).ToV8();
+  return mojo::js::HandleWrapper::Create(isolate, val.value()).ToV8();
 }
 
 bool Converter<mojo::Handle>::FromV8(v8::Isolate* isolate,
@@ -53,8 +59,9 @@ bool Converter<mojo::Handle>::FromV8(v8::Isolate* isolate,
     return true;
   }
 
-  gin::Handle<HandleWrapper> handle;
-  if (!Converter<gin::Handle<HandleWrapper> >::FromV8(isolate, val, &handle))
+  gin::Handle<mojo::js::HandleWrapper> handle;
+  if (!Converter<gin::Handle<mojo::js::HandleWrapper> >::FromV8(
+      isolate, val, &handle))
     return false;
 
   *out = handle->get();

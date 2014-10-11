@@ -22,7 +22,7 @@ namespace js {
 namespace {
 
 WaitingCallback* AsyncWait(const gin::Arguments& args,
-                           gin::Handle<gin::HandleWrapper> handle,
+                           gin::Handle<HandleWrapper> handle,
                            MojoHandleSignals signals,
                            v8::Handle<v8::Function> callback) {
   return WaitingCallback::Create(args.isolate(), callback, handle, signals)

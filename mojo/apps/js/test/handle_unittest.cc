@@ -12,7 +12,7 @@ namespace mojo {
 namespace js {
 
 class HandleWrapperTest : public testing::Test,
-                          public gin::HandleCloseObserver {
+                          public HandleCloseObserver {
  public:
   HandleWrapperTest() : closes_observed_(0) {}
 
@@ -25,7 +25,7 @@ class HandleWrapperTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(HandleWrapperTest);
 };
 
-class TestHandleWrapper : public gin::HandleWrapper {
+class TestHandleWrapper : public HandleWrapper {
  public:
   explicit TestHandleWrapper(MojoHandle handle) : HandleWrapper(handle) {}
 
