@@ -60,7 +60,7 @@ public:
     static float minFractionToStepWhenPaging();
     static int maxOverlapBetweenPages();
 
-    // The window that hosts the ScrollView. The ScrollView will communicate scrolls and repaints to the
+    // The window that hosts the ScrollableArea. The ScrollableArea will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
     virtual HostWindow* hostWindow() const { return 0; };
 
@@ -158,7 +158,6 @@ public:
 
     virtual Scrollbar* horizontalScrollbar() const { return 0; }
     virtual Scrollbar* verticalScrollbar() const { return 0; }
-    virtual bool isScrollViewScrollbar(const Widget* child) const { return false; }
 
     // scrollPosition is relative to the scrollOrigin. i.e. If the page is RTL
     // then scrollPosition will be negative. By default, scrollPositionDouble()

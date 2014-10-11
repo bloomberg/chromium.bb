@@ -70,7 +70,6 @@ public:
     virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
     virtual void getTickmarks(Vector<IntRect>&) const override;
     virtual bool isScrollableAreaActive() const override;
-    virtual bool isScrollViewScrollbar() const override;
 
     virtual IntPoint convertFromContainingWindow(const IntPoint& windowPoint) override { return Widget::convertFromContainingWindow(windowPoint); }
 

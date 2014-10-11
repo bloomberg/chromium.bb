@@ -71,8 +71,8 @@ AXObject* AXScrollView::scrollBar(AccessibilityOrientation orientation)
 }
 
 // If this is WebKit1 then the native scroll view needs to return the
-// AX information (because there are no scroll bar children in the ScrollView object in WK1).
-// In WebKit2, the ScrollView object will return the AX information (because there are no platform widgets).
+// AX information (because there are no scroll bar children in the FrameView object in WK1).
+// In WebKit2, the FrameView object will return the AX information (because there are no platform widgets).
 bool AXScrollView::isAttachment() const
 {
     return false;

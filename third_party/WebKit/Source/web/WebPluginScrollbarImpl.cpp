@@ -144,11 +144,6 @@ int WebPluginScrollbarImpl::totalSize() const
     return m_scrollbar->totalSize();
 }
 
-bool WebPluginScrollbarImpl::isScrollViewScrollbar() const
-{
-    return m_scrollbar->isScrollViewScrollbar();
-}
-
 bool WebPluginScrollbarImpl::isScrollableAreaActive() const
 {
     return m_scrollbar->isScrollableAreaActive();

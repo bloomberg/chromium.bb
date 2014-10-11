@@ -239,7 +239,7 @@ bool AXRenderObject::shouldNotifyActiveDescendant() const
 
 ScrollableArea* AXRenderObject::getScrollableAreaIfScrollable() const
 {
-    // If the parent is a scroll view, then this object isn't really scrollable, the parent ScrollView should handle the scrolling.
+    // If the parent is a FrameView, then this object isn't really scrollable; the parent should handle the scrolling.
     if (parentObject() && parentObject()->isAXScrollView())
         return 0;
 

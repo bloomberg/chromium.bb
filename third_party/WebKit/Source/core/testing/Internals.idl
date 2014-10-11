@@ -99,7 +99,7 @@
     [TypeChecking=Interface] void setMarkersActive(Node node, unsigned long startOffset, unsigned long endOffset, boolean active);
     void setMarkedTextMatchesAreHighlighted(Document document, boolean highlight);
 
-    [RaisesException, TypeChecking=Interface] void setScrollViewPosition(Document document, long x, long y);
+    [RaisesException, TypeChecking=Interface] void setFrameViewPosition(Document document, long x, long y);
 
     [RaisesException, TypeChecking=Interface] DOMString viewportAsText(Document document,
                                                                        float devicePixelRatio,

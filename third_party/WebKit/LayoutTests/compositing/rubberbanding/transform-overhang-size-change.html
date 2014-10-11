@@ -13,9 +13,9 @@
         testRunner.waitUntilDone();
         document.getElementById('info').style.visibility = "hidden";
         internals.settings.setMockScrollbarsEnabled(false);
-        internals.setScrollViewPosition(document, -20, -20);
+        internals.setFrameViewPosition(document, -20, -20);
         runAfterDisplay(function() {
-            internals.setScrollViewPosition(document, -60, -60);
+            internals.setFrameViewPosition(document, -60, -60);
             testRunner.notifyDone();
         });
     }

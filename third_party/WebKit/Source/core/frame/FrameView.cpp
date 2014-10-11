@@ -348,7 +348,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     updateScrollableAreaSet();
 
     if (autosizerNeedsUpdating) {
-        // This needs to be after the call to ScrollView::setFrameRect, because it reads the new width.
+        // This needs to be after the call to setFrameRectInternal, because it reads the new width.
         if (TextAutosizer* textAutosizer = m_frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
@@ -2761,22 +2761,17 @@ IntPoint FrameView::convertToRenderer(const RenderObject& renderer, const IntPoi
 
 IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 {
-    if (const FrameView* parentScrollView = toFrameView(parent())) {
-        if (parentScrollView->isFrameView()) {
-            const FrameView* parentView = parentScrollView;
-            // Get our renderer in the parent view
-            RenderPart* renderer = m_frame->ownerRenderer();
-            if (!renderer)
-                return localRect;
+    if (const FrameView* parentView = toFrameView(parent())) {
+        // Get our renderer in the parent view
+        RenderPart* renderer = m_frame->ownerRenderer();
+        if (!renderer)
+            return localRect;
 
-            IntRect rect(localRect);
-            // Add borders and padding??
-            rect.move(renderer->borderLeft() + renderer->paddingLeft(),
-                renderer->borderTop() + renderer->paddingTop());
-            return parentView->convertFromRenderer(*renderer, rect);
-        }
-
-        return Widget::convertToContainingView(localRect);
+        IntRect rect(localRect);
+        // Add borders and padding??
+        rect.move(renderer->borderLeft() + renderer->paddingLeft(),
+            renderer->borderTop() + renderer->paddingTop());
+        return parentView->convertFromRenderer(*renderer, rect);
     }
 
     return localRect;
@@ -2784,23 +2779,17 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 
 IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 {
-    if (const FrameView* parentScrollView = toFrameView(parent())) {
-        if (parentScrollView->isFrameView()) {
-            const FrameView* parentView = parentScrollView;
+    if (const FrameView* parentView = toFrameView(parent())) {
+        // Get our renderer in the parent view
+        RenderPart* renderer = m_frame->ownerRenderer();
+        if (!renderer)
+            return parentRect;
 
-            // Get our renderer in the parent view
-            RenderPart* renderer = m_frame->ownerRenderer();
-            if (!renderer)
-                return parentRect;
-
-            IntRect rect = parentView->convertToRenderer(*renderer, parentRect);
-            // Subtract borders and padding
-            rect.move(-renderer->borderLeft() - renderer->paddingLeft(),
-                      -renderer->borderTop() - renderer->paddingTop());
-            return rect;
-        }
-
-        return Widget::convertFromContainingView(parentRect);
+        IntRect rect = parentView->convertToRenderer(*renderer, parentRect);
+        // Subtract borders and padding
+        rect.move(-renderer->borderLeft() - renderer->paddingLeft(),
+            -renderer->borderTop() - renderer->paddingTop());
+        return rect;
     }
 
     return parentRect;
@@ -2808,24 +2797,18 @@ IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 
 IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 {
-    if (const FrameView* parentScrollView = toFrameView(parent())) {
-        if (parentScrollView->isFrameView()) {
-            const FrameView* parentView = parentScrollView;
+    if (const FrameView* parentView = toFrameView(parent())) {
+        // Get our renderer in the parent view
+        RenderPart* renderer = m_frame->ownerRenderer();
+        if (!renderer)
+            return localPoint;
 
-            // Get our renderer in the parent view
-            RenderPart* renderer = m_frame->ownerRenderer();
-            if (!renderer)
-                return localPoint;
+        IntPoint point(localPoint);
 
-            IntPoint point(localPoint);
-
-            // Add borders and padding
-            point.move(renderer->borderLeft() + renderer->paddingLeft(),
-                       renderer->borderTop() + renderer->paddingTop());
-            return parentView->convertFromRenderer(*renderer, point);
-        }
-
-        return Widget::convertToContainingView(localPoint);
+        // Add borders and padding
+        point.move(renderer->borderLeft() + renderer->paddingLeft(),
+            renderer->borderTop() + renderer->paddingTop());
+        return parentView->convertFromRenderer(*renderer, point);
     }
 
     return localPoint;
@@ -2833,23 +2816,17 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 
 IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
 {
-    if (const FrameView* parentScrollView = toFrameView(parent())) {
-        if (parentScrollView->isFrameView()) {
-            const FrameView* parentView = parentScrollView;
+    if (const FrameView* parentView = toFrameView(parent())) {
+        // Get our renderer in the parent view
+        RenderPart* renderer = m_frame->ownerRenderer();
+        if (!renderer)
+            return parentPoint;
 
-            // Get our renderer in the parent view
-            RenderPart* renderer = m_frame->ownerRenderer();
-            if (!renderer)
-                return parentPoint;
-
-            IntPoint point = parentView->convertToRenderer(*renderer, parentPoint);
-            // Subtract borders and padding
-            point.move(-renderer->borderLeft() - renderer->paddingLeft(),
-                       -renderer->borderTop() - renderer->paddingTop());
-            return point;
-        }
-
-        return Widget::convertFromContainingView(parentPoint);
+        IntPoint point = parentView->convertToRenderer(*renderer, parentPoint);
+        // Subtract borders and padding
+        point.move(-renderer->borderLeft() - renderer->paddingLeft(),
+            -renderer->borderTop() - renderer->paddingTop());
+        return point;
     }
 
     return parentPoint;
@@ -3053,8 +3030,6 @@ IntPoint FrameView::maximumScrollPosition() const
     maximumOffset.clampNegativeToZero();
     return maximumOffset;
 }
-
-// --- ScrollView ---
 
 void FrameView::addChild(PassRefPtr<Widget> prpChild)
 {

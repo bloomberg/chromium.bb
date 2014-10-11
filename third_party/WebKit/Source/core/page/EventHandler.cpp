@@ -579,8 +579,8 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    if (FrameView* scrollView = m_frame->view()) {
-        if (scrollView->isPointInScrollbarCorner(event.event().position()))
+    if (FrameView* frameView = m_frame->view()) {
+        if (frameView->isPointInScrollbarCorner(event.event().position()))
             return false;
     }
 

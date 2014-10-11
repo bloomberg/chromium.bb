@@ -148,10 +148,10 @@ void ViewportAnchor::setAnchor(const IntRect& outerViewRect, const IntRect& inne
     m_anchorInNodeCoords.scale(1.f / m_anchorNodeBounds.width(), 1.f / m_anchorNodeBounds.height());
 }
 
-void ViewportAnchor::computeOrigins(const FrameView& scrollView, const FloatSize& innerSize,
+void ViewportAnchor::computeOrigins(const FrameView& frameView, const FloatSize& innerSize,
     IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const
 {
-    IntSize outerSize = scrollView.visibleContentRect().size();
+    IntSize outerSize = frameView.visibleContentRect().size();
 
     // Compute the viewport origins in CSS pixels relative to the document.
     FloatSize absPinchViewportOffset = m_normalizedPinchViewportOffset;
@@ -165,7 +165,7 @@ void ViewportAnchor::computeOrigins(const FrameView& scrollView, const FloatSize
 
     moveToEncloseRect(outerRect, innerRect);
 
-    outerRect.setLocation(scrollView.adjustScrollPositionWithinRange(outerRect.location()));
+    outerRect.setLocation(frameView.adjustScrollPositionWithinRange(outerRect.location()));
 
     moveIntoRect(innerRect, outerRect);
 

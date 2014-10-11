@@ -335,19 +335,17 @@ public:
     virtual GraphicsLayer* layerForHorizontalScrollbar() const override;
     virtual GraphicsLayer* layerForVerticalScrollbar() const override;
     virtual GraphicsLayer* layerForScrollCorner() const override;
-
-    // --- ScrollView ---
     virtual int scrollSize(ScrollbarOrientation) const override;
     virtual void setScrollOffset(const IntPoint&) override;
     virtual void setScrollOffset(const DoublePoint&) override;
     virtual bool isScrollCornerVisible() const override;
-    void scrollbarStyleChangedInternal();
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
 
+    void scrollbarStyleChangedInternal();
     void notifyPageThatContentAreaWillPaintInternal() const;
 
-    // The window that hosts the ScrollView. The ScrollView will communicate scrolls and repaints to the
+    // The window that hosts the FrameView. The FrameView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
     HostWindow* hostWindow() const;
 
@@ -363,7 +361,6 @@ public:
     // can be used to obtain those scrollbars.
     virtual Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
     virtual Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
-    virtual bool isScrollViewScrollbar(const Widget* child) const override { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 
     void positionScrollbarLayers();
 
@@ -414,7 +411,7 @@ public:
     // Scale used to convert incoming input events. Usually the same as visibleContentScaleFactor(), unless specifically changed.
     float inputEventsScaleFactorInternal() const { return visibleContentScaleFactor(); }
 
-    // Functions for getting/setting the size of the document contained inside the ScrollView (as an IntSize or as individual width and height
+    // Functions for getting/setting the size of the document contained inside the FrameView (as an IntSize or as individual width and height
     // values).
     virtual IntSize contentsSize() const override; // Always at least as big as the visibleWidth()/visibleHeight().
     int contentsWidth() const { return contentsSize().width(); }
@@ -496,7 +493,7 @@ public:
     virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const override
     {
         IntPoint newPoint = point;
-        if (!isScrollViewScrollbar(child))
+        if (!isFrameViewScrollbar(child))
             newPoint = point - scrollOffset();
         newPoint.moveBy(child->location());
         return newPoint;
@@ -505,7 +502,7 @@ public:
     virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const override
     {
         IntPoint newPoint = point;
-        if (!isScrollViewScrollbar(child))
+        if (!isFrameViewScrollbar(child))
             newPoint = point + scrollOffset();
         newPoint.moveBy(-child->location());
         return newPoint;
@@ -540,7 +537,6 @@ public:
     void calculateAndPaintOverhangAreas(GraphicsContext*, const IntRect& dirtyRect);
     void calculateAndPaintOverhangBackground(GraphicsContext*, const IntRect& dirtyRect);
 
-    virtual bool isScrollView() const override final { return true; }
     virtual bool isFrameView() const override { return true; }
 
 protected:
@@ -554,8 +550,7 @@ protected:
     // overlay scrollbars in the case of the pinch viewport.
     bool scrollbarsDisabled() const;
 
-    // --- ScrollView ---
-    // NOTE: This should only be called by the overriden setScrollOffset from ScrollableArea.
+    // NOTE: This should only be called by the overridden setScrollOffset from ScrollableArea.
     void scrollToInternal(const DoublePoint& newPosition);
 
     void contentRectangleForPaintInvalidationInternal(const IntRect&);
@@ -683,6 +678,20 @@ private:
         return !isInPerformLayout() || canInvalidatePaintDuringPerformLayout();
     }
 
+    bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
+    void adjustScrollbarOpacity();
+    // FIXME(bokan): setScrollOffset, setScrollPosition, scrollTo, scrollToOffsetWithoutAnimation,
+    // notifyScrollPositionChanged...there's too many ways to scroll this class. This needs
+    // some cleanup.
+    void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
+
+    IntRect rectToCopyOnScroll() const;
+
+    void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
+    void updateOverhangAreas();
+
+    bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
+
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
     static bool s_inPaintContents;
 
@@ -776,14 +785,6 @@ private:
     bool m_needsUpdateWidgetPositions;
     float m_topControlsViewportAdjustment;
 
-    // --- ScrollView ---
-    bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
-    void adjustScrollbarOpacity();
-    // FIXME(bokan): setScrollOffset, setScrollPosition, scrollTo, scrollToOffsetWithoutAnimation,
-    // notifyScrollPositionChanged...there's too many ways to scroll this class. This needs
-    // some cleanup.
-    void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
-
     RefPtr<Scrollbar> m_horizontalScrollbar;
     RefPtr<Scrollbar> m_verticalScrollbar;
     ScrollbarMode m_horizontalScrollbarMode;
@@ -808,11 +809,6 @@ private:
     bool m_drawPanScrollIcon;
 
     bool m_clipsRepaints;
-
-    IntRect rectToCopyOnScroll() const;
-
-    void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
-    void updateOverhangAreas();
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

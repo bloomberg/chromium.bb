@@ -7,7 +7,7 @@
 
             function inject()
             {
-                var content = '<html><head><style>' + 
+                var content = '<html><head><style>' +
                     'html,body { margin: 0; overflow: hidden; height: 100%; width: 100% } ' +
                     'html.scroll { overflow-x: auto; overflow-y: scroll; } ' +
                     '</style><body><div id="offender" style="height: 900px;"></div></body></html>';
@@ -18,7 +18,7 @@
                 doc.write(content);
                 doc.close();
                 doc.getElementsByTagName("html")[0].className = "scroll";
-                // tickle ScrollView::updateScrollbars()
+                // tickle FrameView::updateScrollbars()
                 doc.getElementById("offender").scrollIntoView(false);
                 // trigger resize
                 injectee.style.width = "400px";
@@ -29,7 +29,7 @@
     </head>
     <body>
         <p>
-            Tests <kbd>ScrollView</kbd>'s behavior when only one of the scrollbars is made <kbd>ScrollbarAlwaysOn</kbd> dynamically.
+            Tests <kbd>FrameView</kbd>'s behavior when only one of the scrollbars is made <kbd>ScrollbarAlwaysOn</kbd> dynamically.
             The correct behavior is not to remove this scrollbar, which is what this test checks for.
         </p>
         <div id="test">

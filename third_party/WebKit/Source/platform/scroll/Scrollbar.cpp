@@ -105,11 +105,6 @@ bool Scrollbar::isScrollableAreaActive() const
     return m_scrollableArea && m_scrollableArea->isActive();
 }
 
-bool Scrollbar::isScrollViewScrollbar() const
-{
-    return m_scrollableArea && m_scrollableArea->isScrollViewScrollbar(this);
-}
-
 bool Scrollbar::isLeftSideVerticalScrollbar() const
 {
     if (m_orientation == VerticalScrollbar && m_scrollableArea)

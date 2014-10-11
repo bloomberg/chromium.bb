@@ -59,7 +59,6 @@ public:
     virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const = 0;
     virtual void getTickmarks(Vector<IntRect>&) const = 0;
     virtual bool isScrollableAreaActive() const = 0;
-    virtual bool isScrollViewScrollbar() const = 0;
 
     virtual IntPoint convertFromContainingWindow(const IntPoint& windowPoint) = 0;
 

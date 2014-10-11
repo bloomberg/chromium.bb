@@ -1,6 +1,6 @@
 var autoscrollInterval = 50;
 var middleButton = 1;
-var panScrollRadius = 15; // from WebCore/platform/ScrollView.h
+var panScrollRadius = 15; // from FrameView::noPanScrollRadius
 
 window.jsTestIsAsync = true;
 

@@ -43,7 +43,6 @@ public:
     virtual bool enabled() const override;
     virtual int maximum() const override;
     virtual int totalSize() const override;
-    virtual bool isScrollViewScrollbar() const override;
     virtual bool isScrollableAreaActive() const override;
     virtual void getTickmarks(WebVector<WebRect>& tickmarks) const override;
     virtual ScrollbarControlSize controlSize() const override;

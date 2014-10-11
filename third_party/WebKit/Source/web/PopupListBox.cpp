@@ -284,7 +284,7 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
 
 HostWindow* PopupListBox::hostWindow() const
 {
-    // Our parent is the root ScrollView, so it is the one that has a
+    // Our parent is the root FrameView, so it is the one that has a
     // HostWindow. FrameView::hostWindow() works similarly.
     return parent() ? parent()->hostWindow() : 0;
 }
@@ -866,7 +866,7 @@ IntRect PopupListBox::windowClipRect() const
 
 void PopupListBox::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
 {
-    // Add in our offset within the ScrollView.
+    // Add in our offset within the FrameView.
     IntRect dirtyRect = rect;
     dirtyRect.move(scrollbar->x(), scrollbar->y());
     invalidateRect(dirtyRect);
@@ -888,7 +888,7 @@ IntRect PopupListBox::scrollableAreaBoundingBox() const
     return windowClipRect();
 }
 
-// FIXME: The following methods are based on code in ScrollView, with
+// FIXME: The following methods are based on code in FrameView, with
 // simplifications for the constraints of PopupListBox (e.g. only vertical
 // scrollbar, not horizontal). This functionality should be moved into
 // ScrollableArea after http://crbug.com/417782 is fixed.
@@ -942,7 +942,7 @@ void PopupListBox::setFrameRect(const IntRect& newRect)
 
 IntRect PopupListBox::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    // NOTE: Unlike ScrollView we do not need to incorporate any scaling factor,
+    // NOTE: Unlike FrameView we do not need to incorporate any scaling factor,
     // and there is only one scrollbar to exclude.
     IntSize size = frameRect().size();
     Scrollbar* verticalBar = verticalScrollbar();

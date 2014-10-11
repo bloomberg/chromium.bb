@@ -154,7 +154,7 @@ public:
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
     void setMarkedTextMatchesAreHighlighted(Document*, bool);
 
-    void setScrollViewPosition(Document*, long x, long y, ExceptionState&);
+    void setFrameViewPosition(Document*, long x, long y, ExceptionState&);
     String viewportAsText(Document*, float devicePixelRatio, int availableWidth, int availableHeight, ExceptionState&);
 
     bool wasLastChangeUserEdit(Element* textField, ExceptionState&);

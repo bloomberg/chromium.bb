@@ -288,7 +288,7 @@ static NSButtonCell *checkbox(ControlStates states, const IntRect& zoomedRect, f
 }
 
 // FIXME: Share more code with radio buttons.
-static void paintCheckbox(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView)
+static void paintCheckbox(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
 
@@ -311,7 +311,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
     }
 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
-    NSView *view = ThemeMac::ensuredView(scrollView);
+    NSView *view = ThemeMac::ensuredView(scrollableArea);
     [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     if (states & FocusControlState)
@@ -372,7 +372,7 @@ static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, floa
     return radioCell;
 }
 
-static void paintRadio(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView)
+static void paintRadio(ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
 {
     // Determine the width and height needed for the control and prepare the cell for painting.
     NSButtonCell *radioCell = radio(states, zoomedRect, zoomFactor);
@@ -394,7 +394,7 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     BEGIN_BLOCK_OBJC_EXCEPTIONS
-    NSView *view = ThemeMac::ensuredView(scrollView);
+    NSView *view = ThemeMac::ensuredView(scrollableArea);
     [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
     if (states & FocusControlState)
@@ -453,7 +453,7 @@ static NSButtonCell *button(ControlPart part, ControlStates states, const IntRec
     return cell;
 }
 
-static void paintButton(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView)
+static void paintButton(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea)
 {
     BEGIN_BLOCK_OBJC_EXCEPTIONS
 
@@ -486,7 +486,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
     }
 
     LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
-    NSView *view = ThemeMac::ensuredView(scrollView);
+    NSView *view = ThemeMac::ensuredView(scrollableArea);
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
@@ -558,14 +558,14 @@ static void paintStepper(ControlStates states, GraphicsContext* context, const I
     HIThemeDrawButton(&backgroundBounds, &drawInfo, localContext.cgContext(), kHIThemeOrientationNormal, 0);
 }
 
-// This will ensure that we always return a valid NSView, even if ScrollView doesn't have an associated document NSView.
-// If the ScrollView doesn't have an NSView, we will return a fake NSView whose sole purpose is to tell AppKit that it's flipped.
-NSView *ThemeMac::ensuredView(ScrollableArea* scrollView)
+// This will ensure that we always return a valid NSView, even if FrameView doesn't have an associated document NSView.
+// If the FrameView doesn't have an NSView, we will return a fake NSView whose sole purpose is to tell AppKit that it's flipped.
+NSView *ThemeMac::ensuredView(ScrollableArea* frameView)
 {
 
     // Use a fake flipped view.
     static NSView *flippedView = [[WebCoreFlippedView alloc] init];
-    [flippedView setFrameSize:NSSizeFromCGSize(scrollView->contentsSize())];
+    [flippedView setFrameSize:NSSizeFromCGSize(frameView->contentsSize())];
 
     return flippedView;
 }
@@ -721,22 +721,22 @@ void ThemeMac::inflateControlPaintRect(ControlPart part, ControlStates states, I
     END_BLOCK_OBJC_EXCEPTIONS
 }
 
-void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollView) const
+void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* context, const IntRect& zoomedRect, float zoomFactor, ScrollableArea* scrollableArea) const
 {
     switch (part) {
         case CheckboxPart:
-            paintCheckbox(states, context, zoomedRect, zoomFactor, scrollView);
+            paintCheckbox(states, context, zoomedRect, zoomFactor, scrollableArea);
             break;
         case RadioPart:
-            paintRadio(states, context, zoomedRect, zoomFactor, scrollView);
+            paintRadio(states, context, zoomedRect, zoomFactor, scrollableArea);
             break;
         case PushButtonPart:
         case ButtonPart:
         case SquareButtonPart:
-            paintButton(part, states, context, zoomedRect, zoomFactor, scrollView);
+            paintButton(part, states, context, zoomedRect, zoomFactor, scrollableArea);
             break;
         case InnerSpinButtonPart:
-            paintStepper(states, context, zoomedRect, zoomFactor, scrollView);
+            paintStepper(states, context, zoomedRect, zoomFactor, scrollableArea);
             break;
         default:
             break;

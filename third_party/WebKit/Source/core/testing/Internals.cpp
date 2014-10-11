@@ -809,7 +809,7 @@ void Internals::setMarkedTextMatchesAreHighlighted(Document* document, bool high
     document->frame()->editor().setMarkedTextMatchesAreHighlighted(highlight);
 }
 
-void Internals::setScrollViewPosition(Document* document, long x, long y, ExceptionState& exceptionState)
+void Internals::setFrameViewPosition(Document* document, long x, long y, ExceptionState& exceptionState)
 {
     ASSERT(document);
     if (!document->view()) {

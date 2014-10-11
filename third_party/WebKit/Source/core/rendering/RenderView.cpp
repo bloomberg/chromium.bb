@@ -104,8 +104,8 @@ bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& l
 
     bool hitLayer = layer()->hitTest(request, location, result);
 
-    // ScrollView scrollbars are not the same as RenderLayer scrollbars tested by RenderLayer::hitTestOverflowControls,
-    // so we need to test ScrollView scrollbars separately here. Note that it's important we do this after
+    // FrameView scrollbars are not the same as RenderLayer scrollbars tested by RenderLayer::hitTestOverflowControls,
+    // so we need to test FrameView scrollbars separately here. Note that it's important we do this after
     // the hit test above, because that may overwrite the entire HitTestResult when it finds a hit.
     IntPoint viewPoint = location.roundedPoint() - frameView()->scrollOffset();
     if (Scrollbar* frameScrollbar = frameView()->scrollbarAtViewPoint(viewPoint))
