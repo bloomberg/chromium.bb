@@ -10,13 +10,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
-
-#if defined(OS_MACOSX)
-#include "content/shell/renderer/test_runner/mock_web_theme_engine_mac.h"
-#else
 #include "content/shell/renderer/test_runner/mock_web_theme_engine.h"
-#endif
+#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
 class WebFrame;
@@ -70,11 +65,7 @@ class TestInterfaces {
   WebTestProxyBase* proxy_;
 
   std::vector<WebTestProxyBase*> window_list_;
-#if defined(OS_MACOSX)
-  scoped_ptr<MockWebThemeEngineMac> theme_engine_;
-#else
   scoped_ptr<MockWebThemeEngine> theme_engine_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
 };

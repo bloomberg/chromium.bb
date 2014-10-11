@@ -176,8 +176,6 @@ static_library("content_shell_lib") {
     "renderer/test_runner/mock_web_speech_recognizer.h",
     "renderer/test_runner/mock_web_theme_engine.cc",
     "renderer/test_runner/mock_web_theme_engine.h",
-    "renderer/test_runner/mock_web_theme_engine_mac.h",
-    "renderer/test_runner/mock_web_theme_engine_mac.mm",
     "renderer/test_runner/mock_web_user_media_client.cc",
     "renderer/test_runner/mock_web_user_media_client.h",
     "renderer/test_runner/mock_webrtc_data_channel_handler.cc",

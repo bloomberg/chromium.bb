@@ -240,7 +240,6 @@
       'child/webthemeengine_impl_android.h',
       'child/webthemeengine_impl_default.cc',
       'child/webthemeengine_impl_default.h',
-      'child/webthemeengine_impl_mac.cc',
       'child/webthemeengine_impl_mac.h',
       'child/webthread_impl.cc',
       'child/webthread_impl.h',

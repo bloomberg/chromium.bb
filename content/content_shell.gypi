@@ -231,8 +231,6 @@
         'shell/renderer/test_runner/mock_web_speech_recognizer.h',
         'shell/renderer/test_runner/mock_web_theme_engine.cc',
         'shell/renderer/test_runner/mock_web_theme_engine.h',
-        'shell/renderer/test_runner/mock_web_theme_engine_mac.h',
-        'shell/renderer/test_runner/mock_web_theme_engine_mac.mm',
         'shell/renderer/test_runner/mock_web_user_media_client.cc',
         'shell/renderer/test_runner/mock_web_user_media_client.h',
         'shell/renderer/test_runner/mock_webrtc_data_channel_handler.cc',

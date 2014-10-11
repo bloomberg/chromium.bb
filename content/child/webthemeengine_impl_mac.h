@@ -10,14 +10,6 @@
 namespace content {
 
 class WebThemeEngineImpl : public blink::WebThemeEngine {
- public:
-  // blink::WebThemeEngine implementation.
-  virtual void paintScrollbarThumb(
-      blink::WebCanvas* canvas,
-      blink::WebThemeEngine::State part,
-      blink::WebThemeEngine::Size state,
-      const blink::WebRect& rect,
-      const blink::WebThemeEngine::ScrollbarInfo& extra_params);
 };
 
 }  // namespace content

@@ -13,6 +13,7 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
  public:
   virtual ~MockWebThemeEngine() {}
 
+#if !defined(OS_MACOSX)
   // blink::WebThemeEngine:
   virtual blink::WebSize getSize(blink::WebThemeEngine::Part);
   virtual void paint(blink::WebCanvas*,
@@ -20,6 +21,7 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
                      blink::WebThemeEngine::State,
                      const blink::WebRect&,
                      const blink::WebThemeEngine::ExtraParams*);
+#endif  // !defined(OS_MACOSX)
 };
 
 }  // namespace content

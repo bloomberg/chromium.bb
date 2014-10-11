@@ -183,13 +183,8 @@ const std::vector<WebTestProxyBase*>& TestInterfaces::GetWindowList() {
 blink::WebThemeEngine* TestInterfaces::GetThemeEngine() {
   if (!test_runner_->UseMockTheme())
     return 0;
-#if defined(OS_MACOSX)
-  if (!theme_engine_.get())
-    theme_engine_.reset(new MockWebThemeEngineMac());
-#else
   if (!theme_engine_.get())
     theme_engine_.reset(new MockWebThemeEngine());
-#endif
   return theme_engine_.get();
 }
 
