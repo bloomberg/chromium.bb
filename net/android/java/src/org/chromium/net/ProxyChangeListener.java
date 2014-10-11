@@ -36,16 +36,21 @@ public class ProxyChangeListener {
     private Delegate mDelegate;
 
     private static class ProxyConfig {
-        public ProxyConfig(String host, int port, String pacUrl) {
+        public ProxyConfig(String host, int port, String pacUrl, String[] exclusionList) {
             mHost = host;
             mPort = port;
             mPacUrl = pacUrl;
+            mExclusionList = exclusionList;
         }
         public final String mHost;
         public final int mPort;
         public final String mPacUrl;
+        public final String[] mExclusionList;
     }
 
+    /**
+     * The delegate for ProxyChangeListener. Use for testing.
+     */
     public interface Delegate {
         public void proxySettingsChanged();
     }
@@ -104,6 +109,7 @@ public class ProxyChangeListener {
                 final String getHostName = "getHost";
                 final String getPortName = "getPort";
                 final String getPacFileUrl = "getPacFileUrl";
+                final String getExclusionList = "getExclusionList";
                 String className;
                 String proxyInfo;
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
@@ -122,27 +128,35 @@ public class ProxyChangeListener {
                 Class<?> cls = Class.forName(className);
                 Method getHostMethod = cls.getDeclaredMethod(getHostName);
                 Method getPortMethod = cls.getDeclaredMethod(getPortName);
+                Method getExclusionListMethod = cls.getDeclaredMethod(getExclusionList);
 
                 String host = (String) getHostMethod.invoke(props);
                 int port = (Integer) getPortMethod.invoke(props);
 
+                String[] exclusionList;
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                    String s = (String) getExclusionListMethod.invoke(props);
+                    exclusionList = s.split(",");
+                } else {
+                    exclusionList = (String[]) getExclusionListMethod.invoke(props);
+                }
                 // TODO(xunjieli): rewrite this once the API is public.
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
                     Method getPacFileUrlMethod =
                         cls.getDeclaredMethod(getPacFileUrl);
                     String pacFileUrl = (String) getPacFileUrlMethod.invoke(props);
                     if (!TextUtils.isEmpty(pacFileUrl)) {
-                       return new ProxyConfig(host, port, pacFileUrl);
+                       return new ProxyConfig(host, port, pacFileUrl, exclusionList);
                     }
                 } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
                     Method getPacFileUrlMethod =
                         cls.getDeclaredMethod(getPacFileUrl);
                     Uri pacFileUrl = (Uri) getPacFileUrlMethod.invoke(props);
                     if (!Uri.EMPTY.equals(pacFileUrl)) {
-                      return new ProxyConfig(host, port, pacFileUrl.toString());
+                      return new ProxyConfig(host, port, pacFileUrl.toString(), exclusionList);
                     }
                 }
-                return new ProxyConfig(host, port, null);
+                return new ProxyConfig(host, port, null, exclusionList);
             } catch (ClassNotFoundException ex) {
                 Log.e(TAG, "Using no proxy configuration due to exception:" + ex);
                 return null;
@@ -175,7 +189,8 @@ public class ProxyChangeListener {
         // Note that this code currently runs on a MESSAGE_LOOP_UI thread, but
         // the C++ code must run the callbacks on the network thread.
         if (cfg != null) {
-            nativeProxySettingsChangedTo(mNativePtr, cfg.mHost, cfg.mPort, cfg.mPacUrl);
+            nativeProxySettingsChangedTo(mNativePtr, cfg.mHost, cfg.mPort, cfg.mPacUrl,
+                    cfg.mExclusionList);
         } else {
             nativeProxySettingsChanged(mNativePtr);
         }
@@ -206,8 +221,8 @@ public class ProxyChangeListener {
     private native void nativeProxySettingsChangedTo(long nativePtr,
                                                      String host,
                                                      int port,
-                                                     String pacUrl);
-
+                                                     String pacUrl,
+                                                     String[] exclusionList);
     @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
     private native void nativeProxySettingsChanged(long nativePtr);
 }

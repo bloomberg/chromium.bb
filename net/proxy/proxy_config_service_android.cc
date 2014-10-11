@@ -6,6 +6,7 @@
 
 #include <sys/system_properties.h>
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -162,6 +163,7 @@ std::string GetJavaProperty(const std::string& property) {
 void CreateStaticProxyConfig(const std::string& host,
                              int port,
                              const std::string& pac_url,
+                             const std::vector<std::string>& exclusion_list,
                              ProxyConfig* config) {
   if (!pac_url.empty()) {
     config->set_pac_url(GURL(pac_url));
@@ -169,6 +171,16 @@ void CreateStaticProxyConfig(const std::string& host,
   } else if (port != 0) {
     std::string rules = base::StringPrintf("%s:%d", host.c_str(), port);
     config->proxy_rules().ParseFromString(rules);
+    config->proxy_rules().bypass_rules.Clear();
+
+    std::vector<std::string>::const_iterator it;
+    for (it = exclusion_list.begin(); it != exclusion_list.end(); ++it) {
+      std::string pattern;
+      base::TrimWhitespaceASCII(*it, base::TRIM_ALL, &pattern);
+      if (pattern.empty())
+          continue;
+      config->proxy_rules().bypass_rules.AddRuleForHostname("", pattern, -1);
+    }
   } else {
     *config = ProxyConfig::CreateDirect();
   }
@@ -255,10 +267,11 @@ class ProxyConfigServiceAndroid::Delegate
   // Called on the JNI thread.
   void ProxySettingsChangedTo(const std::string& host,
                               int port,
-                              const std::string& pac_url) {
+                              const std::string& pac_url,
+                              const std::vector<std::string>& exclusion_list) {
     DCHECK(OnJNIThread());
     ProxyConfig proxy_config;
-    CreateStaticProxyConfig(host, port, pac_url, &proxy_config);
+    CreateStaticProxyConfig(host, port, pac_url, exclusion_list, &proxy_config);
     network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
@@ -277,12 +290,16 @@ class ProxyConfigServiceAndroid::Delegate
                                         jobject jself,
                                         jstring jhost,
                                         jint jport,
-                                        jstring jpac_url) override {
+                                        jstring jpac_url,
+                                        jobjectArray jexclusion_list) override {
       std::string host = ConvertJavaStringToUTF8(env, jhost);
       std::string pac_url;
       if (jpac_url)
         ConvertJavaStringToUTF8(env, jpac_url, &pac_url);
-      delegate_->ProxySettingsChangedTo(host, jport, pac_url);
+      std::vector<std::string> exclusion_list;
+      base::android::AppendJavaStringArrayToStringVector(
+          env, jexclusion_list, &exclusion_list);
+      delegate_->ProxySettingsChangedTo(host, jport, pac_url, exclusion_list);
     }
 
     virtual void ProxySettingsChanged(JNIEnv* env, jobject self) override {
