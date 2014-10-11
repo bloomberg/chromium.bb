@@ -536,25 +536,6 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
 FileTasks.prototype.executeInternalTask_ = function(id, entries) {
   var fm = this.fileManager_;
 
-  if (id === 'play') {
-    var selectedEntry = entries[0];
-    if (entries.length === 1) {
-      // If just a single audio file is selected pass along every audio file
-      // in the directory.
-      entries = fm.getAllEntriesInCurrentDirectory().filter(FileType.isAudio);
-    }
-    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-    // crbug.com/345527.
-    var urls = util.entriesToURLs(entries);
-    var position = urls.indexOf(selectedEntry.toURL());
-    chrome.fileManagerPrivate.getProfiles(
-        function(profiles, currentId, displayedId) {
-          fm.backgroundPage.launchAudioPlayer(
-              {items: urls, position: position}, displayedId);
-        });
-    return;
-  }
-
   if (id === 'mount-archive') {
     this.mountArchivesInternal_(entries);
     return;

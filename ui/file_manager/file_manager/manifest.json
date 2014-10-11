@@ -42,20 +42,6 @@
   ],
   "file_browser_handlers": [
     {
-      "id": "play",
-      "default_title": "__MSG_PLAY_MEDIA__",
-      "default_icon": "common/images/file_types/200/audio.png",
-      "file_filters": [
-        "filesystem:*.amr",
-        "filesystem:*.flac",
-        "filesystem:*.m4a",
-        "filesystem:*.mp3",
-        "filesystem:*.oga",
-        "filesystem:*.ogg",
-        "filesystem:*.wav"
-      ]
-    },
-    {
       "id": "mount-archive",
       "default_title": "__MSG_MOUNT_ARCHIVE__",
       "default_icon": "common/images/file_types/200/archive.png",

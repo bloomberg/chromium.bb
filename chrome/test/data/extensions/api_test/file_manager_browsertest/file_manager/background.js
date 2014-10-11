@@ -14,6 +14,15 @@ var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 var remoteCall = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
 
 /**
+ * Extension ID of Audio Player.
+ * @type {string}
+ * @const
+ */
+var AUDIO_PLAYER_APP_ID = 'cjbfomnbifhcdnihkgipgfcihmgjfhbf';
+
+var audioPlayerApp = new RemoteCall(AUDIO_PLAYER_APP_ID);
+
+/**
  * Adds check of chrome.test to the end of the given promise.
  * @param {Promise} promise Promise.
  */

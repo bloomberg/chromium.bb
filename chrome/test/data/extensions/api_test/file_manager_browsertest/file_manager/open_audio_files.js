@@ -14,11 +14,11 @@
  *     object.
  */
 function getTrackText(audioAppId, query) {
-  var titleElements = remoteCall.callRemoteTestUtil(
+  var titleElements = audioPlayerApp.callRemoteTestUtil(
       'queryAllElements',
       audioAppId,
       [query + ' > .data > .data-title']);
-  var artistElements = remoteCall.callRemoteTestUtil(
+  var artistElements = audioPlayerApp.callRemoteTestUtil(
       'queryAllElements',
       audioAppId,
       [query + ' > .data > .data-artist']);
@@ -70,18 +70,18 @@ function audioOpen(path) {
     // Wait for the audio player window.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForWindow('audio_player.html').then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the changes of the player status.
     function(inAppId) {
       audioAppId = inAppId;
-      remoteCall.waitForElement(audioAppId, 'audio-player[playing]').
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
       var query1 = 'audio-player /deep/ .track[index="0"][active]';
@@ -112,12 +112,12 @@ function audioOpen(path) {
       var query = 'audio-player' +
                   '[playing]' +
                   '[currenttrackurl$="newly%20added%20file.ogg"]';
-      remoteCall.waitForElement(audioAppId, query).then(this.next);
+      audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
       var query1 = 'audio-player /deep/ .track[index="0"]:not([active])';
@@ -140,7 +140,7 @@ function audioOpen(path) {
     // Wait for the changes of the player status.
     function() {
       // Close window
-      remoteCall.closeWindowAndWait(audioAppId).then(this.next);
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
     },
     // Wait for the audio player.
     function(result) {
@@ -189,18 +189,18 @@ function audioAutoAdvance(path) {
     // Wait for the audio player window.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForWindow('audio_player.html').then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the changes of the player status.
     function(inAppId) {
       audioAppId = inAppId;
-      remoteCall.waitForElement(audioAppId, 'audio-player[playing]').
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
 
@@ -208,17 +208,17 @@ function audioAutoAdvance(path) {
       var query = 'audio-player' +
                   '[playing]' +
                   '[currenttrackurl$="newly%20added%20file.ogg"]';
-      remoteCall.waitForElement(audioAppId, query).then(this.next);
+      audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
 
       // Close window
-      remoteCall.closeWindowAndWait(audioAppId).then(this.next);
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -250,41 +250,42 @@ function audioRepeatSingleFile(path) {
     // Wait for the audio player window.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForWindow('audio_player.html').then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the changes of the player status.
     function(inAppId) {
       audioAppId = inAppId;
-      remoteCall.waitForElement(audioAppId, 'audio-player[playing]').
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
 
-      remoteCall.callRemoteTestUtil('fakeMouseClick',
-                         audioAppId,
-                         ['audio-player /deep/ button.repeat input'],
-                         this.next);
+      audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick',
+          audioAppId,
+          ['audio-player /deep/ button.repeat input'],
+          this.next);
     },
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
 
       var selector = 'audio-player[playing][playcount="1"]';
-      remoteCall.waitForElement(audioAppId, selector).then(this.next);
+      audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
 
       // Close window
-      remoteCall.closeWindowAndWait(audioAppId).then(this.next);
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
     },
     // Wait for the audio player.
     function(result) {
@@ -317,28 +318,28 @@ function audioNoRepeatSingleFile(path) {
     // Wait for the audio player window.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForWindow('audio_player.html').then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the changes of the player status.
     function(inAppId) {
       audioAppId = inAppId;
-      remoteCall.waitForElement(audioAppId, 'audio-player[playing]').
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
 
       var selector = 'audio-player[playcount="1"]:not([playing])';
-      remoteCall.waitForElement(audioAppId, selector).then(this.next);
+      audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
     },
     // Get the source file name.
     function(element) {
       // Close window
-      remoteCall.closeWindowAndWait(audioAppId).then(this.next);
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
     },
     // Wait for the audio player.
     function(result) {
@@ -385,25 +386,26 @@ function audioRepeatMultipleFile(path) {
     // Wait for the audio player window.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForWindow('audio_player.html').then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the changes of the player status.
     function(inAppId) {
       audioAppId = inAppId;
-      remoteCall.waitForElement(audioAppId, 'audio-player[playing]').
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
 
-      remoteCall.callRemoteTestUtil('fakeMouseClick',
-                         audioAppId,
-                         ['audio-player /deep/ button.repeat input'],
-                         this.next);
+      audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick',
+          audioAppId,
+          ['audio-player /deep/ button.repeat input'],
+          this.next);
     },
     function(result) {
       chrome.test.assertTrue(result, 'Failed to click the repeat button');
@@ -412,17 +414,17 @@ function audioRepeatMultipleFile(path) {
       var query = 'audio-player' +
                   '[playing]' +
                   '[currenttrackurl$="Beautiful%20Song.ogg"]';
-      remoteCall.waitForElement(audioAppId, query).then(this.next);
+      audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
 
       // Close window
-      remoteCall.closeWindowAndWait(audioAppId).then(this.next);
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
     },
     // Wait for the audio player.
     function(result) {
@@ -469,29 +471,29 @@ function audioNoRepeatMultipleFile(path) {
     // Wait for the audio player window.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForWindow('audio_player.html').then(this.next);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
     },
     // Wait for the changes of the player status.
     function(inAppId) {
       audioAppId = inAppId;
-      remoteCall.waitForElement(audioAppId, 'audio-player[playing]').
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
     // Get the source file name.
     function(element) {
       chrome.test.assertEq(
-          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
 
       // Wait for next song.
       var query = 'audio-player:not([playing])';
-      remoteCall.waitForElement(audioAppId, query).then(this.next);
+      audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
     // Get the source file name.
     function(element) {
       // Close window
-      remoteCall.closeWindowAndWait(audioAppId).then(this.next);
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
     },
     // Wait for the audio player.
     function(result) {

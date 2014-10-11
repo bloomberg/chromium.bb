@@ -58,7 +58,6 @@
       <include name="IDR_FILE_MANAGER_ICON_96" file="file_manager/common/images/icon96.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/common/images/icon128.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ICON_256" file="file_manager/common/images/icon256.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_AUDIO_PLAYER_ICON_64" file="file_manager/audio_player/icons/audio-player-64.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_GALLERY_ICON_16" file="gallery/images/icon16.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_GALLERY_ICON_32" file="gallery/images/icon32.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_GALLERY_ICON_48" file="gallery/images/icon48.png" type="BINDATA" />
@@ -72,10 +71,6 @@
       <include name="IDR_FILE_MANAGER_IMG_UI_DRIVE_WELCOME_BACKGROUND" file="../webui/resources/images/clouds.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_UI_DRIVE_WELCOME_LOGO" file="file_manager/foreground/images/files/ui/drive_logo.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMG_UI_2X_DRIVE_WELCOME_LOGO" file="file_manager/foreground/images/files/ui/2x/drive_logo.png" type="BINDATA" />
-
-      <!-- Audio player pages and scripts. -->
-      <include name="IDR_FILE_MANAGER_AUDIO_PLAYER" file="file_manager/audio_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_AUDIO_PLAYER_SCRIPTS_JS" file="file_manager/audio_player/js/audio_player_scripts.js" flattenhtml="true" type="BINDATA" />
 
       <!-- VideoPlayer.app pages and scripts. -->
       <include name="IDR_VIDEO_PLAYER_MANIFEST" file="video_player/manifest.json" type="BINDATA" />
@@ -92,6 +87,20 @@
       <include name="IDR_VIDEO_PLAYER_ICON_128" file="video_player/images/icon/video-player-128.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_256" file="video_player/images/icon/video-player-256.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_FAVICON_32" file="video_player/images/icon/video-player-favicon-32.png" type="BINDATA" />
+
+      <!-- AudioPlayer.app pages and scripts. -->
+      <include name="IDR_AUDIO_PLAYER_MANIFEST" file="audio_player/manifest.json" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_BKGND_JS" file="audio_player/js/background.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER" file="audio_player/audio_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_JS" file="audio_player/js/audio_player_scripts.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_FAVICON_16" file="audio_player/icons/audio-player-favicon-16.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_FAVICON_32" file="audio_player/icons/audio-player-favicon-32.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_32" file="audio_player/icons/audio-player-32.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_48" file="audio_player/icons/audio-player-48.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_64" file="audio_player/icons/audio-player-64.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_96" file="audio_player/icons/audio-player-96.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_128" file="audio_player/icons/audio-player-128.png" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_ICON_256" file="audio_player/icons/audio-player-256.png" type="BINDATA" />
 
       <!-- Gallery.app pages and scripts. -->
       <include name="IDR_GALLERY_MANIFEST" file="gallery/manifest.json" type="BINDATA" />

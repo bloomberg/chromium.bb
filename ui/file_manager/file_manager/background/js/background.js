@@ -379,7 +379,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         FILE_MANAGER_WINDOW_CREATE_OPTIONS);
     appWindow.launch(opt_appState || {}, false, function() {
       AppWindowWrapper.focusOnDesktop(
-          appWindow.window_, (opt_appState || {}).displayedId);
+          appWindow.rawAppWindow, (opt_appState || {}).displayedId);
       if (opt_callback)
         opt_callback(appId);
       onTaskCompleted();
@@ -408,85 +408,23 @@ function registerDialog(dialogWindow) {
  * @private
  */
 FileBrowserBackground.prototype.onExecute_ = function(action, details) {
-  switch (action) {
-    case 'play':
-      var urls = util.entriesToURLs(details.entries);
-      launchAudioPlayer({items: urls, position: 0});
-      break;
+  var appState = {
+    params: {action: action},
+    // It is not allowed to call getParent() here, since there may be
+    // no permissions to access it at this stage. Therefore we are passing
+    // the selectionURL only, and the currentDirectory will be resolved
+    // later.
+    selectionURL: details.entries[0].toURL()
+  };
 
-    default:
-      var appState = {
-        params: {action: action},
-        // It is not allowed to call getParent() here, since there may be
-        // no permissions to access it at this stage. Therefore we are passing
-        // the selectionURL only, and the currentDirectory will be resolved
-        // later.
-        selectionURL: details.entries[0].toURL()
-      };
-
-      // Every other action opens a Files app window.
-      // For mounted devices just focus any Files.app window. The mounted
-      // volume will appear on the navigation list.
-      launchFileManager(
-          appState,
-          /* App ID */ null,
-          LaunchType.FOCUS_SAME_OR_CREATE);
-      break;
-  }
+  // Every other action opens a Files app window.
+  // For mounted devices just focus any Files.app window. The mounted
+  // volume will appear on the navigation list.
+  launchFileManager(
+      appState,
+      /* App ID */ null,
+      LaunchType.FOCUS_SAME_OR_CREATE);
 };
-
-/**
- * Icon of the audio player.
- * TODO(yoshiki): Consider providing an exact size icon, instead of relying
- * on downsampling by ash.
- *
- * @type {string}
- * @const
- */
-var AUDIO_PLAYER_ICON = 'audio_player/icons/audio-player-64.png';
-
-// The instance of audio player. Until it's ready, this is null.
-var audioPlayer = null;
-
-// Queue to serializes the initialization, launching and reloading of the audio
-// player, so races won't happen.
-var audioPlayerInitializationQueue = new AsyncUtil.Queue();
-
-audioPlayerInitializationQueue.run(function(callback) {
-  /**
-   * Audio player window create options.
-   * @type {Object}
-   */
-  var audioPlayerCreateOptions = Object.freeze({
-    type: 'panel',
-    hidden: true,
-    minHeight: 44 + 73,  // 44px: track, 73px: controller
-    minWidth: 292,
-    height: 44 + 73,  // collapsed
-    width: 292
-  });
-
-  audioPlayer = new SingletonAppWindowWrapper('audio_player.html',
-                                              audioPlayerCreateOptions);
-  callback();
-});
-
-/**
- * Launches the audio player.
- * @param {Object} playlist Playlist.
- * @param {string=} opt_displayedId ProfileID of the desktop where the audio
- *     player should show.
- */
-function launchAudioPlayer(playlist, opt_displayedId) {
-  audioPlayerInitializationQueue.run(function(callback) {
-    audioPlayer.launch(playlist, false, function(appWindow) {
-      audioPlayer.setIcon(AUDIO_PLAYER_ICON);
-      AppWindowWrapper.focusOnDesktop(audioPlayer.rawAppWindow,
-                                      opt_displayedId);
-    });
-    callback();
-  });
-}
 
 /**
  * Launches the app.
@@ -529,17 +467,6 @@ FileBrowserBackground.prototype.onRestarted_ = function() {
         }
       }
     }
-  });
-
-  // Reopen audio player.
-  audioPlayerInitializationQueue.run(function(callback) {
-    audioPlayer.reopen(function() {
-      // If the audioPlayer is reopened, change its window's icon. Otherwise
-      // there is no reopened window so just skip the call of setIcon.
-      if (audioPlayer.rawAppWindow)
-        audioPlayer.setIcon(AUDIO_PLAYER_ICON);
-    });
-    callback();
   });
 };
 

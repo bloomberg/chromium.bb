@@ -5,6 +5,13 @@
 'use strict';
 
 /**
+ * Overrided metadata worker's path.
+ * @type {string}
+ * @const
+ */
+ContentProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
+
+/**
  * @param {HTMLElement} container Container element.
  * @constructor
  */
