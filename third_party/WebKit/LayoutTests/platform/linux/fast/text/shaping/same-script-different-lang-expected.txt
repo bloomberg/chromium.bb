@@ -7,12 +7,12 @@ layer at (0,0) size 800x212
         RenderText {#text} at (0,0) size 764x22
           text run at (0,0) width 764: "The glyph for JHA should look different for Nepali and Hindi, depending on the lang attribute."
       RenderBlock {P} at (0,41.72) size 784x28
-        RenderText {#text} at (0,4) size 87x21
-          text run at (0,4) width 87: "Hindi:JHA \x{91D}"
+        RenderText {#text} at (0,4) size 86x21
+          text run at (0,4) width 86: "Hindi:JHA \x{91D}"
       RenderBlock (anonymous) at (0,85.72) size 784x20
         RenderBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,121.72) size 784x28
-        RenderText {#text} at (0,4) size 99x21
-          text run at (0,4) width 99: "Nepali:JHA \x{91D}"
+        RenderText {#text} at (0,4) size 98x21
+          text run at (0,4) width 98: "Nepali:JHA \x{91D}"
       RenderBlock (anonymous) at (0,165.72) size 784x20
         RenderBR {BR} at (0,0) size 0x19
