@@ -23,6 +23,12 @@ class HidServiceLinux : public HidService,
  public:
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
+#if defined(OS_CHROMEOS)
+  virtual void RequestAccess(
+      const HidDeviceId& device_id,
+      const base::Callback<void(bool success)>& callback) override;
+#endif
+
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
       override;
 
@@ -34,10 +40,10 @@ class HidServiceLinux : public HidService,
   virtual ~HidServiceLinux();
 
   void OnRequestAccessComplete(
-      const std::string& path,
-      scoped_ptr<HidDeviceInfo> device_info,
+      const base::Callback<void(bool success)>& callback,
       bool success);
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<HidServiceLinux> weak_factory_;

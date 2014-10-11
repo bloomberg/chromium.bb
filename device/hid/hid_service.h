@@ -31,6 +31,13 @@ class HidService {
   // Returns |true| if successful or |false| if |device_id| is invalid.
   bool GetDeviceInfo(const HidDeviceId& device_id, HidDeviceInfo* info) const;
 
+#if defined(OS_CHROMEOS)
+  // Requests access to the given device from the Chrome OS permission broker.
+  virtual void RequestAccess(
+      const HidDeviceId& device_id,
+      const base::Callback<void(bool success)>& callback) = 0;
+#endif
+
   virtual scoped_refptr<HidConnection> Connect(
       const HidDeviceId& device_id) = 0;
 

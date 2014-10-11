@@ -141,14 +141,30 @@ bool HidConnectFunction::Prepare() {
 }
 
 void HidConnectFunction::AsyncWorkStart() {
-  device::HidDeviceInfo device_info;
-  if (!device_manager_->GetDeviceInfo(parameters_->device_id, &device_info)) {
+  if (!device_manager_->GetDeviceInfo(parameters_->device_id, &device_info_)) {
     CompleteWithError(kErrorInvalidDeviceId);
     return;
   }
 
-  if (!device_manager_->HasPermission(extension(), device_info)) {
+  if (!device_manager_->HasPermission(extension(), device_info_)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
+    CompleteWithError(kErrorPermissionDenied);
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  HidService* hid_service = device::DeviceClient::Get()->GetHidService();
+  DCHECK(hid_service);
+  hid_service->RequestAccess(
+      device_info_.device_id,
+      base::Bind(&HidConnectFunction::OnRequestAccessComplete, this));
+#else
+  OnRequestAccessComplete(true);
+#endif
+}
+
+void HidConnectFunction::OnRequestAccessComplete(bool success) {
+  if (!success) {
     CompleteWithError(kErrorPermissionDenied);
     return;
   }
@@ -156,11 +172,12 @@ void HidConnectFunction::AsyncWorkStart() {
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
   scoped_refptr<HidConnection> connection =
-      hid_service->Connect(device_info.device_id);
+      hid_service->Connect(device_info_.device_id);
   if (!connection.get()) {
     CompleteWithError(kErrorFailedToOpenDevice);
     return;
   }
+
   int connection_id = connection_manager_->Add(
       new HidConnectionResource(extension_->id(), connection));
   SetResult(PopulateHidConnection(connection_id, connection));

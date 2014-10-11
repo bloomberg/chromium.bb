@@ -15,6 +15,10 @@
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/common/api/hid.h"
 
+namespace device {
+class HidService;
+}  // namespace device
+
 namespace net {
 class IOBuffer;
 }  // namespace net
@@ -74,7 +78,10 @@ class HidConnectFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidConnectFunction();
 
+  void OnRequestAccessComplete(bool success);
+
   scoped_ptr<core_api::hid::Connect::Params> parameters_;
+  device::HidDeviceInfo device_info_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectFunction);
 };

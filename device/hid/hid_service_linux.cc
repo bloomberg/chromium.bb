@@ -4,20 +4,18 @@
 
 #include "device/hid/hid_service_linux.h"
 
-#include <linux/hidraw.h>
-#include <sys/ioctl.h>
-#include <stdint.h>
-
 #include <string>
 
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info.h"
@@ -38,6 +36,7 @@ const char kHidrawSubsystem[] = "hidraw";
 const char kHIDID[] = "HID_ID";
 const char kHIDName[] = "HID_NAME";
 const char kHIDUnique[] = "HID_UNIQ";
+const char kSysfsReportDescriptorKey[] = "report_descriptor";
 
 }  // namespace
 
@@ -46,11 +45,49 @@ HidServiceLinux::HidServiceLinux(
     : ui_task_runner_(ui_task_runner),
       weak_factory_(this) {
   base::ThreadRestrictions::AssertIOAllowed();
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
   monitor->AddObserver(this);
   monitor->Enumerate(
       base::Bind(&HidServiceLinux::OnDeviceAdded, weak_factory_.GetWeakPtr()));
 }
+
+#if defined(OS_CHROMEOS)
+void HidServiceLinux::RequestAccess(
+    const HidDeviceId& device_id,
+    const base::Callback<void(bool success)>& callback) {
+  bool success = false;
+  ScopedUdevDevicePtr device =
+      DeviceMonitorLinux::GetInstance()->GetDeviceFromPath(
+          device_id);
+
+  if (device) {
+    const char* dev_node = udev_device_get_devnode(device.get());
+
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      chromeos::PermissionBrokerClient* client =
+          chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+      DCHECK(client) << "Could not get permission broker client.";
+      if (client) {
+        ui_task_runner_->PostTask(
+            FROM_HERE,
+            base::Bind(&chromeos::PermissionBrokerClient::RequestPathAccess,
+                       base::Unretained(client),
+                       std::string(dev_node),
+                       -1,
+                       base::Bind(&HidServiceLinux::OnRequestAccessComplete,
+                                  weak_factory_.GetWeakPtr(),
+                                  callback)));
+        return;
+      }
+    } else {
+      // Not really running on Chrome OS, declare success.
+      success = true;
+    }
+  }
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+#endif
 
 scoped_refptr<HidConnection> HidServiceLinux::Connect(
     const HidDeviceId& device_id) {
@@ -63,8 +100,10 @@ scoped_refptr<HidConnection> HidServiceLinux::Connect(
           device_info.device_id);
 
   if (device) {
-    std::string dev_node = udev_device_get_devnode(device.get());
-    return new HidConnectionLinux(device_info, dev_node);
+    const char* dev_node = udev_device_get_devnode(device.get());
+    if (dev_node) {
+      return new HidConnectionLinux(device_info, dev_node);
+    }
   }
 
   return NULL;
@@ -86,8 +125,8 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   if (!subsystem || strcmp(subsystem, kHidrawSubsystem) != 0)
     return;
 
-  scoped_ptr<HidDeviceInfo> device_info(new HidDeviceInfo);
-  device_info->device_id = device_path;
+  HidDeviceInfo device_info;
+  device_info.device_id = device_path;
 
   uint32_t int_property = 0;
   const char* str_property = NULL;
@@ -98,8 +137,9 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   }
 
   const char* hid_id = udev_device_get_property_value(parent, kHIDID);
-  if (!hid_id)
+  if (!hid_id) {
     return;
+  }
 
   std::vector<std::string> parts;
   base::SplitString(hid_id, ':', &parts);
@@ -108,96 +148,57 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   }
 
   if (HexStringToUInt(base::StringPiece(parts[1]), &int_property)) {
-    device_info->vendor_id = int_property;
+    device_info.vendor_id = int_property;
   }
 
   if (HexStringToUInt(base::StringPiece(parts[2]), &int_property)) {
-    device_info->product_id = int_property;
+    device_info.product_id = int_property;
   }
 
   str_property = udev_device_get_property_value(parent, kHIDUnique);
-  if (str_property != NULL)
-    device_info->serial_number = str_property;
+  if (str_property != NULL) {
+    device_info.serial_number = str_property;
+  }
 
   str_property = udev_device_get_property_value(parent, kHIDName);
-  if (str_property != NULL)
-    device_info->product_name = str_property;
-
-  const std::string dev_node = udev_device_get_devnode(device);
-#if defined(OS_CHROMEOS)
-  // ChromeOS builds on non-ChromeOS machines (dev) should not attempt to
-  // use permission broker.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::PermissionBrokerClient* client =
-        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-    DCHECK(client) << "Could not get permission broker client.";
-    if (!client) {
-      return;
-    }
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&chromeos::PermissionBrokerClient::RequestPathAccess,
-                   base::Unretained(client),
-                   dev_node,
-                   -1,
-                   base::Bind(&HidServiceLinux::OnRequestAccessComplete,
-                              weak_factory_.GetWeakPtr(),
-                              dev_node,
-                              base::Passed(&device_info))));
-  } else {
-    OnRequestAccessComplete(dev_node, device_info.Pass(), true);
+  if (str_property != NULL) {
+    device_info.product_name = str_property;
   }
-#else
-  OnRequestAccessComplete(dev_node, device_info.Pass(), true);
-#endif  // defined(OS_CHROMEOS)
+
+  const char* parent_sysfs_path = udev_device_get_syspath(parent);
+  if (!parent_sysfs_path) {
+    return;
+  }
+  base::FilePath report_descriptor_path =
+      base::FilePath(parent_sysfs_path).Append(kSysfsReportDescriptorKey);
+  std::string report_descriptor_str;
+  if (!base::ReadFileToString(report_descriptor_path, &report_descriptor_str)) {
+    return;
+  }
+
+  HidReportDescriptor report_descriptor(
+      reinterpret_cast<uint8_t*>(&report_descriptor_str[0]),
+      report_descriptor_str.length());
+  report_descriptor.GetDetails(&device_info.collections,
+                               &device_info.has_report_id,
+                               &device_info.max_input_report_size,
+                               &device_info.max_output_report_size,
+                               &device_info.max_feature_report_size);
+
+  AddDevice(device_info);
 }
 
 void HidServiceLinux::OnDeviceRemoved(udev_device* device) {
   const char* device_path = udev_device_get_syspath(device);;
-  if (device_path)
+  if (device_path) {
     RemoveDevice(device_path);
+  }
 }
 
 void HidServiceLinux::OnRequestAccessComplete(
-    const std::string& path,
-    scoped_ptr<HidDeviceInfo> device_info,
+    const base::Callback<void(bool success)>& callback,
     bool success) {
-  const int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  base::File device_file(base::FilePath(path), flags);
-  if (!device_file.IsValid()) {
-    LOG(ERROR) << "Cannot open '" << path << "': "
-        << base::File::ErrorToString(device_file.error_details());
-    return;
-  }
-
-  int desc_size = 0;
-  int res = ioctl(device_file.GetPlatformFile(), HIDIOCGRDESCSIZE, &desc_size);
-  if (res < 0) {
-    PLOG(ERROR) << "Failed to get report descriptor size";
-    device_file.Close();
-    return;
-  }
-
-  hidraw_report_descriptor rpt_desc;
-  rpt_desc.size = desc_size;
-
-  res = ioctl(device_file.GetPlatformFile(), HIDIOCGRDESC, &rpt_desc);
-  if (res < 0) {
-    PLOG(ERROR) << "Failed to get report descriptor";
-    device_file.Close();
-    return;
-  }
-
-  device_file.Close();
-
-  HidReportDescriptor report_descriptor(rpt_desc.value, rpt_desc.size);
-  report_descriptor.GetDetails(&device_info->collections,
-                               &device_info->has_report_id,
-                               &device_info->max_input_report_size,
-                               &device_info->max_output_report_size,
-                               &device_info->max_feature_report_size);
-
-  AddDevice(*device_info);
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback, success));
 }
 
 }  // namespace device
