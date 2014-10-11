@@ -45,8 +45,8 @@ bool CachedMatchedPropertiesHashTraits::traceInCollection(Visitor* visitor, Memb
         // A given cache entry is only kept alive if none of the MatchedProperties
         // in the CachedMatchedProperties value contain a dead "properties" field.
         // If there is a dead field the entire cache entry is removed.
-        for (const auto& cachedProperties : cachedProperties->matchedProperties) {
-            if (!visitor->isAlive(cachedProperties.properties)) {
+        for (const auto& matchedProperties : cachedProperties->matchedProperties) {
+            if (!visitor->isAlive(matchedProperties.properties)) {
                 // For now report the cache entry as dead. This might not
                 // be the final result if in a subsequent call for this entry,
                 // the "properties" field has been marked via another path.
