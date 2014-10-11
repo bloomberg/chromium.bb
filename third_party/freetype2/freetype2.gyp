@@ -34,6 +34,7 @@
         '<(ft2_dir)/src/base/ftgasp.c',
         '<(ft2_dir)/src/base/ftgxval.c',
         '<(ft2_dir)/src/base/ftlcdfil.c',
+        '<(ft2_dir)/src/base/ftmm.c',
         '<(ft2_dir)/src/base/ftpfr.c',
         '<(ft2_dir)/src/base/ftstroke.c',
         '<(ft2_dir)/src/base/ftsynth.c',
@@ -68,7 +69,6 @@
         'FT2_BUILD_LIBRARY',
         'FT_CONFIG_CONFIG_H=<ftconfig.h>',  # See comments in README.chromium.
         'FT_CONFIG_MODULES_H=<ftmodule.h>',  # See comments in README.chromium.
-        'FT_CONFIG_OPTIONS_H=<ftoption.h>',  # See comments in README.chromium.
       ],
       'include_dirs': [
         'include',
