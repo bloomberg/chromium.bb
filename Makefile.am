@@ -86,6 +86,7 @@ weston_SOURCES =					\
 	src/timeline.c					\
 	src/timeline.h					\
 	src/timeline-object.h				\
+	src/main.c					\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
