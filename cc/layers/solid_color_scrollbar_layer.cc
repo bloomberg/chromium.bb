@@ -68,7 +68,7 @@ void SolidColorScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
                                                    clip_layer_id_);
 }
 
-void SolidColorScrollbarLayer::SetNeedsDisplayRect(const gfx::RectF&) {
+void SolidColorScrollbarLayer::SetNeedsDisplayRect(const gfx::Rect& rect) {
   // Never needs repaint.
 }
 

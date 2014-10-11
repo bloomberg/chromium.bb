@@ -293,7 +293,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         EXPECT_FALSE(frame_data->has_no_damage);
 
         // Just a part of the next frame should be damaged.
-        child_damage_rect_ = gfx::RectF(10, 11, 12, 13);
+        child_damage_rect_ = gfx::Rect(10, 11, 12, 13);
         break;
       case 3:
         // The update rect in the child should be damaged and the damaged area
@@ -319,7 +319,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
 
         // If we damage part of the frame, but also damage the full
         // frame, then the whole frame should be damaged.
-        child_damage_rect_ = gfx::RectF(10, 11, 12, 13);
+        child_damage_rect_ = gfx::Rect(10, 11, 12, 13);
         host_impl->SetFullRootLayerDamage();
         break;
       case 4:
@@ -340,7 +340,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
 
     if (!child_damage_rect_.IsEmpty()) {
       child_->SetNeedsDisplayRect(child_damage_rect_);
-      child_damage_rect_ = gfx::RectF();
+      child_damage_rect_ = gfx::Rect();
     }
   }
 
@@ -349,7 +349,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> root_;
   scoped_refptr<FakeContentLayer> child_;
-  gfx::RectF child_damage_rect_;
+  gfx::Rect child_damage_rect_;
 };
 
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);

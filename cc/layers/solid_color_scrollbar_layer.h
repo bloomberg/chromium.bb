@@ -31,7 +31,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual void PushScrollClipPropertiesTo(LayerImpl* layer) override;
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF&) override;
+  virtual void SetNeedsDisplayRect(const gfx::Rect& rect) override;
 
   // ScrollbarLayerInterface
   virtual int ScrollLayerId() const override;

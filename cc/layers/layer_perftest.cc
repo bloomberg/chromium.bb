@@ -75,7 +75,7 @@ TEST_F(LayerPerfTest, PushPropertiesTo) {
   // Properties changed.
   timer_.Reset();
   do {
-    test_layer->SetNeedsDisplayRect(gfx::RectF(0.f, 0.f, 5.f, 5.f));
+    test_layer->SetNeedsDisplayRect(gfx::Rect(5, 5));
     test_layer->SetTransformOrigin(gfx::Point3F(0.f, 0.f, transform_origin_z));
     test_layer->SetContentsOpaque(contents_opaque);
     test_layer->SetDoubleSided(double_sided);

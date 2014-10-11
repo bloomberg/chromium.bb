@@ -134,7 +134,7 @@ class CC_EXPORT TextureLayer : public Layer {
   // TODO(danakj): Remove this when pepper doesn't need it. crbug.com/350204
   void SetTextureMailboxWithoutReleaseCallback(const TextureMailbox& mailbox);
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect) override;
+  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
 
   virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   virtual bool Update(ResourceUpdateQueue* queue,

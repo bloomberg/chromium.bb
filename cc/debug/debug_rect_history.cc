@@ -82,7 +82,7 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
     float height_scale = layer->content_bounds().height() /
                          static_cast<float>(layer->bounds().height());
     gfx::Rect update_content_rect = gfx::ScaleToEnclosingRect(
-        gfx::ToEnclosingRect(layer->update_rect()), width_scale, height_scale);
+        layer->update_rect(), width_scale, height_scale);
     debug_rects_.push_back(
         DebugRect(PAINT_RECT_TYPE,
                   MathUtil::MapEnclosingClippedRect(

@@ -599,7 +599,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
-  update_rect_ = gfx::RectF();
+  update_rect_ = gfx::Rect();
   needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;
 }
@@ -716,7 +716,7 @@ const char* LayerImpl::LayerTypeAsString() const {
 void LayerImpl::ResetAllChangeTrackingForSubtree() {
   layer_property_changed_ = false;
 
-  update_rect_ = gfx::RectF();
+  update_rect_ = gfx::Rect();
   damage_rect_ = gfx::RectF();
 
   if (draw_properties_.render_surface)
@@ -1032,7 +1032,7 @@ bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
   return transform_animation && transform_animation->is_impl_only();
 }
 
-void LayerImpl::SetUpdateRect(const gfx::RectF& update_rect) {
+void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
   update_rect_ = update_rect;
   SetNeedsPushProperties();
 }

@@ -471,9 +471,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool transform_is_invertible() const { return transform_is_invertible_; }
 
   // Note this rect is in layer space (not content space).
-  void SetUpdateRect(const gfx::RectF& update_rect);
-
-  const gfx::RectF& update_rect() const { return update_rect_; }
+  void SetUpdateRect(const gfx::Rect& update_rect);
+  gfx::Rect update_rect() const { return update_rect_; }
 
   void AddDamageRect(const gfx::RectF& damage_rect);
 
@@ -688,7 +687,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
   // Uses layer (not content) space.
-  gfx::RectF update_rect_;
+  gfx::Rect update_rect_;
 
   // This rect is in layer space.
   gfx::RectF damage_rect_;

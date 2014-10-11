@@ -102,8 +102,8 @@ class FakeTiledLayer : public TiledLayer {
   using TiledLayer::NumPaintedTiles;
   using TiledLayer::IdlePaintRect;
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF& rect) override;
-  const gfx::RectF& last_needs_display_rect() const {
+  virtual void SetNeedsDisplayRect(const gfx::Rect& rect) override;
+  const gfx::Rect& last_needs_display_rect() const {
     return last_needs_display_rect_;
   }
 
@@ -127,7 +127,7 @@ class FakeTiledLayer : public TiledLayer {
  private:
   scoped_refptr<FakeLayerUpdater> fake_updater_;
   PrioritizedResourceManager* resource_manager_;
-  gfx::RectF last_needs_display_rect_;
+  gfx::Rect last_needs_display_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTiledLayer);
 };

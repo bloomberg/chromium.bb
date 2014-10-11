@@ -18,19 +18,19 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   MockContentsScalingLayer()
       : ContentsScalingLayer() {}
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect) override {
+  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override {
     last_needs_display_rect_ = dirty_rect;
     ContentsScalingLayer::SetNeedsDisplayRect(dirty_rect);
   }
 
-  const gfx::RectF& LastNeedsDisplayRect() const {
+  const gfx::Rect& LastNeedsDisplayRect() const {
     return last_needs_display_rect_;
   }
 
  private:
   virtual ~MockContentsScalingLayer() {}
 
-  gfx::RectF last_needs_display_rect_;
+  gfx::Rect last_needs_display_rect_;
 };
 
 static void CalcDrawProps(FakeLayerTreeHost* host, float device_scale_factor) {

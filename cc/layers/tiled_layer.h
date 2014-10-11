@@ -28,7 +28,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   virtual void SetIsMask(bool is_mask) override;
   virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual void ReduceMemoryUsage() override;
-  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect) override;
+  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
   virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       override;

@@ -27,6 +27,7 @@
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 using cc::Animation;
@@ -77,6 +78,10 @@ int WebLayerImpl::id() const {
 }
 
 void WebLayerImpl::invalidateRect(const blink::WebFloatRect& rect) {
+  layer_->SetNeedsDisplayRect(gfx::ToEnclosingRect(rect));
+}
+
+void WebLayerImpl::invalidateRect(const blink::WebRect& rect) {
   layer_->SetNeedsDisplayRect(rect);
 }
 

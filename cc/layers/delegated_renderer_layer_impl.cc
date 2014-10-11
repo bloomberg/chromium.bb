@@ -17,6 +17,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
 
@@ -149,7 +150,8 @@ void DelegatedRendererLayerImpl::SetFrameData(
   gfx::RectF damage_in_layer = damage_in_frame;
   damage_in_layer.Scale(inverse_device_scale_factor_);
   SetUpdateRect(gfx::IntersectRects(
-      gfx::UnionRects(update_rect(), damage_in_layer), gfx::Rect(bounds())));
+      gfx::UnionRects(update_rect(), gfx::ToEnclosingRect(damage_in_layer)),
+      gfx::Rect(bounds())));
 
   SetRenderPasses(&render_pass_list);
   have_render_passes_to_push_ = true;

@@ -202,13 +202,13 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
-gfx::Rect Layer::LayerRectToContentRect(const gfx::RectF& layer_rect) const {
-  gfx::RectF content_rect =
-      gfx::ScaleRect(layer_rect, contents_scale_x(), contents_scale_y());
+gfx::Rect Layer::LayerRectToContentRect(const gfx::Rect& layer_rect) const {
+  gfx::Rect content_rect = gfx::ScaleToEnclosingRect(
+      layer_rect, contents_scale_x(), contents_scale_y());
   // Intersect with content rect to avoid the extra pixel because for some
   // values x and y, ceil((x / y) * y) may be x + 1.
   content_rect.Intersect(gfx::Rect(content_bounds()));
-  return gfx::ToEnclosingRect(content_rect);
+  return content_rect;
 }
 
 skia::RefPtr<SkPicture> Layer::GetPicture() const {
@@ -795,7 +795,7 @@ void Layer::SetHideLayerAndSubtree(bool hide) {
   SetNeedsCommit();
 }
 
-void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
+void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
   if (dirty_rect.IsEmpty())
     return;
 
@@ -1003,7 +1003,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
-  update_rect_ = gfx::RectF();
+  update_rect_ = gfx::Rect();
 
   needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;

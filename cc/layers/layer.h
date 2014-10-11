@@ -124,8 +124,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   Layer* mask_layer() { return mask_layer_.get(); }
   const Layer* mask_layer() const { return mask_layer_.get(); }
 
-  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect);
-  void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::RectF(bounds())); }
+  virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect);
+  void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::Rect(bounds())); }
 
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
@@ -422,7 +422,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
-  gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
+  gfx::Rect LayerRectToContentRect(const gfx::Rect& layer_rect) const;
 
   virtual skia::RefPtr<SkPicture> GetPicture() const;
 
@@ -430,7 +430,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 
   bool NeedsDisplayForTesting() const { return !update_rect_.IsEmpty(); }
-  void ResetNeedsDisplayForTesting() { update_rect_ = gfx::RectF(); }
+  void ResetNeedsDisplayForTesting() { update_rect_ = gfx::Rect(); }
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
 
@@ -524,7 +524,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // outside the compositor's control (i.e. plugin layers), this information
   // is not available and the update rect will remain empty.
   // Note this rect is in layer space (not content space).
-  gfx::RectF update_rect_;
+  gfx::Rect update_rect_;
 
   scoped_refptr<Layer> mask_layer_;
 

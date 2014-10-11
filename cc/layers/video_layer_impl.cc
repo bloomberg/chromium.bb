@@ -363,7 +363,7 @@ void VideoLayerImpl::ReleaseResources() {
 }
 
 void VideoLayerImpl::SetNeedsRedraw() {
-  SetUpdateRect(gfx::UnionRects(update_rect(), gfx::RectF(bounds())));
+  SetUpdateRect(gfx::UnionRects(update_rect(), gfx::Rect(bounds())));
   layer_tree_impl()->SetNeedsRedraw();
 }
 

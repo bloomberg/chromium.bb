@@ -1357,8 +1357,8 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
         break;
       case 2:
         // Damage part of layers.
-        parent_->SetNeedsDisplayRect(gfx::RectF(0.f, 0.f, 5.f, 5.f));
-        child_->SetNeedsDisplayRect(gfx::RectF(0.f, 0.f, 5.f, 5.f));
+        parent_->SetNeedsDisplayRect(gfx::Rect(5, 5));
+        child_->SetNeedsDisplayRect(gfx::Rect(5, 5));
         break;
       case 3:
         child_->SetNeedsDisplay();

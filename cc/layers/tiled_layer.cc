@@ -288,7 +288,7 @@ UpdatableTile* TiledLayer::CreateTile(int i, int j) {
   return added_tile;
 }
 
-void TiledLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
+void TiledLayer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
   InvalidateContentRect(LayerRectToContentRect(dirty_rect));
   ContentsScalingLayer::SetNeedsDisplayRect(dirty_rect);
 }
@@ -464,7 +464,8 @@ void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
   // paint_rect from content space to layer space.
   float width_scale = 1 / draw_properties().contents_scale_x;
   float height_scale = 1 / draw_properties().contents_scale_y;
-  update_rect_ = gfx::ScaleRect(update_rect, width_scale, height_scale);
+  update_rect_ =
+      gfx::ScaleToEnclosingRect(update_rect, width_scale, height_scale);
 
   // Calling PrepareToUpdate() calls into WebKit to paint, which may have the
   // side effect of disabling compositing, which causes our reference to the

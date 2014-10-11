@@ -536,10 +536,9 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
 
   gfx::Size test_bounds = gfx::Size(501, 508);
 
-  gfx::RectF dirty1 = gfx::RectF(10.f, 15.f, 1.f, 2.f);
-  gfx::RectF dirty2 = gfx::RectF(20.f, 25.f, 3.f, 4.f);
-  gfx::RectF empty_dirty_rect = gfx::RectF(40.f, 45.f, 0.f, 0.f);
-  gfx::RectF out_of_bounds_dirty_rect = gfx::RectF(400.f, 405.f, 500.f, 502.f);
+  gfx::Rect dirty1 = gfx::Rect(10, 15, 1, 2);
+  gfx::Rect dirty2 = gfx::Rect(20, 25, 3, 4);
+  gfx::Rect out_of_bounds_dirty_rect = gfx::Rect(400, 405, 500, 502);
 
   // Before anything, test_layer should not be dirty.
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
@@ -649,14 +648,14 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
 
-  test_layer->SetNeedsDisplayRect(gfx::RectF(0.f, 0.f, 5.f, 5.f));
+  test_layer->SetNeedsDisplayRect(gfx::Rect(5, 5));
   test_layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0.f, 0.f, 5.f, 5.f),
                        impl_layer->update_rect());
 
   // The LayerImpl's update_rect() should be accumulated here, since we did not
   // do anything to clear it.
-  test_layer->SetNeedsDisplayRect(gfx::RectF(10.f, 10.f, 5.f, 5.f));
+  test_layer->SetNeedsDisplayRect(gfx::Rect(10, 10, 5, 5));
   test_layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0.f, 0.f, 15.f, 15.f),
                        impl_layer->update_rect());
@@ -664,7 +663,7 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
   // If we do clear the LayerImpl side, then the next update_rect() should be
   // fresh without accumulation.
   impl_layer->ResetAllChangeTrackingForSubtree();
-  test_layer->SetNeedsDisplayRect(gfx::RectF(10.f, 10.f, 5.f, 5.f));
+  test_layer->SetNeedsDisplayRect(gfx::Rect(10, 10, 5, 5));
   test_layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10.f, 10.f, 5.f, 5.f),
                        impl_layer->update_rect());

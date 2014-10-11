@@ -68,12 +68,11 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   }
 }
 
-void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
-  gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
-  if (!rect.IsEmpty()) {
+void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
+  if (!layer_rect.IsEmpty()) {
     // Clamp invalidation to the layer bounds.
-    rect.Intersect(gfx::Rect(bounds()));
-    pending_invalidation_.Union(rect);
+    pending_invalidation_.Union(
+        gfx::IntersectRects(layer_rect, gfx::Rect(bounds())));
   }
   Layer::SetNeedsDisplayRect(layer_rect);
 }

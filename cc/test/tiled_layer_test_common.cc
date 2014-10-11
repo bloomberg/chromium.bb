@@ -87,7 +87,7 @@ FakeTiledLayerWithScaledBounds::~FakeTiledLayerWithScaledBounds() {}
 
 FakeTiledLayer::~FakeTiledLayer() {}
 
-void FakeTiledLayer::SetNeedsDisplayRect(const gfx::RectF& rect) {
+void FakeTiledLayer::SetNeedsDisplayRect(const gfx::Rect& rect) {
   last_needs_display_rect_ = rect;
   TiledLayer::SetNeedsDisplayRect(rect);
 }

@@ -28,7 +28,7 @@ class CC_EXPORT PictureLayer : public Layer {
       LayerTreeImpl* tree_impl) override;
   virtual void SetLayerTreeHost(LayerTreeHost* host) override;
   virtual void PushPropertiesTo(LayerImpl* layer) override;
-  virtual void SetNeedsDisplayRect(const gfx::RectF& layer_rect) override;
+  virtual void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker<Layer>* occlusion) override;
   virtual void SetIsMask(bool is_mask) override;
