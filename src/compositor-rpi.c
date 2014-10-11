@@ -463,9 +463,7 @@ struct rpi_parameters {
 
 static struct rpi_backend *
 rpi_backend_create(struct weston_compositor *compositor,
-		   struct rpi_parameters *param,
-		   int *argc, char *argv[],
-		   struct weston_config *config)
+		   struct rpi_parameters *param)
 {
 	struct rpi_backend *backend;
 	uint32_t key;
@@ -475,10 +473,6 @@ rpi_backend_create(struct weston_compositor *compositor,
 	backend = zalloc(sizeof *backend);
 	if (backend == NULL)
 		return NULL;
-
-	if (weston_compositor_init(compositor, argc, argv,
-				   config) < 0)
-		goto out_free;
 
 	if (weston_compositor_set_presentation_clock_software(
 							compositor) < 0)
@@ -550,7 +544,6 @@ out_udev:
 out_compositor:
 	weston_compositor_shutdown(compositor);
 
-out_free:
 	bcm_host_deinit();
 	free(backend);
 
@@ -586,7 +579,7 @@ backend_init(struct weston_compositor *compositor,
 	if (weston_parse_transform(transform, &param.output_transform) < 0)
 		weston_log("invalid transform \"%s\"\n", transform);
 
-	b = rpi_backend_create(compositor, &param, argc, argv, config);
+	b = rpi_backend_create(compositor, &param);
 	if (b == NULL)
 		return -1;
 	return 0;

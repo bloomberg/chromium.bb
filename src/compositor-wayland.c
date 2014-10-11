@@ -1404,7 +1404,7 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 			input->keyboard_focus = NULL;
 
 			if (wl_list_empty(&input->backend->compositor->output_list))
-				wl_display_terminate(input->backend->compositor->wl_display);
+				weston_compositor_exit(input->backend->compositor);
 
 			return;
 		}
@@ -1852,7 +1852,7 @@ wayland_backend_handle_event(int fd, uint32_t mask, void *data)
 	int count = 0;
 
 	if ((mask & WL_EVENT_HANGUP) || (mask & WL_EVENT_ERROR)) {
-		wl_display_terminate(b->compositor->wl_display);
+		weston_compositor_exit(b->compositor);
 		return 0;
 	}
 
@@ -1960,10 +1960,6 @@ wayland_backend_create(struct weston_compositor *compositor, int use_pixman,
 		return NULL;
 
 	b->compositor = compositor;
-	if (weston_compositor_init(compositor, argc, argv,
-				   config) < 0)
-		goto err_free;
-
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_compositor;
 
@@ -2032,7 +2028,6 @@ err_display:
 	wl_display_disconnect(b->parent.wl_display);
 err_compositor:
 	weston_compositor_shutdown(compositor);
-err_free:
 	free(b);
 	return NULL;
 }

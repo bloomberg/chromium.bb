@@ -218,8 +218,7 @@ headless_destroy(struct weston_compositor *ec)
 static struct headless_backend *
 headless_backend_create(struct weston_compositor *compositor,
 			struct headless_parameters *param,
-			const char *display_name, int *argc, char *argv[],
-			struct weston_config *config)
+			const char *display_name)
 {
 	struct headless_backend *b;
 
@@ -228,9 +227,6 @@ headless_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	b->compositor = compositor;
-	if (weston_compositor_init(compositor, argc, argv, config) < 0)
-		goto err_free;
-
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_free;
 
@@ -288,8 +284,7 @@ backend_init(struct weston_compositor *compositor,
 	if (weston_parse_transform(transform, &param.transform) < 0)
 		weston_log("Invalid transform \"%s\"\n", transform);
 
-	b = headless_backend_create(compositor, &param, display_name,
-				    argc, argv, config);
+	b = headless_backend_create(compositor, &param, display_name);
 	if (b == NULL)
 		return -1;
 	return 0;

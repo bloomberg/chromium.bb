@@ -2452,7 +2452,7 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 
 	/* FIXME: handle zero outputs, without terminating */
 	if (b->connector_allocator == 0)
-		wl_display_terminate(b->compositor->wl_display);
+		weston_compositor_exit(b->compositor);
 }
 
 static int
@@ -2872,12 +2872,6 @@ drm_backend_create(struct weston_compositor *compositor,
 		goto err_base;
 
 	b->use_pixman = param->use_pixman;
-
-	if (weston_compositor_init(compositor, argc, argv,
-				   config) < 0) {
-		weston_log("%s failed\n", __func__);
-		goto err_base;
-	}
 
 	/* Check if we run drm-backend using weston-launch */
 	compositor->launcher = weston_launcher_connect(compositor, param->tty,

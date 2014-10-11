@@ -1172,9 +1172,6 @@ rdp_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	b->compositor = compositor;
-	if (weston_compositor_init(compositor, argc, argv, wconfig) < 0)
-		goto err_free;
-
 	b->base.destroy = rdp_destroy;
 	b->base.restore = rdp_restore;
 	b->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
@@ -1241,7 +1238,6 @@ err_free_strings:
 		free(b->server_cert);
 	if (b->server_key)
 		free(b->server_key);
-err_free:
 	free(b);
 	return NULL;
 }

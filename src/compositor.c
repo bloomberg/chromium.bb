@@ -4500,16 +4500,27 @@ timeline_key_binding_handler(struct weston_seat *seat, uint32_t time,
 		weston_timeline_open(compositor);
 }
 
-WL_EXPORT int
-weston_compositor_init(struct weston_compositor *ec,
-		       int *argc, char *argv[],
-		       struct weston_config *config)
+/** Create the compositor.
+ *
+ * This functions creates and initializes a compositor instance.
+ *
+ * \param display The Wayland display to be used.
+ * \param user_data A pointer to an object that can later be retrieved
+ * using the \ref weston_compositor_get_user_data function.
+ * \return The compositor instance on success or NULL on failure.
+ */
+WL_EXPORT struct weston_compositor *
+weston_compositor_create(struct wl_display *display, void *user_data)
 {
+	struct weston_compositor *ec;
 	struct wl_event_loop *loop;
-	struct xkb_rule_names xkb_names;
-	struct weston_config_section *s;
 
-	ec->config = config;
+	ec = zalloc(sizeof *ec);
+	if (!ec)
+		return NULL;
+
+	ec->wl_display = display;
+	ec->user_data = user_data;
 	wl_signal_init(&ec->destroy_signal);
 	wl_signal_init(&ec->create_surface_signal);
 	wl_signal_init(&ec->activate_signal);
@@ -4531,19 +4542,19 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	if (!wl_global_create(ec->wl_display, &wl_compositor_interface, 3,
 			      ec, compositor_bind))
-		return -1;
+		goto fail;
 
 	if (!wl_global_create(ec->wl_display, &wl_subcompositor_interface, 1,
 			      ec, bind_subcompositor))
-		return -1;
+		goto fail;
 
 	if (!wl_global_create(ec->wl_display, &wl_scaler_interface, 2,
 			      ec, bind_scaler))
-		return -1;
+		goto fail;
 
 	if (!wl_global_create(ec->wl_display, &presentation_interface, 1,
 			      ec, bind_presentation))
-		return -1;
+		goto fail;
 
 	wl_list_init(&ec->view_list);
 	wl_list_init(&ec->plane_list);
@@ -4560,7 +4571,39 @@ weston_compositor_init(struct weston_compositor *ec,
 	weston_plane_init(&ec->primary_plane, ec, 0, 0);
 	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);
 
-	s = weston_config_get_section(ec->config, "keyboard", NULL, NULL);
+	wl_data_device_manager_init(ec->wl_display);
+
+	wl_display_init_shm(ec->wl_display);
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
+	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
+
+	ec->input_loop = wl_event_loop_create();
+
+	weston_layer_init(&ec->fade_layer, &ec->layer_list);
+	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
+
+	weston_compositor_add_debug_binding(ec, KEY_T,
+					    timeline_key_binding_handler, ec);
+
+	weston_compositor_schedule_repaint(ec);
+
+	return ec;
+
+fail:
+	free(ec);
+	return NULL;
+}
+
+static int
+weston_compositor_init_config(struct weston_compositor *ec,
+			      struct weston_config *config)
+{
+	struct xkb_rule_names xkb_names;
+	struct weston_config_section *s;
+
+	s = weston_config_get_section(config, "keyboard", NULL, NULL);
 	weston_config_section_get_string(s, "keymap_rules",
 					 (char **) &xkb_names.rules, NULL);
 	weston_config_section_get_string(s, "keymap_model",
@@ -4580,23 +4623,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	weston_config_section_get_int(s, "repeat-delay",
 				      &ec->kb_repeat_delay, 400);
 
-	wl_data_device_manager_init(ec->wl_display);
-
-	wl_display_init_shm(ec->wl_display);
-
-	loop = wl_display_get_event_loop(ec->wl_display);
-	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
-	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
-
-	ec->input_loop = wl_event_loop_create();
-
-	weston_layer_init(&ec->fade_layer, &ec->layer_list);
-	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
-
-	weston_compositor_add_debug_binding(ec, KEY_T,
-					    timeline_key_binding_handler, ec);
-
-	s = weston_config_get_section(ec->config, "core", NULL, NULL);
+	s = weston_config_get_section(config, "core", NULL, NULL);
 	weston_config_section_get_int(s, "repaint-window", &ec->repaint_msec,
 				      DEFAULT_REPAINT_WINDOW);
 	if (ec->repaint_msec < -10 || ec->repaint_msec > 1000) {
@@ -4606,8 +4633,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	}
 	weston_log("Output repaint window is %d ms maximum.\n",
 		   ec->repaint_msec);
-
-	weston_compositor_schedule_repaint(ec);
 
 	return 0;
 }
@@ -4637,8 +4662,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	weston_plane_release(&ec->primary_plane);
 
 	wl_event_loop_destroy(ec->input_loop);
-
-	weston_config_destroy(ec->config);
 }
 
 WL_EXPORT void
@@ -4648,7 +4671,7 @@ weston_compositor_exit_with_code(struct weston_compositor *compositor,
 	if (compositor->exit_code == EXIT_SUCCESS)
 		compositor->exit_code = exit_code;
 
-	wl_display_terminate(compositor->wl_display);
+	weston_compositor_exit(compositor);
 }
 
 WL_EXPORT void
@@ -5272,6 +5295,12 @@ load_configuration(struct weston_config **config, int32_t noconfig,
 	return 0;
 }
 
+static void
+handle_exit(struct weston_compositor *c)
+{
+	wl_display_terminate(c->wl_display);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
@@ -5296,7 +5325,7 @@ int main(int argc, char *argv[])
 	int32_t noconfig = 0;
 	int32_t numlock_on;
 	char *config_file = NULL;
-	struct weston_config *config;
+	struct weston_config *config = NULL;
 	struct weston_config_section *section;
 	struct wl_client *primary_client;
 	struct wl_listener primary_client_destroyed;
@@ -5370,13 +5399,18 @@ int main(int argc, char *argv[])
 	if (!backend_init)
 		goto out_signals;
 
-	ec = zalloc(sizeof *ec);
+	ec = weston_compositor_create(display, NULL);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		goto out_signals;
 	}
 
-	ec->wl_display = display;
+	ec->config = config;
+	if (weston_compositor_init_config(ec, config) < 0) {
+		ret = EXIT_FAILURE;
+		goto out_signals;
+	}
+
 	if (backend_init(ec, &argc, argv, config) < 0) {
 		weston_log("fatal: failed to create compositor backend\n");
 		ret = EXIT_FAILURE;
@@ -5393,6 +5427,7 @@ int main(int argc, char *argv[])
 	ec->idle_time = idle_time;
 	ec->default_pointer_grab = NULL;
 	ec->exit_code = EXIT_SUCCESS;
+	ec->exit = handle_exit;
 
 	weston_compositor_log_capabilities(ec);
 
@@ -5463,15 +5498,7 @@ int main(int argc, char *argv[])
 	ret = ec->exit_code;
 
 out:
-	/* prevent further rendering while shutting down */
-	ec->state = WESTON_COMPOSITOR_OFFSCREEN;
-
-	wl_signal_emit(&ec->destroy_signal, ec);
-
-	weston_compositor_xkb_destroy(ec);
-
-	ec->backend->destroy(ec);
-	free(ec);
+	weston_compositor_destroy(ec);
 
 out_signals:
 	for (i = ARRAY_LENGTH(signals) - 1; i >= 0; i--)
@@ -5479,7 +5506,8 @@ out_signals:
 			wl_event_source_remove(signals[i]);
 
 	wl_display_destroy(display);
-
+	if (config)
+		weston_config_destroy(config);
 	weston_log_file_close();
 
 	free(config_file);
@@ -5491,4 +5519,49 @@ out_signals:
 	free(modules);
 
 	return ret;
+}
+
+/** Destroys the compositor.
+ *
+ * This function cleans up the compositor state and destroys it.
+ *
+ * \param compositor The compositor to be destroyed.
+ */
+WL_EXPORT void
+weston_compositor_destroy(struct weston_compositor *compositor)
+{
+	/* prevent further rendering while shutting down */
+	compositor->state = WESTON_COMPOSITOR_OFFSCREEN;
+
+	wl_signal_emit(&compositor->destroy_signal, compositor);
+
+	weston_compositor_xkb_destroy(compositor);
+
+	compositor->backend->destroy(compositor);
+	free(compositor);
+}
+
+/** Instruct the compositor to exit.
+ *
+ * This functions does not directly destroy the compositor object, it merely
+ * command it to start the tear down process. It is not guaranteed that the
+ * tear down will happen immediately.
+ *
+ * \param compositor The compositor to tear down.
+ */
+WL_EXPORT void
+weston_compositor_exit(struct weston_compositor *compositor)
+{
+	compositor->exit(compositor);
+}
+
+/** Return the user data stored in the compositor.
+ *
+ * This function returns the user data pointer set with user_data parameter
+ * to the \ref weston_compositor_create function.
+ */
+WL_EXPORT void *
+weston_compositor_get_user_data(struct weston_compositor *compositor)
+{
+	return compositor->user_data;
 }

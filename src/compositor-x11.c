@@ -960,7 +960,7 @@ x11_backend_delete_window(struct x11_backend *b, xcb_window_t window)
 	xcb_flush(b->conn);
 
 	if (wl_list_empty(&b->compositor->output_list))
-		wl_display_terminate(b->compositor->wl_display);
+		weston_compositor_exit(b->compositor);
 }
 
 static void delete_cb(void *data)
@@ -1534,9 +1534,6 @@ x11_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	b->compositor = compositor;
-	if (weston_compositor_init(compositor, argc, argv, config) < 0)
-		goto err_free;
-
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_free;
 

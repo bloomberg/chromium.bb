@@ -826,10 +826,6 @@ fbdev_backend_create(struct weston_compositor *compositor, int *argc, char *argv
 		return NULL;
 
 	backend->compositor = compositor;
-	if (weston_compositor_init(compositor, argc, argv,
-	                           config) < 0)
-		goto out_free;
-
 	if (weston_compositor_set_presentation_clock_software(
 							compositor) < 0)
 		goto out_compositor;
@@ -902,8 +898,6 @@ out_udev:
 
 out_compositor:
 	weston_compositor_shutdown(compositor);
-
-out_free:
 	free(backend);
 
 	return NULL;
