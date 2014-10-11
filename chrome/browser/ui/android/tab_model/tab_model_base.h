@@ -12,7 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 
 class Profile;
 class TabAndroid;
@@ -24,41 +24,12 @@ class WebContents;
 // Native representation of TabModelBase which provides access to information
 // about a tabstrip to native code and could potentially be used in place of
 // Browser for some functionality in Clank.
-class TabModelBase : public TabModel {
+class TabModelBase : public TabModelJniBridge {
  public:
-  TabModelBase(JNIEnv* env, jobject obj, Profile* profile);
-  void Destroy(JNIEnv* env, jobject obj);
-
-  // Called by JNI
-  base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
-                                                               jobject obj);
-  void TabAddedToModel(JNIEnv* env, jobject obj, jobject jtab);
+  TabModelBase(JNIEnv* env, jobject obj, bool is_incognito);
+  virtual ~TabModelBase() { }
 
   // TabModel:
-  virtual int GetTabCount() const override;
-  virtual int GetActiveIndex() const override;
-  virtual content::WebContents* GetWebContentsAt(int index) const override;
-  virtual TabAndroid* GetTabAt(int index) const override;
-
-  virtual void SetActiveIndex(int index) override;
-  virtual void CloseTabAt(int index) override;
-
-  virtual void CreateTab(content::WebContents* web_contents,
-                         int parent_tab_id) override;
-  virtual content::WebContents* CreateNewTabForDevTools(
-      const GURL& url) override;
-
-  // Return true if we are currently restoring sessions asynchronously.
-  virtual bool IsSessionRestoreInProgress() const override;
-
-  // Instructs the TabModel to broadcast a notification that all tabs are now
-  // loaded from storage.
-  void BroadcastSessionRestoreComplete(JNIEnv* env, jobject obj);
-
- private:
-  virtual ~TabModelBase();
-
-  JavaObjectWeakGlobalRef java_object_;
 };
 
 // Register the Tab's native methods through jni.

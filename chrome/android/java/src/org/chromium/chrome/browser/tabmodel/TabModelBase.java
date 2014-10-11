@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -18,7 +16,7 @@ import java.util.List;
 /**
  * This is the default implementation of the {@link TabModel} interface.
  */
-public abstract class TabModelBase implements TabModel {
+public abstract class TabModelBase extends TabModelJniBridge {
     private static final String TAG = "TabModelBase";
 
     /**
@@ -28,8 +26,6 @@ public abstract class TabModelBase implements TabModel {
      * date.
      */
     private final List<Tab> mTabs = new ArrayList<Tab>();
-
-    private final boolean mIsIncognito;
 
     private final TabModelOrderController mOrderController;
 
@@ -52,26 +48,16 @@ public abstract class TabModelBase implements TabModel {
      */
     private int mIndex = INVALID_TAB_INDEX;
 
-    /** Native Tab pointer which will be set by nativeInit(). */
+    /** Native TabModelBase pointer which will be set by nativeInit(). */
     private long mNativeTabModelImpl = 0;
 
     public TabModelBase(boolean incognito, TabModelOrderController orderController,
             TabModelDelegate modelDelegate) {
-        mIsIncognito = incognito;
+        super(incognito);
         mNativeTabModelImpl = nativeInit(incognito);
         mOrderController = orderController;
         mModelDelegate = modelDelegate;
         mObservers = new ObserverList<TabModelObserver>();
-    }
-
-    @Override
-    public Profile getProfile() {
-        return nativeGetProfileAndroid(mNativeTabModelImpl);
-    }
-
-    @Override
-    public boolean isIncognito() {
-        return mIsIncognito;
     }
 
     @Override
@@ -81,14 +67,11 @@ public abstract class TabModelBase implements TabModel {
         }
 
         mRewoundList.destroy();
-
-        if (mNativeTabModelImpl != 0) {
-            nativeDestroy(mNativeTabModelImpl);
-            mNativeTabModelImpl = 0;
-        }
-
         mTabs.clear();
         mObservers.clear();
+
+        super.destroy();
+        mNativeTabModelImpl = 0;
     }
 
     @Override
@@ -111,12 +94,12 @@ public abstract class TabModelBase implements TabModel {
 
         for (TabModelObserver obs : mObservers) obs.willAddTab(tab, type);
 
-        boolean selectTab = mOrderController.willOpenInForeground(type, mIsIncognito);
+        boolean selectTab = mOrderController.willOpenInForeground(type, isIncognito());
 
         index = mOrderController.determineInsertionIndex(type, index, tab);
         assert index <= mTabs.size();
 
-        assert tab.isIncognito() == mIsIncognito;
+        assert tab.isIncognito() == isIncognito();
 
         // TODO(dtrainor): Update the list of undoable tabs instead of committing it.
         commitAllTabClosures();
@@ -143,12 +126,12 @@ public abstract class TabModelBase implements TabModel {
         mModelDelegate.didChange();
         mModelDelegate.didCreateNewTab(tab);
 
-        if (mNativeTabModelImpl != 0) nativeTabAddedToModel(mNativeTabModelImpl, tab);
+        tabAddedToModel(tab);
 
         for (TabModelObserver obs : mObservers) obs.didAddTab(tab, type);
 
         if (selectTab) {
-            mModelDelegate.selectModel(mIsIncognito);
+            mModelDelegate.selectModel(isIncognito());
             setIndex(newIndex, TabModel.TabSelectionType.FROM_NEW);
         }
 
@@ -188,15 +171,14 @@ public abstract class TabModelBase implements TabModel {
     }
 
     @Override
-    @CalledByNative
     public boolean closeTab(Tab tab) {
         return closeTab(tab, true, false, false);
     }
 
     private Tab findTabInAllTabModels(int tabId) {
-        Tab tab = TabModelUtils.getTabById(mModelDelegate.getModel(mIsIncognito), tabId);
+        Tab tab = TabModelUtils.getTabById(mModelDelegate.getModel(isIncognito()), tabId);
         if (tab != null) return tab;
-        return TabModelUtils.getTabById(mModelDelegate.getModel(!mIsIncognito), tabId);
+        return TabModelUtils.getTabById(mModelDelegate.getModel(!isIncognito()), tabId);
     }
 
     @Override
@@ -222,7 +204,7 @@ public abstract class TabModelBase implements TabModel {
             nextTab = parentTab;
         } else if (adjacentTab != null) {
             nextTab = adjacentTab;
-        } else if (mIsIncognito) {
+        } else if (isIncognito()) {
             nextTab = TabModelUtils.getCurrentTab(mModelDelegate.getModel(false));
         }
 
@@ -236,7 +218,7 @@ public abstract class TabModelBase implements TabModel {
 
     @Override
     public boolean supportsPendingClosures() {
-        return !mIsIncognito;
+        return !isIncognito();
     }
 
     @Override
@@ -278,7 +260,7 @@ public abstract class TabModelBase implements TabModel {
         // If we're the active model call setIndex to actually select this tab, otherwise just set
         // mIndex but don't kick off everything that happens when calling setIndex().
         if (activeModel) {
-            setIndex(insertIndex);
+            TabModelUtils.setIndex(this, insertIndex);
         } else {
             mIndex = insertIndex;
         }
@@ -340,7 +322,6 @@ public abstract class TabModelBase implements TabModel {
     }
 
     @Override
-    @CalledByNative
     public Tab getTabAt(int index) {
         // This will catch INVALID_TAB_INDEX and return null
         if (index < 0 || index >= mTabs.size()) return null;
@@ -399,16 +380,6 @@ public abstract class TabModelBase implements TabModel {
         mModelDelegate.didChange();
         TraceEvent.end();
     }
-
-    /**
-     * @param incognito
-     * @param nativeWebContents
-     * @param parentId
-     * @return
-     */
-    @CalledByNative
-    protected abstract Tab createTabWithNativeContents(boolean incognito, long nativeWebContents,
-            int parentId);
 
     /**
      * Performs the necessary actions to remove this {@link Tab} from this {@link TabModel}.
@@ -479,7 +450,7 @@ public abstract class TabModelBase implements TabModel {
          * rewindable closes were undone). If there are no possible rewindable closes this list
          * should match {@link #mTabs}.
          */
-        private List<Tab> mRewoundTabs = new ArrayList<Tab>();
+        private final List<Tab> mRewoundTabs = new ArrayList<Tab>();
 
         @Override
         public boolean isIncognito() {
@@ -594,50 +565,25 @@ public abstract class TabModelBase implements TabModel {
         }
     }
 
-    /**
-     * Broadcast a notification (in native code) that all tabs are now loaded from storage.
-     */
-    public void broadcastSessionRestoreComplete() {
-        nativeBroadcastSessionRestoreComplete(mNativeTabModelImpl);
+    @Override
+    protected boolean closeTabAt(int index) {
+        return closeTab(getTabAt(index));
     }
 
-    // JNI related methods -------------------------------------------------------------------------
-
     @Override
-    @CalledByNative
     public int getCount() {
         return mTabs.size();
     }
 
     @Override
-    @CalledByNative
     public int index() {
         return mIndex;
     }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void setIndex(int index) {
-        TabModelUtils.setIndex(this, index);
-    }
-
-    /**
-     * Used by Developer Tools to create a new tab with a given URL.
-     *
-     * @param url The URL to open.
-     * @return The new tab.
-     */
-    @CalledByNative
-    protected abstract Tab createNewTabForDevTools(String url);
-
-    @CalledByNative
-    private boolean isSessionRestoreInProgress() {
+    @Override
+    protected boolean isSessionRestoreInProgress() {
         return mModelDelegate.isSessionRestoreInProgress();
     }
 
     private native long nativeInit(boolean isIncognito);
-    private native void nativeDestroy(long nativeTabModelBase);
-    private native void nativeBroadcastSessionRestoreComplete(long nativeTabModelBase);
-    private native Profile nativeGetProfileAndroid(long nativeTabModelBase);
-    private native void nativeTabAddedToModel(long nativeTabModelBase, Tab tab);
 }

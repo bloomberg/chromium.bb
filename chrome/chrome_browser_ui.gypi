@@ -55,6 +55,8 @@
       'browser/ui/android/tab_model/tab_model.h',
       'browser/ui/android/tab_model/tab_model_base.cc',
       'browser/ui/android/tab_model/tab_model_base.h',
+      'browser/ui/android/tab_model/tab_model_jni_bridge.cc',
+      'browser/ui/android/tab_model/tab_model_jni_bridge.h',
       'browser/ui/android/tab_model/tab_model_list.cc',
       'browser/ui/android/tab_model/tab_model_list.h',
       'browser/ui/android/toolbar/toolbar_model_android.cc',
