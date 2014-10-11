@@ -407,17 +407,4 @@ struct ProfileCompare {
   bool operator()(Profile* a, Profile* b) const;
 };
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-
-template<>
-struct hash<Profile*> {
-  std::size_t operator()(Profile* const& p) const {
-    return reinterpret_cast<std::size_t>(p);
-  }
-};
-
-}  // namespace BASE_HASH_NAMESPACE
-#endif
-
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_H_

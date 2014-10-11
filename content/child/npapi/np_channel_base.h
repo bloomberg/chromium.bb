@@ -21,35 +21,6 @@ namespace base {
 class MessageLoopProxy;
 }
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-
-template<>
-struct hash<NPObject*> {
-  std::size_t operator()(NPObject* const& ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-
-template<>
-struct hash<struct _NPP*> {
-  std::size_t operator()(struct _NPP* const& ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-
-}  // namespace __gnu_cxx
-#elif defined(COMPILER_MSVC)
-namespace stdext {
-
-template<>
-inline size_t hash_value(NPObject* const& ptr) {
-  return hash_value(reinterpret_cast<size_t>(ptr));
-}
-
-}  // namespace stdext
-#endif // COMPILER
-
 namespace content {
 
 // Encapsulates an IPC channel between a renderer and another process. Used to

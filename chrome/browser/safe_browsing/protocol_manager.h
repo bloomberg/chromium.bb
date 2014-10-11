@@ -36,19 +36,6 @@ class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
 
-#if defined(COMPILER_GCC)
-// Allows us to use URLFetchers in a hash_map with gcc (MSVC is okay without
-// specifying this).
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<const net::URLFetcher*> {
-  size_t operator()(const net::URLFetcher* fetcher) const {
-    return reinterpret_cast<size_t>(fetcher);
-  }
-};
-}
-#endif
-
 class SBProtocolManagerFactory;
 class SafeBrowsingProtocolManagerDelegate;
 

@@ -9,17 +9,6 @@
 #include "base/id_map.h"
 #include "content/public/browser/web_contents_observer.h"
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<content::RenderFrameHost*> {
-  uint64 operator()(content::RenderFrameHost* ptr) const {
-    return hash<uint64>()(reinterpret_cast<uint64>(ptr));
-  }
-};
-}
-#endif
-
 namespace content {
 
 class RenderFrameHost;

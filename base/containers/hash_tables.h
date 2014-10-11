@@ -85,6 +85,17 @@ DEFINE_TRIVIAL_HASH(unsigned long long);
 #undef DEFINE_TRIVIAL_HASH
 #endif  // !defined(OS_ANDROID)
 
+// To align with C++11's std::hash and MSVC's pre-standard stdext::hash_value,
+// provide a default hash function for raw pointers. Note: const char * is still
+// specialized to hash as a C string. This is consistent with the currently used
+// stdext::hash_value, but not C++11.
+template<typename T>
+struct hash<T*> {
+  std::size_t operator()(T* value) const {
+    return hash<uintptr_t>()(reinterpret_cast<uintptr_t>(value));
+  }
+};
+
 // Implement string hash functions so that strings of various flavors can
 // be used as keys in STL maps and sets.  The hash algorithm comes from the
 // GNU C++ library, in <tr1/functional>.  It is duplicated here because GCC

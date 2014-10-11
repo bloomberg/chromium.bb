@@ -10,17 +10,6 @@
 #include "base/containers/hash_tables.h"
 #include "net/quic/quic_protocol.h"
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<net::QuicAckNotifier*> {
-  std::size_t operator()(const net::QuicAckNotifier* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}
-#endif
-
 namespace net {
 
 class QuicAckNotifier;

@@ -315,20 +315,4 @@ class Target : public Item {
   DISALLOW_COPY_AND_ASSIGN(Target);
 };
 
-namespace BASE_HASH_NAMESPACE {
-
-#if defined(COMPILER_GCC)
-template<> struct hash<const Target*> {
-  std::size_t operator()(const Target* t) const {
-    return reinterpret_cast<std::size_t>(t);
-  }
-};
-#elif defined(COMPILER_MSVC)
-inline size_t hash_value(const Target* t) {
-  return reinterpret_cast<size_t>(t);
-}
-#endif  // COMPILER...
-
-}  // namespace BASE_HASH_NAMESPACE
-
 #endif  // TOOLS_GN_TARGET_H_

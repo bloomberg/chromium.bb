@@ -45,17 +45,6 @@
 template <typename Type>
 struct DefaultSingletonTraits;
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<base::MessageLoop*> {
-  std::size_t operator()(base::MessageLoop* value) const {
-    return reinterpret_cast<std::size_t>(value);
-  }
-};
-}  // BASE_HASH_NAMESPACE
-#endif
-
 namespace base {
 
 class WaitableEvent;

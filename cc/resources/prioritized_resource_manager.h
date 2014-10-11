@@ -19,16 +19,6 @@
 #include "cc/trees/proxy.h"
 #include "ui/gfx/size.h"
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <> struct hash<cc::PrioritizedResource*> {
-  size_t operator()(cc::PrioritizedResource* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
-
 namespace cc {
 
 class PriorityCalculator;

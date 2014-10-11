@@ -34,17 +34,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-#if defined(COMPILER_GCC) && defined(ENABLE_EXTENSIONS)
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<extensions::CrxInstaller*> {
-  std::size_t operator()(extensions::CrxInstaller* const& p) const {
-    return reinterpret_cast<std::size_t>(p);
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif
-
 // This is the Chrome side helper for the download system.
 class ChromeDownloadManagerDelegate
     : public content::DownloadManagerDelegate,

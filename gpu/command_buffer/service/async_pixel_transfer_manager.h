@@ -15,17 +15,6 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_export.h"
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <>
-  struct hash<gpu::gles2::TextureRef*> {
-  size_t operator()(gpu::gles2::TextureRef* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
-
 namespace gfx {
 class GLContext;
 }

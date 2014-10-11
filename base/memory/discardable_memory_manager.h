@@ -38,18 +38,6 @@ class DiscardableMemoryManagerAllocation {
 }  // namespace internal
 }  // namespace base
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<base::internal::DiscardableMemoryManagerAllocation*> {
-  size_t operator()(
-      base::internal::DiscardableMemoryManagerAllocation* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
-
 namespace base {
 namespace internal {
 

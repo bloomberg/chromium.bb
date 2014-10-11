@@ -12,17 +12,6 @@
 
 using gpu::MemoryAllocation;
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<content::GpuMemoryManagerClient*> {
-  uint64 operator()(content::GpuMemoryManagerClient* ptr) const {
-    return hash<uint64>()(reinterpret_cast<uint64>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
-
 class FakeMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
   virtual void TrackMemoryAllocatedChange(
