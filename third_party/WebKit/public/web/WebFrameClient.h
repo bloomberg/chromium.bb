@@ -67,7 +67,6 @@ class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFormElement;
 class WebGeolocationClient;
-class WebInputEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMIDIClient;
@@ -552,10 +551,6 @@ public:
     // given reason (one of the GL_ARB_robustness status codes; see
     // Extensions3D.h in WebCore/platform/graphics).
     virtual void didLoseWebGLContext(WebLocalFrame*, int) { }
-
-    // FIXME: Remove this method once we have input routing in the browser
-    // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(const WebInputEvent*) { }
 
     // Send initial drawing parameters to a child frame that is being rendered out of process.
     virtual void initializeChildFrame(const WebRect& frameRect, float scaleFactor) { }

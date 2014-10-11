@@ -44,6 +44,8 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/Console.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/RemoteFrame.h"
+#include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/ColorChooser.h"
@@ -101,6 +103,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebPopupMenuImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/text/CString.h"
@@ -843,14 +846,9 @@ void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputEle
 // FIXME: Remove this code once we have input routing in the browser
 // process. See http://crbug.com/339659.
 void ChromeClientImpl::forwardInputEvent(
-    Frame* frame, Event* event)
+    RemoteFrame* frame, Event* event)
 {
-    // FIXME: Input event forwarding to out-of-process frames is broken until
-    // WebRemoteFrameImpl has a WebFrameClient.
-    if (frame->isRemoteFrame())
-        return;
-
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
+    WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*frame);
 
     // This is only called when we have out-of-process iframes, which
     // need to forward input events across processes.
@@ -859,14 +857,13 @@ void ChromeClientImpl::forwardInputEvent(
         WebKeyboardEventBuilder webEvent(*static_cast<KeyboardEvent*>(event));
         webFrame->client()->forwardInputEvent(&webEvent);
     } else if (event->isMouseEvent()) {
-        WebMouseEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<MouseEvent*>(event));
+        WebMouseEventBuilder webEvent(webFrame->frame()->view(), frame->ownerRenderer(), *static_cast<MouseEvent*>(event));
         // Internal Blink events should not be forwarded.
         if (webEvent.type == WebInputEvent::Undefined)
             return;
-
         webFrame->client()->forwardInputEvent(&webEvent);
     } else if (event->isWheelEvent()) {
-        WebMouseWheelEventBuilder webEvent(webFrame->frameView(), frame->ownerRenderer(), *static_cast<WheelEvent*>(event));
+        WebMouseWheelEventBuilder webEvent(webFrame->frame()->view(), frame->ownerRenderer(), *static_cast<WheelEvent*>(event));
         if (webEvent.type == WebInputEvent::Undefined)
             return;
         webFrame->client()->forwardInputEvent(&webEvent);

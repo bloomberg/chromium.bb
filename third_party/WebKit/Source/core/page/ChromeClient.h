@@ -62,6 +62,7 @@ class Node;
 class Page;
 class PagePopupDriver;
 class PopupMenuClient;
+class RemoteFrame;
 
 struct CompositedSelectionBound;
 struct DateTimeChooserParameters;
@@ -225,7 +226,7 @@ public:
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(blink::Frame*, blink::Event*) { }
+    virtual void forwardInputEvent(RemoteFrame*, Event*) { }
 
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }

@@ -989,8 +989,8 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     }
 
     RefPtrWillBeRawPtr<Frame> focusedFrame = focusedCoreFrame();
-    if (focusedFrame && focusedFrame->isRemoteFrameTemporary()) {
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrameTemporary(focusedFrame.get()));
+    if (focusedFrame && focusedFrame->isRemoteFrame()) {
+        WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame.get()));
         webFrame->client()->forwardInputEvent(&event);
         return true;
     }
@@ -2088,7 +2088,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         return true;
     }
 
-    return PageWidgetDelegate::handleInputEvent(*this, inputEvent, m_page->deprecatedLocalMainFrame());
+    // FIXME: This should take in the intended frame, not the local frame root.
+    return PageWidgetDelegate::handleInputEvent(*this, inputEvent, localFrameRootTemporary()->frame());
 }
 
 void WebViewImpl::setCursorVisibilityState(bool isVisible)

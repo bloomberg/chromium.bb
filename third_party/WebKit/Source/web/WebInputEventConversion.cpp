@@ -483,12 +483,14 @@ static IntPoint convertAbsoluteLocationForRenderObject(const LayoutPoint& locati
     return roundedIntPoint(convertAbsoluteLocationForRenderObjectFloat(location, renderObject));
 }
 
-static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event, const Widget& widget, const RenderObject& renderObject, WebMouseEvent& webEvent)
+// FIXME: Change |widget| to const Widget& after RemoteFrames get
+// RemoteFrameViews.
+static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event, const Widget* widget, const RenderObject& renderObject, WebMouseEvent& webEvent)
 {
     webEvent.timeStampSeconds = event.timeStamp() / millisPerSecond;
     webEvent.modifiers = getWebInputModifiers(event);
 
-    FrameView* view =  toFrameView(widget.parent());
+    FrameView* view = widget ? toFrameView(widget->parent()) : 0;
     IntPoint windowPoint = IntPoint(event.absoluteLocation().x(), event.absoluteLocation().y());
     if (view)
         windowPoint = view->contentsToWindow(windowPoint);
@@ -518,7 +520,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const RenderObj
     else
         return; // Skip all other mouse events.
 
-    updateWebMouseEventFromCoreMouseEvent(event, *widget, *renderObject, *this);
+    updateWebMouseEventFromCoreMouseEvent(event, widget, *renderObject, *this);
 
     switch (event.button()) {
     case LeftButton:
@@ -648,7 +650,7 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     if (event.type() != EventTypeNames::wheel && event.type() != EventTypeNames::mousewheel)
         return;
     type = WebInputEvent::MouseWheel;
-    updateWebMouseEventFromCoreMouseEvent(event, *widget, *renderObject, *this);
+    updateWebMouseEventFromCoreMouseEvent(event, widget, *renderObject, *this);
     deltaX = -event.deltaX();
     deltaY = -event.deltaY();
     wheelTicksX = event.ticksX();
