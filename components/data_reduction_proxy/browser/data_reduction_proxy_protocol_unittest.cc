@@ -565,6 +565,16 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       0,
       BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE
     },
+    // Invalid data reduction proxy 4xx response. Missing Via header.
+    { "GET",
+      "HTTP/1.1 404 Not Found\r\n"
+      "Server: proxy\r\n\r\n",
+      true,
+      1u,
+      true,
+      1,
+      BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX
+    },
     // Invalid data reduction proxy response. Missing Via header.
     { "GET",
       "HTTP/1.1 200 OK\r\n"
