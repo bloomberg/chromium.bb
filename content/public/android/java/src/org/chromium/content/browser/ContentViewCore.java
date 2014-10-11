@@ -75,7 +75,6 @@ import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.SelectionEventType;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
@@ -577,7 +576,8 @@ public class ContentViewCore
                                 } else if (hasFocus() && resultCode ==
                                         InputMethodManager.RESULT_UNCHANGED_SHOWN) {
                                     // If the OSK was already there, focus the form immediately.
-                                    scrollFocusedEditableNodeIntoView();
+                                    assert mWebContents != null;
+                                    mWebContents.scrollFocusedEditableNodeIntoView();
                                 }
                             }
                         };
@@ -853,61 +853,55 @@ public class ContentViewCore
     }
 
     /**
-     * Shows an interstitial page driven by the passed in delegate.
-     *
-     * @param url The URL being blocked by the interstitial.
-     * @param delegate The delegate handling the interstitial.
-     */
-    @VisibleForTesting
-    public void showInterstitialPage(
-            String url, InterstitialPageDelegateAndroid delegate) {
-        assert mWebContents != null;
-        mWebContents.showInterstitialPage(url, delegate.getNative());
-    }
-
-    /**
-     * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
-     */
-    public boolean isShowingInterstitialPage() {
-        assert mWebContents != null;
-        return mWebContents.isShowingInterstitialPage();
-    }
-
-    /**
      * @return Viewport width in physical pixels as set from onSizeChanged.
      */
     @CalledByNative
-    public int getViewportWidthPix() { return mViewportWidthPix; }
+    public int getViewportWidthPix() {
+        return mViewportWidthPix;
+    }
 
     /**
      * @return Viewport height in physical pixels as set from onSizeChanged.
      */
     @CalledByNative
-    public int getViewportHeightPix() { return mViewportHeightPix; }
+    public int getViewportHeightPix() {
+        return mViewportHeightPix;
+    }
 
     /**
      * @return Width of underlying physical surface.
      */
     @CalledByNative
-    public int getPhysicalBackingWidthPix() { return mPhysicalBackingWidthPix; }
+    public int getPhysicalBackingWidthPix() {
+        return mPhysicalBackingWidthPix;
+    }
 
     /**
      * @return Height of underlying physical surface.
      */
     @CalledByNative
-    public int getPhysicalBackingHeightPix() { return mPhysicalBackingHeightPix; }
+    public int getPhysicalBackingHeightPix() {
+        return mPhysicalBackingHeightPix;
+    }
 
     /* TODO(aelias): Remove these when downstream callers disappear. */
     @VisibleForTesting
-    public int getViewportSizeOffsetWidthPix() { return 0; }
+    public int getViewportSizeOffsetWidthPix() {
+        return 0;
+    }
+
     @VisibleForTesting
-    public int getViewportSizeOffsetHeightPix() { return getTopControlsLayoutHeightPix(); }
+    public int getViewportSizeOffsetHeightPix() {
+        return getTopControlsLayoutHeightPix();
+    }
 
     /**
      * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
      */
     @CalledByNative
-    public int getTopControlsLayoutHeightPix() { return mTopControlsLayoutHeightPix; }
+    public int getTopControlsLayoutHeightPix() {
+        return mTopControlsLayoutHeightPix;
+    }
 
     /**
      * @see android.webkit.WebView#getContentHeight()
@@ -1185,48 +1179,6 @@ public class ContentViewCore
     }
 
     /**
-     * Inserts the provided markup sandboxed into the frame.
-     */
-    public void setupTransitionView(String markup) {
-        assert mWebContents != null;
-        mWebContents.setupTransitionView(markup);
-    }
-
-    /**
-     * Hides transition elements specified by the selector, and activates any
-     * exiting-transition stylesheets.
-     */
-    public void beginExitTransition(String cssSelector) {
-        assert mWebContents != null;
-        mWebContents.beginExitTransition(cssSelector);
-    }
-
-    /**
-     * Requests the renderer insert a link to the specified stylesheet in the
-     * main frame's document.
-     */
-    public void addStyleSheetByURL(String url) {
-        assert mWebContents != null;
-        mWebContents.addStyleSheetByURL(url);
-    }
-
-    /**
-     * Injects the passed Javascript code in the current page and evaluates it.
-     * If a result is required, pass in a callback.
-     * Used in automation tests.
-     *
-     * @param script The Javascript to execute.
-     * @param callback The callback to be fired off when a result is ready. The script's
-     *                 result will be json encoded and passed as the parameter, and the call
-     *                 will be made on the main thread.
-     *                 If no result is required, pass null.
-     */
-    public void evaluateJavaScript(String script, JavaScriptCallback callback) {
-        assert mWebContents != null;
-        mWebContents.evaluateJavaScript(script, callback);
-    }
-
-    /**
      * Post a message to a frame.
      * TODO(sgurun) also add support for transferring a message channel port.
      *
@@ -1455,7 +1407,8 @@ public class ContentViewCore
             if (!rect.equals(mFocusPreOSKViewportRect)) {
                 // Only assume the OSK triggered the onSizeChanged if width was preserved.
                 if (rect.width() == mFocusPreOSKViewportRect.width()) {
-                    scrollFocusedEditableNodeIntoView();
+                    assert mWebContents != null;
+                    mWebContents.scrollFocusedEditableNodeIntoView();
                 }
                 cancelRequestToScrollFocusedEditableNodeIntoView();
             }
@@ -1466,20 +1419,6 @@ public class ContentViewCore
         // Zero-ing the rect will prevent |updateAfterSizeChanged()| from
         // issuing the delayed form focus event.
         mFocusPreOSKViewportRect.setEmpty();
-    }
-
-    private void scrollFocusedEditableNodeIntoView() {
-        assert mWebContents != null;
-        mWebContents.scrollFocusedEditableNodeIntoView();
-    }
-
-    /**
-     * Selects the word around the caret, if any.
-     * The caller can check if selection actually occurred by listening to OnSelectionChanged.
-     */
-    public void selectWordAroundCaret() {
-        assert mWebContents != null;
-        mWebContents.selectWordAroundCaret();
     }
 
     /**
@@ -2533,17 +2472,6 @@ public class ContentViewCore
         return mRenderCoordinates.getPageScaleFactor();
     }
 
-    /**
-     * If the view is ready to draw contents to the screen. In hardware mode,
-     * the initialization of the surface texture may not occur until after the
-     * view has been added to the layout. This method will return {@code true}
-     * once the texture is actually ready.
-     */
-    public boolean isReady() {
-        assert mWebContents != null;
-        return mWebContents.isReady();
-    }
-
     @CalledByNative
     private void startContentIntent(String contentUrl) {
         getContentViewClient().onStartContentIntent(getContext(), contentUrl);
@@ -2774,28 +2702,6 @@ public class ContentViewCore
     }
 
     /**
-     * Inform WebKit that Fullscreen mode has been exited by the user.
-     */
-    public void exitFullscreen() {
-        assert mWebContents != null;
-        mWebContents.exitFullscreen();
-    }
-
-    /**
-     * Changes whether hiding the top controls is enabled.
-     *
-     * @param enableHiding Whether hiding the top controls should be enabled or not.
-     * @param enableShowing Whether showing the top controls should be enabled or not.
-     * @param animate Whether the transition should be animated or not.
-     */
-    public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
-            boolean animate) {
-        assert mWebContents != null;
-        mWebContents.updateTopControlsState(
-                enableHiding, enableShowing, animate);
-    }
-
-    /**
      * @return The cached copy of render positions and scales.
      */
     public RenderCoordinates getRenderCoordinates() {
@@ -2911,11 +2817,6 @@ public class ContentViewCore
     @Override
     public void onScreenOrientationChanged(int orientation) {
         sendOrientationChangeEvent(orientation);
-    }
-
-    public void resumeResponseDeferredAtStart() {
-        assert mWebContents != null;
-        mWebContents.resumeResponseDeferredAtStart();
     }
 
     /**

@@ -467,7 +467,7 @@ public class Tab implements NavigationClient {
      * @return Whether or not the tab has something valid to render.
      */
     public boolean isReady() {
-        return mNativePage != null || (mContentViewCore != null && mContentViewCore.isReady());
+        return mNativePage != null || (getWebContents() != null && getWebContents().isReady());
     }
 
     /**

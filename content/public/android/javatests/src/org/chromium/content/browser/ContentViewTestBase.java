@@ -9,6 +9,7 @@ import android.util.Log;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
@@ -42,8 +43,9 @@ public class ContentViewTestBase extends ContentShellTestBase {
                 }
             });
 
-            loadDataSync(activity.getActiveContentViewCore(),
-                    "<!DOCTYPE html><title></title>", "text/html", false);
+            loadDataSync(activity.getActiveContentViewCore().getWebContents()
+                    .getNavigationController(), "<!DOCTYPE html><title></title>", "text/html",
+                            false);
         } catch (Throwable e) {
             throw new RuntimeException(
                     "Failed to set up ContentView: " + Log.getStackTraceString(e));
@@ -54,9 +56,9 @@ public class ContentViewTestBase extends ContentShellTestBase {
      * Loads data on the UI thread and blocks until onPageFinished is called.
      * TODO(cramya): Move method to a separate util file once UiUtils.java moves into base.
      */
-    protected void loadDataSync(final ContentViewCore contentViewCore, final String data,
+    protected void loadDataSync(final NavigationController navigationController, final String data,
             final String mimeType, final boolean isBase64Encoded) throws Throwable {
-        loadUrl(contentViewCore, mTestCallbackHelperContainer, LoadUrlParams.createLoadDataParams(
-                data, mimeType, isBase64Encoded));
+        loadUrl(navigationController, mTestCallbackHelperContainer,
+                LoadUrlParams.createLoadDataParams(data, mimeType, isBase64Encoded));
     }
 }

@@ -148,7 +148,7 @@ public class SyncTest extends ChromeShellTestBase {
                 String innerHtml = "";
                 try {
                     innerHtml = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                            contentViewCore, "document.documentElement.innerHTML");
+                            contentViewCore.getWebContents(), "document.documentElement.innerHTML");
                 } catch (InterruptedException e) {
                     Log.w(TAG, "Interrupted while polling about:sync page for sync status.", e);
                 } catch (TimeoutException e) {

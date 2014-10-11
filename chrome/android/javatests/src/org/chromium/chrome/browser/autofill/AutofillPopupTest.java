@@ -21,6 +21,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.autofill.AutofillPopup;
 
 import java.util.ArrayList;
@@ -141,6 +142,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
         final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
+        final WebContents webContents = viewCore.getWebContents();
         final ViewGroup view = viewCore.getContainerView();
         final TestInputMethodManagerWrapper immw =
                 new TestInputMethodManagerWrapper(viewCore);
@@ -157,7 +159,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
         assertEquals(1, mHelper.getNumberOfProfiles());
 
         // Click the input field for the first name.
-        assertTrue(DOMUtils.waitForNonZeroNodeBounds(viewCore, "fn"));
+        assertTrue(DOMUtils.waitForNonZeroNodeBounds(webContents, "fn"));
         DOMUtils.clickNode(this, viewCore, "fn");
 
         waitForKeyboardShowRequest(immw, 1);
@@ -181,7 +183,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
         TouchCommon touchCommon = new TouchCommon(this);
         touchCommon.singleClickViewRelative(popup.getListView(), 10, 10);
 
-        waitForInputFieldFill(viewCore);
+        waitForInputFieldFill(webContents);
     }
 
     /**
@@ -194,27 +196,28 @@ public class AutofillPopupTest extends ChromeShellTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         loadAndFillForm(BASIC_PAGE_DATA, "J");
         final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
+        final WebContents webContents = viewCore.getWebContents();
 
         assertEquals("First name did not match",
-                FIRST_NAME, DOMUtils.getNodeValue(viewCore, "fn"));
+                FIRST_NAME, DOMUtils.getNodeValue(webContents, "fn"));
         assertEquals("Last name did not match",
-                LAST_NAME, DOMUtils.getNodeValue(viewCore, "ln"));
+                LAST_NAME, DOMUtils.getNodeValue(webContents, "ln"));
         assertEquals("Street address (textarea) did not match",
-                STREET_ADDRESS_TEXTAREA, DOMUtils.getNodeValue(viewCore, "sa"));
+                STREET_ADDRESS_TEXTAREA, DOMUtils.getNodeValue(webContents, "sa"));
         assertEquals("Address line 1 did not match",
-                ADDRESS_LINE1, DOMUtils.getNodeValue(viewCore, "a1"));
+                ADDRESS_LINE1, DOMUtils.getNodeValue(webContents, "a1"));
         assertEquals("Address line 2 did not match",
-                ADDRESS_LINE2, DOMUtils.getNodeValue(viewCore, "a2"));
+                ADDRESS_LINE2, DOMUtils.getNodeValue(webContents, "a2"));
         assertEquals("City did not match",
-                CITY, DOMUtils.getNodeValue(viewCore, "ct"));
+                CITY, DOMUtils.getNodeValue(webContents, "ct"));
         assertEquals("Zip code did not match",
-                ZIP_CODE, DOMUtils.getNodeValue(viewCore, "zc"));
+                ZIP_CODE, DOMUtils.getNodeValue(webContents, "zc"));
         assertEquals("Country did not match",
-                COUNTRY, DOMUtils.getNodeValue(viewCore, "co"));
+                COUNTRY, DOMUtils.getNodeValue(webContents, "co"));
         assertEquals("Email did not match",
-                EMAIL, DOMUtils.getNodeValue(viewCore, "em"));
+                EMAIL, DOMUtils.getNodeValue(webContents, "em"));
         assertEquals("Phone number did not match",
-                PHONE_NUMBER, DOMUtils.getNodeValue(viewCore, "ph"));
+                PHONE_NUMBER, DOMUtils.getNodeValue(webContents, "ph"));
 
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
         final int loggedEntries = 10;
@@ -321,14 +324,14 @@ public class AutofillPopupTest extends ChromeShellTestBase {
                 }));
     }
 
-    private void waitForInputFieldFill(final ContentViewCore viewCore) throws InterruptedException {
+    private void waitForInputFieldFill(final WebContents webContents) throws InterruptedException {
         assertTrue("First name field was never filled.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
                         try {
                             return TextUtils.equals(FIRST_NAME,
-                                    DOMUtils.getNodeValue(viewCore, "fn"));
+                                    DOMUtils.getNodeValue(webContents, "fn"));
                         } catch (InterruptedException e) {
                             return false;
                         } catch (TimeoutException e) {

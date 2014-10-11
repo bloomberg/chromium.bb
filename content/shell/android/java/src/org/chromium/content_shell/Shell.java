@@ -334,6 +334,13 @@ public class Shell extends LinearLayout {
         return mContentViewCore;
     }
 
+     /**
+     * @return The {@link WebContents} currently managing the content shown by this Shell.
+     */
+    public WebContents getWebContents() {
+        return mWebContents;
+    }
+
     private void setKeyboardVisibilityForUrl(boolean visible) {
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
                 Context.INPUT_METHOD_SERVICE);

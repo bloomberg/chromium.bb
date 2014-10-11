@@ -9,8 +9,8 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -26,9 +26,9 @@ public class JavaScriptUtils {
      * Returns the result of its execution in JSON format.
      */
     public static String executeJavaScriptAndWaitForResult(
-            ContentViewCore viewCore, String code) throws InterruptedException, TimeoutException {
+            WebContents webContents, String code) throws InterruptedException, TimeoutException {
         return executeJavaScriptAndWaitForResult(
-                viewCore, code, EVALUATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                webContents, code, EVALUATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
@@ -37,7 +37,7 @@ public class JavaScriptUtils {
      * Returns the result of its execution in JSON format.
      */
     public static String executeJavaScriptAndWaitForResult(
-            final ContentViewCore viewCore,
+            final WebContents webContents,
             final String code,
             final long timeout,
             final TimeUnit timeoutUnits)
@@ -50,7 +50,7 @@ public class JavaScriptUtils {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                helper.evaluateJavaScript(viewCore, code);
+                helper.evaluateJavaScript(webContents, code);
             }
         });
         helper.waitUntilHasValue(timeout, timeoutUnits);
@@ -61,11 +61,11 @@ public class JavaScriptUtils {
     /**
      * Executes the given snippet of JavaScript code but does not wait for the result.
      */
-    public static void executeJavaScript(final ContentViewCore viewCore, final String code) {
+    public static void executeJavaScript(final WebContents webContents, final String code) {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                viewCore.evaluateJavaScript(code, null);
+                webContents.evaluateJavaScript(code, null);
             }
         });
     }

@@ -22,6 +22,7 @@ import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -224,4 +225,14 @@ public class ContentShellActivity extends Activity {
         Shell shell = getActiveShell();
         return shell != null ? shell.getContentViewCore() : null;
     }
+
+    /**
+     * @return The {@link WebContents} owned by the currently visible {@link Shell} or null if
+     *         one is not showing.
+     */
+    public WebContents getActiveWebContents() {
+        Shell shell = getActiveShell();
+        return shell != null ? shell.getWebContents() : null;
+    }
+
 }

@@ -8,6 +8,7 @@ package org.chromium.content.browser.test.util;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.JavaScriptCallback;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -28,7 +29,8 @@ public class TestCallbackHelperContainer {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mTestWebContentsObserver = new TestWebContentsObserver(contentViewCore);
+                mTestWebContentsObserver = new TestWebContentsObserver(contentViewCore
+                        .getWebContents());
             }
         });
     }
@@ -105,11 +107,11 @@ public class TestCallbackHelperContainer {
         private String mJsonResult;
 
         /**
-         * Starts evaluation of a given JavaScript code on a given contentViewCore.
-         * @param contentViewCore A ContentViewCore instance to be used.
+         * Starts evaluation of a given JavaScript code on a given webContents.
+         * @param webContents A WebContents instance to be used.
          * @param code A JavaScript code to be evaluated.
          */
-        public void evaluateJavaScript(ContentViewCore contentViewCore, String code) {
+        public void evaluateJavaScript(WebContents webContents, String code) {
             JavaScriptCallback callback =
                 new JavaScriptCallback() {
                     @Override
@@ -117,7 +119,7 @@ public class TestCallbackHelperContainer {
                         notifyCalled(jsonResult);
                     }
                 };
-            contentViewCore.evaluateJavaScript(code, callback);
+            webContents.evaluateJavaScript(code, callback);
             mJsonResult = null;
         }
 

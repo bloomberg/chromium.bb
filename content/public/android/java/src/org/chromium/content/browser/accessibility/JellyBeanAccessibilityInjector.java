@@ -185,7 +185,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
             final int resultId = mResultIdCounter.getAndIncrement();
             final String js = String.format(Locale.US, JAVASCRIPT_ACTION_TEMPLATE, code,
                     mInterfaceName, resultId);
-            contentView.evaluateJavaScript(js, null);
+            contentView.getWebContents().evaluateJavaScript(js, null);
 
             return getResultAndClear(resultId);
         }

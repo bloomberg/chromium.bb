@@ -72,7 +72,8 @@ public class PostMessageTest extends ContentViewTestBase {
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrame() throws Throwable {
         ContentViewCore contentViewCore = getContentViewCore();
-        loadDataSync(contentViewCore, URL1, "text/html", false);
+        loadDataSync(contentViewCore.getWebContents().getNavigationController(), URL1, "text/html",
+                false);
         contentViewCore.postMessageToFrame(null, MESSAGE, SOURCE_ORIGIN, "*");
         mMessageObject.waitForMessage();
         assertEquals(MESSAGE, mMessageObject.getData());

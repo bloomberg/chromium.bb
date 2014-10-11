@@ -9,8 +9,12 @@ import android.test.suitebuilder.annotation.LargeTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
+/**
+ * Integration tests for JavaScript execution.
+ */
 public class TestsJavaScriptEvalTest extends ContentShellTestBase {
     private static final String JSTEST_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><script>" +
@@ -32,15 +36,15 @@ public class TestsJavaScriptEvalTest extends ContentShellTestBase {
         launchContentShellWithUrl(JSTEST_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
-        final ContentViewCore contentViewCore = getContentViewCore();
+        final WebContents webContents = getWebContents();
         for (int i = 0; i < 30; ++i) {
             for (int j = 0; j < 10; ++j) {
                 // Start evaluation of a JavaScript script -- we don't need a result.
-                contentViewCore.evaluateJavaScript("foobar();", null);
+                webContents.evaluateJavaScript("foobar();", null);
             }
             // DOMUtils does need to evaluate a JavaScript and get its result to get DOM bounds.
             assertNotNull("Failed to get bounds",
-                    DOMUtils.getNodeBounds(contentViewCore, "test"));
+                    DOMUtils.getNodeBounds(webContents, "test"));
         }
     }
 }

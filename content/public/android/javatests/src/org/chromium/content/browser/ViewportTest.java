@@ -17,7 +17,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 public class ViewportTest extends ContentViewTestBase {
 
     protected String evaluateStringValue(String expression) throws Throwable {
-        return JavaScriptUtils.executeJavaScriptAndWaitForResult(getContentViewCore(),
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(getWebContents(),
                 expression);
     }
 

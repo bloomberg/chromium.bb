@@ -137,7 +137,8 @@ public class WebContentsDelegateAndroid {
 
     /**
      * Report a form resubmission. The overwriter of this function should eventually call
-     * either of ContentViewCore.ContinuePendingReload or ContentViewCore.CancelPendingReload.
+     * either of NavigationController.ContinuePendingReload or
+     * NavigationController.CancelPendingReload.
      */
     @CalledByNative
     public void showRepostFormWarningDialog() {

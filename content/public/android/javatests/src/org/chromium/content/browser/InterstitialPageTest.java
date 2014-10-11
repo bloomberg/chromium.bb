@@ -71,7 +71,7 @@ public class InterstitialPageTest extends ContentShellTestBase {
                         @Override
                         public Boolean call() throws Exception {
                             return shouldBeShown
-                                    == getContentViewCore().isShowingInterstitialPage();
+                                    == getWebContents().isShowingInterstitialPage();
                         }
                     });
                 } catch (ExecutionException e) {
@@ -115,9 +115,8 @@ public class InterstitialPageTest extends ContentShellTestBase {
                 new Callable<TestWebContentsObserverAndroid>() {
                     @Override
                     public TestWebContentsObserverAndroid call() throws Exception {
-                        getContentViewCore().showInterstitialPage(URL, delegate);
-                        return new TestWebContentsObserverAndroid(
-                                getContentViewCore().getWebContents());
+                        getWebContents().showInterstitialPage(URL, delegate.getNative());
+                        return new TestWebContentsObserverAndroid(getWebContents());
                     }
                 });
 

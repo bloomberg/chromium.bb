@@ -22,6 +22,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 
 import java.lang.annotation.ElementType;
@@ -112,6 +114,13 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
     }
 
     /**
+     * Returns the WebContents of this Shell.
+     */
+    protected WebContents getWebContents() {
+        return getActivity().getActiveShell().getWebContents();
+    }
+
+    /**
      * Waits for the Active shell to finish loading.  This times out after
      * WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT milliseconds and it shouldn't be used for long
      * loading pages. Instead it should be used more for test initialization. The proper way
@@ -162,14 +171,15 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
      * @param params The URL params to use.
      */
     protected void loadUrl(
-            final ContentViewCore viewCore, TestCallbackHelperContainer callbackHelperContainer,
+            final NavigationController navigationController,
+            TestCallbackHelperContainer callbackHelperContainer,
             final LoadUrlParams params) throws Throwable {
         handleBlockingCallbackAction(
                 callbackHelperContainer.getOnPageFinishedHelper(),
                 new Runnable() {
                     @Override
                     public void run() {
-                        viewCore.getWebContents().getNavigationController().loadUrl(params);
+                        navigationController.loadUrl(params);
                     }
                 });
     }

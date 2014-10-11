@@ -52,7 +52,7 @@ public class GestureDetectorResetTest extends ContentShellTestBase {
         @Override
         public boolean isSatisfied() {
             try {
-                String contents = DOMUtils.getNodeContents(mViewCore, mNodeId);
+                String contents = DOMUtils.getNodeContents(mViewCore.getWebContents(), mNodeId);
                 return mExpectedContents.equals(contents);
             } catch (Throwable e) {
                 Assert.fail("Failed to retrieve node contents: " + e);

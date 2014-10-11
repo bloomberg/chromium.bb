@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.test.util;
 
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
@@ -20,11 +19,6 @@ public class TestWebContentsObserver extends WebContentsObserverAndroid {
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
-
-    // TODO(yfriedman): Switch everyone to use the WebContents constructor.
-    public TestWebContentsObserver(ContentViewCore contentViewCore) {
-        this(contentViewCore.getWebContents());
-    }
 
     public TestWebContentsObserver(WebContents webContents) {
         super(webContents);

@@ -14,6 +14,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Test WebChromeClient::onShow/HideCustomView.
@@ -21,6 +22,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
     private FullScreenVideoTestAwContentsClient mContentsClient;
     private ContentViewCore mContentViewCore;
+    private WebContents mWebContents;
     private VideoTestWebServer mWebServer;
     private AwTestContainerView mTestContainerView;
 
@@ -31,6 +33,7 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         mTestContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
         mContentViewCore = mTestContainerView.getContentViewCore();
+        mWebContents = mTestContainerView.getAwContents().getWebContents();
         enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         mTestContainerView.getAwContents().getSettings().setFullscreenSupported(true);
         mWebServer = new VideoTestWebServer(
@@ -60,7 +63,7 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         doOnShowAndHideCustomViewTest(new Runnable() {
             @Override
             public void run() {
-                DOMUtils.exitFullscreen(mContentViewCore);
+                DOMUtils.exitFullscreen(mWebContents);
             }
         });
     }
@@ -69,8 +72,7 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testOnShowCustomViewAndPlayWithHtmlControl() throws Throwable {
         doOnShowCustomViewTest();
-        Assert.assertFalse(DOMUtils.hasVideoEnded(
-                mContentViewCore, VideoTestWebServer.VIDEO_ID));
+        Assert.assertFalse(DOMUtils.hasVideoEnded(mWebContents, VideoTestWebServer.VIDEO_ID));
 
         // Click the html play button that is rendered above the video right in the middle
         // of the custom view. Note that we're not able to get the precise location of the
@@ -80,8 +82,7 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
                 AwContentsClientFullScreenVideoTest.this);
         touchCommon.singleClickView(mContentsClient.getCustomView());
 
-        Assert.assertTrue(DOMUtils.waitForEndOfVideo(
-                mContentViewCore, VideoTestWebServer.VIDEO_ID));
+        Assert.assertTrue(DOMUtils.waitForEndOfVideo(mWebContents, VideoTestWebServer.VIDEO_ID));
     }
 
     @MediumTest
