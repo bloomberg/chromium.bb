@@ -57,7 +57,7 @@ class ChromeElfUtilTest :
                                              const char*,
                                              const char*> > {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
     const char* app;
