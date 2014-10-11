@@ -5,6 +5,7 @@
 #include "components/captive_portal/captive_portal_detector.h"
 
 #include "base/logging.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -57,6 +58,11 @@ void CaptivePortalDetector::Cancel() {
 }
 
 void CaptivePortalDetector::OnURLFetchComplete(const net::URLFetcher* source) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422577 CaptivePortalDetector::OnURLFetchComplete"));
+
   DCHECK(CalledOnValidThread());
   DCHECK(FetchingURL());
   DCHECK_EQ(url_fetcher_.get(), source);

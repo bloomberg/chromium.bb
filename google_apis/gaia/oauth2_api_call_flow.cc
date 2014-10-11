@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
@@ -137,6 +138,11 @@ OAuth2AccessTokenFetcher* OAuth2ApiCallFlow::CreateAccessTokenFetcher() {
 }
 
 void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422577 OAuth2ApiCallFlow::OnURLFetchComplete"));
+
   CHECK(source);
   CHECK_EQ(API_CALL_STARTED, state_);
   EndApiCall(source);

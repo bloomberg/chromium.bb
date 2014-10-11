@@ -5,6 +5,7 @@
 #include "base/base64.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -223,6 +224,11 @@ void GCMNetworkChannel::OnGetTokenComplete(
 }
 
 void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422577 GCMNetworkChannel::OnURLFetchComplete"));
+
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fetcher_, source);
   // Free fetcher at the end of function.
