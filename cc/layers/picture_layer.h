@@ -61,7 +61,6 @@ class CC_EXPORT PictureLayer : public Layer {
   // Invalidation from the last time update was called.
   Region pile_invalidation_;
   gfx::Rect last_updated_visible_content_rect_;
-  bool is_mask_;
 
   int update_source_frame_number_;
   bool can_use_lcd_text_last_frame_;
