@@ -49,6 +49,7 @@ public:
 
     void end();
 
+    void forceSynchronousParse();
     void addData(const char* bytes, size_t length);
 
     const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }
@@ -68,6 +69,7 @@ private:
     TextResourceDecoderBuilder m_decoderBuilder;
 
     RefPtrWillBeMember<DocumentParser> m_parser;
+    bool m_forcedSynchronousParse;
 };
 
 } // namespace blink

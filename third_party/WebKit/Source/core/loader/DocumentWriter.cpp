@@ -56,6 +56,7 @@ DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType,
     // original parser, even if the document acquires a new parser (e.g., via
     // document.open).
     , m_parser(m_document->implicitOpen())
+    , m_forcedSynchronousParse(false)
 {
     if (m_document->frame()) {
         if (FrameView* view = m_document->frame()->view())
@@ -73,6 +74,15 @@ void DocumentWriter::trace(Visitor* visitor)
     visitor->trace(m_parser);
 }
 
+void DocumentWriter::forceSynchronousParse()
+{
+    ASSERT(!m_forcedSynchronousParse);
+
+    ASSERT(m_parser);
+    m_parser->pinToMainThread();
+    m_forcedSynchronousParse = true;
+}
+
 void DocumentWriter::appendReplacingData(const String& source)
 {
     m_document->setCompatibilityMode(Document::NoQuirksMode);
@@ -80,7 +90,8 @@ void DocumentWriter::appendReplacingData(const String& source)
     // FIXME: This should call DocumentParser::appendBytes instead of append
     // to support RawDataDocumentParsers.
     if (DocumentParser* parser = m_document->parser()) {
-        parser->pinToMainThread();
+        if (!m_forcedSynchronousParse)
+            forceSynchronousParse();
         // Because we're pinned to the main thread we don't need to worry about
         // passing ownership of the source string.
         parser->append(source.impl());

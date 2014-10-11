@@ -521,6 +521,10 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 
     m_writer = createWriterFor(0, init, mimeType, encoding, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
+
+    if (m_substituteData.isValid() && m_substituteData.forceSynchronousLoad())
+        m_writer->forceSynchronousParse();
+
     // This should be set before receivedFirstData().
     if (!overridingURL.isEmpty())
         m_frame->document()->setBaseURLOverride(overridingURL);
