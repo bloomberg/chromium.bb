@@ -4800,15 +4800,17 @@ TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
 
 TEST_F(WebFrameTest, NavigateToSandboxedMarkup)
 {
+    FrameTestHelpers::TestWebFrameClient webFrameClient;
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad("about:blank", true);
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad("about:blank", true, &webFrameClient);
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
 
     frame->document().setIsTransitionDocument();
 
     std::string markup("<div id='foo'></div><script>document.getElementById('foo').setAttribute('dir', 'rtl')</script>");
     frame->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
-    FrameTestHelpers::runPendingTasks();
+
+    webFrameClient.waitForLoadToComplete();
 
     WebDocument document = webViewImpl->mainFrame()->document();
     WebElement transitionElement = document.getElementById("foo");

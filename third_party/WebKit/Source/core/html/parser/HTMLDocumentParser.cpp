@@ -255,6 +255,8 @@ bool HTMLDocumentParser::processingData() const
 
 void HTMLDocumentParser::pumpTokenizerIfPossible(SynchronousMode mode)
 {
+    ASSERT(mode == ForceSynchronous);
+
     if (isStopped())
         return;
     if (isWaitingForScripts())
@@ -262,7 +264,6 @@ void HTMLDocumentParser::pumpTokenizerIfPossible(SynchronousMode mode)
 
     // Once a resume is scheduled, HTMLParserScheduler controls when we next pump.
     if (isScheduledForResume()) {
-        ASSERT(mode == AllowYield);
         return;
     }
 
@@ -278,19 +279,12 @@ bool HTMLDocumentParser::isScheduledForResume() const
 void HTMLDocumentParser::resumeParsingAfterYield()
 {
     ASSERT(!m_isPinnedToMainThread);
-    // pumpTokenizer can cause this parser to be detached from the Document,
+    ASSERT(m_haveBackgroundParser);
+
+    // pumpPendingSpeculations can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
-
-    if (m_haveBackgroundParser) {
-        pumpPendingSpeculations();
-        return;
-    }
-
-    // We should never be here unless we can pump immediately.  Call pumpTokenizer()
-    // directly so that ASSERTS will fire if we're wrong.
-    pumpTokenizer(AllowYield);
-    endIfDelayed();
+    pumpPendingSpeculations();
 }
 
 void HTMLDocumentParser::runScriptsForPausedTreeBuilder()
@@ -589,7 +583,7 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
 #endif
     ASSERT(m_tokenizer);
     ASSERT(m_token);
-    ASSERT(!m_haveBackgroundParser || mode == ForceSynchronous);
+    ASSERT(mode == ForceSynchronous);
 
     PumpSession session(m_pumpSessionNestingLevel, contextForParsingSession());
 
@@ -814,10 +808,8 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     // javascript: url handling is one such caller.
     // FIXME: This is gross, and we should separate the concept of synchronous parsing
     // from insert() so that only document.write() uses insert.
-    if (m_isPinnedToMainThread)
-        pumpTokenizerIfPossible(ForceSynchronous);
-    else
-        pumpTokenizerIfPossible(AllowYield);
+    ASSERT(m_isPinnedToMainThread);
+    pumpTokenizerIfPossible(ForceSynchronous);
 
     endIfDelayed();
 }
@@ -971,7 +963,7 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
     }
 
     m_insertionPreloadScanner.clear();
-    pumpTokenizerIfPossible(AllowYield);
+    pumpTokenizerIfPossible(ForceSynchronous);
     endIfDelayed();
 }
 

@@ -329,6 +329,21 @@ void TestWebFrameClient::didStopLoading()
     --m_loadsInProgress;
 }
 
+void TestWebFrameClient::waitForLoadToComplete()
+{
+    for (;;) {
+        // We call runPendingTasks multiple times as single call of
+        // runPendingTasks may not be enough.
+        // runPendingTasks only ensures that main thread task queue is empty,
+        // and asynchronous parsing make use of off main thread HTML parser.
+        FrameTestHelpers::runPendingTasks();
+        if (!isLoading())
+            break;
+
+        Platform::current()->yieldCurrentThread();
+    }
+}
+
 void TestWebViewClient::initializeLayerTreeView()
 {
     m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting());

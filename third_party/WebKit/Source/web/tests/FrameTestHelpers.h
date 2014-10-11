@@ -104,6 +104,7 @@ public:
     virtual void didStopLoading() override;
 
     bool isLoading() { return m_loadsInProgress > 0; }
+    void waitForLoadToComplete();
 
 private:
     int m_loadsInProgress;
