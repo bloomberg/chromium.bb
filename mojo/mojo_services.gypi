@@ -94,6 +94,9 @@
       'include_dirs': [
         'third_party/WebKit'
       ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
+      ],
       'sources': [
         'services/html_viewer/blink_basic_type_converters.cc',
         'services/html_viewer/blink_basic_type_converters.h',
