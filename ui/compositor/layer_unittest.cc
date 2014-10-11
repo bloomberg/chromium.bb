@@ -283,7 +283,7 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) override {
     painted_ = true;
-    canvas->DrawColor(SK_ColorTRANSPARENT);
+    canvas->DrawColor(SK_ColorWHITE);
   }
   virtual void OnDelegatedFrameDamage(
       const gfx::Rect& damage_rect_in_dip) override {}
