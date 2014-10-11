@@ -32,7 +32,10 @@
 #include "public/web/WebPluginContainer.h"
 
 #include "core/dom/Element.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/testing/URLTestHelpers.h"
+#include "platform/PlatformEvent.h"
+#include "platform/PlatformKeyboardEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebThread.h"
@@ -176,4 +179,38 @@ TEST_F(WebPluginContainerTest, Copy)
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 }
 
+// Verifies |Ctrl-C| and |Ctrl-Insert| keyboard events, results in copying to
+// the clipboard.
+TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(
+        WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("plugin_container.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    ASSERT(webView);
+    webView->settings()->setPluginsEnabled(true);
+    webView->resize(WebSize(300, 300));
+    webView->layout();
+    FrameTestHelpers::runPendingTasks();
+
+    WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
+    PlatformEvent::Modifiers modifierKey = PlatformEvent::CtrlKey;
+#if OS(MACOSX)
+    modifierKey = PlatformEvent::MetaKey;
+#endif
+    PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "67", 67, 0, false, false, false, modifierKey, 0.0);
+    RefPtrWillBeRawPtr<KeyboardEvent> keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
+    ((WebPluginContainerImpl*)(pluginContainerOneElement.pluginContainer()))->handleEvent(keyEventC.get());
+    EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
+
+    // Clearing |Clipboard::Buffer()|.
+    Platform::current()->clipboard()->writePlainText(WebString(""));
+    EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
+
+    PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "45", 45, 0, false, false, false, modifierKey, 0.0);
+    RefPtrWillBeRawPtr<KeyboardEvent> keyEventInsert = KeyboardEvent::create(platformKeyboardEventInsert, 0);
+    ((WebPluginContainerImpl*)(pluginContainerOneElement.pluginContainer()))->handleEvent(keyEventInsert.get());
+    EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
+}
 }

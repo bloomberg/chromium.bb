@@ -818,7 +818,7 @@ void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)
 #else
         if (webEvent.modifiers == WebInputEvent::ControlKey
 #endif
-            && webEvent.windowsKeyCode == VKEY_C
+            && (webEvent.windowsKeyCode == VKEY_C || webEvent.windowsKeyCode == VKEY_INSERT)
             // Only copy if there's a selection, so that we only ever do this
             // for Pepper plugins that support copying.  Windowless NPAPI
             // plugins will get the event as before.
