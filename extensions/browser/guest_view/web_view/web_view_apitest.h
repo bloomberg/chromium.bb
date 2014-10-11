@@ -30,8 +30,15 @@ class WebViewAPITest : public AppShellTest {
   void StartTestServer();
   void StopTestServer();
 
+  content::WebContents* GetEmbedderWebContents();
+
   // Returns the GuestViewManager singleton.
   TestGuestViewManager* GetGuestViewManager();
+
+  content::WebContents* GetGuestWebContents();
+  void SendMessageToGuestAndWait(const std::string& message,
+                                 const std::string& wait_message);
+  void SendMessageToEmbedder(const std::string& message);
 
   // content::BrowserTestBase implementation.
   virtual void RunTestOnMainThreadLoop() override;
@@ -39,10 +46,12 @@ class WebViewAPITest : public AppShellTest {
   virtual void SetUpOnMainThread() override;
   virtual void TearDownOnMainThread() override;
 
- protected:
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
   base::DictionaryValue test_config_;
+
+ private:
+  content::WebContents* GetFirstAppWindowWebContents();
 };
 
 class WebViewDPIAPITest : public WebViewAPITest {

@@ -11,6 +11,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -71,6 +72,30 @@ static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
   return http_response.PassAs<net::test_server::HttpResponse>();
 }
 
+class WebContentsHiddenObserver : public content::WebContentsObserver {
+ public:
+  WebContentsHiddenObserver(content::WebContents* web_contents,
+                            const base::Closure& hidden_callback)
+      : WebContentsObserver(web_contents),
+        hidden_callback_(hidden_callback),
+        hidden_observed_(false) {
+  }
+
+  // WebContentsObserver.
+  virtual void WasHidden() OVERRIDE {
+    hidden_observed_ = true;
+    hidden_callback_.Run();
+  }
+
+  bool hidden_observed() { return hidden_observed_; }
+
+ private:
+  base::Closure hidden_callback_;
+  bool hidden_observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
+};
+
 // Handles |request| by serving a redirect response.
 scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
     const std::string& path,
@@ -121,10 +146,14 @@ void WebViewAPITest::LaunchApp(const std::string& app_location) {
   ExtensionTestMessageListener launch_listener("LAUNCHED", false);
   ASSERT_TRUE(launch_listener.WaitUntilSatisfied());
 
+  embedder_web_contents_ = GetFirstAppWindowWebContents();
+}
+
+content::WebContents* WebViewAPITest::GetFirstAppWindowWebContents() {
   const AppWindowRegistry::AppWindowList& app_window_list =
       AppWindowRegistry::Get(browser_context_)->app_windows();
   DCHECK(app_window_list.size() == 1);
-  embedder_web_contents_ = (*app_window_list.begin())->web_contents();
+  return (*app_window_list.begin())->web_contents();
 }
 
 void WebViewAPITest::RunTest(const std::string& test_name,
@@ -196,10 +225,39 @@ void WebViewAPITest::TearDownOnMainThread() {
   AppShellTest::TearDownOnMainThread();
 }
 
+void WebViewAPITest::SendMessageToEmbedder(const std::string& message) {
+  EXPECT_TRUE(
+      content::ExecuteScript(
+          GetEmbedderWebContents(),
+          base::StringPrintf("onAppCommand('%s');", message.c_str())));
+}
+
+content::WebContents* WebViewAPITest::GetEmbedderWebContents() {
+  if (!embedder_web_contents_)
+    embedder_web_contents_ = GetFirstAppWindowWebContents();
+  return embedder_web_contents_;
+}
+
 TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
   return static_cast<TestGuestViewManager*>(
       TestGuestViewManager::FromBrowserContext(
           ShellContentBrowserClient::Get()->GetBrowserContext()));
+}
+
+void WebViewAPITest::SendMessageToGuestAndWait(
+    const std::string& message,
+    const std::string& wait_message) {
+  scoped_ptr<ExtensionTestMessageListener> listener;
+  if (!wait_message.empty())
+    listener.reset(new ExtensionTestMessageListener(wait_message, false));
+
+  EXPECT_TRUE(
+      content::ExecuteScript(
+          GetGuestWebContents(),
+          base::StringPrintf("onAppCommand('%s');", message.c_str())));
+
+  if (listener)
+    ASSERT_TRUE(listener->WaitUntilSatisfied());
 }
 
 void WebViewDPIAPITest::SetUp() {
@@ -207,6 +265,80 @@ void WebViewDPIAPITest::SetUp() {
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                                   base::StringPrintf("%f", scale()));
   WebViewAPITest::SetUp();
+}
+
+content::WebContents* WebViewAPITest::GetGuestWebContents() {
+  return GetGuestViewManager()->WaitForSingleGuestCreated();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, AcceptTouchEvents) {
+  LaunchApp("web_view/accept_touch_events");
+
+  content::RenderViewHost* embedder_rvh =
+      GetEmbedderWebContents()->GetRenderViewHost();
+
+  bool embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_FALSE(embedder_has_touch_handler);
+
+  SendMessageToGuestAndWait("install-touch-handler", "installed-touch-handler");
+
+  // Note that we need to wait for the installed/registered touch handler to
+  // appear in browser process before querying |embedder_rvh|.
+  // In practice, since we do a roundrtip from browser process to guest and
+  // back, this is sufficient.
+  embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_TRUE(embedder_has_touch_handler);
+
+  SendMessageToGuestAndWait("uninstall-touch-handler",
+                            "uninstalled-touch-handler");
+  // Same as the note above about waiting.
+  embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_FALSE(embedder_has_touch_handler);
+}
+
+// This test verifies that hiding the embedder also hides the guest.
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, EmbedderVisibilityChanged) {
+  LaunchApp("web_view/visibility_changed");
+
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  WebContentsHiddenObserver observer(GetGuestWebContents(),
+                                     loop_runner->QuitClosure());
+
+  // Handled in web_view/visibility_changed/main.js
+  SendMessageToEmbedder("hide-embedder");
+  if (!observer.hidden_observed())
+    loop_runner->Run();
+}
+
+// This test verifies that hiding the guest triggers WebContents::WasHidden().
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, GuestVisibilityChanged) {
+  LaunchApp("web_view/visibility_changed");
+
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  WebContentsHiddenObserver observer(GetGuestWebContents(),
+                                     loop_runner->QuitClosure());
+
+  // Handled in web_view/visibility_changed/main.js
+  SendMessageToEmbedder("hide-guest");
+  if (!observer.hidden_observed())
+    loop_runner->Run();
+}
+
+// This test verifies that reloading the embedder reloads the guest (and doest
+// not crash).
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, ReloadEmbedder) {
+  // Just load a guest from other test, we do not want to add a separate
+  // app for this test.
+  LaunchApp("web_view/visibility_changed");
+
+  ExtensionTestMessageListener launched_again_listener("LAUNCHED", false);
+  embedder_web_contents_->GetController().Reload(false);
+  ASSERT_TRUE(launched_again_listener.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAllowTransparencyAttribute) {
@@ -476,8 +608,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
   EXPECT_TRUE(content::ExecuteScript(embedder_web_contents_,
                                      "runTest('testRemoveWebviewOnExit')"));
 
-  content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForSingleGuestCreated();
+  content::WebContents* guest_web_contents = GetGuestWebContents();
   EXPECT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 
