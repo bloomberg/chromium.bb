@@ -35,9 +35,9 @@ class NET_EXPORT ChunkedUploadDataStream : public UploadDataStream {
 
  private:
   // UploadDataStream implementation.
-  virtual int InitInternal() OVERRIDE;
-  virtual int ReadInternal(IOBuffer* buf, int buf_len) OVERRIDE;
-  virtual void ResetInternal() OVERRIDE;
+  virtual int InitInternal() override;
+  virtual int ReadInternal(IOBuffer* buf, int buf_len) override;
+  virtual void ResetInternal() override;
 
   int ReadChunk(IOBuffer* buf, int buf_len);
 

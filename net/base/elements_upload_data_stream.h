@@ -36,12 +36,12 @@ class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
 
  private:
   // UploadDataStream implementation.
-  virtual bool IsInMemory() const OVERRIDE;
+  virtual bool IsInMemory() const override;
   virtual const ScopedVector<UploadElementReader>*
-     GetElementReaders() const OVERRIDE;
-  virtual int InitInternal() OVERRIDE;
-  virtual int ReadInternal(IOBuffer* buf, int buf_len) OVERRIDE;
-  virtual void ResetInternal() OVERRIDE;
+     GetElementReaders() const override;
+  virtual int InitInternal() override;
+  virtual int ReadInternal(IOBuffer* buf, int buf_len) override;
+  virtual void ResetInternal() override;
 
   // Runs Init() for all element readers.
   // This method is used to implement InitInternal().
