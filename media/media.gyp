@@ -516,6 +516,8 @@
         'video/capture/video_capture_device.h',
         'video/capture/video_capture_device_factory.cc',
         'video/capture/video_capture_device_factory.h',
+        'video/capture/video_capture_device_info.cc',
+        'video/capture/video_capture_device_info.h',
         'video/capture/video_capture_types.cc',
         'video/capture/video_capture_types.h',
         'video/capture/win/capability_list_win.cc',
@@ -1028,7 +1030,7 @@
         'mojo/interfaces/media_renderer.mojom',
         'mojo/interfaces/demuxer_stream.mojom',
       ],
-      'includes': [ 
+      'includes': [
         '../mojo/public/tools/bindings/mojom_bindings_generator.gypi'
        ],
       'export_dependent_settings': [
@@ -1123,7 +1125,7 @@
       'sources': [
         'mojo/services/renderer_unittest.cc',
       ],
-    }, 
+    },
     {
       'target_name': 'media_mojo',
       'type': 'none',

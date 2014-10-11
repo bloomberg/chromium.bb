@@ -36,7 +36,7 @@ enum ResolutionChangePolicy {
   // Capture device outputs a fixed resolution all the time. The resolution of
   // the first frame is the resolution for all frames.
   // It is implementation specific for the capture device to scale, letter-box
-  // and pillar-box. The only gurantee is that resolution will never change.
+  // and pillar-box. The only guarantee is that resolution will never change.
   RESOLUTION_POLICY_FIXED,
 
   // Capture device outputs frames with dynamic resolution. The width and height

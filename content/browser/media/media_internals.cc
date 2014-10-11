@@ -117,7 +117,7 @@ void AudioLogImpl::OnCreated(int component_id,
                  ChannelLayoutToString(params.channel_layout()));
   dict.SetString("effects", EffectsToString(params.effects()));
 
-  media_internals_->SendUpdateAndCache(
+  media_internals_->SendUpdateAndCacheAudioStreamKey(
       FormatCacheKey(component_id), kAudioLogUpdateFunction, &dict);
 }
 
@@ -133,7 +133,7 @@ void AudioLogImpl::OnClosed(int component_id) {
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetString(kAudioLogStatusKey, "closed");
-  media_internals_->SendUpdateAndPurgeCache(
+  media_internals_->SendUpdateAndPurgeAudioStreamCache(
       FormatCacheKey(component_id), kAudioLogUpdateFunction, &dict);
 }
 
@@ -145,7 +145,7 @@ void AudioLogImpl::OnSetVolume(int component_id, double volume) {
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetDouble("volume", volume);
-  media_internals_->SendUpdateAndCache(
+  media_internals_->SendUpdateAndCacheAudioStreamKey(
       FormatCacheKey(component_id), kAudioLogUpdateFunction, &dict);
 }
 
@@ -159,7 +159,7 @@ void AudioLogImpl::SendSingleStringUpdate(int component_id,
   base::DictionaryValue dict;
   StoreComponentMetadata(component_id, &dict);
   dict.SetString(key, value);
-  media_internals_->SendUpdateAndCache(
+  media_internals_->SendUpdateAndCacheAudioStreamKey(
       FormatCacheKey(component_id), kAudioLogUpdateFunction, &dict);
 }
 
@@ -214,14 +214,46 @@ void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
   NOTREACHED();
 }
 
-void MediaInternals::SendEverything() {
-  base::string16 everything_update;
+void MediaInternals::SendAudioStreamData() {
+  base::string16 audio_stream_update;
   {
     base::AutoLock auto_lock(lock_);
-    everything_update = SerializeUpdate(
-        "media.onReceiveEverything", &cached_data_);
+    audio_stream_update = SerializeUpdate(
+        "media.onReceiveAudioStreamData", &audio_streams_cached_data_);
   }
-  SendUpdate(everything_update);
+  SendUpdate(audio_stream_update);
+}
+
+void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
+    const media::VideoCaptureDeviceInfos& video_capture_device_infos) {
+  base::DictionaryValue video_devices_info_dictionary;
+
+  for (const auto& video_capture_device_info : video_capture_device_infos) {
+    base::DictionaryValue* formats_dict = new base::DictionaryValue();
+    formats_dict->SetString("Unique ID", video_capture_device_info.name.id());
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    formats_dict->SetInteger("Capture API: #",
+                             video_capture_device_info.name.capture_api_type());
+#endif
+    int count = 0;
+    for (const auto& format : video_capture_device_info.supported_formats) {
+      formats_dict->SetString(base::StringPrintf("[%3d]", count++),
+                              format.ToString());
+    }
+    video_devices_info_dictionary.Set(
+        video_capture_device_info.name.GetNameAndModel(), formats_dict);
+  }
+  // TODO(mcasas): Remove the following printout when sending the capabilities
+  // to JS is implemented in a similar way to how SendAudioStreamData() does.
+  // A lock might be needed if these capabilities are cached at this point.
+  DVLOG(1) << "Received: " << video_devices_info_dictionary;
+}
+
+scoped_ptr<media::AudioLog> MediaInternals::CreateAudioLog(
+    AudioComponent component) {
+  base::AutoLock auto_lock(lock_);
+  return scoped_ptr<media::AudioLog>(new AudioLogImpl(
+      owner_ids_[component]++, component, this));
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {
@@ -238,30 +270,24 @@ void MediaInternals::SendUpdate(const base::string16& update) {
     update_callbacks_[i].Run(update);
 }
 
-scoped_ptr<media::AudioLog> MediaInternals::CreateAudioLog(
-    AudioComponent component) {
-  base::AutoLock auto_lock(lock_);
-  return scoped_ptr<media::AudioLog>(new AudioLogImpl(
-      owner_ids_[component]++, component, this));
-}
-
-void MediaInternals::SendUpdateAndCache(const std::string& cache_key,
-                                        const std::string& function,
-                                        const base::DictionaryValue* value) {
+void MediaInternals::SendUpdateAndCacheAudioStreamKey(
+    const std::string& cache_key,
+    const std::string& function,
+    const base::DictionaryValue* value) {
   SendUpdate(SerializeUpdate(function, value));
 
   base::AutoLock auto_lock(lock_);
-  if (!cached_data_.HasKey(cache_key)) {
-    cached_data_.Set(cache_key, value->DeepCopy());
+  if (!audio_streams_cached_data_.HasKey(cache_key)) {
+    audio_streams_cached_data_.Set(cache_key, value->DeepCopy());
     return;
   }
 
   base::DictionaryValue* existing_dict = NULL;
-  CHECK(cached_data_.GetDictionary(cache_key, &existing_dict));
+  CHECK(audio_streams_cached_data_.GetDictionary(cache_key, &existing_dict));
   existing_dict->MergeDictionary(value);
 }
 
-void MediaInternals::SendUpdateAndPurgeCache(
+void MediaInternals::SendUpdateAndPurgeAudioStreamCache(
     const std::string& cache_key,
     const std::string& function,
     const base::DictionaryValue* value) {
@@ -269,7 +295,7 @@ void MediaInternals::SendUpdateAndPurgeCache(
 
   base::AutoLock auto_lock(lock_);
   scoped_ptr<base::Value> out_value;
-  CHECK(cached_data_.Remove(cache_key, &out_value));
+  CHECK(audio_streams_cached_data_.Remove(cache_key, &out_value));
 }
 
 }  // namespace content

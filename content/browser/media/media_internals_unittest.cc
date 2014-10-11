@@ -17,32 +17,16 @@
 namespace {
 const int kTestComponentID = 0;
 const char kTestDeviceID[] = "test-device-id";
-}  // namespace
 
-namespace content {
-
-class MediaInternalsTest
-    : public testing::TestWithParam<media::AudioLogFactory::AudioComponent> {
+// This class encapsulates a MediaInternals reference. It also has some useful
+// methods to receive a callback, deserialize its associated data and expect
+// integer/string values.
+class MediaInternalsTestBase {
  public:
-  MediaInternalsTest()
-      : media_internals_(MediaInternals::GetInstance()),
-        update_cb_(base::Bind(&MediaInternalsTest::UpdateCallbackImpl,
-                              base::Unretained(this))),
-        test_params_(media::AudioParameters::AUDIO_PCM_LINEAR,
-                     media::CHANNEL_LAYOUT_MONO,
-                     48000,
-                     16,
-                     128,
-                     media::AudioParameters::ECHO_CANCELLER |
-                     media::AudioParameters::DUCKING),
-        test_component_(GetParam()),
-        audio_log_(media_internals_->CreateAudioLog(test_component_)) {
-    media_internals_->AddUpdateCallback(update_cb_);
+  MediaInternalsTestBase()
+    : media_internals_(content::MediaInternals::GetInstance()) {
   }
-
-  virtual ~MediaInternalsTest() {
-    media_internals_->RemoveUpdateCallback(update_cb_);
-  }
+  virtual ~MediaInternalsTestBase() {}
 
  protected:
   // Extracts and deserializes the JSON update data; merges into |update_data_|.
@@ -61,34 +45,99 @@ class MediaInternalsTest
     update_data_.MergeDictionary(output_dict);
   }
 
-  void ExpectInt(const std::string& key, int expected_value) {
+  void ExpectInt(const std::string& key, int expected_value) const {
     int actual_value = 0;
     ASSERT_TRUE(update_data_.GetInteger(key, &actual_value));
     EXPECT_EQ(expected_value, actual_value);
   }
 
-  void ExpectString(const std::string& key, const std::string& expected_value) {
+  void ExpectString(const std::string& key,
+                    const std::string& expected_value) const {
     std::string actual_value;
     ASSERT_TRUE(update_data_.GetString(key, &actual_value));
     EXPECT_EQ(expected_value, actual_value);
   }
 
-  void ExpectStatus(const std::string& expected_value) {
+  void ExpectStatus(const std::string& expected_value) const {
     ExpectString("status", expected_value);
   }
 
-  TestBrowserThreadBundle thread_bundle_;
-  MediaInternals* const media_internals_;
-  MediaInternals::UpdateCallback update_cb_;
+  const content::TestBrowserThreadBundle thread_bundle_;
   base::DictionaryValue update_data_;
+  content::MediaInternals* const media_internals_;
+};
+
+}  // namespace
+
+namespace content {
+
+class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
+                                             public MediaInternalsTestBase {};
+
+TEST_F(MediaInternalsVideoCaptureDeviceTest,
+    NotifyVideoCaptureDeviceCapabilitiesEnumerated) {
+  const int kWidth = 1280;
+  const int kHeight = 720;
+  const float kFrameRate = 30.0f;
+  const media::VideoPixelFormat kPixelFormat = media::PIXEL_FORMAT_I420;
+  const media::VideoCaptureFormat format_hd({kWidth, kHeight},
+      kFrameRate, kPixelFormat);
+  media::VideoCaptureFormats formats{};
+  formats.push_back(format_hd);
+  const media::VideoCaptureDeviceInfo device_info(
+#if defined(OS_MACOSX)
+      media::VideoCaptureDevice::Name("dummy", "dummy",
+          media::VideoCaptureDevice::Name::QTKIT),
+#elif defined(OS_WIN)
+      media::VideoCaptureDevice::Name("dummy", "dummy",
+          media::VideoCaptureDevice::Name::DIRECT_SHOW),
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+      media::VideoCaptureDevice::Name("dummy", "/dev/dummy"),
+#else
+      media::VideoCaptureDevice::Name("dummy", "dummy"),
+#endif
+      formats);
+  media::VideoCaptureDeviceInfos device_infos{};
+  device_infos.push_back(device_info);
+
+  // TODO(mcasas): Listen for the serialised version of |device_infos| and
+  // check its content using ExpectInt(), ExpectString(), after RunUntilIdle().
+  media_internals_->UpdateVideoCaptureDeviceCapabilities(device_infos);
+  base::RunLoop().RunUntilIdle();
+}
+
+class MediaInternalsAudioLogTest
+    : public MediaInternalsTestBase,
+      public testing::TestWithParam<media::AudioLogFactory::AudioComponent> {
+ public:
+  MediaInternalsAudioLogTest() :
+      update_cb_(base::Bind(&MediaInternalsAudioLogTest::UpdateCallbackImpl,
+                            base::Unretained(this))),
+      test_params_(media::AudioParameters::AUDIO_PCM_LINEAR,
+                   media::CHANNEL_LAYOUT_MONO,
+                   48000,
+                   16,
+                   128,
+                   media::AudioParameters::ECHO_CANCELLER |
+                   media::AudioParameters::DUCKING),
+      test_component_(GetParam()),
+      audio_log_(media_internals_->CreateAudioLog(test_component_)) {
+    media_internals_->AddUpdateCallback(update_cb_);
+  }
+
+  virtual ~MediaInternalsAudioLogTest() {
+    media_internals_->RemoveUpdateCallback(update_cb_);
+  }
+
+ protected:
+  MediaInternals::UpdateCallback update_cb_;
   const media::AudioParameters test_params_;
   const media::AudioLogFactory::AudioComponent test_component_;
   scoped_ptr<media::AudioLog> audio_log_;
 };
 
-TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
-  audio_log_->OnCreated(
-      kTestComponentID, test_params_, kTestDeviceID);
+TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {
+  audio_log_->OnCreated(kTestComponentID, test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
 
   ExpectString("channel_layout",
@@ -126,9 +175,8 @@ TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
   ExpectStatus("closed");
 }
 
-TEST_P(MediaInternalsTest, AudioLogCreateClose) {
-  audio_log_->OnCreated(
-      kTestComponentID, test_params_, kTestDeviceID);
+TEST_P(MediaInternalsAudioLogTest, AudioLogCreateClose) {
+  audio_log_->OnCreated(kTestComponentID, test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
   ExpectStatus("created");
 
@@ -138,7 +186,7 @@ TEST_P(MediaInternalsTest, AudioLogCreateClose) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    MediaInternalsTest, MediaInternalsTest, testing::Values(
+    MediaInternalsAudioLogTest, MediaInternalsAudioLogTest, testing::Values(
         media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
         media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER,
         media::AudioLogFactory::AUDIO_OUTPUT_STREAM));

@@ -39,7 +39,7 @@ var media = (function() {
     manager = theManager;
   };
 
-  media.onReceiveEverything = function(everything) {
+  media.onReceiveAudioStreamData = function(everything) {
     for (var component in everything) {
       media.updateAudioComponent(everything[component]);
     }

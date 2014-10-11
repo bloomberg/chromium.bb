@@ -177,6 +177,8 @@ component("media") {
     "video/capture/video_capture_device.h",
     "video/capture/video_capture_device_factory.cc",
     "video/capture/video_capture_device_factory.h",
+    "video/capture/video_capture_device_info.cc",
+    "video/capture/video_capture_device_info.h",
     "video/capture/video_capture_types.cc",
     "video/capture/video_capture_types.h",
     "video/capture/win/capability_list_win.cc",
