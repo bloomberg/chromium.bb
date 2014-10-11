@@ -262,21 +262,12 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
             }
         }
 
-        switch (current->relation()) {
-        case CSSSelector::SubSelector:
-            break;
-        case CSSSelector::ShadowPseudo:
-        case CSSSelector::ShadowDeep:
-            features.treeBoundaryCrossing = true;
-            return current->tagHistory();
-        case CSSSelector::DirectAdjacent:
-        case CSSSelector::IndirectAdjacent:
-            features.wholeSubtree = true;
-            return current->tagHistory();
-        case CSSSelector::Descendant:
-        case CSSSelector::Child:
-            return current->tagHistory();
-        }
+        if (current->relation() == CSSSelector::SubSelector)
+            continue;
+
+        features.treeBoundaryCrossing = current->isShadowSelector();
+        features.adjacent = current->isAdjacentSelector();
+        return current->tagHistory();
     }
     return 0;
 }
@@ -290,7 +281,8 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
 // ContainerNode::checkForChildrenAdjacentRuleChanges.
 //
 // As we encounter a descendant type of combinator, the features only need to be checked
-// against descendants in the same subtree only. Hence wholeSubtree is reset to false.
+// against descendants in the same subtree only. features.adjacent is set to false, and
+// we start adding features instead of calling setWholeSubtreeInvalid.
 
 void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
@@ -298,7 +290,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
         if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
             if (features.treeBoundaryCrossing)
                 invalidationSet->setTreeBoundaryCrossing();
-            if (features.wholeSubtree) {
+            if (features.adjacent) {
                 invalidationSet->setWholeSubtreeInvalid();
             } else {
                 if (!features.id.isEmpty())
@@ -321,23 +313,12 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                     addFeaturesToInvalidationSets(*selector, features);
             }
         }
-        switch (current->relation()) {
-        case CSSSelector::SubSelector:
-            break;
-        case CSSSelector::ShadowPseudo:
-        case CSSSelector::ShadowDeep:
+
+        if (current->isShadowSelector())
             features.treeBoundaryCrossing = true;
-            features.wholeSubtree = false;
-            break;
-        case CSSSelector::Descendant:
-        case CSSSelector::Child:
-            features.wholeSubtree = false;
-            break;
-        case CSSSelector::DirectAdjacent:
-        case CSSSelector::IndirectAdjacent:
-            features.wholeSubtree = true;
-            break;
-        }
+
+        if (current->relation() != CSSSelector::SubSelector)
+            features.adjacent = current->isAdjacentSelector();
     }
 }
 

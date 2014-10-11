@@ -290,6 +290,8 @@ namespace blink {
         bool matchesPseudoElement() const;
         bool isCustomPseudoElement() const;
         bool isDirectAdjacentSelector() const { return m_relation == DirectAdjacent; }
+        bool isAdjacentSelector() const { return m_relation == DirectAdjacent || m_relation == IndirectAdjacent; }
+        bool isShadowSelector() const { return m_relation == ShadowPseudo || m_relation == ShadowDeep; }
         bool isSiblingSelector() const;
         bool isAttributeSelector() const;
         bool isContentPseudoElement() const;
