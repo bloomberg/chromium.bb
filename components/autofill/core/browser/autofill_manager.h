@@ -171,8 +171,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   //     the same browsing session as it was originally submitted (as we may
   //     not have the necessary information to classify the form at that time)
   //     so it bypasses the cache and doesn't log the same quality UMA metrics.
-  bool UploadPasswordForm(const FormData& form,
-                          const ServerFieldType& pasword_type);
+  virtual bool UploadPasswordForm(const FormData& form,
+                                  const ServerFieldType& pasword_type);
 
   // Resets cache.
   virtual void Reset();
