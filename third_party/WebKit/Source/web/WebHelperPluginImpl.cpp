@@ -57,6 +57,14 @@ WebHelperPluginImpl::WebHelperPluginImpl()
 
 WebHelperPluginImpl::~WebHelperPluginImpl()
 {
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: it is potentially problematic to support plugin
+    // disposal during an Oilpan GC. If it happens, we need to know
+    // and evaluate possible ways to handle it.
+    ASSERT(!ThreadState::current()->isSweepInProgress());
+    if (m_pluginContainer)
+        m_pluginContainer->dispose();
+#endif
 }
 
 bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl* frame)
@@ -69,7 +77,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl
     Vector<String> attributeNames;
     Vector<String> attributeValues;
     ASSERT(frame->frame()->document()->url().isValid());
-    m_pluginContainer = adoptRef(toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
+    m_pluginContainer = adoptRefWillBeNoop(toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
         m_objectElement.get(),
         frame->frame()->document()->url(),
         attributeNames,

@@ -26,14 +26,18 @@
 #define WebScrollbarImpl_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebScrollbar.h"
 
 namespace blink {
 
 class Scrollbar;
-class PLATFORM_EXPORT WebScrollbarImpl : public WebScrollbar {
+class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
 public:
-    explicit WebScrollbarImpl(Scrollbar*);
+    static WebScrollbarImpl* create(Scrollbar* scrollbar)
+    {
+        return new WebScrollbarImpl(scrollbar);
+    }
 
     // Implement WebScrollbar methods
     virtual bool isOverlay() const override;
@@ -56,7 +60,9 @@ public:
     virtual void setIsAlphaLocked(bool) override;
 
 private:
-    RefPtr<Scrollbar> m_scrollbar;
+    explicit WebScrollbarImpl(Scrollbar*);
+
+    RefPtrWillBePersistent<Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

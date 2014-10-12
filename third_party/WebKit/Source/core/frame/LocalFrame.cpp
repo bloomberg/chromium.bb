@@ -48,6 +48,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -145,6 +146,7 @@ void LocalFrame::trace(Visitor* visitor)
     visitor->trace(m_destructionObservers);
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
+    visitor->trace(m_view);
     visitor->trace(m_pagePopupOwner);
     visitor->trace(m_script);
     visitor->trace(m_editor);
@@ -153,10 +155,26 @@ void LocalFrame::trace(Visitor* visitor)
     visitor->trace(m_eventHandler);
     visitor->trace(m_console);
     visitor->trace(m_inputMethodController);
+    visitor->registerWeakMembers<LocalFrame, &LocalFrame::clearWeakMembers>(this);
     HeapSupplementable<LocalFrame>::trace(visitor);
 #endif
     Frame::trace(visitor);
 }
+
+#if ENABLE(OILPAN)
+void LocalFrame::clearWeakMembers(Visitor* visitor)
+{
+    Vector<HTMLPlugInElement*> deadPlugins;
+    for (HashSet<HTMLPlugInElement*>::const_iterator it = m_pluginElements.begin(); it != m_pluginElements.end(); ++it) {
+        if (!visitor->isAlive(*it)) {
+            (*it)->shouldDisposePlugin();
+            deadPlugins.append(*it);
+        }
+    }
+    for (unsigned i = 0; i < deadPlugins.size(); ++i)
+        m_pluginElements.remove(deadPlugins[i]);
+}
+#endif
 
 void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList)
 {
@@ -202,8 +220,9 @@ void LocalFrame::detachView()
         m_view->prepareForDetach();
 }
 
-void LocalFrame::setView(PassRefPtr<FrameView> view)
+void LocalFrame::setView(PassRefPtrWillBeRawPtr<FrameView> view)
 {
+    ASSERT(!m_view || m_view != view);
     detachView();
 
     // Prepare for destruction now, so any unload event handlers get run and the LocalDOMWindow is
@@ -448,7 +467,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
 
     setView(nullptr);
 
-    RefPtr<FrameView> frameView;
+    RefPtrWillBeRawPtr<FrameView> frameView = nullptr;
     if (isLocalRoot) {
         frameView = FrameView::create(this, viewportSize);
 
@@ -723,6 +742,12 @@ void LocalFrame::disconnectOwnerElement()
         if (Document* document = this->document())
             document->topDocument().clearAXObjectCache();
 #if ENABLE(OILPAN)
+        // First give the plugin elements holding persisted,
+        // renderer-less plugins the opportunity to dispose of them.
+        for (HashSet<HTMLPlugInElement*>::const_iterator it = m_pluginElements.begin(); it != m_pluginElements.end(); ++it)
+            (*it)->disconnectContentFrame();
+        m_pluginElements.clear();
+
         // Clear the FrameView and FrameLoader right here rather than
         // during finalization. Too late to access various heap objects
         // at that stage.
@@ -746,5 +771,18 @@ void LocalFrame::setPagePopupOwner(Element& owner)
 {
     m_pagePopupOwner = &owner;
 }
+
+#if ENABLE(OILPAN)
+void LocalFrame::registerPluginElement(HTMLPlugInElement* plugin)
+{
+    m_pluginElements.add(plugin);
+}
+
+void LocalFrame::unregisterPluginElement(HTMLPlugInElement* plugin)
+{
+    ASSERT(m_pluginElements.contains(plugin));
+    m_pluginElements.remove(plugin);
+}
+#endif
 
 } // namespace blink

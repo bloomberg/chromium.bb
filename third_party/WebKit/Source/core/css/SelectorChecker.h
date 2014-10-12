@@ -60,7 +60,7 @@ public:
             , visitedMatchType(visitedMatchType)
             , pseudoId(NOPSEUDO)
             , elementStyle(0)
-            , scrollbar(0)
+            , scrollbar(nullptr)
             , scrollbarPart(NoPart)
             , isSubSelector(false)
             , hasScrollbarPseudo(false)
@@ -78,7 +78,7 @@ public:
         VisitedMatchType visitedMatchType;
         PseudoId pseudoId;
         RenderStyle* elementStyle;
-        RenderScrollbar* scrollbar;
+        RawPtrWillBeMember<RenderScrollbar> scrollbar;
         ScrollbarPart scrollbarPart;
         unsigned isSubSelector : 1;
         unsigned hasScrollbarPseudo : 1;

@@ -364,7 +364,7 @@ void RenderLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffs
     LocalFrame* frame = box().frame();
     ASSERT(frame);
 
-    RefPtr<FrameView> frameView = box().frameView();
+    RefPtrWillBeRawPtr<FrameView> frameView = box().frameView();
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScrollLayer", "data", InspectorScrollLayerEvent::data(&box()));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
@@ -866,9 +866,9 @@ static inline RenderObject* rendererForScrollbar(RenderObject& renderer)
     return &renderer;
 }
 
-PassRefPtr<Scrollbar> RenderLayerScrollableArea::createScrollbar(ScrollbarOrientation orientation)
+PassRefPtrWillBeRawPtr<Scrollbar> RenderLayerScrollableArea::createScrollbar(ScrollbarOrientation orientation)
 {
-    RefPtr<Scrollbar> widget;
+    RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
     RenderObject* actualRenderer = rendererForScrollbar(box());
     bool hasCustomScrollbarStyle = actualRenderer->isBox() && actualRenderer->style()->hasPseudoStyle(SCROLLBAR);
     if (hasCustomScrollbarStyle) {
@@ -889,7 +889,7 @@ PassRefPtr<Scrollbar> RenderLayerScrollableArea::createScrollbar(ScrollbarOrient
 
 void RenderLayerScrollableArea::destroyScrollbar(ScrollbarOrientation orientation)
 {
-    RefPtr<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
+    RefPtrWillBePersistent<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
     if (!scrollbar)
         return;
 

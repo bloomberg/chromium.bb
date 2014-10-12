@@ -122,11 +122,11 @@ public:
         Document&, const KURL&,
         const Vector<String>& paramNames, const Vector<String>& paramValues,
         const String& mimeType, bool loadManually) override;
-    virtual PassRefPtr<Widget> createPlugin(
+    virtual PassRefPtrWillBeRawPtr<Widget> createPlugin(
         HTMLPlugInElement*, const KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually, DetachedPluginPolicy) override;
-    virtual PassRefPtr<Widget> createJavaAppletWidget(
+    virtual PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(
         HTMLAppletElement*,
         const KURL& /* base_url */,
         const Vector<WTF::String>& paramNames,

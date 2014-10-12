@@ -355,7 +355,7 @@ private:
     RefPtrWillBeMember<Node> m_nodeUnderMouse;
     RefPtrWillBeMember<Node> m_lastNodeUnderMouse;
     RefPtrWillBeMember<LocalFrame> m_lastMouseMoveEventSubframe;
-    RefPtr<Scrollbar> m_lastScrollbarUnderMouse;
+    RefPtrWillBeMember<Scrollbar> m_lastScrollbarUnderMouse;
     Cursor m_currentMouseCursor;
 
     int m_clickCount;
@@ -394,7 +394,7 @@ private:
     RefPtrWillBeMember<Node> m_scrollGestureHandlingNode;
     bool m_lastGestureScrollOverWidget;
     RefPtrWillBeMember<Node> m_previousGestureScrolledNode;
-    RefPtr<Scrollbar> m_scrollbarHandlingScrollGesture;
+    RefPtrWillBeMember<Scrollbar> m_scrollbarHandlingScrollGesture;
 
     double m_maxMouseMovedDuration;
     bool m_didStartDrag;

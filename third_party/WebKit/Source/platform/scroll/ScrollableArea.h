@@ -282,7 +282,7 @@ private:
     IntRect m_verticalBarDamage;
 
     struct ScrollableAreaAnimators {
-        OwnPtr<ScrollAnimator> scrollAnimator;
+        RefPtr<ScrollAnimator> scrollAnimator;
         OwnPtr<ProgrammaticScrollAnimator> programmaticScrollAnimator;
     };
 

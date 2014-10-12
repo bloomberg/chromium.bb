@@ -661,7 +661,7 @@ PassOwnPtrWillBeRawPtr<PluginPlaceholder> FrameLoaderClientImpl::createPluginPla
     return PluginPlaceholderImpl::create(webPluginPlaceholder.release(), document);
 }
 
-PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
+PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createPlugin(
     HTMLPlugInElement* element,
     const KURL& url,
     const Vector<String>& paramNames,
@@ -685,19 +685,27 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
         return nullptr;
 
     // The container takes ownership of the WebPlugin.
-    RefPtr<WebPluginContainerImpl> container =
+    RefPtrWillBeRawPtr<WebPluginContainerImpl> container =
         WebPluginContainerImpl::create(element, webPlugin);
 
-    if (!webPlugin->initialize(container.get()))
+    if (!webPlugin->initialize(container.get())) {
+#if ENABLE(OILPAN)
+        container->dispose();
+#endif
         return nullptr;
+    }
 
-    if (policy != AllowDetachedPlugin && !element->renderer())
+    if (policy != AllowDetachedPlugin && !element->renderer()) {
+#if ENABLE(OILPAN)
+        container->dispose();
+#endif
         return nullptr;
+    }
 
     return container;
 }
 
-PassRefPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
+PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
     HTMLAppletElement* element,
     const KURL& /* baseURL */,
     const Vector<String>& paramNames,

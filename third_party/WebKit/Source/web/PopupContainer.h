@@ -34,6 +34,7 @@
 
 #include "platform/PopupMenuStyle.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/heap/Handle.h"
 #include "web/PopupListBox.h"
 
 namespace blink {
@@ -49,7 +50,7 @@ struct WebPopupMenuInfo;
 // FIXME(skobes): This class can probably be combined with PopupListBox.
 class PopupContainer final : public Widget {
 public:
-    static PassRefPtr<PopupContainer> create(PopupMenuClient*, bool deviceSupportsTouch);
+    static PassRefPtrWillBeRawPtr<PopupContainer> create(PopupMenuClient*, bool deviceSupportsTouch);
 
     // Whether a key event should be sent to this popup.
     bool isInterestedInEventForKey(int keyCode);
@@ -124,6 +125,8 @@ public:
 
     void updateFromElement() { m_listBox->updateFromElement(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     friend class WTF::RefCounted<PopupContainer>;
 
@@ -144,8 +147,8 @@ private:
     // Returns the ChromeClient of the page this popup is associated with.
     ChromeClient& chromeClient();
 
-    RefPtr<PopupListBox> m_listBox;
-    RefPtr<FrameView> m_frameView;
+    RefPtrWillBeMember<PopupListBox> m_listBox;
+    RefPtrWillBeMember<FrameView> m_frameView;
 
     // m_controlPosition contains the transformed position of the
     // <select>/<input> associated with this popup. m_controlSize is the size

@@ -31,6 +31,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -45,7 +46,7 @@ class HostWindow;
 // Widgets are connected in a hierarchy, with the restriction that plugins and
 // scrollbars are always leaves of the tree. Only FrameView can have children
 // (and therefore the Widget class has no concept of children).
-class PLATFORM_EXPORT Widget : public RefCounted<Widget> {
+class PLATFORM_EXPORT Widget : public RefCountedWillBeGarbageCollectedFinalized<Widget> {
 public:
     Widget();
     virtual ~Widget();
@@ -123,12 +124,11 @@ public:
     // Notifies this widget that it will no longer be receiving events.
     virtual void eventListenersRemoved() { }
 
-#if ENABLE(OILPAN)
-    virtual void detach() { }
-#endif
+    virtual void trace(Visitor*);
+    virtual void dispose() { }
 
 private:
-    Widget* m_parent;
+    RawPtrWillBeMember<Widget> m_parent;
     IntRect m_frame;
     bool m_selfVisible;
     bool m_parentVisible;

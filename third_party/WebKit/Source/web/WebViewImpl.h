@@ -693,7 +693,7 @@ private:
     WebDragOperation m_dragOperation;
 
     // The popup associated with a select element.
-    RefPtr<PopupContainer> m_selectPopup;
+    RefPtrWillBePersistent<PopupContainer> m_selectPopup;
 
     // The popup associated with an input element.
     RefPtr<WebPagePopupImpl> m_pagePopup;

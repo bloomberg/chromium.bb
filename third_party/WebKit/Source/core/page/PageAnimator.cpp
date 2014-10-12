@@ -65,7 +65,7 @@ void PageAnimator::scheduleVisualUpdate()
 
 void PageAnimator::updateLayoutAndStyleForPainting(LocalFrame* rootFrame)
 {
-    RefPtr<FrameView> view = rootFrame->view();
+    RefPtrWillBeRawPtr<FrameView> view = rootFrame->view();
 
     TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
 

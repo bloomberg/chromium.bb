@@ -174,7 +174,7 @@ void WebPluginContainerImpl::handleEvent(Event* event)
     if (!m_webPlugin->acceptsInputEvents())
         return;
 
-    RefPtr<WebPluginContainerImpl> protector(this);
+    RefPtrWillBeRawPtr<WebPluginContainerImpl> protector(this);
     // The events we pass are defined at:
     //    http://devedge-temp.mozilla.org/library/manuals/2002/plugin/1.0/structures5.html#1000000
     // Don't take the documentation as truth, however.  There are many cases
@@ -438,7 +438,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
     if (!scriptState->contextIsValid())
         return v8::Local<v8::Object>();
 
-    v8::Handle<v8::Value> v8value = toV8(m_element, scriptState->context()->Global(), scriptState->isolate());
+    v8::Handle<v8::Value> v8value = toV8(m_element.get(), scriptState->context()->Global(), scriptState->isolate());
     ASSERT(v8value->IsObject());
 
     return v8::Handle<v8::Object>::Cast(v8value);
@@ -673,55 +673,71 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
-#if ENABLE(OILPAN)
-    : m_frame(element->document().frame())
-#else
     : FrameDestructionObserver(element->document().frame())
-#endif
     , m_element(element)
     , m_webPlugin(webPlugin)
-    , m_webLayer(0)
+    , m_webLayer(nullptr)
     , m_touchEventRequestType(TouchEventRequestTypeNone)
     , m_wantsWheelEvents(false)
+#if ENABLE(OILPAN)
+    , m_shouldDisposePlugin(false)
+#endif
 {
 }
 
 WebPluginContainerImpl::~WebPluginContainerImpl()
 {
 #if ENABLE(OILPAN)
-    // The element (and its document) are heap allocated and may
-    // have been finalized by now; unsafe to unregister the touch
-    // event handler at this stage.
-    //
-    // This is acceptable, as the widget will unregister itself if it
-    // is cleanly detached. If an explicit detach doesn't happen, this
-    // container is assumed to have died with the plugin element (and
-    // its document), hence no unregistration step is needed.
-    //
-    m_element = 0;
+    if (m_shouldDisposePlugin)
+        dispose();
+    // The plugin container must have been disposed of by now.
+    ASSERT(!m_webPlugin);
 #else
-    if (m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
-        m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
+    dispose();
 #endif
+}
+
+void WebPluginContainerImpl::dispose()
+{
+    if (m_element && m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
+        m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
 
     ScriptForbiddenScope::AllowSuperUnsafeScript thisShouldBeRemoved;
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
     m_webPlugin->destroy();
+    m_webPlugin = nullptr;
+
     if (m_webLayer)
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
+
+    m_pluginLoadObservers.clear();
+    m_scrollbarGroup.clear();
+    m_element = nullptr;
 }
 
 #if ENABLE(OILPAN)
-void WebPluginContainerImpl::detach()
+void WebPluginContainerImpl::shouldDisposePlugin()
 {
-    if (m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
-        m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
-
-    setWebLayer(0);
+    // If the LocalFrame is still alive, but the plugin element isn't, the
+    // LocalFrame will set m_shouldDisposePlugin via its weak pointer
+    // callback. This is a signal that the plugin container
+    // must dispose of its plugin when finalizing. The LocalFrame and
+    // all objects accessible from it can safely be accessed, but not
+    // the plugin element itself.
+    ASSERT(!m_shouldDisposePlugin);
+    m_shouldDisposePlugin = true;
+    m_element = nullptr;
 }
 #endif
+
+void WebPluginContainerImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    FrameDestructionObserver::trace(visitor);
+    PluginView::trace(visitor);
+}
 
 void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
 {

@@ -51,10 +51,14 @@ public:
     virtual void updateFromElement() override;
     virtual void disconnectClient() override;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
+    void dispose();
+
     PopupMenuClient* m_popupClient;
-    RefPtr<FrameView> m_frameView;
-    RefPtr<PopupContainer> m_popup;
+    RefPtrWillBeMember<FrameView> m_frameView;
+    RefPtrWillBeMember<PopupContainer> m_popup;
 };
 
 } // namespace blink

@@ -54,6 +54,7 @@ class MouseEvent;
 class PlatformGestureEvent;
 class ResourceError;
 class ResourceResponse;
+class ScriptController;
 class ScrollbarGroup;
 class TouchEvent;
 class WebPlugin;
@@ -63,17 +64,12 @@ class WheelEvent;
 class Widget;
 struct WebPrintParams;
 
-class WebPluginContainerImpl final
-    : public PluginView
-    , public WebPluginContainer
-#if !ENABLE(OILPAN)
-    , public FrameDestructionObserver
-#endif
-    {
+class WebPluginContainerImpl final : public PluginView, public WebPluginContainer, public FrameDestructionObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
 public:
-    static PassRefPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
+    static PassRefPtrWillBeRawPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
-        return adoptRef(new WebPluginContainerImpl(element, webPlugin));
+        return adoptRefWillBeNoop(new WebPluginContainerImpl(element, webPlugin));
     }
 
     // PluginView methods
@@ -169,8 +165,12 @@ public:
 
     bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
 
+    virtual void trace(Visitor*) override;
+    virtual void dispose() override;
+
 #if ENABLE(OILPAN)
-    virtual void detach() override;
+    virtual LocalFrame* pluginFrame() const override { return frame(); }
+    virtual void shouldDisposePlugin() override;
 #endif
 
 private:
@@ -198,25 +198,7 @@ private:
         const IntRect& frameRect,
         Vector<IntRect>& cutOutRects);
 
-#if ENABLE(OILPAN)
-    // FIXME: Oilpan: consider moving Widget to the heap, allowing this
-    // container object to be a FrameDestructionObserver. And thereby
-    // keep a traced member reference to the frame rather than as a
-    // bare pointer. Instead, the owning object (HTMLFrameOwnerElement)
-    // explicitly deletes this object when it is disconnected from its
-    // frame. Any access to an invalid frame via this bare pointer
-    // is therefore not possible.
-    //
-    // See the HTMLFrameOwnerElement::disconnectContentFrame comment for
-    // (even) more.
-    LocalFrame* m_frame;
-
-    LocalFrame* frame() const { return m_frame; }
-#endif
-
-    // FIXME: see above; for the time being, a bare pointer to the owning
-    // HTMLPlugInElement and managed as such.
-    HTMLPlugInElement* m_element;
+    RawPtrWillBeMember<HTMLPlugInElement> m_element;
     WebPlugin* m_webPlugin;
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
 
@@ -228,6 +210,12 @@ private:
 
     TouchEventRequestType m_touchEventRequestType;
     bool m_wantsWheelEvents;
+
+#if ENABLE(OILPAN)
+    // Oilpan: if true, the plugin container must dispose
+    // of its plugin when being finalized.
+    bool m_shouldDisposePlugin;
+#endif
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl, Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());

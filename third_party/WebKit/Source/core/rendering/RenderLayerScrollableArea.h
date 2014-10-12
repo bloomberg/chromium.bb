@@ -200,7 +200,7 @@ private:
     LayoutUnit horizontalScrollbarStart(int minX) const;
     IntSize scrollbarOffset(const Scrollbar*) const;
 
-    PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+    PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
     void destroyScrollbar(ScrollbarOrientation);
 
     void setHasHorizontalScrollbar(bool hasScrollbar);
@@ -247,8 +247,8 @@ private:
     IntPoint m_cachedOverlayScrollbarOffset;
 
     // For areas with overflow, we have a pair of scrollbars.
-    RefPtr<Scrollbar> m_hBar;
-    RefPtr<Scrollbar> m_vBar;
+    RefPtrWillBePersistent<Scrollbar> m_hBar;
+    RefPtrWillBePersistent<Scrollbar> m_vBar;
 
     // Renderers to hold our custom scroll corner.
     RawPtrWillBePersistent<RenderScrollbarPart> m_scrollCorner;

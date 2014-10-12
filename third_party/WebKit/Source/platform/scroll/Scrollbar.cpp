@@ -42,9 +42,9 @@
 
 namespace blink {
 
-PassRefPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size)
+PassRefPtrWillBeRawPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size)
 {
-    return adoptRef(new Scrollbar(scrollableArea, orientation, size));
+    return adoptRefWillBeNoop(new Scrollbar(scrollableArea, orientation, size));
 }
 
 Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, ScrollbarTheme* theme)
@@ -80,6 +80,11 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
 
     m_currentPos = scrollableAreaCurrentPos();
+
+#if ENABLE(OILPAN)
+    if (m_scrollableArea)
+        m_animator = m_scrollableArea->scrollAnimator();
+#endif
 }
 
 Scrollbar::~Scrollbar()
@@ -87,6 +92,17 @@ Scrollbar::~Scrollbar()
     stopTimerIfNeeded();
 
     m_theme->unregisterScrollbar(this);
+
+#if ENABLE(OILPAN)
+    if (!m_animator)
+        return;
+
+    ASSERT(m_scrollableArea);
+    if (m_orientation == VerticalScrollbar)
+        m_animator->willRemoveVerticalScrollbar(this);
+    else
+        m_animator->willRemoveHorizontalScrollbar(this);
+#endif
 }
 
 ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const
@@ -125,6 +141,14 @@ void Scrollbar::offsetDidChange()
     updateThumbPosition();
     if (m_pressedPart == ThumbPart)
         setPressedPos(m_pressedPos + theme()->thumbPosition(this) - oldThumbPosition);
+}
+
+void Scrollbar::disconnectFromScrollableArea()
+{
+    m_scrollableArea = nullptr;
+#if ENABLE(OILPAN)
+    m_animator = nullptr;
+#endif
 }
 
 void Scrollbar::setProportion(int visibleSize, int totalSize)

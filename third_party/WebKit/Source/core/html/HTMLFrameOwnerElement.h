@@ -48,7 +48,7 @@ public:
     void setContentFrame(Frame&);
     void clearContentFrame();
 
-    void disconnectContentFrame();
+    virtual void disconnectContentFrame();
 
     // Most subclasses use RenderPart (either RenderEmbeddedObject or RenderIFrame)
     // except for HTMLObjectElement and HTMLEmbedElement which may return any
@@ -65,7 +65,7 @@ public:
     virtual void renderFallbackContent() { }
 
     virtual bool isObjectElement() const { return false; }
-    void setWidget(PassRefPtr<Widget>);
+    void setWidget(PassRefPtrWillBeRawPtr<Widget>);
     Widget* ownedWidget() const;
 
     class UpdateSuspendScope {
@@ -95,7 +95,7 @@ private:
     virtual void dispatchLoad() override;
 
     RawPtrWillBeMember<Frame> m_contentFrame;
-    RefPtr<Widget> m_widget;
+    RefPtrWillBeMember<Widget> m_widget;
     SandboxFlags m_sandboxFlags;
 };
 

@@ -84,9 +84,9 @@ static PlatformWheelEvent constructRelativeWheelEvent(const PlatformWheelEvent& 
 }
 
 // static
-PassRefPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, bool deviceSupportsTouch)
+PassRefPtrWillBeRawPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, bool deviceSupportsTouch)
 {
-    return adoptRef(new PopupContainer(client, deviceSupportsTouch));
+    return adoptRefWillBeNoop(new PopupContainer(client, deviceSupportsTouch));
 }
 
 PopupContainer::PopupContainer(PopupMenuClient* client, bool deviceSupportsTouch)
@@ -98,8 +98,17 @@ PopupContainer::PopupContainer(PopupMenuClient* client, bool deviceSupportsTouch
 
 PopupContainer::~PopupContainer()
 {
+#if !ENABLE(OILPAN)
     if (m_listBox->parent())
         m_listBox->setParent(0);
+#endif
+}
+
+void PopupContainer::trace(Visitor* visitor)
+{
+    visitor->trace(m_frameView);
+    visitor->trace(m_listBox);
+    Widget::trace(visitor);
 }
 
 IntRect PopupContainer::layoutAndCalculateWidgetRectInternal(IntRect widgetRectInScreen, int targetControlHeight, const FloatRect& windowRect, const FloatRect& screen, bool isRTL, const int rtlOffset, const int verticalOffset, const IntSize& transformOffset, PopupContent* listBox, bool& needToResizeView)
@@ -285,7 +294,7 @@ bool PopupContainer::handleMouseMoveEvent(const PlatformMouseEvent& event)
 
 bool PopupContainer::handleMouseReleaseEvent(const PlatformMouseEvent& event)
 {
-    RefPtr<PopupContainer> protect(this);
+    RefPtrWillBeRawPtr<PopupContainer> protect(this);
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
     return m_listBox->handleMouseReleaseEvent(
         constructRelativeMouseEvent(event, this, m_listBox.get()));

@@ -75,6 +75,16 @@ private:
     AXScrollbar* addChildScrollbar(Scrollbar*);
     void removeChildScrollbar(AXObject*);
 
+    // FIXME: Oilpan: Frame/ScrollView is on the heap and its
+    // AXScrollView is detached&removed from the AX cache when the
+    // FrameView is disposed. Which clears m_scrollView, hence this
+    // bare pointer will not be stale, so the bare pointer use is safe
+    // & acceptable.
+    //
+    // However, it would be preferable to have it be normally traced
+    // as part of moving the AX objects to the heap. Temporarily using
+    // a Persistent risks creating a FrameView leak, and brings no
+    // real benefits overall.
     FrameView* m_scrollView;
     RefPtr<AXObject> m_horizontalScrollbar;
     RefPtr<AXObject> m_verticalScrollbar;

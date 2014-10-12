@@ -1914,7 +1914,7 @@ void Document::updateLayout()
 
     ScriptForbiddenScope forbidScript;
 
-    RefPtr<FrameView> frameView = view();
+    RefPtrWillBeRawPtr<FrameView> frameView = view();
     if (frameView && frameView->isInPerformLayout()) {
         // View layout should not be re-entrant.
         ASSERT_NOT_REACHED();

@@ -51,6 +51,7 @@ namespace blink {
     class FrameDestructionObserver;
     class FrameSelection;
     class FrameView;
+    class HTMLPlugInElement;
     class InputMethodController;
     class IntPoint;
     class IntSize;
@@ -70,7 +71,7 @@ namespace blink {
         virtual bool isLocalFrame() const override { return true; }
 
         void init();
-        void setView(PassRefPtr<FrameView>);
+        void setView(PassRefPtrWillBeRawPtr<FrameView>);
         void createView(const IntSize&, const Color&, bool,
             ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
@@ -157,6 +158,12 @@ namespace blink {
         bool shouldReuseDefaultView(const KURL&) const;
         void removeSpellingMarkersUnderWords(const Vector<String>& words);
 
+#if ENABLE(OILPAN)
+        void registerPluginElement(HTMLPlugInElement*);
+        void unregisterPluginElement(HTMLPlugInElement*);
+        void clearWeakMembers(Visitor*);
+#endif
+
     // ========
 
     private:
@@ -170,7 +177,7 @@ namespace blink {
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 
-        RefPtr<FrameView> m_view;
+        RefPtrWillBeMember<FrameView> m_view;
         // Usually 0. Non-null if this is the top frame of PagePopup.
         RefPtrWillBeMember<Element> m_pagePopupOwner;
 
@@ -180,7 +187,24 @@ namespace blink {
         const OwnPtrWillBeMember<FrameSelection> m_selection;
         const OwnPtrWillBeMember<EventHandler> m_eventHandler;
         const OwnPtrWillBeMember<FrameConsole> m_console;
-        OwnPtrWillBeMember<InputMethodController> m_inputMethodController;
+        const OwnPtrWillBeMember<InputMethodController> m_inputMethodController;
+
+#if ENABLE(OILPAN)
+        // Oilpan: in order to reliably finalize plugin elements with
+        // renderer-less plugins, the frame keeps track of them. When
+        // the frame is detached and disposed, these will be disposed
+        // of in the process. This is needed as the plugin element
+        // might not itself be attached to a DOM tree and be
+        // explicitly detached&disposed of.
+        //
+        // A weak reference is all wanted; the plugin element must
+        // otherwise be referenced and kept alive. So as to be able
+        // to process the set of weak references during the LocalFrame's
+        // weak callback, the set itself is not on the heap and the
+        // references are bare pointers (rather than WeakMembers.)
+        // See LocalFrame::clearWeakMembers().
+        HashSet<HTMLPlugInElement*> m_pluginElements;
+#endif
 
         float m_pageZoomFactor;
         float m_textZoomFactor;

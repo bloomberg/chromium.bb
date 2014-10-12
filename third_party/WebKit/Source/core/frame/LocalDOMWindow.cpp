@@ -1399,7 +1399,7 @@ void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior)
 
     document()->updateLayoutIgnorePendingStylesheets();
 
-    RefPtr<FrameView> view = m_frame->view();
+    RefPtrWillBeRawPtr<FrameView> view = m_frame->view();
     if (!view)
         return;
 

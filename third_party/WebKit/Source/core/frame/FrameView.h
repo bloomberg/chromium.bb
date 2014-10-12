@@ -63,14 +63,13 @@ struct CompositedSelectionBound;
 
 typedef unsigned long long DOMTimeStamp;
 
-// FIXME: Oilpan: move Widget (and thereby FrameView) to the heap.
 class FrameView final : public Widget, public ScrollableArea {
 public:
     friend class RenderView;
     friend class Internals;
 
-    static PassRefPtr<FrameView> create(LocalFrame*);
-    static PassRefPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
+    static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*);
+    static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
 
     virtual ~FrameView();
 
@@ -89,7 +88,7 @@ public:
 
     void setCanHaveScrollbars(bool);
 
-    PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+    PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
     void setContentsSize(const IntSize&);
     IntPoint clampOffsetAtScale(const IntPoint& offset, float scale) const;
@@ -229,7 +228,7 @@ public:
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
     void enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
-    void disableAutoSizeMode() { m_autoSizeInfo.clear(); }
+    void disableAutoSizeMode() { disposeAutoSizeInfo(); }
 
     void forceLayout(bool allowSubtree = false);
     void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
@@ -352,9 +351,11 @@ public:
     // Returns a clip rect in host window coordinates. Used to clip the blit on a scroll.
     IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
 
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget> > ChildrenWidgetSet;
+
     // Functions for child manipulation and inspection.
-    const HashSet<RefPtr<Widget> >* children() const { return &m_children; }
-    void addChild(PassRefPtr<Widget>);
+    const ChildrenWidgetSet* children() const { return &m_children; }
+    void addChild(PassRefPtrWillBeRawPtr<Widget>);
     void removeChildInternal(Widget*);
 
     // If the scroll view does not use a native widget, then it will have cross-platform Scrollbars. These functions
@@ -392,7 +393,7 @@ public:
     void setClipsRepaints(bool);
 
     // Overridden by FrameView to create custom CSS scrollbars if applicable.
-    PassRefPtr<Scrollbar> createScrollbarInternal(ScrollbarOrientation);
+    PassRefPtrWillBeRawPtr<Scrollbar> createScrollbarInternal(ScrollbarOrientation);
 
     // The visible content rect has a location that is the scrolled offset of the document. The width and height are the viewport width
     // and height. By default the scrollbars themselves are excluded from this rectangle, but an optional boolean argument allows them to be
@@ -539,6 +540,8 @@ public:
 
     virtual bool isFrameView() const override { return true; }
 
+    virtual void trace(Visitor*) override;
+
 protected:
     bool scrollContentsFastPath(const IntSize& scrollDelta);
     void scrollContentsSlowPath(const IntRect& updateRect);
@@ -603,6 +606,7 @@ protected:
 private:
     explicit FrameView(LocalFrame*);
 
+    void dispose();
     void reset();
     void init();
 
@@ -673,6 +677,8 @@ private:
 
     void setLayoutSizeInternal(const IntSize&);
 
+    void disposeAutoSizeInfo();
+
     bool paintInvalidationIsAllowed() const
     {
         return !isInPerformLayout() || canInvalidatePaintDuringPerformLayout();
@@ -698,18 +704,20 @@ private:
     LayoutSize m_size;
 
     typedef WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > EmbeddedObjectSet;
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > m_partUpdateSet;
+    WillBeHeapHashSet<RefPtrWillBeMember<RenderEmbeddedObject> > m_partUpdateSet;
 
-    // FIXME: These are just "children" of the FrameView and should be RefPtr<Widget> instead.
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<RenderPart> > m_parts;
+    // FIXME: These are just "children" of the FrameView and should be RefPtrWillBeMember<Widget> instead.
+    WillBeHeapHashSet<RefPtrWillBeMember<RenderPart> > m_parts;
 
-    // Oilpan: the use of a persistent back reference 'emulates' the
-    // RefPtr-cycle that is kept between the two objects non-Oilpan.
+    // The RefPtr cycle between LocalFrame and FrameView is broken
+    // when a LocalFrame is detached by FrameLoader::detachFromParent().
+    // It clears the LocalFrame's m_view reference via setView(nullptr).
     //
-    // That cycle is broken when a LocalFrame is detached by
-    // FrameLoader::detachFromParent(), it then clears its
-    // FrameView's m_frame reference by calling setView(nullptr).
-    RefPtrWillBePersistent<LocalFrame> m_frame;
+    // For Oilpan, Member reference cycles pose no problem, but
+    // LocalFrame's FrameView is also cleared by setView(). This additionally
+    // triggers FrameView::dispose(), which performs the operations
+    // that cannot be delayed until finalization time.
+    RefPtrWillBeMember<LocalFrame> m_frame;
 
     bool m_doFullPaintInvalidation;
 
@@ -752,7 +760,7 @@ private:
     bool m_isTrackingPaintInvalidations; // Used for testing.
     Vector<IntRect> m_trackedPaintInvalidationRects;
 
-    RefPtrWillBePersistent<Node> m_nodeToDraw;
+    RefPtrWillBeMember<Node> m_nodeToDraw;
     PaintBehavior m_paintBehavior;
     bool m_isPainting;
 
@@ -761,15 +769,15 @@ private:
     bool m_isVisuallyNonEmpty;
     bool m_firstVisuallyNonEmptyLayoutCallbackPending;
 
-    RefPtrWillBePersistent<Node> m_maintainScrollPositionAnchor;
+    RefPtrWillBeMember<Node> m_maintainScrollPositionAnchor;
 
     // Renderer to hold our custom scroll corner.
-    RawPtrWillBePersistent<RenderScrollbarPart> m_scrollCorner;
+    RawPtrWillBeMember<RenderScrollbarPart> m_scrollCorner;
 
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
-    OwnPtr<FrameViewAutoSizeInfo> m_autoSizeInfo;
+    OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;
 
     float m_visibleContentScaleFactor;
     IntSize m_inputEventsOffsetForEmulation;
@@ -782,18 +790,24 @@ private:
 
     Vector<IntRect> m_tickmarks;
 
-    bool m_needsUpdateWidgetPositions;
     float m_topControlsViewportAdjustment;
 
-    RefPtr<Scrollbar> m_horizontalScrollbar;
-    RefPtr<Scrollbar> m_verticalScrollbar;
+    bool m_needsUpdateWidgetPositions;
+
+#if ENABLE(OILPAN) && ENABLE(ASSERT)
+    // Verified when finalizing.
+    bool m_hasBeenDisposed;
+#endif
+
+    RefPtrWillBeMember<Scrollbar> m_horizontalScrollbar;
+    RefPtrWillBeMember<Scrollbar> m_verticalScrollbar;
     ScrollbarMode m_horizontalScrollbarMode;
     ScrollbarMode m_verticalScrollbarMode;
 
     bool m_horizontalScrollbarLock;
     bool m_verticalScrollbarLock;
 
-    HashSet<RefPtr<Widget> > m_children;
+    ChildrenWidgetSet m_children;
 
     DoubleSize m_pendingScrollDelta;
     DoublePoint m_scrollPosition;
@@ -837,6 +851,7 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
 DEFINE_TYPE_CASTS(FrameView, Widget, widget, widget->isFrameView(), widget.isFrameView());
 
 class AllowPaintInvalidationScope {
+    STACK_ALLOCATED();
 public:
     explicit AllowPaintInvalidationScope(FrameView* view)
         : m_view(view)
@@ -855,8 +870,9 @@ public:
 
         m_view->setCanInvalidatePaintDuringPerformLayout(m_originalValue);
     }
+
 private:
-    FrameView* m_view;
+    RawPtrWillBeMember<FrameView> m_view;
     bool m_originalValue;
 };
 

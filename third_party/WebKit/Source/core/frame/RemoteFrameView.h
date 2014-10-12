@@ -13,9 +13,9 @@ namespace blink {
 
 class RemoteFrame;
 
-class RemoteFrameView : public Widget {
+class RemoteFrameView final : public Widget {
 public:
-    static PassRefPtr<RemoteFrameView> create(RemoteFrame*);
+    static PassRefPtrWillBeRawPtr<RemoteFrameView> create(RemoteFrame*);
 
     virtual ~RemoteFrameView();
 
@@ -34,13 +34,16 @@ public:
 
     virtual void setFrameRect(const IntRect&) override;
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit RemoteFrameView(RemoteFrame*);
 
-    // The RefPtrWillBePersistent-cycle between RemoteFrame and its RemoteFrameView
-    // is broken in the same manner as FrameView::m_frame and LocalFrame::m_view is.
-    // See the FrameView::m_frame comment.
-    RefPtrWillBePersistent<RemoteFrame> m_remoteFrame;
+    // The properties and handling of the cycle between RemoteFrame
+    // and its RemoteFrameView corresponds to that between LocalFrame
+    // and FrameView. Please see the FrameView::m_frame comment for
+    // details.
+    RefPtrWillBeMember<RemoteFrame> m_remoteFrame;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameView, Widget, widget, widget->isRemoteFrameView(), widget.isRemoteFrameView());

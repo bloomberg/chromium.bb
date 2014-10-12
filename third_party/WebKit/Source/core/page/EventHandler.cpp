@@ -243,11 +243,13 @@ void EventHandler::trace(Visitor* visitor)
     visitor->trace(m_nodeUnderMouse);
     visitor->trace(m_lastNodeUnderMouse);
     visitor->trace(m_lastMouseMoveEventSubframe);
+    visitor->trace(m_lastScrollbarUnderMouse);
     visitor->trace(m_clickNode);
     visitor->trace(m_dragTarget);
     visitor->trace(m_frameSetBeingResized);
     visitor->trace(m_latchedWheelEventNode);
     visitor->trace(m_previousWheelScrolledNode);
+    visitor->trace(m_scrollbarHandlingScrollGesture);
     visitor->trace(m_targetForTouchID);
     visitor->trace(m_touchSequenceDocument);
     visitor->trace(m_scrollGestureHandlingNode);
@@ -1200,7 +1202,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMousePressEvent");
 
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
     m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
@@ -1344,7 +1346,7 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
     HitTestResult hoveredNode = HitTestResult(LayoutPoint());
@@ -1373,7 +1375,7 @@ void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event);
 }
 
@@ -1498,7 +1500,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseReleaseEvent");
 
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     m_frame->selection().setCaretBlinkingSuspended(false);
 
@@ -1958,7 +1960,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!doc->renderView())
         return false;
 
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     FrameView* view = m_frame->view();
     if (!view)
@@ -2103,7 +2105,7 @@ bool EventHandler::handleGestureEventInFrame(const GestureEventWithHitTestResult
     ASSERT(!targetedEvent.event().isScrollEvent());
 
     RefPtrWillBeRawPtr<Node> eventTarget = targetedEvent.hitTestResult().innerNode();
-    RefPtr<Scrollbar> scrollbar = targetedEvent.hitTestResult().scrollbar();
+    RefPtrWillBeRawPtr<Scrollbar> scrollbar = targetedEvent.hitTestResult().scrollbar();
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
 
     if (scrollbar) {
@@ -2147,7 +2149,7 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
     TRACE_EVENT0("input", "EventHandler::handleGestureScrollEvent");
 
     RefPtrWillBeRawPtr<Node> eventTarget = nullptr;
-    RefPtr<Scrollbar> scrollbar;
+    RefPtrWillBeRawPtr<Scrollbar> scrollbar = nullptr;
     if (gestureEvent.type() != PlatformEvent::GestureScrollBegin) {
         scrollbar = m_scrollbarHandlingScrollGesture.get();
         eventTarget = m_scrollGestureHandlingNode.get();
@@ -2214,7 +2216,7 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
 
 bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& targetedEvent)
 {
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     HitTestRequest::HitTestRequestType hitType = getHitTypeForGestureType(gestureEvent.type());
 
@@ -2314,7 +2316,7 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
         m_mouseDownMayStartDrag = true;
         dragState().m_dragSrc = nullptr;
         m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
-        RefPtr<FrameView> protector(m_frame->view());
+        RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
         handleDrag(mev, DontCheckDragHysteresis);
         if (m_didStartDrag) {
             m_longTapShouldInvokeContextMenu = true;
@@ -2445,7 +2447,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     if (!renderer)
         return false;
 
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     Node* stopNode = 0;
     bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation;
@@ -3001,7 +3003,7 @@ bool EventHandler::isKeyEventAllowedInFullScreen(Fullscreen* fullscreen, const P
 
 bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
-    RefPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     ASSERT(m_frame->document());
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*m_frame->document())) {

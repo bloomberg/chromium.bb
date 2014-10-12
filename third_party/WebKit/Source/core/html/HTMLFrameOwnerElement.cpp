@@ -30,6 +30,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/plugins/PluginView.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -37,11 +38,11 @@
 
 namespace blink {
 
-typedef HashMap<RefPtr<Widget>, FrameView*> WidgetToParentMap;
+typedef WillBeHeapHashMap<RefPtrWillBeMember<Widget>, RawPtrWillBeMember<FrameView> > WidgetToParentMap;
 static WidgetToParentMap& widgetNewParentMap()
 {
-    DEFINE_STATIC_LOCAL(WidgetToParentMap, map, ());
-    return map;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WidgetToParentMap>, map, (adoptPtrWillBeNoop(new WidgetToParentMap())));
+    return *map;
 }
 
 WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >& SubframeLoadingDisabler::disabledSubtreeRoots()
@@ -71,6 +72,10 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperati
                 currentParent->removeChild(child);
             if (newParent)
                 newParent->addChild(child);
+#if ENABLE(OILPAN)
+            if (currentParent && !newParent)
+                child->dispose();
+#endif
         }
     }
 }
@@ -86,10 +91,14 @@ HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope()
 static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
 {
     if (!s_updateSuspendCount) {
-        if (parent)
+        if (parent) {
             parent->addChild(child);
-        else if (toFrameView(child->parent()))
+        } else if (toFrameView(child->parent())) {
             toFrameView(child->parent())->removeChild(child);
+#if ENABLE(OILPAN)
+            child->dispose();
+#endif
+        }
         return;
     }
     widgetNewParentMap().set(child, parent);
@@ -143,17 +152,18 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // see if this behavior is really needed as Gecko does not allow this.
     if (RefPtrWillBeRawPtr<Frame> frame = contentFrame()) {
         frame->detach();
-#if ENABLE(OILPAN)
-        // FIXME: Oilpan: the plugin container is released and finalized here
-        // in order to work around the current inability to make the plugin
-        // container a FrameDestructionObserver (it needs to effectively be on
-        // the heap, and Widget isn't). Hence, release it here while its
-        // frame reference is still valid.
-        if (m_widget && m_widget->isPluginContainer())
-            m_widget = nullptr;
-#endif
         frame->disconnectOwnerElement();
     }
+#if ENABLE(OILPAN)
+    // Oilpan: a plugin container must be explicitly disposed before it
+    // is swept and finalized. This is because the underlying plugin needs
+    // to be able to access a fully-functioning frame (and all it refers
+    // to) while it destructs and cleans out its resources.
+    if (m_widget) {
+        m_widget->dispose();
+        m_widget = nullptr;
+    }
+#endif
 }
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
@@ -201,7 +211,7 @@ Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) 
     return 0;
 }
 
-void HTMLFrameOwnerElement::setWidget(PassRefPtr<Widget> widget)
+void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
 {
     if (widget == m_widget)
         return;
@@ -257,6 +267,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 void HTMLFrameOwnerElement::trace(Visitor* visitor)
 {
     visitor->trace(m_contentFrame);
+    visitor->trace(m_widget);
     HTMLElement::trace(visitor);
     FrameOwner::trace(visitor);
 }

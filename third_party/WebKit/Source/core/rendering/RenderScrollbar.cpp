@@ -36,9 +36,9 @@
 
 namespace blink {
 
-PassRefPtr<Scrollbar> RenderScrollbar::createCustomScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
+PassRefPtrWillBeRawPtr<Scrollbar> RenderScrollbar::createCustomScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
 {
-    return adoptRef(new RenderScrollbar(scrollableArea, orientation, ownerNode, owningFrame));
+    return adoptRefWillBeNoop(new RenderScrollbar(scrollableArea, orientation, ownerNode, owningFrame));
 }
 
 RenderScrollbar::RenderScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
@@ -64,19 +64,43 @@ RenderScrollbar::RenderScrollbar(ScrollableArea* scrollableArea, ScrollbarOrient
         height = this->height();
 
     setFrameRect(IntRect(0, 0, width, height));
+
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(*this);
+#endif
 }
 
 RenderScrollbar::~RenderScrollbar()
 {
-    if (!m_parts.isEmpty()) {
-        // When a scrollbar is detached from its parent (causing all parts removal) and
-        // ready to be destroyed, its destruction can be delayed because of RefPtr
-        // maintained in other classes such as EventHandler (m_lastScrollbarUnderMouse).
-        // Meanwhile, we can have a call to updateScrollbarPart which recreates the
-        // scrollbar part. So, we need to destroy these parts since we don't want them
-        // to call on a destroyed scrollbar. See webkit bug 68009.
-        updateScrollbarParts(true);
-    }
+    // Oilpan: to be able to access the hash map that's
+    // also on the heap, a pre-destruction finalizer is used.
+#if !ENABLE(OILPAN)
+    destroyParts();
+#endif
+}
+
+void RenderScrollbar::destroyParts()
+{
+    if (m_parts.isEmpty())
+        return;
+
+    // When a scrollbar is detached from its parent (causing all parts removal) and
+    // ready to be destroyed, its destruction can be delayed because of RefPtr
+    // maintained in other classes such as EventHandler (m_lastScrollbarUnderMouse).
+    // Meanwhile, we can have a call to updateScrollbarPart which recreates the
+    // scrollbar part. So, we need to destroy these parts since we don't want them
+    // to call on a destroyed scrollbar. See webkit bug 68009.
+    updateScrollbarParts(true);
+}
+
+void RenderScrollbar::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_owner);
+    visitor->trace(m_owningFrame);
+    visitor->trace(m_parts);
+#endif
+    Scrollbar::trace(visitor);
 }
 
 RenderBox* RenderScrollbar::owningRenderer() const

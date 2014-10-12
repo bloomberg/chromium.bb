@@ -216,7 +216,8 @@ void DragController::dragExited(DragData* dragData)
     ASSERT(dragData);
     LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
 
-    if (RefPtr<FrameView> v = mainFrame->view()) {
+    RefPtrWillBeRawPtr<FrameView> frameView(mainFrame->view());
+    if (frameView) {
         DataTransferAccessPolicy policy = (!m_documentUnderMouse || m_documentUnderMouse->securityOrigin()->isLocal()) ? DataTransferReadable : DataTransferTypesReadable;
         RefPtrWillBeRawPtr<DataTransfer> dataTransfer = createDraggingDataTransfer(policy, dragData);
         dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
@@ -353,7 +354,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
 
     // It's unclear why this check is after tryDHTMLDrag.
     // We send drag events in tryDHTMLDrag and that may be the reason.
-    RefPtr<FrameView> frameView = m_documentUnderMouse->view();
+    RefPtrWillBeRawPtr<FrameView> frameView = m_documentUnderMouse->view();
     if (!frameView)
         return false;
 
@@ -594,7 +595,7 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
     if (!mainFrame->view())
         return false;
 
-    RefPtr<FrameView> viewProtector(mainFrame->view());
+    RefPtrWillBeRawPtr<FrameView> viewProtector(mainFrame->view());
     DataTransferAccessPolicy policy = m_documentUnderMouse->securityOrigin()->isLocal() ? DataTransferReadable : DataTransferTypesReadable;
     RefPtrWillBeRawPtr<DataTransfer> dataTransfer = createDraggingDataTransfer(policy, dragData);
     DragOperation srcOpMask = dragData->draggingSourceOperationMask();
@@ -946,7 +947,7 @@ void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation
     m_dragInitiator = frame->document();
     // Protect this frame and view, as a load may occur mid drag and attempt to unload this frame
     RefPtrWillBeRawPtr<LocalFrame> mainFrame = m_page->deprecatedLocalMainFrame();
-    RefPtr<FrameView> mainFrameView = mainFrame->view();
+    RefPtrWillBeRawPtr<FrameView> mainFrameView = mainFrame->view();
 
     m_client->startDrag(image, mainFrameView->rootViewToContents(frame->view()->contentsToRootView(dragLocation)),
         mainFrameView->rootViewToContents(frame->view()->contentsToRootView(eventPos)), dataTransfer, frame, forLink);

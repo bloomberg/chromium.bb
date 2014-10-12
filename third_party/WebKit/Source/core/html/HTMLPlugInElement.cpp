@@ -87,7 +87,44 @@ void HTMLPlugInElement::trace(Visitor* visitor)
 {
     visitor->trace(m_imageLoader);
     visitor->trace(m_placeholder);
+    visitor->trace(m_persistedPluginWidget);
     HTMLFrameOwnerElement::trace(visitor);
+}
+
+#if ENABLE(OILPAN)
+void HTMLPlugInElement::disconnectContentFrame()
+{
+    if (m_persistedPluginWidget) {
+        m_persistedPluginWidget->dispose();
+        m_persistedPluginWidget = nullptr;
+    }
+    HTMLFrameOwnerElement::disconnectContentFrame();
+}
+
+void HTMLPlugInElement::shouldDisposePlugin()
+{
+    if (m_persistedPluginWidget && m_persistedPluginWidget->isPluginView())
+        toPluginView(m_persistedPluginWidget.get())->shouldDisposePlugin();
+}
+#endif
+
+void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
+{
+    if (m_persistedPluginWidget == widget)
+        return;
+#if ENABLE(OILPAN)
+    if (m_persistedPluginWidget && m_persistedPluginWidget->isPluginView()) {
+        LocalFrame* frame = toPluginView(m_persistedPluginWidget.get())->pluginFrame();
+        ASSERT(frame);
+        frame->unregisterPluginElement(this);
+    }
+    if (widget && widget->isPluginView()) {
+        LocalFrame* frame = toPluginView(widget)->pluginFrame();
+        ASSERT(frame);
+        frame->registerPluginElement(this);
+    }
+#endif
+    m_persistedPluginWidget = widget;
 }
 
 bool HTMLPlugInElement::canProcessDrag() const
@@ -202,13 +239,10 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     // Only try to persist a plugin widget we actually own.
     Widget* plugin = ownedWidget();
     if (plugin && plugin->pluginShouldPersist())
-        m_persistedPluginWidget = plugin;
-#if ENABLE(OILPAN)
-    else if (plugin)
-        plugin->detach();
-#endif
+        setPersistedPluginWidget(plugin);
+
     resetInstance();
-    // FIXME - is this next line necessary?
+    // Clear the widget; will trigger disposal of it with Oilpan.
     setWidget(nullptr);
 
     if (m_isCapturingMouseEvents) {
@@ -336,7 +370,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
         if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
             return;
     }
-    RefPtr<Widget> widget = toRenderPart(r)->widget();
+    RefPtrWillBeRawPtr<Widget> widget = toRenderPart(r)->widget();
     if (!widget)
         return;
     widget->handleEvent(event);
@@ -479,8 +513,8 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
-    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder;
-    RefPtr<Widget> widget = m_persistedPluginWidget;
+    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder = nullptr;
+    RefPtrWillBeRawPtr<Widget> widget = m_persistedPluginWidget;
     if (!widget) {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
         placeholder = frame->loader().client()->createPluginPlaceholder(document(), url, paramNames, paramValues, mimeType, loadManually);
@@ -504,9 +538,9 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
     if (renderer) {
         setWidget(widget);
-        m_persistedPluginWidget = nullptr;
-    } else if (widget != m_persistedPluginWidget) {
-        m_persistedPluginWidget = widget;
+        setPersistedPluginWidget(nullptr);
+    } else {
+        setPersistedPluginWidget(widget.get());
     }
     setPlaceholder(nullptr);
     document().setContainsPlugins();

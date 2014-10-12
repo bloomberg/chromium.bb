@@ -119,6 +119,7 @@ void HitTestResult::trace(Visitor* visitor)
     visitor->trace(m_innerPossiblyPseudoNode);
     visitor->trace(m_innerNonSharedNode);
     visitor->trace(m_innerURLElement);
+    visitor->trace(m_scrollbar);
 #if ENABLE(OILPAN)
     visitor->trace(m_rectBasedTestResult);
 #endif

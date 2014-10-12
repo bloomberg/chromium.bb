@@ -46,6 +46,10 @@ class HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
     virtual void trace(Visitor*) override;
+#if ENABLE(OILPAN)
+    virtual void disconnectContentFrame() override;
+    void shouldDisposePlugin();
+#endif
 
     void resetInstance();
     SharedPersistent<v8::Object>* pluginWrapper();
@@ -133,6 +137,8 @@ private:
     bool pluginIsLoadable(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
+    void setPersistedPluginWidget(Widget*);
+
     mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
@@ -146,7 +152,7 @@ private:
     // prevent confusing code which may assume that widget() != null
     // means the frame is active, we save off m_widget here while
     // the plugin is persisting but not being displayed.
-    RefPtr<Widget> m_persistedPluginWidget;
+    RefPtrWillBeMember<Widget> m_persistedPluginWidget;
 };
 
 inline bool isHTMLPlugInElement(const HTMLElement& element)

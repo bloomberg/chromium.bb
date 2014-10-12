@@ -20,9 +20,9 @@ RemoteFrameView::~RemoteFrameView()
 {
 }
 
-PassRefPtr<RemoteFrameView> RemoteFrameView::create(RemoteFrame* remoteFrame)
+PassRefPtrWillBeRawPtr<RemoteFrameView> RemoteFrameView::create(RemoteFrame* remoteFrame)
 {
-    RefPtr<RemoteFrameView> view = adoptRef(new RemoteFrameView(remoteFrame));
+    RefPtrWillBeRawPtr<RemoteFrameView> view = adoptRefWillBeNoop(new RemoteFrameView(remoteFrame));
     view->show();
     return view.release();
 }
@@ -54,6 +54,12 @@ void RemoteFrameView::setFrameRect(const IntRect& newRect)
 void RemoteFrameView::frameRectsChanged()
 {
     // FIXME: Notify embedder via WebLocalFrameClient when that is possible.
+}
+
+void RemoteFrameView::trace(Visitor* visitor)
+{
+    visitor->trace(m_remoteFrame);
+    Widget::trace(visitor);
 }
 
 } // namespace blink

@@ -61,7 +61,9 @@ private:
     virtual void setValue(float) override;
     virtual float valueForRange() const override;
 
-    RefPtr<Scrollbar> m_scrollbar;
+    // FIXME: Oilpan: turn this into a Member once the AXObject
+    // hierarchy is on the heap.
+    RefPtrWillBePersistent<Scrollbar> m_scrollbar;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollbar, isAXScrollbar());

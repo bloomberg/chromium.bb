@@ -125,8 +125,11 @@ FrameView::FrameView(LocalFrame* frame)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
-    , m_needsUpdateWidgetPositions(false)
     , m_topControlsViewportAdjustment(0)
+    , m_needsUpdateWidgetPositions(false)
+#if ENABLE(OILPAN) && ENABLE(ASSERT)
+    , m_hasBeenDisposed(false)
+#endif
     , m_horizontalScrollbarMode(ScrollbarAuto)
     , m_verticalScrollbarMode(ScrollbarAuto)
     , m_horizontalScrollbarLock(false)
@@ -147,16 +150,16 @@ FrameView::FrameView(LocalFrame* frame)
     ScrollableArea::setHorizontalScrollElasticity(ScrollElasticityAllowed);
 }
 
-PassRefPtr<FrameView> FrameView::create(LocalFrame* frame)
+PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame)
 {
-    RefPtr<FrameView> view = adoptRef(new FrameView(frame));
+    RefPtrWillBeRawPtr<FrameView> view = adoptRefWillBeNoop(new FrameView(frame));
     view->show();
     return view.release();
 }
 
-PassRefPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initialSize)
+PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initialSize)
 {
-    RefPtr<FrameView> view = adoptRef(new FrameView(frame));
+    RefPtrWillBeRawPtr<FrameView> view = adoptRefWillBeNoop(new FrameView(frame));
     view->Widget::setFrameRect(IntRect(view->location(), initialSize));
     view->setLayoutSizeInternal(initialSize);
 
@@ -165,6 +168,18 @@ PassRefPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initia
 }
 
 FrameView::~FrameView()
+{
+#if ENABLE(OILPAN)
+    ASSERT(m_hasBeenDisposed);
+#else
+    // Verify that the LocalFrame has a different FrameView or
+    // that it is being detached and destructed.
+    ASSERT(frame().view() != this || !renderView());
+    dispose();
+#endif
+}
+
+void FrameView::dispose()
 {
     if (m_postLayoutTasksTimer.isActive())
         m_postLayoutTasksTimer.stop();
@@ -183,12 +198,32 @@ FrameView::~FrameView()
 
     ASSERT(!m_scrollCorner);
 
-    ASSERT(m_frame);
-    ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
     // FIXME: Do we need to do something here for OOPI?
     HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
     if (ownerElement && ownerElement->ownedWidget() == this)
         ownerElement->setWidget(nullptr);
+
+    disposeAutoSizeInfo();
+#if ENABLE(OILPAN) && ENABLE(ASSERT)
+    m_hasBeenDisposed = true;
+#endif
+}
+
+void FrameView::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_partUpdateSet);
+    visitor->trace(m_parts);
+    visitor->trace(m_frame);
+    visitor->trace(m_nodeToDraw);
+    visitor->trace(m_maintainScrollPositionAnchor);
+    visitor->trace(m_scrollCorner);
+    visitor->trace(m_autoSizeInfo);
+    visitor->trace(m_horizontalScrollbar);
+    visitor->trace(m_verticalScrollbar);
+    visitor->trace(m_children);
+#endif
+    Widget::trace(visitor);
 }
 
 void FrameView::reset()
@@ -264,6 +299,13 @@ void FrameView::prepareForDetach()
         if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
             scrollingCoordinator->willDestroyScrollableArea(this);
     }
+
+#if ENABLE(OILPAN)
+    // FIXME: once/if dust settles, do this always (non-Oilpan)?
+    //
+    // FIXME: Oilpan: is this safe to dispose() if there are FrameView protections on the stack?
+    dispose();
+#endif
 }
 
 void FrameView::detachCustomScrollbars()
@@ -419,7 +461,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
     return false;
 }
 
-PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
+PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
     Element* customScrollbarElement = 0;
     LocalFrame* customScrollbarFrame = 0;
@@ -690,7 +732,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // FrameView for a layout. After that the RenderEmbeddedObject (ownerRenderer) carries the
     // correct size, which RenderSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the RenderSVGRoot size has changed dynamically (eg. via <script>).
-    RefPtr<FrameView> frameView = ownerRenderer->frame()->view();
+    RefPtrWillBeRawPtr<FrameView> frameView = ownerRenderer->frame()->view();
 
     // Mark the owner renderer as needing layout.
     ownerRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
@@ -802,7 +844,7 @@ void FrameView::layout(bool allowSubtree)
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
 
     // Protect the view from being deleted during layout (in recalcStyle)
-    RefPtr<FrameView> protector(this);
+    RefPtrWillBeRawPtr<FrameView> protector(this);
 
     // Every scroll that happens during layout is programmatic.
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
@@ -827,10 +869,12 @@ void FrameView::layout(bool allowSubtree)
 
     performPreLayoutTasks();
 
+#if !ENABLE(OILPAN)
     // If there is only one ref to this view left, then its going to be destroyed as soon as we exit,
     // so there's no point to continuing to layout
     if (protector->hasOneRef())
         return;
+#endif
 
     Document* document = m_frame->document();
     bool inSubtreeLayout = isSubtreeLayout();
@@ -1512,7 +1556,7 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     if (!hasViewportConstrainedObjects())
         return;
 
-    RefPtr<FrameView> protect(this);
+    RefPtrWillBeRawPtr<FrameView> protect(this);
 
     // If there fixed position elements, scrolling may cause compositing layers to change.
     // Update widget and layer positions after scrolling, but only if we're not inside of
@@ -1894,7 +1938,7 @@ bool FrameView::updateWidgets()
 void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
 {
     ASSERT(!isInPerformLayout());
-    RefPtr<FrameView> protect(this);
+    RefPtrWillBeRawPtr<FrameView> protect(this);
     m_updateWidgetsTimer.stop();
     for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
         if (updateWidgets())
@@ -1927,7 +1971,7 @@ void FrameView::performPostLayoutTasks()
     // We should ASSERT(isActive()); or at least return early if we can!
     ASSERT(!isInPerformLayout()); // Always before or after performLayout(), part of the highest-level layout() call.
     TRACE_EVENT0("blink", "FrameView::performPostLayoutTasks");
-    RefPtr<FrameView> protect(this);
+    RefPtrWillBeRawPtr<FrameView> protect(this);
 
     m_postLayoutTasksTimer.stop();
 
@@ -2374,9 +2418,9 @@ Color FrameView::documentBackgroundColor() const
 
 bool FrameView::hasCustomScrollbars() const
 {
-    const HashSet<RefPtr<Widget> >* viewChildren = children();
-    HashSet<RefPtr<Widget> >::const_iterator end = viewChildren->end();
-    for (HashSet<RefPtr<Widget> >::const_iterator current = viewChildren->begin(); current != end; ++current) {
+    const ChildrenWidgetSet* viewChildren = children();
+    ChildrenWidgetSet::const_iterator end = viewChildren->end();
+    for (ChildrenWidgetSet::const_iterator current = viewChildren->begin(); current != end; ++current) {
         Widget* widget = current->get();
         if (widget->isFrameView()) {
             if (toFrameView(widget)->hasCustomScrollbars())
@@ -2555,7 +2599,7 @@ void FrameView::updateWidgetPositionsIfNeeded()
 void FrameView::updateLayoutAndStyleForPainting()
 {
     // Updating layout can run script, which can tear down the FrameView.
-    RefPtr<FrameView> protector(this);
+    RefPtrWillBeRawPtr<FrameView> protector(this);
 
     updateLayoutAndStyleIfNeededRecursive();
 
@@ -2603,7 +2647,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
 
     // FIXME: Calling layout() shouldn't trigger scripe execution or have any
     // observable effects on the frame tree but we're not quite there yet.
-    Vector<RefPtr<FrameView> > frameViews;
+    WillBeHeapVector<RefPtrWillBeMember<FrameView> > frameViews;
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
@@ -2611,8 +2655,8 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
             frameViews.append(view);
     }
 
-    const Vector<RefPtr<FrameView> >::iterator end = frameViews.end();
-    for (Vector<RefPtr<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
+    const WillBeHeapVector<RefPtrWillBeMember<FrameView> >::iterator end = frameViews.end();
+    for (WillBeHeapVector<RefPtrWillBeMember<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
         (*it)->updateLayoutAndStyleIfNeededRecursive();
 
     // When an <iframe> gets composited, it triggers an extra style recalc in its containing FrameView.
@@ -2653,9 +2697,28 @@ void FrameView::invalidateTreeIfNeededRecursive()
 void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)
 {
     if (!m_autoSizeInfo)
-        m_autoSizeInfo = adoptPtr(new FrameViewAutoSizeInfo(this));
+        m_autoSizeInfo = FrameViewAutoSizeInfo::create(this);
 
     m_autoSizeInfo->configureAutoSizeMode(minSize, maxSize);
+    setLayoutSizeFixedToFrameSize(true);
+    setNeedsLayout();
+    scheduleRelayout();
+}
+
+void FrameView::disposeAutoSizeInfo()
+{
+    if (!m_autoSizeInfo)
+        return;
+
+    setLayoutSizeFixedToFrameSize(false);
+    setNeedsLayout();
+    scheduleRelayout();
+
+    // Since autosize mode forces the scrollbar mode, change them to being auto.
+    setVerticalScrollbarLock(false);
+    setHorizontalScrollbarLock(false);
+    setScrollbarModes(ScrollbarAuto, ScrollbarAuto);
+    m_autoSizeInfo.clear();
 }
 
 void FrameView::forceLayout(bool allowSubtree)
@@ -3031,7 +3094,7 @@ IntPoint FrameView::maximumScrollPosition() const
     return maximumOffset;
 }
 
-void FrameView::addChild(PassRefPtr<Widget> prpChild)
+void FrameView::addChild(PassRefPtrWillBeRawPtr<Widget> prpChild)
 {
     Widget* child = prpChild.get();
     ASSERT(child != this && !child->parent());
@@ -3082,7 +3145,7 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
     }
 }
 
-PassRefPtr<Scrollbar> FrameView::createScrollbarInternal(ScrollbarOrientation orientation)
+PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbarInternal(ScrollbarOrientation orientation)
 {
     return Scrollbar::create(this, orientation, RegularScrollbar);
 }
@@ -3751,8 +3814,8 @@ void FrameView::setFrameRectInternal(const IntRect& newRect)
 
 void FrameView::frameRectsChangedInternal()
 {
-    HashSet<RefPtr<Widget> >::const_iterator end = m_children.end();
-    for (HashSet<RefPtr<Widget> >::const_iterator current = m_children.begin(); current != end; ++current)
+    ChildrenWidgetSet::const_iterator end = m_children.end();
+    for (ChildrenWidgetSet::const_iterator current = m_children.begin(); current != end; ++current)
         (*current)->frameRectsChanged();
 }
 
@@ -4089,8 +4152,8 @@ void FrameView::setParentVisible(bool visible)
     if (!isSelfVisible())
         return;
 
-    HashSet<RefPtr<Widget> >::iterator end = m_children.end();
-    for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
+    ChildrenWidgetSet::const_iterator end = m_children.end();
+    for (ChildrenWidgetSet::const_iterator it = m_children.begin(); it != end; ++it)
         (*it)->setParentVisible(visible);
 }
 
@@ -4099,8 +4162,8 @@ void FrameView::show()
     if (!isSelfVisible()) {
         setSelfVisible(true);
         if (isParentVisible()) {
-            HashSet<RefPtr<Widget> >::iterator end = m_children.end();
-            for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
+            ChildrenWidgetSet::const_iterator end = m_children.end();
+            for (ChildrenWidgetSet::const_iterator it = m_children.begin(); it != end; ++it)
                 (*it)->setParentVisible(true);
         }
     }
@@ -4112,8 +4175,8 @@ void FrameView::hide()
 {
     if (isSelfVisible()) {
         if (isParentVisible()) {
-            HashSet<RefPtr<Widget> >::iterator end = m_children.end();
-            for (HashSet<RefPtr<Widget> >::iterator it = m_children.begin(); it != end; ++it)
+            ChildrenWidgetSet::const_iterator end = m_children.end();
+            for (ChildrenWidgetSet::const_iterator it = m_children.begin(); it != end; ++it)
                 (*it)->setParentVisible(false);
         }
         setSelfVisible(false);

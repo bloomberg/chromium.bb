@@ -33,7 +33,7 @@
 namespace blink {
 
 Widget::Widget()
-    : m_parent(0)
+    : m_parent(nullptr)
     , m_selfVisible(false)
     , m_parentVisible(false)
 {
@@ -41,7 +41,14 @@ Widget::Widget()
 
 Widget::~Widget()
 {
+#if !ENABLE(OILPAN)
     ASSERT(!parent());
+#endif
+}
+
+void Widget::trace(Visitor* visitor)
+{
+    visitor->trace(m_parent);
 }
 
 void Widget::setParent(Widget* widget)

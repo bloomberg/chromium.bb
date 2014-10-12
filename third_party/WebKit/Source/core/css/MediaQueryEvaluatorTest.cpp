@@ -84,8 +84,9 @@ TestCase printTestCases[] = {
 
 void testMQEvaluator(TestCase* testCases, const MediaQueryEvaluator& mediaQueryEvaluator)
 {
+    RefPtrWillBePersistent<MediaQuerySet> querySet = nullptr;
     for (unsigned i = 0; testCases[i].input; ++i) {
-        RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create(testCases[i].input);
+        querySet = MediaQuerySet::create(testCases[i].input);
         ASSERT_EQ(testCases[i].output, mediaQueryEvaluator.eval(querySet.get()));
     }
 }
@@ -132,10 +133,10 @@ TEST(MediaQueryEvaluatorTest, Dynamic)
 TEST(MediaQueryEvaluatorTest, DynamicNoView)
 {
     OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
-    RefPtr<FrameView> view = pageHolder->frame().view();
+    RefPtrWillBePersistent<FrameView> view = pageHolder->frame().view();
     pageHolder->frame().setView(nullptr);
     MediaQueryEvaluator mediaQueryEvaluator(&pageHolder->frame());
-    RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
+    RefPtrWillBePersistent<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
     bool output = false;
     ASSERT_EQ(output, mediaQueryEvaluator.eval(querySet.get()));
     pageHolder->frame().setView(view);

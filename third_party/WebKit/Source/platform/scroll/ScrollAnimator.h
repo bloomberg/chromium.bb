@@ -35,9 +35,8 @@
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -45,10 +44,9 @@ class FloatPoint;
 class ScrollableArea;
 class Scrollbar;
 
-class PLATFORM_EXPORT ScrollAnimator {
-    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(ScrollAnimator);
+class PLATFORM_EXPORT ScrollAnimator : public RefCounted<ScrollAnimator> {
 public:
-    static PassOwnPtr<ScrollAnimator> create(ScrollableArea*);
+    static PassRefPtr<ScrollAnimator> create(ScrollableArea*);
 
     virtual ~ScrollAnimator();
 

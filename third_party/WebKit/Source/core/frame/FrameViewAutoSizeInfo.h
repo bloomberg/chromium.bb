@@ -6,6 +6,7 @@
 #define FrameViewAutoSizeInfo_h
 
 #include "platform/geometry/IntSize.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -14,28 +15,34 @@ namespace blink {
 
 class FrameView;
 
-class FrameViewAutoSizeInfo {
+class FrameViewAutoSizeInfo final : public NoBaseWillBeGarbageCollected<FrameViewAutoSizeInfo> {
     WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
-    WTF_MAKE_FAST_ALLOCATED;
-
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameViewAutoSizeInfo);
 public:
-    FrameViewAutoSizeInfo(FrameView*);
-    ~FrameViewAutoSizeInfo();
+    static PassOwnPtrWillBeRawPtr<FrameViewAutoSizeInfo> create(FrameView* frameView)
+    {
+        return adoptPtrWillBeNoop(new FrameViewAutoSizeInfo(frameView));
+    }
+
     void configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
     void autoSizeIfNeeded();
 
+    void trace(Visitor*);
+
 private:
-    void removeAutoSizeMode();
+    explicit FrameViewAutoSizeInfo(FrameView*);
 
-    RefPtr<FrameView> m_frameView;
+    RefPtrWillBeMember<FrameView> m_frameView;
 
-    bool m_inAutoSize;
-    // True if autosize has been run since m_shouldAutoSize was set.
-    bool m_didRunAutosize;
     // The lower bound on the size when autosizing.
     IntSize m_minAutoSize;
     // The upper bound on the size when autosizing.
     IntSize m_maxAutoSize;
+
+    bool m_inAutoSize;
+    // True if autosize has been run since m_shouldAutoSize was set.
+    bool m_didRunAutosize;
 };
 
 } // namespace blink

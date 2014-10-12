@@ -490,7 +490,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     // If there is a popup open, close it as the user is clicking on the page (outside of the
     // popup). We also save it so we can prevent a click on an element from immediately
     // reopening the same popup.
-    RefPtr<PopupContainer> selectPopup;
+    RefPtrWillBeRawPtr<PopupContainer> selectPopup = nullptr;
     RefPtr<WebPagePopupImpl> pagePopup;
     if (event.button == WebMouseEvent::ButtonLeft) {
         selectPopup = m_selectPopup;
@@ -738,7 +738,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             break;
         }
 
-        RefPtr<PopupContainer> selectPopup;
+        RefPtrWillBeRawPtr<PopupContainer> selectPopup = nullptr;
         selectPopup = m_selectPopup;
         hideSelectPopup();
         ASSERT(!m_selectPopup);
@@ -3282,7 +3282,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (m_shouldAutoResize || !mainFrameImpl())
         return;
 
-    RefPtr<FrameView> view = mainFrameImpl()->frameView();
+    RefPtrWillBeRawPtr<FrameView> view = mainFrameImpl()->frameView();
     if (!view)
         return;
 

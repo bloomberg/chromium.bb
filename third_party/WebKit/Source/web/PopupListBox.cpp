@@ -87,7 +87,22 @@ PopupListBox::~PopupListBox()
 {
     clear();
 
+    // Oilpan: the scrollbars of the ScrollView are self-sufficient,
+    // capable of detaching themselves from their animator on
+    // finalization.
+#if !ENABLE(OILPAN)
     setHasVerticalScrollbar(false);
+#endif
+}
+
+void PopupListBox::trace(Visitor* visitor)
+{
+    visitor->trace(m_capturingScrollbar);
+    visitor->trace(m_lastScrollbarUnderMouse);
+    visitor->trace(m_focusedElement);
+    visitor->trace(m_container);
+    visitor->trace(m_verticalScrollbar);
+    Widget::trace(visitor);
 }
 
 bool PopupListBox::handleMouseDownEvent(const PlatformMouseEvent& event)
@@ -502,7 +517,7 @@ Font PopupListBox::getRowFont(int rowIndex) const
 
 void PopupListBox::abandon()
 {
-    RefPtr<PopupListBox> keepAlive(this);
+    RefPtrWillBeRawPtr<PopupListBox> protect(this);
 
     m_selectedIndex = m_originalIndex;
 
@@ -550,7 +565,7 @@ bool PopupListBox::acceptIndex(int index)
     }
 
     if (isSelectableItem(index)) {
-        RefPtr<PopupListBox> keepAlive(this);
+        RefPtrWillBeRawPtr<PopupListBox> protect(this);
 
         // Hide ourselves first since valueChanged may have numerous side-effects.
         hidePopup();
@@ -835,8 +850,7 @@ void PopupListBox::layout()
 
 void PopupListBox::clear()
 {
-    for (Vector<PopupItem*>::iterator it = m_items.begin(); it != m_items.end(); ++it)
-        delete *it;
+    deleteAllValues(m_items);
     m_items.clear();
 }
 

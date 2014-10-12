@@ -27,6 +27,7 @@
 #define RenderScrollbar_h
 
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/HashMap.h"
 
@@ -39,12 +40,11 @@ class RenderScrollbarPart;
 class RenderStyle;
 
 class RenderScrollbar final : public Scrollbar {
-protected:
-    RenderScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
-
+#if ENABLE(OILPAN)
+    USING_PRE_FINALIZER(RenderScrollbar, destroyParts);
+#endif
 public:
-    friend class Scrollbar;
-    static PassRefPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
+    static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
     virtual ~RenderScrollbar();
 
     RenderBox* owningRenderer() const;
@@ -59,7 +59,14 @@ public:
 
     RenderScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
 
+    virtual void trace(Visitor*) override;
+
+protected:
+    RenderScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
+
 private:
+    friend class Scrollbar;
+
     virtual void setParent(Widget*) override;
     virtual void setEnabled(bool) override;
 
@@ -75,14 +82,17 @@ private:
     PassRefPtr<RenderStyle> getScrollbarPseudoStyle(ScrollbarPart, PseudoId);
     void updateScrollbarPart(ScrollbarPart, bool destroy = false);
 
+    void destroyParts();
+
     // This Scrollbar(Widget) may outlive the DOM which created it (during tear down),
     // so we keep a reference to the Node which caused this custom scrollbar creation.
     // This will not create a reference cycle as the Widget tree is owned by our containing
     // FrameView which this Node pointer can in no way keep alive. See webkit bug 80610.
-    RefPtrWillBePersistent<Node> m_owner;
+    RefPtrWillBeMember<Node> m_owner;
 
-    LocalFrame* m_owningFrame;
-    WillBePersistentHeapHashMap<unsigned, RawPtrWillBeMember<RenderScrollbarPart> > m_parts;
+    RawPtrWillBeMember<LocalFrame> m_owningFrame;
+
+    WillBeHeapHashMap<unsigned, RawPtrWillBeMember<RenderScrollbarPart> > m_parts;
 };
 
 DEFINE_TYPE_CASTS(RenderScrollbar, ScrollbarThemeClient, scrollbar, scrollbar->isCustomScrollbar(), scrollbar.isCustomScrollbar());

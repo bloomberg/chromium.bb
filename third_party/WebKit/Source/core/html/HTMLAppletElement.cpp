@@ -183,8 +183,8 @@ void HTMLAppletElement::updateWidgetInternal()
         paramValues.append(param->value());
     }
 
-    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder;
-    RefPtr<Widget> widget;
+    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder = nullptr;
+    RefPtrWillBeRawPtr<Widget> widget = nullptr;
     if (frame->loader().allowPlugins(AboutToInstantiatePlugin)) {
         placeholder = frame->loader().client()->createPluginPlaceholder(document(), KURL(), paramNames, paramValues, m_serviceType, false);
         if (!placeholder)

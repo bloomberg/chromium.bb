@@ -59,6 +59,11 @@ public:
     virtual void didFinishLoading() { }
     virtual void didFailLoading(const ResourceError&) { }
 
+#if ENABLE(OILPAN)
+    virtual LocalFrame* pluginFrame() const { return nullptr; }
+    virtual void shouldDisposePlugin() { }
+#endif
+
 protected:
     PluginView() : Widget() { }
 };

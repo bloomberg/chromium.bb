@@ -69,7 +69,7 @@ private:
 
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<Event> m_event;
-    RefPtr<FrameView> m_view;
+    RefPtrWillBeMember<FrameView> m_view;
 #if ENABLE(ASSERT)
     bool m_eventDispatched;
 #endif

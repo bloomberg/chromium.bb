@@ -22,17 +22,19 @@ public:
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
 
-    void setView(PassRefPtr<RemoteFrameView>);
+    void setView(PassRefPtrWillBeRawPtr<RemoteFrameView>);
     void createView();
 
     RemoteFrameView* view() const;
+
+    void trace(Visitor*) OVERRIDE;
 
 private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
     RemoteFrameClient* remoteFrameClient() const;
 
-    RefPtr<RemoteFrameView> m_view;
+    RefPtrWillBeMember<RemoteFrameView> m_view;
 };
 
 inline RemoteFrameView* RemoteFrame::view() const

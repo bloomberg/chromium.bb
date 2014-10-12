@@ -43,14 +43,22 @@ void RemoteFrame::detach()
     m_host = nullptr;
 }
 
-void RemoteFrame::setView(PassRefPtr<RemoteFrameView> view)
+void RemoteFrame::trace(Visitor* visitor)
 {
+    visitor->trace(m_view);
+    Frame::trace(visitor);
+}
+
+void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)
+{
+    // Oilpan: as RemoteFrameView performs no finalization actions,
+    // no explicit dispose() of it needed here. (cf. FrameView::dispose().)
     m_view = view;
 }
 
 void RemoteFrame::createView()
 {
-    RefPtr<RemoteFrameView> view = RemoteFrameView::create(this);
+    RefPtrWillBeRawPtr<RemoteFrameView> view = RemoteFrameView::create(this);
     setView(view);
 
     if (ownerRenderer()) {

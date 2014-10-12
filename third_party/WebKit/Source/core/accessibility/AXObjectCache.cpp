@@ -340,6 +340,7 @@ AXObject* AXObjectCache::getOrCreate(Widget* widget)
         return obj;
 
     RefPtr<AXObject> newObj = nullptr;
+    // FIXME: test for isScrollView() instead?
     if (widget->isFrameView())
         newObj = AXScrollView::create(toFrameView(widget));
     else if (widget->isScrollbar())
@@ -579,6 +580,14 @@ void AXObjectCache::clearWeakMembers(Visitor* visitor)
     }
     for (unsigned i = 0; i < deadNodes.size(); ++i)
         remove(deadNodes[i]);
+
+    Vector<Widget*> deadWidgets;
+    for (HashMap<Widget*, AXID>::iterator it = m_widgetObjectMapping.begin(); it != m_widgetObjectMapping.end(); ++it) {
+        if (!visitor->isAlive(it->key))
+            deadWidgets.append(it->key);
+    }
+    for (unsigned i = 0; i < deadWidgets.size(); ++i)
+        remove(deadWidgets[i]);
 }
 
 AXID AXObjectCache::platformGenerateAXID() const

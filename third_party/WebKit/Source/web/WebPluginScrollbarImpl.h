@@ -25,8 +25,8 @@
 #ifndef WebPluginScrollbarImpl_h
 #define WebPluginScrollbarImpl_h
 
+#include "platform/heap/Handle.h"
 #include "public/web/WebPluginScrollbar.h"
-
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -92,7 +92,7 @@ private:
     WebPluginScrollbarClient* m_client;
 
     int m_scrollOffset;
-    RefPtr<Scrollbar> m_scrollbar;
+    RefPtrWillBePersistent<Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

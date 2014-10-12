@@ -126,7 +126,7 @@ public:
     virtual FontSelector* fontSelector() const { return 0; }
     virtual HostWindow* hostWindow() const { return 0; }
 
-    virtual PassRefPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) { return nullptr; }
+    virtual PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) { return nullptr; }
 
     void setDisabledIndex(unsigned index) { m_disabledIndexSet.insert(index); }
     void setFocusedNode(Node* node) { m_node = node; }
@@ -195,6 +195,7 @@ protected:
 
     virtual void TearDown()
     {
+        m_popupMenu->disconnectClient();
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 

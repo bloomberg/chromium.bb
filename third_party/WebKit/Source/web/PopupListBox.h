@@ -88,9 +88,9 @@ struct PopupItem {
 // This class manages the scrollable content inside a <select> popup.
 class PopupListBox final : public Widget, public ScrollableArea, public PopupContent {
 public:
-    static PassRefPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
+    static PassRefPtrWillBeRawPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
     {
-        return adoptRef(new PopupListBox(client, deviceSupportsTouch, container));
+        return adoptRefWillBeNoop(new PopupListBox(client, deviceSupportsTouch, container));
     }
 
     // Widget
@@ -180,6 +180,8 @@ public:
     virtual int popupContentHeight() const override;
 
     static const int defaultMaxHeight;
+
+    void trace(Visitor*) OVERRIDE;
 
 protected:
     virtual void invalidateScrollCornerRect(const IntRect&) override { }
@@ -288,10 +290,10 @@ private:
 
     // The scrollbar which has mouse capture. Mouse events go straight to this
     // if not null.
-    RefPtr<Scrollbar> m_capturingScrollbar;
+    RefPtrWillBeMember<Scrollbar> m_capturingScrollbar;
 
     // The last scrollbar that the mouse was over. Used for mouseover highlights.
-    RefPtr<Scrollbar> m_lastScrollbarUnderMouse;
+    RefPtrWillBeMember<Scrollbar> m_lastScrollbarUnderMouse;
 
     // The string the user has typed so far into the popup. Used for typeAheadFind.
     String m_typedString;
@@ -306,11 +308,14 @@ private:
     int m_maxWindowWidth;
 
     // To forward last mouse release event.
-    RefPtrWillBePersistent<Element> m_focusedElement;
+    RefPtrWillBeMember<Element> m_focusedElement;
 
-    PopupContainer* m_container;
+    // Oilpan: the container owns/wraps this listbox. A (strong)
+    // Member can be used for the back reference without extending the
+    // container's lifetime; the two objects live equally long.
+    RawPtrWillBeMember<PopupContainer> m_container;
 
-    RefPtr<Scrollbar> m_verticalScrollbar;
+    RefPtrWillBeMember<Scrollbar> m_verticalScrollbar;
     IntSize m_contentsSize;
     IntPoint m_scrollOffset;
 };

@@ -28,6 +28,7 @@
 
 #include "platform/Timer.h"
 #include "platform/Widget.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/MathExtras.h"
@@ -39,14 +40,14 @@ class GraphicsContext;
 class IntRect;
 class PlatformGestureEvent;
 class PlatformMouseEvent;
+class ScrollAnimator;
 class ScrollableArea;
 class ScrollbarTheme;
 
-class PLATFORM_EXPORT Scrollbar : public Widget,
-                  public ScrollbarThemeClient {
+class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
 
 public:
-    static PassRefPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
+    static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
 
     virtual ~Scrollbar();
 
@@ -95,7 +96,7 @@ public:
     // Called by the ScrollableArea when the scroll offset changes.
     void offsetDidChange();
 
-    void disconnectFromScrollableArea() { m_scrollableArea = 0; }
+    void disconnectFromScrollableArea();
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 
     int pressedPos() const { return m_pressedPos; }
@@ -163,6 +164,13 @@ protected:
     ScrollbarOrientation m_orientation;
     ScrollbarControlSize m_controlSize;
     ScrollbarTheme* m_theme;
+
+#if ENABLE(OILPAN)
+    // To simplify Oilpan finalization, keep a copy of the ScrollableArea's
+    // scroll animator. Scrollbar is responsible for notifying the animator
+    // when it is destructed.
+    RefPtr<ScrollAnimator> m_animator;
+#endif
 
     int m_visibleSize;
     int m_totalSize;
