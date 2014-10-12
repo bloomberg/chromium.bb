@@ -26,3 +26,6 @@ class ContextLostExpectations(test_expectations.TestExpectations):
 
     self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
               ['win'], bug=392891)
+
+    self.Fail('ContextLost.WebGLContextLostInHiddenTab',
+              ['mac', ('nvidia', 0xfe9)], bug=422803)
