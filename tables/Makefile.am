@@ -163,7 +163,6 @@ table_files = \
 	latinLetterDef6Dots.uti \
 	latinLetterDef8Dots.uti \
 	litdigits6Dots.uti \
-	loweredDigits6Dotsin.uti \
 	loweredDigits6Dots.uti \
 	loweredDigits8Dots.uti \
 	lt.ctb \
