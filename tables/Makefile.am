@@ -161,7 +161,6 @@ table_files = \
 	kru.ctb \
 	ks-in-g1.utb \
 	latinLetterDef6Dots.uti \
-	latinLetterDef8Dotsin.uti \
 	latinLetterDef8Dots.uti \
 	litdigits6Dotsin.uti \
 	litdigits6Dots.uti \
