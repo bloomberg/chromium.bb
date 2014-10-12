@@ -49,7 +49,7 @@ public:
 
     static BiquadFilterNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new BiquadFilterNode(context, sampleRate));
+        return new BiquadFilterNode(context, sampleRate);
     }
 
     String type() const;

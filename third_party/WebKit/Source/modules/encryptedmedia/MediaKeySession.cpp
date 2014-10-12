@@ -207,7 +207,7 @@ private:
 
 MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* mediaKeys, const String& sessionType)
 {
-    RefPtrWillBeRawPtr<MediaKeySession> session = adoptRefCountedGarbageCollectedWillBeNoop(new MediaKeySession(scriptState, mediaKeys, sessionType));
+    RefPtrWillBeRawPtr<MediaKeySession> session = new MediaKeySession(scriptState, mediaKeys, sessionType);
     session->suspendIfNeeded();
     return session.get();
 }

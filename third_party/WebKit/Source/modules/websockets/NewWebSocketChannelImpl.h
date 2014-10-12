@@ -67,7 +67,7 @@ public:
     // Specify handle explicitly only in tests.
     static NewWebSocketChannelImpl* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
     {
-        return adoptRefCountedGarbageCollected(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle));
+        return new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle);
     }
     virtual ~NewWebSocketChannelImpl();
 

@@ -89,7 +89,7 @@ AudioContext* AudioContext::create(Document& document, ExceptionState& exception
         return 0;
     }
 
-    AudioContext* audioContext = adoptRefCountedGarbageCollectedWillBeNoop(new AudioContext(&document));
+    AudioContext* audioContext = new AudioContext(&document);
     audioContext->suspendIfNeeded();
     return audioContext;
 }

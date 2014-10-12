@@ -88,7 +88,7 @@ ScreenOrientation* ScreenOrientation::create(LocalFrame* frame)
 {
     ASSERT(frame);
 
-    ScreenOrientation* orientation = adoptRefCountedGarbageCollectedWillBeNoop(new ScreenOrientation(frame));
+    ScreenOrientation* orientation = new ScreenOrientation(frame);
     ASSERT(orientation->controller());
     // FIXME: ideally, we would like to provide the ScreenOrientationController
     // the case where it is not defined but for the moment, it is eagerly

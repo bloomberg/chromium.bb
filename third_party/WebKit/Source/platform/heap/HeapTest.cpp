@@ -822,9 +822,9 @@ int LargeObject::s_destructorCalls = 0;
 
 class RefCountedAndGarbageCollected : public RefCountedGarbageCollected<RefCountedAndGarbageCollected> {
 public:
-    static PassRefPtr<RefCountedAndGarbageCollected> create()
+    static RefCountedAndGarbageCollected* create()
     {
-        return adoptRef(new RefCountedAndGarbageCollected());
+        return new RefCountedAndGarbageCollected();
     }
 
     ~RefCountedAndGarbageCollected()
@@ -853,7 +853,7 @@ class RefCountedAndGarbageCollected2 : public HeapTestOtherSuperClass, public Re
 public:
     static RefCountedAndGarbageCollected2* create()
     {
-        return adoptRefCountedGarbageCollected(new RefCountedAndGarbageCollected2());
+        return new RefCountedAndGarbageCollected2();
     }
 
     ~RefCountedAndGarbageCollected2()
@@ -1267,7 +1267,7 @@ class TransitionRefCounted : public RefCountedWillBeRefCountedGarbageCollected<T
 public:
     static PassRefPtrWillBeRawPtr<TransitionRefCounted> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionRefCounted());
+        return adoptRefWillBeNoop(new TransitionRefCounted());
     }
 
     ~TransitionRefCounted()
@@ -1441,7 +1441,7 @@ private:
 TEST(HeapTest, Transition)
 {
     {
-        RefPtr<TransitionRefCounted> refCounted = TransitionRefCounted::create();
+        RefPtrWillBePersistent<TransitionRefCounted> refCounted = TransitionRefCounted::create();
         EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
@@ -2742,7 +2742,7 @@ static void heapMapDestructorHelper(bool clearMaps)
     clearOutOldGarbage(&initialHeapStats);
     ThingWithDestructor::s_liveThingsWithDestructor = 0;
 
-    typedef HeapHashMap<WeakMember<IntWrapper>, RefPtr<RefCountedAndGarbageCollected> > RefMap;
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<RefCountedAndGarbageCollected> > RefMap;
 
     typedef HeapHashMap<
         WeakMember<IntWrapper>,
@@ -3169,8 +3169,8 @@ TEST(HeapTest, RefCountedGarbageCollected)
         {
             Persistent<RefCountedAndGarbageCollected> persistent;
             {
-                RefPtr<RefCountedAndGarbageCollected> refPtr1 = RefCountedAndGarbageCollected::create();
-                RefPtr<RefCountedAndGarbageCollected> refPtr2 = RefCountedAndGarbageCollected::create();
+                Persistent<RefCountedAndGarbageCollected> refPtr1 = RefCountedAndGarbageCollected::create();
+                Persistent<RefCountedAndGarbageCollected> refPtr2 = RefCountedAndGarbageCollected::create();
                 Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
                 EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
                 persistent = refPtr1.get();
@@ -3200,8 +3200,8 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
         RefCountedAndGarbageCollected* pointer1 = 0;
         RefCountedAndGarbageCollected2* pointer2 = 0;
         {
-            RefPtr<RefCountedAndGarbageCollected> object1 = RefCountedAndGarbageCollected::create();
-            RefPtr<RefCountedAndGarbageCollected2> object2 = RefCountedAndGarbageCollected2::create();
+            Persistent<RefCountedAndGarbageCollected> object1 = RefCountedAndGarbageCollected::create();
+            Persistent<RefCountedAndGarbageCollected2> object2 = RefCountedAndGarbageCollected2::create();
             pointer1 = object1.get();
             pointer2 = object2.get();
             void* objects[2] = { object1.get(), object2.get() };
@@ -3225,8 +3225,8 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
         EXPECT_TRUE(visitor.validate());
 
         {
-            RefPtr<RefCountedAndGarbageCollected> object1(pointer1);
-            RefPtr<RefCountedAndGarbageCollected2> object2(pointer2);
+            Persistent<RefCountedAndGarbageCollected> object1(pointer1);
+            Persistent<RefCountedAndGarbageCollected2> object2(pointer2);
             void* objects[2] = { object1.get(), object2.get() };
             RefCountedGarbageCollectedVisitor visitor(2, objects);
             ThreadState::current()->visitPersistents(&visitor);

@@ -43,7 +43,7 @@ namespace blink {
 
 MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
 {
-    MediaStreamTrack* track = adoptRefCountedGarbageCollectedWillBeNoop(new MediaStreamTrack(context, component));
+    MediaStreamTrack* track = new MediaStreamTrack(context, component);
     track->suspendIfNeeded();
     return track;
 }

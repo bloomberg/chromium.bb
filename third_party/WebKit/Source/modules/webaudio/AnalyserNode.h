@@ -38,7 +38,7 @@ class AnalyserNode final : public AudioBasicInspectorNode {
 public:
     static AnalyserNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new AnalyserNode(context, sampleRate));
+        return new AnalyserNode(context, sampleRate);
     }
 
     virtual ~AnalyserNode();

@@ -46,7 +46,7 @@ namespace blink {
 Notification* Notification::create(ExecutionContext* context, const String& title, const NotificationOptions& options)
 {
     NotificationClient& client = NotificationController::clientFrom(context);
-    Notification* notification = adoptRefCountedGarbageCollectedWillBeNoop(new Notification(title, context, &client));
+    Notification* notification = new Notification(title, context, &client);
 
     notification->setBody(options.body());
     notification->setTag(options.tag());

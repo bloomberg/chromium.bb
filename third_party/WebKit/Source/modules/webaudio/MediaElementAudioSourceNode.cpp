@@ -40,7 +40,7 @@ namespace blink {
 
 MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext* context, HTMLMediaElement* mediaElement)
 {
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MediaElementAudioSourceNode(context, mediaElement));
+    return new MediaElementAudioSourceNode(context, mediaElement);
 }
 
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, HTMLMediaElement* mediaElement)

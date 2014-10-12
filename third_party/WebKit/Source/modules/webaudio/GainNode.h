@@ -42,7 +42,7 @@ class GainNode final : public AudioNode {
 public:
     static GainNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new GainNode(context, sampleRate));
+        return new GainNode(context, sampleRate);
     }
 
     // AudioNode

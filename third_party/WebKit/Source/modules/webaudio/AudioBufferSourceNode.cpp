@@ -49,7 +49,7 @@ const double MaxRate = 1024;
 
 AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
 {
-    return adoptRefCountedGarbageCollectedWillBeNoop(new AudioBufferSourceNode(context, sampleRate));
+    return new AudioBufferSourceNode(context, sampleRate);
 }
 
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sampleRate)

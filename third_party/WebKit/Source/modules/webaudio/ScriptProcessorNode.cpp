@@ -85,7 +85,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(AudioContext* context, float sa
     if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
         return 0;
 
-    return adoptRefCountedGarbageCollectedWillBeNoop(new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
+    return new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
 }
 
 ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)

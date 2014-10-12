@@ -74,7 +74,7 @@ static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, E
 
 SourceBuffer* SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
 {
-    SourceBuffer* sourceBuffer(adoptRefCountedGarbageCollectedWillBeNoop(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));
+    SourceBuffer* sourceBuffer = new SourceBuffer(webSourceBuffer, source, asyncEventQueue);
     sourceBuffer->suspendIfNeeded();
     return sourceBuffer;
 }

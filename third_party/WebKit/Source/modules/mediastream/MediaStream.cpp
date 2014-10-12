@@ -59,7 +59,7 @@ MediaStream* MediaStream::create(ExecutionContext* context)
     MediaStreamTrackVector audioTracks;
     MediaStreamTrackVector videoTracks;
 
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MediaStream(context, audioTracks, videoTracks));
+    return new MediaStream(context, audioTracks, videoTracks);
 }
 
 MediaStream* MediaStream::create(ExecutionContext* context, MediaStream* stream)
@@ -75,7 +75,7 @@ MediaStream* MediaStream::create(ExecutionContext* context, MediaStream* stream)
     for (size_t i = 0; i < stream->m_videoTracks.size(); ++i)
         processTrack(stream->m_videoTracks[i].get(), videoTracks);
 
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MediaStream(context, audioTracks, videoTracks));
+    return new MediaStream(context, audioTracks, videoTracks);
 }
 
 MediaStream* MediaStream::create(ExecutionContext* context, const MediaStreamTrackVector& tracks)
@@ -86,12 +86,12 @@ MediaStream* MediaStream::create(ExecutionContext* context, const MediaStreamTra
     for (size_t i = 0; i < tracks.size(); ++i)
         processTrack(tracks[i].get(), tracks[i]->kind() == "audio" ? audioTracks : videoTracks);
 
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MediaStream(context, audioTracks, videoTracks));
+    return new MediaStream(context, audioTracks, videoTracks);
 }
 
 MediaStream* MediaStream::create(ExecutionContext* context, MediaStreamDescriptor* streamDescriptor)
 {
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MediaStream(context, streamDescriptor));
+    return new MediaStream(context, streamDescriptor);
 }
 
 MediaStream::MediaStream(ExecutionContext* context, MediaStreamDescriptor* streamDescriptor)

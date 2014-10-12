@@ -57,7 +57,7 @@ class WorkerThreadableWebSocketChannel final : public WebSocketChannel {
 public:
     static WebSocketChannel* create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     {
-        return adoptRefCountedGarbageCollected(new WorkerThreadableWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber));
+        return new WorkerThreadableWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber);
     }
     virtual ~WorkerThreadableWebSocketChannel();
 

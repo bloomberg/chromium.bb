@@ -176,7 +176,7 @@ private:
 MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MIDIOutput(access, portIndex, id, manufacturer, name, version));
+    return new MIDIOutput(access, portIndex, id, manufacturer, name, version);
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)

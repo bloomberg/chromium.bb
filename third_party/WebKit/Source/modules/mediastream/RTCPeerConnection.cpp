@@ -217,7 +217,7 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     if (exceptionState.hadException())
         return 0;
 
-    RTCPeerConnection* peerConnection = adoptRefCountedGarbageCollectedWillBeNoop(new RTCPeerConnection(context, configuration, constraints, exceptionState));
+    RTCPeerConnection* peerConnection = new RTCPeerConnection(context, configuration, constraints, exceptionState);
     peerConnection->suspendIfNeeded();
     if (exceptionState.hadException())
         return 0;

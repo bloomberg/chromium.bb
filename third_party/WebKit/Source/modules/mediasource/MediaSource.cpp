@@ -89,7 +89,7 @@ const AtomicString& MediaSource::endedKeyword()
 
 MediaSource* MediaSource::create(ExecutionContext* context)
 {
-    MediaSource* mediaSource(adoptRefCountedGarbageCollectedWillBeNoop(new MediaSource(context)));
+    MediaSource* mediaSource = new MediaSource(context);
     mediaSource->suspendIfNeeded();
     return mediaSource;
 }

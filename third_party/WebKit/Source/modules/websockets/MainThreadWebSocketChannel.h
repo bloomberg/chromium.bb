@@ -65,7 +65,7 @@ public:
     // pass it.
     static MainThreadWebSocketChannel* create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
     {
-        return adoptRefCountedGarbageCollected(new MainThreadWebSocketChannel(document, client, sourceURL, lineNumber));
+        return new MainThreadWebSocketChannel(document, client, sourceURL, lineNumber);
     }
     virtual ~MainThreadWebSocketChannel();
 

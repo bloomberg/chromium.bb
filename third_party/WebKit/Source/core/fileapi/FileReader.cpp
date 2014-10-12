@@ -218,7 +218,7 @@ private:
 
 FileReader* FileReader::create(ExecutionContext* context)
 {
-    FileReader* fileReader = adoptRefCountedGarbageCollectedWillBeNoop(new FileReader(context));
+    FileReader* fileReader = new FileReader(context);
     fileReader->suspendIfNeeded();
     return fileReader;
 }

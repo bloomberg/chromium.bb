@@ -41,7 +41,7 @@ namespace blink {
 
 NetworkInformation* NetworkInformation::create(ExecutionContext* context)
 {
-    NetworkInformation* connection = adoptRefCountedGarbageCollectedWillBeNoop(new NetworkInformation(context));
+    NetworkInformation* connection = new NetworkInformation(context);
     connection->suspendIfNeeded();
     return connection;
 }

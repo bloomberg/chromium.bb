@@ -41,7 +41,7 @@ class ConvolverNode final : public AudioNode {
 public:
     static ConvolverNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new ConvolverNode(context, sampleRate));
+        return new ConvolverNode(context, sampleRate);
     }
 
     virtual ~ConvolverNode();

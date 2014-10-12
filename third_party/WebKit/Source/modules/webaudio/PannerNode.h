@@ -55,7 +55,7 @@ public:
 
     static PannerNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new PannerNode(context, sampleRate));
+        return new PannerNode(context, sampleRate);
     }
 
     virtual ~PannerNode();

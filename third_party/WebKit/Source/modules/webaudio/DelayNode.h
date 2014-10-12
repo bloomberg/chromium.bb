@@ -39,7 +39,7 @@ class DelayNode final : public AudioBasicProcessorNode {
 public:
     static DelayNode* create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new DelayNode(context, sampleRate, maxDelayTime, exceptionState));
+        return new DelayNode(context, sampleRate, maxDelayTime, exceptionState);
     }
 
     AudioParam* delayTime();

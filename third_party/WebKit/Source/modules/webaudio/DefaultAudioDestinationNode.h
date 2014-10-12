@@ -38,7 +38,7 @@ class DefaultAudioDestinationNode final : public AudioDestinationNode {
 public:
     static DefaultAudioDestinationNode* create(AudioContext* context)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new DefaultAudioDestinationNode(context));
+        return new DefaultAudioDestinationNode(context);
     }
 
     virtual ~DefaultAudioDestinationNode();

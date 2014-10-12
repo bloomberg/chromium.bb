@@ -55,7 +55,7 @@ class MIDIAccess final : public RefCountedGarbageCollectedWillBeGarbageCollected
 public:
     static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {
-        MIDIAccess* access = adoptRefCountedGarbageCollectedWillBeNoop(new MIDIAccess(accessor, sysexEnabled, ports, executionContext));
+        MIDIAccess* access = new MIDIAccess(accessor, sysexEnabled, ports, executionContext);
         access->suspendIfNeeded();
         return access;
     }

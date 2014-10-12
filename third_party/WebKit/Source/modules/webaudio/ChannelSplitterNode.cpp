@@ -39,7 +39,7 @@ ChannelSplitterNode* ChannelSplitterNode::create(AudioContext* context, float sa
     if (!numberOfOutputs || numberOfOutputs > AudioContext::maxNumberOfChannels())
         return 0;
 
-    return adoptRefCountedGarbageCollectedWillBeNoop(new ChannelSplitterNode(context, sampleRate, numberOfOutputs));
+    return new ChannelSplitterNode(context, sampleRate, numberOfOutputs);
 }
 
 ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate, unsigned numberOfOutputs)

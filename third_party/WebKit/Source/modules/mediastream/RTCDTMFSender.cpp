@@ -52,7 +52,7 @@ RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, WebRTCPeerConnec
         return nullptr;
     }
 
-    RTCDTMFSender* dtmfSender = adoptRefCountedGarbageCollectedWillBeNoop(new RTCDTMFSender(context, track, handler.release()));
+    RTCDTMFSender* dtmfSender = new RTCDTMFSender(context, track, handler.release());
     dtmfSender->suspendIfNeeded();
     return dtmfSender;
 }

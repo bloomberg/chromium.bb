@@ -260,7 +260,7 @@ DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url,
         return nullptr;
     }
 
-    DOMWebSocket* webSocket(adoptRefCountedGarbageCollectedWillBeNoop(new DOMWebSocket(context)));
+    DOMWebSocket* webSocket = new DOMWebSocket(context);
     webSocket->suspendIfNeeded();
 
     webSocket->connect(url, protocols, exceptionState);

@@ -43,7 +43,7 @@ using namespace VectorMath;
 
 OscillatorNode* OscillatorNode::create(AudioContext* context, float sampleRate)
 {
-    return adoptRefCountedGarbageCollectedWillBeNoop(new OscillatorNode(context, sampleRate));
+    return new OscillatorNode(context, sampleRate);
 }
 
 OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)

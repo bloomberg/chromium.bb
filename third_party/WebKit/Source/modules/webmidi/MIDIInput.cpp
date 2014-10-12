@@ -40,7 +40,7 @@ namespace blink {
 MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MIDIInput(access, id, manufacturer, name, version));
+    return new MIDIInput(access, id, manufacturer, name, version);
 }
 
 MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)

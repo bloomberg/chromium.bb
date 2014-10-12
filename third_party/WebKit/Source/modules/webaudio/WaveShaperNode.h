@@ -39,7 +39,7 @@ class WaveShaperNode final : public AudioBasicProcessorNode {
 public:
     static WaveShaperNode* create(AudioContext* context)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new WaveShaperNode(context));
+        return new WaveShaperNode(context);
     }
 
     // setCurve() is called on the main thread.

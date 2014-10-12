@@ -39,7 +39,7 @@ class MockWebSocketChannel : public WebSocketChannel {
 public:
     static MockWebSocketChannel* create()
     {
-        return adoptRefCountedGarbageCollected(new testing::StrictMock<MockWebSocketChannel>());
+        return new testing::StrictMock<MockWebSocketChannel>();
     }
 
     virtual ~MockWebSocketChannel()
@@ -67,7 +67,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
 public:
     static DOMWebSocketWithMockChannel* create(ExecutionContext* context)
     {
-        DOMWebSocketWithMockChannel* websocket = adoptRefCountedGarbageCollectedWillBeNoop(new DOMWebSocketWithMockChannel(context));
+        DOMWebSocketWithMockChannel* websocket = new DOMWebSocketWithMockChannel(context);
         websocket->suspendIfNeeded();
         return websocket;
     }

@@ -622,61 +622,6 @@ private:
     bool m_hasEntries;
 };
 
-// FIXME: This is currently used by the WebAudio code.
-// We should attempt to restructure the WebAudio code so that the main thread
-// alone determines life-time and receives messages about life-time from the
-// audio thread.
-template<typename T>
-class ThreadSafeRefCountedGarbageCollected : public GarbageCollectedFinalized<T>, public WTF::ThreadSafeRefCountedBase {
-    WTF_MAKE_NONCOPYABLE(ThreadSafeRefCountedGarbageCollected);
-
-public:
-    ThreadSafeRefCountedGarbageCollected()
-    {
-        makeKeepAlive();
-    }
-
-    // Override ref to deal with a case where a reference count goes up
-    // from 0 to 1. This can happen in the following scenario:
-    // (1) The reference count becomes 0, but on-stack pointers keep references to the object.
-    // (2) The on-stack pointer is assigned to a RefPtr. The reference count becomes 1.
-    // In this case, we have to resurrect m_keepAlive.
-    void ref()
-    {
-        MutexLocker lock(m_mutex);
-        if (UNLIKELY(!refCount())) {
-            makeKeepAlive();
-        }
-        WTF::ThreadSafeRefCountedBase::ref();
-    }
-
-    // Override deref to deal with our own deallocation based on ref counting.
-    void deref()
-    {
-        MutexLocker lock(m_mutex);
-        if (derefBase()) {
-            ASSERT(m_keepAlive);
-            m_keepAlive.clear();
-        }
-    }
-
-    using GarbageCollectedFinalized<T>::operator new;
-    using GarbageCollectedFinalized<T>::operator delete;
-
-protected:
-    ~ThreadSafeRefCountedGarbageCollected() { }
-
-private:
-    void makeKeepAlive()
-    {
-        ASSERT(!m_keepAlive);
-        m_keepAlive = adoptPtr(new CrossThreadPersistent<T>(static_cast<T*>(this)));
-    }
-
-    OwnPtr<CrossThreadPersistent<T> > m_keepAlive;
-    mutable Mutex m_mutex;
-};
-
 template<typename DataType>
 class PagePool {
 protected:
@@ -1194,9 +1139,8 @@ class RefCountedGarbageCollected : public GarbageCollectedFinalized<T> {
 
 public:
     RefCountedGarbageCollected()
-        : m_refCount(1)
+        : m_refCount(0)
     {
-        makeKeepAlive();
     }
 
     // Implement method to increase reference count for use with
@@ -1257,15 +1201,6 @@ private:
     int m_refCount;
     Persistent<T>* m_keepAlive;
 };
-
-template<typename T>
-T* adoptRefCountedGarbageCollected(T* ptr)
-{
-    ASSERT(ptr->hasOneRef());
-    ptr->deref();
-    WTF::adopted(ptr);
-    return ptr;
-}
 
 // Classes that contain heap references but aren't themselves heap
 // allocated, have some extra macros available which allows their use

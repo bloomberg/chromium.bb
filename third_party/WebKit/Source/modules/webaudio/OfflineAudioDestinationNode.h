@@ -40,7 +40,7 @@ class OfflineAudioDestinationNode final : public AudioDestinationNode {
 public:
     static OfflineAudioDestinationNode* create(AudioContext* context, AudioBuffer* renderTarget)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new OfflineAudioDestinationNode(context, renderTarget));
+        return new OfflineAudioDestinationNode(context, renderTarget);
     }
 
     virtual ~OfflineAudioDestinationNode();

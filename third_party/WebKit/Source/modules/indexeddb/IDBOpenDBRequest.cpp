@@ -40,7 +40,7 @@ namespace blink {
 
 IDBOpenDBRequest* IDBOpenDBRequest::create(ScriptState* scriptState, IDBDatabaseCallbacks* callbacks, int64_t transactionId, int64_t version)
 {
-    IDBOpenDBRequest* request = adoptRefCountedGarbageCollectedWillBeNoop(new IDBOpenDBRequest(scriptState, callbacks, transactionId, version));
+    IDBOpenDBRequest* request = new IDBOpenDBRequest(scriptState, callbacks, transactionId, version);
     request->suspendIfNeeded();
     return request;
 }

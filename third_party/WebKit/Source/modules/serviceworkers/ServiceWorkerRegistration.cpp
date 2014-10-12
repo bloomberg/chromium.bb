@@ -134,7 +134,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionConte
         }
     }
 
-    ServiceWorkerRegistration* registration = adoptRefCountedGarbageCollectedWillBeNoop(new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration)));
+    ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration));
     registration->suspendIfNeeded();
     return registration;
 }

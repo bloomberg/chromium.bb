@@ -37,7 +37,7 @@ namespace blink {
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AudioContext* context, size_t numberOfChannels)
 {
-    return adoptRefCountedGarbageCollectedWillBeNoop(new MediaStreamAudioDestinationNode(context, numberOfChannels));
+    return new MediaStreamAudioDestinationNode(context, numberOfChannels);
 }
 
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* context, size_t numberOfChannels)

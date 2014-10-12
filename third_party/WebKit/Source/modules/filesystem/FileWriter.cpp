@@ -47,7 +47,7 @@ static const double progressNotificationIntervalMS = 50;
 
 FileWriter* FileWriter::create(ExecutionContext* context)
 {
-    FileWriter* fileWriter = adoptRefCountedGarbageCollectedWillBeNoop(new FileWriter(context));
+    FileWriter* fileWriter = new FileWriter(context);
     fileWriter->suspendIfNeeded();
     return fileWriter;
 }

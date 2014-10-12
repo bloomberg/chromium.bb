@@ -38,7 +38,7 @@ class DynamicsCompressorNode final : public AudioNode {
 public:
     static DynamicsCompressorNode* create(AudioContext* context, float sampleRate)
     {
-        return adoptRefCountedGarbageCollectedWillBeNoop(new DynamicsCompressorNode(context, sampleRate));
+        return new DynamicsCompressorNode(context, sampleRate);
     }
 
     virtual ~DynamicsCompressorNode();

@@ -55,7 +55,7 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
     ASSERT(handler);
-    return adoptRefCountedGarbageCollectedWillBeNoop(new RTCDataChannel(context, connection, handler));
+    return new RTCDataChannel(context, connection, handler);
 }
 
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnection* connection, WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebRTCDataChannelInit& init, ExceptionState& exceptionState)
@@ -65,7 +65,7 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, RTCPeerConnect
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return nullptr;
     }
-    return adoptRefCountedGarbageCollectedWillBeNoop(new RTCDataChannel(context, connection, handler.release()));
+    return new RTCDataChannel(context, connection, handler.release());
 }
 
 RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* connection, PassOwnPtr<WebRTCDataChannelHandler> handler)

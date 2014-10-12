@@ -30,7 +30,7 @@ namespace blink {
 
 SpeechSynthesisUtterance* SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
 {
-    return adoptRefCountedGarbageCollectedWillBeNoop(new SpeechSynthesisUtterance(context, text));
+    return new SpeechSynthesisUtterance(context, text);
 }
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context, const String& text)

@@ -1011,7 +1011,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RefCountedGarbageCollectedWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
 #define ThreadSafeRefCountedWillBeGarbageCollected blink::GarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
-#define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected blink::ThreadSafeRefCountedGarbageCollected
 #define PersistentWillBeMember blink::Member
 #define CrossThreadPersistentWillBeMember blink::Member
 #define RefPtrWillBePersistent blink::Persistent
@@ -1058,50 +1057,16 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define PersistentHeapDequeWillBeHeapDeque blink::HeapDeque
 #define PersistentHeapVectorWillBeHeapVector blink::HeapVector
 
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
+template<typename T> T* adoptRefWillBeNoop(T* ptr)
 {
-    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
     static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
-    COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
     COMPILE_ASSERT(notRefCounted, youMustAdopt);
-    return PassRefPtrWillBeRawPtr<T>(ptr);
+    return ptr;
 }
 
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr)
+template<typename T> T* adoptPtrWillBeNoop(T* ptr)
 {
-    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
-    COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
-    return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
-}
-
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeThreadSafeRefCountedGarbageCollected(T* ptr)
-{
-    static const bool isThreadSafeRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, ThreadSafeRefCountedGarbageCollected>::value;
-    COMPILE_ASSERT(isThreadSafeRefCountedGarbageCollected, useAdoptRefWillBeNoop);
-    return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
-}
-
-template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr)
-{
-    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
     static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
-    COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
-    COMPILE_ASSERT(notRefCounted, youMustAdopt);
-    return PassOwnPtrWillBeRawPtr<T>(ptr);
-}
-
-template<typename T> T* adoptPtrWillBeRefCountedGarbageCollected(T* ptr)
-{
-    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
-    COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
-    return adoptRefCountedGarbageCollected(ptr);
-}
-
-template<typename T> T* adoptRefCountedGarbageCollectedWillBeNoop(T* ptr)
-{
-    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
-    COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
     COMPILE_ASSERT(notRefCounted, youMustAdopt);
     return ptr;
 }
@@ -1130,7 +1095,6 @@ public:
 #define RefCountedGarbageCollectedWillBeGarbageCollectedFinalized blink::RefCountedGarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
-#define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected WTF::ThreadSafeRefCounted
 #define PersistentWillBeMember blink::Persistent
 #define CrossThreadPersistentWillBeMember blink::CrossThreadPersistent
 #define RefPtrWillBePersistent WTF::RefPtr
@@ -1178,18 +1142,7 @@ public:
 #define PersistentHeapVectorWillBeHeapVector blink::PersistentHeapVector
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeThreadSafeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
-template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeRefCountedGarbageCollected(T* ptr) { return adoptPtr(ptr); }
-
-template<typename T> T* adoptRefCountedGarbageCollectedWillBeNoop(T* ptr)
-{
-    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
-    COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
-    return adoptRefCountedGarbageCollected(ptr);
-}
-
 
 #define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED WTF_MAKE_FAST_ALLOCATED
 #define DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(type) \

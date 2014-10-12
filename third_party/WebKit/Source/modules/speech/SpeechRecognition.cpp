@@ -40,7 +40,7 @@ namespace blink {
 
 SpeechRecognition* SpeechRecognition::create(ExecutionContext* context)
 {
-    SpeechRecognition* speechRecognition = adoptRefCountedGarbageCollectedWillBeNoop(new SpeechRecognition(context));
+    SpeechRecognition* speechRecognition = new SpeechRecognition(context);
     speechRecognition->suspendIfNeeded();
     return speechRecognition;
 }

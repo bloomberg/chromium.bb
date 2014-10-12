@@ -47,14 +47,14 @@ namespace blink {
 IDBTransaction* IDBTransaction::create(ScriptState* scriptState, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
-    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(scriptState, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata()));
+    IDBTransaction* transaction = new IDBTransaction(scriptState, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata());
     transaction->suspendIfNeeded();
     return transaction;
 }
 
 IDBTransaction* IDBTransaction::create(ScriptState* scriptState, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    IDBTransaction* transaction = adoptRefCountedGarbageCollectedWillBeNoop(new IDBTransaction(scriptState, id, Vector<String>(), WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata));
+    IDBTransaction* transaction = new IDBTransaction(scriptState, id, Vector<String>(), WebIDBTransactionModeVersionChange, db, openDBRequest, previousMetadata);
     transaction->suspendIfNeeded();
     return transaction;
 }

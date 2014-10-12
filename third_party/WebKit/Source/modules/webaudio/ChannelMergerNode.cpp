@@ -45,7 +45,7 @@ ChannelMergerNode* ChannelMergerNode::create(AudioContext* context, float sample
     if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
         return 0;
 
-    return adoptRefCountedGarbageCollectedWillBeNoop(new ChannelMergerNode(context, sampleRate, numberOfInputs));
+    return new ChannelMergerNode(context, sampleRate, numberOfInputs);
 }
 
 ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, unsigned numberOfInputs)
