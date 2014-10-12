@@ -39,8 +39,6 @@ namespace blink {
 
 struct WebRect;
 
-// FIXME: crbug.com/327471. We need to merge the Apple and non-Apple implementations.
-
 class WebThemeEngine {
 public:
     // The current state of the associated Part.
@@ -54,35 +52,6 @@ public:
         StateInactive, // Apple-specific
         StateActive, // Apple-specific
     };
-
-    // FIXME: The next section describes stuff only used on the Apple port.
-    enum Size {
-        SizeRegular,
-        SizeSmall,
-    };
-
-    enum ScrollbarOrientation {
-        ScrollbarOrientationHorizontal,
-        ScrollbarOrientationVertical,
-    };
-
-    enum ScrollbarParent {
-        ScrollbarParentScrollView,
-        ScrollbarParentRenderLayer,
-    };
-
-    struct ScrollbarInfo {
-        ScrollbarOrientation orientation;
-        ScrollbarParent parent;
-        int maxValue;
-        int currentValue;
-        int visibleSize;
-        int totalSize;
-    };
-
-    virtual void paintScrollbarThumb(WebCanvas*, State, Size, const WebRect&, const ScrollbarInfo&) { }
-
-    // FIXME: The remaining definitions are only used on the non-Apple ports.
 
     // The UI part which is being accessed.
     enum Part {
@@ -108,7 +77,6 @@ public:
         PartInnerSpinButton,
         PartProgressBar
     };
-
 
     // Extra parameters for drawing the PartScrollbarHorizontalTrack and
     // PartScrollbarVerticalTrack.
