@@ -522,28 +522,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       if cbuildbot_config.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
-  def SubmitPartialPool(self, messages):
-    """Submit partial pool if possible.
-
-    Args:
-      messages: A list of BuildFailureMessage or NoneType objects from
-        the failed slaves.
-
-    Returns:
-      The changes that were not submitted.
-    """
-    tracebacks = set()
-    for message in messages:
-      # If there are no tracebacks, that means that the builder did not
-      # report its status properly. Don't submit anything.
-      if not message or not message.tracebacks:
-        break
-      tracebacks.update(message.tracebacks)
-    else:
-      # SubmitPartialPool submit some changes (if it is applicable),
-      # and returns changes that were not submitted.
-      return self.sync_stage.pool.SubmitPartialPool(tracebacks)
-
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Commit Queue.
 
@@ -598,7 +576,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     if failing and not inflight:
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
-      changes = self.SubmitPartialPool(messages)
+      changes = self.sync_stage.pool.SubmitPartialPool(messages)
 
     tot_sanity = self._ToTSanity(
         self._run.config.sanity_check_slaves, self._slave_statuses)

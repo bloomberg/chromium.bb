@@ -1167,8 +1167,7 @@ class CalculateSuspects(object):
                 messages, failures_lib.InfrastructureFailure, strict=False))
 
   @classmethod
-  def FindSuspects(cls, build_root, changes, messages, infra_fail=False,
-                   lab_fail=False):
+  def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False):
     """Find out what changes probably caused our failure.
 
     In cases where there were no internal failures, we can assume that the
@@ -1177,7 +1176,6 @@ class CalculateSuspects(object):
     If the failures don't match either case, just fail everything.
 
     Args:
-      build_root: Build root directory.
       changes: A list of cros_patch.GerritPatch instances to consider.
       messages: A list of build failure messages, of type
         BuildFailureMessage or of type NoneType.
@@ -1209,24 +1207,12 @@ class CalculateSuspects(object):
           'issue(s). Will only reject chromite changes')
       return set(cls.FilterChromiteChanges(changes))
 
-    suspects = set()
-    # If there were no internal failures, only kick out external changes.
-    # Treat None messages as external for this purpose.
-    if any(message and message.internal for message in messages):
-      candidates = changes
-    else:
-      candidates = [change for change in changes if not change.internal]
-
-    # Filter out innocent internal overlay changes from our list of candidates.
-    candidates = cls.FilterInnocentOverlayChanges(
-        build_root, candidates, messages)
-
     if all(message and message.IsPackageBuildFailure()
            for message in messages):
       # If we are here, there are no None messages.
-      suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
+      suspects = cls._FindPackageBuildFailureSuspects(changes, messages)
     else:
-      suspects.update(candidates)
+      suspects = set(changes)
 
     return suspects
 
@@ -1292,8 +1278,28 @@ class CalculateSuspects(object):
         return subdirs
 
   @classmethod
-  def FilterInnocentOverlayChanges(cls, build_root, changes, messages):
-    """Filter out clearly innocent overlay changes based on failure messages.
+  def FilterOutInnocentChanges(cls, build_root, changes, messages):
+    """Filter out innocent changes based on failure messages.
+
+    Args:
+      build_root: Build root directory.
+      changes: GitRepoPatches that might be guilty.
+      messages: A list of build failure messages from supporting builders.
+        These must be BuildFailureMessage objects or NoneType objects.
+
+    Returns:
+      A list of the changes that we could not prove innocent.
+    """
+    # If there were no internal failures, only kick out external changes.
+    # (Still, fail all changes if we received any None messages.)
+    candidates = changes
+    if all(messages) and not any(message.internal for message in messages):
+      candidates = [change for change in changes if not change.internal]
+    return cls.FilterOutInnocentOverlayChanges(build_root, candidates, messages)
+
+  @classmethod
+  def FilterOutInnocentOverlayChanges(cls, build_root, changes, messages):
+    """Filter out innocent overlay changes based on failure messages.
 
     It is not possible to break a x86-generic builder via a change to an
     unrelated overlay (e.g. amd64-generic). Filter out changes that are
@@ -1301,12 +1307,12 @@ class CalculateSuspects(object):
 
     Args:
       build_root: Build root directory.
-      changes: Changes to filter.
+      changes: GitRepoPatches that might be guilty.
       messages: A list of build failure messages from supporting builders.
         These must be BuildFailureMessage objects or NoneType objects.
 
     Returns:
-      The list of changes that are potentially guilty.
+      A list of the changes that we could not prove innocent.
     """
     responsible_overlays = cls.GetResponsibleOverlays(build_root, messages)
     if responsible_overlays is None:
@@ -2358,34 +2364,47 @@ class ValidationPool(object):
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
-  def SubmitPartialPool(self, tracebacks):
+  def SubmitPartialPool(self, messages):
     """If the build failed, push any CLs that don't care about the failure.
+
+    In this function we calculate what CLs are definitely innocent and submit
+    those CLs.
 
     Each project can specify a list of stages it does not care about in its
     COMMIT-QUEUE.ini file. Changes to that project will be submitted even if
     those stages fail.
 
     Args:
-      tracebacks: A list of RecordedTraceback objects. These objects represent
-        the exceptions that failed the build.
+      messages: A list of BuildFailureMessage or NoneType objects from
+        the failed slaves.
 
     Returns:
       A list of the rejected changes.
     """
     # Create a list of the failing stage prefixes.
+    tracebacks = set()
+    for message in messages:
+      # If there are no tracebacks, that means that the builder did not
+      # report its status properly. Don't submit anything.
+      if not message or not message.tracebacks:
+        return self.changes
+      tracebacks.update(message.tracebacks)
     failing_stages = set(traceback.failed_prefix for traceback in tracebacks)
 
     # For each CL, look at whether it cares about the failures. Based on this,
-    # categorize the CL as accepted or rejected.
-    accepted, rejected = [], []
+    # filter out CLs that don't care about the failure.
+    rejection_candidates = []
     for change in self.changes:
       ignored_stages = GetStagesToIgnoreForChange(self.build_root, change)
-      if failing_stages.issubset(ignored_stages):
-        accepted.append(change)
-      else:
-        rejected.append(change)
+      if not ignored_stages or not failing_stages.issubset(ignored_stages):
+        rejection_candidates.append(change)
+
+    # Filter out innocent internal overlay changes from our list of candidates.
+    rejected = CalculateSuspects.FilterOutInnocentChanges(
+        self.build_root, rejection_candidates, messages)
 
     # Actually submit the accepted changes.
+    accepted = list(set(self.changes) - set(rejected))
     self.SubmitChanges(accepted)
 
     # Return the list of rejected changes.
@@ -2696,8 +2715,7 @@ class ValidationPool(object):
       lab_fail = CalculateSuspects.OnlyLabFailures(messages, no_stat)
       infra_fail = CalculateSuspects.OnlyInfraFailures(messages, no_stat)
       suspects = CalculateSuspects.FindSuspects(
-          self.build_root, candidates, messages, infra_fail=infra_fail,
-          lab_fail=lab_fail)
+          candidates, messages, infra_fail=infra_fail, lab_fail=lab_fail)
     # Send out failure notifications for each change.
     inputs = [[change, messages, suspects, sanity, infra_fail,
                lab_fail, no_stat] for change in candidates]

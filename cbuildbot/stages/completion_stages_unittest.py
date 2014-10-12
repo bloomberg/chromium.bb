@@ -311,8 +311,6 @@ class CommitQueueCompletionStageTest(
     self.mox.StubOutWithMock(completion_stages.MasterSlaveSyncCompletionStage,
                              'HandleFailure')
     self.mox.StubOutWithMock(completion_stages.CommitQueueCompletionStage,
-                             'SubmitPartialPool')
-    self.mox.StubOutWithMock(completion_stages.CommitQueueCompletionStage,
                              '_ToTSanity')
     self.mox.StubOutWithMock(alerts, '_SendEmailHelper')
 
@@ -330,6 +328,8 @@ class CommitQueueCompletionStageTest(
                              'HandleValidationFailure')
     self.mox.StubOutWithMock(sync_stage.pool,
                              'HandleValidationTimeout')
+    self.mox.StubOutWithMock(sync_stage.pool,
+                             'SubmitPartialPool')
 
     return completion_stages.CommitQueueCompletionStage(
         self._run, sync_stage, success=True)
@@ -343,13 +343,13 @@ class CommitQueueCompletionStageTest(
       inflight: The names of the buiders that timed out.
       handle_failure: If True, calls HandleValidationFailure.
       handle_timeout: If True, calls HandleValidationTimeout.
-      submit_partial: If True, submit parital pool.
+      submit_partial: If True, submit partial pool.
       alert: If True, sends out an alert email for infra failures.
     """
     stage = self.ConstructStage()
 
     if submit_partial:
-      completion_stages.CommitQueueCompletionStage.SubmitPartialPool(
+      stage.sync_stage.pool.SubmitPartialPool(
           mox.IgnoreArg()).AndReturn(self.other_changes)
 
     if alert:
