@@ -42,7 +42,7 @@ begcomp 456-346
 endcomp 456-156
 
 # literary forms of the decimal digits
-include litdigits6Dotsin.uti
+include litdigits6Dots.uti
 
 # Letters are defined in chardefs.cti
 

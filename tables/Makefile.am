@@ -162,7 +162,6 @@ table_files = \
 	ks-in-g1.utb \
 	latinLetterDef6Dots.uti \
 	latinLetterDef8Dots.uti \
-	litdigits6Dotsin.uti \
 	litdigits6Dots.uti \
 	loweredDigits6Dotsin.uti \
 	loweredDigits6Dots.uti \
