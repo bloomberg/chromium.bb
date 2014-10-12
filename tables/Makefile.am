@@ -17,7 +17,6 @@ table_files = \
 	ca-chardefs.cti \
 	ca-g1.ctb \
 	chardefs.cti \
-	chardefsin.cti \
 	chr-us-g1.ctb \
 	ckb-chardefs.cti \
 	ckb-g1.ctb \
