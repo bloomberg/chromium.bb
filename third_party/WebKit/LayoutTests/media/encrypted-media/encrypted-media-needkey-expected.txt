@@ -1,0 +1,8 @@
+Test that needkey event is fired on an encrypted media file.
+
+EVENT(needkey)
+EVENT(needkey)
+This is a testharness.js-based test.
+PASS Needkey fired on encrypted media file. 
+Harness: the test ran to completion.
+

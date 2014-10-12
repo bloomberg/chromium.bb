@@ -14,9 +14,9 @@
             var messageEvent = document.createEvent("MediaKeyMessageEvent");
             testExpected("messageEvent", null, "!=");
             testExpected("messageEvent instanceof window.MediaKeyMessageEvent", true);
-            var keyNeededEvent = document.createEvent("MediaKeyEvent");
+            var keyNeededEvent = document.createEvent("MediaKeyNeededEvent");
             testExpected("keyNeededEvent", null, "!=");
-            testExpected("keyNeededEvent instanceof window.MediaKeyEvent", true);
+            testExpected("keyNeededEvent instanceof window.MediaKeyNeededEvent", true);
 
             // Next, The test runs twice, once using on* and then using addEventListener().
             var isFirstRun = true;

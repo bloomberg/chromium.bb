@@ -1,5 +1,5 @@
-EVENT(encrypted)
-EVENT(encrypted)
+EVENT(needkey)
+EVENT(needkey)
 EVENT(message)
 EVENT(playing)
 This is a testharness.js-based test.

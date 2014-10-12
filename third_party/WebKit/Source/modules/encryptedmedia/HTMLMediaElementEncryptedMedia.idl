@@ -14,5 +14,5 @@ partial interface HTMLMediaElement {
 
     [RuntimeEnabled=EncryptedMedia] readonly attribute MediaKeys mediaKeys;
     [RuntimeEnabled=EncryptedMedia, TypeChecking=Interface, CallWith=ScriptState] Promise setMediaKeys(MediaKeys? mediaKeys);
-    [RuntimeEnabled=EncryptedMedia] attribute EventHandler onencrypted;
+    [RuntimeEnabled=EncryptedMedia] attribute EventHandler onneedkey;
 };

@@ -229,11 +229,11 @@ MIDIMessageEvent
 Map
 MediaController
 MediaElementAudioSourceNode
-MediaEncryptedEvent
 MediaError
 MediaKeyError
 MediaKeyEvent
 MediaKeyMessageEvent
+MediaKeyNeededEvent
 MediaKeySession
 MediaKeys
 MediaList

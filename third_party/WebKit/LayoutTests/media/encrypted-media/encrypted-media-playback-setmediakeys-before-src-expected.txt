@@ -1,7 +1,7 @@
 Test playback of encrypted media using Clear Key key system.
 
-EVENT(encrypted)
-EVENT(encrypted)
+EVENT(needkey)
+EVENT(needkey)
 EVENT(message)
 EVENT(playing)
 This is a testharness.js-based test.

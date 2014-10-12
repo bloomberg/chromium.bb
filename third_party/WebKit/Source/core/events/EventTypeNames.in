@@ -75,7 +75,6 @@ dragstart
 drop
 durationchange
 emptied
-encrypted
 end
 ended
 endEvent
@@ -131,6 +130,7 @@ mouseover
 mouseup
 mousewheel
 mute
+needkey
 negotiationneeded
 nomatch
 noupdate

@@ -24,35 +24,37 @@
  */
 
 #include "config.h"
-#include "modules/encryptedmedia/MediaEncryptedEvent.h"
+#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
+
+#include "wtf/Uint8Array.h"
 
 namespace blink {
 
-MediaEncryptedEventInit::MediaEncryptedEventInit()
+MediaKeyNeededEventInit::MediaKeyNeededEventInit()
 {
 }
 
-MediaEncryptedEvent::MediaEncryptedEvent()
+MediaKeyNeededEvent::MediaKeyNeededEvent()
 {
 }
 
-MediaEncryptedEvent::MediaEncryptedEvent(const AtomicString& type, const MediaEncryptedEventInit& initializer)
+MediaKeyNeededEvent::MediaKeyNeededEvent(const AtomicString& type, const MediaKeyNeededEventInit& initializer)
     : Event(type, initializer)
-    , m_initDataType(initializer.initDataType)
+    , m_contentType(initializer.contentType)
     , m_initData(initializer.initData)
 {
 }
 
-MediaEncryptedEvent::~MediaEncryptedEvent()
+MediaKeyNeededEvent::~MediaKeyNeededEvent()
 {
 }
 
-const AtomicString& MediaEncryptedEvent::interfaceName() const
+const AtomicString& MediaKeyNeededEvent::interfaceName() const
 {
-    return EventNames::MediaEncryptedEvent;
+    return EventNames::MediaKeyNeededEvent;
 }
 
-void MediaEncryptedEvent::trace(Visitor* visitor)
+void MediaKeyNeededEvent::trace(Visitor* visitor)
 {
     Event::trace(visitor);
 }

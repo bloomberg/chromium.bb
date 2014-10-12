@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>onencrypted</title>
+        <title>NeedKey</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
@@ -9,7 +9,7 @@
     <body>
         <video id="testVideo" controls></video>
         <div id="log"></div>
-        <p>Test that encrypted event is fired on an encrypted media file.</p>
+        <p>Test that needkey event is fired on an encrypted media file.</p>
         <script>
             var expectedInitData = stringToUint8Array('0123456789012345');
 
@@ -20,21 +20,20 @@
             {
                 var video = document.getElementById('testVideo');
 
-                var onEncrypted = function(event)
+                var onNeedKey = function(event)
                 {
                     assert_equals(event.target, video);
-                    assert_true(event instanceof window.MediaEncryptedEvent);
-                    assert_equals(event.type, 'encrypted');
-                    assert_equals(event.initDataType, 'webm');
-                    assert_array_equals(new Uint8Array(event.initData), expectedInitData);
+                    assert_true(event instanceof window.MediaKeyNeededEvent);
+                    assert_equals(event.type, 'needkey');
+                    assert_array_equals(event.initData, expectedInitData);
 
                     if (--expectedEvents == 0)
                         test.done();
                 };
 
-                waitForEventAndRunStep('encrypted', video, onEncrypted, test);
+                waitForEventAndRunStep('needkey', video, onNeedKey, test);
                 video.src = '../content/test-encrypted.webm';
-            }, 'encrypted fired on encrypted media file.');
+            }, 'Needkey fired on encrypted media file.');
         </script>
     </body>
 </html>

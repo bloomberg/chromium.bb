@@ -14,13 +14,12 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaKeyError.h"
 #include "core/html/MediaKeyEvent.h"
-#include "modules/encryptedmedia/MediaEncryptedEvent.h"
+#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResult.h"
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Functional.h"
 #include "wtf/Uint8Array.h"
 
@@ -287,20 +286,20 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
     return SetMediaKeysHandler::create(scriptState, element, mediaKeys);
 }
 
-// Create a MediaEncryptedEvent for WD EME.
-static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(const String& initDataType, const unsigned char* initData, unsigned initDataLength)
+// Create a MediaKeyNeededEvent for WD EME.
+static PassRefPtrWillBeRawPtr<Event> createNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
-    MediaEncryptedEventInit initializer;
-    initializer.initDataType = initDataType;
-    initializer.initData = ArrayBuffer::create(initData, initDataLength);
+    MediaKeyNeededEventInit initializer;
+    initializer.contentType = contentType;
+    initializer.initData = Uint8Array::create(initData, initDataLength);
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    return MediaEncryptedEvent::create(EventTypeNames::encrypted, initializer);
+    return MediaKeyNeededEvent::create(EventTypeNames::needkey, initializer);
 }
 
 // Create a 'needkey' MediaKeyEvent for v0.1b EME.
-static PassRefPtrWillBeRawPtr<Event> createWebkitNeedKeyEvent(const unsigned char* initData, unsigned initDataLength)
+static PassRefPtrWillBeRawPtr<Event> createWebkitNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaKeyEventInit webkitInitializer;
     webkitInitializer.keySystem = String();
@@ -501,21 +500,20 @@ void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const
     element.scheduleEvent(event.release());
 }
 
-void HTMLMediaElementEncryptedMedia::encrypted(HTMLMediaElement& element, const String& initDataType, const unsigned char* initData, unsigned initDataLength)
+void HTMLMediaElementEncryptedMedia::keyNeeded(HTMLMediaElement& element, const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted: initDataType=%s", initDataType.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::mediaPlayerKeyNeeded: contentType=%s", contentType.utf8().data());
 
     if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
         // Send event for WD EME.
-        // FIXME: Check origin before providing initData. http://crbug.com/418233.
-        RefPtrWillBeRawPtr<Event> event = createEncryptedEvent(initDataType, initData, initDataLength);
+        RefPtrWillBeRawPtr<Event> event = createNeedKeyEvent(contentType, initData, initDataLength);
         event->setTarget(&element);
         element.scheduleEvent(event.release());
     }
 
     if (RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled()) {
         // Send event for v0.1b EME.
-        RefPtrWillBeRawPtr<Event> event = createWebkitNeedKeyEvent(initData, initDataLength);
+        RefPtrWillBeRawPtr<Event> event = createWebkitNeedKeyEvent(contentType, initData, initDataLength);
         event->setTarget(&element);
         element.scheduleEvent(event.release());
     }
