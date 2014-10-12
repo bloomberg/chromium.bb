@@ -434,6 +434,7 @@ test("gfx_unittests") {
       "codec/jpeg_codec_unittest.cc",
       "codec/png_codec_unittest.cc",
       "color_analysis_unittest.cc",
+      "color_profile_mac_unittest.mm",
       "color_utils_unittest.cc",
       "display_change_notifier_unittest.cc",
       "display_unittest.cc",
