@@ -230,8 +230,8 @@ gfx::Transform InterpolatedScale::InterpolateButDoNotCompose(float t) const {
   gfx::Transform result;
   float scale_x = ValueBetween(t, start_scale_.x(), end_scale_.x());
   float scale_y = ValueBetween(t, start_scale_.y(), end_scale_.y());
-  // TODO(vollick) 3d xforms.
-  result.Scale(scale_x, scale_y);
+  float scale_z = ValueBetween(t, start_scale_.z(), end_scale_.z());
+  result.Scale3d(scale_x, scale_y, scale_z);
   return result;
 }
 
@@ -255,14 +255,28 @@ InterpolatedTranslation::InterpolatedTranslation(const gfx::Point& start_pos,
       end_pos_(end_pos) {
 }
 
+InterpolatedTranslation::InterpolatedTranslation(const gfx::Point3F& start_pos,
+                                                 const gfx::Point3F& end_pos)
+    : InterpolatedTransform(), start_pos_(start_pos), end_pos_(end_pos) {
+}
+
+InterpolatedTranslation::InterpolatedTranslation(const gfx::Point3F& start_pos,
+                                                 const gfx::Point3F& end_pos,
+                                                 float start_time,
+                                                 float end_time)
+    : InterpolatedTransform(start_time, end_time),
+      start_pos_(start_pos),
+      end_pos_(end_pos) {
+}
+
 InterpolatedTranslation::~InterpolatedTranslation() {}
 
 gfx::Transform
 InterpolatedTranslation::InterpolateButDoNotCompose(float t) const {
   gfx::Transform result;
-  // TODO(vollick) 3d xforms.
-  result.Translate(ValueBetween(t, start_pos_.x(), end_pos_.x()),
-                      ValueBetween(t, start_pos_.y(), end_pos_.y()));
+  result.Translate3d(ValueBetween(t, start_pos_.x(), end_pos_.x()),
+                     ValueBetween(t, start_pos_.y(), end_pos_.y()),
+                     ValueBetween(t, start_pos_.z(), end_pos_.z()));
   return result;
 }
 

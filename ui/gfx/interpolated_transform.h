@@ -169,14 +169,20 @@ class GFX_EXPORT InterpolatedTranslation : public InterpolatedTransform {
                           const gfx::Point& end_pos,
                           float start_time,
                           float end_time);
+  InterpolatedTranslation(const gfx::Point3F& start_pos,
+                          const gfx::Point3F& end_pos);
+  InterpolatedTranslation(const gfx::Point3F& start_pos,
+                          const gfx::Point3F& end_pos,
+                          float start_time,
+                          float end_time);
   virtual ~InterpolatedTranslation();
 
  protected:
   virtual gfx::Transform InterpolateButDoNotCompose(float t) const override;
 
  private:
-  const gfx::Point start_pos_;
-  const gfx::Point end_pos_;
+  const gfx::Point3F start_pos_;
+  const gfx::Point3F end_pos_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatedTranslation);
 };

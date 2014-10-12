@@ -44,7 +44,7 @@ TEST(InterpolatedTransformTest, InterpolatedScale) {
 
   for (int i = 0; i <= 100; ++i) {
     gfx::Transform scale;
-    scale.Scale(i, i);
+    scale.Scale3d(i, i, i);
     gfx::Transform interpolated = interpolated_scale.Interpolate(i / 100.0f);
     CheckApproximatelyEqual(scale, interpolated);
     interpolated = interpolated_scale_diff_start_end.Interpolate(i + 100);
@@ -62,6 +62,23 @@ TEST(InterpolatedTransformTest, InterpolatedTranslate) {
   for (int i = 0; i <= 100; ++i) {
     gfx::Transform xform;
     xform.Translate(i, i);
+    gfx::Transform interpolated = interpolated_xform.Interpolate(i / 100.0f);
+    CheckApproximatelyEqual(xform, interpolated);
+    interpolated = interpolated_xform_diff_start_end.Interpolate(i + 100);
+    CheckApproximatelyEqual(xform, interpolated);
+  }
+}
+
+TEST(InterpolatedTransformTest, InterpolatedTranslate3d) {
+  ui::InterpolatedTranslation interpolated_xform(gfx::Point3F(0, 0, 0),
+                                                 gfx::Point3F(100, 100, 100));
+
+  ui::InterpolatedTranslation interpolated_xform_diff_start_end(
+      gfx::Point3F(0, 0, 0), gfx::Point3F(100, 100, 100), 100, 200);
+
+  for (int i = 0; i <= 100; ++i) {
+    gfx::Transform xform;
+    xform.Translate3d(i, i, i);
     gfx::Transform interpolated = interpolated_xform.Interpolate(i / 100.0f);
     CheckApproximatelyEqual(xform, interpolated);
     interpolated = interpolated_xform_diff_start_end.Interpolate(i + 100);
