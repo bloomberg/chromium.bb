@@ -269,8 +269,7 @@ gfx::Rect NativeWidgetMac::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect NativeWidgetMac::GetRestoredBounds() const {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return bridge_ ? bridge_->GetRestoredBounds() : gfx::Rect();
 }
 
 void NativeWidgetMac::SetBounds(const gfx::Rect& bounds) {
@@ -405,7 +404,7 @@ void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {
 }
 
 void NativeWidgetMac::Maximize() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED();  // See IsMaximized().
 }
 
 void NativeWidgetMac::Minimize() {
@@ -413,7 +412,8 @@ void NativeWidgetMac::Minimize() {
 }
 
 bool NativeWidgetMac::IsMaximized() const {
-  NOTIMPLEMENTED();
+  // The window frame isn't altered on Mac unless going fullscreen. The green
+  // "+" button just makes the window bigger. So, always false.
   return false;
 }
 
@@ -427,12 +427,14 @@ void NativeWidgetMac::Restore() {
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen) {
-  NOTIMPLEMENTED();
+  if (!bridge_ || fullscreen == IsFullscreen())
+    return;
+
+  bridge_->ToggleDesiredFullscreenState();
 }
 
 bool NativeWidgetMac::IsFullscreen() const {
-  NOTIMPLEMENTED();
-  return false;
+  return bridge_ && bridge_->target_fullscreen_state();
 }
 
 void NativeWidgetMac::SetOpacity(unsigned char opacity) {

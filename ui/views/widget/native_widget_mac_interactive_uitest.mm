@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "ui/views/test/widget_test.h"
+#include "ui/views/test/test_widget_observer.h"
 
 namespace views {
 namespace test {
@@ -17,7 +18,10 @@ class NativeWidgetMacInteractiveUITest
     : public WidgetTest,
       public ::testing::WithParamInterface<bool> {
  public:
-  NativeWidgetMacInteractiveUITest() {}
+  class Observer;
+
+  NativeWidgetMacInteractiveUITest()
+      : activationCount_(0), deactivationCount_(0) {}
 
   Widget* MakeWidget() {
     return GetParam() ? CreateTopLevelFramelessPlatformWidget()
@@ -33,21 +37,70 @@ class NativeWidgetMacInteractiveUITest
     WidgetTest::SetUp();
   }
 
+ protected:
+  scoped_ptr<Observer> observer_;
+  int activationCount_;
+  int deactivationCount_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacInteractiveUITest);
+};
+
+class NativeWidgetMacInteractiveUITest::Observer : public TestWidgetObserver {
+ public:
+  Observer(NativeWidgetMacInteractiveUITest* parent, Widget* widget)
+      : TestWidgetObserver(widget), parent_(parent) {}
+
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE {
+    if (active)
+      parent_->activationCount_++;
+    else
+      parent_->deactivationCount_++;
+  }
+
+ private:
+  NativeWidgetMacInteractiveUITest* parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
 // Test that showing a window causes it to attain global keyWindow status.
 TEST_P(NativeWidgetMacInteractiveUITest, ShowAttainsKeyStatus) {
   Widget* widget = MakeWidget();
+  observer_.reset(new Observer(this, widget));
 
   EXPECT_FALSE(widget->IsActive());
+  EXPECT_EQ(0, activationCount_);
   widget->Show();
   EXPECT_TRUE(widget->IsActive());
-
   RunPendingMessages();
   EXPECT_TRUE([widget->GetNativeWindow() isKeyWindow]);
+  EXPECT_EQ(1, activationCount_);
+  EXPECT_EQ(0, deactivationCount_);
+
+  // Now check that losing and gaining key status due events outside of Widget
+  // works correctly.
+  Widget* widget2 = MakeWidget();  // Note: not observed.
+  EXPECT_EQ(0, deactivationCount_);
+  widget2->Show();
+  EXPECT_EQ(1, deactivationCount_);
+
+  RunPendingMessages();
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_EQ(1, deactivationCount_);
+  EXPECT_EQ(1, activationCount_);
+
+  [widget->GetNativeWindow() makeKeyAndOrderFront:nil];
+  RunPendingMessages();
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_EQ(1, deactivationCount_);
+  EXPECT_EQ(2, activationCount_);
+
+  widget2->CloseNow();
   widget->CloseNow();
+
+  EXPECT_EQ(1, deactivationCount_);
+  EXPECT_EQ(2, activationCount_);
 }
 
 // Test that ShowInactive does not take keyWindow status from an active window.

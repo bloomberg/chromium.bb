@@ -115,18 +115,6 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   EXPECT_FALSE([other_ns_window isVisible]);
 }
 
-// Only test fullscreen for 10.7 and above.
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-NSString* const NSWindowDidEnterFullScreenNotification =
-    @"NSWindowDidEnterFullScreenNotification";
-NSString* const NSWindowDidExitFullScreenNotification =
-    @"NSWindowDidExitFullScreenNotification";
-
-#endif  // MAC_OS_X_VERSION_10_7
-
 @interface ScopedNotificationWatcher : NSObject {
  @private
   BOOL received_;

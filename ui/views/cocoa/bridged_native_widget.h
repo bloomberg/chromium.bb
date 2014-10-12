@@ -52,13 +52,32 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // Called internally by the NSWindowDelegate when the window is closing.
   void OnWindowWillClose();
 
+  // Called by the NSWindowDelegate when a fullscreen operation begins. If
+  // |target_fullscreen_state| is true, the target state is fullscreen.
+  // Otherwise, a transition has begun to come out of fullscreen.
+  void OnFullscreenTransitionStart(bool target_fullscreen_state);
+
+  // Called when a fullscreen transition completes. If target_fullscreen_state()
+  // does not match |actual_fullscreen_state|, a new transition will begin.
+  void OnFullscreenTransitionComplete(bool actual_fullscreen_state);
+
+  // Transition the window into or out of fullscreen. This will immediately
+  // invert the value of target_fullscreen_state().
+  void ToggleDesiredFullscreenState();
+
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
   ui::InputMethod* GetHostInputMethod();
 
+  // The restored bounds will be derived from the current NSWindow frame unless
+  // fullscreen or transitioning between fullscreen states.
+  gfx::Rect GetRestoredBounds() const;
+
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
   NSWindow* ns_window() { return window_; }
+
+  bool target_fullscreen_state() const { return target_fullscreen_state_; }
 
   // Overridden from internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
@@ -73,6 +92,19 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   scoped_ptr<ui::InputMethod> input_method_;
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.
+
+  // Tracks the bounds when the window last started entering fullscreen. Used to
+  // provide an answer for GetRestoredBounds(), but not ever sent to Cocoa (it
+  // has its own copy, but doesn't provide access to it).
+  gfx::Rect bounds_before_fullscreen_;
+
+  // Whether this window wants to be fullscreen. If a fullscreen animation is in
+  // progress then it might not be actually fullscreen.
+  bool target_fullscreen_state_;
+
+  // Whether this window is in a fullscreen transition, and the fullscreen state
+  // can not currently be changed.
+  bool in_fullscreen_transition_;
 
   // Overridden from FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,

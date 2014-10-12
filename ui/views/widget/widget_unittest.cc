@@ -928,7 +928,9 @@ TEST_F(WidgetTest, GetWindowBoundsInScreen) {
   widget->CloseNow();
 }
 
-#if defined(false)
+// Before being enabled on Mac, this was #ifdef(false).
+// TODO(tapted): Fix this for DesktopNativeWidgets on other platforms.
+#if defined(OS_MACOSX)
 // Aura needs shell to maximize/fullscreen window.
 // NativeWidgetGtk doesn't implement GetRestoredBounds.
 TEST_F(WidgetTest, GetRestoredBounds) {
@@ -938,8 +940,14 @@ TEST_F(WidgetTest, GetRestoredBounds) {
   toplevel->Show();
   toplevel->Maximize();
   RunPendingMessages();
+#if defined(OS_MACOSX)
+  // Current expectation on Mac is to do nothing on Maximize.
+  EXPECT_EQ(toplevel->GetWindowBoundsInScreen().ToString(),
+            toplevel->GetRestoredBounds().ToString());
+#else
   EXPECT_NE(toplevel->GetWindowBoundsInScreen().ToString(),
             toplevel->GetRestoredBounds().ToString());
+#endif
   EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
   EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
 
@@ -975,6 +983,9 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
   // And it should still be in normal state after getting out of full screen.
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, GetWidgetShowState(toplevel));
 
+// On Mac, a "maximized" state is indistinguishable from a window that just
+// fills the screen, so nothing to check there.
+#if !defined(OS_MACOSX)
   // Now, make it maximized.
   toplevel->Maximize();
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
@@ -986,6 +997,7 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
 
   // And it stays maximized after getting out of full screen.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, GetWidgetShowState(toplevel));
+#endif
 
   // Clean up.
   toplevel->Close();

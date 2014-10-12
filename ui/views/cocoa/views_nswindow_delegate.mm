@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/widget/native_widget_mac.h"
 
 @implementation ViewsNSWindowDelegate
 
@@ -23,9 +24,44 @@
 
 // NSWindowDelegate implementation.
 
+- (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
+  // TODO(tapted): Handle these failure notifications, and simulate in a test.
+  NOTREACHED();
+}
+
+- (void)windowDidFailToExitFullScreen:(NSWindow*)window {
+  NOTREACHED();
+}
+
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  parent_->native_widget_mac()->GetWidget()->OnNativeWidgetActivationChanged(
+      true);
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  parent_->native_widget_mac()->GetWidget()->OnNativeWidgetActivationChanged(
+      false);
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK([parent_->ns_window() isEqual:[notification object]]);
   parent_->OnWindowWillClose();
+}
+
+- (void)windowWillEnterFullScreen:(NSNotification*)notification {
+  parent_->OnFullscreenTransitionStart(true);
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification*)notification {
+  parent_->OnFullscreenTransitionComplete(true);
+}
+
+- (void)windowWillExitFullScreen:(NSNotification*)notification {
+  parent_->OnFullscreenTransitionStart(false);
+}
+
+- (void)windowDidExitFullScreen:(NSNotification*)notification {
+  parent_->OnFullscreenTransitionComplete(false);
 }
 
 @end
