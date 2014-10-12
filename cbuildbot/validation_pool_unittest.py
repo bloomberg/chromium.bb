@@ -31,7 +31,6 @@ from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import gob_util
@@ -1162,12 +1161,13 @@ class TestFindSuspects(MoxBase):
     ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
     return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
-  def _GetFailedMessage(self, exceptions, stage='Build', internal=False,
-                        bot='daisy_spring-paladin'):
+  @staticmethod
+  def GetFailedMessage(exceptions, stage='Build', internal=False,
+                       bot='daisy_spring-paladin'):
     """Returns a BuildFailureMessage object."""
     tracebacks = []
     for ex in exceptions:
-      tracebacks.append(results_lib.RecordedTraceback('Build', 'Build', ex,
+      tracebacks.append(results_lib.RecordedTraceback(stage, stage, ex,
                                                       str(ex)))
     reason = 'failure reason string'
     return failures_lib.BuildFailureMessage(
@@ -1187,10 +1187,9 @@ class TestFindSuspects(MoxBase):
       lab_fail: Whether the build failed due to lab infrastructure issues.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
-    message = self._GetFailedMessage(all_exceptions, internal=internal)
+    message = self.GetFailedMessage(all_exceptions, internal=internal)
     results = validation_pool.CalculateSuspects.FindSuspects(
-        constants.SOURCE_ROOT, patches, [message], lab_fail=lab_fail,
-        infra_fail=infra_fail)
+        patches, [message], lab_fail=lab_fail, infra_fail=infra_fail)
     self.assertEquals(set(suspects), results)
 
   @unittest.skipIf(not KERNEL_AVAILABLE, 'Full checkout is required.')
@@ -1209,18 +1208,16 @@ class TestFindSuspects(MoxBase):
 
   def testFailUnknownPackage(self):
     """If no patches changed the package, all patches should fail."""
-    suspects = [self.overlay_patch, self.power_manager_patch]
-    changes = suspects + [self.secret_patch]
-    self._AssertSuspects(changes, suspects, [self.kernel_pkg])
+    changes = [self.overlay_patch, self.power_manager_patch, self.secret_patch]
+    self._AssertSuspects(changes, changes, [self.kernel_pkg])
 
   def testFailUnknownException(self):
-    """An unknown exception should cause all [public] patches to fail."""
-    suspects = [self.kernel_patch, self.power_manager_patch]
-    changes = suspects + [self.secret_patch]
-    self._AssertSuspects(changes, suspects, exceptions=[Exception('foo bar')])
+    """An unknown exception should cause all patches to fail."""
+    changes = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
+    self._AssertSuspects(changes, changes, exceptions=[Exception('foo bar')])
 
   def testFailUnknownInternalException(self):
-    """An unknown exception should cause all [internal] patches to fail."""
+    """An unknown exception should cause all patches to fail."""
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')],
                          internal=True)
@@ -1230,16 +1227,14 @@ class TestFindSuspects(MoxBase):
 
     Even if there are also build failures that we can explain.
     """
-    suspects = [self.kernel_patch, self.power_manager_patch]
-    changes = suspects + [self.secret_patch]
-    self._AssertSuspects(changes, suspects, [self.kernel_pkg],
+    suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
+    self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
                          [Exception('foo bar')])
 
   def testFailNoExceptions(self):
     """If there are no exceptions, all patches should be failed."""
-    suspects = [self.kernel_patch, self.power_manager_patch]
-    changes = suspects + [self.secret_patch]
-    self._AssertSuspects(changes, suspects)
+    suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
+    self._AssertSuspects(suspects, suspects)
 
   def testLabFail(self):
     """If there are only lab failures, no suspect is chosen."""
@@ -1273,13 +1268,13 @@ class TestFindSuspects(MoxBase):
     """Returns a list of BuildFailureMessage objects."""
     messages = []
     messages.extend(
-        [self._GetFailedMessage([failures_lib.TestLabFailure()])
+        [self.GetFailedMessage([failures_lib.TestLabFailure()])
          for _ in range(lab_fail)])
     messages.extend(
-        [self._GetFailedMessage([failures_lib.InfrastructureFailure()])
+        [self.GetFailedMessage([failures_lib.InfrastructureFailure()])
          for _ in range(infra_fail)])
     messages.extend(
-        [self._GetFailedMessage(Exception())
+        [self.GetFailedMessage(Exception())
          for _ in range(other_fail)])
     return messages
 
@@ -1336,7 +1331,11 @@ class TestFindSuspects(MoxBase):
     self.PatchObject(changes[3], 'GetDiffStatus',
         return_value={'overlay-daisy_spring/make.conf': 'M'})
 
-    self._AssertSuspects(changes, changes[1:], [self.kernel_pkg])
+    message = self.GetFailedMessage([Exception()])
+    candidates = \
+        validation_pool.CalculateSuspects.FilterOutInnocentOverlayChanges(
+            constants.SOURCE_ROOT, changes, [message])
+    self.assertEquals(candidates, changes[1:])
 
 
 class TestCLStatus(MoxBase):
@@ -1571,7 +1570,7 @@ class MockValidationPool(partial_mock.PartialMock):
   RemoveCommitReady = None
 
 
-class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
+class BaseSubmitPoolTestCase(Base):
   """Test full ability to submit and reject CL pools."""
 
   def setUp(self):
@@ -1593,7 +1592,12 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
       pool.changes_that_failed_to_apply_earlier = errors[:]
     return pool
 
-  def GetTracebacks(self):
+  def GetMessages(self):
+    """Return the list of failure messages.
+
+    This is intended to be overridden by subclasses so that they can specify
+    what failures occur during the CQ run.
+    """
     return []
 
   def SubmitPool(self, submitted=(), rejected=(), **kwargs):
@@ -1611,9 +1615,9 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
 
     # Set up our pool and submit the patches.
     pool = self.SetUpPatchPool(**kwargs)
-    tracebacks = self.GetTracebacks()
-    if tracebacks:
-      actually_rejected = sorted(pool.SubmitPartialPool(self.GetTracebacks()))
+    messages = self.GetMessages()
+    if messages:
+      actually_rejected = sorted(pool.SubmitPartialPool(self.GetMessages()))
     else:
       actually_rejected = pool.SubmitChanges(self.patches)
 
@@ -1755,12 +1759,18 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
       patch.project = str(patch)
 
     self.stage_name = 'MyHWTest'
+    self.PatchObject(validation_pool.CalculateSuspects,
+                     'FilterOutInnocentOverlayChanges',
+                     side_effect=lambda build_root, changes, messages: changes)
 
-  def GetTracebacks(self):
-    """Return a list containing a single traceback."""
-    traceback = results_lib.RecordedTraceback(
-        self.stage_name, self.stage_name, Exception(), '')
-    return [traceback]
+  def GetMessages(self):
+    """Return a list of failure messages containing a single traceback.
+
+    This is used by SubmitPool and specifies what error messages occured
+    during the CQ run.
+    """
+    return [TestFindSuspects.GetFailedMessage([Exception()],
+                                              stage=self.stage_name)]
 
   def IgnoreFailures(self, patch):
     """Set us up to ignore failures for the specified |patch|."""
@@ -1784,6 +1794,19 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
   def testSubmitSecond(self):
     """Attempt to submit the second change in a series."""
     self.IgnoreFailures(self.patches[1])
+    self.SubmitPool(submitted=[], rejected=[self.patches[0]])
+
+  def testSubmitUnrelatedOverlay(self):
+    """Verify that innocent changes are submitted."""
+    self.PatchObject(validation_pool.CalculateSuspects,
+        'FilterOutInnocentOverlayChanges', return_value=[self.patches[1]])
+    self.SubmitPool(submitted=[self.patches[0]],
+                    rejected=[self.patches[1]])
+
+  def testSubmitUnrelatedOverlaySecond(self):
+    """Verify that dependencies are respected when submitting innocents."""
+    self.PatchObject(validation_pool.CalculateSuspects,
+        'FilterOutInnocentOverlayChanges', return_value=[self.patches[0]])
     self.SubmitPool(submitted=[], rejected=[self.patches[0]])
 
 
