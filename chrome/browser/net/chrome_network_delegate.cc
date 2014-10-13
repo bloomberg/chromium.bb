@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -231,6 +232,8 @@ void ReportInvalidReferrerSend(const GURL& target_url,
                                const GURL& referrer_url) {
   base::RecordAction(
       base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
+  base::debug::DumpWithoutCrashing();
+  NOTREACHED();
 }
 
 }  // namespace
