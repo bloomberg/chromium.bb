@@ -8,7 +8,6 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/test_runtime_api_delegate.h"
-#include "extensions/browser/updater/null_extension_cache.h"
 
 using content::BrowserContext;
 
@@ -19,8 +18,7 @@ TestExtensionsBrowserClient::TestExtensionsBrowserClient(
     : main_context_(main_context),
       incognito_context_(NULL),
       process_manager_delegate_(NULL),
-      extension_system_factory_(NULL),
-      extension_cache_(new NullExtensionCache) {
+      extension_system_factory_(NULL) {
   DCHECK(main_context_);
   DCHECK(!main_context_->IsOffTheRecord());
 }
@@ -171,10 +169,6 @@ void TestExtensionsBrowserClient::BroadcastEventToRenderers(
 
 net::NetLog* TestExtensionsBrowserClient::GetNetLog() {
   return NULL;
-}
-
-ExtensionCache* TestExtensionsBrowserClient::GetExtensionCache() {
-  return extension_cache_.get();
 }
 
 }  // namespace extensions

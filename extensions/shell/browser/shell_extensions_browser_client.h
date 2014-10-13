@@ -78,7 +78,6 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       const std::string& event_name,
       scoped_ptr<base::ListValue> args) override;
   virtual net::NetLog* GetNetLog() override;
-  virtual ExtensionCache* GetExtensionCache() override;
 
  private:
   // The single BrowserContext for app_shell. Not owned.
@@ -89,9 +88,6 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // The PrefService for |browser_context_|.
   scoped_ptr<PrefService> prefs_;
-
-  // The extension cache used for download and installation.
-  scoped_ptr<ExtensionCache> extension_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsBrowserClient);
 };

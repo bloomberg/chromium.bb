@@ -125,9 +125,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     default_params_ = params;
   }
 
-  // Overrides the extension cache with |extension_cache| for testing.
-  void SetExtensionCacheForTesting(ExtensionCache* extension_cache);
-
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;

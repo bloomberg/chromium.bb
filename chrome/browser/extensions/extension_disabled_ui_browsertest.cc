@@ -41,7 +41,6 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
   }
 
   virtual void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     service_ = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();

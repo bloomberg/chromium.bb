@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -62,9 +61,6 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
         new chromeos::FakeUserManager);
 #endif
     InitializeExtensionServiceWithUpdater();
-
-    service()->updater()->SetExtensionCacheForTesting(
-        test_extension_cache_.get());
 
     // Don't install default apps. Some of the default apps are downloaded from
     // the webstore, ignoring the url we pass to kAppsGalleryUpdateURL, which

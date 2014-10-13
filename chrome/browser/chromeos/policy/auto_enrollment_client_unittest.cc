@@ -394,14 +394,7 @@ TEST_F(AutoEnrollmentClientTest, NetworkChangeRetryAfterErrors) {
   EXPECT_TRUE(HasCachedDecision());
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/422884
-#define MAYBE_CancelAndDeleteSoonWithPendingRequest DISABLED_CancelAndDeleteSoonWithPendingRequest
-#else
-#define MAYBE_CancelAndDeleteSoonWithPendingRequest CancelAndDeleteSoonWithPendingRequest
-#endif
-
-TEST_F(AutoEnrollmentClientTest, MAYBE_CancelAndDeleteSoonWithPendingRequest) {
+TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonWithPendingRequest) {
   MockDeviceManagementJob* job = NULL;
   ServerWillReplyAsync(&job);
   EXPECT_FALSE(job);
@@ -422,14 +415,7 @@ TEST_F(AutoEnrollmentClientTest, MAYBE_CancelAndDeleteSoonWithPendingRequest) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/422884
-#define MAYBE_NetworkChangedAfterCancelAndDeleteSoon DISABLED_NetworkChangedAfterCancelAndDeleteSoon
-#else
-#define MAYBE_NetworkChangedAfterCancelAndDeleteSoon
-#endif
-
-TEST_F(AutoEnrollmentClientTest, MAYBE_NetworkChangedAfterCancelAndDeleteSoon) {
+TEST_F(AutoEnrollmentClientTest, NetworkChangedAfterCancelAndDeleteSoon) {
   MockDeviceManagementJob* job = NULL;
   ServerWillReplyAsync(&job);
   EXPECT_FALSE(job);
@@ -459,14 +445,7 @@ TEST_F(AutoEnrollmentClientTest, MAYBE_NetworkChangedAfterCancelAndDeleteSoon) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/422884
-#define MAYBE_CancelAndDeleteSoonAfterCompletion DISABLED_CancelAndDeleteSoonAfterCompletion
-#else
-#define MAYBE_CancelAndDeleteSoonAfterCompletion CancelAndDeleteSoonAfterCompletion
-#endif
-
-TEST_F(AutoEnrollmentClientTest, MAYBE_CancelAndDeleteSoonAfterCompletion) {
+TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterCompletion) {
   ServerWillReply(-1, true, true);
   ServerWillSendState(
       "example.com",
@@ -481,14 +460,7 @@ TEST_F(AutoEnrollmentClientTest, MAYBE_CancelAndDeleteSoonAfterCompletion) {
   EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
 }
 
-#if defined(OS_CHROMEOS)
-// crbug.com/422884
-#define MAYBE_CancelAndDeleteSoonAfterNetworkFailure DISABLED_CancelAndDeleteSoonAfterNetworkFailure
-#else
-#define MAYBE_CancelAndDeleteSoonAfterNetworkFailure CancelAndDeleteSoonAfterNetworkFailure
-#endif
-
-TEST_F(AutoEnrollmentClientTest, MAYBE_CancelAndDeleteSoonAfterNetworkFailure) {
+TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterNetworkFailure) {
   ServerWillFail(DM_STATUS_TEMPORARY_UNAVAILABLE);
   client_->Start();
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_SERVER_ERROR, state_);

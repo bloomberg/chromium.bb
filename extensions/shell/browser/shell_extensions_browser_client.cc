@@ -17,7 +17,6 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/null_app_sorting.h"
-#include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
@@ -38,9 +37,7 @@ void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
     BrowserContext* context)
-    : browser_context_(context),
-      api_client_(new ExtensionsAPIClient),
-      extension_cache_(new NullExtensionCache()) {
+    : browser_context_(context), api_client_(new ExtensionsAPIClient) {
   // Set up the preferences service.
   base::PrefServiceFactory factory;
   factory.set_user_prefs(new TestingPrefStore);
@@ -220,10 +217,6 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
 
 net::NetLog* ShellExtensionsBrowserClient::GetNetLog() {
   return NULL;
-}
-
-ExtensionCache* ShellExtensionsBrowserClient::GetExtensionCache() {
-  return extension_cache_.get();
 }
 
 }  // namespace extensions

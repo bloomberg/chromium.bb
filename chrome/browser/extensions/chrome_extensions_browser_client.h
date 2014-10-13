@@ -96,7 +96,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       const std::string& event_name,
       scoped_ptr<base::ListValue> args) override;
   virtual net::NetLog* GetNetLog() override;
-  virtual ExtensionCache* GetExtensionCache() override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;
@@ -111,8 +110,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   scoped_ptr<ChromeExtensionsAPIClient> api_client_;
 
   scoped_ptr<ChromeComponentExtensionResourceManager> resource_manager_;
-
-  scoped_ptr<ExtensionCache> extension_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };

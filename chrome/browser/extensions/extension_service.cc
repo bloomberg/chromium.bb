@@ -42,6 +42,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
+#include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_brand.h"
@@ -67,12 +68,10 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/update_observer.h"
-#include "extensions/browser/updater/extension_cache.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
@@ -186,8 +185,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
 
   if (Manifest::IsExternalLocation(location)) {
     // All extensions that are not user specific can be cached.
-    extensions::ExtensionsBrowserClient::Get()->GetExtensionCache()
-        ->AllowCaching(id);
+    extensions::ExtensionCache::GetInstance()->AllowCaching(id);
   }
 
   const Extension* extension = GetExtensionById(id, true);
@@ -309,7 +307,7 @@ ExtensionService::ExtensionService(Profile* profile,
         profile->GetPrefs(),
         profile,
         update_frequency,
-        extensions::ExtensionsBrowserClient::Get()->GetExtensionCache(),
+        extensions::ExtensionCache::GetInstance(),
         base::Bind(ChromeExtensionDownloaderFactory::CreateForProfile,
                    profile)));
   }

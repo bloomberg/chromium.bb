@@ -395,11 +395,6 @@ bool ExtensionUpdater::WillCheckSoon() const {
   return will_check_soon_;
 }
 
-void ExtensionUpdater::SetExtensionCacheForTesting(
-    ExtensionCache* extension_cache) {
-  extension_cache_ = extension_cache;
-}
-
 void ExtensionUpdater::DoCheckSoon() {
   DCHECK(will_check_soon_);
   CheckNow(default_params_);

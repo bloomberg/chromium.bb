@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "extensions/browser/updater/extension_cache.h"
+#include "chrome/browser/extensions/updater/extension_cache.h"
 
 namespace extensions {
 
