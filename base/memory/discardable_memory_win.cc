@@ -29,10 +29,6 @@ void DiscardableMemory::GetSupportedTypes(
 scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     DiscardableMemoryType type, size_t size) {
   switch (type) {
-    case DISCARDABLE_MEMORY_TYPE_NONE:
-    case DISCARDABLE_MEMORY_TYPE_ASHMEM:
-    case DISCARDABLE_MEMORY_TYPE_MAC:
-      return scoped_ptr<DiscardableMemory>();
     case DISCARDABLE_MEMORY_TYPE_EMULATED: {
       scoped_ptr<internal::DiscardableMemoryEmulated> memory(
           new internal::DiscardableMemoryEmulated(size));
@@ -49,6 +45,11 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 
       return memory.PassAs<DiscardableMemory>();
     }
+    case DISCARDABLE_MEMORY_TYPE_NONE:
+    case DISCARDABLE_MEMORY_TYPE_ASHMEM:
+    case DISCARDABLE_MEMORY_TYPE_MAC:
+      NOTREACHED();
+      return scoped_ptr<DiscardableMemory>();
   }
 
   NOTREACHED();
