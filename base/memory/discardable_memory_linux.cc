@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/discardable_memory_emulated.h"
-#include "base/memory/discardable_memory_malloc.h"
 
 namespace base {
 
@@ -19,8 +18,7 @@ bool DiscardableMemory::ReduceMemoryUsage() {
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
-    DISCARDABLE_MEMORY_TYPE_EMULATED,
-    DISCARDABLE_MEMORY_TYPE_MALLOC
+    DISCARDABLE_MEMORY_TYPE_EMULATED
   };
   types->assign(supported_types, supported_types + arraysize(supported_types));
 }
@@ -32,14 +30,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     case DISCARDABLE_MEMORY_TYPE_EMULATED: {
       scoped_ptr<internal::DiscardableMemoryEmulated> memory(
           new internal::DiscardableMemoryEmulated(size));
-      if (!memory->Initialize())
-        return scoped_ptr<DiscardableMemory>();
-
-      return memory.PassAs<DiscardableMemory>();
-    }
-    case DISCARDABLE_MEMORY_TYPE_MALLOC: {
-      scoped_ptr<internal::DiscardableMemoryMalloc> memory(
-          new internal::DiscardableMemoryMalloc(size));
       if (!memory->Initialize())
         return scoped_ptr<DiscardableMemory>();
 

@@ -328,8 +328,6 @@
           'memory/discardable_memory_emulated.h',
           'memory/discardable_memory_linux.cc',
           'memory/discardable_memory_mac.cc',
-          'memory/discardable_memory_malloc.cc',
-          'memory/discardable_memory_malloc.h',
           'memory/discardable_memory_manager.cc',
           'memory/discardable_memory_manager.h',
           'memory/discardable_memory_win.cc',
