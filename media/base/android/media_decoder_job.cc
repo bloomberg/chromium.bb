@@ -48,7 +48,7 @@ MediaDecoderJob::MediaDecoderJob(
 }
 
 MediaDecoderJob::~MediaDecoderJob() {
-  DCHECK(!media_codec_bridge_);
+  ReleaseMediaCodecBridge();
 }
 
 void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
@@ -232,7 +232,6 @@ void MediaDecoderJob::Release() {
     return;
   }
 
-  ReleaseMediaCodecBridge();
   delete this;
 }
 
@@ -501,7 +500,6 @@ void MediaDecoderJob::OnDecodeCompleted(
 
   if (destroy_pending_) {
     DVLOG(1) << __FUNCTION__ << " : completing pending deletion";
-    ReleaseMediaCodecBridge();
     delete this;
     return;
   }
