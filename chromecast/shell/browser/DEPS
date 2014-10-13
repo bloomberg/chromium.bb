@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/crash",
-  "+content/public/browser",
-  "+media/base",
-]

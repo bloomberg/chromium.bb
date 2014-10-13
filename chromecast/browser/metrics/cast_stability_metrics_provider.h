@@ -1,0 +1,73 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMECAST_BROWSER_METRICS_CAST_STABILITY_METRICS_PROVIDER_H_
+#define CHROMECAST_BROWSER_METRICS_CAST_STABILITY_METRICS_PROVIDER_H_
+
+#include "base/basictypes.h"
+#include "base/metrics/user_metrics.h"
+#include "base/process/kill.h"
+#include "components/metrics/metrics_provider.h"
+#include "content/public/browser/browser_child_process_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+
+class MetricsService;
+class PrefRegistrySimple;
+
+namespace content {
+class RenderProcessHost;
+class WebContents;
+}
+
+namespace chromecast {
+namespace metrics {
+
+// CastStabilityMetricsProvider gathers and logs stability-related metrics.
+// Loosely based on ChromeStabilityMetricsProvider from chrome/browser/metrics.
+class CastStabilityMetricsProvider
+    : public ::metrics::MetricsProvider,
+      public content::BrowserChildProcessObserver,
+      public content::NotificationObserver {
+ public:
+  // Registers local state prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  CastStabilityMetricsProvider();
+  virtual ~CastStabilityMetricsProvider();
+
+  // metrics::MetricsDataProvider implementation:
+  virtual void OnRecordingEnabled() override;
+  virtual void OnRecordingDisabled() override;
+  virtual void ProvideStabilityMetrics(
+      ::metrics::SystemProfileProto* system_profile_proto) override;
+
+ private:
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) override;
+
+  // content::BrowserChildProcessObserver implementation:
+  virtual void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data) override;
+
+  // Records a renderer process crash.
+  void LogRendererCrash(content::RenderProcessHost* host,
+                        base::TerminationStatus status,
+                        int exit_code);
+
+  // Records a renderer process hang.
+  void LogRendererHang();
+
+  // Registrar for receiving stability-related notifications.
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastStabilityMetricsProvider);
+};
+
+}  // namespace metrics
+}  // namespace chromecast
+
+#endif  // CHROMECAST_BROWSER_METRICS_CAST_STABILITY_METRICS_PROVIDER_H_

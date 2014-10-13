@@ -15,8 +15,8 @@
         {
           'action_name': 'chromecast_settings',
           'variables': {
-            'grit_grd_file': 'shell/settings/chromecast_settings.grd',
-            'grit_resource_ids': 'shell/browser/resources/resource_ids',
+            'grit_grd_file': 'app/resources/chromecast_settings.grd',
+            'grit_resource_ids': 'app/resources/resource_ids',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },

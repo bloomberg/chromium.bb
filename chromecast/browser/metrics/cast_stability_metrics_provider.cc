@@ -1,0 +1,152 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
+
+#include <vector>
+
+#include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/common/chromecast_config.h"
+#include "chromecast/common/pref_names.h"
+#include "components/metrics/proto/system_profile.pb.h"
+#include "content/public/browser/child_process_data.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/user_metrics.h"
+
+namespace chromecast {
+namespace metrics {
+
+namespace {
+
+void IncrementPrefValue(const char* path) {
+  PrefService* pref = ChromecastConfig::GetInstance()->pref_service();
+  DCHECK(pref);
+  int value = pref->GetInteger(path);
+  pref->SetInteger(path, value + 1);
+}
+
+// Converts an exit code into something that can be inserted into our
+// histograms (which expect non-negative numbers less than MAX_INT).
+int MapCrashExitCodeForHistogram(int exit_code) {
+  return std::abs(exit_code);
+}
+
+}  // namespace
+
+// static
+void CastStabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
+}
+
+CastStabilityMetricsProvider::CastStabilityMetricsProvider() {
+  BrowserChildProcessObserver::Add(this);
+}
+
+CastStabilityMetricsProvider::~CastStabilityMetricsProvider() {
+  BrowserChildProcessObserver::Remove(this);
+}
+
+void CastStabilityMetricsProvider::OnRecordingEnabled() {
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
+                 content::NotificationService::AllSources());
+}
+
+void CastStabilityMetricsProvider::OnRecordingDisabled() {
+  registrar_.RemoveAll();
+}
+
+void CastStabilityMetricsProvider::ProvideStabilityMetrics(
+    ::metrics::SystemProfileProto* system_profile_proto) {
+  PrefService* pref = ChromecastConfig::GetInstance()->pref_service();
+  ::metrics::SystemProfileProto_Stability* stability_proto =
+      system_profile_proto->mutable_stability();
+
+  int count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
+  if (count) {
+    stability_proto->set_child_process_crash_count(count);
+    pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
+  }
+
+  count = pref->GetInteger(prefs::kStabilityRendererCrashCount);
+  if (count) {
+    stability_proto->set_renderer_crash_count(count);
+    pref->SetInteger(prefs::kStabilityRendererCrashCount, 0);
+  }
+
+  count = pref->GetInteger(prefs::kStabilityRendererHangCount);
+  if (count) {
+    stability_proto->set_renderer_hang_count(count);
+    pref->SetInteger(prefs::kStabilityRendererHangCount, 0);
+  }
+}
+
+void CastStabilityMetricsProvider::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
+      content::RenderProcessHost::RendererClosedDetails* process_details =
+          content::Details<content::RenderProcessHost::RendererClosedDetails>(
+              details).ptr();
+      content::RenderProcessHost* host =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      LogRendererCrash(
+          host, process_details->status, process_details->exit_code);
+      break;
+    }
+
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
+      LogRendererHang();
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void CastStabilityMetricsProvider::BrowserChildProcessCrashed(
+    const content::ChildProcessData& data) {
+  IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
+}
+
+void CastStabilityMetricsProvider::LogRendererCrash(
+    content::RenderProcessHost* host,
+    base::TerminationStatus status,
+    int exit_code) {
+  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+    IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+
+    UMA_HISTOGRAM_SPARSE_SLOWLY("CrashExitCodes.Renderer",
+                                MapCrashExitCodeForHistogram(exit_code));
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes", 1);
+  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills", 1);
+  } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive", 1);
+  }
+}
+
+void CastStabilityMetricsProvider::LogRendererHang() {
+  IncrementPrefValue(prefs::kStabilityRendererHangCount);
+}
+
+}  // namespace metrics
+}  // namespace chromecast
