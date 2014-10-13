@@ -31,7 +31,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
@@ -74,15 +74,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         state_keys_broker_(&fake_session_manager_client_,
                            base::MessageLoopProxy::current()),
         store_(NULL) {
-    EXPECT_CALL(mock_statistics_provider_,
-                GetMachineStatistic(_, _))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(mock_statistics_provider_,
-                GetMachineStatistic("serial_number", _))
-        .WillRepeatedly(DoAll(SetArgumentPointee<1>(std::string("test_sn")),
-                              Return(true)));
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &mock_statistics_provider_);
+    fake_statistics_provider_.SetMachineStatistic("serial_numer", "test_sn");
     std::vector<std::string> state_keys;
     state_keys.push_back("1");
     state_keys.push_back("2");
@@ -191,7 +183,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   MockDeviceManagementService consumer_device_management_service_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
   ServerBackedStateKeysBroker state_keys_broker_;

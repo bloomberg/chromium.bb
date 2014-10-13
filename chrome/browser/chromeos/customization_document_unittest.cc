@@ -21,7 +21,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -101,21 +101,18 @@ const char kDummyCustomizationID[] = "test-dummy";
 
 namespace chromeos {
 
-using ::testing::_;
 using ::testing::DoAll;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
+using ::testing::_;
 
 TEST(StartupCustomizationDocumentTest, Basic) {
-  system::MockStatisticsProvider mock_statistics_provider;
-  EXPECT_CALL(mock_statistics_provider, GetMachineStatistic(_, NotNull()))
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(mock_statistics_provider,
-      GetMachineStatistic(std::string("hardware_class"), NotNull()))
-          .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
-                          Return(true)));
-  StartupCustomizationDocument customization(&mock_statistics_provider,
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+
+  // hardware_class selects the appropriate entry in hwid_map in the manifest.
+  fake_statistics_provider.SetMachineStatistic("hardware_class", "Mario 12345");
+  StartupCustomizationDocument customization(&fake_statistics_provider,
                                              kGoodStartupManifest);
   EXPECT_EQ("ru-RU", customization.initial_locale());
   EXPECT_EQ("Europe/Moscow", customization.initial_timezone());
@@ -130,24 +127,15 @@ TEST(StartupCustomizationDocumentTest, Basic) {
 }
 
 TEST(StartupCustomizationDocumentTest, VPD) {
-  system::MockStatisticsProvider mock_statistics_provider;
-  EXPECT_CALL(mock_statistics_provider,
-      GetMachineStatistic(std::string("hardware_class"), NotNull()))
-          .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Mario 12345")),
-                          Return(true)));
-  EXPECT_CALL(mock_statistics_provider,
-      GetMachineStatistic(std::string("initial_locale"), NotNull()))
-          .WillOnce(DoAll(SetArgumentPointee<1>(std::string("ja")),
-                          Return(true)));
-  EXPECT_CALL(mock_statistics_provider,
-      GetMachineStatistic(std::string("initial_timezone"), NotNull()))
-          .WillOnce(DoAll(SetArgumentPointee<1>(std::string("Asia/Tokyo")),
-                          Return(true)));
-  EXPECT_CALL(mock_statistics_provider,
-      GetMachineStatistic(std::string("keyboard_layout"), NotNull()))
-          .WillOnce(DoAll(SetArgumentPointee<1>(std::string("mozc-jp")),
-                          Return(true)));
-  StartupCustomizationDocument customization(&mock_statistics_provider,
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+
+  // hardware_class selects the appropriate entry in hwid_map in the manifest.
+  fake_statistics_provider.SetMachineStatistic("hardware_class", "Mario 12345");
+  fake_statistics_provider.SetMachineStatistic("initial_locale", "ja");
+  fake_statistics_provider.SetMachineStatistic("initial_timezone",
+                                               "Asia/Tokyo");
+  fake_statistics_provider.SetMachineStatistic("keyboard_layout", "mozc-jp");
+  StartupCustomizationDocument customization(&fake_statistics_provider,
                                              kGoodStartupManifest);
   EXPECT_TRUE(customization.IsReady());
   EXPECT_EQ("ja", customization.initial_locale());
@@ -156,8 +144,8 @@ TEST(StartupCustomizationDocumentTest, VPD) {
 }
 
 TEST(StartupCustomizationDocumentTest, BadManifest) {
-  system::MockStatisticsProvider mock_statistics_provider;
-  StartupCustomizationDocument customization(&mock_statistics_provider,
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  StartupCustomizationDocument customization(&fake_statistics_provider,
                                              kBadManifest);
   EXPECT_FALSE(customization.IsReady());
 }
@@ -221,11 +209,6 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   virtual void SetUp() override {
     ServicesCustomizationDocument::InitializeForTesting();
 
-    EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
-        .WillRepeatedly(Return(false));
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &mock_statistics_provider_);
-
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
     RunUntilIdle();
@@ -255,7 +238,6 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     NetworkPortalDetector::InitializeForTesting(NULL);
-    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
 
     ServicesCustomizationDocument::ShutdownForTesting();
   }
@@ -265,10 +247,8 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
   void AddCustomizationIdToVp(const std::string& id) {
-    EXPECT_CALL(mock_statistics_provider_,
-        GetMachineStatistic(system::kCustomizationIdKey, NotNull()))
-            .WillOnce(DoAll(SetArgumentPointee<1>(id),
-                            Return(true)));
+    fake_statistics_provider_.SetMachineStatistic(system::kCustomizationIdKey,
+                                                  id);
   }
 
   void AddExpectedManifest(const std::string& id,
@@ -309,7 +289,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
  private:
-  system::MockStatisticsProvider mock_statistics_provider_;
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple local_state_;
   TestURLFetcherCallback url_callback_;

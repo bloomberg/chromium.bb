@@ -33,13 +33,13 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #endif
 
-using ::testing::_;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::_;
 
 namespace extensions {
 
@@ -99,19 +99,10 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     cmdline->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
                                test_server_->GetURL(kManifestPath).spec());
-#if defined(OS_CHROMEOS)
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &mock_statistics_provider_);
-    EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
-        .WillRepeatedly(Return(false));
-#endif
   }
 
   virtual void TearDown() override {
-#if defined(OS_CHROMEOS)
-    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
-#endif
   }
 
  private:
@@ -151,8 +142,11 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 
   scoped_ptr<EmbeddedTestServer> test_server_;
   scoped_ptr<ExtensionCacheFake> test_extension_cache_;
+
 #if defined(OS_CHROMEOS)
-  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
+  // chromeos::ServicesCustomizationExternalLoader is hooked up as an
+  // extensions::ExternalLoader and depends on a functioning StatisticsProvider.
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   TestingPrefServiceSimple local_state_;
 #endif
 

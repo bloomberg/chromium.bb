@@ -19,15 +19,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/system/mock_statistics_provider.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-using ::testing::_;
-using ::testing::NotNull;
-using ::testing::Return;
 
 namespace extensions {
 
@@ -69,23 +64,17 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
     external_externsions_overrides_.reset(new base::ScopedPathOverride(
         chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().Append("external")));
-
-    chromeos::system::StatisticsProvider::SetTestProvider(
-        &mock_statistics_provider_);
-    EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, NotNull()))
-        .WillRepeatedly(Return(false));
   }
 
   virtual void TearDown() override {
     chromeos::KioskAppManager::Shutdown();
-    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
  private:
   TestingPrefServiceSimple local_state_;
   scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
-  chromeos::system::MockStatisticsProvider mock_statistics_provider_;
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   chromeos::FakeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_;
 

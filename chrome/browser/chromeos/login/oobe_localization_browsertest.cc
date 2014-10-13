@@ -19,6 +19,7 @@
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -40,55 +41,6 @@ const char* kKeyboardSelect = "keyboard-select";
 const char* kUSLayout = "xkb:us::eng";
 
 }
-
-namespace system {
-
-// Custom StatisticsProvider that will return each set of region settings.
-class FakeStatisticsProvider : public StatisticsProvider {
- public:
-  virtual ~FakeStatisticsProvider() {}
-
-  void set_locale(const std::string& locale) {
-    initial_locale_ = locale;
-  }
-
-  void set_keyboard_layout(const std::string& keyboard_layout) {
-    keyboard_layout_ = keyboard_layout;
-  }
-
- private:
-  // StatisticsProvider overrides.
-  virtual void StartLoadingMachineStatistics(
-      const scoped_refptr<base::TaskRunner>& file_task_runner,
-      bool load_oem_manifest) override {
-  }
-
-  // Populates the named machine statistic for initial_locale and
-  // keyboard_layout only.
-  virtual bool GetMachineStatistic(const std::string& name,
-                                   std::string* result) override {
-    if (name == "initial_locale")
-      *result = initial_locale_;
-    else if (name == "keyboard_layout")
-      *result = keyboard_layout_;
-    else
-      return false;
-
-    return true;
-  }
-
-  virtual bool GetMachineFlag(const std::string& name, bool* result) override {
-    return false;
-  }
-
-  virtual void Shutdown() override {
-  }
-
-  std::string initial_locale_;
-  std::string keyboard_layout_;
-};
-
-}  // namespace system
 
 struct LocalizationTestParams {
   const char* initial_locale;
@@ -162,7 +114,6 @@ class OobeLocalizationTest
       public testing::WithParamInterface<const LocalizationTestParams*> {
  public:
   OobeLocalizationTest();
-  virtual ~OobeLocalizationTest();
 
   // Verifies that the comma-separated |values| corresponds with the first
   // values in |select_id|, optionally checking for an options group label after
@@ -196,23 +147,17 @@ class OobeLocalizationTest
   }
 
  private:
-  scoped_ptr<system::FakeStatisticsProvider> statistics_provider_;
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   test::JSChecker checker;
 
   DISALLOW_COPY_AND_ASSIGN(OobeLocalizationTest);
 };
 
 OobeLocalizationTest::OobeLocalizationTest() : LoginManagerTest(false) {
-  statistics_provider_.reset(new system::FakeStatisticsProvider());
-  // Set the instance returned by GetInstance() for testing.
-  system::StatisticsProvider::SetTestProvider(statistics_provider_.get());
-
-  statistics_provider_->set_locale(GetParam()->initial_locale);
-  statistics_provider_->set_keyboard_layout(GetParam()->keyboard_layout);
-}
-
-OobeLocalizationTest::~OobeLocalizationTest() {
-  system::StatisticsProvider::SetTestProvider(NULL);
+  fake_statistics_provider_.SetMachineStatistic("initial_locale",
+                                                GetParam()->initial_locale);
+  fake_statistics_provider_.SetMachineStatistic("keyboard_layout",
+                                                GetParam()->keyboard_layout);
 }
 
 bool OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
