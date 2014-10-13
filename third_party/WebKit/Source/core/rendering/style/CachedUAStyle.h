@@ -37,19 +37,16 @@ public:
         return adoptPtr(new CachedUAStyle(style));
     }
 
-    bool hasAppearance;
     BorderData border;
     FillLayer backgroundLayers;
     StyleColor backgroundColor;
 
 private:
     explicit CachedUAStyle(const RenderStyle* style)
-        : hasAppearance(true)
-        , border(style->border())
+        : border(style->border())
         , backgroundLayers(style->backgroundLayers())
         , backgroundColor(style->backgroundColor())
     {
-        ASSERT(style->hasAppearance());
     }
 };
 
