@@ -15,6 +15,12 @@ if not env.Bit('host_mac'):
 if env.Bit('pnacl_generate_pexe'):
   Return()
 
+# This test uses the nexe built by exception_test, which currently doesn't
+# build with nacl_clang. See
+# https://code.google.com/p/nativeclient/issues/detail?id=3969
+if env.Bit('nacl_clang'):
+  Return()
+
 if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']

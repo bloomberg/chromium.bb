@@ -442,12 +442,7 @@ tc-tests-fast() {
 
   driver-tests "${arch}"
 
-  scons-stage-noirt "${arch}" "${scons_flags} -j8" "${SCONS_TC_TESTS}"
-  # Large tests cannot be run in parallel
-  scons-stage-noirt "${arch}" "${scons_flags} -j1" "large_tests"
-  scons-stage-noirt "${arch}" "${scons_flags} -j8 pnacl_generate_pexe=0" \
-    "nonpexe_tests"
-  scons-stage-noirt "${arch}" "${scons_flags} -j8 minsfi=1" "minsfi_tests"
+  buildbot/buildbot_pnacl.py opt 32 pnacl
 }
 
 mode-buildbot-tc-x8664-linux() {

@@ -399,14 +399,26 @@ def SetUpArgumentBits(env):
 
   # PNaCl sanity checks
   if not env.Bit('bitcode'):
-    pnacl_only_flags = ('nonsfi_nacl',
+    pnacl_only_flags = ('minsfi',
+                        'nonsfi_nacl',
                         'pnacl_generate_pexe',
+                        'pnacl_unsandboxed',
+                        'skip_nonstable_bitcode',
+                        'translate_fast',
                         'use_sandboxed_translator')
+
     for flag_name in pnacl_only_flags:
       if env.Bit(flag_name):
         raise UserError('The option %r only makes sense when using the '
                         'PNaCl toolchain (i.e. with bitcode=1)'
                         % flag_name)
+  else:
+    pnacl_incompatible_flags = ('nacl_clang',
+                                'nacl_glibc')
+    for flag_name in pnacl_incompatible_flags:
+      if env.Bit(flag_name):
+        raise UserError('The option %r cannot be used when building with '
+                        'PNaCl (i.e. with bitcode=1)' % flag_name)
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -3165,6 +3177,9 @@ if nacl_env.Bit('nacl_clang'):
   # https://code.google.com/p/nativeclient/issues/detail?id=3974
   # TODO(dschuff): change it to __asm__ and remove this suppression.
   nacl_env.Append(CCFLAGS=['-Wno-language-extension-token'])
+  # src/untrusted/valgrind/valgrind_interceptors.c uses a non-string-literal
+  # variable for printf.
+  nacl_env.Append(CCFLAGS=['-Wno-format-security'])
 
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone
