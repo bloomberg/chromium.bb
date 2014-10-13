@@ -94,6 +94,20 @@ protected:
         : m_type(type)
         , m_ownerList(nullptr)
     {
+#if ENABLE(OILPAN)
+        // FIXME: Oilpan: the objects that derive from this RefCountedGarbageCollected<>
+        // base object are all RefPtr<T>-exposed (i.e., create()s returning a PassRefPtr<T>.)
+        //
+        // Following r183582, RefCountedGarbageCollected<>::m_refCount is initialized
+        // as 0, which is safe assuming the constructor result is initially handled/returned
+        // as a raw pointer. But to support an "RefCounted-identical" view of such a fresh
+        // object, we need to adjust the RefCountedGarbageCollected<>::m_refCount to be
+        // its assumed 1 for these derived objects to function as expected.
+        //
+        // This would be simpler if the derived SVG property objects created GCed objects
+        // proper. Remove this ref count adjustment when this happens.
+        ref();
+#endif
     }
 
 private:
