@@ -586,7 +586,7 @@ bool AnimationPlayer::maybeStartAnimationOnCompositor()
     double startTime = timeline()->zeroTime() + startTimeInternal();
     double timeOffset = 0;
     if (std::isnan(startTime)) {
-        timeOffset = currentTimeInternal();
+        timeOffset = m_playbackRate < 0 ? sourceEnd() - currentTimeInternal() : currentTimeInternal();
     }
     return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(startTime, timeOffset, m_playbackRate);
 }
