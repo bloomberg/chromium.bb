@@ -29,9 +29,9 @@ class AppListPrefsFactory : public BrowserContextKeyedServiceFactory {
   virtual ~AppListPrefsFactory();
 
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 }  // namespace app_list

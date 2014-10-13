@@ -720,14 +720,14 @@ class Browser : public TabStripModelObserver,
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
 
   // Command and state updating ///////////////////////////////////////////////
 

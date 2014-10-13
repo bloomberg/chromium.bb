@@ -21,9 +21,9 @@ class ModelPrefUpdater : public AppListModelObserver {
   virtual ~ModelPrefUpdater();
 
   // Overridden from AppListModelObserver:
-  virtual void OnAppListItemAdded(AppListItem* item) OVERRIDE;
-  virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE;
-  virtual void OnAppListItemUpdated(AppListItem* item) OVERRIDE;
+  virtual void OnAppListItemAdded(AppListItem* item) override;
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) override;
+  virtual void OnAppListItemUpdated(AppListItem* item) override;
 
  private:
   void UpdatePrefsFromAppListItem(AppListItem* item);

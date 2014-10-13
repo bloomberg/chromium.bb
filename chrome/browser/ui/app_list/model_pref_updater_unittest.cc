@@ -20,7 +20,7 @@ class TestExtensionAppItem : public AppListItem {
   explicit TestExtensionAppItem(const std::string& id) : AppListItem(id) {}
   virtual ~TestExtensionAppItem() {}
 
-  virtual const char* GetItemType() const OVERRIDE {
+  virtual const char* GetItemType() const override {
     return ExtensionAppItem::kItemType;
   }
 
@@ -33,7 +33,7 @@ class ModelPrefUpdaterTest : public testing::Test {
   ModelPrefUpdaterTest() {}
   virtual ~ModelPrefUpdaterTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     AppListPrefs::RegisterProfilePrefs(pref_service_.registry());
     prefs_.reset(AppListPrefs::Create(&pref_service_));
     model_.reset(new AppListTestModel());
