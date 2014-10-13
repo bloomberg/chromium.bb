@@ -32,6 +32,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #endif  // OS_ANDROID
 
@@ -161,6 +162,11 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   // Initialize histogram statistics gathering system.
   base::StatisticsRecorder::Initialize();
+
+#if defined(OS_ANDROID)
+  // If we have a pending chromium android linker histogram, record it.
+  base::android::RecordChromiumAndroidLinkerRendererHistogram();
+#endif
 
   // Initialize statistical testing infrastructure.  We set the entropy provider
   // to NULL to disallow the renderer process from creating its own one-time

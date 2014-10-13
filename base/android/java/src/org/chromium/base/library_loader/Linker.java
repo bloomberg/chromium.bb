@@ -215,9 +215,6 @@ public class Linker {
     // Current fixed-location load address for the next library called by loadLibrary().
     private static long sCurrentLoadAddress = 0;
 
-    // Becomes true if any library fails to load at a given, non-0, fixed address.
-    private static boolean sLoadAtFixedAddressFailed = false;
-
     // Becomes true once prepareLibraryLoad() has been called.
     private static boolean sPrepareLibraryLoadCalled = false;
 
@@ -700,15 +697,6 @@ public class Linker {
     }
 
     /**
-     * Returns whether the linker was unable to load one library at a given fixed address.
-     *
-     * @return true if at least one library was not loaded at the expected fixed address.
-     */
-    public static boolean loadAtFixedAddressFailed() {
-        return sLoadAtFixedAddressFailed;
-    }
-
-    /**
      * Load a native shared library with the Chromium linker.
      * The shared library is uncompressed and page aligned inside the zipfile.
      * Note the crazy linker treats libraries and files as equivalent,
@@ -771,11 +759,9 @@ public class Linker {
 
             String sharedRelRoName = libName;
             if (zipFile != null) {
-                if (!nativeLoadLibraryInZipFile(
-                        zipFile, libName, loadAddress, libInfo)) {
-                    String errorMessage =
-                            "Unable to load library: " + libName + " in: " +
-                            zipFile;
+                if (!nativeLoadLibraryInZipFile(zipFile, libName, loadAddress, libInfo)) {
+                    String errorMessage = "Unable to load library: " + libName +
+                                          ", in: " + zipFile;
                     Log.e(TAG, errorMessage);
                     throw new UnsatisfiedLinkError(errorMessage);
                 }
@@ -787,9 +773,6 @@ public class Linker {
                     throw new UnsatisfiedLinkError(errorMessage);
                 }
             }
-            // Keep track whether the library has been loaded at the expected load address.
-            if (loadAddress != 0 && loadAddress != libInfo.mLoadAddress)
-                sLoadAtFixedAddressFailed = true;
 
             // Print the load address to the logcat when testing the linker. The format
             // of the string is expected by the Python test_runner script as one of:

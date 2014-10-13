@@ -2689,6 +2689,43 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChromiumAndroidLinker.BrowserStates"
+    enum="ChromiumAndroidLinkerBrowserState">
+  <owner>simonb@chromium.org</owner>
+  <summary>
+    Whether relro sharing was attempted for the browser process, and if
+    attempted, whether it succeeded.
+  </summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.IsLowMemoryDevice" enum="Boolean">
+  <obsolete>
+    Deprecated 10/2014 in Issue 419010, and replaced by
+    ChromiumAndroidLinker.BrowserStates.
+  </obsolete>
+  <owner>simonb@chromium.org</owner>
+  <summary>Is low memory device.</summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.LoadedAtFixedAddressFailed"
+    enum="Boolean">
+  <obsolete>
+    Deprecated 10/2014 in Issue 419010, and replaced by
+    ChromiumAndroidLinker.RendererStates.
+  </obsolete>
+  <owner>simonb@chromium.org</owner>
+  <summary>Load at fixed address failed.</summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.RendererStates"
+    enum="ChromiumAndroidLinkerRendererState">
+  <owner>simonb@chromium.org</owner>
+  <summary>
+    Whether relro sharing was attempted for a renderer process, and if
+    attempted, whether it succeeded.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.discard_download" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -39857,6 +39894,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="20" label="Downloaded file"/>
   <int value="21" label="Old image"/>
   <int value="22" label="Profile image"/>
+</enum>
+
+<enum name="ChromiumAndroidLinkerBrowserState" type="int">
+  <int value="0" label="Normal, Random Address Load"/>
+  <int value="1" label="Low memory, Fixed Address Load Success"/>
+  <int value="2" label="Low memory, Fixed Address Load Failure"/>
+</enum>
+
+<enum name="ChromiumAndroidLinkerRendererState" type="int">
+  <int value="0" label="Fixed Address Load Success"/>
+  <int value="1" label="Fixed Address Load Failure"/>
+  <int value="2" label="Fixed Address Load Not Attempted"/>
 </enum>
 
 <enum name="ClipboardAction" type="int">

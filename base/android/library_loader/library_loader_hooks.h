@@ -12,6 +12,10 @@
 namespace base {
 namespace android {
 
+// Record any pending renderer histogram value as a histogram.  Pending values
+// are set by RegisterChromiumAndroidLinkerRendererHistogram.
+BASE_EXPORT void RecordChromiumAndroidLinkerRendererHistogram();
+
 // Registers the callbacks that allows the entry point of the library to be
 // exposed to the calling java code.  This handles only registering the
 // the callbacks needed by the loader. Any application specific JNI bindings

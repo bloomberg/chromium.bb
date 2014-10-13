@@ -19,7 +19,77 @@ base::AtExitManager* g_at_exit_manager = NULL;
 const char* g_library_version_number = "";
 LibraryLoadedHook* g_registration_callback = NULL;
 
+enum RendererHistogramCode {
+  // Renderer load at fixed address success, fail, or not attempted.
+  // Renderers do not attempt to load at at fixed address if on a
+  // low-memory device on which browser load at fixed address has already
+  // failed.
+  LFA_SUCCESS = 0,
+  LFA_BACKOFF_USED = 1,
+  LFA_NOT_ATTEMPTED = 2,
+
+  // End sentinel, also used as nothing-pending indicator.
+  MAX_RENDERER_HISTOGRAM_CODE = 3,
+  NO_PENDING_HISTOGRAM_CODE = MAX_RENDERER_HISTOGRAM_CODE
+};
+
+enum BrowserHistogramCode {
+  // Non-low-memory random address browser loads.
+  NORMAL_LRA_SUCCESS = 0,
+
+  // Low-memory browser loads at fixed address, success or fail.
+  LOW_MEMORY_LFA_SUCCESS = 1,
+  LOW_MEMORY_LFA_BACKOFF_USED = 2,
+
+  MAX_BROWSER_HISTOGRAM_CODE = 3,
+};
+
+RendererHistogramCode g_renderer_histogram_code = NO_PENDING_HISTOGRAM_CODE;
+
 } // namespace
+
+static void RegisterChromiumAndroidLinkerRendererHistogram(
+    JNIEnv* env,
+    jclass clazz,
+    jboolean requested_shared_relro,
+    jboolean load_at_fixed_address_failed) {
+  // Note a pending histogram value for later recording.
+  if (requested_shared_relro) {
+    g_renderer_histogram_code = load_at_fixed_address_failed
+                                ? LFA_BACKOFF_USED : LFA_SUCCESS;
+  } else {
+    g_renderer_histogram_code = LFA_NOT_ATTEMPTED;
+  }
+}
+
+void RecordChromiumAndroidLinkerRendererHistogram() {
+  if (g_renderer_histogram_code == NO_PENDING_HISTOGRAM_CODE)
+    return;
+  // Record and release the pending histogram value.
+  UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.RendererStates",
+                            g_renderer_histogram_code,
+                            MAX_RENDERER_HISTOGRAM_CODE);
+  g_renderer_histogram_code = NO_PENDING_HISTOGRAM_CODE;
+}
+
+static void RecordChromiumAndroidLinkerBrowserHistogram(
+    JNIEnv* env,
+    jclass clazz,
+    jboolean is_using_browser_shared_relros,
+    jboolean load_at_fixed_address_failed) {
+  // For low-memory devices, record whether or not we successfully loaded the
+  // browser at a fixed address. Otherwise just record a normal invocation.
+  BrowserHistogramCode histogram_code;
+  if (is_using_browser_shared_relros) {
+    histogram_code = load_at_fixed_address_failed
+                     ? LOW_MEMORY_LFA_BACKOFF_USED : LOW_MEMORY_LFA_SUCCESS;
+  } else {
+    histogram_code = NORMAL_LRA_SUCCESS;
+  }
+  UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.BrowserStates",
+                            histogram_code,
+                            MAX_BROWSER_HISTOGRAM_CODE);
+}
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {
   g_registration_callback = func;
@@ -31,21 +101,10 @@ static void InitCommandLine(JNIEnv* env, jclass clazz,
 }
 
 static jboolean LibraryLoaded(JNIEnv* env, jclass clazz) {
-  if(g_registration_callback == NULL) {
+  if (g_registration_callback == NULL) {
     return true;
   }
   return g_registration_callback(env, clazz);
-}
-
-static void RecordChromiumAndroidLinkerHistogram(
-    JNIEnv* env,
-    jclass clazz,
-    jboolean loaded_at_fixed_address_failed,
-    jboolean is_low_memory_device) {
-  UMA_HISTOGRAM_BOOLEAN("ChromiumAndroidLinker.LoadedAtFixedAddressFailed",
-                        loaded_at_fixed_address_failed);
-  UMA_HISTOGRAM_BOOLEAN("ChromiumAndroidLinker.IsLowMemoryDevice",
-                        is_low_memory_device);
 }
 
 void LibraryLoaderExitHook() {

@@ -160,6 +160,7 @@ public class ChildProcessService extends Service {
                         android.os.Debug.waitForDebugger();
                     }
 
+                    boolean loadAtFixedAddressFailed = false;
                     try {
                         LibraryLoader.loadNow(getApplicationContext(), false);
                         isLoaded = true;
@@ -167,6 +168,7 @@ public class ChildProcessService extends Service {
                         if (requestedSharedRelro) {
                             Log.w(TAG, "Failed to load native library with shared RELRO, " +
                                   "retrying without");
+                            loadAtFixedAddressFailed = true;
                         } else {
                             Log.e(TAG, "Failed to load native library", e);
                         }
@@ -183,6 +185,9 @@ public class ChildProcessService extends Service {
                     if (!isLoaded) {
                         System.exit(-1);
                     }
+                    LibraryLoader.registerRendererProcessHistogram(
+                            requestedSharedRelro,
+                            loadAtFixedAddressFailed);
                     LibraryLoader.initialize();
                     synchronized (mMainThread) {
                         mLibraryInitialized = true;
