@@ -771,10 +771,15 @@ bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }
 
-// TODO(aelias): Convert so that bounds returns SizeF.
 gfx::Size LayerImpl::bounds() const {
-  return gfx::ToCeiledSize(gfx::SizeF(bounds_.width() + bounds_delta_.x(),
-                                      bounds_.height() + bounds_delta_.y()));
+  gfx::Vector2d delta = gfx::ToCeiledVector2d(bounds_delta_);
+  return gfx::Size(bounds_.width() + delta.x(),
+                   bounds_.height() + delta.y());
+}
+
+gfx::SizeF LayerImpl::BoundsForScrolling() const {
+  return gfx::SizeF(bounds_.width() + bounds_delta_.x(),
+                    bounds_.height() + bounds_delta_.y());
 }
 
 void LayerImpl::SetBounds(const gfx::Size& bounds) {
@@ -1174,7 +1179,7 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
   DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
          IsContainerForFixedPositionLayers());
 
-  gfx::SizeF scaled_scroll_bounds(bounds());
+  gfx::SizeF scaled_scroll_bounds(BoundsForScrolling());
 
   float scale_factor = 1.f;
   for (LayerImpl const* current_layer = this;
@@ -1242,11 +1247,12 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
   DCHECK(scrollbar_clip_layer);
   DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
          IsContainerForFixedPositionLayers());
-  gfx::RectF clip_rect(gfx::PointF(), scrollbar_clip_layer->bounds());
+  gfx::RectF clip_rect(gfx::PointF(),
+                       scrollbar_clip_layer->BoundsForScrolling());
 
   // See comment in MaxScrollOffset() regarding the use of the content layer
   // bounds here.
-  gfx::RectF scroll_rect(gfx::PointF(), bounds());
+  gfx::RectF scroll_rect(gfx::PointF(), BoundsForScrolling());
 
   if (scroll_rect.size().IsEmpty())
     return;

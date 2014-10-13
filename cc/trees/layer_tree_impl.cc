@@ -265,6 +265,12 @@ LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
              : NULL;
 }
 
+LayerImpl* LayerTreeImpl::OuterViewportContainerLayer() const {
+  return outer_viewport_scroll_layer_
+             ? outer_viewport_scroll_layer_->scroll_clip_layer()
+             : NULL;
+}
+
 LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   DCHECK(IsActiveTree());
   return currently_scrolling_layer_;
@@ -366,7 +372,7 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
   if (!InnerViewportContainerLayer())
     return gfx::SizeF();
 
-  return gfx::ScaleSize(InnerViewportContainerLayer()->bounds(),
+  return gfx::ScaleSize(InnerViewportContainerLayer()->BoundsForScrolling(),
                         1.0f / total_page_scale_factor());
 }
 

@@ -497,7 +497,7 @@ class CC_EXPORT LayerTreeHostImpl
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
 
-  void UpdateInnerViewportContainerSize();
+  void UpdateViewportContainerSizes();
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time);
@@ -535,6 +535,8 @@ class CC_EXPORT LayerTreeHostImpl
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);
+
+  bool ShouldTopControlsConsumeScroll(const gfx::Vector2dF& scroll_delta) const;
 
   gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
       LayerImpl* layer_impl,

@@ -365,6 +365,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void SetBounds(const gfx::Size& bounds);
   gfx::Size bounds() const;
+  // Like bounds() but doesn't snap to int. Lossy on giant pages (e.g. millions
+  // of pixels) due to use of single precision float.
+  gfx::SizeF BoundsForScrolling() const;
   void SetBoundsDelta(const gfx::Vector2dF& bounds_delta);
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
