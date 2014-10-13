@@ -1366,10 +1366,6 @@ crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received
 
 crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failure ]
 
-crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Crash Timeout ]
-
-crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [ Pass Failure ]
-
 crbug.com/340522 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.html [ Pass ImageOnlyFailure ]
 
 crbug.com/418091 [ Mac ] editing/pasteboard/copy-crash.html [ Pass Timeout ]
@@ -1447,6 +1443,12 @@ crbug.com/421854 [ SnowLeopard Debug ] fast/dom/52776.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 
 crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure ]
+
+# Test case needs to be updated after https://codereview.chromium.org/593673003/
+crbug.com/416425 fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/416425 [ Mac Win ] virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/416425 svg/text/text-overflow-ellipsis-svgfont.html [ NeedsRebaseline ]
+crbug.com/416425 [ Mac ] fast/text/line-break-after-question-mark.html [ NeedsRebaseline ]
 
 # Updating Javascript spec.
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
