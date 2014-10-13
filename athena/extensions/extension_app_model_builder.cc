@@ -20,6 +20,10 @@ namespace athena {
 
 namespace {
 
+// Copied from chrome/common/extensions/extension_constants.h
+// TODO(mukai): move constants to src/extensions
+const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+
 class AppItem : public app_list::AppListItem {
  public:
   AppItem(scoped_refptr<const extensions::Extension> extension,
@@ -68,8 +72,11 @@ void ExtensionAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
   for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end();
        ++iter) {
+    // Chrome icon is currently disabled for homecard since it's not meaningful.
+    // http://crbug.com/421677
     // TODO(mukai): use chrome/browser/extension_ui_util.
-    if ((*iter)->ShouldDisplayInAppLauncher()) {
+    if ((*iter)->ShouldDisplayInAppLauncher() &&
+        (*iter)->id() != kChromeAppId) {
       model->AddItem(scoped_ptr<app_list::AppListItem>(
           new AppItem(*iter, browser_context_)));
     }
