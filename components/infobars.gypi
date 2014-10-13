@@ -17,6 +17,9 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/strings/ui_strings.gyp:ui_strings',
       ],
+      'export_dependent_settings': [
+        '../skia/skia.gyp:skia',
+      ],
       'sources': [
         # Note: sources duplicated in GN build.
         'infobars/core/confirm_infobar_delegate.cc',
