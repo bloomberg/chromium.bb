@@ -255,7 +255,7 @@ function test_login(test, origin, username, password) {
         .then(test.step_func(function(frame) {
             var channel = new MessageChannel();
             channel.port1.onmessage = test.step_func(function() {
-                unload_iframe(frame).catch(function() {});
+                unload_iframe(frame);
                 resolve();
               });
             frame.contentWindow.postMessage(
