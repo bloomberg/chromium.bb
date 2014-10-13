@@ -46,14 +46,6 @@ class CONTENT_EXPORT RendererOverridesHandler
   void ClearRenderViewHost();
 
  private:
-  // Network domain.
-  scoped_refptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> ClearBrowserCache(
-      scoped_refptr<DevToolsProtocol::Command> command);
-  scoped_refptr<DevToolsProtocol::Response> ClearBrowserCookies(
-      scoped_refptr<DevToolsProtocol::Command> command);
-
   // Page domain.
   scoped_refptr<DevToolsProtocol::Response> PageQueryUsageAndQuota(
       scoped_refptr<DevToolsProtocol::Command>);

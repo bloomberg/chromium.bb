@@ -4,28 +4,38 @@
 
 #include "content/browser/devtools/protocol/network_handler.h"
 
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
+
 namespace content {
 namespace devtools {
 namespace network {
 
 typedef DevToolsProtocolClient::Response Response;
 
-NetworkHandler::NetworkHandler() {
+NetworkHandler::NetworkHandler() : host_(nullptr) {
 }
 
 NetworkHandler::~NetworkHandler() {
 }
 
+void NetworkHandler::SetRenderViewHost(RenderViewHost* host) {
+  host_ = host;
+}
+
 Response NetworkHandler::ClearBrowserCache() {
-  return Response::FallThrough();
+  GetContentClient()->browser()->ClearCache(host_);
+  return Response::OK();
 }
 
 Response NetworkHandler::ClearBrowserCookies() {
-  return Response::FallThrough();
+  GetContentClient()->browser()->ClearCookies(host_);
+  return Response::OK();
 }
 
 Response NetworkHandler::CanEmulateNetworkConditions(bool* result) {
-  return Response::FallThrough();
+  *result = false;
+  return Response::OK();
 }
 
 Response NetworkHandler::EmulateNetworkConditions(bool offline,

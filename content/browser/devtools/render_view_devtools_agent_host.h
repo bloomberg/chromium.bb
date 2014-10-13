@@ -13,6 +13,7 @@
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
+#include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/power_handler.h"
 #include "content/common/content_export.h"
@@ -113,6 +114,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   RenderViewHostImpl* render_view_host_;
   scoped_ptr<devtools::dom::DOMHandler> dom_handler_;
   scoped_ptr<devtools::input::InputHandler> input_handler_;
+  scoped_ptr<devtools::network::NetworkHandler> network_handler_;
   scoped_ptr<devtools::page::PageHandler> page_handler_;
   scoped_ptr<devtools::power::PowerHandler> power_handler_;
   scoped_ptr<DevToolsProtocolHandlerImpl> handler_impl_;

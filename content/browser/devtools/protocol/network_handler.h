@@ -8,6 +8,9 @@
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 
 namespace content {
+
+class RenderViewHost;
+
 namespace devtools {
 namespace network {
 
@@ -17,6 +20,8 @@ class NetworkHandler {
 
   NetworkHandler();
   virtual ~NetworkHandler();
+
+  void SetRenderViewHost(RenderViewHost* host);
 
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
@@ -28,6 +33,8 @@ class NetworkHandler {
                                     double upload_throughput);
 
  private:
+  RenderViewHost* host_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };
 

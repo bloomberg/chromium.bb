@@ -111,6 +111,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
     : render_view_host_(NULL),
       dom_handler_(new devtools::dom::DOMHandler()),
       input_handler_(new devtools::input::InputHandler()),
+      network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(new devtools::page::PageHandler()),
       power_handler_(new devtools::power::PowerHandler()),
       handler_impl_(new DevToolsProtocolHandlerImpl()),
@@ -120,6 +121,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       reattaching_(false) {
   handler_impl_->SetDOMHandler(dom_handler_.get());
   handler_impl_->SetInputHandler(input_handler_.get());
+  handler_impl_->SetNetworkHandler(network_handler_.get());
   handler_impl_->SetPageHandler(page_handler_.get());
   handler_impl_->SetPowerHandler(power_handler_.get());
   SetRenderViewHost(rvh);
@@ -377,6 +379,7 @@ void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
   overrides_handler_->SetRenderViewHost(render_view_host_);
   dom_handler_->SetRenderViewHost(render_view_host_);
   input_handler_->SetRenderViewHost(render_view_host_);
+  network_handler_->SetRenderViewHost(render_view_host_);
   page_handler_->SetRenderViewHost(render_view_host_);
 
   registrar_.Add(
@@ -395,6 +398,7 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
   overrides_handler_->ClearRenderViewHost();
   dom_handler_->SetRenderViewHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
+  network_handler_->SetRenderViewHost(nullptr);
   page_handler_->SetRenderViewHost(nullptr);
 }
 

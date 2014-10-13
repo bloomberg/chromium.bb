@@ -65,21 +65,6 @@ namespace content {
 RendererOverridesHandler::RendererOverridesHandler()
     : weak_factory_(this) {
   RegisterCommandHandler(
-      devtools::Network::canEmulateNetworkConditions::kName,
-      base::Bind(
-          &RendererOverridesHandler::CanEmulateNetworkConditions,
-          base::Unretained(this)));
-  RegisterCommandHandler(
-      devtools::Network::clearBrowserCache::kName,
-      base::Bind(
-          &RendererOverridesHandler::ClearBrowserCache,
-          base::Unretained(this)));
-  RegisterCommandHandler(
-      devtools::Network::clearBrowserCookies::kName,
-      base::Bind(
-          &RendererOverridesHandler::ClearBrowserCookies,
-          base::Unretained(this)));
-  RegisterCommandHandler(
       devtools::Page::queryUsageAndQuota::kName,
       base::Bind(
           &RendererOverridesHandler::PageQueryUsageAndQuota,
@@ -99,31 +84,6 @@ void RendererOverridesHandler::SetRenderViewHost(
 void RendererOverridesHandler::ClearRenderViewHost() {
   host_ = NULL;
 }
-
-// Network agent handlers  ----------------------------------------------------
-
-scoped_refptr<DevToolsProtocol::Response>
-RendererOverridesHandler::CanEmulateNetworkConditions(
-    scoped_refptr<DevToolsProtocol::Command> command) {
-  base::DictionaryValue* result = new base::DictionaryValue();
-  result->SetBoolean(devtools::kResult, false);
-  return command->SuccessResponse(result);
-}
-
-scoped_refptr<DevToolsProtocol::Response>
-RendererOverridesHandler::ClearBrowserCache(
-    scoped_refptr<DevToolsProtocol::Command> command) {
-  GetContentClient()->browser()->ClearCache(host_);
-  return command->SuccessResponse(NULL);
-}
-
-scoped_refptr<DevToolsProtocol::Response>
-RendererOverridesHandler::ClearBrowserCookies(
-    scoped_refptr<DevToolsProtocol::Command> command) {
-  GetContentClient()->browser()->ClearCookies(host_);
-  return command->SuccessResponse(NULL);
-}
-
 
 // Quota and Usage ------------------------------------------
 
