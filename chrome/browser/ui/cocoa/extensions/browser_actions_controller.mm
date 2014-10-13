@@ -852,7 +852,7 @@ class ExtensionServiceObserverBridge
 #pragma mark -
 #pragma mark Testing Methods
 
-- (NSButton*)buttonWithIndex:(NSUInteger)index {
+- (BrowserActionButton*)buttonWithIndex:(NSUInteger)index {
   const extensions::ExtensionList& toolbar_items =
       toolbarModel_->toolbar_items();
   if (index < toolbar_items.size()) {

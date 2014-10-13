@@ -627,6 +627,8 @@
       'browser/ui/sync/profile_signin_confirmation_helper_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.h',
+      'browser/ui/toolbar/browser_actions_bar_browsertest.cc',
+      'browser/ui/toolbar/browser_actions_bar_browsertest.h',
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
       'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',

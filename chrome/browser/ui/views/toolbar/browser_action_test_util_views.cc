@@ -96,10 +96,22 @@ void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
       SetVisibleIconCount(icons);
 }
 
+// static
+void BrowserActionTestUtil::DisableAnimations() {
+  BrowserActionsContainer::disable_animations_during_testing_ = true;
+}
+
+// static
+void BrowserActionTestUtil::EnableAnimations() {
+  BrowserActionsContainer::disable_animations_during_testing_ = false;
+}
+
+// static
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
   return gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight);
 }
 
+// static
 gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
   return gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight);
 }

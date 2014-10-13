@@ -4,140 +4,31 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_testing_views.h"
+#include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "components/crx_file/id_util.h"
-#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
-#include "extensions/common/value_builder.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/view.h"
 
-using extensions::Extension;
-
-namespace {
-
-scoped_refptr<const Extension> CreateExtension(const std::string& name,
-                                               bool has_browser_action) {
-  extensions::DictionaryBuilder manifest;
-  manifest.Set("name", name).
-           Set("description", "an extension").
-           Set("manifest_version", 2).
-           Set("version", "1.0");
-  if (has_browser_action)
-    manifest.Set("browser_action", extensions::DictionaryBuilder().Pass());
-  return extensions::ExtensionBuilder().
-      SetManifest(manifest.Pass()).
-      SetID(crx_file::id_util::GenerateId(name)).
-      Build();
-}
-
-}  // namespace
-
-class BrowserActionsContainerTest : public ExtensionBrowserTest {
- public:
-  BrowserActionsContainerTest() {
-  }
-  virtual ~BrowserActionsContainerTest() {}
-
- protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
-    BrowserActionsContainer::disable_animations_during_testing_ = true;
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  virtual void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
-    browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
-  }
-
-  virtual void TearDownOnMainThread() override {
-    BrowserActionsContainer::disable_animations_during_testing_ = false;
-    ExtensionBrowserTest::TearDownOnMainThread();
-  }
-
-  BrowserActionTestUtil* browser_actions_bar() {
-    return browser_actions_bar_.get();
-  }
-
-  // Creates three different extensions, each with a browser action, and adds
-  // them to associated ExtensionService. These can then be accessed via
-  // extension_[a|b|c]().
-  void LoadExtensions();
-
-  const Extension* extension_a() const { return extension_a_.get(); }
-  const Extension* extension_b() const { return extension_b_.get(); }
-  const Extension* extension_c() const { return extension_c_.get(); }
-
- private:
-  scoped_ptr<BrowserActionTestUtil> browser_actions_bar_;
-
-  // Extensions with browser actions used for testing.
-  scoped_refptr<const Extension> extension_a_;
-  scoped_refptr<const Extension> extension_b_;
-  scoped_refptr<const Extension> extension_c_;
-};
-
-void BrowserActionsContainerTest::LoadExtensions() {
-  // Create three extensions with browser actions.
-  extension_a_ = CreateExtension("alpha", true);
-  extension_b_ = CreateExtension("beta", true);
-  extension_c_ = CreateExtension("gamma", true);
-
-  const Extension* extensions[] =
-      { extension_a(), extension_b(), extension_c() };
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile());
-  // Add each, and verify that it is both correctly added to the extension
-  // registry and to the browser actions container.
-  for (size_t i = 0; i < arraysize(extensions); ++i) {
-    extension_service()->AddExtension(extensions[i]);
-    EXPECT_TRUE(registry->enabled_extensions().GetByID(extensions[i]->id())) <<
-        extensions[i]->name();
-    EXPECT_EQ(static_cast<int>(i + 1),
-              browser_actions_bar_->NumberOfBrowserActions());
-    EXPECT_TRUE(browser_actions_bar_->HasIcon(i));
-    EXPECT_EQ(static_cast<int>(i + 1),
-              browser_actions_bar()->VisibleBrowserActions());
-  }
-}
-
-// Test the basic functionality.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
-  // Load an extension with no browser action.
-  extension_service()->AddExtension(CreateExtension("alpha", false).get());
-  // This extension should not be in the model (has no browser action).
-  EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
-
-  // Load an extension with a browser action.
-  extension_service()->AddExtension(CreateExtension("beta", true).get());
-  EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
-
-  // Unload the extension.
-  std::string id = browser_actions_bar()->GetExtensionId(0);
-  UnloadExtension(id);
-  EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
-}
+// TODO(devlin): Continue moving any tests that should be platform independent
+// from this file to the crossplatform tests in
+// chrome/browser/ui/toolbar/browser_actions_bar_browsertest.cc.
 
 // Test moving various browser actions. This is not to check the logic of the
 // move (that's in the toolbar model tests), but just to check our ui.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MoveBrowserActions) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
   LoadExtensions();
 
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
@@ -174,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MoveBrowserActions) {
 // Test that dragging browser actions works, and that dragging a browser action
 // from the overflow menu results in it "popping" out (growing the container
 // size by 1), rather than just reordering the extensions.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DragBrowserActions) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   LoadExtensions();
 
   // Sanity check: All extensions showing; order is A B C.
@@ -270,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DragBrowserActions) {
   // mock up the BrowserActionOverflowMenuController.
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   LoadExtensions();
 
   // Change container to show only one action, rest in overflow: A, [B, C].
@@ -370,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
 
 // Test that changes performed in one container affect containers in other
 // windows so that it is consistent.
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MultipleWindows) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   LoadExtensions();
   BrowserActionsContainer* first =
       BrowserView::GetBrowserViewForBrowser(browser())->toolbar()->
@@ -425,25 +316,26 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MultipleWindows) {
   EXPECT_EQ(2u, second->VisibleBrowserActions());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
-  // Load extension A (with a browser action).
-  extension_service()->AddExtension(CreateExtension("alpha", true).get());
-  EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
-  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  std::string idA = browser_actions_bar()->GetExtensionId(0);
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, ForceHide) {
+  LoadExtensions();
 
-  // Force hide this browser action.
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+  // Force hide one of the extensions' browser action.
   extensions::ExtensionActionAPI::SetBrowserActionVisibility(
-      extensions::ExtensionPrefs::Get(browser()->profile()), idA, false);
-  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+      extensions::ExtensionPrefs::Get(browser()->profile()),
+      extension_a()->id(),
+      false);
+  // The browser action for Extension A should be removed.
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
 }
 
 // Test that the BrowserActionsContainer responds correctly when the underlying
 // model enters highlight mode, and that browser actions are undraggable in
 // highlight mode. (Highlight mode itself it tested more thoroughly in the
 // ExtensionToolbarModel browsertests).
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, HighlightMode) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   LoadExtensions();
 
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
@@ -486,7 +378,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, HighlightMode) {
 }
 
 // Test the behavior of the overflow container for Extension Actions.
-class BrowserActionsContainerOverflowTest : public BrowserActionsContainerTest {
+class BrowserActionsContainerOverflowTest
+    : public BrowserActionsBarBrowserTest {
  public:
   BrowserActionsContainerOverflowTest() : main_bar_(NULL), model_(NULL) {
   }
@@ -532,14 +425,14 @@ class BrowserActionsContainerOverflowTest : public BrowserActionsContainerTest {
 
 void BrowserActionsContainerOverflowTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  BrowserActionsContainerTest::SetUpCommandLine(command_line);
+  BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
   enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::extension_action_redesign(),
       true));
 }
 
 void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
-  BrowserActionsContainerTest::SetUpOnMainThread();
+  BrowserActionsBarBrowserTest::SetUpOnMainThread();
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
   overflow_bar_.reset(new BrowserActionsContainer(browser(), NULL, main_bar_));
@@ -550,7 +443,7 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
 void BrowserActionsContainerOverflowTest::TearDownOnMainThread() {
   overflow_bar_.reset();
   enable_redesign_.reset();
-  BrowserActionsContainerTest::TearDownOnMainThread();
+  BrowserActionsBarBrowserTest::TearDownOnMainThread();
 }
 
 bool BrowserActionsContainerOverflowTest::ViewOrdersMatch() {

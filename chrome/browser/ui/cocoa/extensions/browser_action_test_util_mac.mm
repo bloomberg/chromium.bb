@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -26,7 +27,7 @@ BrowserActionsController* GetController(Browser* browser) {
            browserActionsController];
 }
 
-NSButton* GetButton(Browser* browser, int index) {
+BrowserActionButton* GetButton(Browser* browser, int index) {
   return [GetController(browser) buttonWithIndex:index];
 }
 
@@ -34,6 +35,10 @@ NSButton* GetButton(Browser* browser, int index) {
 
 int BrowserActionTestUtil::NumberOfBrowserActions() {
   return [GetController(browser_) buttonCount];
+}
+
+int BrowserActionTestUtil::VisibleBrowserActions() {
+  return [GetController(browser_) visibleButtonCount];
 }
 
 ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
@@ -63,6 +68,10 @@ void BrowserActionTestUtil::Press(int index) {
   [button performClick:nil];
 }
 
+std::string BrowserActionTestUtil::GetExtensionId(int index) {
+  return [GetButton(browser_, index) extension]->id();
+}
+
 std::string BrowserActionTestUtil::GetTooltip(int index) {
   NSString* tooltip = [GetButton(browser_, index) toolTip];
   return base::SysNSStringToUTF8(tooltip);
@@ -90,10 +99,20 @@ bool BrowserActionTestUtil::HidePopup() {
   return !HasPopup();
 }
 
+// static
+void BrowserActionTestUtil::DisableAnimations() {
+}
+
+// static
+void BrowserActionTestUtil::EnableAnimations() {
+}
+
+// static
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {
   return gfx::Size(NSSizeToCGSize([ExtensionPopupController minPopupSize]));
 }
 
+// static
 gfx::Size BrowserActionTestUtil::GetMaxPopupSize() {
   return gfx::Size(NSSizeToCGSize([ExtensionPopupController maxPopupSize]));
 }

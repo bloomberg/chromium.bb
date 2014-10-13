@@ -66,6 +66,12 @@ class BrowserActionTestUtil {
   // Set how many icons should be visible.
   void SetIconVisibilityCount(size_t icons);
 
+  // Disables animation.
+  static void DisableAnimations();
+
+  // Enables animation.
+  static void EnableAnimations();
+
   // Returns the minimum allowed size of an extension popup.
   static gfx::Size GetMinPopupSize();
 
