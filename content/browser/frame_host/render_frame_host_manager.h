@@ -44,8 +44,53 @@ class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
 
-// Manages RenderFrameHosts for a FrameTreeNode.  This class acts as a state
-// machine to make cross-process navigations in a frame possible.
+// Manages RenderFrameHosts for a FrameTreeNode. It maintains a
+// current_frame_host() which is the content currently visible to the user. When
+// a frame is told to navigate to a different web site (as determined by
+// SiteInstance), it will replace its current RenderFrameHost with a new
+// RenderFrameHost dedicated to the new SiteInstance, possibly in a new process.
+//
+// Cross-process navigation works like this:
+//
+// - RFHM::Navigate determines whether the destination is cross-site, and if so,
+//   it creates a pending_render_frame_host_.
+//
+// - The pending RFH is created in the "navigations suspended" state, meaning no
+//   navigation messages are sent to its renderer until the beforeunload handler
+//   has a chance to run in the current RFH.
+//
+// - The current RFH runs its beforeunload handler. If it returns false, we
+//   cancel all the pending logic. Otherwise we allow the pending RFH to send
+//   the navigation request to its renderer.
+//
+// - ResourceDispatcherHost receives a ResourceRequest on the IO thread for the
+//   main resource load from the pending RFH. It creates a
+//   CrossSiteResourceHandler to check whether a process transfer is needed when
+//   the request is ready to commit.
+//
+// - When RDH receives a response, the BufferedResourceHandler determines
+//   whether it is a navigation type that doesn't commit (e.g. download, 204 or
+//   error page). If so, it sends a message to the new renderer causing it to
+//   cancel the request, and the request (e.g. the download) proceeds. In this
+//   case, the pending RFH will never become the current RFH, but it remains
+//   until the next DidNavigate event for this WebContentsImpl.
+//
+// - After RDH receives a response and determines that it is safe and not a
+//   download, the CrossSiteResourceHandler checks whether a transfer for a
+//   redirect is needed. If so, it pauses the network response and starts an
+//   identical navigation in a new pending RFH. When the identical request is
+//   later received by RDH, the response is transferred and unpaused.
+//
+// - Otherwise, the network response commits in the pending RFH's renderer,
+//   which sends a DidCommitProvisionalLoad message back to the browser process.
+//
+// - RFHM::CommitPending makes visible the new RFH, and initiates the unload
+//   handler in the old RFH. The unload handler will complete in the background.
+//
+// - RenderFrameHostManager may keep the previous RFH alive as a
+//   RenderFrameProxyHost, to be used (for example) if the user goes back. The
+//   process only stays live if another tab is using it, but if so, the existing
+//   frame relationships will be maintained.
 class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
  public:
   // Functions implemented by our owner that we need.

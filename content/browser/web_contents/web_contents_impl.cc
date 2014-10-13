@@ -115,57 +115,6 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-// Cross-Site Navigations
-//
-// If a WebContentsImpl is told to navigate to a different web site (as
-// determined by SiteInstance), it will replace its current RenderViewHost with
-// a new RenderViewHost dedicated to the new SiteInstance.  This works as
-// follows:
-//
-// - RVHM::Navigate determines whether the destination is cross-site, and if so,
-//   it creates a pending_render_view_host_.
-// - The pending RVH is "suspended," so that no navigation messages are sent to
-//   its renderer until the beforeunload JavaScript handler has a chance to
-//   run in the current RVH.
-// - The pending RVH tells CrossSiteRequestManager (a thread-safe singleton)
-//   that it has a pending cross-site request.  We will check this on the IO
-//   thread when deciding how to handle the response.
-// - The current RVH runs its beforeunload handler.  If it returns false, we
-//   cancel all the pending logic.  Otherwise we allow the pending RVH to send
-//   the navigation request to its renderer.
-// - ResourceDispatcherHost receives a ResourceRequest on the IO thread for the
-//   main resource load on the pending RVH.  It creates a
-//   CrossSiteResourceHandler to check whether a process swap is needed when
-//   the request is ready to commit.
-// - When RDH receives a response, the BufferedResourceHandler determines
-//   whether it is a download.  If so, it sends a message to the new renderer
-//   causing it to cancel the request, and the download proceeds. For now, the
-//   pending RVH remains until the next DidNavigate event for this
-//   WebContentsImpl. This isn't ideal, but it doesn't affect any functionality.
-// - After RDH receives a response and determines that it is safe and not a
-//   download, the CrossSiteResourceHandler checks whether a process swap is
-//   needed (either because CrossSiteRequestManager has state for it or because
-//   a transfer was needed for a redirect).
-// - If so, CrossSiteResourceHandler pauses the response to first run the old
-//   page's unload handler.  It does this by asynchronously calling the
-//   OnCrossSiteResponse method of RenderFrameHostManager on the UI thread,
-//   which sends a SwapOut message to the current RVH.
-// - Once the unload handler is finished, RVHM::SwappedOut checks if a transfer
-//   to a new process is needed, based on the stored pending_nav_params_.  (This
-//   is independent of whether we started out with a cross-process navigation.)
-//   - If not, it just tells the ResourceDispatcherHost to resume the response
-//     to its current RenderViewHost.
-//   - If so, it cancels the current pending RenderViewHost and sets up a new
-//     navigation using RequestTransferURL.  When the transferred request
-//     arrives in the ResourceDispatcherHost, we transfer the response and
-//     resume it.
-// - The pending renderer sends a FrameNavigate message that invokes the
-//   DidNavigate method.  This replaces the current RVH with the
-//   pending RVH.
-// - The previous renderer is kept swapped out in RenderFrameHostManager in case
-//   the user goes back.  The process only stays live if another tab is using
-//   it, but if so, the existing frame relationships will be maintained.
-
 namespace content {
 namespace {
 
