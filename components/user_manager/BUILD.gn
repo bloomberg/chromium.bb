@@ -13,6 +13,17 @@ component("user_manager") {
     "user_manager_export.h",
   ]
 
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/gfx",
+    "//url",
+  ]
+
+  defines = [
+    "USER_MANAGER_IMPLEMENTATION",
+  ]
+
   if (is_chromeos) {
     sources += [
       "remove_user_delegate.h",
@@ -28,16 +39,6 @@ component("user_manager") {
       "user_manager_base.h",
       "user_type.h",
     ]
+    deps += [ "//ui/chromeos/strings" ]
   }
-
-  defines = [
-    "USER_MANAGER_IMPLEMENTATION",
-  ]
-
-  deps = [
-    "//base",
-    "//skia",
-    "//ui/gfx",
-    "//url",
-  ]
 }
