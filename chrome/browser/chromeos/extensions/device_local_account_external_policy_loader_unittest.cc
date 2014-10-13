@@ -178,10 +178,17 @@ void DeviceLocalAccountExternalPolicyLoaderTest::SetForceInstallListPolicy() {
   store_.NotifyStoreLoaded();
 }
 
+#if defined(OS_CHROMEOS)
+// crbug.com/422884
+#define MAYBE_CacheNotStarted DISABLED_CacheNotStarted
+#else
+#define MAYBE_CacheNotStarted CacheNotStarted
+#endif
+
 // Verifies that when the cache is not explicitly started, the loader does not
 // serve any extensions, even if the force-install list policy is set or a load
 // is manually requested.
-TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, CacheNotStarted) {
+TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, MAYBE_CacheNotStarted) {
   // Set the force-install list policy.
   SetForceInstallListPolicy();
 
