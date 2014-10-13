@@ -115,8 +115,6 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas,
 
 void BrowserActionView::GetAccessibleState(ui::AXViewState* state) {
   views::MenuButton::GetAccessibleState(state);
-  state->name = l10n_util::GetStringUTF16(
-      IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
   state->role = ui::AX_ROLE_BUTTON;
 }
 
