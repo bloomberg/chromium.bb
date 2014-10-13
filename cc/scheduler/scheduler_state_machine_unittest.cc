@@ -10,7 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define EXPECT_ACTION_UPDATE_STATE(action)                                   \
-  EXPECT_EQ(action, state.NextAction()) << state.AsValue()->ToString();      \
+  EXPECT_STREQ(SchedulerStateMachine::ActionToString(action),                \
+               SchedulerStateMachine::ActionToString(state.NextAction()))    \
+      << state.AsValue()->ToString();                                        \
   if (action == SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE ||   \
       action == SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED) {        \
     EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE, \
