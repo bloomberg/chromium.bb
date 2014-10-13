@@ -23,7 +23,7 @@
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
 
-include chardefsin.cti All character definition opcodes
+include chardefs.cti All character definition opcodes
 # Braille indicators
 numsign 3456  number sign, just a dots operand
 capsign 6
@@ -42,7 +42,7 @@ begcomp 456-346
 endcomp 456-156
 
 # literary forms of the decimal digits
-include litdigits6Dotsin.uti
+include litdigits6Dots.uti
 
 # Letters are defined in chardefs.cti
 

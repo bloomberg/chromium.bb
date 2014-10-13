@@ -25,7 +25,7 @@
 
 # Vowels
  
-include braille-patternsin.cti 
+include braille-patterns.cti 
     
 letter   \x0A81	3	# GUJARATI SIGN CHANDRABINDU
 letter   \x0A82	56	# GUJARATI SIGN ANUSVARA

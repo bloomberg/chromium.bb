@@ -114,6 +114,7 @@ AM_CONDITIONAL([HAVE_UCS4], [test x$enable_ucs4 = xyes])
 case $host in
   *mingw* | *cygwin*)
     CFLAGS="$CFLAGS -Wl,--add-stdcall-alias"
+    LDFLAGS="$LDFLAGS -avoid-version"
   ;;
 esac
 

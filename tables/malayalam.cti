@@ -23,7 +23,7 @@
 # Last updated on May 5, 2014
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
-include braille-patternsin.cti
+include braille-patterns.cti
 letter	\x0D02	56	# MALAYALAM SIGN ANUSVARA
 letter	\x0D03	6	# MALAYALAM SIGN VISARGA
 letter	\x0D05	1	# MALAYALAM LETTER A

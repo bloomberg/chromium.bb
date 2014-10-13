@@ -13,12 +13,10 @@ table_files = \
 	bo.ctb \
 	boxes.ctb \
 	braille-patterns.cti \
-	braille-patternsin.cti \
 	br-in-g1.utb \
 	ca-chardefs.cti \
 	ca-g1.ctb \
 	chardefs.cti \
-	chardefsin.cti \
 	chr-us-g1.ctb \
 	ckb-chardefs.cti \
 	ckb-g1.ctb \
@@ -162,11 +160,8 @@ table_files = \
 	kru.ctb \
 	ks-in-g1.utb \
 	latinLetterDef6Dots.uti \
-	latinLetterDef8Dotsin.uti \
 	latinLetterDef8Dots.uti \
-	litdigits6Dotsin.uti \
 	litdigits6Dots.uti \
-	loweredDigits6Dotsin.uti \
 	loweredDigits6Dots.uti \
 	loweredDigits8Dots.uti \
 	lt.ctb \
