@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("inspected", testEmulateKeypress);
+
+    function testEmulateKeypress()
+    {
+        var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-size");
+        treeElement.startEditing(treeElement.valueElement);
+        var selection = window.getSelection();
+        var range = selection.getRangeAt(0);
+        var newRange = document.createRange();
+        newRange.setStart(range.startContainer, 1);
+        newRange.setEnd(range.startContainer, 1);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        // Use eventSender to emit "input" event.
+        eventSender.keyDown("1");
+        InspectorTest.waitForStyleApplied(onStyleApplied);
+    }
+
+    function onStyleApplied()
+    {
+        InspectorTest.nodeWithId("inspected", onNodeFound);
+    }
+
+    function onNodeFound(node)
+    {
+        WebInspector.cssModel.getInlineStylesAsync(node.id, onInlineStyle);
+    }
+
+    function onInlineStyle(inlineStyle)
+    {
+        if (!inlineStyle) {
+            InspectorTest.addResult("Failed to get inline styles.").
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.addResult("font-size: " + inlineStyle.getPropertyValue("font-size"));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that property value editing triggers style update in rendering engine.
+</p>
+
+<div id="inspected" style="font-size: 19px"></div>
+
+</body>
+</html>
