@@ -191,6 +191,9 @@
 #define GL_STENCIL_EXT                                   0x1802
 #endif
 
+// GL_EXT_sRGB
+#define GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT     0x8210
+
 // GL_ARB_get_program_binary
 #define PROGRAM_BINARY_RETRIEVABLE_HINT                  0x8257
 // GL_OES_get_program_binary

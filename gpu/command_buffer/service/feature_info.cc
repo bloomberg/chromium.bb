@@ -393,6 +393,20 @@ void FeatureInfo::InitializeFeatures() {
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
   }
 
+  if (is_es3 || extensions.Contains("GL_EXT_sRGB") ||
+      gfx::HasDesktopGLFeatures()) {
+    AddExtensionString("GL_EXT_sRGB");
+    texture_format_validators_[GL_SRGB_EXT].AddValue(GL_UNSIGNED_BYTE);
+    texture_format_validators_[GL_SRGB_ALPHA_EXT].AddValue(GL_UNSIGNED_BYTE);
+    validators_.texture_internal_format.AddValue(GL_SRGB_EXT);
+    validators_.texture_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
+    validators_.texture_format.AddValue(GL_SRGB_EXT);
+    validators_.texture_format.AddValue(GL_SRGB_ALPHA_EXT);
+    validators_.render_buffer_format.AddValue(GL_SRGB8_ALPHA8_EXT);
+    validators_.frame_buffer_parameter.AddValue(
+        GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT);
+  }
+
   bool enable_texture_format_bgra8888 = false;
   bool enable_read_format_bgra = false;
   bool enable_render_buffer_bgra = false;

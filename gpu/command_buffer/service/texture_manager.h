@@ -814,6 +814,8 @@ class GPU_EXPORT TextureManager {
   void UpdateNumImages(int delta);
   void IncFramebufferStateChangeCount();
 
+  GLenum AdjustTexFormat(GLenum format) const;
+
   MemoryTypeTracker* GetMemTracker(GLenum texture_pool);
   scoped_ptr<MemoryTypeTracker> memory_tracker_managed_;
   scoped_ptr<MemoryTypeTracker> memory_tracker_unmanaged_;

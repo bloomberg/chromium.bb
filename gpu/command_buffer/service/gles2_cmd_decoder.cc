@@ -10089,6 +10089,8 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
       return GL_LUMINANCE_ALPHA;
     case GL_BGRA8_EXT:
       return GL_BGRA_EXT;
+    case GL_SRGB8_ALPHA8_EXT:
+      return GL_SRGB_ALPHA_EXT;
     default:
       return GL_NONE;
   }

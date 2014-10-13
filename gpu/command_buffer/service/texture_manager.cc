@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gpu {
 namespace gles2 {
@@ -1640,6 +1641,18 @@ void TextureManager::ValidateAndDoTexImage2D(
                texture_ref, args);
 }
 
+GLenum TextureManager::AdjustTexFormat(GLenum format) const {
+  // TODO: GLES 3 allows for internal format and format to differ. This logic
+  // may need to change as a result.
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+    if (format == GL_SRGB_EXT)
+      return GL_RGB;
+    if (format == GL_SRGB_ALPHA_EXT)
+      return GL_RGBA;
+  }
+  return format;
+}
+
 void TextureManager::DoTexImage2D(
     DecoderTextureState* texture_state,
     ErrorState* error_state,
@@ -1676,7 +1689,7 @@ void TextureManager::DoTexImage2D(
     {
       ScopedTextureUploadTimer timer(texture_state);
       glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
-                      args.format, args.type, args.pixels);
+                      AdjustTexFormat(args.format), args.type, args.pixels);
     }
     SetLevelCleared(texture_ref, args.target, args.level, true);
     texture_state->tex_image_2d_failed = false;
@@ -1688,7 +1701,7 @@ void TextureManager::DoTexImage2D(
     ScopedTextureUploadTimer timer(texture_state);
     glTexImage2D(
         args.target, args.level, args.internal_format, args.width, args.height,
-        args.border, args.format, args.type, args.pixels);
+        args.border, AdjustTexFormat(args.format), args.type, args.pixels);
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, "glTexImage2D");
   if (error == GL_NO_ERROR) {
