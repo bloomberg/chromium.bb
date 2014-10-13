@@ -9,7 +9,7 @@ PASS allowsBreakBefore(35) is true
 PASS allowsBreakBefore(36) is true
 PASS allowsBreakBefore(37) is true
 PASS allowsBreakBefore(38) is true
-PASS allowsBreakBefore(39) is false
+FAIL allowsBreakBefore(39) should be false. Was true.
 PASS allowsBreakBefore(40) is true
 PASS allowsBreakBefore(41) is false
 PASS allowsBreakBefore(42) is true

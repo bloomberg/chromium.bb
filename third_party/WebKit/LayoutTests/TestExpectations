@@ -1444,12 +1444,6 @@ crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pix
 
 crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure ]
 
-# Test case needs to be updated after https://codereview.chromium.org/593673003/
-crbug.com/416425 fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
-crbug.com/416425 [ Mac Win ] virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
-crbug.com/416425 svg/text/text-overflow-ellipsis-svgfont.html [ NeedsRebaseline ]
-crbug.com/416425 [ Mac ] fast/text/line-break-after-question-mark.html [ NeedsRebaseline ]
-
 # Updating Javascript spec.
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebaseline ]
