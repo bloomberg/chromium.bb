@@ -589,7 +589,7 @@ float StyleBuilderConverter::convertPerspective(StyleResolverState& state, CSSVa
 
     // CSSPropertyWebkitPerspective accepts unitless numbers.
     if (primitiveValue->isNumber()) {
-        RefPtr<CSSPrimitiveValue> px = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> px = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX);
         return convertPerspectiveLength(state, px.get());
     }
 
