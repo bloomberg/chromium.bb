@@ -579,14 +579,12 @@ void AppListService::InitAll(Profile* initial_profile) {
     [animation_ setAnimationCurve:NSAnimationEaseOut];
     window_.reset();
   }
-  // Threaded animations are buggy on Snow Leopard. See http://crbug.com/335550.
-  // Note that in the non-threaded case, the animation won't start unless the
-  // UI runloop has spun up, so on <= Lion the animation will only animate if
-  // Chrome is already running.
-  if (base::mac::IsOSMountainLionOrLater())
-    [animation_ setAnimationBlockingMode:NSAnimationNonblockingThreaded];
-  else
-    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
+  // This once used a threaded animation, but AppKit would too often ignore
+  // -[NSView canDrawConcurrently:] and just redraw whole view hierarchies on
+  // the animation thread anyway, creating a minefield of race conditions.
+  // Non-threaded means the animation isn't as smooth and doesn't begin unless
+  // the UI runloop has spun up (after profile loading).
+  [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
   [animation_ startAnimation];
 }

@@ -402,15 +402,6 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
       [self delegate]);
 }
 
-- (BOOL)canDraw {
-  // AppKit doesn't call -[NSView canDrawConcurrently] which would have told it
-  // that this is unsafe. Returning true from canDraw only if there is a message
-  // loop ensures that no drawing occurs on a background thread. Without this,
-  // ImageSkia can assert when trying to get bitmaps. http://crbug.com/417148.
-  // This means unit tests will always return 'NO', but that's OK.
-  return !!base::MessageLoop::current() && [super canDraw];
-}
-
 - (void)mouseDown:(NSEvent*)theEvent {
   [[self controller] mouseDown:theEvent];
   [super mouseDown:theEvent];
