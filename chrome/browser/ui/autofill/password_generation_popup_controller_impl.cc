@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/autofill/password_generation_popup_observer.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_view.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -214,12 +214,9 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 }
 
 void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(controller_common_.web_contents());
-  content::OpenURLParams params(
-      GURL(chrome::kPasswordManagerAccountDashboardURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
+  chrome::ShowSettingsSubPage(
+      chrome::FindBrowserWithWebContents(controller_common_.web_contents()),
+      chrome::kPasswordManagerSubPage);
 }
 
 void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(
