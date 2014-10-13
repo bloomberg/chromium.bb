@@ -9,18 +9,20 @@
 namespace mojo {
 namespace system {
 
-STATIC_CONST_MEMBER_DEFINITION const uint32_t
-    ChannelEndpointId::kRemotelyAllocatedFlag;
-STATIC_CONST_MEMBER_DEFINITION const uint32_t
-    ChannelEndpointId::kLocallyAllocatedMask;
+STATIC_CONST_MEMBER_DEFINITION const uint32_t ChannelEndpointId::kRemoteFlag;
 
 ChannelEndpointId LocalChannelEndpointIdGenerator::GetNext() {
-  ChannelEndpointId rv = next_channel_endpoint_id_;
-  next_channel_endpoint_id_.value_ = (next_channel_endpoint_id_.value_ + 1) &
-                                     ChannelEndpointId::kLocallyAllocatedMask;
+  ChannelEndpointId rv = next_;
+  next_.value_ = (next_.value_ + 1) & ~ChannelEndpointId::kRemoteFlag;
   // Skip over the invalid value, in case we wrap.
-  if (!next_channel_endpoint_id_.is_valid())
-    next_channel_endpoint_id_.value_++;
+  if (!next_.is_valid())
+    next_.value_++;
+  return rv;
+}
+
+ChannelEndpointId RemoteChannelEndpointIdGenerator::GetNext() {
+  ChannelEndpointId rv = next_;
+  next_.value_ = (next_.value_ + 1) | ChannelEndpointId::kRemoteFlag;
   return rv;
 }
 

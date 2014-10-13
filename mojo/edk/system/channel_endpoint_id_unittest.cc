@@ -30,8 +30,8 @@ TEST(ChannelEndpointIdTest, Basic) {
   EXPECT_FALSE(invalid.is_valid());
   EXPECT_TRUE(bootstrap.is_valid());
 
-  EXPECT_FALSE(invalid.is_remotely_allocated());
-  EXPECT_FALSE(bootstrap.is_remotely_allocated());
+  EXPECT_FALSE(invalid.is_remote());
+  EXPECT_FALSE(bootstrap.is_remote());
 
   // Test assignment.
   ChannelEndpointId copy;
@@ -70,11 +70,13 @@ TEST(LocalChannelEndpointIdGeneratorTest, Basic) {
 
   id1 = gen.GetNext();
   EXPECT_TRUE(id1.is_valid());
+  EXPECT_FALSE(id1.is_remote());
 
-  EXPECT_EQ(id1, ChannelEndpointId::GetBootstrap());
+  EXPECT_EQ(ChannelEndpointId::GetBootstrap().value(), id1.value());
 
   ChannelEndpointId id2 = gen.GetNext();
   EXPECT_TRUE(id2.is_valid());
+  EXPECT_FALSE(id2.is_remote());
   // Technically, nonequality here is an implementation detail, since, e.g.,
   // random generation of IDs would be a valid implementation.
   EXPECT_NE(id2, id1);
@@ -82,25 +84,71 @@ TEST(LocalChannelEndpointIdGeneratorTest, Basic) {
   EXPECT_EQ(2u, id2.value());
 }
 
+// Note: LocalChannelEndpointIdGeneratorTest.WrapAround is defined further
+// below, outside the anonymous namespace.
+
+TEST(RemoteChannelEndpointIdGeneratorTest, Basic) {
+  RemoteChannelEndpointIdGenerator gen;
+
+  ChannelEndpointId id1;
+  EXPECT_FALSE(id1.is_valid());  // Check sanity.
+
+  id1 = gen.GetNext();
+  EXPECT_TRUE(id1.is_valid());
+  EXPECT_TRUE(id1.is_remote());
+
+  // This tests an implementation detail.
+  EXPECT_EQ(ChannelEndpointId::kRemoteFlag, id1.value());
+
+  ChannelEndpointId id2 = gen.GetNext();
+  EXPECT_TRUE(id2.is_valid());
+  EXPECT_TRUE(id2.is_remote());
+  // Technically, nonequality here is an implementation detail, since, e.g.,
+  // random generation of IDs would be a valid implementation.
+  EXPECT_NE(id2, id1);
+  // ... but right now we just increment to generate IDs.
+  EXPECT_EQ(ChannelEndpointId::kRemoteFlag + 1, id2.value());
+}
+
+// Note: RemoteChannelEndpointIdGeneratorTest.WrapAround is defined further
+// below, outside the anonymous namespace.
+
 }  // namespace
 
-// Tests that the generator handles wrap-around correctly. (This tests
-// implementation details.) This test isn't in an anonymous namespace, since
-// it needs to be friended.
+// Tests that |LocalChannelEndpointIdGenerator| handles wrap-around correctly.
+// (This tests implementation details.) This test isn't in an anonymous
+// namespace, since it needs to be friended.
 TEST(LocalChannelEndpointIdGeneratorTest, WrapAround) {
   LocalChannelEndpointIdGenerator gen;
-  gen.next_channel_endpoint_id_.value_ =
-      ChannelEndpointId::kRemotelyAllocatedFlag - 1;
+  gen.next_ = ChannelEndpointId(ChannelEndpointId::kRemoteFlag - 1);
 
   ChannelEndpointId id = gen.GetNext();
   EXPECT_TRUE(id.is_valid());
-  EXPECT_FALSE(id.is_remotely_allocated());
-  EXPECT_EQ(ChannelEndpointId::kRemotelyAllocatedFlag - 1, id.value());
+  EXPECT_FALSE(id.is_remote());
+  EXPECT_EQ(ChannelEndpointId::kRemoteFlag - 1, id.value());
 
   id = gen.GetNext();
   EXPECT_TRUE(id.is_valid());
-  EXPECT_FALSE(id.is_remotely_allocated());
+  EXPECT_FALSE(id.is_remote());
   EXPECT_EQ(1u, id.value());
+}
+
+// Tests that |RemoteChannelEndpointIdGenerator| handles wrap-around correctly.
+// (This tests implementation details.) This test isn't in an anonymous
+// namespace, since it needs to be friended.
+TEST(RemoteChannelEndpointIdGeneratorTest, WrapAround) {
+  RemoteChannelEndpointIdGenerator gen;
+  gen.next_ = ChannelEndpointId(~0u);
+
+  ChannelEndpointId id = gen.GetNext();
+  EXPECT_TRUE(id.is_valid());
+  EXPECT_TRUE(id.is_remote());
+  EXPECT_EQ(~0u, id.value());
+
+  id = gen.GetNext();
+  EXPECT_TRUE(id.is_valid());
+  EXPECT_TRUE(id.is_remote());
+  EXPECT_EQ(ChannelEndpointId::kRemoteFlag, id.value());
 }
 
 }  // namespace system
