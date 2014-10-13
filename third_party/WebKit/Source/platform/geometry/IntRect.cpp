@@ -35,8 +35,8 @@
 namespace blink {
 
 IntRect::IntRect(const FloatRect& r)
-    : m_location(clampToInteger(r.x()), clampToInteger(r.y()))
-    , m_size(clampToInteger(r.width()), clampToInteger(r.height()))
+    : m_location(clampTo<int>(r.x()), clampTo<int>(r.y()))
+    , m_size(clampTo<int>(r.width()), clampTo<int>(r.height()))
 {
 }
 

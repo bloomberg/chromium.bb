@@ -301,7 +301,7 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
                 double val = firstValue->getDoubleValue();
                 if (val < 0)
                     return false;
-                p = clampToPositiveInteger(val);
+                p = clampTo<int>(val, 0);
             }
 
             operations.operations().append(PerspectiveTransformOperation::create(p));

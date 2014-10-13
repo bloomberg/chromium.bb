@@ -795,7 +795,7 @@ double parseDateFromNullTerminatedCharacters(const char* dateString)
     if (!haveTZ) {
         double utcOffset = calculateUTCOffset();
         double dstOffset = calculateDSTOffset(ms, utcOffset);
-        offset = (utcOffset + dstOffset) / msPerMinute;
+        offset = static_cast<int>((utcOffset + dstOffset) / msPerMinute);
     }
     return ms - (offset * msPerMinute);
 }

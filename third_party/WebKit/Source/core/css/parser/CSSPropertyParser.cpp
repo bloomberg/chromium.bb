@@ -3002,7 +3002,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
         CSSParserValue* v = args->current();
         if (!validUnit(v, FInteger))
             return nullptr;
-        numSteps = clampToInteger(v->fValue);
+        numSteps = clampTo<int>(v->fValue);
         if (numSteps < 1)
             return nullptr;
 
@@ -5551,8 +5551,8 @@ bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
     if (!flexBasis)
         flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PERCENTAGE);
 
-    addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampToFloat(flexGrow), CSSPrimitiveValue::CSS_NUMBER), important);
-    addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampToFloat(flexShrink), CSSPrimitiveValue::CSS_NUMBER), important);
+    addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampTo<float>(flexGrow), CSSPrimitiveValue::CSS_NUMBER), important);
+    addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampTo<float>(flexShrink), CSSPrimitiveValue::CSS_NUMBER), important);
     addProperty(CSSPropertyFlexBasis, flexBasis, important);
     return true;
 }
@@ -6158,7 +6158,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValu
         val = m_valueList->current();
         int i = defaultValue;
         if (val && validUnit(val, FInteger)) {
-            i = clampToInteger(val->fValue);
+            i = clampTo<int>(val->fValue);
             m_valueList->next();
         }
 
@@ -7550,7 +7550,7 @@ bool CSSPropertyParser::parseFontFeatureTag(CSSValueList* settings)
     value = m_valueList->next();
     if (value) {
         if (value->unit == CSSPrimitiveValue::CSS_NUMBER && value->isInt && value->fValue >= 0) {
-            tagValue = clampToInteger(value->fValue);
+            tagValue = clampTo<int>(value->fValue);
             if (tagValue < 0)
                 return false;
             m_valueList->next();

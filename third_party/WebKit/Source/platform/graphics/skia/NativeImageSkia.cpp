@@ -82,8 +82,8 @@ namespace blink {
 SkBitmap NativeImageSkia::extractScaledImageFragment(const SkRect& srcRect, float scaleX, float scaleY, SkRect* scaledSrcRect) const
 {
     SkISize imageSize = SkISize::Make(bitmap().width(), bitmap().height());
-    SkISize scaledImageSize = SkISize::Make(clampToInteger(roundf(imageSize.width() * scaleX)),
-        clampToInteger(roundf(imageSize.height() * scaleY)));
+    SkISize scaledImageSize = SkISize::Make(clampTo<int>(roundf(imageSize.width() * scaleX)),
+        clampTo<int>(roundf(imageSize.height() * scaleY)));
 
     SkRect imageRect = SkRect::MakeWH(imageSize.width(), imageSize.height());
     SkRect scaledImageRect = SkRect::MakeWH(scaledImageSize.width(), scaledImageSize.height());
