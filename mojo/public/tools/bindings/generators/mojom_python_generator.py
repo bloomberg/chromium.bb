@@ -145,6 +145,15 @@ def GetFieldType(kind, field=None):
       array_type = 'NativeArrayType'
     return '_descriptor.%s(%s)' % (array_type, ', '.join(arguments))
 
+  if mojom.IsMapKind(kind):
+    arguments = [
+      GetFieldType(kind.key_kind),
+      GetFieldType(kind.value_kind),
+    ]
+    if mojom.IsNullableKind(kind):
+      arguments.append('nullable=True')
+    return '_descriptor.MapType(%s)' % ', '.join(arguments)
+
   if mojom.IsStructKind(kind):
     arguments = [ 'lambda: %s' % GetStructClass(kind) ]
     if mojom.IsNullableKind(kind):

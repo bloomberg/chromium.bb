@@ -10,6 +10,7 @@ import array
 import itertools
 import struct
 
+import mojo.bindings.reflection as reflection
 import mojo.bindings.serialization as serialization
 
 # pylint: disable=E0611,F0401
@@ -402,6 +403,54 @@ class StructType(PointerType):
 
   def DeserializePointer(self, size, nb_elements, data, handles):
     return self.struct_type.Deserialize(data, handles)
+
+
+class MapType(SerializableType):
+  """Type objects for maps."""
+
+  def __init__(self, key_type, value_type, nullable=False):
+    self._key_type = key_type
+    self._value_type = value_type
+    dictionary = {
+      '__metaclass__': reflection.MojoStructType,
+      '__module__': __name__,
+      'DESCRIPTOR': {
+        'fields': [
+          SingleFieldGroup('keys', GenericArrayType(key_type), 0, 0),
+          SingleFieldGroup('values', GenericArrayType(value_type), 1, 1),
+        ],
+      }
+    }
+    self.struct = reflection.MojoStructType('MapStruct', (object,), dictionary)
+    self.struct_type = StructType(lambda: self.struct, nullable)
+    SerializableType.__init__(self, self.struct_type.typecode)
+
+  def Convert(self, value):
+    if value is None:
+      return value
+    if isinstance(value, dict):
+      return dict([(self._key_type.Convert(x), self._value_type.Convert(y)) for
+                   x, y in value.iteritems()])
+    raise TypeError('%r is not a dictionary.')
+
+  def Serialize(self, value, data_offset, data, handle_offset):
+    s = None
+    if value:
+      keys, values = [], []
+      for key, value in value.iteritems():
+        keys.append(key)
+        values.append(value)
+      s = self.struct(keys=keys, values=values)
+    return self.struct_type.Serialize(s, data_offset, data, handle_offset)
+
+  def Deserialize(self, value, data, handles):
+    s = self.struct_type.Deserialize(value, data, handles)
+    if s:
+      if len(s.keys) != len(s.values):
+        raise serialization.DeserializationException(
+            'keys and values do not have the same length.')
+      return dict(zip(s.keys, s.values))
+    return None
 
 
 class NoneType(SerializableType):

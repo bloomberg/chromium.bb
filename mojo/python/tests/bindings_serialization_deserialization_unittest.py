@@ -32,6 +32,18 @@ def _TestEquality(x, y):
   if isinstance(x, float) and math.isnan(x) and math.isnan(y):
     return True
 
+  if isinstance(x, dict):
+    if len(x) != len(y):
+      print '\n%r != %r. Dictionaries are not of the same size.' % (x, y)
+      return False
+    for xk, xv in x.iteritems():
+      if xk not in y:
+        print '\n%r != %r. Key %r is not in %r.' % (x, y, xk, y)
+        return False
+      if not _TestEquality(xv, y[xk]):
+        return False
+    return True
+
   if hasattr(x, '__len__'):
     if len(x) != len(y):
       print '\n%r != %r. Iterables are not of the same size.' % (x, y)
@@ -98,6 +110,7 @@ class SerializationDeserializationTest(unittest.TestCase):
 
   def testTestEquality(self):
     self.assertFalse(_TestEquality(1, 2))
+    self.assertTrue(_TestEquality({1: 2, 2: 1}, {2: 1, 1: 2}))
 
   def testFooSerialization(self):
     (data, _) = _NewFoo().Serialize()
