@@ -23,6 +23,8 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_picture_layer.h"
+#include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_host_common_test.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -60,6 +62,14 @@ class MockContentLayerClient : public ContentLayerClient {
   virtual bool FillsBoundsCompletely() const override { return false; }
 };
 
+scoped_refptr<FakePictureLayer> CreateDrawablePictureLayer(
+    ContentLayerClient* delegate) {
+  scoped_refptr<FakePictureLayer> to_return =
+      FakePictureLayer::Create(delegate);
+  to_return->SetIsDrawable(true);
+  return to_return;
+}
+
 scoped_refptr<ContentLayer> CreateDrawableContentLayer(
     ContentLayerClient* delegate) {
   scoped_refptr<ContentLayer> to_return = ContentLayer::Create(delegate);
@@ -71,6 +81,11 @@ scoped_refptr<ContentLayer> CreateDrawableContentLayer(
   do {                                                    \
     EXPECT_FLOAT_EQ(expected, layer->contents_scale_x()); \
     EXPECT_FLOAT_EQ(expected, layer->contents_scale_y()); \
+  } while (false)
+
+#define EXPECT_IDEAL_SCALE_EQ(expected, layer)                                \
+  do {                                                                        \
+    EXPECT_FLOAT_EQ(expected, layer->draw_properties().ideal_contents_scale); \
   } while (false)
 
 TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
@@ -3261,13 +3276,13 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsInHighDPI) {
   MockContentLayerClient client;
 
   scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<ContentLayer> render_surface1 =
-      CreateDrawableContentLayer(&client);
-  scoped_refptr<ContentLayer> render_surface2 =
-      CreateDrawableContentLayer(&client);
-  scoped_refptr<ContentLayer> child1 = CreateDrawableContentLayer(&client);
-  scoped_refptr<ContentLayer> child2 = CreateDrawableContentLayer(&client);
-  scoped_refptr<ContentLayer> child3 = CreateDrawableContentLayer(&client);
+  scoped_refptr<FakePictureLayer> render_surface1 =
+      CreateDrawablePictureLayer(&client);
+  scoped_refptr<FakePictureLayer> render_surface2 =
+      CreateDrawablePictureLayer(&client);
+  scoped_refptr<FakePictureLayer> child1 = CreateDrawablePictureLayer(&client);
+  scoped_refptr<FakePictureLayer> child2 = CreateDrawablePictureLayer(&client);
+  scoped_refptr<FakePictureLayer> child3 = CreateDrawablePictureLayer(&client);
   root->AddChild(render_surface1);
   render_surface1->AddChild(render_surface2);
   render_surface2->AddChild(child1);
@@ -3353,15 +3368,15 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsInHighDPI) {
   // The root layer does not actually draw content of its own.
   EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), root->visible_content_rect());
 
-  // All layer visible content rects are expressed in content space of each
-  // layer, so they are also scaled by the device_scale_factor.
-  EXPECT_RECT_EQ(gfx::Rect(0, 0, 6, 8),
+  // All layer visible content rects are not expressed in content space of each
+  // layer, so they are not scaled by the device_scale_factor.
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 3, 4),
                  render_surface1->visible_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(0, 0, 14, 26),
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 7, 13),
                  render_surface2->visible_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), child1->visible_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), child2->visible_content_rect());
-  EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), child3->visible_content_rect());
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visible_content_rect());
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child2->visible_content_rect());
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child3->visible_content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
@@ -4045,7 +4060,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> parent =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4054,7 +4070,7 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child = CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4063,8 +4079,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child_empty =
-      CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child_empty =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(child_empty.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4073,19 +4089,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<NoScaleContentLayer> child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
-  SetLayerPropertiesForTesting(child_no_scale.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(10, 10),
-                               false,
-                               true);
-
   parent->AddChild(child);
   parent->AddChild(child_empty);
-  parent->AddChild(child_no_scale);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(parent);
@@ -4101,16 +4106,16 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, child);
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
-                           child_empty);
-  EXPECT_CONTENTS_SCALE_EQ(1, child_no_scale);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, child);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, child_empty);
 
   EXPECT_EQ(1u, render_surface_layer_list.size());
 
   // Verify parent transforms
   gfx::Transform expected_parent_transform;
+  expected_parent_transform.Scale(device_scale_factor * page_scale_factor,
+                                  device_scale_factor * page_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
                                   parent->screen_space_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
@@ -4131,9 +4136,9 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
 
   // Verify child and child_empty transforms. They should match.
   gfx::Transform expected_child_transform;
-  expected_child_transform.Translate(
-      device_scale_factor * child->position().x(),
-      device_scale_factor * child->position().y());
+  expected_child_transform.Scale(device_scale_factor, device_scale_factor);
+  expected_child_transform.Translate(child->position().x(),
+                                     child->position().y());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
                                   child->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_transform,
@@ -4163,17 +4168,6 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
   EXPECT_FLOAT_RECT_EQ(expected_child_draw_rect, child_screen_space_rect);
   EXPECT_FLOAT_RECT_EQ(expected_child_draw_rect, child_empty_draw_rect);
   EXPECT_FLOAT_RECT_EQ(expected_child_draw_rect, child_empty_screen_space_rect);
-
-  // Verify child_no_scale transforms
-  gfx::Transform expected_child_no_scale_transform = child->draw_transform();
-  // All transforms operate on content rects. The child's content rect
-  // incorporates device scale, but the child_no_scale does not; add it here.
-  expected_child_no_scale_transform.Scale(device_scale_factor,
-                                          device_scale_factor);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_no_scale_transform,
-                                  child_no_scale->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_child_no_scale_transform,
-                                  child_no_scale->screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
@@ -4189,7 +4183,8 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
 
   scoped_refptr<Layer> root = Layer::Create();
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> parent =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4198,8 +4193,8 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> perspective_surface =
-      CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> perspective_surface =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(perspective_surface.get(),
                                perspective_matrix * scale_small_matrix,
                                gfx::Point3F(),
@@ -4208,8 +4203,8 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> scale_surface =
-      CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> scale_surface =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(scale_surface.get(),
                                scale_small_matrix,
                                gfx::Point3F(),
@@ -4240,31 +4235,36 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
-                           perspective_surface);
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
-                           scale_surface);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor,
+                        perspective_surface);
+  // Ideal scale is the max 2d scale component of the combined transform up to
+  // the nearest render target. Here this includes the layer transform as well
+  // as the device and page scale factors.
+  gfx::Transform transform = scale_small_matrix;
+  transform.Scale(device_scale_factor * page_scale_factor,
+                  device_scale_factor * page_scale_factor);
+  gfx::Vector2dF scales =
+      MathUtil::ComputeTransform2dScaleComponents(transform, 0.f);
+  float max_2d_scale = std::max(scales.x(), scales.y());
+  EXPECT_IDEAL_SCALE_EQ(max_2d_scale, scale_surface);
+
+  // The ideal scale will draw 1:1 with its render target space along
+  // the larger-scale axis.
+  gfx::Vector2dF target_space_transform_scales =
+      MathUtil::ComputeTransform2dScaleComponents(
+          scale_surface->draw_properties().target_space_transform, 0.f);
+  EXPECT_FLOAT_EQ(max_2d_scale,
+                  std::max(target_space_transform_scales.x(),
+                           target_space_transform_scales.y()));
 
   EXPECT_EQ(3u, render_surface_layer_list.size());
 
   gfx::Transform expected_parent_draw_transform;
+  expected_parent_draw_transform.Scale(device_scale_factor * page_scale_factor,
+                                       device_scale_factor * page_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_draw_transform,
                                   parent->draw_transform());
-
-  // The scaled surface is rendered at its appropriate scale, and drawn 1:1
-  // into its target.
-  gfx::Transform expected_scale_surface_draw_transform;
-  expected_scale_surface_draw_transform.Translate(
-      device_scale_factor * page_scale_factor * scale_surface->position().x(),
-      device_scale_factor * page_scale_factor * scale_surface->position().y());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_scale_surface_draw_transform,
-      scale_surface->render_surface()->draw_transform());
-  gfx::Transform expected_scale_surface_layer_draw_transform =
-      scale_small_matrix;
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_scale_surface_layer_draw_transform,
-                                  scale_surface->draw_transform());
 
   // The scale for the perspective surface is not known, so it is rendered 1:1
   // with the screen, and then scaled during drawing.
@@ -4279,6 +4279,9 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   expected_perspective_surface_draw_transform.PreconcatTransform(
       scale_small_matrix);
   gfx::Transform expected_perspective_surface_layer_draw_transform;
+  expected_perspective_surface_layer_draw_transform.Scale(
+      device_scale_factor * page_scale_factor,
+      device_scale_factor * page_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_perspective_surface_draw_transform,
       perspective_surface->render_surface()->draw_transform());
@@ -4287,6 +4290,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
       perspective_surface->draw_transform());
 }
 
+// TODO(sohanjg): Remove this test when ContentLayer is removed.
 TEST_F(LayerTreeHostCommonTest,
      LayerTransformsInHighDPIAccurateScaleZeroChildPosition) {
   // Verify draw and screen space transforms of layers not in a surface.
@@ -4402,6 +4406,7 @@ TEST_F(LayerTreeHostCommonTest,
                                   child_no_scale->screen_space_transform());
 }
 
+// TODO(sohanjg): Remove this test when ContentLayer is removed.
 TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
@@ -4585,8 +4590,9 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   }
 }
 
+// TODO(sohanjg): Remove this test when ContentLayer is removed.
 TEST_F(LayerTreeHostCommonTest,
-     ContentsScale_LayerTransformsDontAffectContentsScale) {
+       ContentsScale_LayerTransformsDontAffectContentsScale) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
@@ -4690,7 +4696,7 @@ TEST_F(LayerTreeHostCommonTest,
                   child_no_scale->draw_transform().matrix().get(1, 1));
 }
 
-TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
+TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
@@ -4705,7 +4711,8 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
   scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> parent =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -4714,8 +4721,8 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child_scale =
-      CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child_scale =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4744,38 +4751,16 @@ TEST_F(LayerTreeHostCommonTest, SmallContentsScale) {
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-    EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
-                             initial_parent_scale,
-                             parent);
-    // The child's scale is < 1, so we should not save and use that scale
-    // factor.
-    EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor * 1,
-                             child_scale);
-  }
+    // The ideal scale is able to go below 1.
+    float expected_ideal_scale =
+        device_scale_factor * page_scale_factor * initial_parent_scale;
+    EXPECT_LT(expected_ideal_scale, 1.f);
+    EXPECT_IDEAL_SCALE_EQ(expected_ideal_scale, parent);
 
-  // When chilld's total scale becomes >= 1, we should save and use that scale
-  // factor.
-  child_scale_matrix.MakeIdentity();
-  SkMScalar final_child_scale = 0.75;
-  child_scale_matrix.Scale(final_child_scale, final_child_scale);
-  child_scale->SetTransform(child_scale_matrix);
-
-  {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list);
-    inputs.device_scale_factor = device_scale_factor;
-    inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-    EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
-                             initial_parent_scale,
-                             parent);
-    EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
-                             initial_parent_scale * final_child_scale,
-                             child_scale);
+    expected_ideal_scale = device_scale_factor * page_scale_factor *
+                           initial_parent_scale * initial_child_scale;
+    EXPECT_LT(expected_ideal_scale, 1.f);
+    EXPECT_IDEAL_SCALE_EQ(expected_ideal_scale, child_scale);
   }
 }
 
@@ -4979,8 +4964,9 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
       surface_no_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 }
 
+// TODO(sohanjg): Remove this test when ContentLayer is removed.
 TEST_F(LayerTreeHostCommonTest,
-     ContentsScaleForSurfaces_LayerTransformsDontAffectContentsScale) {
+       ContentsScaleForSurfaces_LayerTransformsDontAffectContentsScale) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
@@ -5182,7 +5168,7 @@ TEST_F(LayerTreeHostCommonTest,
       surface_no_scale_child_no_scale->draw_transform().matrix().get(1, 1));
 }
 
-TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
+TEST_F(LayerTreeHostCommonTest, IdealScaleForAnimatingLayer) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
@@ -5197,7 +5183,8 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> parent =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -5206,8 +5193,8 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child_scale =
-      CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child_scale =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5223,10 +5210,6 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(root);
 
-  // Now put an animating transform on child.
-  int animation_id = AddAnimatedTransformToController(
-      child_scale->layer_animation_controller(), 10.0, 30, 0);
-
   {
     RenderSurfaceLayerList render_surface_layer_list;
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
@@ -5234,30 +5217,15 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-    EXPECT_CONTENTS_SCALE_EQ(initial_parent_scale, parent);
-    // The layers with animating transforms should not compute a contents scale
-    // other than 1 until they finish animating.
-    EXPECT_CONTENTS_SCALE_EQ(1, child_scale);
-  }
-
-  // Remove the animation, now it can save a raster scale.
-  child_scale->layer_animation_controller()->RemoveAnimation(animation_id);
-
-  {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-    EXPECT_CONTENTS_SCALE_EQ(initial_parent_scale, parent);
-    // The layers with animating transforms should not compute a contents scale
-    // other than 1 until they finish animating.
-    EXPECT_CONTENTS_SCALE_EQ(initial_parent_scale * initial_child_scale,
-                             child_scale);
+    EXPECT_IDEAL_SCALE_EQ(initial_parent_scale, parent);
+    // Animating layers compute ideal scale in the same way as when
+    // they are static.
+    EXPECT_IDEAL_SCALE_EQ(initial_child_scale * initial_parent_scale,
+                          child_scale);
   }
 }
 
+// TODO(sohanjg): Remove this test when ContentLayer is removed.
 TEST_F(LayerTreeHostCommonTest,
        ChangeInContentBoundsOrScaleTriggersPushProperties) {
   MockContentLayerClient delegate;
@@ -5314,7 +5282,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> parent =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5323,7 +5292,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child = CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5334,7 +5303,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
 
   gfx::Transform replica_transform;
   replica_transform.Scale(1.0, -1.0);
-  scoped_refptr<ContentLayer> replica = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> replica =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(replica.get(),
                                replica_transform,
                                gfx::Point3F(),
@@ -5345,8 +5315,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
 
   // This layer should end up in the same surface as child, with the same draw
   // and screen space transforms.
-  scoped_refptr<ContentLayer> duplicate_child_non_owner =
-      CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> duplicate_child_non_owner =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(duplicate_child_non_owner.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5376,19 +5346,22 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   EXPECT_EQ(2u, render_surface_layer_list.size());
 
   gfx::Transform expected_parent_transform;
+  expected_parent_transform.Scale(device_scale_factor, device_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
                                   parent->screen_space_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
                                   parent->draw_transform());
 
   gfx::Transform expected_draw_transform;
+  expected_draw_transform.Scale(device_scale_factor, device_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_draw_transform,
                                   child->draw_transform());
 
   gfx::Transform expected_screen_space_transform;
-  expected_screen_space_transform.Translate(
-      device_scale_factor * child->position().x(),
-      device_scale_factor * child->position().y());
+  expected_screen_space_transform.Scale(device_scale_factor,
+                                        device_scale_factor);
+  expected_screen_space_transform.Translate(child->position().x(),
+                                            child->position().y());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
                                   child->screen_space_transform());
 
@@ -5449,7 +5422,8 @@ TEST_F(LayerTreeHostCommonTest,
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> parent =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5458,7 +5432,7 @@ TEST_F(LayerTreeHostCommonTest,
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child = CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5469,7 +5443,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   gfx::Transform replica_transform;
   replica_transform.Scale(1.0, -1.0);
-  scoped_refptr<ContentLayer> replica = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<FakePictureLayer> replica =
+      CreateDrawablePictureLayer(&delegate);
   SetLayerPropertiesForTesting(replica.get(),
                                replica_transform,
                                gfx::Point3F(),
@@ -5478,20 +5453,7 @@ TEST_F(LayerTreeHostCommonTest,
                                false,
                                true);
 
-  // This layer should end up in the same surface as child, with the same draw
-  // and screen space transforms.
-  scoped_refptr<ContentLayer> duplicate_child_non_owner =
-      CreateDrawableContentLayer(&delegate);
-  SetLayerPropertiesForTesting(duplicate_child_non_owner.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(13, 11),
-                               false,
-                               true);
-
   parent->AddChild(child);
-  child->AddChild(duplicate_child_non_owner);
   child->SetReplicaLayer(replica.get());
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -5511,22 +5473,6 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(2u, render_surface_layer_list.size());
 
   gfx::Transform identity_transform;
-
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform,
-                                  parent->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform, parent->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform, child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform,
-                                  child->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform,
-                                  duplicate_child_non_owner->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      identity_transform, duplicate_child_non_owner->screen_space_transform());
-  EXPECT_RECT_EQ(child->drawable_content_rect(),
-                 duplicate_child_non_owner->drawable_content_rect());
-  EXPECT_EQ(child->content_bounds(),
-            duplicate_child_non_owner->content_bounds());
-
   EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform,
                                   child->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(identity_transform,
