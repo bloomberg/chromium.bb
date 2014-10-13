@@ -81,6 +81,14 @@ def get_position(footers):
   if svn_commit:
     match = GIT_SVN_ID_PATTERN.match(svn_commit)
     assert match, 'Invalid git-svn-id value: %s' % svn_commit
+    # V8 has different semantics than Chromium.
+    if re.match(r'.*https?://v8\.googlecode\.com/svn/trunk',
+                match.group(1)):
+      return ('refs/heads/candidates', match.group(2))
+    if re.match(r'.*https?://v8\.googlecode\.com/svn/branches/bleeding_edge',
+                match.group(1)):
+      return ('refs/heads/master', match.group(2))
+
     # Assume that any trunk svn revision will match the commit-position
     # semantics.
     if re.match('.*/trunk.*$', match.group(1)):
