@@ -71,7 +71,7 @@ Error DirNode::GetDents(size_t offs,
 
 Error DirNode::Fchmod(mode_t mode) {
   AUTO_LOCK(node_lock_);
-  SetMode(mode);
+  SetMode(mode & ~S_IFMT);
   return 0;
 }
 
