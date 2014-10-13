@@ -54,6 +54,17 @@ using blink::WebVector;
 namespace autofill {
 namespace {
 
+// A bit field mask for FillForm functions to not fill some fields.
+enum FieldFilterMask {
+  FILTER_NONE                       = 0,
+  FILTER_DISABLED_ELEMENTS          = 1 << 0,
+  FILTER_READONLY_ELEMENTS          = 1 << 1,
+  FILTER_NON_FOCUSABLE_ELEMENTS     = 1 << 2,
+  FILTER_ALL_NON_EDITIABLE_ELEMENTS = FILTER_DISABLED_ELEMENTS |
+                                      FILTER_READONLY_ELEMENTS |
+                                      FILTER_NON_FOCUSABLE_ELEMENTS,
+};
+
 bool IsOptionElement(const WebElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kOption, ("option"));
   return element.hasHTMLTagName(kOption);
@@ -465,7 +476,7 @@ typedef void (*Callback)(const FormFieldData&,
 void ForEachMatchingFormField(const WebFormElement& form_element,
                               const WebElement& initiating_element,
                               const FormData& data,
-                              bool only_focusable_elements,
+                              FieldFilterMask filters,
                               bool force_override,
                               Callback callback) {
   std::vector<WebFormControlElement> control_elements;
@@ -508,8 +519,9 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
          !element->value().isEmpty()))
       continue;
 
-    if (!element->isEnabled() || element->isReadOnly() ||
-        (only_focusable_elements && !element->isFocusable()))
+    if (((filters & FILTER_DISABLED_ELEMENTS) && !element->isEnabled()) ||
+        ((filters & FILTER_READONLY_ELEMENTS) && element->isReadOnly()) ||
+        ((filters & FILTER_NON_FOCUSABLE_ELEMENTS) && !element->isFocusable()))
       continue;
 
     callback(data.fields[i], is_initiating_element, element);
@@ -989,8 +1001,8 @@ void FillForm(const FormData& form, const WebFormControlElement& element) {
   ForEachMatchingFormField(form_element,
                            element,
                            form,
-                           true, /* only_focusable_elements */
-                           false, /* don't force override */
+                           FILTER_ALL_NON_EDITIABLE_ELEMENTS,
+                           false, /* dont force override */
                            &FillFormField);
 }
 
@@ -999,10 +1011,25 @@ void FillFormIncludingNonFocusableElements(const FormData& form_data,
   if (form_element.isNull())
     return;
 
+  FieldFilterMask filter_mask = static_cast<FieldFilterMask>(
+      FILTER_DISABLED_ELEMENTS | FILTER_READONLY_ELEMENTS);
   ForEachMatchingFormField(form_element,
                            WebInputElement(),
                            form_data,
-                           false, /* only_focusable_elements */
+                           filter_mask,
+                           true, /* force override */
+                           &FillFormField);
+}
+
+void FillFormForAllElements(const FormData& form_data,
+                            const WebFormElement& form_element) {
+  if (form_element.isNull())
+    return;
+
+  ForEachMatchingFormField(form_element,
+                           WebInputElement(),
+                           form_data,
+                           FILTER_NONE,
                            true, /* force override */
                            &FillFormField);
 }
@@ -1015,7 +1042,7 @@ void PreviewForm(const FormData& form, const WebFormControlElement& element) {
   ForEachMatchingFormField(form_element,
                            element,
                            form,
-                           true, /* only_focusable_elements */
+                           FILTER_ALL_NON_EDITIABLE_ELEMENTS,
                            false, /* dont force override */
                            &PreviewFormField);
 }
