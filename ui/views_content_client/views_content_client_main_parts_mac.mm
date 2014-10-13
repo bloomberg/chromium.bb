@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_paths.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/views_content_client/views_content_client.h"
@@ -51,6 +52,10 @@ ViewsContentClientMainPartsMac::ViewsContentClientMainPartsMac(
   // Cache the child process path to avoid triggering an AssertIOAllowed.
   base::FilePath child_process_exe;
   PathService::Get(content::CHILD_PROCESS_EXE, &child_process_exe);
+
+  // Disable plugin discovery since NPAPI plugin support on Mac requires this to
+  // be done in a utility process type which isn't bundled with this executable.
+  content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
 
   app_controller_.reset([[ViewsContentClientAppController alloc] init]);
   [[NSApplication sharedApplication] setDelegate:app_controller_];
