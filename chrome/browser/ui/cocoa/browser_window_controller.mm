@@ -45,7 +45,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
@@ -1975,9 +1974,6 @@ using content::WebContents;
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
   [self adjustToolbarAndBookmarkBarForCompression:
           [controller getDesiredToolbarHeightCompression]];
-
-  [[ConstrainedWindowSheetController controllerForParentWindow:[self window]]
-      updateSheetPosition];
 }
 
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
