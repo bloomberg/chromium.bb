@@ -140,7 +140,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
+// Disabled for flaky timeouts.  https://crbug.com/423077
+IN_PROC_BROWSER_TEST_F(PreferencesTest, DISABLED_MultiProfiles) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Add first user and init its preferences. Check that corresponding
