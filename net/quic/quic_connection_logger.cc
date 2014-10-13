@@ -46,24 +46,22 @@ base::Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
 }
 
 base::Value* NetLogQuicPacketSentCallback(
-    QuicPacketSequenceNumber sequence_number,
+    const SerializedPacket& serialized_packet,
     QuicPacketSequenceNumber original_sequence_number,
     EncryptionLevel level,
     TransmissionType transmission_type,
     size_t packet_size,
-    WriteResult result,
+    QuicTime sent_time,
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("encryption_level", level);
   dict->SetInteger("transmission_type", transmission_type);
   dict->SetString("packet_sequence_number",
-                  base::Uint64ToString(sequence_number));
+                  base::Uint64ToString(serialized_packet.sequence_number));
   dict->SetString("original_sequence_number",
                   base::Uint64ToString(original_sequence_number));
   dict->SetInteger("size", packet_size);
-  if (result.status != WRITE_STATUS_OK) {
-    dict->SetInteger("net_error", result.error_code);
-  }
+  dict->SetInteger("sent_time_us", sent_time.ToDebuggingValue());
   return dict;
 }
 
@@ -463,17 +461,17 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
 }
 
 void QuicConnectionLogger::OnPacketSent(
-    QuicPacketSequenceNumber sequence_number,
+    const SerializedPacket& serialized_packet,
     QuicPacketSequenceNumber original_sequence_number,
     EncryptionLevel level,
     TransmissionType transmission_type,
     const QuicEncryptedPacket& packet,
-    WriteResult result) {
+    QuicTime sent_time) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
-      base::Bind(&NetLogQuicPacketSentCallback, sequence_number,
+      base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
                  original_sequence_number, level, transmission_type,
-                 packet.length(), result));
+                 packet.length(), sent_time));
 }
 
 void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,

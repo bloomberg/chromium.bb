@@ -117,6 +117,10 @@ const int64 kMaximumIdleTimeoutSecs = 60 * 10;  // 10 minutes.
 // The default timeout for a connection until the crypto handshake succeeds.
 const int64 kMaxTimeForCryptoHandshakeSecs = 10;  // 10 secs.
 
+// Default limit on the number of undecryptable packets the connection buffers
+// before the CHLO/SHLO arrive.
+const size_t kDefaultMaxUndecryptablePackets = 10;
+
 // Default ping timeout.
 const int64 kPingTimeoutSecs = 15;  // 15 secs.
 

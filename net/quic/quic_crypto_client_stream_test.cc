@@ -34,8 +34,6 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
         stream_(new QuicCryptoClientStream(server_id_, session_.get(), nullptr,
                                            &crypto_config_)) {
     session_->SetCryptoStream(stream_.get());
-    session_->config()->SetDefaults();
-    crypto_config_.SetDefaults();
   }
 
   void CompleteCryptoHandshake() {
@@ -127,7 +125,6 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
                                            &crypto_config_));
 
   session_->SetCryptoStream(stream_.get());
-  session_->config()->SetDefaults();
 
   // Advance time 5 years to ensure that we pass the expiry time of the cached
   // server config.

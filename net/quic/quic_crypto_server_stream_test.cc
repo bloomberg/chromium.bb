@@ -61,8 +61,6 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
                        QuicRandom::GetInstance()),
         stream_(crypto_config_, &session_),
         strike_register_client_(nullptr) {
-    config_.SetDefaults();
-    session_.config()->SetDefaults();
     session_.SetCryptoStream(&stream_);
     // We advance the clock initially because the default time is zero and the
     // strike register worries that we've just overflowed a uint32 time.
@@ -141,11 +139,9 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   server_conn->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
 
   QuicConfig client_config;
-  client_config.SetDefaults();
   scoped_ptr<TestClientSession> client_session(
       new TestClientSession(client_conn, client_config));
   QuicCryptoClientConfig client_crypto_config;
-  client_crypto_config.SetDefaults();
 
   QuicServerId server_id(kServerHostname, kServerPort, false,
                          PRIVACY_MODE_DISABLED);
@@ -277,7 +273,7 @@ TEST_P(QuicCryptoServerStreamTest, ChannelIDAsync) {
 
 TEST_P(QuicCryptoServerStreamTest, OnlySendSCUPAfterHandshakeComplete) {
   // An attempt to send a SCUP before completing handshake should fail.
-  stream_.SendServerConfigUpdate(nullptr);
+  stream_.SendServerConfigUpdate(nullptr, false);
   EXPECT_EQ(0, stream_.num_server_config_update_messages_sent());
 }
 

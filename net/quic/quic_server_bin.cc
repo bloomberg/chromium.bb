@@ -55,15 +55,12 @@ int main(int argc, char *argv[]) {
   }
 
   base::AtExitManager exit_manager;
-
   base::MessageLoopForIO message_loop;
 
   net::IPAddressNumber ip;
   CHECK(net::ParseIPLiteralToNumber("::", &ip));
 
   net::QuicConfig config;
-  config.SetDefaults();
-
   net::QuicServer server(config, net::QuicSupportedVersions());
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));

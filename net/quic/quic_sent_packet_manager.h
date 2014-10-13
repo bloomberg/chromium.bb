@@ -51,13 +51,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         TransmissionType transmission_type,
         QuicByteCount byte_size) {}
 
-    virtual void OnSentPacket(
-        const SerializedPacket& packet,
-        QuicPacketSequenceNumber original_sequence_number,
-        QuicTime sent_time,
-        QuicByteCount bytes,
-        TransmissionType transmission_type) {}
-
     virtual void OnIncomingAck(
         const QuicAckFrame& ack_frame,
         QuicTime ack_receive_time,

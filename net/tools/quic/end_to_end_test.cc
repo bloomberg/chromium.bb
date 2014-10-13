@@ -198,9 +198,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
     VLOG(1) << "Using Configuration: " << GetParam();
 
-    client_config_.SetDefaults();
-    server_config_.SetDefaults();
-
     // Use different flow control windows for client/server.
     client_config_.SetInitialFlowControlWindowToSend(
         2 * kInitialSessionFlowControlWindowForTest);

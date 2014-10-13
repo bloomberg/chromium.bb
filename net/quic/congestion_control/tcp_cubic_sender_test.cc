@@ -670,8 +670,8 @@ TEST_F(TcpCubicSenderTest, 1ConnectionCongestionAvoidanceAtEndOfRecovery) {
   expected_send_window /= 2;
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
 
-  // No congestion window growth should occur in recovery phase, i.e.,
-  // until the currently outstanding 20 packets are acked.
+  // No congestion window growth should occur in recovery phase, i.e., until the
+  // currently outstanding 20 packets are acked.
   for (int i = 0; i < 10; ++i) {
     // Send our full send window.
     SendAvailableSendWindow();

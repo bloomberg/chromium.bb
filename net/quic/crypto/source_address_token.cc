@@ -14,13 +14,39 @@ using std::vector;
 
 namespace net {
 
-CachedNetworkParameters::CachedNetworkParameters() {
+CachedNetworkParameters::CachedNetworkParameters()
+    : bandwidth_estimate_bytes_per_second_(0),
+      max_bandwidth_estimate_bytes_per_second_(0),
+      max_bandwidth_timestamp_seconds_(0),
+      min_rtt_ms_(0),
+      previous_connection_state_(0),
+      timestamp_(0) {
 }
 
 CachedNetworkParameters::~CachedNetworkParameters() {
 }
 
-SourceAddressToken::SourceAddressToken() {
+bool CachedNetworkParameters::operator==(
+    const CachedNetworkParameters& other) const {
+  return serving_region_ == other.serving_region_ &&
+      bandwidth_estimate_bytes_per_second_ ==
+          other.bandwidth_estimate_bytes_per_second_ &&
+      max_bandwidth_estimate_bytes_per_second_ ==
+          other.max_bandwidth_estimate_bytes_per_second_ &&
+      max_bandwidth_timestamp_seconds_ ==
+          other.max_bandwidth_timestamp_seconds_ &&
+      min_rtt_ms_ == other.min_rtt_ms_ &&
+      previous_connection_state_ == other.previous_connection_state_ &&
+      timestamp_ == other.timestamp_;
+}
+
+bool CachedNetworkParameters::operator!=(
+    const CachedNetworkParameters& other) const {
+  return !(*this == other);
+}
+
+SourceAddressToken::SourceAddressToken()
+    : has_cached_network_parameters_(false) {
 }
 
 SourceAddressToken::~SourceAddressToken() {

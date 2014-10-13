@@ -124,12 +124,12 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual ~QuicConnectionDebugVisitor() {}
 
   // Called when a packet has been sent.
-  virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+  virtual void OnPacketSent(const SerializedPacket& serialized_packet,
                             QuicPacketSequenceNumber original_sequence_number,
                             EncryptionLevel level,
                             TransmissionType transmission_type,
                             const QuicEncryptedPacket& packet,
-                            WriteResult result) {}
+                            QuicTime sent_time) {}
 
   // Called when a packet has been received, but before it is
   // validated or parsed.
@@ -712,6 +712,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // the assumption that they could not be processed because they were
   // sent with the INITIAL encryption and the CHLO message was lost.
   std::deque<QuicEncryptedPacket*> undecryptable_packets_;
+
+  // Maximum number of undecryptable packets the connection will store.
+  size_t max_undecryptable_packets_;
 
   // When the version negotiation packet could not be sent because the socket
   // was not writable, this is set to true.

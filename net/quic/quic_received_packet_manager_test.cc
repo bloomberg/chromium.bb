@@ -314,6 +314,7 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   // When UpdateReceivedPacketInfo with a time earlier than the time of the
   // largest observed packet, make sure that the delta is 0, not negative.
   EXPECT_EQ(QuicTime::Delta::Zero(), ack.delta_time_largest_observed);
+  EXPECT_FALSE(ack.received_packet_times.empty());
 
   QuicTime four_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(4));
   received_manager_.UpdateReceivedPacketInfo(&ack, four_ms);

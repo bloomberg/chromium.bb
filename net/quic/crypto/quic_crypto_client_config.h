@@ -133,9 +133,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicCryptoClientConfig();
   ~QuicCryptoClientConfig();
 
-  // Sets the members to reasonable, default values.
-  void SetDefaults();
-
   // LookupOrCreate returns a CachedState for the given |server_id|. If no such
   // CachedState currently exists, it will be created and cached.
   CachedState* LookupOrCreate(const QuicServerId& server_id);
@@ -268,6 +265,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
  private:
   typedef std::map<QuicServerId, CachedState*> CachedStateMap;
+
+  // Sets the members to reasonable, default values.
+  void SetDefaults();
 
   // CacheNewServerConfig checks for SCFG, STK, PROF, and CRT tags in |message|,
   // verifies them, and stores them in the cached state if they validate.

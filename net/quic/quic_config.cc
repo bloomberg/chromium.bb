@@ -427,6 +427,7 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
 QuicConfig::QuicConfig()
     : max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
       max_idle_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
+      max_undecryptable_packets_(0),
       congestion_feedback_(kCGST, PRESENCE_REQUIRED),
       connection_options_(kCOPT, PRESENCE_OPTIONAL),
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
@@ -443,6 +444,7 @@ QuicConfig::QuicConfig()
       // QUIC_VERSION_19.
       initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL),
       socket_receive_buffer_(kSRBF, PRESENCE_OPTIONAL) {
+  SetDefaults();
 }
 
 QuicConfig::~QuicConfig() {}
@@ -643,6 +645,7 @@ void QuicConfig::SetDefaults() {
       QuicTime::Delta::FromSeconds(kMaxTimeForCryptoHandshakeSecs);
   max_idle_time_before_crypto_handshake_ =
       QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs);
+  max_undecryptable_packets_ = kDefaultMaxUndecryptablePackets;
 
   SetInitialFlowControlWindowToSend(kDefaultFlowControlSendWindow);
   SetInitialStreamFlowControlWindowToSend(kDefaultFlowControlSendWindow);

@@ -82,8 +82,8 @@ void Cubic::UpdateCongestionControlStats(
     QuicTcpCongestionWindow new_cubic_mode_cwnd,
     QuicTcpCongestionWindow new_reno_mode_cwnd) {
 
-  QuicTcpCongestionWindow highest_new_cwnd = std::max(new_cubic_mode_cwnd,
-                                                      new_reno_mode_cwnd);
+  QuicTcpCongestionWindow highest_new_cwnd = max(new_cubic_mode_cwnd,
+                                                 new_reno_mode_cwnd);
   if (last_congestion_window_ < highest_new_cwnd) {
     // cwnd will increase to highest_new_cwnd.
     stats_->cwnd_increase_congestion_avoidance +=

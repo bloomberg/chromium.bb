@@ -56,7 +56,9 @@ void RecordServerConfigState(ServerConfigState server_config_state) {
 }  // namespace
 
 QuicCryptoClientConfig::QuicCryptoClientConfig()
-    : disable_ecdsa_(false) {}
+    : disable_ecdsa_(false) {
+  SetDefaults();
+}
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
   STLDeleteValues(&cached_states_);

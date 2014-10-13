@@ -48,8 +48,6 @@ QuicServer::QuicServer()
       use_recvmmsg_(false),
       crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
       supported_versions_(QuicSupportedVersions()) {
-  // Use hardcoded crypto parameters for now.
-  config_.SetDefaults();
   Initialize();
 }
 

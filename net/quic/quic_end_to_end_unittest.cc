@@ -133,7 +133,6 @@ class QuicEndToEndTest : public PlatformTest {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
-    server_config_.SetDefaults();
     server_config_.SetInitialFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     server_config_.SetInitialStreamFlowControlWindowToSend(

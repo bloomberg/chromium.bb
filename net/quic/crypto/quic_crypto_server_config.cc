@@ -18,6 +18,7 @@
 #include "net/quic/crypto/chacha20_poly1305_encrypter.h"
 #include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/crypto_framer.h"
+#include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/curve25519_key_exchange.h"
@@ -60,49 +61,6 @@ string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
 }
 
 }  // namespace
-
-// ClientHelloInfo contains information about a client hello message that is
-// only kept for as long as it's being processed.
-struct ClientHelloInfo {
-  ClientHelloInfo(const IPEndPoint& in_client_ip, QuicWallTime in_now)
-      : client_ip(in_client_ip),
-        now(in_now),
-        valid_source_address_token(false),
-        client_nonce_well_formed(false),
-        unique(false) {}
-
-  // Inputs to EvaluateClientHello.
-  const IPEndPoint client_ip;
-  const QuicWallTime now;
-
-  // Outputs from EvaluateClientHello.
-  bool valid_source_address_token;
-  bool client_nonce_well_formed;
-  bool unique;
-  StringPiece sni;
-  StringPiece client_nonce;
-  StringPiece server_nonce;
-  StringPiece user_agent_id;
-
-  // Errors from EvaluateClientHello.
-  vector<uint32> reject_reasons;
-  COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
-};
-
-struct ValidateClientHelloResultCallback::Result {
-  Result(const CryptoHandshakeMessage& in_client_hello,
-         IPEndPoint in_client_ip,
-         QuicWallTime in_now)
-      : client_hello(in_client_hello),
-        info(in_client_ip, in_now),
-        error_code(QUIC_NO_ERROR) {
-  }
-
-  CryptoHandshakeMessage client_hello;
-  ClientHelloInfo info;
-  QuicErrorCode error_code;
-  string error_details;
-};
 
 class ValidateClientHelloHelper {
  public:
@@ -199,10 +157,34 @@ class VerifyNonceIsValidAndUniqueCallback
 // static
 const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
+ClientHelloInfo::ClientHelloInfo(const IPEndPoint& in_client_ip,
+                                 QuicWallTime in_now)
+    : client_ip(in_client_ip),
+      now(in_now),
+      valid_source_address_token(false),
+      client_nonce_well_formed(false),
+      unique(false) {
+}
+
+ClientHelloInfo::~ClientHelloInfo() {
+}
+
 PrimaryConfigChangedCallback::PrimaryConfigChangedCallback() {
 }
 
 PrimaryConfigChangedCallback::~PrimaryConfigChangedCallback() {
+}
+
+ValidateClientHelloResultCallback::Result::Result(
+    const CryptoHandshakeMessage& in_client_hello,
+    IPEndPoint in_client_ip,
+    QuicWallTime in_now)
+    : client_hello(in_client_hello),
+      info(in_client_ip, in_now),
+      error_code(QUIC_NO_ERROR) {
+}
+
+ValidateClientHelloResultCallback::Result::~Result() {
 }
 
 ValidateClientHelloResultCallback::ValidateClientHelloResultCallback() {
@@ -603,8 +585,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(
-        *primary_config.get(), client_hello, info, rand, params, out);
+    BuildRejection(*primary_config.get(), client_hello, info,
+                   validate_chlo_result.cached_network_params, rand, params,
+                   out);
     return QUIC_NO_ERROR;
   }
 
@@ -949,8 +932,12 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   HandshakeFailureReason source_address_token_error;
   StringPiece srct;
   if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-    source_address_token_error = ValidateSourceAddressToken(
-        *requested_config.get(), srct, info->client_ip, info->now);
+    source_address_token_error =
+        ValidateSourceAddressToken(*requested_config.get(),
+                                   srct,
+                                   info->client_ip,
+                                   info->now,
+                                   &client_hello_state->cached_network_params);
     info->valid_source_address_token =
         (source_address_token_error == HANDSHAKE_OK);
   } else {
@@ -1083,6 +1070,7 @@ void QuicCryptoServerConfig::BuildRejection(
     const Config& config,
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
+    const CachedNetworkParameters& cached_network_params,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters *params,
     CryptoHandshakeMessage* out) const {
@@ -1094,7 +1082,7 @@ void QuicCryptoServerConfig::BuildRejection(
                           info.client_ip,
                           rand,
                           info.now,
-                          nullptr));
+                          &cached_network_params));
   if (replay_protection_) {
     out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
   }
@@ -1437,7 +1425,8 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
     const Config& config,
     StringPiece token,
     const IPEndPoint& ip,
-    QuicWallTime now) const {
+    QuicWallTime now,
+    CachedNetworkParameters* cached_network_params) const {
   string storage;
   StringPiece plaintext;
   if (!config.source_address_token_boxer->Unbox(token, &storage, &plaintext)) {
@@ -1471,6 +1460,11 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
   if (now.IsAfter(timestamp) &&
       delta.ToSeconds() > source_address_token_lifetime_secs_) {
     return SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE;
+  }
+
+  if (FLAGS_quic_store_cached_network_params_from_chlo &&
+      source_address_token.has_cached_network_parameters()) {
+    *cached_network_params = source_address_token.cached_network_parameters();
   }
 
   return HANDSHAKE_OK;

@@ -134,7 +134,7 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
     cached_network_params.set_serving_region(serving_region_);
   }
 
-  crypto_stream_->SendServerConfigUpdate(&cached_network_params);
+  crypto_stream_->SendServerConfigUpdate(&cached_network_params, false);
   last_server_config_update_time_ = now;
 }
 

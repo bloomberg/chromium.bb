@@ -22,15 +22,10 @@ namespace {
 
 class QuicConfigTest : public ::testing::Test {
  protected:
-  QuicConfigTest() {
-    config_.SetDefaults();
-  }
-
   QuicConfig config_;
 };
 
 TEST_F(QuicConfigTest, ToHandshakeMessage) {
-  config_.SetDefaults();
   config_.SetInitialFlowControlWindowToSend(
       kInitialSessionFlowControlWindowForTest);
   config_.SetInitialStreamFlowControlWindowToSend(
@@ -265,7 +260,6 @@ TEST_F(QuicConfigTest, MultipleNegotiatedValuesInVectorTag) {
 
 TEST_F(QuicConfigTest, NoOverLapInCGST) {
   QuicConfig server_config;
-  server_config.SetDefaults();
   QuicTagVector cgst;
   cgst.push_back(kTBBR);
   server_config.SetCongestionFeedback(cgst, kTBBR);

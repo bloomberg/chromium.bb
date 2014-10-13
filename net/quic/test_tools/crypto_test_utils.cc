@@ -219,8 +219,6 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   TestClientSession client_session(client_conn, DefaultQuicConfig());
   QuicCryptoClientConfig crypto_config;
 
-  client_session.config()->SetDefaults();
-  crypto_config.SetDefaults();
   if (!options.dont_verify_certs) {
     // TODO(wtc): replace this with ProofVerifierForTesting() when we have
     // a working ProofSourceForTesting().
@@ -273,7 +271,6 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
     QuicRandom* rand,
     QuicConfig* config,
     QuicCryptoServerConfig* crypto_config) {
-  config->SetDefaults();
   QuicCryptoServerConfig::ConfigOptions options;
   options.channel_id_enabled = true;
   scoped_ptr<CryptoHandshakeMessage> scfg(

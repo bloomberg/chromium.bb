@@ -34,7 +34,6 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
     session_.InitializeSession(
         QuicServerId("example.com", 80, false, PRIVACY_MODE_DISABLED),
         &crypto_config_);
-    crypto_config_.SetDefaults();
 
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
     headers_.ReplaceOrAppendHeader("content-length", "11");

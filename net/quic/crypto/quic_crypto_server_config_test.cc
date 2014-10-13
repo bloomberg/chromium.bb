@@ -13,6 +13,7 @@
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/crypto/strike_register_client.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -52,19 +53,37 @@ class QuicCryptoServerConfigPeer {
 
   string NewSourceAddressToken(
       string config_id,
-      IPEndPoint ip,
+      const IPEndPoint& ip,
       QuicRandom* rand,
       QuicWallTime now) {
+    return NewSourceAddressToken(config_id, ip, rand, now, NULL);
+  }
+
+  string NewSourceAddressToken(
+      string config_id,
+      const IPEndPoint& ip,
+      QuicRandom* rand,
+      QuicWallTime now,
+      CachedNetworkParameters* cached_network_params) {
     return server_config_->NewSourceAddressToken(
-        *GetConfig(config_id), ip, rand, now, nullptr);
+        *GetConfig(config_id), ip, rand, now, cached_network_params);
   }
 
   HandshakeFailureReason ValidateSourceAddressToken(string config_id,
                                                     StringPiece srct,
-                                                    IPEndPoint ip,
+                                                    const IPEndPoint& ip,
                                                     QuicWallTime now) {
+    return ValidateSourceAddressToken(config_id, srct, ip, now, NULL);
+  }
+
+  HandshakeFailureReason ValidateSourceAddressToken(
+      string config_id,
+      StringPiece srct,
+      const IPEndPoint& ip,
+      QuicWallTime now,
+      CachedNetworkParameters* cached_network_params) {
     return server_config_->ValidateSourceAddressToken(
-        *GetConfig(config_id), srct, ip, now);
+        *GetConfig(config_id), srct, ip, now, cached_network_params);
   }
 
   string NewServerNonce(QuicRandom* rand, QuicWallTime now) const {
@@ -241,6 +260,8 @@ TEST(QuicCryptoServerConfigTest, GetOrbitIsCalledWithoutTheStrikeRegisterLock) {
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_store_cached_network_params_from_chlo,
+                              true);
   const string kPrimary = "<primary>";
   const string kOverride = "Config with custom source address token key";
 
@@ -329,6 +350,21 @@ TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
   now = original_time.Subtract(QuicTime::Delta::FromSeconds(3600 * 2));
   DCHECK_EQ(SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE,
             peer.ValidateSourceAddressToken(kPrimary, token4, ip4, now));
+
+  // Make sure that if the source address token contains CachedNetworkParameters
+  // that this gets written to ValidateSourceAddressToken output argument.
+  CachedNetworkParameters cached_network_params_input;
+  cached_network_params_input.set_bandwidth_estimate_bytes_per_second(1234);
+  const string token4_with_cached_network_params = peer.NewSourceAddressToken(
+      kPrimary, ip4, rand, now, &cached_network_params_input);
+
+  CachedNetworkParameters cached_network_params_output;
+  EXPECT_NE(cached_network_params_output, cached_network_params_input);
+  peer.ValidateSourceAddressToken(kPrimary, token4_with_cached_network_params,
+                                  ip4, now, &cached_network_params_output);
+  // TODO(rtenneti): For server, enable the following check after serialization
+  // of optional CachedNetworkParameters is implemented.
+  // EXPECT_EQ(cached_network_params_output, cached_network_params_input);
 }
 
 TEST(QuicCryptoServerConfigTest, ValidateServerNonce) {

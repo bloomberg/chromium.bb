@@ -70,6 +70,8 @@ const int32 kInitialReceiveWindowSize = 10 * 1024 * 1024;  // 10MB
 const int32 kServerSecureInitialCongestionWindow = 32;
 // Be conservative, and just use double a typical TCP  ICWND for HTTP.
 const int32 kServerInecureInitialCongestionWindow = 20;
+// Set the maximum number of undecryptable packets the connection will store.
+const int32 kMaxUndecryptablePackets = 100;
 
 const char kDummyHostname[] = "quic.global.props";
 const uint16 kDummyPort = 0;
@@ -90,7 +92,6 @@ bool IsEcdsaSupported() {
 
 QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options) {
   QuicConfig config;
-  config.SetDefaults();
   config.SetIdleConnectionStateLifetime(
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds),
       QuicTime::Delta::FromSeconds(kIdleConnectionTimeoutSeconds));
@@ -511,7 +512,6 @@ QuicStreamFactory::QuicStreamFactory(
       check_persisted_supports_quic_(true),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
-  crypto_config_.SetDefaults();
   crypto_config_.set_user_agent_id(user_agent_id);
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
@@ -902,6 +902,7 @@ int QuicStreamFactory::CreateSession(
   config.SetInitialCongestionWindowToSend(
       server_id.is_https() ? kServerSecureInitialCongestionWindow
                            : kServerInecureInitialCongestionWindow);
+  config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
   config.SetInitialFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
   config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);

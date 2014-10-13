@@ -49,7 +49,6 @@ QuicClient::QuicClient(IPEndPoint server_address,
       overflow_supported_(false),
       supported_versions_(supported_versions),
       print_response_(print_response) {
-  config_.SetDefaults();
 }
 
 QuicClient::QuicClient(IPEndPoint server_address,
@@ -86,7 +85,6 @@ bool QuicClient::Initialize() {
   DCHECK(!initialized_);
 
   epoll_server_->set_timeout_in_us(50 * 1000);
-  crypto_config_.SetDefaults();
 
   if (!CreateUDPSocket()) {
     return false;

@@ -503,13 +503,6 @@ bool QuicSentPacketManager::OnPacketSent(
   DCHECK_LT(0u, sequence_number);
   DCHECK(!unacked_packets_.IsUnacked(sequence_number));
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
-  if (debug_delegate_ != nullptr) {
-    debug_delegate_->OnSentPacket(*serialized_packet,
-                                  original_sequence_number,
-                                  sent_time,
-                                  bytes,
-                                  transmission_type);
-  }
 
   if (original_sequence_number == 0) {
     if (serialized_packet->retransmittable_frames) {

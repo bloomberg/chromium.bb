@@ -118,7 +118,6 @@ int main(int argc, char *argv[]) {
           << QuicVersionVectorToString(versions);
   net::EpollServer epoll_server;
   net::QuicConfig config;
-  config.SetDefaults();
 
   // The default flow control window of 16 Kb is too small for practical
   // purposes. Set it to the specified value, which has a large default.

@@ -2416,19 +2416,22 @@ TEST_P(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
 }
 
 TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
+  // SetFromConfig is always called after construction from InitializeSession.
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  connection_.SetFromConfig(config);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   use_tagging_decrypter();
 
   const uint8 tag = 0x07;
   framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
 
-  // Process an encrypted packet which can not yet be decrypted
-  // which should result in the packet being buffered.
+  // Process an encrypted packet which can not yet be decrypted which should
+  // result in the packet being buffered.
   ProcessDataPacketAtLevel(1, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 
-  // Transition to the new encryption state and process another
-  // encrypted packet which should result in the original packet being
-  // processed.
+  // Transition to the new encryption state and process another encrypted packet
+  // which should result in the original packet being processed.
   connection_.SetDecrypter(new StrictTaggingDecrypter(tag),
                            ENCRYPTION_INITIAL);
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
@@ -2436,10 +2439,42 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(2);
   ProcessDataPacketAtLevel(2, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 
-  // Finally, process a third packet and note that we do not
-  // reprocess the buffered packet.
+  // Finally, process a third packet and note that we do not reprocess the
+  // buffered packet.
   EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
   ProcessDataPacketAtLevel(3, 0, kEntropyFlag, ENCRYPTION_INITIAL);
+}
+
+TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
+  // SetFromConfig is always called after construction from InitializeSession.
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  config.set_max_undecryptable_packets(100);
+  connection_.SetFromConfig(config);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  use_tagging_decrypter();
+
+  const uint8 tag = 0x07;
+  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+
+  // Process an encrypted packet which can not yet be decrypted which should
+  // result in the packet being buffered.
+  for (QuicPacketSequenceNumber i = 1; i <= 100; ++i) {
+    ProcessDataPacketAtLevel(i, 0, kEntropyFlag, ENCRYPTION_INITIAL);
+  }
+
+  // Transition to the new encryption state and process another encrypted packet
+  // which should result in the original packets being processed.
+  connection_.SetDecrypter(new StrictTaggingDecrypter(tag), ENCRYPTION_INITIAL);
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(101);
+  ProcessDataPacketAtLevel(101, 0, kEntropyFlag, ENCRYPTION_INITIAL);
+
+  // Finally, process a third packet and note that we do not reprocess the
+  // buffered packet.
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  ProcessDataPacketAtLevel(102, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 }
 
 TEST_P(QuicConnectionTest, TestRetransmitOrder) {
@@ -2682,7 +2717,6 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   // SetFromConfig sets the initial timeouts before negotiation.
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
-  config.SetDefaults();
   connection_.SetFromConfig(config);
   // Subtract a second from the idle timeout on the client side.
   QuicTime default_timeout = clock_.ApproximateNow().Add(
@@ -2835,7 +2869,6 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
-  config.SetDefaults();
   connection_.SetFromConfig(config);
 
   const QuicTime::Delta initial_idle_timeout =
@@ -3924,12 +3957,12 @@ class MockQuicConnectionDebugVisitor
                void(const QuicFrame&));
 
   MOCK_METHOD6(OnPacketSent,
-               void(QuicPacketSequenceNumber,
+               void(const SerializedPacket&,
                     QuicPacketSequenceNumber,
                     EncryptionLevel,
                     TransmissionType,
                     const QuicEncryptedPacket&,
-                    WriteResult));
+                    QuicTime));
 
   MOCK_METHOD3(OnPacketReceived,
                void(const IPEndPoint&,

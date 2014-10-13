@@ -229,14 +229,11 @@ void QuicReceivedPacketManager::UpdateReceivedPacketInfo(
     return;
   }
 
-  if (approximate_now < time_largest_observed_) {
-    // Approximate now may well be "in the past".
-    ack_frame->delta_time_largest_observed = QuicTime::Delta::Zero();
-    return;
-  }
-
+  // Ensure the delta is zero if approximate now is "in the past".
   ack_frame->delta_time_largest_observed =
-      approximate_now.Subtract(time_largest_observed_);
+      approximate_now < time_largest_observed_ ?
+          QuicTime::Delta::Zero() :
+          approximate_now.Subtract(time_largest_observed_);
 
   // Remove all packets that are too far from largest_observed to express.
   received_packet_times_.remove_if(isTooLarge(ack_frame_.largest_observed));

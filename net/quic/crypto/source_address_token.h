@@ -28,6 +28,9 @@ class NET_EXPORT_PRIVATE CachedNetworkParameters {
   CachedNetworkParameters();
   ~CachedNetworkParameters();
 
+  bool operator==(const CachedNetworkParameters& other) const;
+  bool operator!=(const CachedNetworkParameters& other) const;
+
   std::string serving_region() const {
     return serving_region_;
   }
@@ -133,6 +136,10 @@ class NET_EXPORT_PRIVATE SourceAddressToken {
   void set_cached_network_parameters(
       const CachedNetworkParameters& cached_network_parameters) {
     cached_network_parameters_ = cached_network_parameters;
+    has_cached_network_parameters_ = true;
+  }
+  bool has_cached_network_parameters() const {
+    return has_cached_network_parameters_;
   }
 
  private:
@@ -146,6 +153,9 @@ class NET_EXPORT_PRIVATE SourceAddressToken {
   // The server can provide estimated network parameters to be used for
   // initial parameter selection in future connections.
   CachedNetworkParameters cached_network_parameters_;
+  // TODO(rtenneti): Delete |has_cached_network_parameters_| after we convert
+  // SourceAddressToken to protobuf.
+  bool has_cached_network_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceAddressToken);
 };

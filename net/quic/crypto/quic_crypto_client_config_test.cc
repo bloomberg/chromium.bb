@@ -81,7 +81,6 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
 
 TEST(QuicCryptoClientConfigTest, PreferAesGcm) {
   QuicCryptoClientConfig config;
-  config.SetDefaults();
   if (config.aead.size() > 1)
     EXPECT_NE(kAESG, config.aead[0]);
   config.PreferAesGcm();

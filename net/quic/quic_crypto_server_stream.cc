@@ -11,6 +11,7 @@
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/source_address_token.h"
 #include "net/quic/quic_config.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
@@ -152,11 +153,12 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
   // Now that the handshake is complete, send an updated server config and
   // source-address token to the client.
-  SendServerConfigUpdate(nullptr);
+  SendServerConfigUpdate(previous_cached_network_params_.get(), true);
 }
 
 void QuicCryptoServerStream::SendServerConfigUpdate(
-    const CachedNetworkParameters* cached_network_params) {
+    const CachedNetworkParameters* cached_network_params,
+    bool on_handshake_complete) {
   if (session()->connection()->version() <= QUIC_VERSION_21 ||
       !handshake_confirmed_) {
     return;
@@ -174,7 +176,8 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
     return;
   }
 
-  DVLOG(1) << "Server: Sending server config update: "
+  DVLOG(1) << "Server: Sending server config update"
+           << (on_handshake_complete ? " immediately after handshake: " : ": ")
            << server_config_update_message.DebugString();
   const QuicData& data = server_config_update_message.GetSerialized();
   WriteOrBufferData(string(data.data(), data.length()), false, nullptr);
@@ -221,6 +224,13 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& result,
     CryptoHandshakeMessage* reply,
     string* error_details) {
+  // Store the bandwidth estimate from the client.
+  if (FLAGS_quic_store_cached_network_params_from_chlo &&
+      result.cached_network_params.bandwidth_estimate_bytes_per_second() > 0) {
+    previous_cached_network_params_.reset(
+        new CachedNetworkParameters(result.cached_network_params));
+  }
+
   return crypto_config_.ProcessClientHello(
       result,
       session()->connection()->connection_id(),

@@ -46,7 +46,9 @@ SequenceNumberSet TCPLossAlgorithm::DetectLostPackets(
     }
 
     LOG_IF(DFATAL, it->nack_count == 0)
-        << "All packets less than largest observed should have been nacked.";
+        << "All packets less than largest observed should have been nacked."
+        << "sequence_number:" << sequence_number
+        << " largest_observed:" << largest_observed;
     if (it->nack_count >= kNumberOfNacksBeforeRetransmission) {
       lost_packets.insert(sequence_number);
       continue;

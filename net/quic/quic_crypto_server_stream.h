@@ -74,8 +74,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   }
 
   // Sends the latest server config and source-address token to the client.
+  // |on_handshake_complete| is true when this is called immediately after
+  // handshake completes, and should be false for subsequent updates.
   virtual void SendServerConfigUpdate(
-      const CachedNetworkParameters* cached_network_params);
+      const CachedNetworkParameters* cached_network_params,
+      bool on_handshake_complete);
 
   // Called by the ServerHello AckNotifier once the SHLO has been ACKed by the
   // client.
@@ -132,6 +135,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
 
   // Number of server config update (SCUP) messages sent by this stream.
   int num_server_config_update_messages_sent_;
+
+  // If the client provides CachedNetworkParameters in the STK in the CHLO, then
+  // store here, and send back in future STKs if we have no better bandwidth
+  // estimate to send.
+  scoped_ptr<CachedNetworkParameters> previous_cached_network_params_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerStream);
 };

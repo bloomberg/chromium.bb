@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -52,10 +53,6 @@ const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 // Limit the number of FEC groups to two.  If we get enough out of order packets
 // that this becomes limiting, we can revisit.
 const size_t kMaxFecGroups = 2;
-
-// Limit the number of undecryptable packets we buffer in
-// expectation of the CHLO/SHLO arriving.
-const size_t kMaxUndecryptablePackets = 10;
 
 // Maximum number of acks received before sending an ack in response.
 const size_t kMaxPacketsReceivedBeforeAckSend = 20;
@@ -162,10 +159,10 @@ class PingAlarm : public QuicAlarm::Delegate {
 
 QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet,
                                            EncryptionLevel level)
-  : serialized_packet(packet),
-    encryption_level(level),
-    transmission_type(NOT_RETRANSMISSION),
-    original_sequence_number(0) {
+    : serialized_packet(packet),
+      encryption_level(level),
+      transmission_type(NOT_RETRANSMISSION),
+      original_sequence_number(0) {
 }
 
 QuicConnection::QueuedPacket::QueuedPacket(
@@ -204,6 +201,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       last_decrypted_packet_level_(ENCRYPTION_NONE),
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
+      max_undecryptable_packets_(0),
       pending_version_negotiation_packet_(false),
       received_packet_manager_(&stats_),
       ack_queued_(false),
@@ -271,6 +269,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     SetIdleNetworkTimeout(config.IdleConnectionStateLifetime());
   }
   sent_packet_manager_.SetFromConfig(config);
+  max_undecryptable_packets_ = config.max_undecryptable_packets();
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -1116,7 +1115,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
     // because the CHLO or SHLO packet was lost.
     if (framer_.error() == QUIC_DECRYPTION_FAILURE) {
       if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
-          undecryptable_packets_.size() < kMaxUndecryptablePackets) {
+          undecryptable_packets_.size() < max_undecryptable_packets_) {
         QueueUndecryptablePacket(packet);
       } else if (debug_visitor_.get() != nullptr) {
         debug_visitor_->OnUndecryptablePacket();
@@ -1176,8 +1175,7 @@ void QuicConnection::OnCanWrite() {
     return;
   }
 
-  {  // Limit the scope of the bundler.
-    // Set |include_ack| to false in bundler; ack inclusion happens elsewhere.
+  { // Limit the scope of the bundler. ACK inclusion happens elsewhere.
     ScopedPacketBundler bundler(this, NO_ACK);
     visitor_->OnCanWrite();
   }
@@ -1322,7 +1320,8 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero()) {
     send_alarm_->Update(now.Add(delay), QuicTime::Delta::FromMilliseconds(1));
-    DVLOG(1) << "Delaying sending.";
+    DVLOG(1) << ENDPOINT << "Delaying sending " << delay.ToMilliseconds()
+             << "ms";
     return false;
   }
   send_alarm_->Cancel();
@@ -1408,15 +1407,6 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }
-  if (debug_visitor_.get() != nullptr) {
-    // Pass the write result to the visitor.
-    debug_visitor_->OnPacketSent(sequence_number,
-                                 packet->original_sequence_number,
-                                 packet->encryption_level,
-                                 packet->transmission_type,
-                                 *encrypted,
-                                 result);
-  }
 
   if (result.status == WRITE_STATUS_BLOCKED) {
     visitor_->OnWriteBlocked();
@@ -1429,6 +1419,15 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
     }
   }
   QuicTime now = clock_->Now();
+  if (result.status != WRITE_STATUS_ERROR && debug_visitor_.get() != nullptr) {
+    // Pass the write result to the visitor.
+    debug_visitor_->OnPacketSent(packet->serialized_packet,
+                                 packet->original_sequence_number,
+                                 packet->encryption_level,
+                                 packet->transmission_type,
+                                 *encrypted,
+                                 now);
+  }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
     time_of_last_sent_new_packet_ = now;
   }
@@ -1857,7 +1856,7 @@ void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
   // Adjust the idle timeout on client and server to prevent clients from
   // sending requests to servers which have already closed the connection.
   if (is_server_) {
-    timeout = timeout.Add(QuicTime::Delta::FromSeconds(1));
+    timeout = timeout.Add(QuicTime::Delta::FromSeconds(3));
   } else if (timeout > QuicTime::Delta::FromSeconds(1)) {
     timeout = timeout.Subtract(QuicTime::Delta::FromSeconds(1));
   }
@@ -1895,7 +1894,7 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
   // Adjust the idle timeout on client and server to prevent clients from
   // sending requests to servers which have already closed the connection.
   if (is_server_) {
-    idle_timeout = idle_timeout.Add(QuicTime::Delta::FromSeconds(1));
+    idle_timeout = idle_timeout.Add(QuicTime::Delta::FromSeconds(3));
   } else if (idle_timeout > QuicTime::Delta::FromSeconds(1)) {
     idle_timeout = idle_timeout.Subtract(QuicTime::Delta::FromSeconds(1));
   }

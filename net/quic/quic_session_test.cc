@@ -581,11 +581,11 @@ TEST_P(QuicSessionTest, DoNotSendGoAwayTwice) {
 
 TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
   EXPECT_EQ((FLAGS_quic_unified_timeouts ?
-             kInitialIdleTimeoutSecs : kDefaultIdleTimeoutSecs) + 1,
+             kInitialIdleTimeoutSecs : kDefaultIdleTimeoutSecs) + 3,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
   CryptoHandshakeMessage msg;
   session_.GetCryptoStream()->OnHandshakeMessage(msg);
-  EXPECT_EQ(kMaximumIdleTimeoutSecs + 1,
+  EXPECT_EQ(kMaximumIdleTimeoutSecs + 3,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
 }
 

@@ -225,7 +225,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     connection_->SetReceiveAlgorithm(receive_algorithm_);
-    crypto_config_.SetDefaults();
     session_.reset(
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),

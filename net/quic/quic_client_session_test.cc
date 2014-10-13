@@ -51,8 +51,6 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
     session_.InitializeSession(QuicServerId(kServerHostname, kServerPort, false,
                                             PRIVACY_MODE_DISABLED),
                                 &crypto_config_, nullptr);
-    session_.config()->SetDefaults();
-    crypto_config_.SetDefaults();
   }
 
   virtual void TearDown() override {

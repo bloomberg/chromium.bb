@@ -304,6 +304,14 @@ class NET_EXPORT_PRIVATE QuicConfig {
     return max_idle_time_before_crypto_handshake_;
   }
 
+  void set_max_undecryptable_packets(size_t max_undecryptable_packets) {
+    max_undecryptable_packets_ = max_undecryptable_packets;
+  }
+
+  size_t max_undecryptable_packets() const {
+    return max_undecryptable_packets_;
+  }
+
   // Sets the peer's default initial congestion window in packets.
   void SetInitialCongestionWindowToSend(size_t initial_window);
 
@@ -362,9 +370,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   bool negotiated() const;
 
-  // SetDefaults sets the members to sensible, default values.
-  void SetDefaults();
-
   // ToHandshakeMessage serialises the settings in this object as a series of
   // tags /value pairs and adds them to |out|.
   void ToHandshakeMessage(CryptoHandshakeMessage* out) const;
@@ -378,11 +383,16 @@ class NET_EXPORT_PRIVATE QuicConfig {
  private:
   friend class test::QuicConfigPeer;
 
+  // SetDefaults sets the members to sensible, default values.
+  void SetDefaults();
+
   // Configurations options that are not negotiated.
   // Maximum time the session can be alive before crypto handshake is finished.
   QuicTime::Delta max_time_before_crypto_handshake_;
   // Maximum idle time before the crypto handshake has completed.
   QuicTime::Delta max_idle_time_before_crypto_handshake_;
+  // Maximum number of undecryptable packets stored before CHLO/SHLO.
+  size_t max_undecryptable_packets_;
 
   // Congestion control feedback type.
   QuicNegotiableTag congestion_feedback_;
