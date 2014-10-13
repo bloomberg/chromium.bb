@@ -1811,13 +1811,17 @@ def CreateTestRoot(build_root):
   return os.path.sep + os.path.relpath(test_root, start=chroot)
 
 
-def GeneratePayloads(build_root, target_image_path, archive_dir):
+def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
+                     delta=False, stateful=False):
   """Generates the payloads for hw testing.
 
   Args:
     build_root: The root of the chromium os checkout.
     target_image_path: The path to the image to generate payloads to.
     archive_dir: Where to store payloads we generated.
+    full: Generate full payloads.
+    delta: Generate delta payloads.
+    stateful: Generate stateful payload.
   """
   real_target = os.path.realpath(target_image_path)
   # The path to the target should look something like this:
@@ -1842,30 +1846,33 @@ def GeneratePayloads(build_root, target_image_path, archive_dir):
         '--image', chroot_target,
         '--output', os.path.join(chroot_temp_dir, 'update.gz')
     ]
-    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-    name = '_'.join([prefix, os_version, board, 'full', suffix])
-    # Names for full payloads look something like this:
-    # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
-    shutil.move(os.path.join(temp_dir, 'update.gz'),
-                os.path.join(archive_dir, name))
+    if full:
+      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
+      name = '_'.join([prefix, os_version, board, 'full', suffix])
+      # Names for full payloads look something like this:
+      # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
+      shutil.move(os.path.join(temp_dir, 'update.gz'),
+                  os.path.join(archive_dir, name))
 
     cmd.extend(['--src_image', chroot_target])
-    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-    # Names for delta payloads look something like this:
-    # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
-    # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
-    name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
-    shutil.move(os.path.join(temp_dir, 'update.gz'),
-                os.path.join(archive_dir, name))
+    if delta:
+      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
+      # Names for delta payloads look something like this:
+      # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
+      # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
+      name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
+      shutil.move(os.path.join(temp_dir, 'update.gz'),
+                  os.path.join(archive_dir, name))
 
-    cmd = [
-        os.path.join(path, 'cros_generate_stateful_update_payload'),
-        '--image', chroot_target,
-        '--output', chroot_temp_dir
-    ]
-    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-    shutil.move(os.path.join(temp_dir, STATEFUL_FILE),
-                os.path.join(archive_dir, STATEFUL_FILE))
+    if stateful:
+      cmd = [
+          os.path.join(path, 'cros_generate_stateful_update_payload'),
+          '--image', chroot_target,
+          '--output', chroot_temp_dir
+      ]
+      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
+      shutil.move(os.path.join(temp_dir, STATEFUL_FILE),
+                  os.path.join(archive_dir, STATEFUL_FILE))
 
 
 def GetChromeLKGM(revision):

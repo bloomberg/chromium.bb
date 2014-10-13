@@ -180,6 +180,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallelDefault('payloads_generated', True)
     return test_stages.HWTestStage(
         self._run, self._current_board, self.suite_config)
 
@@ -352,6 +354,15 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self.assertRaises(failures_lib.StepFailure, self.RunStage)
     self.mox.VerifyAll()
 
+  def testPayloadsNotGenerated(self):
+    """Test that we exit early if payloads are not generated."""
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('payloads_generated', False)
+    cros_build_lib.Warning(mox.IgnoreArg())
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
   def testBranchedBuildExtendsTimeouts(self):
     """Tests that we run with an extended timeout on a branched build."""
     cmd_args = ['--branch', 'notTot', '-r', self.build_root,
@@ -394,6 +405,8 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallelDefault('payloads_generated', True)
     return test_stages.AUTestStage(
         self._run, self._current_board, self.suite_config)
 

@@ -283,6 +283,13 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     lab_status.CheckLabStatus(self._current_board)
 
   def PerformStage(self):
+    # Wait for UploadHWTestArtifacts to generate the payloads.
+    if not self.GetParallel('payloads_generated', pretty_name='payloads'):
+      cros_build_lib.PrintBuildbotStepText('missing payloads')
+      cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
+                             'failed. See UploadTestArtifacts for details.')
+      return
+
     if self._CheckAborted():
       cros_build_lib.PrintBuildbotStepText('aborted')
       cros_build_lib.Warning(CQ_HWTEST_WAS_ABORTED)

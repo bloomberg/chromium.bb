@@ -457,10 +457,6 @@ class SimpleBuilder(Builder):
       builder_run: BuilderRun object for these background stages.
       board: Board name.
     """
-    # Upload HWTest artifacts first.
-    self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
-                   builder_run=builder_run)
-
     parallel_stages = []
 
     # We can not run hw tests without archiving the payloads.
@@ -567,6 +563,7 @@ class SimpleBuilder(Builder):
         [artifact_stages.DevInstallerPrebuiltsStage, board],
         [artifact_stages.DebugSymbolsStage, board],
         [artifact_stages.CPEExportStage, board],
+        [artifact_stages.UploadTestArtifactsStage, board],
     ]
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
