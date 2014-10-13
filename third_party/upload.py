@@ -972,7 +972,7 @@ def EncodeMultipartFormData(fields, files):
   Source:
     http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/146306
   """
-  BOUNDARY = '-M-A-G-I-C---B-O-U-N-D-A-R-Y-'
+  BOUNDARY = '-M-A-G-I-C---B-O-U-N-D-A-R-Y-%s-' % sum(hash(f) for f in files)
   CRLF = '\r\n'
   lines = []
   for (key, value) in fields:
