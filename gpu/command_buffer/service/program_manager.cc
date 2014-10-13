@@ -493,7 +493,7 @@ void Program::ExecuteBindAttribLocationCalls() {
   for (LocationMap::const_iterator it = bind_attrib_location_map_.begin();
        it != bind_attrib_location_map_.end(); ++it) {
     const std::string* mapped_name = GetAttribMappedName(it->first);
-    if (mapped_name && *mapped_name != it->first)
+    if (mapped_name)
       glBindAttribLocation(service_id_, it->second, mapped_name->c_str());
   }
 }
@@ -655,10 +655,10 @@ GLint Program::GetUniformFakeLocation(
 }
 
 GLint Program::GetAttribLocation(
-    const std::string& name) const {
+    const std::string& original_name) const {
   for (GLuint ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& info = attrib_infos_[ii];
-    if (info.name == name) {
+    if (info.name == original_name) {
       return info.location;
     }
   }
@@ -989,21 +989,44 @@ bool Program::DetectAttribLocationBindingConflicts() const {
   std::set<GLint> location_binding_used;
   for (LocationMap::const_iterator it = bind_attrib_location_map_.begin();
        it != bind_attrib_location_map_.end(); ++it) {
-    // Find out if an attribute is declared in this program's shaders.
-    bool active = false;
+    // Find out if an attribute is statically used in this program's shaders.
+    const sh::Attribute* attrib = NULL;
+    const std::string* mapped_name = GetAttribMappedName(it->first);
+    if (!mapped_name)
+      continue;
     for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
       if (!attached_shaders_[ii].get() || !attached_shaders_[ii]->valid())
         continue;
-      if (attached_shaders_[ii]->GetAttribInfo(it->first)) {
-        active = true;
-        break;
+      attrib = attached_shaders_[ii]->GetAttribInfo(*mapped_name);
+      if (attrib) {
+        if (attrib->staticUse)
+          break;
+        else
+          attrib = NULL;
       }
     }
-    if (active) {
-      std::pair<std::set<GLint>::iterator, bool> result =
-          location_binding_used.insert(it->second);
-      if (!result.second)
-        return true;
+    if (attrib) {
+      size_t num_of_locations = 1;
+      switch (attrib->type) {
+        case GL_FLOAT_MAT2:
+          num_of_locations = 2;
+          break;
+        case GL_FLOAT_MAT3:
+          num_of_locations = 3;
+          break;
+        case GL_FLOAT_MAT4:
+          num_of_locations = 4;
+          break;
+        default:
+          break;
+      }
+      for (size_t ii = 0; ii < num_of_locations; ++ii) {
+        GLint loc = it->second + ii;
+        std::pair<std::set<GLint>::iterator, bool> result =
+            location_binding_used.insert(loc);
+        if (!result.second)
+          return true;
+      }
     }
   }
   return false;

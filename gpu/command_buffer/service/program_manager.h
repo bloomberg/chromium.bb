@@ -115,7 +115,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
        &attrib_infos_[index] : NULL;
   }
 
-  GLint GetAttribLocation(const std::string& name) const;
+  GLint GetAttribLocation(const std::string& original_name) const;
 
   const VertexAttrib* GetAttribInfoByLocation(GLuint location) const {
     if (location < attrib_location_to_index_map_.size()) {

@@ -154,7 +154,7 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
   static const GLenum kAttrib1Precision = GL_MEDIUM_FLOAT;
   static const GLenum kAttrib2Precision = GL_HIGH_FLOAT;
   static const GLenum kAttrib3Precision = GL_LOW_FLOAT;
-  static const bool kAttribStaticUse = false;
+  static const bool kAttribStaticUse = true;
   static const GLint kAttrib1Location = 0;
   static const GLint kAttrib2Location = 1;
   static const GLint kAttrib3Location = 2;
@@ -1134,6 +1134,13 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
         kAttribStaticUse,
         kAttribs[ii].name);
   }
+  const char kAttribMatName[] = "matAttrib";
+  attrib_map[kAttribMatName] = TestHelper::ConstructAttribute(
+      GL_FLOAT_MAT2,
+      1,
+      SH_PRECISION_MEDIUMP,
+      kAttribStaticUse,
+      kAttribMatName);
   // Check we can create shader.
   Shader* vshader = shader_manager_.CreateShader(
       kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
@@ -1173,17 +1180,38 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
 
   program->SetAttribLocationBinding(kAttrib1Name, 0);
   EXPECT_FALSE(program->DetectAttribLocationBindingConflicts());
+  EXPECT_CALL(*(gl_.get()), BindAttribLocation(_, 0, _))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_TRUE(LinkAsExpected(program, true));
 
   program->SetAttribLocationBinding("xxx", 0);
   EXPECT_FALSE(program->DetectAttribLocationBindingConflicts());
+  EXPECT_CALL(*(gl_.get()), BindAttribLocation(_, 0, _))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_TRUE(LinkAsExpected(program, true));
 
   program->SetAttribLocationBinding(kAttrib2Name, 1);
   EXPECT_FALSE(program->DetectAttribLocationBindingConflicts());
+  EXPECT_CALL(*(gl_.get()), BindAttribLocation(_, _, _))
+      .Times(2)
+      .RetiresOnSaturation();
   EXPECT_TRUE(LinkAsExpected(program, true));
 
   program->SetAttribLocationBinding(kAttrib2Name, 0);
+  EXPECT_TRUE(program->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program, false));
+
+  program->SetAttribLocationBinding(kAttribMatName, 1);
+  program->SetAttribLocationBinding(kAttrib2Name, 3);
+  EXPECT_CALL(*(gl_.get()), BindAttribLocation(_, _, _))
+      .Times(3)
+      .RetiresOnSaturation();
+  EXPECT_FALSE(program->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program, true));
+
+  program->SetAttribLocationBinding(kAttrib2Name, 2);
   EXPECT_TRUE(program->DetectAttribLocationBindingConflicts());
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
