@@ -283,6 +283,23 @@
       "browser_tests"
     ]
   },
+  "Linux ChromiumOS Athena Tests (1)": {
+    "gtest_tests": [
+      {
+        "test": "athena_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 5
+        }
+      }
+    ]
+  },
   "Site Isolation Linux": {
     "gtest_tests": [
       { "test": "content_unittests", "args": ["--site-per-process"] },
