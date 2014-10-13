@@ -1038,7 +1038,6 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
 
     FloatPoint currPoint = point;
     BidiCharacterRun* bidiRun = bidiRuns.firstRun();
-    float width = 0;
     while (bidiRun) {
         TextRun subrun = run.subRun(bidiRun->start(), bidiRun->stop() - bidiRun->start());
         bool isRTL = bidiRun->level() % 2;
@@ -1047,12 +1046,10 @@ void GraphicsContext::drawBidiText(const Font& font, const TextRunPaintInfo& run
 
         TextRunPaintInfo subrunInfo(subrun);
         subrunInfo.bounds = runInfo.bounds;
-        width = font.drawText(this, subrunInfo, currPoint, customFontNotReadyAction);
-
+        float runWidth = font.drawUncachedText(this, subrunInfo, currPoint, customFontNotReadyAction);
 
         bidiRun = bidiRun->next();
-        if (bidiRun)
-            currPoint.move(width, 0);
+        currPoint.move(runWidth, 0);
     }
 
     bidiRuns.deleteRuns();

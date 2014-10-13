@@ -67,7 +67,7 @@ private:
     enum PaintInternalStep { PaintText, PaintEmphasisMark };
 
     template <PaintInternalStep step>
-    void paintInternalRun(TextRunPaintInfo&, int from, int to, TextBlobPtr* cachedTextBlob = 0);
+    void paintInternalRun(TextRunPaintInfo&, int from, int to);
 
     template <PaintInternalStep step>
     void paintInternal(int startOffset, int endOffset, int truncationPoint, TextBlobPtr* cachedTextBlob = 0);

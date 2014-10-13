@@ -27,10 +27,13 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/heap/Heap.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
+
+class SkTextBlob;
 
 namespace blink {
 
@@ -257,10 +260,13 @@ inline void TextRun::setTabSize(bool allow, unsigned size)
 
 // Container for parameters needed to paint TextRun.
 struct TextRunPaintInfo {
+    STACK_ALLOCATED();
+public:
     explicit TextRunPaintInfo(const TextRun& r)
         : run(r)
         , from(0)
         , to(r.length())
+        , cachedTextBlob(nullptr)
     {
     }
 
@@ -268,6 +274,7 @@ struct TextRunPaintInfo {
     int from;
     int to;
     FloatRect bounds;
+    RefPtr<const SkTextBlob>* cachedTextBlob;
 };
 
 }

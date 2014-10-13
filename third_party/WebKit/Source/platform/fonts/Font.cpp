@@ -100,7 +100,78 @@ void Font::update(PassRefPtrWillBeRawPtr<FontSelector> fontSelector) const
     m_fontFallbackList->invalidate(fontSelector);
 }
 
-float Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
+float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyphBuffer,
+    ForTextEmphasisOrNot forTextEmphasis) const
+{
+    if (codePath(runInfo) == ComplexPath) {
+        HarfBuzzShaper shaper(this, runInfo.run, (forTextEmphasis == ForTextEmphasis)
+            ? HarfBuzzShaper::ForTextEmphasis : HarfBuzzShaper::NotForTextEmphasis);
+        shaper.setDrawRange(runInfo.from, runInfo.to);
+        shaper.shape(&glyphBuffer);
+
+        return 0;
+    }
+
+    SimpleShaper shaper(this, runInfo.run, nullptr /* fallbackFonts */,
+        nullptr /* GlyphBounds */, forTextEmphasis);
+    shaper.advance(runInfo.from);
+    float beforeWidth = shaper.runWidthSoFar();
+    shaper.advance(runInfo.to, &glyphBuffer);
+
+    if (runInfo.run.ltr())
+        return beforeWidth;
+
+    // RTL
+    float afterWidth = shaper.runWidthSoFar();
+    shaper.advance(runInfo.run.length());
+    glyphBuffer.reverse();
+
+    return shaper.runWidthSoFar() - afterWidth;
+}
+
+void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
+    const FloatPoint& point) const
+{
+    // Don't draw anything while we are using custom fonts that are in the process of loading.
+    if (shouldSkipDrawing())
+        return;
+
+    TextDrawingModeFlags textMode = context->textDrawingMode();
+    if (!(textMode & TextModeFill) && !((textMode & TextModeStroke) && context->hasStroke()))
+        return;
+
+    if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
+        ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
+        // we have a pre-cached blob -- happy joy!
+        drawTextBlob(context, runInfo.cachedTextBlob->get(), point.data());
+        return;
+    }
+
+    GlyphBuffer glyphBuffer;
+    float initialAdvance = buildGlyphBuffer(runInfo, glyphBuffer);
+
+    if (glyphBuffer.isEmpty())
+        return;
+
+    if (RuntimeEnabledFeatures::textBlobEnabled()) {
+        // Enabling text-blobs forces the blob rendering path even for uncacheable blobs.
+        TextBlobPtr uncacheableTextBlob;
+        TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
+        FloatRect blobBounds = runInfo.bounds;
+        blobBounds.moveBy(-point);
+
+        textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds, context->couldUseLCDRenderedText());
+        if (textBlob) {
+            drawTextBlob(context, textBlob.get(), point.data());
+            return;
+        }
+    }
+
+    drawGlyphBuffer(context, runInfo, glyphBuffer, FloatPoint(point.x() + initialAdvance, point.y()));
+}
+
+float Font::drawUncachedText(GraphicsContext* context, const TextRunPaintInfo& runInfo,
+    const FloatPoint& point, CustomFontNotReadyAction customFontNotReadyAction) const
 {
     // Don't draw anything while we are using custom fonts that are in the process of loading,
     // except if the 'force' argument is set to true (in which case it will use a fallback
@@ -108,10 +179,17 @@ float Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, 
     if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
         return 0;
 
-    if (codePath(runInfo) != ComplexPath)
-        return drawSimpleText(context, runInfo, point);
+    TextDrawingModeFlags textMode = context->textDrawingMode();
+    if (!(textMode & TextModeFill) && !((textMode & TextModeStroke) && context->hasStroke()))
+        return 0;
 
-    return drawComplexText(context, runInfo, point);
+    GlyphBuffer glyphBuffer;
+    float initialAdvance = buildGlyphBuffer(runInfo, glyphBuffer);
+
+    if (glyphBuffer.isEmpty())
+        return 0;
+
+    return drawGlyphBuffer(context, runInfo, glyphBuffer, FloatPoint(point.x() + initialAdvance, point.y()));
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
@@ -119,10 +197,13 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     if (shouldSkipDrawing())
         return;
 
-    if (codePath(runInfo) != ComplexPath)
-        drawEmphasisMarksForSimpleText(context, runInfo, mark, point);
-    else
-        drawEmphasisMarksForComplexText(context, runInfo, mark, point);
+    GlyphBuffer glyphBuffer;
+    float initialAdvance = buildGlyphBuffer(runInfo, glyphBuffer, ForTextEmphasis);
+
+    if (glyphBuffer.isEmpty())
+        return;
+
+    drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
 }
 
 static inline void updateGlyphOverflowFromBounds(const IntRectExtent& glyphBounds,
@@ -190,43 +271,14 @@ float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
     return width(run);
 }
 
-PassTextBlobPtr Font::buildTextBlob(const TextRunPaintInfo& runInfo, const FloatPoint& textOrigin, bool couldUseLCDRenderedText, CustomFontNotReadyAction customFontNotReadyAction) const
-{
-    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
-
-    // FIXME: Some logic in common with Font::drawText. Would be nice to
-    // deduplicate.
-    if (shouldSkipDrawing() && customFontNotReadyAction == DoNotPaintIfFontNotReady)
-        return nullptr;
-
-    if (codePath(runInfo) != ComplexPath)
-        return buildTextBlobForSimpleText(runInfo, textOrigin, couldUseLCDRenderedText);
-
-    return nullptr;
-}
-
-PassTextBlobPtr Font::buildTextBlobForSimpleText(const TextRunPaintInfo& runInfo, const FloatPoint& textOrigin, bool couldUseLCDRenderedText) const
-{
-    GlyphBuffer glyphBuffer;
-    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
-
-    if (glyphBuffer.isEmpty())
-        return nullptr;
-
-    FloatRect blobBounds = runInfo.bounds;
-    blobBounds.moveBy(-textOrigin);
-
-    float ignoredWidth;
-    return buildTextBlob(glyphBuffer, initialAdvance, blobBounds, ignoredWidth, couldUseLCDRenderedText);
-}
-
 PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance,
-    const FloatRect& bounds, float& advance, bool couldUseLCD) const
+    const FloatRect& bounds, bool couldUseLCD) const
 {
     ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
 
-    // FIXME: Implement the more general full-positioning path.
-    ASSERT(!glyphBuffer.hasOffsets());
+    // FIXME: Implement the more general full-positioning path for complex text support.
+    if (glyphBuffer.hasOffsets())
+        return nullptr;
 
     SkTextBlobBuilder builder;
     SkScalar x = SkFloatToScalar(initialAdvance);
@@ -271,7 +323,6 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
         }
     }
 
-    advance = x;
     return adoptRef(builder.build());
 }
 
@@ -694,57 +745,6 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-float Font::getGlyphsAndAdvancesForSimpleText(const TextRunPaintInfo& runInfo,
-    GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
-{
-    float initialAdvance;
-
-    SimpleShaper shaper(this, runInfo.run, 0 /* fallbackFonts */,
-        0 /* GlyphBounds */, forTextEmphasis);
-    shaper.advance(runInfo.from);
-    float beforeWidth = shaper.runWidthSoFar();
-    shaper.advance(runInfo.to, &glyphBuffer);
-
-    if (glyphBuffer.isEmpty())
-        return 0;
-
-    float afterWidth = shaper.runWidthSoFar();
-
-    if (runInfo.run.rtl()) {
-        shaper.advance(runInfo.run.length());
-        initialAdvance = shaper.runWidthSoFar() - afterWidth;
-        glyphBuffer.reverse();
-    } else {
-        initialAdvance = beforeWidth;
-    }
-
-    return initialAdvance;
-}
-
-float Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
-{
-    // This glyph buffer holds our glyphs+advances+font data for each glyph.
-    GlyphBuffer glyphBuffer;
-    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
-
-    if (glyphBuffer.isEmpty())
-        return 0;
-
-    FloatPoint startPoint(point.x() + initialAdvance, point.y());
-    return drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
-}
-
-void Font::drawEmphasisMarksForSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
-{
-    GlyphBuffer glyphBuffer;
-    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer, ForTextEmphasis);
-
-    if (glyphBuffer.isEmpty())
-        return;
-
-    drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
-}
-
 static SkPaint textFillPaint(GraphicsContext* gc, const SimpleFontData* font)
 {
     SkPaint paint = gc->fillPaint();
@@ -873,12 +873,10 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     }
 
     ASSERT(glyphBuffer.hasOffsets());
-    const GlyphBufferWithOffsets& glyphBufferWithOffsets =
-        static_cast<const GlyphBufferWithOffsets&>(glyphBuffer);
     SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
     SkPoint* pos = storage.get();
-    const FloatSize* offsets = glyphBufferWithOffsets.offsets(from);
-    const float* advances = glyphBufferWithOffsets.advances(from);
+    const FloatSize* offsets = glyphBuffer.offsets(from);
+    const float* advances = glyphBuffer.advances(from);
     SkScalar advanceSoFar = SkFloatToScalar(0);
     for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(
@@ -887,7 +885,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         advanceSoFar += SkFloatToScalar(advances[i]);
     }
 
-    const Glyph* glyphs = glyphBufferWithOffsets.glyphs(from);
+    const Glyph* glyphs = glyphBuffer.glyphs(from);
     paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
 }
 
@@ -905,46 +903,6 @@ void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoi
             paint.setLooper(0);
         gc->drawTextBlob(blob, origin, paint);
     }
-}
-
-float Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
-{
-    if (!runInfo.run.length())
-        return 0;
-
-    TextDrawingModeFlags textMode = gc->textDrawingMode();
-    bool fill = textMode & TextModeFill;
-    bool stroke = (textMode & TextModeStroke) && gc->hasStroke();
-
-    if (!fill && !stroke)
-        return 0;
-
-    GlyphBufferWithOffsets glyphBuffer;
-    HarfBuzzShaper shaper(this, runInfo.run);
-    shaper.setDrawRange(runInfo.from, runInfo.to);
-    if (!shaper.shape(&glyphBuffer) || glyphBuffer.isEmpty())
-        return 0;
-    return drawGlyphBuffer(gc, runInfo, glyphBuffer, point);
-}
-
-void Font::drawEmphasisMarksForComplexText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const
-{
-    GlyphBuffer glyphBuffer;
-
-    float initialAdvance = getGlyphsAndAdvancesForComplexText(runInfo, glyphBuffer, ForTextEmphasis);
-
-    if (glyphBuffer.isEmpty())
-        return;
-
-    drawEmphasisMarks(context, runInfo, glyphBuffer, mark, FloatPoint(point.x() + initialAdvance, point.y()));
-}
-
-float Font::getGlyphsAndAdvancesForComplexText(const TextRunPaintInfo& runInfo, GlyphBuffer& glyphBuffer, ForTextEmphasisOrNot forTextEmphasis) const
-{
-    HarfBuzzShaper shaper(this, runInfo.run, HarfBuzzShaper::ForTextEmphasis);
-    shaper.setDrawRange(runInfo.from, runInfo.to);
-    shaper.shape(&glyphBuffer);
-    return 0;
 }
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const

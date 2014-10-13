@@ -43,12 +43,17 @@ class GlyphBuffer {
     STACK_ALLOCATED();
 public:
     bool isEmpty() const { return m_fontData.isEmpty(); }
-    virtual bool hasOffsets() const { return false; }
+    bool hasOffsets() const { return !m_offsets.isEmpty(); }
     unsigned size() const { return m_fontData.size(); }
 
     const Glyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
     const float* advances(unsigned from) const { return m_advances.data() + from; }
-    const SimpleFontData* fontDataAt(unsigned index) const { return m_fontData[index]; }
+    const FloatSize* offsets(unsigned from) const { return m_offsets.data() + from; }
+
+    const SimpleFontData* fontDataAt(unsigned index) const
+    {
+        return m_fontData[index];
+    }
 
     Glyph glyphAt(unsigned index) const
     {
@@ -62,9 +67,23 @@ public:
 
     void add(Glyph glyph, const SimpleFontData* font, float width)
     {
+        // should not mix offset/advance-only glyphs
+        ASSERT(!hasOffsets());
+
         m_fontData.append(font);
         m_glyphs.append(glyph);
         m_advances.append(width);
+    }
+
+    void add(Glyph glyph, const SimpleFontData* font, const FloatSize& offset, float advance)
+    {
+        // should not mix offset/advance-only glyphs
+        ASSERT(size() == m_offsets.size());
+
+        m_fontData.append(font);
+        m_glyphs.append(glyph);
+        m_offsets.append(offset);
+        m_advances.append(advance);
     }
 
     void reverse()
@@ -85,39 +104,6 @@ protected:
     Vector<const SimpleFontData*, 2048> m_fontData;
     Vector<Glyph, 2048> m_glyphs;
     Vector<float, 2048> m_advances;
-};
-
-
-class GlyphBufferWithOffsets : public GlyphBuffer {
-public:
-    virtual bool hasOffsets() const override { return true; }
-
-    const FloatSize* offsets(unsigned from) const { return m_offsets.data() + from; }
-
-    FloatSize offsetAt(unsigned index) const
-    {
-        return m_offsets[index];
-    }
-
-    void add(Glyph glyph, const SimpleFontData* font, const FloatSize& offset, float advance)
-    {
-        m_fontData.append(font);
-        m_glyphs.append(glyph);
-        m_offsets.append(offset);
-        m_advances.append(advance);
-    }
-
-private:
-    void add(Glyph glyph, const SimpleFontData* font, float width)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    void reverse()
-    {
-        ASSERT_NOT_REACHED();
-    }
-
     Vector<FloatSize, 1024> m_offsets;
 };
 

@@ -172,39 +172,29 @@ TextPainter::Style TextPainter::selectionPaintingStyle(RenderObject& renderer, b
 }
 
 template <TextPainter::PaintInternalStep step>
-void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to, TextBlobPtr* cachedTextBlob)
+void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to)
 {
     textRunPaintInfo.from = from;
     textRunPaintInfo.to = to;
 
     if (step == PaintEmphasisMark) {
-        m_graphicsContext->drawEmphasisMarks(m_font, textRunPaintInfo, m_emphasisMark, m_textOrigin + IntSize(0, m_emphasisMarkOffset));
-        return;
-    }
-
-    ASSERT(step == PaintText);
-
-    TextBlobPtr localTextBlob;
-    TextBlobPtr& textBlob = cachedTextBlob ? *cachedTextBlob : localTextBlob;
-    bool canUseTextBlobs = RuntimeEnabledFeatures::textBlobEnabled();
-
-    if (canUseTextBlobs && !textBlob)
-        textBlob = m_font.buildTextBlob(textRunPaintInfo, m_textOrigin, m_graphicsContext->couldUseLCDRenderedText());
-
-    if (canUseTextBlobs && textBlob)
-        m_font.drawTextBlob(m_graphicsContext, textBlob.get(), m_textOrigin.data());
-    else
+        m_graphicsContext->drawEmphasisMarks(m_font, textRunPaintInfo, m_emphasisMark,
+            m_textOrigin + IntSize(0, m_emphasisMarkOffset));
+    } else {
+        ASSERT(step == PaintText);
         m_graphicsContext->drawText(m_font, textRunPaintInfo, m_textOrigin);
+    }
 }
 
 template <TextPainter::PaintInternalStep Step>
 void TextPainter::paintInternal(int startOffset, int endOffset, int truncationPoint, TextBlobPtr* cachedTextBlob)
 {
-    // FIXME: We should be able to use cachedTextBlob in more cases.
     TextRunPaintInfo textRunPaintInfo(m_run);
     textRunPaintInfo.bounds = m_textBounds;
     if (startOffset <= endOffset) {
-        paintInternalRun<Step>(textRunPaintInfo, startOffset, endOffset, cachedTextBlob);
+        // FIXME: We should be able to use cachedTextBlob in more cases.
+        textRunPaintInfo.cachedTextBlob = cachedTextBlob;
+        paintInternalRun<Step>(textRunPaintInfo, startOffset, endOffset);
     } else {
         if (endOffset > 0)
             paintInternalRun<Step>(textRunPaintInfo, 0, endOffset);

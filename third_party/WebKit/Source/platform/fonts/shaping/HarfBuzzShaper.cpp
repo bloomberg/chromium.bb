@@ -950,7 +950,8 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
     m_totalWidth += currentRun->width();
 }
 
-void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBufferWithOffsets* glyphBuffer, HarfBuzzRun* currentRun, float& carryAdvance)
+void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer,
+    HarfBuzzRun* currentRun, float& carryAdvance)
 {
     FloatSize* offsets = currentRun->offsets();
     uint16_t* glyphs = currentRun->glyphs();
@@ -1049,12 +1050,9 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
                 continue;
             }
             if (m_forTextEmphasis == ForTextEmphasis) {
-                ASSERT(!glyphBuffer->hasOffsets());
                 fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
             } else {
-                ASSERT(glyphBuffer->hasOffsets());
-                fillGlyphBufferFromHarfBuzzRun(
-                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun, carryAdvance);
+                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, carryAdvance);
             }
         }
     } else {
@@ -1065,12 +1063,9 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
                 continue;
             }
             if (m_forTextEmphasis == ForTextEmphasis) {
-                ASSERT(!glyphBuffer->hasOffsets());
                 fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
             } else {
-                ASSERT(glyphBuffer->hasOffsets());
-                fillGlyphBufferFromHarfBuzzRun(
-                    static_cast<GlyphBufferWithOffsets*>(glyphBuffer), currentRun, carryAdvance);
+                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, carryAdvance);
             }
         }
     }
