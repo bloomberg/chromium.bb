@@ -1,24 +1,32 @@
 {% from "constant_definition.tmpl" import constant_def %}
 {% from "enum_definition.tmpl" import enum_def %}
 
-{%- macro array_expected_length(kind) -%}
-{%- if kind|is_fixed_array_kind -%}
-{{kind.length}}
-{%- else -%}
-org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
-{%- endif -%}
-{%- endmacro -%}
-
 {% macro encode(variable, kind, offset, bit, level=0) %}
 {% if kind|is_pointer_array_kind %}
 {% set sub_kind = kind.kind %}
 if ({{variable}} == null) {
     encoder{{level}}.encodeNullPointer({{offset}}, {{kind|is_nullable_kind|java_true_false}});
 } else {
-    org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{array_expected_length(kind)}});
+    org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{kind|array_expected_length}});
     for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
         {{encode(variable~'[i'~level~']', sub_kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~level, 0, level+1)|indent(8)}}
     }
+}
+{% elif kind|is_map_kind %}
+if ({{variable}} == null) {
+    encoder{{level}}.encodeNullPointer({{offset}}, {{kind|is_nullable_kind|java_true_false}});
+} else {
+    org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encoderForMap({{offset}});
+    int size{{level}} = {{variable}}.size();
+    {{kind.key_kind|java_type}}[] keys{{level}} = {{kind.key_kind|array|new_array('size'~level)}};
+    {{kind.value_kind|java_type}}[] values{{level}} = {{kind.value_kind|array|new_array('size'~level)}};
+    int index{{level}} = 0;
+    for (java.util.Map.Entry<{{kind.key_kind|java_type(true)}}, {{kind.value_kind|java_type(true)}}> entry{{level}} : {{variable}}.entrySet()) {
+        keys{{level}}[index{{level}}] = entry{{level}}.getKey();
+        values{{level}}[index{{level}}] = entry{{level}}.getValue();
+    }
+    {{encode('keys'~level, kind.key_kind|array, 'DataHeader.HEADER_SIZE', 0, level+1)|indent(4)}}
+    {{encode('values'~level, kind.value_kind|array, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE', 0, level+1)|indent(4)}}
 }
 {% else %}
 encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
@@ -26,19 +34,35 @@ encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
 {% endmacro %}
 
 {% macro decode(variable, kind, offset, bit, level=0) %}
-{% if kind|is_struct_kind or kind|is_pointer_array_kind %}
+{% if kind|is_struct_kind or kind|is_pointer_array_kind or kind|is_map_kind %}
 org.chromium.mojo.bindings.Decoder decoder{{level+1}} = decoder{{level}}.readPointer({{offset}}, {{kind|is_nullable_kind|java_true_false}});
 {%   if kind|is_struct_kind %}
 {{variable}} = {{kind|java_type}}.decode(decoder{{level+1}});
-{%   else %}{# kind|is_pointer_array_kind #}
+{%   else %}{# kind|is_pointer_array_kind or is_map_kind #}
 if (decoder{{level+1}} == null) {
     {{variable}} = null;
 } else {
-    DataHeader si{{level+1}} = decoder{{level+1}}.readDataHeaderForPointerArray({{array_expected_length(kind)}});
+{%     if kind|is_map_kind %}
+    decoder{{level+1}}.readDataHeaderForMap();
+    {{kind.key_kind|java_type}}[] keys{{level}};
+    {{kind.value_kind|java_type}}[] values{{level}};
+    {
+        {{decode('keys'~level, kind.key_kind|array, 'DataHeader.HEADER_SIZE', 0, level+1)|indent(8)}}
+    }
+    {
+        {{decode('values'~level, kind.value_kind|array('keys'~level~'.length'), 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE', 0, level+1)|indent(8)}}
+    }
+    {{variable}} = new java.util.HashMap<{{kind.key_kind|java_type(true)}}, {{kind.value_kind|java_type(true)}}>();
+    for (int index{{level}} = 0; index{{level}} < keys{{level}}.length; ++index{{level}}) {
+        {{variable}}.put(keys{{level}}[index{{level}}],  values{{level}}[index{{level}}]);
+    }
+{%     else %}
+    DataHeader si{{level+1}} = decoder{{level+1}}.readDataHeaderForPointerArray({{kind|array_expected_length}});
     {{variable}} = {{kind|new_array('si'~(level+1)~'.numFields')}};
     for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numFields; ++i{{level+1}}) {
         {{decode(variable~'[i'~(level+1)~']', kind.kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~(level+1), 0, level+1)|indent(8)}}
     }
+{%     endif %}
 }
 {%   endif %}
 {% else %}

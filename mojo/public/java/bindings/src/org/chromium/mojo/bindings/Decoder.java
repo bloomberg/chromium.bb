@@ -145,6 +145,21 @@ public class Decoder {
     }
 
     /**
+     * Deserializes a {@link DataHeader} at the given offset and checks if it is correct for a map.
+     */
+    public void readDataHeaderForMap() {
+        DataHeader si = readDataHeader();
+        if (si.size != BindingsHelper.MAP_STRUCT_HEADER.size) {
+            throw new DeserializationException(
+                    "Incorrect header for map. The size is incorrect.");
+        }
+        if (si.numFields != BindingsHelper.MAP_STRUCT_HEADER.numFields) {
+            throw new DeserializationException(
+                    "Incorrect header for map. The number of fields is incorrect.");
+        }
+    }
+
+    /**
      * Deserializes a byte at the given offset.
      */
     public byte readByte(int offset) {

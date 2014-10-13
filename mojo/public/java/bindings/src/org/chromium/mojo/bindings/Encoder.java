@@ -422,6 +422,11 @@ public class Encoder {
         }
     }
 
+    public Encoder encoderForMap(int offset) {
+        encodePointerToNextUnclaimedData(offset);
+        return getEncoderAtDataOffset(BindingsHelper.MAP_STRUCT_HEADER);
+    }
+
     /**
      * Encodes an array of {@link InterfaceRequest}.
      */

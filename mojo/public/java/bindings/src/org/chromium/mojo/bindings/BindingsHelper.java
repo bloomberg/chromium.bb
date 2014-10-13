@@ -4,6 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
+import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.Handle;
 
@@ -29,16 +30,14 @@ public class BindingsHelper {
     public static final int POINTER_SIZE = 8;
 
     /**
+     * The header for a serialized map element.
+     */
+    public static final DataHeader MAP_STRUCT_HEADER = new DataHeader(24, 2);
+
+    /**
      * The value used for the expected length of a non-fixed size array.
      */
     public static final int UNSPECIFIED_ARRAY_LENGTH = -1;
-
-    /**
-     * Align |size| on {@link BindingsHelper#ALIGNMENT}.
-     */
-    public static int align(int size) {
-        return (size + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
-    }
 
     /**
      * Passed as |arrayNullability| when neither the array nor its elements are nullable.
@@ -61,6 +60,13 @@ public class BindingsHelper {
 
     public static boolean isElementNullable(int arrayNullability) {
         return (arrayNullability & ELEMENT_NULLABLE) > 0;
+    }
+
+    /**
+     * Align |size| on {@link BindingsHelper#ALIGNMENT}.
+     */
+    public static int align(int size) {
+        return (size + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
     }
 
     /**

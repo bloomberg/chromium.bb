@@ -181,11 +181,7 @@ def AppendEncodeDecodeParams(initial_params, context, kind, bit):
     else:
       params.append(GetJavaTrueFalse(mojom.IsNullableKind(kind)))
   if mojom.IsAnyArrayKind(kind):
-    if mojom.IsFixedArrayKind(kind):
-      params.append(str(kind.length))
-    else:
-      params.append(
-        'org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH');
+    params.append(GetArrayExpectedLength(kind))
   if mojom.IsInterfaceKind(kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
@@ -253,6 +249,10 @@ def GetJavaType(context, kind, boxed=False):
   if mojom.IsInterfaceRequestKind(kind):
     return ('org.chromium.mojo.bindings.InterfaceRequest<%s>' %
             GetNameForKind(context, kind.kind))
+  if mojom.IsMapKind(kind):
+    return 'java.util.Map<%s, %s>' % (
+        GetBoxedJavaType(context, kind.key_kind),
+        GetBoxedJavaType(context, kind.value_kind))
   if mojom.IsAnyArrayKind(kind):
     return '%s[]' % GetJavaType(context, kind.kind)
   if mojom.IsEnumKind(kind):
@@ -323,6 +323,20 @@ def ExpressionToText(context, token, kind_spec=''):
       return 'java.lang.Float.NaN'
   return token
 
+def GetArrayKind(kind, size = None):
+  if size is None:
+    return mojom.Array(kind)
+  else:
+    array = mojom.FixedArray(0, kind)
+    array.java_map_size = size
+    return array
+
+def GetArrayExpectedLength(kind):
+  if mojom.IsFixedArrayKind(kind):
+    return getattr(kind, 'java_map_size', str(kind.length))
+  else:
+    return 'org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH'
+
 def IsPointerArrayKind(kind):
   if not mojom.IsAnyArrayKind(kind):
     return False
@@ -379,6 +393,8 @@ def ZipContentInto(root, zip_filename):
 class Generator(generator.Generator):
 
   java_filters = {
+    'array': GetArrayKind,
+    'array_expected_length': GetArrayExpectedLength,
     'interface_response_name': GetInterfaceResponseName,
     'constant_value': ConstantValue,
     'default_value': DefaultValue,
@@ -389,6 +405,7 @@ class Generator(generator.Generator):
     'has_method_without_response': HasMethodWithoutResponse,
     'is_fixed_array_kind': mojom.IsFixedArrayKind,
     'is_handle': mojom.IsNonInterfaceHandleKind,
+    'is_map_kind': mojom.IsMapKind,
     'is_nullable_kind': mojom.IsNullableKind,
     'is_pointer_array_kind': IsPointerArrayKind,
     'is_struct_kind': mojom.IsStructKind,
