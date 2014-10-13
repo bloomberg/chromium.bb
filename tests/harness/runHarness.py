@@ -22,15 +22,17 @@
 """Liblouis test harness:
 Please see the liblouis documentation for information of how to add a new harness or more tests for your braille table.
 
-@author: Mesar Hameed <mhameed@src.gnome.org>
+@author: Mesar Hameed <mesar.hameed@gmail.com>
 @author: Michael Whapples <mwhapples@aim.com>
 @author: Hammer Attila <hammera@pickup.hu>
 """
 
+import argparse
 import json
 import os
 import sys
 import traceback
+from collections import OrderedDict
 from glob import iglob
 from louis import translate, backTranslateString, hyphenate
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
@@ -41,6 +43,12 @@ try:
 except ImportError:
     sys.stderr.write("The harness tests require nose. Skipping...\n")
     sys.exit(0)
+
+### command line parser
+parser = argparse.ArgumentParser(description='runHarness')
+parser.add_argument('-c', '--compact_output', action='store_true', help='Display output in a compact form, suitable for grepping.')
+parser.add_argument('harnessFiles', nargs='*', help='test harness file.')
+args = parser.parse_args()
 
 ### Nosetest plugin for controlling the output format. ###
 
@@ -72,8 +80,7 @@ class Reporter(Plugin):
 
     def addFailure(self, test, err):
         exctype, value, tb = err
-        #errMsg = ''.join(traceback.format_exception(exctype, value, None))
-        self.res.append("%s\n" % value)
+        self.res.append(value.__str__())
 
     def finalize(self, result):
         failures=len(result.failures)
@@ -118,7 +125,7 @@ class BrailleTest():
         if outputUniBrl:
             self.tables.insert(0, 'unicode.dis')
         self.input = input
-        self.expectedOutput = output
+        self.expected = output
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
         self.expectedBrlCursorPos = brlCursorPos
@@ -140,62 +147,56 @@ class BrailleTest():
         else:
             return "".join( list(map(lambda a,b: "-"+a if b=='1' else a, word, hyphen_mask)) )
 
+    def report_error(self, errorType, received, brlCursorPos=0):
+        if args.compact_output:
+            # Using an ordered dict here so that json will serialize
+            # the structure in a predictable fassion.
+            od = OrderedDict()
+            od['file'] = self.__str__()
+            od['errorType'] = errorType
+            if self.comment:
+                od['comment'] = self.comment
+            od['input'] = self.input
+            if self.expected != received:
+                od['expected'] = self.expected
+            od['received'] = received
+            if errorType == "Braille Cursor Difference":
+                od["expected cursor at: %d" % self.expectedBrlCursorPos] = "found at: %d" % brlCursorPos
+            return u(json.dumps(od, ensure_ascii=False))
+
+        template = "%-25s '%s'"
+        report = []
+        report.append("--- {errorType} Failure: {file} ---".format(errorType=errorType, file=self.__str__()))
+        if self.comment:
+            report.append(template % ("comment:", "".join(self.comment)))
+        report.append(template % ("input:", self.input))
+        if self.expected != received:
+            report.append(template % ("expected:", self.expected))
+        report.append(template % ("received:", received))
+        if errorType == "Braille Cursor Difference":
+            cursorLocationIndicators = showCurPos(len(self.expected), brlCursorPos, pos2=self.expectedBrlCursorPos)
+            report.append(template % ("BRLCursorAt %d expected %d:" %(brlCursorPos, self.expectedBrlCursorPos), cursorLocationIndicators))
+        report.append("--- end ---\n")
+        return u("\n".join(report))
+
     def check_translate(self):
         if self.cursorPos is not None:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
+            brl, temp1, temp2, brlCursorPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
         else:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode)
-        template = "%-25s '%s'"
-        tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
-        report = [
-            "--- Braille Difference Failure: %s ---" % self.__str__(),
-            template % ("comment:", "".join(self.comment)),
-            template % ("input:", self.input),
-            template % ("expected brl:", self.expectedOutput),
-            template % ("actual brl:", tBrl),
-            "--- end ---",
-        ]
-        assert tBrl == self.expectedOutput, u("\n".join(report))
+            brl, temp1, temp2, brlCursorPos = translate(self.tables, self.input, mode=self.mode)
+        assert brl == self.expected, self.report_error("Braille Difference", brl)
 
     def check_backtranslate(self):
-        backtranslate_output = backTranslateString(self.tables, self.input, None, mode=self.mode)
-        template = "%-25s '%s'"
-        report = [
-            "--- Backtranslate failure: %s ---" % self.__str__(),
-            template % ("comment:", "".join(self.comment)),
-            template % ("input:", self.input),
-            template % ("expected text:", self.expectedOutput),
-            template % ("actual backtranslated text:", backtranslate_output),
-            "--- end ---",
-        ]
-        assert backtranslate_output == self.expectedOutput, u("\n".join(report))
+        text = backTranslateString(self.tables, self.input, None, mode=self.mode)
+        assert text == self.expected, self.report_error("Backtranslate", text)
 
     def check_cursor(self):
-        tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
-        template = "%-25s '%s'"
-        etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
-        report = [
-            "--- Braille Cursor Difference Failure: %s ---" %self.__str__(),
-            template % ("comment:", "".join(self.comment)),
-            template % ("input:", self.input),
-            template % ("received brl:", tBrl),
-            template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos),
-                        etBrlCurPosStr),
-            "--- end ---"
-        ]
-        assert tBrlCurPos == self.expectedBrlCursorPos, u("\n".join(report))
+        brl, temp1, temp2, brlCursorPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
+        assert brlCursorPos == self.expectedBrlCursorPos, self.report_error("Braille Cursor Difference", brl, brlCursorPos=brlCursorPos)
 
     def check_hyphenate(self):
-        hyphenated_word = self.hyphenateword(self.tables, self.input, mode=self.mode)
-        template = "%-25s '%s'"
-        report = [
-            "--- Hyphenation failure: %s ---" % self.__str__(),
-            template % ("input:", self.input),
-            template % ("expected hyphenated word:", self.expectedOutput),
-            template % ("actual hyphenated word:", hyphenated_word),
-            "--- end ---",
-        ]
-        assert hyphenated_word == self.expectedOutput, u("\n".join(report))
+        hyphenated = self.hyphenateword(self.tables, self.input, mode=self.mode)
+        assert hyphenated == self.expected, self.report_error("Hyphenation", hyphenated)
 
 def test_allCases():
     if 'HARNESS_DIR' in os.environ:
@@ -211,9 +212,9 @@ def test_allCases():
         os.environ['LOUIS_TABLEPATH'] = '../tables,../../tables'
 
     testfiles=[]
-    if len(sys.argv)>1:
+    if len(args.harnessFiles):
         # grab the test files from the arguments
-        for test_file in sys.argv[1:]:
+        for test_file in args.harnessFiles:
             testfiles.extend(iglob(os.path.join(harness_dir, test_file)))
     else:
         # Process all *_harness.txt files in the harness directory.
