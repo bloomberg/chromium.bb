@@ -5,6 +5,7 @@
 #include "base/memory/discardable_memory_manager.h"
 
 #include "base/bind.h"
+#include "base/containers/adapters.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/debug/crash_logging.h"
@@ -177,11 +178,9 @@ void DiscardableMemoryManager::
   lock_.AssertAcquired();
 
   size_t bytes_allocated_before_purging = bytes_allocated_;
-  for (AllocationMap::reverse_iterator it = allocations_.rbegin();
-       it != allocations_.rend();
-       ++it) {
-    Allocation* allocation = it->first;
-    AllocationInfo* info = &it->second;
+  for (auto& entry : base::Reversed(allocations_)) {
+    Allocation* allocation = entry.first;
+    AllocationInfo* info = &entry.second;
 
     if (bytes_allocated_ <= limit)
       break;
