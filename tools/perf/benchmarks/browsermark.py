@@ -46,7 +46,6 @@ class _BrowsermarkMeasurement(page_test.PageTest):
         scalar.ScalarValue(results.current_page, 'Score', 'score', result))
 
 
-@benchmark.Disabled
 class Browsermark(benchmark.Benchmark):
   """Browsermark suite tests CSS, DOM, resize, page load, WebGL and JS."""
   test = _BrowsermarkMeasurement
