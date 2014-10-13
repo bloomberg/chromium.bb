@@ -13,6 +13,9 @@ MacSandboxTest.ClipboardAccess
 # mach_override assertion, see http://crbug.com/162728
 BlobURLRequestJobTest.*
 
+# Fail, see http://crbug.com/159234
+WebContentsVideoCaptureDeviceTest.BadFramesGoodFrames
+
 # Hang at arbitrary point, can't tell where exactly, see http://crbug.com/163314
 RenderWidgetHostViewMacTest.*
 RenderViewHostTest.*
