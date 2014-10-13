@@ -68,7 +68,6 @@ void LoginState::SetLoggedInStateAndPrimaryUser(
 }
 
 void LoginState::SetLoggedInState(LoggedInState state, LoggedInUserType type) {
-  CHECK_NE(LOGGED_IN_USER_RETAIL_MODE, type);
   if (state == logged_in_state_ && type == logged_in_user_type_)
     return;
   VLOG(1) << "LoggedInState: " << state << " UserType: " << type;
@@ -97,7 +96,8 @@ bool LoginState::IsGuestSessionUser() const {
 }
 
 bool LoginState::IsPublicSessionUser() const {
-  return logged_in_user_type_ == LOGGED_IN_USER_PUBLIC_ACCOUNT;
+  return logged_in_user_type_ == LOGGED_IN_USER_PUBLIC_ACCOUNT ||
+         logged_in_user_type_ == LOGGED_IN_USER_RETAIL_MODE;
 }
 
 bool LoginState::IsKioskApp() const {
