@@ -74,8 +74,14 @@ enum UpdateReason {
 // from MemoryCacheLRUList.
 class MemoryCacheEntry final : public NoBaseWillBeGarbageCollectedFinalized<MemoryCacheEntry> {
 public:
-    static PassOwnPtrWillBeRawPtr<MemoryCacheEntry> create(Resource* resource) { return adoptPtrWillBeNoop(new MemoryCacheEntry(resource)); }
+    static PassOwnPtrWillBeRawPtr<MemoryCacheEntry> create(Resource* resource)
+    {
+        return adoptPtrWillBeNoop(new MemoryCacheEntry(resource));
+    }
     void trace(Visitor*);
+#if ENABLE(OILPAN)
+    void dispose();
+#endif
 
     ResourcePtr<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;

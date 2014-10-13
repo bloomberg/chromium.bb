@@ -85,6 +85,13 @@ void MemoryCacheEntry::trace(Visitor* visitor)
     visitor->trace(m_nextInAllResourcesList);
 }
 
+#if ENABLE(OILPAN)
+void MemoryCacheEntry::dispose()
+{
+    m_resource.clear();
+}
+#endif
+
 void MemoryCacheLRUList::trace(Visitor* visitor)
 {
     visitor->trace(m_head);
@@ -372,11 +379,17 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
 
     ResourceMap::iterator it = m_resources.find(resource->url());
     ASSERT(it != m_resources.end());
-#if !ENABLE(OILPAN)
+#if ENABLE(OILPAN)
+    MemoryCacheEntry* entryPtr = it->value;
+#else
     OwnPtr<MemoryCacheEntry> entryPtr;
     entryPtr.swap(it->value);
 #endif
     m_resources.remove(it);
+#if ENABLE(OILPAN)
+    if (entryPtr)
+        entryPtr->dispose();
+#endif
     return canDelete;
 }
 
