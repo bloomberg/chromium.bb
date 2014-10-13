@@ -63,7 +63,6 @@ enum AccessibilityRole {
     ButtonRole,
     CanvasRole,
     CellRole,
-    CheckBoxMenuItemRole,
     CheckBoxRole,
     ColorWellRole,
     ColumnHeaderRole,

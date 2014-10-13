@@ -82,7 +82,6 @@ enum WebAXRole {
     WebAXRoleButton,
     WebAXRoleCanvas,
     WebAXRoleCell,
-    WebAXRoleCheckBoxMenuItem,
     WebAXRoleCheckBox,
     WebAXRoleColorWell,
     WebAXRoleColumnHeader,

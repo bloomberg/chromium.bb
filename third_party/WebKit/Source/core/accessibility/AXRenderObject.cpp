@@ -320,7 +320,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         }
         if (type == InputTypeNames::checkbox) {
             if ((node->parentNode() && isHTMLMenuElement(node->parentNode())) || (parentObject() && parentObject()->roleValue() == MenuRole))
-                return CheckBoxMenuItemRole;
+                return MenuItemCheckBoxRole;
             return CheckBoxRole;
         }
         if (type == InputTypeNames::date)
