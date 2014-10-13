@@ -516,7 +516,9 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 
 // Verifies that SaveUserImageFromProfileImage() correctly downloads, sets and
 // persists the chosen user image.
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
+// Disabled for timeouts.  https://crbug.com/423015
+IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
+                       DISABLED_SaveUserImageFromProfileImage) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(kTestUser1);
   ASSERT_TRUE(user);
