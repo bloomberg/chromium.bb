@@ -18,13 +18,7 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
-
-#include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/svg/RenderSVGShape.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -38,20 +32,13 @@ RenderSVGResourceSolidColor::~RenderSVGResourceSolidColor()
 {
 }
 
-bool RenderSVGResourceSolidColor::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext* context, RenderSVGResourceModeFlags resourceMode)
+SVGPaintServer RenderSVGResourceSolidColor::preparePaintServer(RenderObject* object, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
 {
     ASSERT_UNUSED(object, object);
     ASSERT_UNUSED(style, style);
-    ASSERT(context);
     ASSERT_UNUSED(resourceMode, resourceMode);
 
-    if (resourceMode & ApplyToFillMode)
-        context->setFillColor(m_color);
-    else if (resourceMode & ApplyToStrokeMode)
-        context->setStrokeColor(m_color);
-
-    updateGraphicsContext(context, style, *object, resourceMode);
-    return true;
+    return SVGPaintServer(m_color);
 }
 
 }

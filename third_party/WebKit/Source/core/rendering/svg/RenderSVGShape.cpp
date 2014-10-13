@@ -32,7 +32,6 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
-#include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 #include "core/rendering/svg/SVGPathData.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
@@ -200,40 +199,6 @@ bool RenderSVGShape::shouldGenerateMarkerPositions() const
     return resources->markerStart() || resources->markerMid() || resources->markerEnd();
 }
 
-void RenderSVGShape::fillShape(RenderStyle* style, GraphicsContext* context)
-{
-    bool hasFallback;
-    if (RenderSVGResource* fillPaintingResource = RenderSVGResource::requestPaintingResource(ApplyToFillMode, this, style, hasFallback)) {
-        if (fillPaintingResource->applyResource(this, style, context, ApplyToFillMode)) {
-            fillShape(context);
-            fillPaintingResource->postApplyResource(context);
-        } else if (hasFallback) {
-            RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
-            if (fallbackResource->applyResource(this, style, context, ApplyToFillMode)) {
-                fillShape(context);
-                fallbackResource->postApplyResource(context);
-            }
-        }
-    }
-}
-
-void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
-{
-    bool hasFallback;
-    if (RenderSVGResource* strokePaintingResource = RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, this, style, hasFallback)) {
-        if (strokePaintingResource->applyResource(this, style, context, ApplyToStrokeMode)) {
-            strokeShape(context);
-            strokePaintingResource->postApplyResource(context);
-        } else if (hasFallback) {
-            RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
-            if (fallbackResource->applyResource(this, style, context, ApplyToStrokeMode)) {
-                strokeShape(context);
-                fallbackResource->postApplyResource(context);
-            }
-        }
-    }
-}
-
 void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
@@ -260,9 +225,13 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 
         for (int i = 0; i < 3; i++) {
             switch (svgStyle.paintOrderType(i)) {
-            case PT_FILL:
-                fillShape(this->style(), childPaintInfo.context);
+            case PT_FILL: {
+                GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
+                if (!SVGRenderSupport::updateGraphicsContext(stateSaver, style(), *this, ApplyToFillMode))
+                    break;
+                fillShape(childPaintInfo.context);
                 break;
+            }
             case PT_STROKE:
                 if (svgStyle.hasVisibleStroke()) {
                     GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
@@ -274,7 +243,9 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
                             return;
                     }
 
-                    strokeShape(this->style(), childPaintInfo.context);
+                    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, style(), *this, ApplyToStrokeMode))
+                        break;
+                    strokeShape(childPaintInfo.context);
                 }
                 break;
             case PT_MARKERS:

@@ -21,7 +21,6 @@
 #define RenderSVGResourceSolidColor_h
 
 #include "core/rendering/svg/RenderSVGResource.h"
-#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
@@ -31,7 +30,7 @@ public:
     RenderSVGResourceSolidColor();
     virtual ~RenderSVGResourceSolidColor();
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) override;
+    virtual SVGPaintServer preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags) override;
 
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;

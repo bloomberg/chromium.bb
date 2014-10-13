@@ -21,7 +21,6 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGResource.h"
 
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
@@ -32,13 +31,73 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 
-bool RenderSVGResource::applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags)
+SVGPaintServer::SVGPaintServer(Color color)
+    : m_color(color)
+{
+}
+
+SVGPaintServer::SVGPaintServer(PassRefPtr<Gradient> gradient)
+    : m_gradient(gradient)
+    , m_color(Color::black)
+{
+}
+
+SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern)
+    : m_pattern(pattern)
+    , m_color(Color::black)
+{
+}
+
+void SVGPaintServer::apply(GraphicsContext& context, RenderSVGResourceMode resourceMode, GraphicsContextStateSaver* stateSaver)
+{
+    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+    if (stateSaver && (m_gradient || m_pattern))
+        stateSaver->saveIfNeeded();
+
+    if (resourceMode == ApplyToFillMode) {
+        if (m_pattern)
+            context.setFillPattern(m_pattern);
+        else if (m_gradient)
+            context.setFillGradient(m_gradient);
+        else
+            context.setFillColor(m_color);
+    } else {
+        if (m_pattern)
+            context.setStrokePattern(m_pattern);
+        else if (m_gradient)
+            context.setStrokeGradient(m_gradient);
+        else
+            context.setStrokeColor(m_color);
+    }
+}
+
+SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, RenderStyle* style, RenderSVGResourceModeFlags resourceModeFlags)
+{
+    ASSERT(style);
+    RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
+    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+
+    bool hasFallback = false;
+    RenderSVGResource* paintingResource = RenderSVGResource::requestPaintingResource(resourceMode, &renderer, style, hasFallback);
+    if (!paintingResource)
+        return invalid();
+
+    SVGPaintServer paintServer = paintingResource->preparePaintServer(&renderer, style, resourceModeFlags);
+    if (paintServer.isValid())
+        return paintServer;
+    if (hasFallback)
+        return SVGPaintServer(RenderSVGResource::sharedSolidPaintingResource()->color());
+    return invalid();
+}
+
+SVGPaintServer RenderSVGResource::preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags)
 {
     ASSERT_NOT_REACHED();
-    return false;
+    return SVGPaintServer::invalid();
 }
 
 RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, RenderObject* object, const RenderStyle* style, bool& hasFallback)
@@ -51,21 +110,12 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     // If we have no style at all, ignore it.
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
-    bool isRenderingMask = SVGRenderSupport::isRenderingClipPathAsMaskImage(*object);
-
     // If we have no fill/stroke, return 0.
     if (mode == ApplyToFillMode) {
-        // When rendering the mask for a RenderSVGResourceClipper, always use the initial fill paint server, and ignore stroke.
-        if (isRenderingMask) {
-            RenderSVGResourceSolidColor* colorResource = RenderSVGResource::sharedSolidPaintingResource();
-            colorResource->setColor(SVGRenderStyle::initialFillPaintColor());
-            return colorResource;
-        }
-
         if (!svgStyle.hasFill())
             return 0;
     } else {
-        if (!svgStyle.hasStroke() || isRenderingMask)
+        if (!svgStyle.hasStroke())
             return 0;
     }
 
@@ -128,32 +178,6 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
         hasFallback = true;
     }
     return uriResource;
-}
-
-void RenderSVGResource::updateGraphicsContext(GraphicsContext* context, const RenderStyle* style, const RenderObject& renderer, unsigned resourceModeFlags)
-{
-    ASSERT(context);
-    ASSERT(style);
-
-    RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
-    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
-
-    if (SVGRenderSupport::isRenderingClipPathAsMaskImage(renderer)) {
-        // When rendering the mask for a RenderSVGResourceClipper, the stroke code path is never hit.
-        ASSERT(resourceMode == ApplyToFillMode);
-        context->setAlphaAsFloat(1);
-        return;
-    }
-
-    const SVGRenderStyle& svgStyle = style->svgStyle();
-
-    if (resourceMode == ApplyToFillMode) {
-        context->setAlphaAsFloat(svgStyle.fillOpacity());
-        context->setFillRule(svgStyle.fillRule());
-    } else {
-        context->setAlphaAsFloat(svgStyle.strokeOpacity());
-        SVGRenderSupport::applyStrokeStyleToContext(context, style, &renderer);
-    }
 }
 
 RenderSVGResourceSolidColor* RenderSVGResource::sharedSolidPaintingResource()

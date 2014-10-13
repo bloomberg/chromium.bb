@@ -19,11 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -112,17 +110,16 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const 
     return m_patternMap.set(object, patternData.release()).storedValue->value.get();
 }
 
-bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* style, GraphicsContext* context, RenderSVGResourceModeFlags resourceMode)
+SVGPaintServer RenderSVGResourcePattern::preparePaintServer(RenderObject* object, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
 {
     ASSERT(object);
     ASSERT(style);
-    ASSERT(context);
 
     clearInvalidationMask();
 
     SVGPatternElement* patternElement = toSVGPatternElement(element());
     if (!patternElement)
-        return false;
+        return SVGPaintServer::invalid();
 
     if (m_shouldCollectPatternAttributes) {
         patternElement->synchronizeAnimatedSVGAttribute(anyQName());
@@ -136,33 +133,18 @@ bool RenderSVGResourcePattern::applyResource(RenderObject* object, RenderStyle* 
     // then the given effect (e.g. a gradient or a filter) will be ignored.
     FloatRect objectBoundingBox = object->objectBoundingBox();
     if (m_attributes.patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
-        return false;
+        return SVGPaintServer::invalid();
 
     PatternData* patternData = buildPattern(object, patternElement);
     if (!patternData)
-        return false;
+        return SVGPaintServer::invalid();
 
     const SVGRenderStyle& svgStyle = style->svgStyle();
 
     AffineTransform computedPatternSpaceTransform = computeResourceSpaceTransform(object, patternData->transform, svgStyle, resourceMode);
     patternData->pattern->setPatternSpaceTransform(computedPatternSpaceTransform);
 
-    // Draw pattern
-    context->save();
-
-    if (resourceMode & ApplyToFillMode)
-        context->setFillPattern(patternData->pattern);
-    else if (resourceMode & ApplyToStrokeMode)
-        context->setStrokePattern(patternData->pattern);
-
-    updateGraphicsContext(context, style, *object, resourceMode);
-    return true;
-}
-
-void RenderSVGResourcePattern::postApplyResource(GraphicsContext* context)
-{
-    ASSERT(context);
-    context->restore();
+    return SVGPaintServer(patternData->pattern);
 }
 
 static inline FloatRect calculatePatternBoundaries(const PatternAttributes& attributes,

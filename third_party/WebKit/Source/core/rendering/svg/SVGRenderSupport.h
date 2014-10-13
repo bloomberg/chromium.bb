@@ -30,6 +30,7 @@ class AffineTransform;
 class FloatPoint;
 class FloatRect;
 class GraphicsContext;
+class GraphicsContextStateSaver;
 class PaintInvalidationState;
 class LayoutRect;
 struct PaintInfo;
@@ -83,6 +84,11 @@ public:
     // Shared between SVG renderers and resources.
     static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle*, const RenderObject*);
     static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const RenderObject*);
+
+    // Update the GC state (on |stateSaver.context()|) for painting |renderer|
+    // using |style|. |resourceModeFlags| is used to decide between fill/stroke.
+    // Previous state will be saved (if needed) using |stateSaver|.
+    static bool updateGraphicsContext(GraphicsContextStateSaver&, RenderStyle*, RenderObject&, unsigned resourceModeFlags);
 
     // Fill and/or stroke the provided |path|.
     static void fillOrStrokePath(GraphicsContext*, unsigned short resourceMode, const Path&);

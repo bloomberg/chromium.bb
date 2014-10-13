@@ -394,6 +394,39 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
+bool SVGRenderSupport::updateGraphicsContext(GraphicsContextStateSaver& stateSaver, RenderStyle* style, RenderObject& renderer, unsigned resourceModeFlags)
+{
+    ASSERT(style);
+
+    RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
+    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+
+    GraphicsContext* context = stateSaver.context();
+    if (isRenderingClipPathAsMaskImage(renderer)) {
+        if (resourceMode == ApplyToStrokeMode)
+            return false;
+        context->setAlphaAsFloat(1);
+        context->setFillColor(SVGRenderStyle::initialFillPaintColor());
+        return true;
+    }
+
+    SVGPaintServer paintServer = SVGPaintServer::requestForRenderer(renderer, style, resourceModeFlags);
+    if (!paintServer.isValid())
+        return false;
+    paintServer.apply(*context, resourceMode, &stateSaver);
+
+    const SVGRenderStyle& svgStyle = style->svgStyle();
+
+    if (resourceMode == ApplyToFillMode) {
+        context->setAlphaAsFloat(svgStyle.fillOpacity());
+        context->setFillRule(svgStyle.fillRule());
+    } else {
+        context->setAlphaAsFloat(svgStyle.strokeOpacity());
+        applyStrokeStyleToContext(context, style, &renderer);
+    }
+    return true;
+}
+
 void SVGRenderSupport::fillOrStrokePath(GraphicsContext* context, unsigned short resourceMode, const Path& path)
 {
     if (resourceMode & ApplyToFillMode)

@@ -26,7 +26,6 @@
 #include "core/svg/SVGGradientElement.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Gradient.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 
@@ -48,8 +47,7 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override final;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override final;
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags) override final;
-    virtual void postApplyResource(GraphicsContext*) override final;
+    virtual SVGPaintServer preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags) override final;
 
     virtual bool isChildAllowed(RenderObject* child, RenderStyle*) const override final;
 

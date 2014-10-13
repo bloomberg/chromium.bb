@@ -20,6 +20,10 @@
 #ifndef RenderSVGResource_h
 #define RenderSVGResource_h
 
+#include "platform/graphics/Color.h"
+#include "platform/graphics/Gradient.h"
+#include "platform/graphics/Pattern.h"
+
 namespace blink {
 
 enum RenderSVGResourceType {
@@ -42,17 +46,36 @@ enum RenderSVGResourceMode {
 typedef unsigned RenderSVGResourceModeFlags;
 
 class GraphicsContext;
+class GraphicsContextStateSaver;
 class RenderObject;
 class RenderStyle;
 class RenderSVGResourceSolidColor;
+
+class SVGPaintServer {
+public:
+    explicit SVGPaintServer(Color);
+    explicit SVGPaintServer(PassRefPtr<Gradient>);
+    explicit SVGPaintServer(PassRefPtr<Pattern>);
+
+    static SVGPaintServer requestForRenderer(RenderObject&, RenderStyle*, RenderSVGResourceModeFlags);
+
+    void apply(GraphicsContext&, RenderSVGResourceMode, GraphicsContextStateSaver* = 0);
+
+    static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }
+    bool isValid() const { return m_color != Color::transparent; }
+
+private:
+    RefPtr<Gradient> m_gradient;
+    RefPtr<Pattern> m_pattern;
+    Color m_color;
+};
 
 class RenderSVGResource {
 public:
     RenderSVGResource() { }
     virtual ~RenderSVGResource() { }
 
-    virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*, RenderSVGResourceModeFlags);
-    virtual void postApplyResource(GraphicsContext*) { }
+    virtual SVGPaintServer preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags);
 
     virtual RenderSVGResourceType resourceType() const = 0;
 
@@ -62,10 +85,6 @@ public:
     static RenderSVGResourceSolidColor* sharedSolidPaintingResource();
 
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
-
-protected:
-    // Transfer fill/stroke style (except paint server) to the GC.
-    static void updateGraphicsContext(GraphicsContext*, const RenderStyle*, const RenderObject&, unsigned resourceModeFlags);
 };
 
 #define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
