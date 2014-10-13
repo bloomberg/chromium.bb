@@ -1111,7 +1111,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         }
         break;
-    case CSSPropertyTransformOrigin: {
+    case CSSPropertyTransformOrigin:
+    case CSSPropertyWebkitTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
         if (!list)
             return false;
@@ -1138,8 +1139,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTransformOriginZ:
         validPrimitive = validUnit(value, FLength);
         break;
-    case CSSPropertyWebkitTransformOrigin:
-        return parseWebkitTransformOriginShorthand(important);
     case CSSPropertyPerspective:
         if (id == CSSValueNone) {
             validPrimitive = true;
@@ -2962,30 +2961,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     if (value->id == CSSValueInitial || value->id == CSSValueInherit)
         return nullptr;
     return createPrimitiveStringValue(value);
-}
-
-bool CSSPropertyParser::parseWebkitTransformOriginShorthand(bool important)
-{
-    RefPtrWillBeRawPtr<CSSValue> originX = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> originY = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> originZ = nullptr;
-
-    parse2ValuesFillPosition(m_valueList, originX, originY);
-
-    if (m_valueList->current()) {
-        if (!validUnit(m_valueList->current(), FLength))
-            return false;
-        originZ = createPrimitiveNumericValue(m_valueList->current());
-        m_valueList->next();
-    } else {
-        originZ = cssValuePool().createImplicitInitialValue();
-    }
-
-    addProperty(CSSPropertyWebkitTransformOriginX, originX.release(), important);
-    addProperty(CSSPropertyWebkitTransformOriginY, originY.release(), important);
-    addProperty(CSSPropertyWebkitTransformOriginZ, originZ.release(), important);
-
-    return true;
 }
 
 bool CSSPropertyParser::parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result)

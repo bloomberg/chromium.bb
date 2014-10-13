@@ -128,7 +128,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunction();
 
-    bool parseWebkitTransformOriginShorthand(bool important);
     bool parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result);
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(CSSPropertyID);
     PassRefPtrWillBeRawPtr<CSSValueList> parseAnimationPropertyList(CSSPropertyID);

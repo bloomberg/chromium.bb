@@ -365,6 +365,7 @@ visibility animatable, inherited
 -webkit-text-stroke-color animatable, inherited, custom_all
 -webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
 -webkit-transform use_handlers_for=CSSPropertyTransform
+-webkit-transform-origin use_handlers_for=CSSPropertyTransformOrigin
 -webkit-transform-origin-x converter=convertLength
 -webkit-transform-origin-y converter=convertLength
 -webkit-transform-origin-z converter=convertComputedLength<float>
@@ -499,7 +500,6 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-mask-repeat longhands=-webkit-mask-repeat-x;-webkit-mask-repeat-y
 -webkit-text-emphasis longhands=-webkit-text-emphasis-style;-webkit-text-emphasis-color
 -webkit-text-stroke longhands=-webkit-text-stroke-width;-webkit-text-stroke-color
--webkit-transform-origin longhands=-webkit-transform-origin-x;-webkit-transform-origin-y;-webkit-transform-origin-z
 -webkit-transition longhands=-webkit-transition-property;-webkit-transition-duration;-webkit-transition-timing-function;-webkit-transition-delay
 
 // Aliases; these map to the same CSSPropertyID

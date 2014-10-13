@@ -75,6 +75,7 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:
+    case CSSPropertyWebkitTransformOrigin:
         return CSSPropertyTransformOrigin;
     default:
         break;

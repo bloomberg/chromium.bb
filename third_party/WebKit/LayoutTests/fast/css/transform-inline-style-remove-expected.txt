@@ -12,9 +12,9 @@ transition property (after):
 transition duration (after): 
 transition timing function (after): 
 
-transform origin (before): 0% 30%
-transform origin X (before): 0%
-transform origin Y (before): 30%
+transform origin (before): left 30% 0px
+transform origin X (before): 
+transform origin Y (before): 
 transform origin (after): 
 transform origin X (after): 
 transform origin Y (after): 

@@ -5,7 +5,7 @@ transform-origin 10ms
 fired transitionend with propertyName: transform-origin
 
 -webkit-transform-origin 10ms
-fired transitionend with propertyName: -webkit-transform-origin-z
+fired transitionend with propertyName: -webkit-transform-origin
 
 -webkit-transform-origin-x 10ms
 fired transitionend with propertyName: -webkit-transform-origin-x

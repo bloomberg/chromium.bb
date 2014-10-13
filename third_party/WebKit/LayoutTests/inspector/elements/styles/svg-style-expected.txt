@@ -11,9 +11,7 @@ fill: red;
 
 [expanded] 
 *  { (user agent stylesheet)
--webkit-transform-origin-x: 0px;
--webkit-transform-origin-y: 0px;
--webkit-transform-origin-z: initial;
+-webkit-transform-origin: 0px 0px 0px;
 
 
 
