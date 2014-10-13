@@ -39,7 +39,6 @@ struct smoke {
 	struct widget *widget;
 	int width, height;
 	int current;
-	uint32_t time;
 	struct { float *d, *u, *v; } b[2];
 };
 
@@ -171,27 +170,10 @@ static void render(struct smoke *smoke, cairo_surface_t *surface)
 }
 
 static void
-frame_callback(void *data, struct wl_callback *callback, uint32_t time)
-{
-	struct smoke *smoke = data;
-
-	window_schedule_redraw(smoke->window);
-	smoke->time = time;
-
-	if (callback)
-		wl_callback_destroy(callback);
-}
-
-static const struct wl_callback_listener listener = {
-	frame_callback,
-};
-
-static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct smoke *smoke = data;
-	uint32_t time = smoke->time;
-	struct wl_callback *callback;
+	uint32_t time = widget_get_last_time(smoke->widget);
 	cairo_surface_t *surface;
 
 	diffuse(smoke, time / 30, smoke->b[0].u, smoke->b[1].u);
@@ -222,9 +204,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	cairo_surface_destroy(surface);
 
-	callback = wl_surface_frame(window_get_wl_surface(smoke->window));
-	wl_callback_add_listener(callback, &listener, smoke);
-	wl_surface_commit(window_get_wl_surface(smoke->window));
+	widget_schedule_redraw(smoke->widget);
 }
 
 static void
