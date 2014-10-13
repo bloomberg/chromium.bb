@@ -78,15 +78,6 @@ static_library("invalidation") {
       "ticl_settings_provider.h",
     ]
   }
-  if (is_android) {
-    sources += [
-      "android/component_jni_registrar.cc",
-      "android/component_jni_registrar.h",
-      "invalidation_service_android.cc",
-      "invalidation_service_android.h",
-    ]
-    deps += [ ":jni_headers" ]
-  }
 
   public_deps = [
     "//third_party/cacheinvalidation",
@@ -104,6 +95,16 @@ static_library("invalidation") {
     "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
+
+  if (is_android) {
+    sources += [
+      "android/component_jni_registrar.cc",
+      "android/component_jni_registrar.h",
+      "invalidation_service_android.cc",
+      "invalidation_service_android.h",
+    ]
+    deps += [ ":jni_headers" ]
+  }
 }
 
 static_library("unittests") {
@@ -141,17 +142,7 @@ static_library("test_support") {
     "unacked_invalidation_set_test_util.cc",
     "unacked_invalidation_set_test_util.h",
   ]
-  if (!is_android) {
-    sources += [
-      "p2p_invalidation_service.cc",
-      "p2p_invalidation_service.h",
-    ]
-  }
-  if (is_android) {
-    deps += [
-      ":jni_headers",
-    ]
-  }
+
   deps = [
     "//base",
     "//components/gcm_driver:test_support",
@@ -167,23 +158,40 @@ static_library("test_support") {
     "//third_party/protobuf:protobuf_lite",
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
+
+  if (is_android) {
+    deps += [
+      ":jni_headers",
+    ]
+  } else {
+    sources += [
+      "p2p_invalidation_service.cc",
+      "p2p_invalidation_service.h",
+    ]
+  }
 }
 
 if (is_android) {
-  static_library("java") {
+  android_library("java") {
     deps = [
-      "//base",
-      "//sync:java",
-      "//third_party/cacheinvalidation:javalib",
+      "//base:base_java",
+      "//sync/android:sync_java",
+      "//third_party/cacheinvalidation:cacheinvalidation_javalib",
+      "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
+      "//third_party/jsr-305:jsr_305_javalib",
     ]
-    sources = [
-    ]
+    DEPRECATED_java_in_dir = "android/java/src"
   }
-  static_library("javatests") {
+  android_library("javatests") {
     deps = [
       ":java",
-      "//base:java_test_support",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//sync/android:sync_java",
+      "//third_party/cacheinvalidation:cacheinvalidation_javalib",
+      "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     ]
+    DEPRECATED_java_in_dir = "android/javatests/src"
   }
   generate_jni("jni_headers") {
     sources = [

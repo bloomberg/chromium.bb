@@ -8,6 +8,10 @@ import("//build/config/ui.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/version.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 if (!is_android) {
 
 # TODO(GYP) for Windows need to the the reorder-imports step which probably
@@ -322,7 +326,7 @@ group("packed_resources") {
 }
 
 repack("packed_extra_resources") {
-  visibility = [ ":*" ]
+  visibility = [ "./*" ]
   sources = [
     "$root_gen_dir/chrome/browser_resources.pak",
     "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
@@ -521,4 +525,49 @@ group("strings") {
     "//chrome/app:google_chrome_strings",
     "//chrome/app/resources:locale_settings",
   ]
+}
+
+if (is_android) {
+
+# GYP: //chrome/chrome.gyp:page_info_connection_type_java
+java_cpp_enum("page_info_connection_type_javagen") {
+  sources = [
+    "browser/ui/android/website_settings_popup_android.h"
+  ]
+  outputs = [
+    "org/chromium/chrome/browser/PageInfoConnectionType.java",
+  ]
+}
+
+# GYP: //chrome/chrome_android.gypi:chrome_android_core
+static_library("chrome_android_core") {
+  sources = [
+    "app/android/chrome_android_initializer.cc",
+    "app/android/chrome_android_initializer.h",
+    "app/android/chrome_main_delegate_android.cc",
+    "app/android/chrome_main_delegate_android.h",
+    "app/chrome_main_delegate.cc",
+    "app/chrome_main_delegate.h",
+  ]
+
+  include_dirs = [
+    android_ndk_include_dir,
+  ]
+
+  libs = [
+    "android",
+    "jnigraphics",
+  ]
+
+  deps = [
+    "//chrome/browser",
+    "//chrome/browser/ui",
+    "//chrome/plugin",
+    "//chrome/renderer",
+    "//chrome/utility",
+    "//components/enhanced_bookmarks",
+    "//content/public/app:browser",
+  ]
+}
+
 }

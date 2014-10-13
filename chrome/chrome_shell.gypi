@@ -12,6 +12,7 @@
   },
   'targets': [
     {
+      # GN: //chrome/android:chrome_shell_base
       'target_name': 'libchromeshell_base',
       'type': 'static_library',
       'dependencies': [
@@ -51,6 +52,7 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_shell
       'target_name': 'libchromeshell',
       'type': 'shared_library',
       'sources': [
@@ -65,6 +67,7 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_sync_shell
       'target_name': 'libchromesyncshell',
       'type': 'shared_library',
       'sources': [
@@ -80,6 +83,7 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_shell_apk
       'target_name': 'chrome_shell_apk',
       'type': 'none',
       'dependencies': [
@@ -102,6 +106,7 @@
       'includes': [ '../build/java_apk.gypi', ],
     },
     {
+      # GN: N/A
       # chrome_shell_apk creates a .jar as a side effect. Any java targets
       # that need that .jar in their classpath should depend on this target,
       # chrome_shell_apk_java. Dependents of chrome_shell_apk receive its
@@ -132,6 +137,7 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_sync_shell_apk
       'target_name': 'chrome_sync_shell_apk',
       'type': 'none',
       'dependencies': [
@@ -157,6 +163,7 @@
       'includes': [ '../build/java_apk.gypi', ],
     },
     {
+      # GN: N/A
       # chrome_sync_shell_apk creates a .jar as a side effect. Any java
       # targets that need that .jar in their classpath should depend on this
       # target. Dependents of chrome_sync_shell_apk receive its jar path in the

@@ -18,6 +18,7 @@
   ],
   'targets': [
     {
+      # GN: //chrome:chrome_android_core
       'target_name': 'chrome_android_core',
       'type': 'static_library',
       'dependencies': [
@@ -52,6 +53,7 @@
       },
     },
     {
+      # GYP: //chrome/android:chrome_version_java
       'target_name': 'chrome_version_java',
       'type': 'none',
       'variables': {

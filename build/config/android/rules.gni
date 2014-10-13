@@ -34,8 +34,9 @@ template("generate_jni") {
   assert(defined(invoker.sources))
   assert(defined(invoker.jni_package))
   jni_package = invoker.jni_package
-  base_output_dir = "${root_gen_dir}/${target_name}/${jni_package}"
-  jni_output_dir = "${base_output_dir}/jni"
+  base_output_dir = "${target_gen_dir}/${target_name}"
+  package_output_dir = "${base_output_dir}/${jni_package}"
+  jni_output_dir = "${package_output_dir}/jni"
 
   jni_generator_include = "//base/android/jni_generator/jni_generator_helper.h"
 
@@ -66,7 +67,13 @@ template("generate_jni") {
   }
 
   config("jni_includes_${target_name}") {
-    include_dirs = [ base_output_dir ]
+    # TODO(cjhopman): #includes should probably all be relative to
+    # base_output_dir. Remove that from this config once the includes are
+    # updated.
+    include_dirs = [
+      base_output_dir,
+      package_output_dir,
+    ]
   }
 
   group(target_name) {
@@ -79,6 +86,8 @@ template("generate_jni") {
     if (defined(invoker.public_deps)) {
       public_deps = invoker.public_deps
     }
+
+    if (defined(invoker.visibility)) { visibility = invoker.visibility }
   }
 }
 
@@ -982,8 +991,9 @@ template("unittest_apk") {
     android_manifest = "//testing/android/java/AndroidManifest.xml"
     unittests_outputs = [ unittests_binary ]
     native_libs = [unittests_outputs[0]]
+    deps = [ "//base:base_java" ]
     if (defined(invoker.deps)) {
-      deps = invoker.deps
+      deps += invoker.deps
     }
     datadeps = [
       "//tools/android/md5sum",

@@ -63,6 +63,7 @@ if (is_android) {
 
   # Path to the Android NDK and SDK.
   android_ndk_root = "//third_party/android_tools/ndk"
+  android_ndk_include_dir = "$android_ndk_root/usr/include"
 
   android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
 

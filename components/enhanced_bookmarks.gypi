@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //components/enhanced_bookmarks:enhanced_bookmarks
       'target_name': 'enhanced_bookmarks',
       'type': 'static_library',
       'include_dirs': [
@@ -59,6 +60,7 @@
       ],
     },
     {
+      # GN: //components/enhanced_bookmarks:enhanced_bookmarks_test_support
       'target_name': 'enhanced_bookmarks_test_support',
       'type': 'static_library',
       'include_dirs': [

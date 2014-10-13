@@ -3493,6 +3493,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN: //chrome/browser:jni_headers
           'target_name': 'chrome_browser_jni_headers',
           'type': 'none',
           'sources': [ '<@(chrome_browser_jni_sources)' ],
@@ -3502,6 +3503,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # GN: //chrome/android:activity_type_ids_javagen
           'target_name': 'activity_type_ids_java',
           'type': 'none',
           'sources': [
@@ -3514,6 +3516,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //chrome/android:app_banner_metrics_ids_javagen
           'target_name': 'app_banner_metrics_ids_java',
           'type': 'none',
           'sources': [
@@ -3526,6 +3529,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //chrome/android:resource_id_javagen
           'target_name': 'resource_id_java',
           'type': 'none',
           'sources': [
@@ -3538,6 +3542,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //chrome/android/profile_account_management_metrics_javagen
           'target_name': 'profile_account_management_metrics_java',
           'type': 'none',
           'sources': [
@@ -3550,6 +3555,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //chrome/android:profile_sync_service_model_type_selection_javagen
           'target_name': 'profile_sync_service_model_type_selection_java',
           'type': 'none',
           'sources': [
@@ -3562,6 +3568,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //chrome/android:toolbar_model_security_levels_javagen
           'target_name': 'toolbar_model_security_levels_java',
           'type': 'none',
           'sources': [
@@ -3574,6 +3581,7 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          # GN: //chrome/android:tab_load_status_javagen
           'target_name': 'tab_load_status_java',
           'type': 'none',
           'sources': [

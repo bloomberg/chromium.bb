@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(!is_android && !is_ios)
+
 source_ids = "//third_party/usb_ids/usb.ids"
 generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 

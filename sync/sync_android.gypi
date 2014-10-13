@@ -7,6 +7,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN: //sync/android:sync_java
           'target_name': 'sync_java',
           'type': 'none',
           'variables': {

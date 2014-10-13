@@ -175,6 +175,7 @@
         ['OS=="android"', {
           'targets': [
             {
+              # GN: //components/dom_distiller/android:dom_distiller_core_java
               'target_name': 'dom_distiller_core_java',
               'type': 'none',
               'dependencies': [
@@ -188,6 +189,7 @@
               'includes': [ '../build/java.gypi' ],
             },
             {
+              # GN: //components/dom_distiller/android:dom_distiller_core_font_family_javagen
               'target_name': 'dom_distiller_core_font_family_java',
               'type': 'none',
               'sources': [
@@ -200,6 +202,7 @@
               'includes': [ '../build/android/java_cpp_template.gypi' ],
             },
             {
+              # GN: //components/dom_distiller/core:jni_headers
               'target_name': 'dom_distiller_core_jni_headers',
               'type': 'none',
               'sources': [
@@ -213,6 +216,7 @@
               'includes': [ '../build/jni_generator.gypi' ],
             },
             {
+              # GN: //components/dom_distiller/android:dom_distiller_core_theme_javagen
               'target_name': 'dom_distiller_core_theme_java',
               'type': 'none',
               'sources': [

@@ -694,6 +694,8 @@ static_library("test_support_sync_fake_server") {
     "//sync",
   ]
 
+  forward_dependent_configs_from = [ "//third_party/protobuf:protobuf_lite" ]
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -764,4 +766,49 @@ if (!is_ios) {
   }
 }
 
-#TODO(GYP): Need to port sync_android.gypi and Android test targets.
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  # GYP: //sync/sync_tests.gypi:fake_server_jni
+  generate_jni("fake_server_jni") {
+    testonly = true
+    jni_package = "sync/test/fake_server"
+    sources = [
+      "//chrome/android/sync_shell/javatests/src/chromium/chrome/browser/sync/FakeServerHelper.java"
+    ]
+  }
+
+  # GYP: //sync/sync_tests.gypi:sync_java_test_support
+  android_library("sync_java_test_support") {
+    testonly = true
+    deps = [
+      "android:sync_java",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//third_party/jsr-305:jsr_305_javalib",
+    ]
+    DEPRECATED_java_in_dir = "test/android/javatests/src"
+  }
+
+  # GYP: //sync/sync_tests.gypi:test_support_sync_fake_server_android
+  static_library("test_support_sync_fake_server_android") {
+    testonly = true
+    sources = [
+      "test/fake_server/android/fake_server_helper_android.cc",
+      "test/fake_server/android/fake_server_helper_android.h",
+    ]
+    deps = [
+      ":fake_server_jni",
+      ":test_support_sync_fake_server",
+      "//base",
+    ]
+  }
+
+  # GYP: //sync/sync_tests.gypi:sync_unit_tests_apk
+  unittest_apk("sync_unit_tests_apk") {
+    unittests_dep = ":sync_unit_tests"
+    deps =  [
+      ":sync_unit_tests",
+    ]
+  }
+}

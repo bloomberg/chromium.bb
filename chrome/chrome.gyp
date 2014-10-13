@@ -577,6 +577,7 @@
       {
       'targets': [
         {
+          # GN: //chrome/android:chrome_java
           'target_name': 'chrome_java',
           'type': 'none',
           'dependencies': [
@@ -597,7 +598,6 @@
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:navigation_interception_java',
-            '../components/components.gyp:sessions',
             '../components/components.gyp:variations_java',
             '../components/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
@@ -621,6 +621,7 @@
           ],
         },
         {
+          # GN: //chrome/android:chrome_strings_grd
           'target_name': 'chrome_strings_grd',
           'type': 'none',
           'variables': {
@@ -631,6 +632,7 @@
           ],
         },
         {
+          # GN: //chrome:page_info_connection_type_javagen
           'target_name': 'page_info_connection_type_java',
           'type': 'none',
           'variables': {

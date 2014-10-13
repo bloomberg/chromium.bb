@@ -50,6 +50,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN version: //components/navigation_intercaption/android:navigation_interception_java
           'target_name': 'navigation_interception_java',
           'type': 'none',
           'dependencies': [

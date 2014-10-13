@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks
 source_set("enhanced_bookmarks") {
   sources = [
     "bookmark_image_service.cc",
@@ -48,6 +49,7 @@ source_set("enhanced_bookmarks") {
   }
 }
 
+# GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks_test_support
 source_set("test_support") {
   testonly = true
   sources = [

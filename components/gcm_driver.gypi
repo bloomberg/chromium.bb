@@ -135,6 +135,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN version: //components/gcm_driver/android:gcm_driver_java
           'target_name': 'gcm_driver_java',
           'type': 'none',
           'dependencies': [
@@ -149,7 +150,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # GN version: //components/gcm_driver:jni_headers
+          # GN version: //components/gcm_driver/android:jni_headers
           'target_name': 'gcm_driver_jni_headers',
           'type': 'none',
           'sources': [

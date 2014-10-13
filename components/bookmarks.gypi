@@ -125,6 +125,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN: //components/common/android:bookmarks_java
           'target_name': 'bookmarks_java',
           'type': 'none',
           'dependencies': [
@@ -137,6 +138,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //components/common/android:bookmarks_jni_headers
           'target_name': 'bookmarks_jni_headers',
           'type': 'none',
           'sources': [
@@ -148,6 +150,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # GN: //components/common/android:bookmarks_type_javagen
           'target_name': 'bookmark_type_java',
           'type': 'none',
           'sources': [

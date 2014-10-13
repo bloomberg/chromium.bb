@@ -52,6 +52,7 @@ static_library("variations") {
 }
 
 if (is_android) {
+  # GYP: //components/variations.gypi:variations_jni_headers
   generate_jni("jni") {
     sources = [
       "android/java/src/org/chromium/components/variations/VariationsAssociatedData.java",

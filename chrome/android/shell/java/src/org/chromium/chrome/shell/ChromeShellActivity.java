@@ -306,46 +306,45 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                 containerView.requestFocus();
             }
         }
-        switch (item.getItemId()) {
-            case R.id.signin:
-                if (ChromeSigninController.get(this).isSignedIn()) {
-                    SyncController.openSignOutDialog(getFragmentManager());
-                } else if (AccountManagerHelper.get(this).hasGoogleAccounts()) {
-                    SyncController.openSigninDialog(getFragmentManager());
-                } else {
-                    Toast.makeText(this, R.string.signin_no_account, Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            case R.id.print:
-                if (activeTab != null) {
-                    mPrintingController.startPrint(new TabPrinter(activeTab),
-                            new PrintManagerDelegateImpl(this));
-                }
-                return true;
-            case R.id.distill_page:
-                if (activeTab != null) {
-                    DomDistillerTabUtils.distillCurrentPageAndView(
-                            activeTab.getContentViewCore().getWebContents());
-                }
-                return true;
-            case R.id.back_menu_id:
-                if (activeTab != null && activeTab.canGoBack()) {
-                    activeTab.goBack();
-                }
-                return true;
-            case R.id.forward_menu_id:
-                if (activeTab != null && activeTab.canGoForward()) {
-                    activeTab.goForward();
-                }
-                return true;
-            case R.id.share_menu_id:
-            case R.id.direct_share_menu_id:
-                ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
-                        activeTab.getTitle(), activeTab.getUrl(), null,
-                        Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        if (id == R.id.signin) {
+            if (ChromeSigninController.get(this).isSignedIn()) {
+                SyncController.openSignOutDialog(getFragmentManager());
+            } else if (AccountManagerHelper.get(this).hasGoogleAccounts()) {
+                SyncController.openSigninDialog(getFragmentManager());
+            } else {
+                Toast.makeText(this, R.string.signin_no_account, Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        } else if (id == R.id.print) {
+            if (activeTab != null) {
+                mPrintingController.startPrint(new TabPrinter(activeTab),
+                        new PrintManagerDelegateImpl(this));
+            }
+            return true;
+        } else if (id == R.id.distill_page) {
+            if (activeTab != null) {
+                DomDistillerTabUtils.distillCurrentPageAndView(
+                        activeTab.getContentViewCore().getWebContents());
+            }
+            return true;
+        } else if (id == R.id.back_menu_id) {
+            if (activeTab != null && activeTab.canGoBack()) {
+                activeTab.goBack();
+            }
+            return true;
+        } else if (id == R.id.forward_menu_id) {
+            if (activeTab != null && activeTab.canGoForward()) {
+                activeTab.goForward();
+            }
+            return true;
+        } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
+            ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
+                    activeTab.getTitle(), activeTab.getUrl(), null,
+                    Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 

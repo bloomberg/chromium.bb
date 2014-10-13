@@ -83,6 +83,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN version: //components/variations/android:variations_java
           'target_name': 'variations_java',
           'type': 'none',
           'dependencies': [
@@ -94,7 +95,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # GN version: //components/variations:variations_java
+          # GN version: //components/variations:jni
           'target_name': 'variations_jni_headers',
           'type': 'none',
           'sources': [

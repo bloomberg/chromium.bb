@@ -426,6 +426,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN: //sync/android:sync_javatests
           'target_name': 'sync_javatests',
           'type': 'none',
           'variables': {
@@ -439,6 +440,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //sync:sync_java_test_support
           'target_name': 'sync_java_test_support',
           'type': 'none',
           'variables': {
@@ -450,6 +452,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //sync:sync_fake_server_jni_headers
           'target_name': 'sync_fake_server_jni_headers',
           'type': 'none',
           'sources': [
@@ -462,6 +465,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # GN: //sync:test_support_sync_fake_server_android
           'target_name': 'test_support_sync_fake_server_android',
           'type': 'static_library',
           'dependencies': [
@@ -474,11 +478,8 @@
             'test/fake_server/android/fake_server_helper_android.h',
           ],
         },
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
         {
+          # GN: //sync:sync_unit_tests_apk
           'target_name': 'sync_unit_tests_apk',
           'type': 'none',
           'dependencies': [

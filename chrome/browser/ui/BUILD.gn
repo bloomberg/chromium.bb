@@ -440,10 +440,15 @@ source_set("test_support") {
     "pdf/pdf_browsertest_base.h",
     "test/test_confirm_bubble_model.cc",
     "test/test_confirm_bubble_model.h",
-    "views/find_bar_host_unittest_util_views.cc",
     "website_settings/mock_permission_bubble_request.cc",
     "website_settings/mock_permission_bubble_request.h",
   ]
+
+  if (toolkit_views) {
+    sources += [
+      "views/find_bar_host_unittest_util_views.cc",
+    ]
+  }
 
   public_deps = [
     ":ui",

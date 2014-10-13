@@ -232,6 +232,7 @@ if (use_cups) {
 }
 
 if (is_android) {
+  # GYP: //printing/printing.gyp:printing_jni_headers
   generate_jni("printing_jni_headers") {
     sources = [
       "android/java/src/org/chromium/printing/PrintingContext.java",
@@ -239,16 +240,11 @@ if (is_android) {
     jni_package = "printing"
   }
 
-  # TODO(GYP)
-  #{
-  #  'target_name': 'printing_java',
-  #  'type': 'none',
-  #  'variables': {
-  #    'java_in_dir': '../printing/android/java',
-  #  },
-  #  'dependencies': [
-  #    '../base/base.gyp:base_java',
-  #  ],
-  #  'includes': [ '../build/java.gypi'  ],
-  #}
+  # GYP: //printing/printing.gyp:printing_java
+  android_library("printing_java") {
+    deps = [
+      "//base:base_java"
+    ]
+    DEPRECATED_java_in_dir = "android/java/src"
+  }
 }

@@ -292,6 +292,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN: //printing:printing_jni_headers
           'target_name': 'printing_jni_headers',
           'type': 'none',
           'sources': [
@@ -302,8 +303,9 @@
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
-	{
-	  'target_name': 'printing_java',
+        {
+          # GN: //printing:printing_java
+          'target_name': 'printing_java',
           'type': 'none',
           'variables': {
             'java_in_dir': '../printing/android/java',
@@ -312,7 +314,7 @@
             '../base/base.gyp:base_java',
           ],
           'includes': [ '../build/java.gypi'  ],
-	}
+        }
       ]
     }],
   ]

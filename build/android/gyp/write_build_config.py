@@ -171,6 +171,9 @@ def main(argv):
     config['resources'] = {}
     config['resources']['dependency_zips'] = [
         c['resources_zip'] for c in all_resources_deps]
+    config['resources']['extra_package_names'] = []
+
+  if options.type == 'android_apk':
     config['resources']['extra_package_names'] = [
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
 

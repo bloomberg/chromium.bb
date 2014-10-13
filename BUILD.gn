@@ -168,6 +168,7 @@ group("root") {
     deps += [
       "//third_party/openmax_dl/dl",
       "//content/shell/android:content_shell_apk",
+      "//chrome/android:chrome_shell_apk",
       "//ui/android:ui_java",
       "//third_party/android_tools:android_gcm_java",
       "//third_party/android_tools:uiautomator_java",

@@ -8,6 +8,7 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN: //components/web_contents_delegate_android:web_contents_delegate_android
           'target_name': 'web_contents_delegate_android',
           'type': 'static_library',
           'dependencies': [
@@ -37,6 +38,7 @@
           ],
         },
         {
+          # GN: //components/web_contents_delegate_android:web_contents_delegate_android_java
           'target_name': 'web_contents_delegate_android_java',
           'type': 'none',
           'dependencies': [
@@ -49,6 +51,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //components/web_contents_delegate_android:web_contents_delegate_android_jni_headers
           'target_name': 'web_contents_delegate_android_jni_headers',
           'type': 'none',
           'sources': [

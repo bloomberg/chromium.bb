@@ -85,11 +85,6 @@ template("write_build_config") {
       deps += invoker.deps
     }
 
-    outputs = [
-      depfile,
-      build_config
-    ]
-
     possible_deps_configs = []
     foreach(d, deps) {
       dep_gen_dir = get_label_info(d, "target_gen_dir")
@@ -97,6 +92,11 @@ template("write_build_config") {
       possible_deps_configs += [ "$dep_gen_dir/$dep_name.build_config" ]
     }
     rebase_possible_deps_configs = rebase_path(possible_deps_configs)
+
+    outputs = [
+      depfile,
+      build_config
+    ]
 
     args = [
       "--type", type,
@@ -565,6 +565,14 @@ template("android_java_library") {
   if (defined(invoker.java_files)) {
     _java_files = invoker.java_files
   } else if (defined(invoker.DEPRECATED_java_in_dir)) {
+    _src_dir = invoker.DEPRECATED_java_in_dir + "/src"
+    _src_dir_exists = exec_script("//build/dir_exists.py",
+          [ rebase_path(_src_dir, root_build_dir) ],
+          "string")
+    assert(_src_dir_exists == "False",
+        "In GN, java_in_dir should be the fully specified java directory " +
+        "(i.e. including the trailing \"/src\")")
+
     _java_files_build_rel = exec_script(
         "//build/android/gyp/find.py",
         [
@@ -718,10 +726,9 @@ template("copy_ex") {
 
   action(target_name) {
     script = "//build/android/gyp/copy_ex.py"
-    depfile = "$target_gen_dir/$target_name.d"
-    outputs = [
-      depfile,
-    ]
+
+    if (defined(invoker.deps)) { deps = invoker.deps }
+
     sources = []
     if (defined(invoker.sources)) {
       sources += invoker.sources
@@ -732,18 +739,24 @@ template("copy_ex") {
       inputs += invoker.inputs
     }
 
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+    ]
+
     args = [
       "--depfile", rebase_path(depfile, root_build_dir),
       "--dest", rebase_path(invoker.dest, root_build_dir),
     ]
-    if (defined(invoker.args)) {
-      args += invoker.args
-    }
     rebased_sources = rebase_path(sources, root_build_dir)
     args += [ "--files=$rebased_sources" ]
 
     if (defined(invoker.clear_dir) && invoker.clear_dir) {
       args += ["--clear"]
+    }
+
+    if (defined(invoker.args)) {
+      args += invoker.args
     }
   }
 }

@@ -16,5 +16,5 @@ android_library("content_java_test_support") {
     "//base:base_java_test_support",
     "//content/public/android:content_java",
   ]
-  DEPRECATED_java_in_dir = "javatests"
+  DEPRECATED_java_in_dir = "javatests/src"
 }
