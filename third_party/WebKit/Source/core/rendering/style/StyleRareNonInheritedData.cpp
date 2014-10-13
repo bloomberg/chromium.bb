@@ -37,8 +37,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_aspectRatioDenominator(RenderStyle::initialAspectRatioDenominator())
     , m_aspectRatioNumerator(RenderStyle::initialAspectRatioNumerator())
     , m_perspective(RenderStyle::initialPerspective())
-    , m_perspectiveOriginX(RenderStyle::initialPerspectiveOriginX())
-    , m_perspectiveOriginY(RenderStyle::initialPerspectiveOriginY())
+    , m_perspectiveOrigin(RenderStyle::initialPerspectiveOrigin())
     , lineClamp(RenderStyle::initialLineClamp())
     , m_draggableRegionMode(DraggableRegionNone)
     , m_mask(MaskFillLayer, true)
@@ -104,8 +103,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_aspectRatioDenominator(o.m_aspectRatioDenominator)
     , m_aspectRatioNumerator(o.m_aspectRatioNumerator)
     , m_perspective(o.m_perspective)
-    , m_perspectiveOriginX(o.m_perspectiveOriginX)
-    , m_perspectiveOriginY(o.m_perspectiveOriginY)
+    , m_perspectiveOrigin(o.m_perspectiveOrigin)
     , lineClamp(o.lineClamp)
     , m_draggableRegionMode(o.m_draggableRegionMode)
     , m_deprecatedFlexibleBox(o.m_deprecatedFlexibleBox)
@@ -193,8 +191,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_aspectRatioDenominator == o.m_aspectRatioDenominator
         && m_aspectRatioNumerator == o.m_aspectRatioNumerator
         && m_perspective == o.m_perspective
-        && m_perspectiveOriginX == o.m_perspectiveOriginX
-        && m_perspectiveOriginY == o.m_perspectiveOriginY
+        && m_perspectiveOrigin == o.m_perspectiveOrigin
         && lineClamp == o.lineClamp
         && m_draggableRegionMode == o.m_draggableRegionMode
         && m_deprecatedFlexibleBox == o.m_deprecatedFlexibleBox

@@ -59,6 +59,7 @@
 #include "core/rendering/style/StyleWillChangeData.h"
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
+#include "platform/LengthPoint.h"
 #include "platform/LengthSize.h"
 #include "platform/ThemeTypes.h"
 #include "platform/fonts/FontBaseline.h"
@@ -914,8 +915,9 @@ public:
     EBackfaceVisibility backfaceVisibility() const { return static_cast<EBackfaceVisibility>(rareNonInheritedData->m_backfaceVisibility); }
     float perspective() const { return rareNonInheritedData->m_perspective; }
     bool hasPerspective() const { return rareNonInheritedData->m_perspective > 0; }
-    const Length& perspectiveOriginX() const { return rareNonInheritedData->m_perspectiveOriginX; }
-    const Length& perspectiveOriginY() const { return rareNonInheritedData->m_perspectiveOriginY; }
+    const LengthPoint& perspectiveOrigin() const { return rareNonInheritedData->m_perspectiveOrigin; }
+    const Length& perspectiveOriginX() const { return perspectiveOrigin().x(); }
+    const Length& perspectiveOriginY() const { return perspectiveOrigin().y(); }
     const LengthSize& pageSize() const { return rareNonInheritedData->m_pageSize; }
     PageSizeType pageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
 
@@ -1383,8 +1385,9 @@ public:
     void setTransformStyle3D(ETransformStyle3D b) { SET_VAR(rareNonInheritedData, m_transformStyle3D, b); }
     void setBackfaceVisibility(EBackfaceVisibility b) { SET_VAR(rareNonInheritedData, m_backfaceVisibility, b); }
     void setPerspective(float p) { SET_VAR(rareNonInheritedData, m_perspective, p); }
-    void setPerspectiveOriginX(const Length& l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginX, l); }
-    void setPerspectiveOriginY(const Length& l) { SET_VAR(rareNonInheritedData, m_perspectiveOriginY, l); }
+    void setPerspectiveOriginX(const Length& v) { setPerspectiveOrigin(LengthPoint(v, perspectiveOriginY())); }
+    void setPerspectiveOriginY(const Length& v) { setPerspectiveOrigin(LengthPoint(perspectiveOriginX(), v)); }
+    void setPerspectiveOrigin(const LengthPoint& p) { SET_VAR(rareNonInheritedData, m_perspectiveOrigin, p); }
     void setPageSize(const LengthSize& s) { SET_VAR(rareNonInheritedData, m_pageSize, s); }
     void setPageSizeType(PageSizeType t) { SET_VAR(rareNonInheritedData, m_pageSizeType, t); }
     void resetPageSizeType() { SET_VAR(rareNonInheritedData, m_pageSizeType, PAGE_SIZE_AUTO); }
@@ -1666,6 +1669,7 @@ public:
     static float initialPerspective() { return 0; }
     static Length initialPerspectiveOriginX() { return Length(50.0, Percent); }
     static Length initialPerspectiveOriginY() { return Length(50.0, Percent); }
+    static LengthPoint initialPerspectiveOrigin() { return LengthPoint(Length(50.0, Percent), Length(50.0, Percent)); }
     static Color initialBackgroundColor() { return Color::transparent; }
     static TextEmphasisFill initialTextEmphasisFill() { return TextEmphasisFillFilled; }
     static TextEmphasisMark initialTextEmphasisMark() { return TextEmphasisMarkNone; }

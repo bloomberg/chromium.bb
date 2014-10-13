@@ -233,7 +233,7 @@ page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
 paint-order inherited, svg, converter=convertPaintOrder
 perspective animatable, converter=convertPerspective
-perspective-origin animatable, custom_all
+perspective-origin animatable, converter=convertPerspectiveOrigin
 pointer-events inherited
 position
 quotes inherited, converter=convertQuotes

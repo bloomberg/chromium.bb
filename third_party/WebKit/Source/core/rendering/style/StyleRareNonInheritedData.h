@@ -96,8 +96,7 @@ public:
     float m_aspectRatioNumerator;
 
     float m_perspective;
-    Length m_perspectiveOriginX;
-    Length m_perspectiveOriginY;
+    LengthPoint m_perspectiveOrigin;
 
     LineClampValue lineClamp; // An Apple extension.
     DraggableRegionMode m_draggableRegionMode;

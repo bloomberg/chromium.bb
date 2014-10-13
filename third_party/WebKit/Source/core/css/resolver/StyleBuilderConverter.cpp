@@ -596,6 +596,39 @@ float StyleBuilderConverter::convertPerspective(StyleResolverState& state, CSSVa
     return convertPerspectiveLength(state, primitiveValue);
 }
 
+template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
+static Length convertOriginLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+{
+    if (primitiveValue->isValueID()) {
+        switch (primitiveValue->getValueID()) {
+        case cssValueFor0:
+            return Length(0, Percent);
+        case cssValueFor100:
+            return Length(100, Percent);
+        case CSSValueCenter:
+            return Length(50, Percent);
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+    return StyleBuilderConverter::convertLength(state, primitiveValue);
+}
+
+LengthPoint StyleBuilderConverter::convertPerspectiveOrigin(StyleResolverState& state, CSSValue* value)
+{
+    CSSValueList* list = toCSSValueList(value);
+    ASSERT(list->length() == 2);
+
+    CSSPrimitiveValue* primitiveValueX = toCSSPrimitiveValue(list->item(0));
+    CSSPrimitiveValue* primitiveValueY = toCSSPrimitiveValue(list->item(1));
+
+    return LengthPoint(
+        convertOriginLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
+        convertOriginLength<CSSValueTop, CSSValueBottom>(state, primitiveValueY)
+    );
+}
+
 EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSValue* cssPaintOrder)
 {
     if (cssPaintOrder->isValueList()) {

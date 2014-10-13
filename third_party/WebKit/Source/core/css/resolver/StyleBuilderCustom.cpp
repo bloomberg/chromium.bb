@@ -612,61 +612,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTransformOrigin(StyleResolverSt
     state.style()->setTransformOriginZ(StyleBuilderConverter::convertComputedLength<float>(state, primitiveValue));
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyPerspectiveOrigin(StyleResolverState& state)
-{
-    applyInitialCSSPropertyWebkitPerspectiveOriginX(state);
-    applyInitialCSSPropertyWebkitPerspectiveOriginY(state);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyPerspectiveOrigin(StyleResolverState& state)
-{
-    applyInheritCSSPropertyWebkitPerspectiveOriginX(state);
-    applyInheritCSSPropertyWebkitPerspectiveOriginY(state);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyPerspectiveOrigin(StyleResolverState& state, CSSValue* value)
-{
-    CSSValueList* list = toCSSValueList(value);
-    ASSERT(list->length() == 2);
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
-    if (primitiveValue->isValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueLeft:
-            state.style()->setPerspectiveOriginX(Length(0, Percent));
-            break;
-        case CSSValueRight:
-            state.style()->setPerspectiveOriginX(Length(100, Percent));
-            break;
-        case CSSValueCenter:
-            state.style()->setPerspectiveOriginX(Length(50, Percent));
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    } else {
-        state.style()->setPerspectiveOriginX(StyleBuilderConverter::convertLength(state, primitiveValue));
-    }
-
-    primitiveValue = toCSSPrimitiveValue(list->item(1));
-    if (primitiveValue->isValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueTop:
-            state.style()->setPerspectiveOriginY(Length(0, Percent));
-            break;
-        case CSSValueBottom:
-            state.style()->setPerspectiveOriginY(Length(100, Percent));
-            break;
-        case CSSValueCenter:
-            state.style()->setPerspectiveOriginY(Length(50, Percent));
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    } else {
-        state.style()->setPerspectiveOriginY(StyleBuilderConverter::convertLength(state, primitiveValue));
-    }
-}
-
 void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(StyleResolverState& state)
 {
     EVerticalAlign verticalAlign = state.parentStyle()->verticalAlign();

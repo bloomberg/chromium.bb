@@ -560,12 +560,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyPerspective:
         style->setPerspective(clampTo<float>(toAnimatableDouble(value)->toDouble()));
         return;
-    case CSSPropertyPerspectiveOrigin: {
-        const AnimatableLengthPoint* animatableLengthPoint = toAnimatableLengthPoint(value);
-        style->setPerspectiveOriginX(animatableValueToLength(animatableLengthPoint->x(), state));
-        style->setPerspectiveOriginY(animatableValueToLength(animatableLengthPoint->y(), state));
+    case CSSPropertyPerspectiveOrigin:
+        style->setPerspectiveOrigin(animatableValueToLengthPoint(value, state));
         return;
-    }
     case CSSPropertyShapeOutside:
         style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
         return;
