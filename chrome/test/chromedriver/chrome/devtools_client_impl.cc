@@ -277,10 +277,14 @@ Status DevToolsClientImpl::ProcessNextMessage(
   if (status.IsError())
     return status;
 
-  // The command response may have already been received or blocked while
-  // notifying listeners.
-  if (expected_id != -1 && response_info_map_[expected_id]->state != kWaiting)
-    return Status(kOk);
+  // The command response may have already been received (in which case it will
+  // have been deleted from |response_info_map_|) or blocked while notifying
+  // listeners.
+  if (expected_id != -1) {
+    ResponseInfoMap::iterator iter = response_info_map_.find(expected_id);
+    if (iter == response_info_map_.end() || iter->second->state != kWaiting)
+      return Status(kOk);
+  }
 
   if (crashed_)
     return Status(kTabCrashed);
@@ -383,12 +387,9 @@ Status DevToolsClientImpl::ProcessCommandResponse(
     return Status(kUnknownError, "unexpected command response");
 
   linked_ptr<ResponseInfo> response_info = response_info_map_[response.id];
-  if (response_info->state == kReceived)
-    return Status(kUnknownError, "received multiple command responses");
+  response_info_map_.erase(response.id);
 
-  if (response_info->state == kIgnored) {
-    response_info_map_.erase(response.id);
-  } else {
+  if (response_info->state != kIgnored) {
     response_info->state = kReceived;
     response_info->response.id = response.id;
     response_info->response.error = response.error;
