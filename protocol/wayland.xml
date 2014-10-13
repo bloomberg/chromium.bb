@@ -517,7 +517,7 @@
 
   </interface>
 
-  <interface name="wl_data_device" version="1">
+  <interface name="wl_data_device" version="2">
     <description summary="data transfer device">
       There is one wl_data_device per seat which can be obtained
       from the global wl_data_device_manager singleton.
@@ -647,9 +647,17 @@
       </description>
       <arg name="id" type="object" interface="wl_data_offer" allow-null="true"/>
     </event>
+
+    <!-- Version 2 additions -->
+
+    <request name="release" type="destructor" since="2">
+      <description summary="destroy data device">
+	This request destroys the data device.
+      </description>
+    </request>
   </interface>
 
-  <interface name="wl_data_device_manager" version="1">
+  <interface name="wl_data_device_manager" version="2">
     <description summary="data transfer interface">
       The wl_data_device_manager is a singleton global object that
       provides access to inter-client data transfer mechanisms such as
