@@ -266,7 +266,7 @@ bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
         params->options->match_case ? *params->options->match_case : false;
   }
 
-  guest->Find(search_text, options, this);
+  guest->StartFinding(search_text, options, this);
   return true;
 }
 

@@ -204,6 +204,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   void SetContentsOpaque(bool opaque);
 
+  // Find the given |search_text| in the page. Returns true if the find request
+  // is handled by this browser plugin guest.
+  bool Find(int request_id,
+            const base::string16& search_text,
+            const blink::WebFindOptions& options);
+
  private:
   class EmbedderWebContentsObserver;
 
@@ -339,6 +345,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool pending_lock_request_;
   bool guest_visible_;
   bool embedder_visible_;
+  // Whether the browser plugin is inside a plugin document.
+  bool is_full_page_plugin_;
 
   // Each copy-request is identified by a unique number. The unique number is
   // used to keep track of the right callback.

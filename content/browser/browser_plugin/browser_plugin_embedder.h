@@ -70,6 +70,12 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // Used to handle special keyboard events.
   bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+  // Find the given |search_text| in the page. Returns true if the find request
+  // is handled by this browser plugin embedder.
+  bool Find(int request_id,
+            const base::string16& search_text,
+            const blink::WebFindOptions& options);
+
  private:
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
@@ -79,9 +85,12 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
 
-  bool SetZoomLevelCallback(double level, WebContents* guest_web_contents);
-
   bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked, WebContents* guest);
+
+  bool FindInGuest(int request_id,
+                   const base::string16& search_text,
+                   const blink::WebFindOptions& options,
+                   WebContents* guest);
 
   // Message handlers.
   void OnAttach(int instance_id,

@@ -53,6 +53,8 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
   IPC_STRUCT_MEMBER(gfx::Point, origin)
+  // Whether the browser plugin is a full page plugin document.
+  IPC_STRUCT_MEMBER(bool, is_full_page_plugin)
 IPC_STRUCT_END()
 
 // Browser plugin messages

@@ -62,6 +62,13 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   typedef base::Callback<void()> DestructionCallback;
   virtual void RegisterDestructionCallback(
       const DestructionCallback& callback) {}
+
+  // Find the given |search_text| in the page. Returns true if the find request
+  // is handled by this browser plugin guest delegate.
+  virtual bool Find(int request_id,
+                    const base::string16& search_text,
+                    const blink::WebFindOptions& options,
+                    bool is_full_page_plugin);
 };
 
 }  // namespace content

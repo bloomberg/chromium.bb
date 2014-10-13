@@ -22,6 +22,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
@@ -162,6 +163,18 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
   return event_consumed;
 }
 
+bool BrowserPluginEmbedder::Find(int request_id,
+                                 const base::string16& search_text,
+                                 const blink::WebFindOptions& options) {
+  return GetBrowserPluginGuestManager()->ForEachGuest(
+      GetWebContents(),
+      base::Bind(&BrowserPluginEmbedder::FindInGuest,
+                 base::Unretained(this),
+                 request_id,
+                 search_text,
+                 options));
+}
+
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                                            WebContents* guest) {
   *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)
@@ -170,6 +183,19 @@ bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
   guest->GotResponseToLockMouseRequest(false);
 
   // Returns false to iterate over all guests.
+  return false;
+}
+
+bool BrowserPluginEmbedder::FindInGuest(int request_id,
+                                        const base::string16& search_text,
+                                        const blink::WebFindOptions& options,
+                                        WebContents* guest) {
+  if (static_cast<WebContentsImpl*>(guest)->GetBrowserPluginGuest()->Find(
+          request_id, search_text, options)) {
+    // There can only ever currently be one browser plugin that handles find so
+    // we can break the iteration at this point.
+    return true;
+  }
   return false;
 }
 

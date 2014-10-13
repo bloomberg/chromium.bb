@@ -131,6 +131,17 @@ void MimeHandlerViewGuest::DidInitialize() {
     delegate_->AttachHelpers();
 }
 
+bool MimeHandlerViewGuest::Find(int request_id,
+                                const base::string16& search_text,
+                                const blink::WebFindOptions& options,
+                                bool is_full_page_plugin) {
+  if (is_full_page_plugin) {
+    web_contents()->Find(request_id, search_text, options);
+    return true;
+  }
+  return false;
+}
+
 void MimeHandlerViewGuest::ContentsZoomChange(bool zoom_in) {
   if (delegate_)
     delegate_->ChangeZoom(zoom_in);
@@ -150,6 +161,23 @@ void MimeHandlerViewGuest::HandleKeyboardEvent(
   // See http://crbug.com/229882.
   embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(web_contents(),
                                                               event);
+}
+
+void MimeHandlerViewGuest::FindReply(content::WebContents* web_contents,
+                                     int request_id,
+                                     int number_of_matches,
+                                     const gfx::Rect& selection_rect,
+                                     int active_match_ordinal,
+                                     bool final_update) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return;
+
+  embedder_web_contents()->GetDelegate()->FindReply(embedder_web_contents(),
+                                                    request_id,
+                                                    number_of_matches,
+                                                    selection_rect,
+                                                    active_match_ordinal,
+                                                    final_update);
 }
 
 bool MimeHandlerViewGuest::OnMessageReceived(const IPC::Message& message) {

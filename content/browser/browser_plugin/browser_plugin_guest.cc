@@ -81,6 +81,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       pending_lock_request_(false),
       guest_visible_(false),
       embedder_visible_(true),
+      is_full_page_plugin_(false),
       copy_request_id_(0),
       has_render_view_(has_render_view),
       is_in_destruction_(false),
@@ -202,6 +203,7 @@ void BrowserPluginGuest::Initialize(
   browser_plugin_instance_id_ = browser_plugin_instance_id;
   focused_ = params.focused;
   guest_visible_ = params.visible;
+  is_full_page_plugin_ = params.is_full_page_plugin;
   guest_window_rect_ = gfx::Rect(params.origin,
                                  params.resize_guest_params.view_size);
 
@@ -352,6 +354,13 @@ void BrowserPluginGuest::SetContentsOpaque(bool opaque) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_SetContentsOpaque(
           browser_plugin_instance_id(), opaque));
+}
+
+bool BrowserPluginGuest::Find(int request_id,
+                              const base::string16& search_text,
+                              const blink::WebFindOptions& options) {
+  return delegate_->Find(request_id, search_text, options,
+                         is_full_page_plugin_);
 }
 
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {

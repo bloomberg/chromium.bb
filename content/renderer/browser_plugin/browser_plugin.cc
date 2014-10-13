@@ -22,8 +22,10 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -134,6 +136,12 @@ void BrowserPlugin::Attach() {
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
   attach_params.origin = plugin_rect().origin();
+  attach_params.is_full_page_plugin = false;
+  if (container()) {
+    blink::WebLocalFrame* frame = container()->element().document().frame();
+    attach_params.is_full_page_plugin =
+        frame->view()->mainFrame()->document().isPluginDocument();
+  }
   gfx::Size view_size(width(), height());
   if (!view_size.IsEmpty()) {
     PopulateResizeGuestParameters(view_size,

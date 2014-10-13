@@ -588,7 +588,7 @@ double WebViewGuest::GetZoom() {
   return web_view_guest_delegate_->GetZoom();
 }
 
-void WebViewGuest::Find(
+void WebViewGuest::StartFinding(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
     scoped_refptr<WebViewInternalFindFunction> find_function) {

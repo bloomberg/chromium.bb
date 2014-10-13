@@ -8,6 +8,10 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/guest_view.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace extensions {
 
 class MimeHandlerViewGuestDelegate;
@@ -36,11 +40,23 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   virtual void DidAttachToEmbedder() override;
   virtual void DidInitialize() override;
 
+  // content::BrowserPluginGuestDelegate implementation
+  virtual bool Find(int request_id,
+                    const base::string16& search_text,
+                    const blink::WebFindOptions& options,
+                    bool is_full_page_plugin) override;
+
   // WebContentsDelegate implementation.
   virtual void ContentsZoomChange(bool zoom_in) override;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
+  virtual void FindReply(content::WebContents* web_contents,
+                         int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update) override;
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) override;
