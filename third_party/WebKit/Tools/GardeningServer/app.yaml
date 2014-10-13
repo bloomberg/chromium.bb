@@ -9,6 +9,10 @@ handlers:
   script: alerts.app
   secure: always
 
+- url: /alerts-history
+  script: alerts.app
+  secure: always
+
 - url: /internal-alerts
   script: internal_alerts.app
   secure: always

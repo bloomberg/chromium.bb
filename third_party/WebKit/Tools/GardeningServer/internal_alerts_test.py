@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import alerts
 import internal_alerts
 import json
 import random
@@ -79,6 +80,27 @@ class InternalAlertsTest(unittest.TestCase):
         self.check_json_headers(res)
         internal_alerts = json.loads(res.body)
         self.assertEqual(internal_alerts['alerts'], 'everything is OK')
+
+    def test_internal_alerts_stored_in_history_have_correct_type(self):
+        test_alerts1 = {'alerts': ['hello', 'world', '1']}
+        test_alerts2 = {'alerts': ['hello', 'world', '2']}
+        self.testapp.post('/internal-alerts',
+                          {'content': json.dumps(test_alerts1)})
+        self.testapp.post('/internal-alerts',
+                          {'content': json.dumps(test_alerts2)})
+        alerts_query = alerts.AlertsJSON.query().order(alerts.AlertsJSON.date)
+        stored_alerts = alerts_query.fetch(limit=3)
+        self.assertEqual(2, len(stored_alerts))
+        self.assertEqual(stored_alerts[0].type, 'internal-alerts')
+        self.assertEqual(stored_alerts[1].type, 'internal-alerts')
+
+    def test_internal_alerts_same_as_last_alerts_are_added_to_history(self):
+        test_alerts = {'alerts': ['hello', 'world']}
+        alerts.AlertsJSON(json=json.dumps(test_alerts), type='alerts').put()
+        self.testapp.post('/internal-alerts',
+                          {'content': json.dumps(test_alerts)})
+        alerts_query = alerts.AlertsJSON.query()
+        self.assertEqual(2, alerts_query.count(limit=3))
 
     def test_large_number_of_internal_alerts(self):
         self.user_helper('tester@google.com', '123')
