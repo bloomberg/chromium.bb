@@ -51,6 +51,17 @@ bool AudioDecoderJob::HasStream() const {
   return audio_codec_ != kUnknownAudioCodec;
 }
 
+void AudioDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
+  // TODO(qinmin): split DemuxerConfig for audio and video separately so we
+  // can simply store the stucture here.
+  audio_codec_ = configs.audio_codec;
+  num_channels_ = configs.audio_channels;
+  sampling_rate_ = configs.audio_sampling_rate;
+  set_is_content_encrypted(configs.is_audio_encrypted);
+  audio_extra_data_ = configs.audio_extra_data;
+  bytes_per_frame_ = kBytesPerAudioOutputSample * num_channels_;
+}
+
 void AudioDecoderJob::SetVolume(double volume) {
   volume_ = volume;
   SetVolumeInternal();
@@ -92,17 +103,6 @@ void AudioDecoderJob::ReleaseOutputBuffer(
 
 bool AudioDecoderJob::ComputeTimeToRender() const {
   return false;
-}
-
-void AudioDecoderJob::UpdateDemuxerConfigs(const DemuxerConfigs& configs) {
-  // TODO(qinmin): split DemuxerConfig for audio and video separately so we
-  // can simply store the stucture here.
-  audio_codec_ = configs.audio_codec;
-  num_channels_ = configs.audio_channels;
-  sampling_rate_ = configs.audio_sampling_rate;
-  set_is_content_encrypted(configs.is_audio_encrypted);
-  audio_extra_data_ = configs.audio_extra_data;
-  bytes_per_frame_ = kBytesPerAudioOutputSample * num_channels_;
 }
 
 bool AudioDecoderJob::AreDemuxerConfigsChanged(

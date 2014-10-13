@@ -35,13 +35,14 @@ class VideoDecoderJob : public MediaDecoderJob {
   virtual bool HasStream() const override;
   virtual void Flush() override;
   virtual void ReleaseDecoderResources() override;
+  virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
 
   bool next_video_data_is_iframe() {
     return next_video_data_is_iframe_;
   }
 
-  int width() const { return width_; }
-  int height() const { return height_; }
+  int output_width() const { return output_width_; }
+  int output_height() const { return output_height_; }
 
  private:
   // MediaDecoderJob implementation.
@@ -52,21 +53,25 @@ class VideoDecoderJob : public MediaDecoderJob {
       base::TimeDelta current_presentation_timestamp,
       const ReleaseOutputCompletionCallback& callback) override;
   virtual bool ComputeTimeToRender() const override;
-  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) override;
   virtual bool IsCodecReconfigureNeeded(
       const DemuxerConfigs& configs) const override;
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const override;
   virtual bool CreateMediaCodecBridgeInternal() override;
   virtual void CurrentDataConsumed(bool is_config_change) override;
+  virtual bool UpdateOutputFormat() override;
 
   // Returns true if a protected surface is required for video playback.
   bool IsProtectedSurfaceRequired();
 
   // Video configs from the demuxer.
   VideoCodec video_codec_;
-  int width_;
-  int height_;
+  int config_width_;
+  int config_height_;
+
+  // Video output format.
+  int output_width_;
+  int output_height_;
 
   // The surface object currently owned by the player.
   gfx::ScopedJavaSurface surface_;

@@ -84,9 +84,8 @@ class MediaDecoderJob {
   // Releases all the decoder resources as the current tab is going background.
   virtual void ReleaseDecoderResources();
 
-  // Sets the demuxer configs. Returns true if configs has changed, or false
-  // otherwise.
-  bool SetDemuxerConfigs(const DemuxerConfigs& configs);
+  // Sets the demuxer configs.
+  virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) = 0;
 
   // Returns whether the decoder has finished decoding all the data.
   bool OutputEOSReached() const;
@@ -228,12 +227,13 @@ class MediaDecoderJob {
   virtual bool AreDemuxerConfigsChanged(
       const DemuxerConfigs& configs) const = 0;
 
-  // Updates the demuxer configs.
-  virtual void UpdateDemuxerConfigs(const DemuxerConfigs& configs) = 0;
-
   // Returns true if |media_codec_bridge_| needs to be reconfigured for the
   // new DemuxerConfigs, or false otherwise.
   virtual bool IsCodecReconfigureNeeded(const DemuxerConfigs& configs) const;
+
+  // Update the output format from the decoder, returns true if the output
+  // format changes, or false otherwise.
+  virtual bool UpdateOutputFormat();
 
   // Return the index to |received_data_| that is not currently being decoded.
   size_t inactive_demuxer_data_index() const {

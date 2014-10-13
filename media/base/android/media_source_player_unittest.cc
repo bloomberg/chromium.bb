@@ -45,6 +45,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
       : message_loop_(message_loop),
         playback_completed_(false),
         num_resources_requested_(0),
+        num_metadata_changes_(0),
         timestamp_updated_(false) {}
   virtual ~MockMediaPlayerManager() {}
 
@@ -62,7 +63,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   }
   virtual void OnMediaMetadataChanged(
       int player_id, base::TimeDelta duration, int width, int height,
-      bool success) override {}
+      bool success) override {
+    num_metadata_changes_++;
+  }
   virtual void OnPlaybackComplete(int player_id) override {
     playback_completed_ = true;
     if (message_loop_->is_running())
@@ -92,6 +95,10 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return num_resources_requested_;
   }
 
+  int num_metadata_changes() const {
+    return num_metadata_changes_;
+  }
+
   void OnMediaResourcesRequested(int player_id) {
     num_resources_requested_++;
   }
@@ -109,6 +116,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   bool playback_completed_;
   // The number of resource requests this object has seen.
   int num_resources_requested_;
+  // The number of metadata changes reported by the player.
+  int num_metadata_changes_;
   // Playback timestamp was updated.
   bool timestamp_updated_;
 
@@ -272,7 +281,7 @@ class MediaSourcePlayerTest : public testing::Test {
     DemuxerConfigs configs;
     configs.video_codec = kCodecVP8;
     configs.video_size =
-        use_larger_size ? gfx::Size(640, 480) : gfx::Size(320, 240);
+        use_larger_size ? gfx::Size(640, 240) : gfx::Size(320, 240);
     configs.is_video_encrypted = false;
     configs.duration = kDefaultDuration;
     return configs;
@@ -2273,6 +2282,32 @@ TEST_F(MediaSourcePlayerTest, CurrentTimeKeepsIncreasingAfterConfigChange) {
   player_.OnDemuxerDataAvailable(data);
   WaitForAudioDecodeDone();
   DecodeAudioDataUntilOutputBecomesAvailable();
+}
+
+TEST_F(MediaSourcePlayerTest, VideoMetadataChangeAfterConfigChange) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that after a config change, metadata change will be happen
+  // after decoder is drained.
+  StartConfigChange(false, true, 2, false);
+  EXPECT_EQ(1, manager_.num_metadata_changes());
+  EXPECT_FALSE(IsDrainingDecoder(false));
+
+  // Create video data with new resolutions.
+  DemuxerData data = CreateReadFromDemuxerAckForVideo();
+  AccessUnit unit;
+  unit.status = DemuxerStream::kOk;
+  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vp8-I-frame-640x240");
+  unit.data = std::vector<uint8>(
+      buffer->data(), buffer->data() + buffer->data_size());
+  data.access_units[0] = unit;
+
+  // Wait for the metadata change.
+  while(manager_.num_metadata_changes() == 1) {
+    player_.OnDemuxerDataAvailable(data);
+    WaitForVideoDecodeDone();
+  }
+  EXPECT_EQ(2, manager_.num_metadata_changes());
 }
 
 }  // namespace media

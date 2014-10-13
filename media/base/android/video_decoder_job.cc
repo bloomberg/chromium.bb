@@ -33,8 +33,10 @@ VideoDecoderJob::VideoDecoderJob(
                       request_data_cb,
                       on_demuxer_config_changed_cb),
       video_codec_(kUnknownVideoCodec),
-      width_(0),
-      height_(0),
+      config_width_(0),
+      config_height_(0),
+      output_width_(0),
+      output_height_(0),
       request_resources_cb_(request_resources_cb),
       next_video_data_is_iframe_(true) {
 }
@@ -69,6 +71,17 @@ void VideoDecoderJob::ReleaseDecoderResources() {
   surface_ = gfx::ScopedJavaSurface();
 }
 
+void VideoDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
+  video_codec_ = configs.video_codec;
+  config_width_ = configs.video_size.width();
+  config_height_ = configs.video_size.height();
+  set_is_content_encrypted(configs.is_video_encrypted);
+  if (!media_codec_bridge_) {
+    output_width_ = config_width_;
+    output_height_ = config_height_;
+  }
+}
+
 void VideoDecoderJob::ReleaseOutputBuffer(
     int output_buffer_index,
     size_t size,
@@ -81,13 +94,6 @@ void VideoDecoderJob::ReleaseOutputBuffer(
 
 bool VideoDecoderJob::ComputeTimeToRender() const {
   return true;
-}
-
-void VideoDecoderJob::UpdateDemuxerConfigs(const DemuxerConfigs& configs) {
-  video_codec_ = configs.video_codec;
-  width_ = configs.video_size.width();
-  height_ = configs.video_size.height();
-  set_is_content_encrypted(configs.is_video_encrypted);
 }
 
 bool VideoDecoderJob::IsCodecReconfigureNeeded(
@@ -114,8 +120,8 @@ bool VideoDecoderJob::AreDemuxerConfigsChanged(
     const DemuxerConfigs& configs) const {
   return video_codec_ != configs.video_codec ||
       is_content_encrypted() != configs.is_video_encrypted ||
-      width_ != configs.video_size.width() ||
-      height_ != configs.video_size.height();
+      config_width_ != configs.video_size.width() ||
+      config_height_ != configs.video_size.height();
 }
 
 bool VideoDecoderJob::CreateMediaCodecBridgeInternal() {
@@ -133,7 +139,7 @@ bool VideoDecoderJob::CreateMediaCodecBridgeInternal() {
       drm_bridge()->IsProtectedSurfaceRequired();
 
   media_codec_bridge_.reset(VideoCodecBridge::CreateDecoder(
-      video_codec_, is_secure, gfx::Size(width_, height_),
+      video_codec_, is_secure, gfx::Size(config_width_, config_height_),
       surface_.j_surface().obj(), GetMediaCrypto().obj()));
 
   if (!media_codec_bridge_)
@@ -145,6 +151,16 @@ bool VideoDecoderJob::CreateMediaCodecBridgeInternal() {
 
 void VideoDecoderJob::CurrentDataConsumed(bool is_config_change) {
   next_video_data_is_iframe_ = is_config_change;
+}
+
+bool VideoDecoderJob::UpdateOutputFormat() {
+  if (!media_codec_bridge_)
+    return false;
+  int prev_output_width = output_width_;
+  int prev_output_height = output_height_;
+  media_codec_bridge_->GetOutputFormat(&output_width_, &output_height_);
+  return (output_width_ != prev_output_width) ||
+      (output_height_ != prev_output_height);
 }
 
 bool VideoDecoderJob::IsProtectedSurfaceRequired() {

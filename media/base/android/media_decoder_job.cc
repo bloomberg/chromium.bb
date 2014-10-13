@@ -202,13 +202,6 @@ void MediaDecoderJob::ReleaseDecoderResources() {
   release_resources_pending_ = true;
 }
 
-bool MediaDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
-  bool config_changed = AreDemuxerConfigsChanged(configs);
-  if (config_changed)
-    UpdateDemuxerConfigs(configs);
-  return config_changed;
-}
-
 base::android::ScopedJavaLocalRef<jobject> MediaDecoderJob::GetMediaCrypto() {
   base::android::ScopedJavaLocalRef<jobject> media_crypto;
   if (drm_bridge_)
@@ -334,19 +327,18 @@ void MediaDecoderJob::DecodeCurrentAccessUnit(
     int index = CurrentReceivedDataChunkIndex();
     const DemuxerConfigs& configs = received_data_[index].demuxer_configs[0];
     bool reconfigure_needed = IsCodecReconfigureNeeded(configs);
-    // TODO(qinmin): |config_changed_cb_| should be run after draining finishes.
-    // http://crbug.com/381975.
-    if (SetDemuxerConfigs(configs))
-      config_changed_cb_.Run();
+    SetDemuxerConfigs(configs);
     if (!drain_decoder_) {
       // If we haven't decoded any data yet, just skip the current access unit
       // and request the MediaCodec to be recreated on next Decode().
       if (skip_eos_enqueue_ || !reconfigure_needed) {
         need_to_reconfig_decoder_job_ =
             need_to_reconfig_decoder_job_ || reconfigure_needed;
+        // Report MEDIA_CODEC_OK status so decoder will continue decoding and
+        // MEDIA_CODEC_OUTPUT_FORMAT_CHANGED status will come later.
         ui_task_runner_->PostTask(FROM_HERE, base::Bind(
             &MediaDecoderJob::OnDecodeCompleted, base::Unretained(this),
-            MEDIA_CODEC_OUTPUT_FORMAT_CHANGED, kNoTimestamp(), kNoTimestamp()));
+            MEDIA_CODEC_OK, kNoTimestamp(), kNoTimestamp()));
         return;
       }
       // Start draining the decoder so that all the remaining frames are
@@ -542,6 +534,9 @@ void MediaDecoderJob::OnDecodeCompleted(
     status = MEDIA_CODEC_OK;
   }
 
+  if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED && UpdateOutputFormat())
+    config_changed_cb_.Run();
+
   if (release_resources_pending_) {
     ReleaseMediaCodecBridge();
     release_resources_pending_ = false;
@@ -641,6 +636,10 @@ bool MediaDecoderJob::IsCodecReconfigureNeeded(
   if (!AreDemuxerConfigsChanged(configs))
     return false;
   return true;
+}
+
+bool MediaDecoderJob::UpdateOutputFormat() {
+  return false;
 }
 
 void MediaDecoderJob::ReleaseMediaCodecBridge() {

@@ -150,11 +150,11 @@ bool MediaSourcePlayer::IsPlaying() {
 }
 
 int MediaSourcePlayer::GetVideoWidth() {
-  return video_decoder_job_->width();
+  return video_decoder_job_->output_width();
 }
 
 int MediaSourcePlayer::GetVideoHeight() {
-  return video_decoder_job_->height();
+  return video_decoder_job_->output_height();
 }
 
 void MediaSourcePlayer::SeekTo(base::TimeDelta timestamp) {
