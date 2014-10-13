@@ -4178,6 +4178,11 @@ void RenderViewImpl::DidStopLoadingIcons() {
   if (TouchEnabled())
     icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
 
+  // Favicons matter only for the top-level frame. If it is a WebRemoteFrame,
+  // just return early.
+  if (webview()->mainFrame()->isWebRemoteFrame())
+    return;
+
   WebVector<WebIconURL> icon_urls =
       webview()->mainFrame()->iconURLs(icon_types);
 
