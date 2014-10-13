@@ -21741,7 +21741,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="PasswordGeneration.SubmissionEvent"
     enum="PasswordGenerationSubmissionEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gcasto@chromium.org</owner>
   <summary>
     Measures the frequency of submission events for generated passwords. This is
     similar to PasswordManager.ActionsTakenWithPsl but only tracks events which
