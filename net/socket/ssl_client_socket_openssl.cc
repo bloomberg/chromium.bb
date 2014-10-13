@@ -915,6 +915,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       if (alpn_len > 0) {
         npn_proto_.assign(reinterpret_cast<const char*>(alpn_proto), alpn_len);
         npn_status_ = kNextProtoNegotiated;
+        set_negotiation_extension(kExtensionALPN);
       }
     }
 
@@ -1669,6 +1670,7 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
 
   npn_proto_.assign(reinterpret_cast<const char*>(*out), *outlen);
   DVLOG(2) << "next protocol: '" << npn_proto_ << "' status: " << npn_status_;
+  set_negotiation_extension(kExtensionNPN);
   return SSL_TLSEXT_ERR_OK;
 }
 

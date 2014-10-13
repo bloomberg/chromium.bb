@@ -79,6 +79,13 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
                                 // the first protocol in our list.
   };
 
+  // TLS extension used to negotiate protocol.
+  enum SSLNegotiationExtension {
+    kExtensionUnknown,
+    kExtensionALPN,
+    kExtensionNPN,
+  };
+
   // StreamSocket:
   virtual bool WasNpnNegotiated() const override;
   virtual NextProto GetNegotiatedProtocol() const override;
@@ -150,6 +157,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   virtual void set_protocol_negotiated(NextProto protocol_negotiated);
 
+  void set_negotiation_extension(SSLNegotiationExtension negotiation_extension);
+
   // Returns the ChannelIDService used by this socket, or NULL if
   // channel ids are not supported.
   virtual ChannelIDService* GetChannelIDService() const = 0;
@@ -161,6 +170,10 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   //
   // Public for ssl_client_socket_openssl_unittest.cc.
   virtual bool WasChannelIDSent() const;
+
+  // Record which TLS extension was used to negotiate protocol and protocol
+  // chosen in a UMA histogram.
+  void RecordNegotiationExtension();
 
  protected:
   virtual void set_channel_id_sent(bool channel_id_sent);
@@ -219,6 +232,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   bool signed_cert_timestamps_received_;
   // True if a stapled OCSP response was received.
   bool stapled_ocsp_response_received_;
+  // Protocol negotiation extension used.
+  SSLNegotiationExtension negotiation_extension_;
 };
 
 }  // namespace net

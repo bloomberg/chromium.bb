@@ -408,6 +408,7 @@ struct HandshakeState {
   void Reset() {
     next_proto_status = SSLClientSocket::kNextProtoUnsupported;
     next_proto.clear();
+    negotiation_extension_ = SSLClientSocket::kExtensionUnknown;
     channel_id_sent = false;
     server_cert_chain.Reset(NULL);
     server_cert = NULL;
@@ -421,6 +422,9 @@ struct HandshakeState {
   // negotiated protocol stored in |next_proto|.
   SSLClientSocket::NextProtoStatus next_proto_status;
   std::string next_proto;
+
+  // TLS extension used for protocol negotiation.
+  SSLClientSocket::SSLNegotiationExtension negotiation_extension_;
 
   // True if a channel ID was sent.
   bool channel_id_sent;
@@ -760,6 +764,8 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // UpdateNextProto gets any application-layer protocol that may have been
   // negotiated by the TLS connection.
   void UpdateNextProto();
+  // Record TLS extension used for protocol negotiation (NPN or ALPN).
+  void UpdateExtensionUsed();
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are ONLY called on the network task runner:
@@ -1641,6 +1647,7 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
   UpdateStapledOCSPResponse();
   UpdateConnectionStatus();
   UpdateNextProto();
+  UpdateExtensionUsed();
 
   // Update the network task runners view of the handshake state whenever
   // a handshake has completed.
@@ -2496,6 +2503,23 @@ void SSLClientSocketNSS::Core::UpdateNextProto() {
   }
 }
 
+void SSLClientSocketNSS::Core::UpdateExtensionUsed() {
+  PRBool negotiated_extension;
+  SECStatus rv = SSL_HandshakeNegotiatedExtension(nss_fd_,
+                                                  ssl_app_layer_protocol_xtn,
+                                                  &negotiated_extension);
+  if (rv == SECSuccess && negotiated_extension) {
+    nss_handshake_state_.negotiation_extension_ = kExtensionALPN;
+  } else {
+    rv = SSL_HandshakeNegotiatedExtension(nss_fd_,
+                                          ssl_next_proto_nego_xtn,
+                                          &negotiated_extension);
+    if (rv == SECSuccess && negotiated_extension) {
+      nss_handshake_state_.negotiation_extension_ = kExtensionNPN;
+    }
+  }
+}
+
 void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNSSTaskRunner() {
   DCHECK(OnNSSTaskRunner());
   if (nss_handshake_state_.resumed_handshake)
@@ -3328,6 +3352,7 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
       !core_->state().sct_list_from_tls_extension.empty());
   set_stapled_ocsp_response_received(
       !core_->state().stapled_ocsp_response.empty());
+  set_negotiation_extension(core_->state().negotiation_extension_);
 
   LeaveFunction(result);
   return result;

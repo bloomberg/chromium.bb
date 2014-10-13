@@ -14,8 +14,10 @@ namespace net {
 // Next Protocol Negotiation (NPN), if successful, results in agreement on an
 // application-level string that specifies the application level protocol to
 // use over the TLS connection. NextProto enumerates the application level
-// protocols that we recognise.  Do not change or reuse values, because they
-// are used to collect statistics on UMA.
+// protocols that we recognize.  Do not change or reuse values, because they
+// are used to collect statistics on UMA.  Also, values must be in [0,499),
+// because of the way TLS protocol negotiation extension information is added to
+// UMA histogram.
 enum NextProto {
   kProtoUnknown = 0,
   kProtoHTTP11 = 1,

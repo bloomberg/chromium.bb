@@ -18220,6 +18220,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time to complete a speculative certificate verification.</summary>
 </histogram>
 
+<histogram name="Net.SSLProtocolNegotiation" enum="SSLProtocolNegotiation">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    TLS extension used to negotiate protocol (ALPN or NPN); in case of NPN,
+    whether the protocol is indeed supported by both the client and the server
+    or is a fallback because of no overlap; and the negotiated protocol itself.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLv3FallbackToRenegoPatchedServer"
     enum="TLSRenegotiationPatched">
   <obsolete>
@@ -52376,6 +52385,27 @@ To add a new entry, add it with any value and run test to compute valid value.
     of the heuristics which decide as to what constitutes a shared certificate.
     In cases of overlap, we emit to only one bucket.
   </int>
+</enum>
+
+<enum name="SSLProtocolNegotiation" type="int">
+  <int value="1" label="ALPN, HTTP/1.1"/>
+  <int value="100" label="ALPN, SPDY 2.0"/>
+  <int value="101" label="ALPN, SPDY 3.0"/>
+  <int value="102" label="ALPN, SPDY 3.1"/>
+  <int value="103" label="ALPN, HTTP/2 draft-14"/>
+  <int value="200" label="ALPN, QUIC/1 + SPDY/3"/>
+  <int value="501" label="NPN, HTTP/1.1"/>
+  <int value="600" label="NPN, SPDY 2.0"/>
+  <int value="601" label="NPN, SPDY 3.0"/>
+  <int value="602" label="NPN, SPDY 3.1"/>
+  <int value="603" label="NPN, HTTP/2 draft-14"/>
+  <int value="700" label="NPN, QUIC/1 + SPDY/3"/>
+  <int value="1001" label="NPN, fallback to HTTP/1.1"/>
+  <int value="1100" label="NPN, fallback to SPDY 2.0"/>
+  <int value="1101" label="NPN, fallback to SPDY 3.0"/>
+  <int value="1102" label="NPN, fallback to SPDY 3.1"/>
+  <int value="1103" label="NPN, fallback to HTTP/2 draft-14"/>
+  <int value="1200" label="NPN, fallback to QUIC/1 + SPDY/3"/>
 </enum>
 
 <enum name="SSLResponseTypesV2" type="int">
