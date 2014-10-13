@@ -149,7 +149,7 @@ class ProfileImplIOData : public ProfileIOData {
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
 
-  virtual bool IsDataReductionProxyEnabled() const OVERRIDE;
+  virtual bool IsDataReductionProxyEnabled() const override;
 
   BooleanPrefMember* data_reduction_proxy_enabled() const {
     return &data_reduction_proxy_enabled_;
