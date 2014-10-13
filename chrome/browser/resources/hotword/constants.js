@@ -18,6 +18,18 @@ var SHARED_MODULE_ID = 'lccekmodgklaepjeofjdjpbminllajkg';
 var SHARED_MODULE_ROOT = '_modules/' + SHARED_MODULE_ID;
 
 /**
+ * Name used by the content scripts to create communications Ports.
+ * @const {string}
+ */
+var CLIENT_PORT_NAME = 'chwcpn';
+
+/**
+ * The field name to specify the command among pages.
+ * @const {string}
+ */
+var COMMAND_FIELD_NAME = 'cmd';
+
+/**
  * Time to wait for expected messages, in milliseconds.
  * @enum {number}
  */
@@ -73,11 +85,42 @@ var NaClPlugin = {
 };
 
 /**
+ * Messages sent from the injected scripts to the Google page.
+ * @enum {string}
+ */
+var CommandToPage = {
+  HOTWORD_VOICE_TRIGGER: 'vt',
+  HOTWORD_STARTED: 'hs',
+  HOTWORD_ENDED: 'hd',
+  HOTWORD_TIMEOUT: 'ht',
+  HOTWORD_ERROR: 'he'
+};
+
+/**
+ * Messages sent from the Google page to the injected scripts
+ * and then passed to the extension.
+ * @enum {string}
+ */
+var CommandFromPage = {
+  SPEECH_START: 'ss',
+  SPEECH_END: 'se',
+  SPEECH_RESET: 'sr',
+  SHOWING_HOTWORD_START: 'shs',
+  SHOWING_ERROR_MESSAGE: 'sem',
+  SHOWING_TIMEOUT_MESSAGE: 'stm',
+  CLICKED_RESUME: 'hcc',
+  CLICKED_RESTART: 'hcr',
+  CLICKED_DEBUG: 'hcd',
+  WAKE_UP_HELPER: 'wuh'
+};
+
+/**
  * Source of a hotwording session request.
  * @enum {string}
  */
 var SessionSource = {
-  LAUNCHER: 'launcher'
+  LAUNCHER: 'launcher',
+  NTP: 'ntp'
 };
 
 /**
@@ -88,15 +131,19 @@ var UI_LANGUAGE = (chrome.i18n && chrome.i18n.getUILanguage) ?
       chrome.i18n.getUILanguage() : '';
 
 return {
+  CLIENT_PORT_NAME: CLIENT_PORT_NAME,
+  COMMAND_FIELD_NAME: COMMAND_FIELD_NAME,
   SHARED_MODULE_ID: SHARED_MODULE_ID,
   SHARED_MODULE_ROOT: SHARED_MODULE_ROOT,
-  TimeoutMs: TimeoutMs,
-  File: File,
+  UI_LANGUAGE: UI_LANGUAGE,
+  CommandToPage: CommandToPage,
+  CommandFromPage: CommandFromPage,
   Error: Error,
   Event: Event,
+  File: File,
   NaClPlugin: NaClPlugin,
   SessionSource: SessionSource,
-  UI_LANGUAGE: UI_LANGUAGE
+  TimeoutMs: TimeoutMs
 };
 
 });

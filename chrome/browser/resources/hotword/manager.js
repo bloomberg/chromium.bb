@@ -19,6 +19,7 @@
 
   // Hotwording state.
   var stateManager = new hotword.StateManager();
+  var pageAudioManager = new hotword.PageAudioManager(stateManager);
 
   // Detect Chrome startup and make sure we get a chance to run.
   chrome.runtime.onStartup.addListener(function() {
@@ -50,6 +51,10 @@
         hotword.constants.SessionSource.LAUNCHER,
         function() {
           chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
+        },
+        function() {
+          chrome.hotwordPrivate.notifyHotwordRecognition('search',
+                                                         function() {});
         });
   });
 

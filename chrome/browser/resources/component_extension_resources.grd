@@ -84,10 +84,12 @@
         <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />
 
         <!-- (Experimental) hotword triggering extension -->
+        <include name="IDR_HOTWORD_AUDIO_CLIENT_JS" file="hotword/audio_client.js" type="BINDATA" />
         <include name="IDR_HOTWORD_CONSTANTS_JS" file="hotword/constants.js" type="BINDATA" />
         <include name="IDR_HOTWORD_LOGGING_JS" file="hotword/logging.js" type="BINDATA" />
         <include name="IDR_HOTWORD_MANAGER_JS" file="hotword/manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_NACL_MANAGER_JS" file="hotword/nacl_manager.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_PAGE_AUDIO_MANAGER_JS" file="hotword/page_audio_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_STATE_MANAGER_JS" file="hotword/state_manager.js" type="BINDATA" />
       </if>
       <if expr="not is_android">
