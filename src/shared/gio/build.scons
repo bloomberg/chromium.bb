@@ -9,7 +9,6 @@ Import('env')
 
 env.DualLibrary('gio',
                 ['gio.c',
-                 'gio_mem.c',
                  'gprintf.c',
                  ])
 
@@ -17,17 +16,6 @@ env.DualLibrary('gio',
 gtest_env = env.MakeGTestEnv()
 
 gtest_env.DualLibrary('gio_test', ['gio_test_base.cc'])
-
-gio_mem_test_exe = gtest_env.ComponentProgram(
-    'gio_mem_test',
-    ['gio_mem_test.cc'],
-    EXTRA_LIBS=['gio', 'gio_test'])
-
-node = gtest_env.CommandTest(
-    'gio_mem_test_output.xml.out',
-    command=[gio_mem_test_exe, '--gtest_output=xml:${TARGET}'])
-gtest_env.AddNodeToTestSuite(node, ['small_tests'],
-    'run_gio_mem_test')
 
 gio_test_exe = gtest_env.ComponentProgram(
     'gio_test',

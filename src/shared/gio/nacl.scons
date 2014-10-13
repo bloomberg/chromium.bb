@@ -7,6 +7,5 @@ Import('env')
 
 libgio = env.NaClSdkLibrary('libgio',
                             ['gio.c',
-                             'gio_mem.c',
                              'gprintf.c',
                              ])

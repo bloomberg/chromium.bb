@@ -130,37 +130,6 @@ void  GioFileDtor(struct Gio  *vself);
 int GioFileRefCtor(struct GioFile *self,
                    FILE           *iop);
 
-struct GioMemoryFile {
-  struct Gio  base;
-  char        *buffer;
-  size_t      len;
-  size_t      curpos;
-  /* invariant: 0 <= curpos && curpos <= len */
-  /* if curpos == len, everything has been read */
-};
-
-int GioMemoryFileCtor(struct GioMemoryFile  *self,
-                      char                  *buffer,
-                      size_t                len);
-
-ssize_t GioMemoryFileRead(struct Gio  *vself,
-                          void        *buf,
-                          size_t      count);
-
-ssize_t GioMemoryFileWrite(struct Gio *vself,
-                           const void *buf,
-                           size_t     count);
-
-off_t GioMemoryFileSeek(struct Gio  *vself,
-                        off_t       offset,
-                        int         whence);
-
-int GioMemoryFileFlush(struct Gio *vself);
-
-int GioMemoryFileClose(struct Gio *vself);
-
-void  GioMemoryFileDtor(struct Gio  *vself);
-
 
 size_t gprintf(struct Gio  *gp,
                char const  *fmt,

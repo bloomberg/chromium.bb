@@ -21,11 +21,6 @@ char GioExpectedCharAt(char initial_char, int file_pos) {
   return static_cast<char>(initial_char + file_pos);
 }
 
-void GioInitTestMemFile(char* mem_buff, char initial_char, int in_size) {
-  for (int i = 0; i < in_size; ++i)
-    mem_buff[i] = GioExpectedCharAt(initial_char, i);
-}
-
 void GioReadTestWithOffset(struct Gio* my_file,
                            char initial_char) {
   char* out_buffer;

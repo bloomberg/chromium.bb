@@ -9,7 +9,6 @@
   'variables': {
     'common_sources': [
       'gio.c',
-      'gio_mem.c',
       'gprintf.c',
     ],
   },

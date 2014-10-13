@@ -7,7 +7,6 @@ import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
 static_library("gio") {
   sources = [
     "gio.c",
-    "gio_mem.c",
     "gprintf.c",
   ]
 }

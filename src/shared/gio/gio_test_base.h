@@ -17,10 +17,6 @@ const int expected_file_size = 32;
 /** Returns character expected to be at file_pos */
 char GioExpectedCharAt(char initial_char, int file_pos);
 
-/** Initializes a GioMemoryFile to conform to requirements of these tests,
-    modulo the length assumption. */
-void GioInitTestMemFile(char* mem_buff, char initial_char, int in_size);
-
 /*
  * Must be given a file with contents:
  * [initial_char+0, initial_char+1, ..., initial_char+expected_file_size-1]. */
