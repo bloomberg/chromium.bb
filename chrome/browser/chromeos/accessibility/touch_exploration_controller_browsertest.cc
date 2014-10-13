@@ -76,9 +76,16 @@ private:
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
 };
 
+#if defined(OS_CHROMEOS)
+// crbug.com/422943
+#define MAYBE_NoRewritingEventsWhenOff DISABLED_NoRewritingEventsWhenOff
+#else
+#define MAYBE_NoRewritingEventsWhenOff NoRewritingEventsWhenOff
+#endif
+
 // This test turns the touch exploration mode off and confirms that events
 // aren't modified.
-IN_PROC_BROWSER_TEST_F(TouchExplorationTest, NoRewritingEventsWhenOff) {
+IN_PROC_BROWSER_TEST_F(TouchExplorationTest, MAYBE_NoRewritingEventsWhenOff) {
   SwitchTouchExplorationMode(false);
   ui::test::EventGenerator generator(root_window_);
 
