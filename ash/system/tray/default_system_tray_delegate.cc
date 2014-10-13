@@ -72,7 +72,9 @@ const base::string16 DefaultSystemTrayDelegate::GetEnterpriseMessage() const {
 
 const std::string
 DefaultSystemTrayDelegate::GetSupervisedUserManager() const {
-  return std::string();
+  if (!IsUserSupervised())
+    return std::string();
+  return "manager@chrome.com";
 }
 
 const base::string16
@@ -87,7 +89,7 @@ const base::string16 DefaultSystemTrayDelegate::GetSupervisedUserMessage()
 }
 
 bool DefaultSystemTrayDelegate::IsUserSupervised() const {
-  return false;
+  return GetUserLoginStatus() == ash::user::LOGGED_IN_SUPERVISED;
 }
 
 void DefaultSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
@@ -289,6 +291,14 @@ bool DefaultSystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
 tray::UserAccountsDelegate* DefaultSystemTrayDelegate::GetUserAccountsDelegate(
     const std::string& user_id) {
   return NULL;
+}
+
+void DefaultSystemTrayDelegate::AddCustodianInfoTrayObserver(
+    CustodianInfoTrayObserver* observer) {
+}
+
+void DefaultSystemTrayDelegate::RemoveCustodianInfoTrayObserver(
+    CustodianInfoTrayObserver* observer) {
 }
 
 }  // namespace ash

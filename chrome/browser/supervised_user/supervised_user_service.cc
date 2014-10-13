@@ -281,28 +281,31 @@ void SupervisedUserService::GetCategoryNames(CategoryList* list) {
 }
 
 std::string SupervisedUserService::GetCustodianEmailAddress() const {
+  std::string custodian_email = profile_->GetPrefs()->GetString(
+      prefs::kSupervisedUserCustodianEmail);
 #if defined(OS_CHROMEOS)
-  return chromeos::ChromeUserManager::Get()
-      ->GetSupervisedUserManager()
-      ->GetManagerDisplayEmail(
-          user_manager::UserManager::Get()->GetActiveUser()->email());
-#else
-  return profile_->GetPrefs()->GetString(prefs::kSupervisedUserCustodianEmail);
+  if (custodian_email.empty()) {
+    custodian_email = chromeos::ChromeUserManager::Get()
+        ->GetSupervisedUserManager()
+        ->GetManagerDisplayEmail(
+            user_manager::UserManager::Get()->GetActiveUser()->email());
+  }
 #endif
+  return custodian_email;
 }
 
 std::string SupervisedUserService::GetCustodianName() const {
-#if defined(OS_CHROMEOS)
-  return base::UTF16ToUTF8(
-      chromeos::ChromeUserManager::Get()
-          ->GetSupervisedUserManager()
-          ->GetManagerDisplayName(
-              user_manager::UserManager::Get()->GetActiveUser()->email()));
-#else
   std::string name = profile_->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianName);
-  return name.empty() ? GetCustodianEmailAddress() : name;
+#if defined(OS_CHROMEOS)
+  if (name.empty()) {
+    name = base::UTF16ToUTF8(chromeos::ChromeUserManager::Get()
+        ->GetSupervisedUserManager()
+        ->GetManagerDisplayName(
+            user_manager::UserManager::Get()->GetActiveUser()->email()));
+  }
 #endif
+  return name.empty() ? GetCustodianEmailAddress() : name;
 }
 
 void SupervisedUserService::AddNavigationBlockedCallback(

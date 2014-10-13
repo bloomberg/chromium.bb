@@ -5,20 +5,25 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
+#include <vector>
+
 #include "ash/ime/input_method_menu_manager.h"
 #include "ash/session/session_state_observer.h"
+#include "ash/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
+#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -51,7 +56,8 @@ class SystemTrayDelegateChromeOS
       public ash::SessionStateObserver,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
-      public user_manager::UserManager::UserSessionStateObserver {
+      public user_manager::UserManager::UserSessionStateObserver,
+      public SupervisedUserServiceObserver {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -132,6 +138,10 @@ class SystemTrayDelegateChromeOS
   virtual bool IsSearchKeyMappedToCapsLock() override;
   virtual ash::tray::UserAccountsDelegate* GetUserAccountsDelegate(
       const std::string& user_id) override;
+  virtual void AddCustodianInfoTrayObserver(
+      ash::CustodianInfoTrayObserver* observer) override;
+  virtual void RemoveCustodianInfoTrayObserver(
+      ash::CustodianInfoTrayObserver* observer) override;
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   virtual void UserAddedToSession(const user_manager::User* active_user)
@@ -169,6 +179,8 @@ class SystemTrayDelegateChromeOS
   void UpdateSessionLengthLimit();
 
   void StopObservingAppWindowRegistry();
+
+  void StopObservingCustodianInfoChanges();
 
   // Notify observers if the current user has no more open browser or app
   // windows.
@@ -244,6 +256,9 @@ class SystemTrayDelegateChromeOS
   // Overridden from extensions::AppWindowRegistry::Observer:
   virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
+  // Overridden from SupervisedUserServiceObserver:
+  virtual void OnCustodianInfoChanged() override;
+
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
 
@@ -269,6 +284,9 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
   base::ScopedPtrHashMap<std::string, ash::tray::UserAccountsDelegate>
       accounts_delegates_;
+
+  ObserverList<ash::CustodianInfoTrayObserver>
+      custodian_info_changed_observers_;
 
   base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
 

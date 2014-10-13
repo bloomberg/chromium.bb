@@ -31,9 +31,16 @@ TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
       tray_view_(NULL),
       status_(ash::user::LOGGED_IN_NONE),
       is_user_supervised_(false) {
+  Shell::GetInstance()->system_tray_delegate()->
+      AddCustodianInfoTrayObserver(this);
 }
 
 TraySupervisedUser::~TraySupervisedUser() {
+  // We need the check as on shell destruction delegate is destroyed first.
+  SystemTrayDelegate* system_tray_delegate =
+      Shell::GetInstance()->system_tray_delegate();
+  if (system_tray_delegate)
+    system_tray_delegate->RemoveCustodianInfoTrayObserver(this);
 }
 
 void TraySupervisedUser::UpdateMessage() {
@@ -75,9 +82,10 @@ void TraySupervisedUser::UpdateAfterLoginStatusChange(
     return;
 
   if (is_user_supervised &&
-      status_ != ash::user::LOGGED_IN_LOCKED) {
-    CreateOrUpdateNotification(delegate->GetSupervisedUserMessage());
-  }
+      status_ != ash::user::LOGGED_IN_LOCKED &&
+      !delegate->GetSupervisedUserManager().empty())
+    CreateOrUpdateSupervisedWarningNotification();
+
   status_ = status;
   is_user_supervised_ = is_user_supervised;
 }
@@ -94,6 +102,22 @@ void TraySupervisedUser::CreateOrUpdateNotification(
           system_notifier::kNotifierSupervisedUser,
           base::Closure() /* null callback */));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+}
+
+void TraySupervisedUser::CreateOrUpdateSupervisedWarningNotification() {
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  CreateOrUpdateNotification(delegate->GetSupervisedUserMessage());
+}
+
+void TraySupervisedUser::OnCustodianInfoChanged() {
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
+  std::string manager_name = delegate->GetSupervisedUserManager();
+  if (!manager_name.empty()) {
+    if (!message_center::MessageCenter::Get()->FindVisibleNotificationById(
+            kNotificationId))
+      CreateOrUpdateSupervisedWarningNotification();
+    UpdateMessage();
+  }
 }
 
 }  // namespace ash

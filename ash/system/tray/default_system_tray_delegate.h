@@ -88,6 +88,10 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool IsSearchKeyMappedToCapsLock() override;
   virtual tray::UserAccountsDelegate* GetUserAccountsDelegate(
       const std::string& user_id) override;
+  virtual void AddCustodianInfoTrayObserver(
+      CustodianInfoTrayObserver* observer) override;
+  virtual void RemoveCustodianInfoTrayObserver(
+      CustodianInfoTrayObserver* observer) override;
 
  private:
   bool bluetooth_enabled_;

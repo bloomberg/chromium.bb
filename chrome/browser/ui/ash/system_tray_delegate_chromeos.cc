@@ -70,6 +70,8 @@
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/ash/user_accounts_delegate_chromeos.h"
@@ -312,6 +314,7 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
+  StopObservingCustodianInfoChanges();
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -380,31 +383,30 @@ const base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
 }
 
 const std::string SystemTrayDelegateChromeOS::GetSupervisedUserManager() const {
-  if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
+  if (!IsUserSupervised())
     return std::string();
-  return ChromeUserManager::Get()
-      ->GetSupervisedUserManager()
-      ->GetManagerDisplayEmail(
-          user_manager::UserManager::Get()->GetActiveUser()->email());
+  return SupervisedUserServiceFactory::GetForProfile(user_profile_)->
+      GetCustodianEmailAddress();
 }
 
 const base::string16
 SystemTrayDelegateChromeOS::GetSupervisedUserManagerName() const {
-  if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
+  if (!IsUserSupervised())
     return base::string16();
-  return ChromeUserManager::Get()
-      ->GetSupervisedUserManager()
-      ->GetManagerDisplayName(
-          user_manager::UserManager::Get()->GetActiveUser()->email());
+  return base::UTF8ToUTF16(SupervisedUserServiceFactory::GetForProfile(
+      user_profile_)->GetCustodianName());
 }
 
 const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
     const {
   if (!IsUserSupervised())
     return base::string16();
+  std::string user_manager_name = GetSupervisedUserManager();
+  LOG_IF(WARNING, user_manager_name.empty()) <<
+      "Returning incomplete supervised user message as manager not known yet.";
   return l10n_util::GetStringFUTF16(
       IDS_USER_IS_SUPERVISED_BY_NOTICE,
-      base::UTF8ToUTF16(GetSupervisedUserManager()));
+      base::UTF8ToUTF16(user_manager_name));
 }
 
 bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
@@ -864,6 +866,16 @@ SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
   return accounts_delegates_.get(user_id);
 }
 
+void SystemTrayDelegateChromeOS::AddCustodianInfoTrayObserver(
+    ash::CustodianInfoTrayObserver* observer) {
+  custodian_info_changed_observers_.AddObserver(observer);
+}
+
+void SystemTrayDelegateChromeOS::RemoveCustodianInfoTrayObserver(
+    ash::CustodianInfoTrayObserver* observer) {
+  custodian_info_changed_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayDelegateChromeOS::UserAddedToSession(
     const user_manager::User* active_user) {
 }
@@ -891,10 +903,16 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
   // Stop observing the AppWindowRegistry of the current |user_profile_|.
   StopObservingAppWindowRegistry();
 
+  // Stop observing custodian info changes of the current |user_profile_|.
+  StopObservingCustodianInfoChanges();
+
   user_profile_ = profile;
 
   // Start observing the AppWindowRegistry of the newly set |user_profile_|.
   extensions::AppWindowRegistry::Get(user_profile_)->AddObserver(this);
+
+  // Start observing custodian info changes of the newly set |user_profile_|.
+  SupervisedUserServiceFactory::GetForProfile(profile)->AddObserver(this);
 
   PrefService* prefs = profile->GetPrefs();
   user_pref_registrar_.reset(new PrefChangeRegistrar);
@@ -939,6 +957,7 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
   UpdateShowLogoutButtonInTray();
   UpdateLogoutDialogDuration();
   UpdatePerformanceTracing();
+  OnCustodianInfoChanged();
   search_key_mapped_to_ =
       profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
 }
@@ -1041,6 +1060,16 @@ void SystemTrayDelegateChromeOS::StopObservingAppWindowRegistry() {
           user_profile_, false);
   if (registry)
     registry->RemoveObserver(this);
+}
+
+void SystemTrayDelegateChromeOS::StopObservingCustodianInfoChanges() {
+  if (!user_profile_)
+    return;
+
+  SupervisedUserService* service = SupervisedUserServiceFactory::GetForProfile(
+      user_profile_);
+  if (service)
+    service->RemoveObserver(this);
 }
 
 void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
@@ -1290,6 +1319,13 @@ void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {
 void SystemTrayDelegateChromeOS::OnAppWindowRemoved(
     extensions::AppWindow* app_window) {
   NotifyIfLastWindowClosed();
+}
+
+// Overridden from SupervisedUserServiceObserver.
+void SystemTrayDelegateChromeOS::OnCustodianInfoChanged() {
+  FOR_EACH_OBSERVER(
+      ash::CustodianInfoTrayObserver, custodian_info_changed_observers_,
+      OnCustodianInfoChanged());
 }
 
 void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(

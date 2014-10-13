@@ -287,6 +287,14 @@ class SystemTrayDelegateLinux : public ash::SystemTrayDelegate,
     return NULL;
   }
 
+  virtual void AddCustodianInfoTrayObserver(
+    ash::CustodianInfoTrayObserver* observer) override {
+  }
+
+  virtual void RemoveCustodianInfoTrayObserver(
+    ash::CustodianInfoTrayObserver* observer) override {
+  }
+
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();

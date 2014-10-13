@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,6 +23,8 @@ class TimeTicks;
 }
 
 namespace ash {
+
+class CustodianInfoTrayObserver;
 
 struct ASH_EXPORT NetworkIconInfo {
   NetworkIconInfo();
@@ -311,6 +314,13 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns accounts delegate for given user.
   virtual tray::UserAccountsDelegate* GetUserAccountsDelegate(
       const std::string& user_id) = 0;
+
+  // Adding observers that are notified when supervised info is being changed.
+  virtual void AddCustodianInfoTrayObserver(
+      CustodianInfoTrayObserver* observer) = 0;
+
+  virtual void RemoveCustodianInfoTrayObserver(
+      CustodianInfoTrayObserver* observer) = 0;
 };
 
 }  // namespace ash

@@ -343,6 +343,7 @@
       'system/chromeos/session/tray_session_length_limit.h',
       'system/chromeos/settings/tray_settings.cc',
       'system/chromeos/settings/tray_settings.h',
+      'system/chromeos/supervised/custodian_info_tray_observer.h',
       'system/chromeos/supervised/tray_supervised_user.cc',
       'system/chromeos/supervised/tray_supervised_user.h',
       'system/chromeos/system_clock_observer.cc',

@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H
 
 #include "ash/ash_export.h"
+#include "ash/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "base/strings/string16.h"
@@ -15,7 +16,8 @@ class LabelTrayView;
 class SystemTray;
 
 class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
-                                      public ViewClickListener {
+                                      public ViewClickListener,
+                                      public CustodianInfoTrayObserver {
  public:
   explicit TraySupervisedUser(SystemTray* system_tray);
   virtual ~TraySupervisedUser();
@@ -32,6 +34,9 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   // Overridden from ViewClickListener.
   virtual void OnViewClicked(views::View* sender) override;
 
+  // Overridden from CustodianInfoTrayObserver:
+  virtual void OnCustodianInfoChanged() override;
+
  private:
   friend class TraySupervisedUserTest;
 
@@ -39,7 +44,10 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
 
   void CreateOrUpdateNotification(const base::string16& new_message);
 
+  void CreateOrUpdateSupervisedWarningNotification();
+
   LabelTrayView* tray_view_;
+
   // Previous login status to avoid showing notification upon unlock.
   user::LoginStatus status_;
 
