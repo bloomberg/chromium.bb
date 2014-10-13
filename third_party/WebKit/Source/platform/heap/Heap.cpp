@@ -2141,11 +2141,10 @@ void Heap::init()
     s_orphanedPagePool = new OrphanedPagePool();
     s_markingThreads = new Vector<OwnPtr<blink::WebThread> >();
     if (blink::Platform::current()) {
-        // FIXME: We should let the amount of threads scale with the
-        // amount of processors in the system instead of hardcoding
-        // it.
+        int processors = blink::Platform::current()->numberOfProcessors();
+        int numberOfMarkingThreads = std::min(processors, maxNumberOfMarkingThreads);
         for (int i = 0; i < numberOfMarkingThreads; i++)
-            s_markingThreads->append(adoptPtr(blink::Platform::current()->createThread("Blink Heap Marker Thread")));
+            s_markingThreads->append(adoptPtr(blink::Platform::current()->createThread("Blink GC Marking Thread")));
     }
 }
 

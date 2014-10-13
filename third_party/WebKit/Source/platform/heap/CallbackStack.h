@@ -53,7 +53,7 @@ public:
     bool hasCallbackForObject(const void*);
 #endif
 
-    static const size_t blockSize = 200;
+    static const size_t blockSize = 128;
 
 private:
     class Block;

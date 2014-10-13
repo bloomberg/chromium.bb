@@ -94,7 +94,7 @@ const uint8_t finalizedZapValue = 24;
 // the mark bit when tracing.
 const uint8_t orphanedZapValue = 240;
 
-const int numberOfMarkingThreads = 2;
+const int maxNumberOfMarkingThreads = 4;
 
 const int numberOfPagesToConsiderForCoalescing = 100;
 
@@ -904,7 +904,7 @@ public:
     static void collectGarbage(ThreadState::StackState, ThreadState::CauseOfGC = ThreadState::NormalGC);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
-    static void processMarkingStackEntries(int* numberOfMarkingThreads);
+    static void processMarkingStackEntries(int*);
     static void processMarkingStackOnMultipleThreads();
     static void processMarkingStackInParallel();
     template<CallbackInvocationMode Mode> static void processMarkingStack();

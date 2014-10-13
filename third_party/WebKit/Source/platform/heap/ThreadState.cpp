@@ -330,7 +330,7 @@ ThreadState::ThreadState()
     m_weakCallbackStack = new CallbackStack();
 
     if (blink::Platform::current())
-        m_sweeperThread = adoptPtr(blink::Platform::current()->createThread("Blink GC Sweeper"));
+        m_sweeperThread = adoptPtr(blink::Platform::current()->createThread("Blink GC Sweeper Thread"));
 }
 
 ThreadState::~ThreadState()
