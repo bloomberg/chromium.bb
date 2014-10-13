@@ -92,7 +92,7 @@ protected:
     friend class ::ScrollAnimatorNoneTest;
 
     struct PLATFORM_EXPORT PerAxisData {
-        PerAxisData(ScrollAnimatorNone* parent, float* currentPos, int visibleLength);
+        PerAxisData(float* currentPos, int visibleLength);
         void reset();
         bool updateDataFromParameters(float step, float delta, float scrollableSize, double currentTime, Parameters*);
         bool animateScroll(double currentTime);

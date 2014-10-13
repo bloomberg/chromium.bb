@@ -190,7 +190,7 @@ double ScrollAnimatorNone::PerAxisData::releaseArea(Curve curve, double startT, 
     return endValue - startValue;
 }
 
-ScrollAnimatorNone::PerAxisData::PerAxisData(ScrollAnimatorNone* parent, float* currentPosition, int visibleLength)
+ScrollAnimatorNone::PerAxisData::PerAxisData(float* currentPosition, int visibleLength)
     : m_currentPosition(currentPosition)
     , m_visibleLength(visibleLength)
 {
@@ -365,8 +365,8 @@ void ScrollAnimatorNone::PerAxisData::updateVisibleLength(int visibleLength)
 
 ScrollAnimatorNone::ScrollAnimatorNone(ScrollableArea* scrollableArea)
     : ScrollAnimator(scrollableArea)
-    , m_horizontalData(this, &m_currentPosX, scrollableArea->visibleWidth())
-    , m_verticalData(this, &m_currentPosY, scrollableArea->visibleHeight())
+    , m_horizontalData(&m_currentPosX, scrollableArea->visibleWidth())
+    , m_verticalData(&m_currentPosY, scrollableArea->visibleHeight())
     , m_startTime(0)
     , m_animationActive(false)
 {

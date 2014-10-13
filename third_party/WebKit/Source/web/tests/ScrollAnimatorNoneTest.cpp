@@ -184,7 +184,7 @@ class ScrollAnimatorNoneTest : public testing::Test {
 public:
     struct SavePerAxisData : public ScrollAnimatorNone::PerAxisData {
         SavePerAxisData(const ScrollAnimatorNone::PerAxisData& data)
-            : ScrollAnimatorNone::PerAxisData(m_mockScrollAnimatorNone.get(), 0, 768)
+            : ScrollAnimatorNone::PerAxisData(0, 768)
             , m_mockScrollableArea(true)
             , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(&m_mockScrollableArea))
         {
@@ -221,7 +221,7 @@ public:
     virtual void SetUp()
     {
         m_currentPosition = 100;
-        m_data = new ScrollAnimatorNone::PerAxisData(m_mockScrollAnimatorNone.get(), &m_currentPosition, 768);
+        m_data = new ScrollAnimatorNone::PerAxisData(&m_currentPosition, 768);
     }
     virtual void TearDown()
     {
