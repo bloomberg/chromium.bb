@@ -1416,7 +1416,7 @@
     # Sets the default version name and code for Android app, by default we
     # do a developer build.
     'android_app_version_name%': 'Developer Build',
-    'android_app_version_code%': 0,
+    'android_app_version_code%': 1,
 
     # Contains data about the attached devices for gyp_managed_install.
     'build_device_config_path': '<(PRODUCT_DIR)/build_devices.cfg',

@@ -252,7 +252,7 @@ template("create_apk") {
     _asset_location = invoker.asset_location
   }
 
-  _version_code = "0"
+  _version_code = "1"
   _version_name = "Developer Build"
 
   _base_apk_path = _base_path + ".apk_intermediates"
