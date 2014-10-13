@@ -58,25 +58,36 @@
         {
           'target_name': 'cronet_version',
           'type': 'none',
-          # Because cronet_version generates a header, we must set the
-          # hard_dependency flag.
-          'hard_dependency': 1,
+          'variables': {
+            'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+            'version_py_path': '<(DEPTH)/build/util/version.py',
+            'version_path': '<(DEPTH)/chrome/VERSION',
+            'template_input_path': 'cronet/android/java/src/org/chromium/net/Version.template',
+            'output_path': '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/org/chromium/cronet/Version.java',
+          },
+          'direct_dependent_settings': {
+            'variables': {
+              # Ensure that the output directory is used in the class path
+              # when building targets that depend on this one.
+              'generated_src_dirs': [
+                '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)',
+              ],
+              # Ensure dependents are rebuilt when the generated Java file changes.
+              'additional_input_paths': [
+                '<(output_path)',
+              ],
+            },
+          },
           'actions': [
             {
               'action_name': 'cronet_version',
-              'variables': {
-                'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
-                'version_py_path': '<(DEPTH)/build/util/version.py',
-                'version_path': '<(DEPTH)/chrome/VERSION',
-                'template_input_path': 'cronet/android/java/src/org/chromium/net/Version.template',
-              },
               'inputs': [
                 '<(template_input_path)',
                 '<(version_path)',
                 '<(lastchange_path)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/org/chromium/cronet/Version.java',
+                '<(output_path)',
               ],
               'action': [
                 'python',
@@ -84,7 +95,7 @@
                 '-f', '<(version_path)',
                 '-f', '<(lastchange_path)',
                 '<(template_input_path)',
-                '<@(_outputs)',
+                '<(output_path)',
               ],
               'message': 'Generating version information',
             },
