@@ -330,8 +330,11 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
             || type == InputTypeNames::month
             || type == InputTypeNames::week)
             return DateTimeRole;
-        if (type == InputTypeNames::radio)
+        if (type == InputTypeNames::radio) {
+            if ((node->parentNode() && isHTMLMenuElement(node->parentNode())) || (parentObject() && parentObject()->roleValue() == MenuRole))
+                return MenuItemRadioRole;
             return RadioButtonRole;
+        }
         if (input.isTextButton())
             return buttonRoleType();
         if (type == InputTypeNames::color)
