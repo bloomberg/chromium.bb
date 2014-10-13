@@ -1,0 +1,20 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+define("{{module.path}}", [
+    "mojo/public/js/bindings/codec",
+    "mojo/public/js/bindings/validator",
+{%- for import in imports %}
+    "{{import.module.path}}",
+{%- endfor %}
+], function(codec, validator
+{%- for import in imports -%}
+    , {{import.unique_name}}
+{%- endfor -%}
+) {
+
+{%- include "module_definition.tmpl" %}
+
+  return exports;
+});

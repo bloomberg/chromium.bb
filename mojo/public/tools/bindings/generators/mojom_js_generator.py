@@ -250,8 +250,7 @@ class Generator(generator.Generator):
     "validate_struct_params": JavaScriptValidateStructParams,
   }
 
-  @UseJinja("js_templates/module.js.tmpl", filters=js_filters)
-  def GenerateJsModule(self):
+  def GetParameters(self):
     return {
       "namespace": self.module.namespace,
       "imports": self.GetImports(),
@@ -263,8 +262,17 @@ class Generator(generator.Generator):
       "imported_interfaces": self.GetImportedInterfaces(),
     }
 
+  @UseJinja("js_templates/module.amd.tmpl", filters=js_filters)
+  def GenerateAMDModule(self):
+    return self.GetParameters()
+
+  @UseJinja("js_templates/module.html.tmpl", filters=js_filters)
+  def GenerateHTMLModule(self):
+    return self.GetParameters()
+
   def GenerateFiles(self, args):
-    self.Write(self.GenerateJsModule(), "%s.js" % self.module.name)
+    self.Write(self.GenerateAMDModule(), "%s.js" % self.module.name)
+    self.Write(self.GenerateHTMLModule(), "%s.html" % self.module.name)
 
   def GetImports(self):
     # Since each import is assigned a variable in JS, they need to have unique
