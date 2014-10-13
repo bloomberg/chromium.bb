@@ -32,9 +32,6 @@ public class AwResource {
     // a generic load error. (It's called NO_DOMAIN for legacy reasons).
     private static int sRawNoDomain;
 
-    // String resource ID for the default text encoding to use.
-    private static int sStringDefaultTextEncoding;
-
     // Array resource ID for the configuration of platform specific key-systems.
     private static int sStringArrayConfigKeySystemUUIDMapping;
 
@@ -58,17 +55,8 @@ public class AwResource {
         sRawNoDomain = nodomain;
     }
 
-    public static void setDefaultTextEncoding(int encoding) {
-        sStringDefaultTextEncoding = encoding;
-    }
-
     public static void setConfigKeySystemUuidMapping(int config) {
         sStringArrayConfigKeySystemUUIDMapping = config;
-    }
-
-    @CalledByNative
-    public static String getDefaultTextEncoding() {
-        return getResource(sStringDefaultTextEncoding, TYPE_STRING);
     }
 
     @CalledByNative

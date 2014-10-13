@@ -147,10 +147,6 @@ void AwContentRendererClient::RenderViewCreated(
   new autofill::AutofillAgent(render_view, password_autofill_agent, NULL);
 }
 
-std::string AwContentRendererClient::GetDefaultEncoding() {
-  return AwResource::GetDefaultTextEncoding();
-}
-
 bool AwContentRendererClient::HasErrorPage(int http_status_code,
                           std::string* error_domain) {
   return http_status_code >= 400;

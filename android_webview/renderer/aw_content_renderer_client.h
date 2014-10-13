@@ -25,7 +25,6 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual void RenderThreadStarted() override;
   virtual void RenderFrameCreated(content::RenderFrame* render_frame) override;
   virtual void RenderViewCreated(content::RenderView* render_view) override;
-  virtual std::string GetDefaultEncoding() override;
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) override;
   virtual void GetNavigationErrorStrings(

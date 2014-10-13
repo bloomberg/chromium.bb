@@ -81,7 +81,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual void SetNumberOfViews(int number_of_views) override;
   virtual SkBitmap* GetSadPluginBitmap() override;
   virtual SkBitmap* GetSadWebViewBitmap() override;
-  virtual std::string GetDefaultEncoding() override;
   virtual bool OverrideCreatePlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
