@@ -61,24 +61,24 @@ const char kTestServiceUuid1[] = "5678";
 const char kTestCharacteristicId0[] = "char_id0";
 const char kTestCharacteristicUuid0[] = "1211";
 const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties0 =
-    BluetoothGattCharacteristic::kPropertyBroadcast |
-    BluetoothGattCharacteristic::kPropertyRead |
-    BluetoothGattCharacteristic::kPropertyWriteWithoutResponse |
-    BluetoothGattCharacteristic::kPropertyIndicate;
+    BluetoothGattCharacteristic::PROPERTY_BROADCAST |
+    BluetoothGattCharacteristic::PROPERTY_READ |
+    BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE |
+    BluetoothGattCharacteristic::PROPERTY_INDICATE;
 const uint8 kTestCharacteristicDefaultValue0[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
 const char kTestCharacteristicId1[] = "char_id1";
 const char kTestCharacteristicUuid1[] = "1212";
 const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties1 =
-    BluetoothGattCharacteristic::kPropertyRead |
-    BluetoothGattCharacteristic::kPropertyWrite |
-    BluetoothGattCharacteristic::kPropertyNotify;
+    BluetoothGattCharacteristic::PROPERTY_READ |
+    BluetoothGattCharacteristic::PROPERTY_WRITE |
+    BluetoothGattCharacteristic::PROPERTY_NOTIFY;
 const uint8 kTestCharacteristicDefaultValue1[] = {0x06, 0x07, 0x08};
 
 const char kTestCharacteristicId2[] = "char_id2";
 const char kTestCharacteristicUuid2[] = "1213";
 const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties2 =
-    BluetoothGattCharacteristic::kPropertyNone;
+    BluetoothGattCharacteristic::PROPERTY_NONE;
 
 // Test descriptor constants.
 const char kTestDescriptorId0[] = "desc_id0";
@@ -153,7 +153,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
         BluetoothUUID(kTestCharacteristicUuid0),
         false /* is_local */,
         kTestCharacteristicProperties0,
-        BluetoothGattCharacteristic::kPermissionNone));
+        BluetoothGattCharacteristic::PERMISSION_NONE));
     default_value.assign(kTestCharacteristicDefaultValue0,
                          (kTestCharacteristicDefaultValue0 +
                           sizeof(kTestCharacteristicDefaultValue0)));
@@ -165,7 +165,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
         BluetoothUUID(kTestCharacteristicUuid1),
         false /* is_local */,
         kTestCharacteristicProperties1,
-        BluetoothGattCharacteristic::kPermissionNone));
+        BluetoothGattCharacteristic::PERMISSION_NONE));
     default_value.assign(kTestCharacteristicDefaultValue1,
                          (kTestCharacteristicDefaultValue1 +
                           sizeof(kTestCharacteristicDefaultValue1)));
@@ -177,14 +177,14 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
         BluetoothUUID(kTestCharacteristicUuid2),
         false /* is_local */,
         kTestCharacteristicProperties2,
-        BluetoothGattCharacteristic::kPermissionNone));
+        BluetoothGattCharacteristic::PERMISSION_NONE));
 
     desc0_.reset(new testing::NiceMock<MockBluetoothGattDescriptor>(
         chrc0_.get(),
         kTestDescriptorId0,
         BluetoothUUID(kTestDescriptorUuid0),
         false /* is_local */,
-        BluetoothGattCharacteristic::kPermissionNone));
+        BluetoothGattCharacteristic::PERMISSION_NONE));
     default_value.assign(
         kTestDescriptorDefaultValue0,
         (kTestDescriptorDefaultValue0 + sizeof(kTestDescriptorDefaultValue0)));
@@ -195,7 +195,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
         kTestDescriptorId1,
         BluetoothUUID(kTestDescriptorUuid1),
         false /* is_local */,
-        BluetoothGattCharacteristic::kPermissionNone));
+        BluetoothGattCharacteristic::PERMISSION_NONE));
     default_value.assign(
         kTestDescriptorDefaultValue1,
         (kTestDescriptorDefaultValue1 + sizeof(kTestDescriptorDefaultValue1)));
@@ -539,32 +539,32 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicProperties) {
       .WillRepeatedly(Return(chrc0_.get()));
   EXPECT_CALL(*chrc0_, GetProperties())
       .Times(12)
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyNone))
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyBroadcast))
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyRead))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_NONE))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_BROADCAST))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_READ))
       .WillOnce(
-           Return(BluetoothGattCharacteristic::kPropertyWriteWithoutResponse))
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyWrite))
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyNotify))
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyIndicate))
+           Return(BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_WRITE))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_NOTIFY))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_INDICATE))
       .WillOnce(Return(
-          BluetoothGattCharacteristic::kPropertyAuthenticatedSignedWrites))
+          BluetoothGattCharacteristic::PROPERTY_AUTHENTICATED_SIGNED_WRITES))
       .WillOnce(
-           Return(BluetoothGattCharacteristic::kPropertyExtendedProperties))
-      .WillOnce(Return(BluetoothGattCharacteristic::kPropertyReliableWrite))
+           Return(BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES))
+      .WillOnce(Return(BluetoothGattCharacteristic::PROPERTY_RELIABLE_WRITE))
       .WillOnce(
-           Return(BluetoothGattCharacteristic::kPropertyWritableAuxiliaries))
+           Return(BluetoothGattCharacteristic::PROPERTY_WRITABLE_AUXILIARIES))
       .WillOnce(Return(
-          BluetoothGattCharacteristic::kPropertyBroadcast |
-          BluetoothGattCharacteristic::kPropertyRead |
-          BluetoothGattCharacteristic::kPropertyWriteWithoutResponse |
-          BluetoothGattCharacteristic::kPropertyWrite |
-          BluetoothGattCharacteristic::kPropertyNotify |
-          BluetoothGattCharacteristic::kPropertyIndicate |
-          BluetoothGattCharacteristic::kPropertyAuthenticatedSignedWrites |
-          BluetoothGattCharacteristic::kPropertyExtendedProperties |
-          BluetoothGattCharacteristic::kPropertyReliableWrite |
-          BluetoothGattCharacteristic::kPropertyWritableAuxiliaries));
+          BluetoothGattCharacteristic::PROPERTY_BROADCAST |
+          BluetoothGattCharacteristic::PROPERTY_READ |
+          BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE |
+          BluetoothGattCharacteristic::PROPERTY_WRITE |
+          BluetoothGattCharacteristic::PROPERTY_NOTIFY |
+          BluetoothGattCharacteristic::PROPERTY_INDICATE |
+          BluetoothGattCharacteristic::PROPERTY_AUTHENTICATED_SIGNED_WRITES |
+          BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES |
+          BluetoothGattCharacteristic::PROPERTY_RELIABLE_WRITE |
+          BluetoothGattCharacteristic::PROPERTY_WRITABLE_AUXILIARIES));
 
   ExtensionTestMessageListener listener("ready", true);
   listener.set_failure_message("fail");

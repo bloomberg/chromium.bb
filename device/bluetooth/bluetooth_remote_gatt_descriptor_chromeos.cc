@@ -72,7 +72,7 @@ device::BluetoothGattCharacteristic::Permissions
 BluetoothRemoteGattDescriptorChromeOS::GetPermissions() const {
   // TODO(armansito): Once BlueZ defines the permissions, return the correct
   // values here.
-  return device::BluetoothGattCharacteristic::kPermissionNone;
+  return device::BluetoothGattCharacteristic::PERMISSION_NONE;
 }
 
 void BluetoothRemoteGattDescriptorChromeOS::ReadRemoteDescriptor(

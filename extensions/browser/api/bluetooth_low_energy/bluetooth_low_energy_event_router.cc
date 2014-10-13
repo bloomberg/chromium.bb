@@ -54,35 +54,36 @@ void PopulateCharacteristicProperties(
     std::vector<apibtle::CharacteristicProperty>* api_properties) {
   DCHECK(api_properties && api_properties->empty());
 
-  if (properties == BluetoothGattCharacteristic::kPropertyNone)
+  if (properties == BluetoothGattCharacteristic::PROPERTY_NONE)
     return;
 
-  if (properties & BluetoothGattCharacteristic::kPropertyBroadcast)
+  if (properties & BluetoothGattCharacteristic::PROPERTY_BROADCAST)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_BROADCAST);
-  if (properties & BluetoothGattCharacteristic::kPropertyRead)
+  if (properties & BluetoothGattCharacteristic::PROPERTY_READ)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_READ);
-  if (properties & BluetoothGattCharacteristic::kPropertyWriteWithoutResponse) {
+  if (properties &
+      BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE) {
     api_properties->push_back(
         apibtle::CHARACTERISTIC_PROPERTY_WRITEWITHOUTRESPONSE);
   }
-  if (properties & BluetoothGattCharacteristic::kPropertyWrite)
+  if (properties & BluetoothGattCharacteristic::PROPERTY_WRITE)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_WRITE);
-  if (properties & BluetoothGattCharacteristic::kPropertyNotify)
+  if (properties & BluetoothGattCharacteristic::PROPERTY_NOTIFY)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_NOTIFY);
-  if (properties & BluetoothGattCharacteristic::kPropertyIndicate)
+  if (properties & BluetoothGattCharacteristic::PROPERTY_INDICATE)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_INDICATE);
   if (properties &
-      BluetoothGattCharacteristic::kPropertyAuthenticatedSignedWrites) {
+      BluetoothGattCharacteristic::PROPERTY_AUTHENTICATED_SIGNED_WRITES) {
     api_properties->push_back(
         apibtle::CHARACTERISTIC_PROPERTY_AUTHENTICATEDSIGNEDWRITES);
   }
-  if (properties & BluetoothGattCharacteristic::kPropertyExtendedProperties) {
+  if (properties & BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES) {
     api_properties->push_back(
         apibtle::CHARACTERISTIC_PROPERTY_EXTENDEDPROPERTIES);
   }
-  if (properties & BluetoothGattCharacteristic::kPropertyReliableWrite)
+  if (properties & BluetoothGattCharacteristic::PROPERTY_RELIABLE_WRITE)
     api_properties->push_back(apibtle::CHARACTERISTIC_PROPERTY_RELIABLEWRITE);
-  if (properties & BluetoothGattCharacteristic::kPropertyWritableAuxiliaries) {
+  if (properties & BluetoothGattCharacteristic::PROPERTY_WRITABLE_AUXILIARIES) {
     api_properties->push_back(
         apibtle::CHARACTERISTIC_PROPERTY_WRITABLEAUXILIARIES);
   }

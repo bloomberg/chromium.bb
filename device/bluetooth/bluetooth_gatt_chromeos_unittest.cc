@@ -1045,19 +1045,19 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
   BluetoothGattCharacteristic *characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
           GetBodySensorLocationPath().value());
-  EXPECT_EQ(BluetoothGattCharacteristic::kPropertyRead,
+  EXPECT_EQ(BluetoothGattCharacteristic::PROPERTY_READ,
             characteristic->GetProperties());
 
   characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
           GetHeartRateControlPointPath().value());
-  EXPECT_EQ(BluetoothGattCharacteristic::kPropertyWrite,
+  EXPECT_EQ(BluetoothGattCharacteristic::PROPERTY_WRITE,
             characteristic->GetProperties());
 
   characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
           GetHeartRateMeasurementPath().value());
-  EXPECT_EQ(BluetoothGattCharacteristic::kPropertyNotify,
+  EXPECT_EQ(BluetoothGattCharacteristic::PROPERTY_NOTIFY,
             characteristic->GetProperties());
 }
 
