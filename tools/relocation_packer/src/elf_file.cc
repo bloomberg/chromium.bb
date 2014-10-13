@@ -1004,8 +1004,6 @@ bool ElfFile::PackTypedRelocations(const std::vector<Rel>& relocations,
   if (!is_padding_relocations_) {
     // Calculate the size of the hole we will close up when we rewrite
     // dynamic relocations.
-    ELF::Shdr* section_header = ELF::getshdr(relocations_section_);
-    const ELF::Off hole_start = section_header->sh_offset;
     ssize_t hole_size =
         relative_relocations.size() * sizeof(relative_relocations[0]);
     const ssize_t unaligned_hole_size = hole_size;
@@ -1217,8 +1215,6 @@ bool ElfFile::UnpackTypedRelocations(const std::vector<uint8_t>& packed,
   if (!is_padded) {
     // Calculate the size of the hole we will open up when we rewrite
     // dynamic relocations.
-    ELF::Shdr* section_header = ELF::getshdr(relocations_section_);
-    const ELF::Off hole_start = section_header->sh_offset;
     ssize_t hole_size =
         relative_relocations.size() * sizeof(relative_relocations[0]);
 
