@@ -675,15 +675,15 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       new SpdyFrameReader(current_frame_buffer_.get(),
                           current_frame_buffer_length_));
 
-  uint16 version = 0;
   bool is_control_frame = false;
 
   uint16 control_frame_type_field =
-    SpdyConstants::DataFrameType(protocol_version());
+      SpdyConstants::DataFrameType(protocol_version());
   // ProcessControlFrameHeader() will set current_frame_type_ to the
   // correct value if this is a valid control frame.
   current_frame_type_ = DATA;
   if (protocol_version() <= SPDY3) {
+    uint16 version = 0;
     bool successful_read = reader->ReadUInt16(&version);
     DCHECK(successful_read);
     is_control_frame = (version & kControlFlagMask) != 0;
@@ -700,9 +700,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
                  << " (expected " << protocol_version() << ")";
         set_error(SPDY_UNSUPPORTED_VERSION);
         return 0;
-      } else {
-        // Convert version from wire format to SpdyMajorVersion.
-        version = SpdyConstants::ParseMajorVersion(version);
       }
       // We check control_frame_type_field's validity in
       // ProcessControlFrameHeader().
@@ -722,7 +719,6 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     remaining_data_length_ = length_field;
     current_frame_length_ = remaining_data_length_ + reader->GetBytesConsumed();
   } else {
-    version = protocol_version();
     uint32 length_field = 0;
     bool successful_read = reader->ReadUInt24(&length_field);
     DCHECK(successful_read);
@@ -1173,9 +1169,9 @@ void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
                                   const SpdyMajorVersion spdy_version,
                                   const SpdyHeaderBlock* headers) {
   if (spdy_version < SPDY3) {
-    frame->WriteUInt16(headers->size());  // Number of headers.
+    frame->WriteUInt16(headers->size());
   } else {
-    frame->WriteUInt32(headers->size());  // Number of headers.
+    frame->WriteUInt32(headers->size());
   }
   SpdyHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {

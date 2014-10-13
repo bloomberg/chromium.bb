@@ -630,7 +630,6 @@ bool InstallerState::AnyExistsAndIsInUse(
   // Check only for the current version (i.e., the version we are upgrading
   // _from_). Later versions from pending in-use updates need not be checked
   // since the current version is guaranteed to be in use if any such are.
-  bool in_use = false;
   scoped_ptr<Version> current_version(GetCurrentVersion(machine_state));
   if (!current_version)
     return false;

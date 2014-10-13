@@ -232,7 +232,6 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
 bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
                                        bool no_sandbox) {
   if (no_sandbox) {
-    base::ProcessHandle process = base::kNullProcessHandle;
     cmd_line->AppendSwitch(switches::kNoSandbox);
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
   } else {

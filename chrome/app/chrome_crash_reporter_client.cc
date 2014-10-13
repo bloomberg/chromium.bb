@@ -216,12 +216,11 @@ void ChromeCrashReporterClient::InitBrowserCrashDumpsRegKey() {
   // browser process might have the same process id and tick count, but crash
   // before consuming the signal (overwriting the signal with an identical one).
   // For now, we're willing to live with that risk.
-  int length = base::strings::SafeSPrintf(g_browser_crash_dump_prefix,
-                                          kBrowserCrashDumpPrefixTemplate,
-                                          chrome::kChromeVersion,
-                                          ::GetCurrentProcessId(),
-                                          ::GetTickCount());
-  if (length <= 0) {
+  if (base::strings::SafeSPrintf(g_browser_crash_dump_prefix,
+                                 kBrowserCrashDumpPrefixTemplate,
+                                 chrome::kChromeVersion,
+                                 ::GetCurrentProcessId(),
+                                 ::GetTickCount()) <= 0) {
     NOTREACHED();
     g_browser_crash_dump_prefix[0] = '\0';
     return;
@@ -241,13 +240,10 @@ void ChromeCrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
   // base value name).
   const size_t kMaxValueSize = 2 * kBrowserCrashDumpPrefixLength;
   char value_name[kMaxValueSize + 1] = {};
-  int length = base::strings::SafeSPrintf(
-      value_name,
-      "%s-%x",
-      g_browser_crash_dump_prefix,
-      base::subtle::NoBarrier_AtomicIncrement(&g_browser_crash_dump_count, 1));
-
-  if (length > 0) {
+  if (base::strings::SafeSPrintf(
+          value_name, "%s-%x", g_browser_crash_dump_prefix,
+          base::subtle::NoBarrier_AtomicIncrement(&g_browser_crash_dump_count,
+                                                  1)) > 0) {
     DWORD value_dword = is_real_crash ? 1 : 0;
     ::RegSetValueExA(g_browser_crash_dump_regkey, value_name, 0, REG_DWORD,
                      reinterpret_cast<BYTE*>(&value_dword),

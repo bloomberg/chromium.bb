@@ -7,13 +7,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace gfx {
+namespace {
 
-void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
-  CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
-}
-
-void CreateBitmapHeaderWithColorDepth(int width, int height, int color_depth,
+void CreateBitmapHeaderWithColorDepth(LONG width,
+                                      LONG height,
+                                      WORD color_depth,
                                       BITMAPINFOHEADER* hdr) {
   // These values are shared with gfx::PlatformDevice
   hdr->biSize = sizeof(BITMAPINFOHEADER);
@@ -27,6 +25,14 @@ void CreateBitmapHeaderWithColorDepth(int width, int height, int color_depth,
   hdr->biYPelsPerMeter = 1;
   hdr->biClrUsed = 0;
   hdr->biClrImportant = 0;
+}
+
+}  // namespace
+
+namespace gfx {
+
+void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
+  CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
 }
 
 void CreateBitmapV4Header(int width, int height, BITMAPV4HEADER* hdr) {
@@ -49,17 +55,7 @@ void CreateBitmapV4Header(int width, int height, BITMAPV4HEADER* hdr) {
 void CreateMonochromeBitmapHeader(int width,
                                   int height,
                                   BITMAPINFOHEADER* hdr) {
-  hdr->biSize = sizeof(BITMAPINFOHEADER);
-  hdr->biWidth = width;
-  hdr->biHeight = -height;
-  hdr->biPlanes = 1;
-  hdr->biBitCount = 1;
-  hdr->biCompression = BI_RGB;
-  hdr->biSizeImage = 0;
-  hdr->biXPelsPerMeter = 1;
-  hdr->biYPelsPerMeter = 1;
-  hdr->biClrUsed = 0;
-  hdr->biClrImportant = 0;
+  CreateBitmapHeaderWithColorDepth(width, height, 1, hdr);
 }
 
 void SubtractRectanglesFromRegion(HRGN hrgn,

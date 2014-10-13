@@ -2187,7 +2187,6 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
                 from_file, from_file_size));
   ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
 
-  int64 to_file_size ALLOW_UNUSED = from_file_size;
   from_file_size = 0;
   ASSERT_EQ(base::File::FILE_OK,
             ofu()->CopyOrMoveFile(

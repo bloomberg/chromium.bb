@@ -461,9 +461,8 @@ void SyncChannel::SetRestrictDispatchChannelGroup(int group) {
 
 bool SyncChannel::Send(Message* message) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging* logger = Logging::GetInstance();
   std::string name;
-  logger->GetMessageText(message->type(), &name, message, NULL);
+  Logging::GetInstance()->GetMessageText(message->type(), &name, message, NULL);
   TRACE_EVENT1("ipc", "SyncChannel::Send", "name", name);
 #else
   TRACE_EVENT2("ipc", "SyncChannel::Send",

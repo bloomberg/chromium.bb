@@ -92,7 +92,7 @@ bool CreateTopWindow(HINSTANCE instance, bool visible) {
   wcx.lpfnWndProc = CrashSvcWndProc;
   wcx.hInstance = instance;
   wcx.lpszClassName = L"crash_svc_class";
-  ATOM atom = ::RegisterClassExW(&wcx);
+  ::RegisterClassExW(&wcx);
   DWORD style = visible ? WS_POPUPWINDOW | WS_VISIBLE : WS_OVERLAPPED;
 
   // The window size is zero but being a popup window still shows in the
@@ -466,7 +466,6 @@ PSECURITY_DESCRIPTOR CrashService::GetSecurityDescriptorForLowIntegrity() {
   // Build the SDDL string for the label.
   std::wstring sddl = L"S:(ML;;NW;;;S-1-16-4096)";
 
-  DWORD error = ERROR_SUCCESS;
   PSECURITY_DESCRIPTOR sec_desc = NULL;
 
   PACL sacl = NULL;

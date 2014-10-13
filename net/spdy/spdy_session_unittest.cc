@@ -885,7 +885,7 @@ TEST_P(SpdySessionTest, ClientPing) {
   session->CheckPingStatus(before_ping_time);
 
   EXPECT_EQ(0, session->pings_in_flight());
-  EXPECT_GE(session->next_ping_id(), static_cast<uint32>(1));
+  EXPECT_GE(session->next_ping_id(), 1U);
   EXPECT_FALSE(session->check_ping_status_pending());
   EXPECT_GE(session->last_activity_time(), before_ping_time);
 
@@ -1302,7 +1302,7 @@ TEST_P(SpdySessionTest, FailedPing) {
   // Send a PING frame.
   session->WritePingFrame(1, false);
   EXPECT_LT(0, session->pings_in_flight());
-  EXPECT_GE(session->next_ping_id(), static_cast<uint32>(1));
+  EXPECT_GE(session->next_ping_id(), 1U);
   EXPECT_TRUE(session->check_ping_status_pending());
 
   // Assert session is not closed.

@@ -375,6 +375,7 @@ extern "C" int __declspec(dllexport) CrashForException(
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
+#ifndef _WIN64
 static NTSTATUS WINAPI HookNtTerminateProcess(HANDLE ProcessHandle,
                                               NTSTATUS ExitStatus) {
   if (g_breakpad &&
@@ -440,6 +441,7 @@ static void InitTerminateProcessHooks() {
                          old_protect,
                          &old_protect));
 }
+#endif
 
 static void InitPipeNameEnvVar(bool is_per_user_install) {
   scoped_ptr<base::Environment> env(base::Environment::Create());

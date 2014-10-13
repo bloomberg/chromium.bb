@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -97,8 +98,7 @@ std::string GetFilenameFromKeyAndFileIndex(const std::string& key,
 int32 GetDataSizeFromKeyAndFileSize(const std::string& key, int64 file_size) {
   int64 data_size = file_size - key.size() - sizeof(SimpleFileHeader) -
                     sizeof(SimpleFileEOF);
-  DCHECK_GE(implicit_cast<int64>(std::numeric_limits<int32>::max()), data_size);
-  return data_size;
+  return base::checked_cast<int32>(data_size);
 }
 
 int64 GetFileSizeFromKeyAndDataSize(const std::string& key, int32 data_size) {

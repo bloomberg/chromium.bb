@@ -431,7 +431,7 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     int resource_id = DevToolsHttpHandler::GetFrontendResourceId(filename);
     if (resource_id != -1) {
       base::StringPiece data = GetContentClient()->GetDataResource(
-              resource_id, ui::SCALE_FACTOR_NONE);
+          resource_id, ui::SCALE_FACTOR_NONE);
       server_->Send200(connection_id, data.as_string(), mime_type);
       return;
     }

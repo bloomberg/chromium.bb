@@ -71,8 +71,8 @@ void NPObjectLifetimeTest::URLNotify(const char* url, NPReason reason,
   // Declare a local variant value.
   NPVariant variantValue;
   // Get the location property from the window object (which is another object).
-  bool b1 = HostFunctions()->getproperty(id(), other_plugin_instance_object_,
-                                        identifier, &variantValue );
+  HostFunctions()->getproperty(id(), other_plugin_instance_object_, identifier,
+                               &variantValue );
   HostFunctions()->releaseobject(other_plugin_instance_object_);
   other_plugin_instance_object_ = NULL;
   // If this test failed, then we'd have crashed by now.
@@ -165,7 +165,7 @@ void CALLBACK NPObjectDeletePluginInNPN_Evaluate::TimerProc(
       static_cast<unsigned int>(script.length());
 
   NPVariant result_var;
-  bool result = g_npn_evaluate_test_instance_->HostFunctions()->evaluate(
+  g_npn_evaluate_test_instance_->HostFunctions()->evaluate(
       g_npn_evaluate_test_instance_->id(), window_obj,
       &script_string, &result_var);
   // If this test failed we would have crashed by now.

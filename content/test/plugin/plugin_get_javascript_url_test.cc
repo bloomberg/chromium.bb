@@ -89,7 +89,7 @@ void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
   NPVariant result_var;
 
   this_instance->npn_evaluate_context_ = true;
-  NPError result = this_instance->HostFunctions()->evaluate(
+  this_instance->HostFunctions()->evaluate(
       this_instance->id(), window_obj, &script_string, &result_var);
   this_instance->npn_evaluate_context_ = false;
 }

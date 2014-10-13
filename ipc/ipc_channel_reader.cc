@@ -80,9 +80,8 @@ bool ChannelReader::DispatchInputData(const char* input_data,
         return false;
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-      Logging* logger = Logging::GetInstance();
       std::string name;
-      logger->GetMessageText(m.type(), &name, &m, NULL);
+      Logging::GetInstance()->GetMessageText(m.type(), &name, &m, NULL);
       TRACE_EVENT1("ipc,toplevel", "ChannelReader::DispatchInputData",
                    "name", name);
 #else

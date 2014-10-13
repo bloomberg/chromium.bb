@@ -1708,7 +1708,6 @@ DWORD WiFiServiceImpl::SetProfile(bool shared,
 }
 
 bool WiFiServiceImpl::HaveProfile(const std::string& network_guid) {
-  DWORD error = ERROR_SUCCESS;
   std::string profile_xml;
   return GetProfile(network_guid, false, &profile_xml) == ERROR_SUCCESS;
 }

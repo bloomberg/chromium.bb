@@ -18,11 +18,6 @@ namespace gfx {
 GFX_EXPORT void CreateBitmapHeader(int width, int height,
                                    BITMAPINFOHEADER* hdr);
 
-// Creates a BITMAPINFOHEADER structure given the bitmap's size and
-// color depth in bits per pixel.
-void CreateBitmapHeaderWithColorDepth(int width, int height, int color_depth,
-                                      BITMAPINFOHEADER* hdr);
-
 // Creates a BITMAPV4HEADER structure given the bitmap's size.  You probably
 // only need to use BMP V4 if you need transparency (alpha channel). This
 // function sets the AlphaMask to 0xff000000.

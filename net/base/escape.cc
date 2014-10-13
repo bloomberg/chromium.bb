@@ -114,7 +114,7 @@ bool UnescapeUnsignedCharAtIndex(const STR& escaped_text,
       static_cast<typename STR::value_type>(escaped_text[index + 2]));
   if (IsHexDigit(most_sig_digit) && IsHexDigit(least_sig_digit)) {
     *value = HexDigitToInt(most_sig_digit) * 16 +
-      HexDigitToInt(least_sig_digit);
+        HexDigitToInt(least_sig_digit);
     return true;
   }
   return false;
