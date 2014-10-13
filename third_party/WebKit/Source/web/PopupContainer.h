@@ -125,7 +125,7 @@ public:
 
     void updateFromElement() { m_listBox->updateFromElement(); }
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     friend class WTF::RefCounted<PopupContainer>;

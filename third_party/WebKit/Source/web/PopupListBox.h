@@ -181,7 +181,7 @@ public:
 
     static const int defaultMaxHeight;
 
-    void trace(Visitor*) OVERRIDE;
+    void trace(Visitor*) override;
 
 protected:
     virtual void invalidateScrollCornerRect(const IntRect&) override { }

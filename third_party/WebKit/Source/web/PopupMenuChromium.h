@@ -51,7 +51,7 @@ public:
     virtual void updateFromElement() override;
     virtual void disconnectClient() override;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) override;
 
 private:
     void dispose();

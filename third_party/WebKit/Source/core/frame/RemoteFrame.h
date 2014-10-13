@@ -27,7 +27,7 @@ public:
 
     RemoteFrameView* view() const;
 
-    void trace(Visitor*) OVERRIDE;
+    void trace(Visitor*) override;
 
 private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
