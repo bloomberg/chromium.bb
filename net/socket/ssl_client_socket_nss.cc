@@ -2652,6 +2652,11 @@ void SSLClientSocketNSS::Core::DidNSSWrite(int result) {
 }
 
 void SSLClientSocketNSS::Core::BufferSendComplete(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 DidCompleteReadWrite => Core::BufferSendComplete"));
+
   if (!OnNSSTaskRunner()) {
     if (detached_)
       return;
@@ -2695,6 +2700,11 @@ void SSLClientSocketNSS::Core::OnGetChannelIDComplete(int result) {
 void SSLClientSocketNSS::Core::BufferRecvComplete(
     IOBuffer* read_buffer,
     int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 DidCompleteReadWrite => SSLClientSocketNSS::Core::..."));
+
   DCHECK(read_buffer);
 
   if (!OnNSSTaskRunner()) {
