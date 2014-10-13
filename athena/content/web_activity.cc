@@ -155,8 +155,8 @@ class WebActivityController : public AcceleratorHandler {
 
 const SkColor kDefaultTitleColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
 const int kIconSize = 32;
-const int kDistanceShowReloadMessage = 100;
-const int kDistanceReload = 150;
+const float kDistanceShowReloadMessage = 100;
+const float kDistanceReload = 150;
 
 }  // namespace
 
@@ -267,7 +267,7 @@ class AthenaWebView : public views::WebView {
     return value != "0";
   }
 
-  virtual void OverscrollUpdate(int delta_y) override {
+  virtual void OverscrollUpdate(float delta_y) override {
     overscroll_y_ = delta_y;
     if (overscroll_y_ > kDistanceShowReloadMessage) {
       if (!reload_message_)
@@ -275,9 +275,8 @@ class AthenaWebView : public views::WebView {
       reload_message_->Show();
       float opacity = 1.0f;
       if (overscroll_y_ < kDistanceReload) {
-        opacity =
-            (overscroll_y_ - kDistanceShowReloadMessage) /
-            static_cast<float>(kDistanceReload - kDistanceShowReloadMessage);
+        opacity = (overscroll_y_ - kDistanceShowReloadMessage) /
+            (kDistanceReload - kDistanceShowReloadMessage);
       }
       reload_message_->GetLayer()->SetOpacity(opacity);
     } else if (reload_message_) {
@@ -412,7 +411,7 @@ class AthenaWebView : public views::WebView {
   bool fullscreen_;
 
   // The distance that the user has overscrolled vertically.
-  int overscroll_y_;
+  float overscroll_y_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaWebView);
 };

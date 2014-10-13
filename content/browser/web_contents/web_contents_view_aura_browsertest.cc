@@ -77,7 +77,7 @@ class VerticalOverscrollTracker : public content::WebContentsDelegate {
     return true;
   }
 
-  virtual void OverscrollUpdate(int delta_y) override {
+  virtual void OverscrollUpdate(float delta_y) override {
     ++count_;
   }
 

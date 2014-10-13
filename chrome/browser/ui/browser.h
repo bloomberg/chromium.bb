@@ -441,7 +441,7 @@ class Browser : public TabStripModelObserver,
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  virtual void OverscrollUpdate(int delta_y) override;
+  virtual void OverscrollUpdate(float delta_y) override;
   virtual void ShowValidationMessage(content::WebContents* web_contents,
                                      const gfx::Rect& anchor_in_root_view,
                                      const base::string16& main_text,

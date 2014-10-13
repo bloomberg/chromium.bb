@@ -912,7 +912,8 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   gfx::Transform transform;
   int content_width =
       web_contents_->GetRenderWidgetHostView()->GetViewBounds().width();
-  int translate_x = mode == OVERSCROLL_WEST ? -content_width : content_width;
+  float translate_x = static_cast<float>(mode == OVERSCROLL_WEST ?
+      -content_width : content_width);
   transform.Translate(translate_x, 0);
   target->SetTransform(transform);
   UpdateOverscrollWindowBrightness(translate_x);
@@ -927,21 +928,22 @@ aura::Window* WebContentsViewAura::GetWindowToAnimateForOverscroll() {
       overscroll_window_.get() : GetContentNativeView();
 }
 
-gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
-                                                               int delta_y) {
+gfx::Vector2dF WebContentsViewAura::GetTranslationForOverscroll(float delta_x,
+                                                                float delta_y) {
   if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||
       current_overscroll_gesture_ == OVERSCROLL_SOUTH) {
-    return gfx::Vector2d(0, delta_y);
+    return gfx::Vector2dF(0, delta_y);
   }
   // For horizontal overscroll, scroll freely if a navigation is possible. Do a
   // resistive scroll otherwise.
   const NavigationControllerImpl& controller = web_contents_->GetController();
   const gfx::Rect& bounds = GetViewBounds();
+  const float bounds_width = static_cast<float>(bounds.width());
   if (ShouldNavigateForward(controller, current_overscroll_gesture_))
-    return gfx::Vector2d(std::max(-bounds.width(), delta_x), 0);
+    return gfx::Vector2dF(std::max(-bounds_width, delta_x), 0);
   else if (ShouldNavigateBack(controller, current_overscroll_gesture_))
-    return gfx::Vector2d(std::min(bounds.width(), delta_x), 0);
-  return gfx::Vector2d();
+    return gfx::Vector2dF(std::min(bounds_width, delta_x), 0);
+  return gfx::Vector2dF();
 }
 
 void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
@@ -984,7 +986,8 @@ void WebContentsViewAura::AttachTouchEditableToRenderView() {
   touch_editable_->AttachToView(rwhva);
 }
 
-void WebContentsViewAura::OverscrollUpdateForWebContentsDelegate(int delta_y) {
+void WebContentsViewAura::OverscrollUpdateForWebContentsDelegate(
+    float delta_y) {
   if (web_contents_->GetDelegate() && IsScrollEndEffectEnabled())
     web_contents_->GetDelegate()->OverscrollUpdate(delta_y);
 }
@@ -1302,7 +1305,7 @@ bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
     return false;
 
   aura::Window* target = GetWindowToAnimateForOverscroll();
-  gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
+  gfx::Vector2dF translate = GetTranslationForOverscroll(delta_x, delta_y);
   gfx::Transform transform;
 
   if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||

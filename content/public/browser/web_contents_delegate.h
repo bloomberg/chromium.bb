@@ -162,7 +162,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Callback that allows vertical overscroll activies to be communicated to the
   // delegate. |delta_y| is the total amount of overscroll.
-  virtual void OverscrollUpdate(int delta_y) {}
+  virtual void OverscrollUpdate(float delta_y) {}
 
   // Invoked when a vertical overscroll completes.
   virtual void OverscrollComplete() {}

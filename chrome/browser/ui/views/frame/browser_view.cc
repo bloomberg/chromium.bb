@@ -2438,7 +2438,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   }
 }
 
-void BrowserView::OverscrollUpdate(int delta_y) {
+void BrowserView::OverscrollUpdate(float delta_y) {
   if (scroll_end_effect_controller_)
     scroll_end_effect_controller_->OverscrollUpdate(delta_y);
 }

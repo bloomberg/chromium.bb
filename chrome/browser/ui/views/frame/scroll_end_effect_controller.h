@@ -21,7 +21,7 @@ class ScrollEndEffectController {
 
   // Interface that allows vertical overscroll activies to be communicated to
   // the controller.
-  virtual void OverscrollUpdate(int delta_y) = 0;
+  virtual void OverscrollUpdate(float delta_y) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollEndEffectController);

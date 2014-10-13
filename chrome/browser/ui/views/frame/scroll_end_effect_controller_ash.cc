@@ -14,6 +14,6 @@ ScrollEndEffectControllerAsh::ScrollEndEffectControllerAsh() {
 ScrollEndEffectControllerAsh::~ScrollEndEffectControllerAsh() {
 }
 
-void ScrollEndEffectControllerAsh::OverscrollUpdate(int delta_y) {
+void ScrollEndEffectControllerAsh::OverscrollUpdate(float delta_y) {
   // TODO(rharrison): Implement initial version of scroll end effect
 }

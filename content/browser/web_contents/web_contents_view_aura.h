@@ -88,7 +88,7 @@ class WebContentsViewAura
 
   // Returns the amount the animating window should be translated in response to
   // the overscroll gesture.
-  gfx::Vector2d GetTranslationForOverscroll(int delta_x, int delta_y);
+  gfx::Vector2dF GetTranslationForOverscroll(float delta_x, float delta_y);
 
   // A window showing the screenshot is overlayed during a navigation triggered
   // by overscroll. This function sets this up.
@@ -100,7 +100,7 @@ class WebContentsViewAura
 
   void AttachTouchEditableToRenderView();
 
-  void OverscrollUpdateForWebContentsDelegate(int delta_y);
+  void OverscrollUpdateForWebContentsDelegate(float delta_y);
 
   // Overridden from WebContentsView:
   virtual gfx::NativeView GetNativeView() const override;

@@ -363,7 +363,7 @@ class BrowserView : public BrowserWindow,
                                 const gfx::Rect& rect) override;
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) override;
-  virtual void OverscrollUpdate(int delta_y) override;
+  virtual void OverscrollUpdate(float delta_y) override;
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   virtual void ExecuteExtensionCommand(
       const extensions::Extension* extension,
