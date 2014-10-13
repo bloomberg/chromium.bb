@@ -78,6 +78,7 @@ public:
     {
         Microtask::performCheckpoint();
         V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());
+        V8Initializer::reportRejectedPromises();
     }
 };
 

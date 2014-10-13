@@ -34,7 +34,7 @@ function runTests() {
     document.fonts.addEventListener('loadingerror', onLoadingError);
     document.fonts.ready().then(finish);
 
-    document.fonts.load('10px TestFont1, TestFont2, TestFont3, TestFont4', 'abc');
+    document.fonts.load('10px TestFont1, TestFont2, TestFont3, TestFont4', 'abc').catch(function() {});
 }
 
 var event;
