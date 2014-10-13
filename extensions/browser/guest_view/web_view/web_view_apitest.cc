@@ -271,7 +271,13 @@ content::WebContents* WebViewAPITest::GetGuestWebContents() {
   return GetGuestViewManager()->WaitForSingleGuestCreated();
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, AcceptTouchEvents) {
+// Occasionally hits NOTIMPLEMENTED on Linux.  https://crbug.com/422998
+#if defined(OS_LINUX)
+#define MAYBE_AcceptTouchEvents DISABLED_AcceptTouchEvents
+#else
+#define MAYBE_AcceptTouchEvents AcceptTouchEvents
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_AcceptTouchEvents) {
   LaunchApp("web_view/accept_touch_events");
 
   content::RenderViewHost* embedder_rvh =
