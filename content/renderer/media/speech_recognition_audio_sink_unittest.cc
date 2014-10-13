@@ -129,6 +129,7 @@ class FakeSpeechRecognizer {
     media::AudioInputBuffer* buffer =
         static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
     audio_track_bus_ = media::AudioBus::WrapMemory(sink_params, buffer->audio);
+    audio_track_bus_->Zero();
 
     // Reference to the counter used to synchronize.
     buffer_index_ = &(buffer->params.size);
@@ -221,7 +222,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
                        output_sample_rate,
                        kOutputBitsPerSample,
                        output_frames_per_buffer);
-    source_data_.reset(new int16[input_frames_per_buffer * kInputChannels]);
+    source_data_.reset(new int16[input_frames_per_buffer * kInputChannels]{});
 
     // Prepare the track and audio source.
     blink::WebMediaStreamTrack blink_track;
@@ -318,9 +319,10 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
       const int output_sample_rate,
       const int output_frames_per_buffer,
       const uint32 consumptions) {
-  const uint32 kBuffersPerNotification =
-        Initialize(input_sample_rate, input_frames_per_buffer,
-                   output_sample_rate, output_frames_per_buffer);
+    const uint32 kBuffersPerNotification = Initialize(input_sample_rate,
+                                                      input_frames_per_buffer,
+                                                      output_sample_rate,
+                                                      output_frames_per_buffer);
     AssertConsumedBuffers(0U);
 
     for (uint32 i = 1U; i <= consumptions; ++i) {

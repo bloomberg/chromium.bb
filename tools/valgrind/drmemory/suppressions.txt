@@ -667,37 +667,3 @@ blink_web.dll!blink::FrameView::removeFromAXObjectCache
 blink_web.dll!blink::FrameView::prepareForDetach
 blink_web.dll!blink::LocalFrame::setView
 blink_web.dll!blink::FrameTree::~FrameTree
-
-UNINITIALIZED READ
-name=http://crbug.com/422472 (a)
-shared_memory_support.dll!media::FromInterleavedInternal<>
-shared_memory_support.dll!media::AudioBus::FromInterleavedPartial
-shared_memory_support.dll!media::AudioBus::FromInterleaved
-content.dll!content::SpeechRecognitionAudioSink::OnData
-content.dll!content::MediaStreamAudioSinkOwner::OnData
-content.dll!content::WebRtcLocalAudioTrack::Capture
-*!content::SpeechRecognitionAudioSinkTest_RecognizerNotifiedOnSocket_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
-
-UNINITIALIZED READ
-name=http://crbug.com/422472 (b)
-shared_memory_support.dll!media::FromInterleavedInternal<>
-...
-*!content::SpeechRecognitionAudioSinkTest::CaptureAudio
-*!content::SpeechRecognitionAudioSinkTest_OnReadyStateChangedOccured_Test::TestBody
-
-UNINITIALIZED READ
-name=http://crbug.com/422472 (c)
-shared_memory_support.dll!media::FromInterleavedInternal<>
-...
-*!content::SpeechRecognitionAudioSinkTest::CaptureAudio
-*!content::SpeechRecognitionAudioSinkTest_SyncSocketFailsSendingData_Test::TestBody
-
-UNINITIALIZED READ
-name=http://crbug.com/422472 (d)
-content.dll!content::`anonymous namespace'::MaxAmplitude
-content.dll!content::MediaStreamAudioLevelCalculator::Calculate
-content.dll!content::WebRtcLocalAudioTrack::Capture
-...
-*!content::SpeechRecognitionAudioSinkTest_*_Test::TestBody
-
