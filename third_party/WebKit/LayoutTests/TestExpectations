@@ -1456,3 +1456,4 @@ crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Time
 crbug.com/388375 http/tests/serviceworker/fetch-event.html [ NeedsManualRebaseline ]
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
+crbug.com/422951 [ XP ] fast/css/font-face-opentype.html [ Pass Failure ]
