@@ -288,9 +288,9 @@ class Forwarder(object):
     if device_serial in self._initialized_devices:
       return
     Forwarder._KillDeviceLocked(device, tool)
-    device.PushChangedFiles(
+    device.PushChangedFiles([(
         self._device_forwarder_path_on_host,
-        Forwarder._DEVICE_FORWARDER_FOLDER)
+        Forwarder._DEVICE_FORWARDER_FOLDER)])
     cmd = '%s %s' % (tool.GetUtilWrapper(), Forwarder._DEVICE_FORWARDER_PATH)
     (exit_code, output) = device.old_interface.GetAndroidToolStatusAndOutput(
         cmd, lib_path=Forwarder._DEVICE_FORWARDER_FOLDER)

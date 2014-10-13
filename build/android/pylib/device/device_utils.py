@@ -8,15 +8,21 @@ Eventually, this will be based on adb_wrapper.
 """
 # pylint: disable=W0613
 
+import multiprocessing
+import os
 import pipes
 import sys
+import tempfile
 import time
+import zipfile
 
 import pylib.android_commands
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_errors
+from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
+from pylib.utils import host_utils
 from pylib.utils import parallelizer
 
 _DEFAULT_TIMEOUT = 30
@@ -61,17 +67,23 @@ class DeviceUtils(object):
                        operation should be retried on failure if no explicit
                        value is provided.
     """
+    self.adb = None
     self.old_interface = None
     if isinstance(device, basestring):
+      self.adb = adb_wrapper.AdbWrapper(device)
       self.old_interface = pylib.android_commands.AndroidCommands(device)
     elif isinstance(device, adb_wrapper.AdbWrapper):
+      self.adb = device
       self.old_interface = pylib.android_commands.AndroidCommands(str(device))
     elif isinstance(device, pylib.android_commands.AndroidCommands):
+      self.adb = adb_wrapper.AdbWrapper(device.GetDevice())
       self.old_interface = device
     elif not device:
+      self.adb = adb_wrapper.AdbWrapper('')
       self.old_interface = pylib.android_commands.AndroidCommands()
     else:
       raise ValueError('Unsupported type passed for argument "device"')
+    self._commands_installed = False
     self._default_timeout = default_timeout
     self._default_retries = default_retries
     assert(hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR))
@@ -91,6 +103,9 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
     """
+    return self._IsOnlineImpl()
+
+  def _IsOnlineImpl(self):
     return self.old_interface.IsOnline()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -111,17 +126,6 @@ class DeviceUtils(object):
     return self._HasRootImpl()
 
   def _HasRootImpl(self):
-    """Implementation of HasRoot.
-
-    This is split from HasRoot to allow other DeviceUtils methods to call
-    HasRoot without spawning a new timeout thread.
-
-    Returns:
-      Same as for |HasRoot|.
-
-    Raises:
-      Same as for |HasRoot|.
-    """
     return self.old_interface.IsRootEnabled()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -156,6 +160,9 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
+    return self._GetExternalStoragePathImpl()
+
+  def _GetExternalStoragePathImpl(self):
     try:
       return self.old_interface.GetExternalStorage()
     except AssertionError as e:
@@ -183,21 +190,6 @@ class DeviceUtils(object):
     self._WaitUntilFullyBootedImpl(wifi=wifi, timeout=timeout)
 
   def _WaitUntilFullyBootedImpl(self, wifi=False, timeout=None):
-    """Implementation of WaitUntilFullyBooted.
-
-    This is split from WaitUntilFullyBooted to allow other DeviceUtils methods
-    to call WaitUntilFullyBooted without spawning a new timeout thread.
-
-    TODO(jbudorick) Remove the timeout parameter once this is no longer
-    implemented via AndroidCommands.
-
-    Args:
-      wifi: Same as for |WaitUntilFullyBooted|.
-      timeout: timeout in seconds
-
-    Raises:
-      Same as for |WaitUntilFullyBooted|.
-    """
     if timeout is None:
       timeout = self._default_timeout
     self.old_interface.WaitForSystemBootCompleted(timeout)
@@ -281,8 +273,8 @@ class DeviceUtils(object):
             str(e), device=str(self)), None, sys.exc_info()[2]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def RunShellCommand(self, cmd, check_return=False, as_root=False,
-                      timeout=None, retries=None):
+  def RunShellCommand(self, cmd, check_return=False, as_root=False, cwd=None,
+                      env=None, timeout=None, retries=None):
     """Run an ADB shell command.
 
     TODO(jbudorick) Switch the default value of check_return to True after
@@ -294,6 +286,8 @@ class DeviceUtils(object):
                     be checked.
       as_root: A boolean indicating whether the shell command should be run
                with root privileges.
+      cwd: The device directory in which the command should be run.
+      env: The environment variables with which the command should be run.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -305,35 +299,23 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self._RunShellCommandImpl(cmd, check_return=check_return,
-                                     as_root=as_root, timeout=timeout)
+    return self._RunShellCommandImpl(
+        cmd, check_return=check_return, as_root=as_root, cwd=cwd, env=env,
+        timeout=timeout)
 
   def _RunShellCommandImpl(self, cmd, check_return=False, as_root=False,
-                           timeout=None):
-    """Implementation of RunShellCommand.
-
-    This is split from RunShellCommand to allow other DeviceUtils methods to
-    call RunShellCommand without spawning a new timeout thread.
-
-    TODO(jbudorick) Remove the timeout parameter once this is no longer
-    implemented via AndroidCommands.
-
-    Args:
-      cmd: Same as for |RunShellCommand|.
-      check_return: Same as for |RunShellCommand|.
-      as_root: Same as for |RunShellCommand|.
-      timeout: timeout in seconds
-
-    Raises:
-      Same as for |RunShellCommand|.
-
-    Returns:
-      Same as for |RunShellCommand|.
-    """
+                           cwd=None, env=None, timeout=None):
+    # TODO(jbudorick): Remove the timeout parameter once this is no longer
+    # backed by AndroidCommands.
     if isinstance(cmd, list):
       cmd = ' '.join(cmd)
-    if as_root and not self.HasRoot():
+    if as_root and not self._HasRootImpl():
       cmd = 'su -c %s' % cmd
+    if env:
+      cmd = '%s %s' % (
+          ' '.join('%s=%s' % (k, v) for k, v in env.iteritems()), cmd)
+    if cwd:
+      cmd = 'cd %s && %s' % (cwd, cmd)
     if check_return:
       code, output = self.old_interface.GetShellCommandStatusAndOutput(
           cmd, timeout_time=timeout)
@@ -501,15 +483,15 @@ class DeviceUtils(object):
   @decorators.WithTimeoutAndRetriesDefaults(
       PUSH_CHANGED_FILES_DEFAULT_TIMEOUT,
       PUSH_CHANGED_FILES_DEFAULT_RETRIES)
-  def PushChangedFiles(self, host_path, device_path, timeout=None,
+  def PushChangedFiles(self, host_device_tuples, timeout=None,
                        retries=None):
     """Push files to the device, skipping files that don't need updating.
 
     Args:
-      host_path: A string containing the absolute path to the file or directory
-                 on the host that should be minimally pushed to the device.
-      device_path: A string containing the absolute path of the destination on
-                   the device.
+      host_device_tuples: A list of (host_path, device_path) tuples, where
+        |host_path| is an absolute path of a file or directory on the host
+        that should be minimially pushed to the device, and |device_path| is
+        an absolute path of the destination on the device.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -518,7 +500,159 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    self.old_interface.PushIfNeeded(host_path, device_path)
+
+    files = []
+    for h, d in host_device_tuples:
+      if os.path.isdir(h):
+        self._RunShellCommandImpl(['mkdir', '-p', '"%s"' % d],
+                                  check_return=True)
+      files += self._GetChangedFilesImpl(h, d)
+
+    if not files:
+      return
+
+    size = sum(host_utils.GetRecursiveDiskUsage(h) for h, _ in files)
+    file_count = len(files)
+    dir_size = sum(host_utils.GetRecursiveDiskUsage(h)
+                   for h, _ in host_device_tuples)
+    dir_file_count = 0
+    for h, _ in host_device_tuples:
+      if os.path.isdir(h):
+        dir_file_count += sum(len(f) for _r, _d, f in os.walk(h))
+      else:
+        dir_file_count += 1
+
+    push_duration = self._ApproximateDuration(
+        file_count, file_count, size, False)
+    dir_push_duration = self._ApproximateDuration(
+        len(host_device_tuples), dir_file_count, dir_size, False)
+    zip_duration = self._ApproximateDuration(1, 1, size, True)
+
+    if dir_push_duration < push_duration and dir_push_duration < zip_duration:
+      self._PushChangedFilesIndividually(host_device_tuples)
+    elif push_duration < zip_duration:
+      self._PushChangedFilesIndividually(files)
+    else:
+      self._PushChangedFilesZipped(files)
+      self._RunShellCommandImpl(
+          ['chmod', '-R', '777'] + [d for _, d in host_device_tuples],
+          as_root=True)
+
+  def _GetChangedFilesImpl(self, host_path, device_path):
+    real_host_path = os.path.realpath(host_path)
+    try:
+      real_device_path = self._RunShellCommandImpl(
+          ['realpath', device_path], check_return=True)
+      real_device_path = real_device_path[0]
+    except device_errors.CommandFailedError:
+      return [(host_path, device_path)]
+
+    # TODO(jbudorick): Move the md5 logic up into DeviceUtils or base
+    # this function on mtime.
+    # pylint: disable=W0212
+    host_hash_tuples, device_hash_tuples = self.old_interface._RunMd5Sum(
+        real_host_path, real_device_path)
+    # pylint: enable=W0212
+
+    if os.path.isfile(host_path):
+      if (not device_hash_tuples
+          or device_hash_tuples[0].hash != host_hash_tuples[0].hash):
+        return [(host_path, device_path)]
+      else:
+        return []
+    else:
+      device_tuple_dict = dict((d.path, d.hash) for d in device_hash_tuples)
+      to_push = []
+      for host_hash, host_abs_path in (
+          (h.hash, h.path) for h in host_hash_tuples):
+        device_abs_path = '%s/%s' % (
+            real_device_path, os.path.relpath(host_abs_path, real_host_path))
+        if (device_abs_path not in device_tuple_dict
+            or device_tuple_dict[device_abs_path] != host_hash):
+          to_push.append((host_abs_path, device_abs_path))
+      return to_push
+
+  @staticmethod
+  def _ApproximateDuration(adb_calls, file_count, byte_count, is_zipping):
+    # We approximate the time to push a set of files to a device as:
+    #   t = c1 * a + c2 * f + c3 + b / c4 + b / (c5 * c6), where
+    #     t: total time (sec)
+    #     c1: adb call time delay (sec)
+    #     a: number of times adb is called (unitless)
+    #     c2: push time delay (sec)
+    #     f: number of files pushed via adb (unitless)
+    #     c3: zip time delay (sec)
+    #     c4: zip rate (bytes/sec)
+    #     b: total number of bytes (bytes)
+    #     c5: transfer rate (bytes/sec)
+    #     c6: compression ratio (unitless)
+
+    # All of these are approximations.
+    ADB_CALL_PENALTY = 0.1 # seconds
+    ADB_PUSH_PENALTY = 0.01 # seconds
+    ZIP_PENALTY = 2.0 # seconds
+    ZIP_RATE = 10000000.0 # bytes / second
+    TRANSFER_RATE = 2000000.0 # bytes / second
+    COMPRESSION_RATIO = 2.0 # unitless
+
+    adb_call_time = ADB_CALL_PENALTY * adb_calls
+    adb_push_setup_time = ADB_PUSH_PENALTY * file_count
+    if is_zipping:
+      zip_time = ZIP_PENALTY + byte_count / ZIP_RATE
+      transfer_time = byte_count / (TRANSFER_RATE * COMPRESSION_RATIO)
+    else:
+      zip_time = 0
+      transfer_time = byte_count / TRANSFER_RATE
+    return (adb_call_time + adb_push_setup_time + zip_time + transfer_time)
+
+  def _PushChangedFilesIndividually(self, files):
+    for h, d in files:
+      self.adb.Push(h, d)
+
+  def _PushChangedFilesZipped(self, files):
+    if not files:
+      return
+
+    self._InstallCommands()
+
+    with tempfile.NamedTemporaryFile(suffix='.zip') as zip_file:
+      zip_proc = multiprocessing.Process(
+          target=DeviceUtils._CreateDeviceZip,
+          args=(zip_file.name, files))
+      zip_proc.start()
+      zip_proc.join()
+
+      zip_on_device = '%s/tmp.zip' % self._GetExternalStoragePathImpl()
+      try:
+        self.adb.Push(zip_file.name, zip_on_device)
+        self._RunShellCommandImpl(
+            ['unzip', zip_on_device],
+            as_root=True, check_return=True,
+            env={'PATH': '$PATH:%s' % install_commands.BIN_DIR})
+      finally:
+        if zip_proc.is_alive():
+          zip_proc.terminate()
+        if self._IsOnlineImpl():
+          self._RunShellCommandImpl(['rm', zip_on_device])
+
+  def _InstallCommands(self):
+    if not self._commands_installed and not install_commands.Installed(self):
+      install_commands.InstallCommands(self)
+      self._commands_installed = True
+
+  @staticmethod
+  def _CreateDeviceZip(zip_path, host_device_tuples):
+    with zipfile.ZipFile(zip_path, 'w') as zip_file:
+      for host_path, device_path in host_device_tuples:
+        if os.path.isfile(host_path):
+          zip_file.write(host_path, device_path, zipfile.ZIP_DEFLATED)
+        else:
+          for hd, _, files in os.walk(host_path):
+            dd = '%s/%s' % (device_path, os.path.relpath(host_path, hd))
+            zip_file.write(hd, dd, zipfile.ZIP_STORED)
+            for f in files:
+              zip_file.write(os.path.join(hd, f), '%s/%s' % (dd, f),
+                             zipfile.ZIP_DEFLATED)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def FileExists(self, device_path, timeout=None, retries=None):
@@ -536,23 +670,6 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
-    """
-    return self._FileExistsImpl(device_path)
-
-  def _FileExistsImpl(self, device_path):
-    """Implementation of FileExists.
-
-    This is split from FileExists to allow other DeviceUtils methods to call
-    FileExists without spawning a new timeout thread.
-
-    Args:
-      device_path: Same as for |FileExists|.
-
-    Returns:
-      True if the file exists on the device, False otherwise.
-
-    Raises:
-      Same as for |FileExists|.
     """
     return self.old_interface.FileExistsOnDevice(device_path)
 
@@ -598,7 +715,7 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    # TODO(jbudorick) Evaluate whether we awant to return a list of lines after
+    # TODO(jbudorick) Evaluate whether we want to return a list of lines after
     # the implementation switch, and if file not found should raise exception.
     if as_root:
       if not self.old_interface.CanAccessProtectedFileContents():
@@ -755,21 +872,6 @@ class DeviceUtils(object):
     return self._GetPidsImpl(process_name)
 
   def _GetPidsImpl(self, process_name):
-    """Implementation of GetPids.
-
-    This is split from GetPids to allow other DeviceUtils methods to call
-    GetPids without spawning a new timeout thread.
-
-    Args:
-      process_name: A string containing the process name to get the PIDs for.
-
-    Returns:
-      A dict mapping process name to PID for each process that contained the
-      provided |process_name|.
-
-    Raises:
-      DeviceUnreachableError on missing device.
-    """
     procs_pids = {}
     for line in self._RunShellCommandImpl('ps'):
       try:

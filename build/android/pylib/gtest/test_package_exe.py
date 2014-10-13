@@ -105,9 +105,9 @@ class TestPackageExecutable(TestPackage):
                           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
     sh_script_file.flush()
     cmd_helper.RunCmd(['chmod', '+x', sh_script_file.name])
-    device.PushChangedFiles(
+    device.PushChangedFiles([(
         sh_script_file.name,
-        constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh')
+        constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh')])
     logging.info('Conents of the test runner script: ')
     for line in open(sh_script_file.name).readlines():
       logging.info('  ' + line.rstrip())
@@ -148,4 +148,4 @@ class TestPackageExecutable(TestPackage):
              self.suite_name + '_stripped'))
 
     test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_name
-    device.PushChangedFiles(target_name, test_binary)
+    device.PushChangedFiles([(target_name, test_binary)])
