@@ -83,7 +83,9 @@ public:
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) = 0;
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) = 0;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) = 0;
+    // FIXME: Remove keyNeeded() once rename to encrypted() is complete.
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) = 0;
+    virtual void encrypted(const WebString& initDataType, const unsigned char* initData, unsigned initDataLength) = 0;
     virtual void setWebLayer(WebLayer*) = 0;
     virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) = 0;
     virtual void removeAudioTrack(WebMediaPlayer::TrackId) = 0;

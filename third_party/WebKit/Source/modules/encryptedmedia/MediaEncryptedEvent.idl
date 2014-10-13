@@ -23,51 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaKeyNeededEvent_h
-#define MediaKeyNeededEvent_h
-
-#include "core/html/MediaKeyError.h"
-#include "modules/EventModules.h"
-
-namespace blink {
-
-struct MediaKeyNeededEventInit : public EventInit {
-    MediaKeyNeededEventInit();
-
-    String contentType;
-    RefPtr<Uint8Array> initData;
+[
+    EventConstructor,
+    RuntimeEnabled=EncryptedMedia
+] interface MediaEncryptedEvent : Event {
+    readonly attribute DOMString initDataType;
+    readonly attribute ArrayBuffer? initData;
 };
 
-class MediaKeyNeededEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual ~MediaKeyNeededEvent();
-
-    static PassRefPtrWillBeRawPtr<MediaKeyNeededEvent> create()
-    {
-        return adoptRefWillBeNoop(new MediaKeyNeededEvent);
-    }
-
-    static PassRefPtrWillBeRawPtr<MediaKeyNeededEvent> create(const AtomicString& type, const MediaKeyNeededEventInit& initializer)
-    {
-        return adoptRefWillBeNoop(new MediaKeyNeededEvent(type, initializer));
-    }
-
-    virtual const AtomicString& interfaceName() const override;
-
-    String contentType() const { return m_contentType; }
-    Uint8Array* initData() const { return m_initData.get(); }
-
-    virtual void trace(Visitor*) override;
-
-private:
-    MediaKeyNeededEvent();
-    MediaKeyNeededEvent(const AtomicString& type, const MediaKeyNeededEventInit& initializer);
-
-    String m_contentType;
-    RefPtr<Uint8Array> m_initData;
-};
-
-} // namespace blink
-
-#endif // MediaKeyNeededEvent_h
