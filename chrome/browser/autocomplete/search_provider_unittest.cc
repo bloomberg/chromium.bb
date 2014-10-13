@@ -78,7 +78,7 @@ class SearchProviderForTest : public SearchProvider {
   virtual ~SearchProviderForTest();
 
  private:
-  virtual void RecordDeletionResult(bool success) OVERRIDE;
+  virtual void RecordDeletionResult(bool success) override;
   bool is_success_;
   DISALLOW_COPY_AND_ASSIGN(SearchProviderForTest);
 };
@@ -157,8 +157,8 @@ class SearchProviderTest : public testing::Test,
   }
 
   // See description above class for what this registers.
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
 
@@ -185,7 +185,7 @@ class SearchProviderTest : public testing::Test,
 
   // AutocompleteProviderListener:
   // If we're waiting for the provider to finish, this exits the message loop.
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
+  virtual void OnProviderUpdate(bool updated_matches) override;
 
   // Runs a nested message loop until provider_ is done. The message loop is
   // exited by way of OnProviderUpdate.

@@ -46,7 +46,7 @@ class TestDriveServiceBridge : public DriveServiceBridge {
       : registry_(registry) {}
   virtual ~TestDriveServiceBridge() {}
 
-  virtual drive::DriveAppRegistry* GetAppRegistry() OVERRIDE {
+  virtual drive::DriveAppRegistry* GetAppRegistry() override {
     return registry_;
   }
 
@@ -65,7 +65,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   virtual ~DriveAppProviderTest() {}
 
   // ExtensionBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
     fake_drive_service_.reset(new drive::FakeDriveService);
@@ -84,7 +84,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
         ->ResetDriveAppProviderForTest();
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     provider_.reset();
     apps_registry_.reset();
     fake_drive_service_.reset();
@@ -170,7 +170,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
 
   // extensions::InstallObserver
   virtual void OnFinishCrxInstall(const std::string& extension_id,
-                                  bool success) OVERRIDE {
+                                  bool success) override {
     runner_->Quit();
   }
 

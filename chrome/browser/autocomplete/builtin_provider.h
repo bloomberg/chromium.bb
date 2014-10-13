@@ -21,7 +21,7 @@ class BuiltinProvider : public AutocompleteProvider {
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
+                     bool minimal_changes) override;
 
  private:
   virtual ~BuiltinProvider();

@@ -117,8 +117,8 @@ class CannedBrowsingDataIndexedDBHelper
   // BrowsingDataIndexedDBHelper methods.
   virtual void StartFetching(
       const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
-          callback) OVERRIDE;
-  virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE;
+          callback) override;
+  virtual void DeleteIndexedDB(const GURL& origin) override;
 
  private:
   virtual ~CannedBrowsingDataIndexedDBHelper();

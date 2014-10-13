@@ -17,7 +17,7 @@ class SystemLogsMemoryHandler : public MemoryDetails {
 
   // Sends the data to the callback.
   // MemoryDetails override.
-  virtual void OnDetailsAvailable() OVERRIDE {
+  virtual void OnDetailsAvailable() override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);

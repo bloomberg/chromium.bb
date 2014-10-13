@@ -55,7 +55,7 @@ class IFrameLoader : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   const GURL& iframe_url() const { return iframe_url_; }
 
@@ -134,7 +134,7 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void AddWatchAndWaitForNotification(
       content::RenderFrameHost* render_frame_host);
@@ -245,8 +245,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   virtual ~GeolocationBrowserTest();
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownInProcessBrowserTestFixture() override;
 
   Browser* current_browser() { return current_browser_; }
   void set_html_for_tests(const std::string& html_for_tests) {

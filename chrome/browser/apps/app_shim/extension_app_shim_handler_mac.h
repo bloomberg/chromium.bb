@@ -95,27 +95,27 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // AppShimHandler overrides:
   virtual void OnShimLaunch(Host* host,
                             AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) OVERRIDE;
-  virtual void OnShimClose(Host* host) OVERRIDE;
+                            const std::vector<base::FilePath>& files) override;
+  virtual void OnShimClose(Host* host) override;
   virtual void OnShimFocus(Host* host,
                            AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) OVERRIDE;
-  virtual void OnShimSetHidden(Host* host, bool hidden) OVERRIDE;
-  virtual void OnShimQuit(Host* host) OVERRIDE;
+                           const std::vector<base::FilePath>& files) override;
+  virtual void OnShimSetHidden(Host* host, bool hidden) override;
+  virtual void OnShimQuit(Host* host) override;
 
   // AppLifetimeMonitor::Observer overrides:
-  virtual void OnAppStart(Profile* profile, const std::string& app_id) OVERRIDE;
+  virtual void OnAppStart(Profile* profile, const std::string& app_id) override;
   virtual void OnAppActivated(Profile* profile,
-                              const std::string& app_id) OVERRIDE;
+                              const std::string& app_id) override;
   virtual void OnAppDeactivated(Profile* profile,
-                                const std::string& app_id) OVERRIDE;
-  virtual void OnAppStop(Profile* profile, const std::string& app_id) OVERRIDE;
-  virtual void OnChromeTerminating() OVERRIDE;
+                                const std::string& app_id) override;
+  virtual void OnAppStop(Profile* profile, const std::string& app_id) override;
+  virtual void OnChromeTerminating() override;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  protected:
   typedef std::map<std::pair<Profile*, std::string>, AppShimHandler::Host*>

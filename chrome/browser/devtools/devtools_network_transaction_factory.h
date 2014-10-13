@@ -29,9 +29,9 @@ class DevToolsNetworkTransactionFactory : public net::HttpTransactionFactory {
   // net::HttpTransactionFactory methods:
   virtual int CreateTransaction(
       net::RequestPriority priority,
-      scoped_ptr<net::HttpTransaction>* trans) OVERRIDE;
-  virtual net::HttpCache* GetCache() OVERRIDE;
-  virtual net::HttpNetworkSession* GetSession() OVERRIDE;
+      scoped_ptr<net::HttpTransaction>* trans) override;
+  virtual net::HttpCache* GetCache() override;
+  virtual net::HttpNetworkSession* GetSession() override;
 
  private:
   DevToolsNetworkController* controller_;

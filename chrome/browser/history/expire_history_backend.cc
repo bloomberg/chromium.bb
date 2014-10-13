@@ -47,7 +47,7 @@ class AllVisitsReader : public ExpiringVisitsReader {
   virtual bool Read(base::Time end_time,
                     HistoryDatabase* db,
                     VisitVector* visits,
-                    int max_visits) const OVERRIDE {
+                    int max_visits) const override {
     DCHECK(db) << "must have a database to operate upon";
     DCHECK(visits) << "visit vector has to exist in order to populate it";
 
@@ -69,7 +69,7 @@ class AutoSubframeVisitsReader : public ExpiringVisitsReader {
   virtual bool Read(base::Time end_time,
                     HistoryDatabase* db,
                     VisitVector* visits,
-                    int max_visits) const OVERRIDE {
+                    int max_visits) const override {
     DCHECK(db) << "must have a database to operate upon";
     DCHECK(visits) << "visit vector has to exist in order to populate it";
 

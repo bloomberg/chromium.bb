@@ -62,14 +62,14 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
   static base::FilePath GetUserDefaultProfileDir();
 
   // DiagnosticsModel::TestInfo overrides
-  virtual int GetId() const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-  virtual std::string GetTitle() const OVERRIDE;
-  virtual DiagnosticsModel::TestResult GetResult() const OVERRIDE;
-  virtual std::string GetAdditionalInfo() const OVERRIDE;
-  virtual int GetOutcomeCode() const OVERRIDE;
-  virtual base::Time GetStartTime() const OVERRIDE;
-  virtual base::Time GetEndTime() const OVERRIDE;
+  virtual int GetId() const override;
+  virtual std::string GetName() const override;
+  virtual std::string GetTitle() const override;
+  virtual DiagnosticsModel::TestResult GetResult() const override;
+  virtual std::string GetAdditionalInfo() const override;
+  virtual int GetOutcomeCode() const override;
+  virtual base::Time GetStartTime() const override;
+  virtual base::Time GetEndTime() const override;
  protected:
   // Derived classes override this method do perform the actual test.
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) = 0;

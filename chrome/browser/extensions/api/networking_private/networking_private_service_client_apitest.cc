@@ -38,21 +38,21 @@ class CryptoVerifyStub
     : public extensions::NetworkingPrivateServiceClient::CryptoVerify {
   virtual void VerifyDestination(const Credentials& verification_properties,
                                  bool* verified,
-                                 std::string* error) OVERRIDE {
+                                 std::string* error) override {
     *verified = true;
   }
 
   virtual void VerifyAndEncryptCredentials(
       const std::string& network_guid,
       const Credentials& credentials,
-      const VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
+      const VerifyAndEncryptCredentialsCallback& callback) override {
     callback.Run("encrypted_credentials", "");
   }
 
   virtual void VerifyAndEncryptData(const Credentials& verification_properties,
                                     const std::string& data,
                                     std::string* base64_encoded_ciphertext,
-                                    std::string* error) OVERRIDE {
+                                    std::string* error) override {
     *base64_encoded_ciphertext = "encrypted_data";
   }
 };
@@ -67,11 +67,11 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
                                kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
@@ -85,7 +85,7 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
                                               new CryptoVerifyStub());
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
     NetworkingPrivateServiceClientFactory::GetInstance()->SetTestingFactory(

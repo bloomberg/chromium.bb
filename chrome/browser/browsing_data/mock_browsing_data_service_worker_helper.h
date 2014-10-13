@@ -37,8 +37,8 @@ class MockBrowsingDataServiceWorkerHelper
 
   // BrowsingDataServiceWorkerHelper.
   virtual void StartFetching(const base::Callback<void(
-      const std::list<content::ServiceWorkerUsageInfo>&)>& callback) OVERRIDE;
-  virtual void DeleteServiceWorkers(const GURL& origin) OVERRIDE;
+      const std::list<content::ServiceWorkerUsageInfo>&)>& callback) override;
+  virtual void DeleteServiceWorkers(const GURL& origin) override;
 
  private:
   virtual ~MockBrowsingDataServiceWorkerHelper();

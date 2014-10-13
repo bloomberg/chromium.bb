@@ -59,7 +59,7 @@ class RequestImpl : public WebHistoryService::Request,
   // Returns the contents of the response body received from the server.
   const std::string& response_body() { return response_body_; }
 
-  virtual bool is_pending() OVERRIDE { return is_pending_; }
+  virtual bool is_pending() override { return is_pending_; }
 
  private:
   friend class history::WebHistoryService;
@@ -93,7 +93,7 @@ class RequestImpl : public WebHistoryService::Request,
   }
 
   // content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override {
     DCHECK_EQ(source, url_fetcher_.get());
     response_code_ = url_fetcher_->GetResponseCode();
 
@@ -131,7 +131,7 @@ class RequestImpl : public WebHistoryService::Request,
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
-      const base::Time& expiration_time) OVERRIDE {
+      const base::Time& expiration_time) override {
     token_request_.reset();
     DCHECK(!access_token.empty());
     access_token_ = access_token;
@@ -145,7 +145,7 @@ class RequestImpl : public WebHistoryService::Request,
 
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
-      const GoogleServiceAuthError& error) OVERRIDE {
+      const GoogleServiceAuthError& error) override {
     token_request_.reset();
     is_pending_ = false;
 

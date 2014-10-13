@@ -42,8 +42,8 @@ class ShortcutsBackendFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      content::BrowserContext* profile) const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_FACTORY_H_

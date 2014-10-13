@@ -292,7 +292,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::ClearState();
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     for (size_t i = 0; i < arraysize(kExperiments); ++i)
       kExperiments[i].supported_platforms = GetCurrentPlatform();
 
@@ -304,7 +304,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::SetExperiments(kExperiments, arraysize(kExperiments));
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     testing::SetExperiments(NULL, 0);
   }
 

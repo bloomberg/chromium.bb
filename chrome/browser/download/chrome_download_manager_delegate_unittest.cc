@@ -77,14 +77,14 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   virtual ~TestChromeDownloadManagerDelegate() {}
 
   virtual safe_browsing::DownloadProtectionService*
-      GetDownloadProtectionService() OVERRIDE {
+      GetDownloadProtectionService() override {
     return NULL;
   }
 
   virtual void NotifyExtensions(
       content::DownloadItem* download,
       const base::FilePath& suggested_virtual_path,
-      const NotifyExtensionsCallback& callback) OVERRIDE {
+      const NotifyExtensionsCallback& callback) override {
     callback.Run(base::FilePath(),
                  DownloadPathReservationTracker::UNIQUIFY);
   }
@@ -95,7 +95,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const DownloadPathReservationTracker::ReservedPathCallback& callback)
-      OVERRIDE {
+      override {
     // Pretend the path reservation succeeded without any change to
     // |target_path|.
     base::MessageLoop::current()->PostTask(
@@ -106,7 +106,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       DownloadItem* download,
       const base::FilePath& suggested_path,
       const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback)
-      OVERRIDE {
+      override {
     base::FilePath return_path = MockPromptUserForDownloadPath(download,
                                                                suggested_path,
                                                                callback);
@@ -127,8 +127,8 @@ class ChromeDownloadManagerDelegateTest
   ChromeDownloadManagerDelegateTest();
 
   // ::testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Verifies and clears test expectations for |delegate_| and
   // |download_manager_|.

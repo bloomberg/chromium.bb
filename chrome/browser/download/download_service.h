@@ -68,7 +68,7 @@ class DownloadService : public KeyedService {
 
   // Will be called to release references on other services as part
   // of Profile shutdown.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns false if at least one extension has disabled the shelf, true
   // otherwise.

@@ -51,9 +51,9 @@ class ProtocolHandlerRegistry : public KeyedService {
     // Get response from the worker regarding whether Chrome is the default
     // handler for the protocol.
     virtual void SetDefaultWebClientUIState(
-        ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
+        ShellIntegration::DefaultWebClientUIState state) override;
 
-    virtual bool IsInteractiveSetDefaultPermitted() OVERRIDE;
+    virtual bool IsInteractiveSetDefaultPermitted() override;
 
     // Give the observer a handle to the worker, so we can find out the protocol
     // when we're called and also tell the worker if we get deleted.
@@ -63,7 +63,7 @@ class ProtocolHandlerRegistry : public KeyedService {
     ShellIntegration::DefaultProtocolClientWorker* worker_;
 
    private:
-    virtual bool IsOwnedByWorker() OVERRIDE;
+    virtual bool IsOwnedByWorker() override;
 
     // This is a raw pointer, not reference counted, intentionally. In general
     // subclasses of DefaultWebClientObserver are not able to be refcounted
@@ -115,10 +115,10 @@ class ProtocolHandlerRegistry : public KeyedService {
     virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
         const std::string& scheme,
         net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE;
-    virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
-    virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
-    virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
+        net::NetworkDelegate* network_delegate) const override;
+    virtual bool IsHandledProtocol(const std::string& scheme) const override;
+    virtual bool IsHandledURL(const GURL& url) const override;
+    virtual bool IsSafeRedirectTarget(const GURL& location) const override;
 
    private:
     // When JobInterceptorFactory decides to pass on particular requests,
@@ -244,7 +244,7 @@ class ProtocolHandlerRegistry : public KeyedService {
 
   // This is called by the UI thread when the system is shutting down. This
   // does finalization which must be done on the UI thread.
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Registers the preferences that we store registered protocol handlers in.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

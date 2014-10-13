@@ -27,8 +27,8 @@ class NativeMessagePort::Core : public NativeMessageHost::Client {
   void OnMessageFromChrome(const std::string& message);
 
   // NativeMessageHost::Client implementation.
-  virtual void PostMessageFromNativeHost(const std::string& message) OVERRIDE;
-  virtual void CloseChannel(const std::string& error_message) OVERRIDE;
+  virtual void PostMessageFromNativeHost(const std::string& message) override;
+  virtual void CloseChannel(const std::string& error_message) override;
 
  private:
   scoped_ptr<NativeMessageHost> host_;

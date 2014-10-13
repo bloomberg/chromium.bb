@@ -85,7 +85,7 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   void RemoveByGUID(JNIEnv* env, jobject unused_obj, jstring jguid);
 
   // PersonalDataManagerObserver:
-  virtual void OnPersonalDataChanged() OVERRIDE;
+  virtual void OnPersonalDataChanged() override;
 
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);

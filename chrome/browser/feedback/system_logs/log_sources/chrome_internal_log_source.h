@@ -16,7 +16,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
   virtual ~ChromeInternalLogSource();
 
   // SystemLogsSource override.
-  virtual void Fetch(const SysLogsSourceCallback& request) OVERRIDE;
+  virtual void Fetch(const SysLogsSourceCallback& request) override;
 
  private:
   void PopulateSyncLogs(SystemLogsResponse* response);

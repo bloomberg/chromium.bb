@@ -28,10 +28,10 @@ class PerAppSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 #endif  // CHROME_BROWSER_APPS_PER_APP_SETTINGS_SERVICE_FACTORY_H_

@@ -12,7 +12,7 @@ class MockGoogleLocationSettingsHelper : public GoogleLocationSettingsHelper {
  public:
   static void SetLocationStatus(bool master, bool google_apps);
 
-  virtual bool IsSystemLocationEnabled() OVERRIDE;
+  virtual bool IsSystemLocationEnabled() override;
 
   bool IsMasterLocationSettingEnabled();
   bool IsGoogleAppsLocationSettingEnabled();

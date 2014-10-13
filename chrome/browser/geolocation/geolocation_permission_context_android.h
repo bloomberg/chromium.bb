@@ -59,7 +59,7 @@ class GeolocationPermissionContextAndroid
        const PermissionRequestID& id,
        const GURL& requesting_frame_origin,
        bool user_gesture,
-       const BrowserPermissionCallback& callback) OVERRIDE;
+       const BrowserPermissionCallback& callback) override;
 
   void CheckMasterLocation(content::WebContents* web_contents,
                            const PermissionRequestInfo& info,

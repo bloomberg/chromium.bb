@@ -63,7 +63,7 @@ class EphemeralAppService : public KeyedService,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver.
   virtual void OnExtensionWillBeInstalled(
@@ -71,15 +71,15 @@ class EphemeralAppService : public KeyedService,
       const extensions::Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // apps::AppLifetimeMonitor::Observer implementation.
-  virtual void OnAppStop(Profile* profile, const std::string& app_id) OVERRIDE;
-  virtual void OnChromeTerminating() OVERRIDE;
+  virtual void OnAppStop(Profile* profile, const std::string& app_id) override;
+  virtual void OnChromeTerminating() override;
 
   void Init();
   void InitEphemeralAppCount();

@@ -126,11 +126,11 @@ class WorkerObserver
       const GURL& url,
       const base::string16& name,
       int process_id,
-      int route_id) OVERRIDE {
+      int route_id) override {
     NotifyOnIOThread();
   }
 
-  virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE {
+  virtual void WorkerDestroyed(int process_id, int route_id) override {
     NotifyOnIOThread();
   }
 
@@ -170,13 +170,13 @@ class LocalTargetsUIHandler
   virtual ~LocalTargetsUIHandler();
 
   // DevToolsTargetsUIHandler overrides.
-  virtual void ForceUpdate() OVERRIDE;
+  virtual void ForceUpdate() override;
 
 private:
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void ScheduleUpdate();
   void UpdateTargets();
@@ -282,15 +282,15 @@ class AdbTargetsUIHandler
 
   virtual void Open(const std::string& browser_id,
                     const std::string& url,
-                    const DevToolsTargetsUIHandler::TargetCallback&) OVERRIDE;
+                    const DevToolsTargetsUIHandler::TargetCallback&) override;
 
   virtual scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
-      const std::string& browser_id) OVERRIDE;
+      const std::string& browser_id) override;
 
  private:
   // DevToolsAndroidBridge::Listener overrides.
   virtual void DeviceListChanged(
-      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE;
+      const DevToolsAndroidBridge::RemoteDevices& devices) override;
 
   Profile* profile_;
 

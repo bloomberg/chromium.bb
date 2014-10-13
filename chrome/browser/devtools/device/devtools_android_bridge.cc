@@ -185,9 +185,9 @@ class ProtocolCommand
       const base::Closure callback);
 
  private:
-  virtual void OnSocketOpened() OVERRIDE;
-  virtual void OnFrameRead(const std::string& message) OVERRIDE;
-  virtual void OnSocketClosed() OVERRIDE;
+  virtual void OnSocketOpened() override;
+  virtual void OnFrameRead(const std::string& message) override;
+  virtual void OnSocketClosed() override;
   virtual ~ProtocolCommand();
 
   const std::string command_;
@@ -288,13 +288,13 @@ class AgentHostDelegate
       scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
       const std::string& debug_url);
   virtual ~AgentHostDelegate();
-  virtual void Attach(content::DevToolsExternalAgentProxy* proxy) OVERRIDE;
-  virtual void Detach() OVERRIDE;
+  virtual void Attach(content::DevToolsExternalAgentProxy* proxy) override;
+  virtual void Detach() override;
   virtual void SendMessageToBackend(
-      const std::string& message) OVERRIDE;
-  virtual void OnSocketOpened() OVERRIDE;
-  virtual void OnFrameRead(const std::string& message) OVERRIDE;
-  virtual void OnSocketClosed() OVERRIDE;
+      const std::string& message) override;
+  virtual void OnSocketOpened() override;
+  virtual void OnFrameRead(const std::string& message) override;
+  virtual void OnSocketClosed() override;
 
   const std::string id_;
   scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser_;
@@ -391,16 +391,16 @@ class RemotePageTarget : public DevToolsTargetImpl,
   virtual ~RemotePageTarget();
 
   // DevToolsAndroidBridge::RemotePage implementation.
-  virtual DevToolsTargetImpl* GetTarget() OVERRIDE;
-  virtual std::string GetFrontendURL() OVERRIDE;
+  virtual DevToolsTargetImpl* GetTarget() override;
+  virtual std::string GetFrontendURL() override;
 
   // DevToolsTargetImpl overrides.
-  virtual std::string GetId() const OVERRIDE;
-  virtual bool IsAttached() const OVERRIDE;
-  virtual bool Activate() const OVERRIDE;
-  virtual bool Close() const OVERRIDE;
-  virtual void Inspect(Profile* profile) const OVERRIDE;
-  virtual void Reload() const OVERRIDE;
+  virtual std::string GetId() const override;
+  virtual bool IsAttached() const override;
+  virtual bool Activate() const override;
+  virtual bool Close() const override;
+  virtual void Inspect(Profile* profile) const override;
+  virtual void Reload() const override;
 
   void Navigate(const std::string& url, base::Closure callback) const;
 

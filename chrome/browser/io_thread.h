@@ -255,9 +255,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must
   // live on the IO thread.
-  virtual void Init() OVERRIDE;
-  virtual void InitAsync() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
+  virtual void Init() override;
+  virtual void InitAsync() override;
+  virtual void CleanUp() override;
 
   // Initializes |params| based on the settings in |globals|.
   static void InitializeNetworkSessionParamsFromGlobals(

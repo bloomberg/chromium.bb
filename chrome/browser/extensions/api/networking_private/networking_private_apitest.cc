@@ -40,20 +40,20 @@ class TestDelegate : public KeyedService,
   // Asynchronous methods
   virtual void GetProperties(const std::string& guid,
                              const DictionaryCallback& success_callback,
-                             const FailureCallback& failure_callback) OVERRIDE {
+                             const FailureCallback& failure_callback) override {
     DictionaryResult(guid, success_callback, failure_callback);
   }
 
   virtual void GetManagedProperties(
       const std::string& guid,
       const DictionaryCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     DictionaryResult(guid, success_callback, failure_callback);
   }
 
   virtual void GetState(const std::string& guid,
                         const DictionaryCallback& success_callback,
-                        const FailureCallback& failure_callback) OVERRIDE {
+                        const FailureCallback& failure_callback) override {
     DictionaryResult(guid, success_callback, failure_callback);
   }
 
@@ -61,14 +61,14 @@ class TestDelegate : public KeyedService,
   virtual void SetProperties(const std::string& guid,
                              scoped_ptr<base::DictionaryValue> properties,
                              const VoidCallback& success_callback,
-                             const FailureCallback& failure_callback) OVERRIDE {
+                             const FailureCallback& failure_callback) override {
     VoidResult(success_callback, failure_callback);
   }
 
   virtual void CreateNetwork(bool shared,
                              scoped_ptr<base::DictionaryValue> properties,
                              const StringCallback& success_callback,
-                             const FailureCallback& failure_callback) OVERRIDE {
+                             const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
   }
 
@@ -77,7 +77,7 @@ class TestDelegate : public KeyedService,
                            bool visible_only,
                            int limit,
                            const NetworkListCallback& success_callback,
-                           const FailureCallback& failure_callback) OVERRIDE {
+                           const FailureCallback& failure_callback) override {
     if (fail_) {
       failure_callback.Run(kFailure);
     } else {
@@ -93,21 +93,21 @@ class TestDelegate : public KeyedService,
 
   virtual void StartConnect(const std::string& guid,
                             const VoidCallback& success_callback,
-                            const FailureCallback& failure_callback) OVERRIDE {
+                            const FailureCallback& failure_callback) override {
     VoidResult(success_callback, failure_callback);
   }
 
   virtual void StartDisconnect(
       const std::string& guid,
       const VoidCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     VoidResult(success_callback, failure_callback);
   }
 
   virtual void VerifyDestination(
       const VerificationProperties& verification_properties,
       const BoolCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     BoolResult(success_callback, failure_callback);
   }
 
@@ -115,7 +115,7 @@ class TestDelegate : public KeyedService,
       const std::string& guid,
       const VerificationProperties& verification_properties,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
   }
 
@@ -123,7 +123,7 @@ class TestDelegate : public KeyedService,
       const VerificationProperties& verification_properties,
       const std::string& data,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
   }
 
@@ -131,26 +131,26 @@ class TestDelegate : public KeyedService,
       const std::string& ip_or_mac_address,
       bool enabled,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
   }
 
   virtual void GetWifiTDLSStatus(
       const std::string& ip_or_mac_address,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
   }
 
   virtual void GetCaptivePortalStatus(
       const std::string& guid,
       const StringCallback& success_callback,
-      const FailureCallback& failure_callback) OVERRIDE {
+      const FailureCallback& failure_callback) override {
     StringResult(success_callback, failure_callback);
   }
 
   // Synchronous methods
-  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() OVERRIDE {
+  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override {
     scoped_ptr<base::ListValue> result;
     if (!fail_) {
       result.reset(new base::ListValue);
@@ -159,17 +159,17 @@ class TestDelegate : public KeyedService,
     return result.Pass();
   }
 
-  virtual bool EnableNetworkType(const std::string& type) OVERRIDE{
+  virtual bool EnableNetworkType(const std::string& type) override{
     enabled_[type] = true;
     return !fail_;
   }
 
-  virtual bool DisableNetworkType(const std::string& type) OVERRIDE {
+  virtual bool DisableNetworkType(const std::string& type) override {
     disabled_[type] = true;
     return !fail_;
   }
 
-  virtual bool RequestScan() OVERRIDE {
+  virtual bool RequestScan() override {
     scan_requested_.push_back(true);
     return !fail_;
   }
@@ -240,7 +240,7 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
     return s_test_delegate_;
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
@@ -248,7 +248,7 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
         "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 #if defined(OS_CHROMEOS)
     NetworkingPrivateChromeOSFactory::GetInstance()->SetTestingFactory(

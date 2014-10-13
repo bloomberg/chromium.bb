@@ -27,19 +27,19 @@ class ChromeHistoryClient : public history::HistoryClient,
   virtual ~ChromeHistoryClient();
 
   // history::HistoryClient:
-  virtual void BlockUntilBookmarksLoaded() OVERRIDE;
-  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
+  virtual void BlockUntilBookmarksLoaded() override;
+  virtual bool IsBookmarked(const GURL& url) override;
   virtual void GetBookmarks(
-      std::vector<history::URLAndTitle>* bookmarks) OVERRIDE;
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE;
-  virtual bool ShouldReportDatabaseError() OVERRIDE;
+      std::vector<history::URLAndTitle>* bookmarks) override;
+  virtual void NotifyProfileError(sql::InitStatus init_status) override;
+  virtual bool ShouldReportDatabaseError() override;
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // TopSitesObserver:
-  virtual void TopSitesLoaded(history::TopSites* top_sites) OVERRIDE;
-  virtual void TopSitesChanged(history::TopSites* top_sites) OVERRIDE;
+  virtual void TopSitesLoaded(history::TopSites* top_sites) override;
+  virtual void TopSitesChanged(history::TopSites* top_sites) override;
 
  private:
   // The BookmarkModel, this should outlive ChromeHistoryClient.

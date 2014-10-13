@@ -64,8 +64,8 @@ class FontSizePrefsObserverAndroid : public FontSizePrefsAndroid::Observer {
   static bool Register(JNIEnv* env);
 
   // FontSizePrefs::Observer implementation.
-  virtual void OnChangeFontSize(float font) OVERRIDE;
-  virtual void OnChangeForceEnableZoom(bool enabled) OVERRIDE;
+  virtual void OnChangeFontSize(float font) override;
+  virtual void OnChangeForceEnableZoom(bool enabled) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

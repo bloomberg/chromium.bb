@@ -17,9 +17,9 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
   virtual ~ChromeBrowserMainPartsLinux();
 
   // ChromeBrowserMainParts overrides.
-  virtual void ToolkitInitialized() OVERRIDE;
-  virtual void PreProfileInit() OVERRIDE;
-  virtual void PostProfileInit() OVERRIDE;
+  virtual void ToolkitInitialized() override;
+  virtual void PreProfileInit() override;
+  virtual void PostProfileInit() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);

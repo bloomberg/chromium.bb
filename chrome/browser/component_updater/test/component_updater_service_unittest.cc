@@ -1003,7 +1003,7 @@ TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
   // This test installer reports installation failure.
   class : public TestInstaller {
     virtual bool Install(const base::DictionaryValue& manifest,
-                         const base::FilePath& unpack_path) OVERRIDE {
+                         const base::FilePath& unpack_path) override {
       ++install_count_;
       base::DeleteFile(unpack_path, true);
       return false;
@@ -1209,10 +1209,10 @@ void RequestAndDeleteResourceThrottle(ComponentUpdateService* cus,
   class NoCallResourceController : public TestResourceController {
    public:
     virtual ~NoCallResourceController() {}
-    virtual void Cancel() OVERRIDE { CHECK(false); }
-    virtual void CancelAndIgnore() OVERRIDE { CHECK(false); }
-    virtual void CancelWithError(int error_code) OVERRIDE { CHECK(false); }
-    virtual void Resume() OVERRIDE { CHECK(false); }
+    virtual void Cancel() override { CHECK(false); }
+    virtual void CancelAndIgnore() override { CHECK(false); }
+    virtual void CancelWithError(int error_code) override { CHECK(false); }
+    virtual void Resume() override { CHECK(false); }
   } controller;
 
   delete RequestTestResourceThrottle(cus, &controller, crx_id);
@@ -1278,16 +1278,16 @@ class CancelResourceController : public TestResourceController {
     CHECK_EQ(1, resume_called_);
     delete throttle_;
   }
-  virtual void Cancel() OVERRIDE { CHECK(false); }
-  virtual void CancelAndIgnore() OVERRIDE { CHECK(false); }
-  virtual void CancelWithError(int error_code) OVERRIDE { CHECK(false); }
-  virtual void Resume() OVERRIDE {
+  virtual void Cancel() override { CHECK(false); }
+  virtual void CancelAndIgnore() override { CHECK(false); }
+  virtual void CancelWithError(int error_code) override { CHECK(false); }
+  virtual void Resume() override {
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
                             base::Bind(&CancelResourceController::ResumeCalled,
                                        base::Unretained(this)));
   }
-  virtual void SetThrottle(content::ResourceThrottle* throttle) OVERRIDE {
+  virtual void SetThrottle(content::ResourceThrottle* throttle) override {
     throttle_ = throttle;
     bool defer = false;
     // Initially the throttle is blocked. The CUS needs to run a

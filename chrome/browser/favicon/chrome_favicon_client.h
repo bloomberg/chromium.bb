@@ -20,8 +20,8 @@ class ChromeFaviconClient : public FaviconClient {
   virtual ~ChromeFaviconClient();
 
   // FaviconClient implementation:
-  virtual FaviconService* GetFaviconService() OVERRIDE;
-  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
+  virtual FaviconService* GetFaviconService() override;
+  virtual bool IsBookmarked(const GURL& url) override;
 
  private:
   Profile* profile_;

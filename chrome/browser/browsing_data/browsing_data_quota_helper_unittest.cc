@@ -32,7 +32,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
   virtual ~BrowsingDataQuotaHelperTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = new storage::QuotaManager(
         false,
@@ -46,7 +46,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         quota_manager_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     helper_ = NULL;
     quota_manager_ = NULL;
     quota_info_.clear();

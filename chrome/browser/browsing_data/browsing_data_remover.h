@@ -262,7 +262,7 @@ class BrowsingDataRemover
 #if defined(ENABLE_PLUGINS)
   // PepperFlashSettingsManager::Client implementation.
   virtual void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
-                                                     bool success) OVERRIDE;
+                                                     bool success) override;
 #endif
 
 #if defined (OS_CHROMEOS)

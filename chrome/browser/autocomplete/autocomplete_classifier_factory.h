@@ -31,10 +31,10 @@ class AutocompleteClassifierFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      content::BrowserContext* context) const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteClassifierFactory);
 };

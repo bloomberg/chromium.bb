@@ -150,15 +150,15 @@ class ExpireHistoryTest : public testing::Test,
   // BroadcastNotificationDelegate:
   virtual void BroadcastNotifications(
       int type,
-      scoped_ptr<HistoryDetails> details) OVERRIDE {
+      scoped_ptr<HistoryDetails> details) override {
     // This gets called when there are notifications to broadcast. Instead, we
     // store them so we can tell that the correct notifications were sent.
     notifications_.push_back(std::make_pair(type, details.release()));
   }
-  virtual void NotifySyncURLsModified(URLRows* rows) OVERRIDE {}
+  virtual void NotifySyncURLsModified(URLRows* rows) override {}
   virtual void NotifySyncURLsDeleted(bool all_history,
                                      bool expired,
-                                     URLRows* rows) OVERRIDE {}
+                                     URLRows* rows) override {}
 };
 
 // The example data consists of 4 visits. The middle two visits are to the

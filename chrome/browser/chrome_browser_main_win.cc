@@ -89,7 +89,7 @@ int GetMinimumFontSize() {
 
 class TranslationDelegate : public installer::TranslationDelegate {
  public:
-  virtual base::string16 GetLocalizedString(int installer_string_id) OVERRIDE;
+  virtual base::string16 GetLocalizedString(int installer_string_id) override;
 };
 
 bool IsSafeModeStart() {

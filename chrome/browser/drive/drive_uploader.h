@@ -125,20 +125,20 @@ class DriveUploader : public DriveUploaderInterface {
       const std::string& content_type,
       const UploadNewFileOptions& options,
       const UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
   virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadExistingFileOptions& options,
       const UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
   virtual google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadCompletionCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) OVERRIDE;
+      const google_apis::ProgressCallback& progress_callback) override;
 
  private:
   struct UploadFileInfo;

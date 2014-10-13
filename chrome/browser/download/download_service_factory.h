@@ -25,9 +25,9 @@ class DownloadServiceFactory : public BrowserContextKeyedServiceFactory {
  protected:
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* profile) const override;
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
  private:
   friend struct DefaultSingletonTraits<DownloadServiceFactory>;

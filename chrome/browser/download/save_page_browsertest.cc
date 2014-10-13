@@ -85,7 +85,7 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
   }
 
   virtual void OnDownloadStored(DownloadItem* item,
-                                const history::DownloadRow& info) OVERRIDE {
+                                const history::DownloadRow& info) override {
     persisted_ = persisted_ || filter_.Run(item, info);
     if (persisted_ && waiting_)
       base::MessageLoopForUI::current()->Quit();
@@ -121,10 +121,10 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
   }
 
   virtual void OnDownloadStored(DownloadItem* item,
-                                const history::DownloadRow& info) OVERRIDE {
+                                const history::DownloadRow& info) override {
   }
 
-  virtual void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) OVERRIDE {
+  virtual void OnDownloadsRemoved(const DownloadHistory::IdSet& ids) override {
     removed_ = ids.find(download_id_) != ids.end();
     if (removed_ && waiting_)
       base::MessageLoopForUI::current()->Quit();
@@ -218,7 +218,7 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
  private:
   // DownloadManager::Observer
   virtual void OnDownloadCreated(
-      DownloadManager* manager, DownloadItem* item) OVERRIDE {
+      DownloadManager* manager, DownloadItem* item) override {
     DCHECK_EQ(manager, manager_);
     items_seen_.push_back(item);
 
@@ -226,7 +226,7 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
       base::MessageLoopForUI::current()->Quit();
   }
 
-  virtual void ManagerGoingDown(DownloadManager* manager) OVERRIDE {
+  virtual void ManagerGoingDown(DownloadManager* manager) override {
     manager_->RemoveObserver(this);
     manager_ = NULL;
     if (waiting_)
@@ -256,10 +256,10 @@ class SavePackageFinishedObserver : public content::DownloadManager::Observer {
 
   // DownloadManager::Observer:
   virtual void OnSavePackageSuccessfullyFinished(
-      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE {
+      content::DownloadManager* manager, content::DownloadItem* item) override {
     callback_.Run();
   }
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE {
+  virtual void ManagerGoingDown(content::DownloadManager* manager) override {
     download_manager_->RemoveObserver(this);
     download_manager_ = NULL;
   }
@@ -277,13 +277,13 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   virtual ~SavePageBrowserTest();
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
     ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory, save_dir_.path());
     browser()->profile()->GetPrefs()->SetFilePath(
@@ -447,7 +447,7 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   virtual bool ShouldCompleteDownload(
       content::DownloadItem* item,
-      const base::Closure& user_complete_callback) OVERRIDE {
+      const base::Closure& user_complete_callback) override {
     return false;
   }
 
@@ -751,7 +751,7 @@ class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
  public:
   SavePageAsMHTMLBrowserTest() {}
   virtual ~SavePageAsMHTMLBrowserTest();
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSavePageAsMHTML);
   }
 

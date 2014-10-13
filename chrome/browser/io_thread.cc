@@ -333,7 +333,7 @@ class IOThread::LoggingNetworkChangeObserver
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() OVERRIDE {
+  virtual void OnIPAddressChanged() override {
     VLOG(1) << "Observed a change to the network IP addresses";
 
     net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
@@ -341,7 +341,7 @@ class IOThread::LoggingNetworkChangeObserver
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+      net::NetworkChangeNotifier::ConnectionType type) override {
     std::string type_as_string =
         net::NetworkChangeNotifier::ConnectionTypeToString(type);
 
@@ -355,7 +355,7 @@ class IOThread::LoggingNetworkChangeObserver
 
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+      net::NetworkChangeNotifier::ConnectionType type) override {
     std::string type_as_string =
         net::NetworkChangeNotifier::ConnectionTypeToString(type);
 
@@ -376,9 +376,9 @@ class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
   explicit SystemURLRequestContextGetter(IOThread* io_thread);
 
   // Implementation for net::UrlRequestContextGetter.
-  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() override;
   virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const OVERRIDE;
+      GetNetworkTaskRunner() const override;
 
  protected:
   virtual ~SystemURLRequestContextGetter();

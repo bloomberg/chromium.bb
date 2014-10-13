@@ -14,11 +14,11 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
   virtual ~ChromeBrowserMainPartsMac();
 
   // BrowserParts overrides.
-  virtual void PreEarlyInitialization() OVERRIDE;
-  virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual void PreProfileInit() OVERRIDE;
-  virtual void PostProfileInit() OVERRIDE;
+  virtual void PreEarlyInitialization() override;
+  virtual void PreMainMessageLoopStart() override;
+  virtual void PostMainMessageLoopStart() override;
+  virtual void PreProfileInit() override;
+  virtual void PostProfileInit() override;
 
   // Perform platform-specific work that needs to be done after the main event
   // loop has ended. The embedder must be sure to call this.

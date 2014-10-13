@@ -155,7 +155,7 @@ class DevToolsWindowBeforeUnloadObserver
   void Wait();
  private:
   // Invoked when the beforeunload handler fires.
-  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) OVERRIDE;
+  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
 
   bool m_fired;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -185,7 +185,7 @@ void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
 
 class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableHangMonitor);
   }
@@ -282,7 +282,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
 
 class DevToolsUnresponsiveBeforeUnloadTest: public DevToolsBeforeUnloadTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {}
+  virtual void SetUpCommandLine(CommandLine* command_line) override {}
 };
 
 void TimeoutCallback(const std::string& timeout_message) {
@@ -366,7 +366,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
@@ -383,7 +383,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
 class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         extensions::switches::kEnableExperimentalExtensionApis);
   }
@@ -418,7 +418,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         const GURL& url,
         const base::string16& name,
         int process_id,
-        int route_id) OVERRIDE {
+        int route_id) override {
       worker_data_->worker_process_id = process_id;
       worker_data_->worker_route_id = route_id;
       WorkerService::GetInstance()->RemoveObserver(this);
@@ -438,7 +438,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
    private:
     virtual ~WorkerTerminationObserver() {}
 
-    virtual void WorkerDestroyed(int process_id, int route_id) OVERRIDE {
+    virtual void WorkerDestroyed(int process_id, int route_id) override {
       ASSERT_EQ(worker_data_->worker_process_id, process_id);
       ASSERT_EQ(worker_data_->worker_route_id, route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
@@ -904,7 +904,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
 }
 
 class RemoteDebuggingTest: public ExtensionApiTest {
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
 

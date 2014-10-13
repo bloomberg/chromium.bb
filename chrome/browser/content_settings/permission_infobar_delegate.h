@@ -30,14 +30,14 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual base::string16 GetMessageText() const = 0;
 
-  virtual infobars::InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual infobars::InfoBarDelegate::Type GetInfoBarType() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
 
   // Remember to call RegisterActionTaken for these methods if you are
   // overriding them.
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+  virtual void InfoBarDismissed() override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
 
  private:
   void SetPermission(bool update_content_setting, bool allowed);

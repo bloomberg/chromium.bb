@@ -16,7 +16,7 @@ class ContextMenuContentTypeWebView : public ContextMenuContentType {
   virtual ~ContextMenuContentTypeWebView();
 
   // ContextMenuContentType overrides.
-  virtual bool SupportsGroup(int group) OVERRIDE;
+  virtual bool SupportsGroup(int group) override;
 
  protected:
   ContextMenuContentTypeWebView(content::WebContents* web_contents,

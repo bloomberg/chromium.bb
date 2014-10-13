@@ -56,7 +56,7 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
 
   virtual ~ProfileDataRemover() {}
 
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE {
+  virtual void OnBrowsingDataRemoverDone() override {
     remover_->RemoveObserver(this);
     origin_loop_->PostTask(FROM_HERE, callback_);
     origin_loop_->DeleteSoon(FROM_HERE, this);

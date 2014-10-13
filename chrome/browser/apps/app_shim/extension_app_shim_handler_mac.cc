@@ -103,12 +103,12 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
 
  private:
   // ExtensionEnableFlowDelegate overrides.
-  virtual void ExtensionEnableFlowFinished() OVERRIDE {
+  virtual void ExtensionEnableFlowFinished() override {
     callback_.Run();
     delete this;
   }
 
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE {
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) override {
     callback_.Run();
     delete this;
   }

@@ -18,9 +18,9 @@ class ChromeBrowserMainExtraPartsX11 : public ChromeBrowserMainExtraParts {
 
  private:
   // ChromeBrowserMainExtraParts overrides.
-  virtual void PreEarlyInitialization() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PreEarlyInitialization() override;
+  virtual void PostMainMessageLoopStart() override;
+  virtual void PostMainMessageLoopRun() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsX11);
 };

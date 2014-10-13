@@ -59,7 +59,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   virtual ~ImageDecoder();
 
   // Overidden from UtilityProcessHostClient:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC message handlers.
   void OnDecodeImageSucceeded(const SkBitmap& decoded_image);

@@ -101,11 +101,11 @@ class URLIteratorFromURLRows
         end_(url_rows.end()) {
   }
 
-  virtual const GURL& NextURL() OVERRIDE {
+  virtual const GURL& NextURL() override {
     return (itr_++)->url();
   }
 
-  virtual bool HasNextURL() const OVERRIDE {
+  virtual bool HasNextURL() const override {
     return itr_ != end_;
   }
 
@@ -141,7 +141,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
         profile_(profile) {
   }
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {
+  virtual void NotifyProfileError(sql::InitStatus init_status) override {
     // Send to the history service on the main thread.
     service_task_runner_->PostTask(
         FROM_HERE,
@@ -150,7 +150,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   }
 
   virtual void SetInMemoryBackend(
-      scoped_ptr<history::InMemoryHistoryBackend> backend) OVERRIDE {
+      scoped_ptr<history::InMemoryHistoryBackend> backend) override {
     // Send the backend to the history service on the main thread.
     service_task_runner_->PostTask(
         FROM_HERE,
@@ -158,7 +158,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                    base::Passed(&backend)));
   }
 
-  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) OVERRIDE {
+  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) override {
     // Send the notification to the history service on the main thread.
     service_task_runner_->PostTask(
         FROM_HERE,
@@ -168,7 +168,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 
   virtual void BroadcastNotifications(
       int type,
-      scoped_ptr<history::HistoryDetails> details) OVERRIDE {
+      scoped_ptr<history::HistoryDetails> details) override {
     // Send the notification on the history thread.
     if (content::NotificationService::current()) {
       content::Details<history::HistoryDetails> det(details.get());
@@ -182,14 +182,14 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                    history_service_, type, base::Passed(&details)));
   }
 
-  virtual void DBLoaded() OVERRIDE {
+  virtual void DBLoaded() override {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&HistoryService::OnDBLoaded, history_service_));
   }
 
   virtual void NotifyVisitDBObserversOnAddVisit(
-      const history::BriefVisitInfo& info) OVERRIDE {
+      const history::BriefVisitInfo& info) override {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&HistoryService::NotifyVisitDBObserversOnAddVisit,

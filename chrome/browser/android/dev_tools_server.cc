@@ -86,7 +86,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         auth_callback_(auth_callback) {
   }
 
-  virtual std::string GetDiscoveryPageHTML() OVERRIDE {
+  virtual std::string GetDiscoveryPageHTML() override {
     // TopSites updates itself after a delay. Ask TopSites to update itself
     // when we're about to show the remote debugging landing page.
     content::BrowserThread::PostTask(
@@ -97,17 +97,17 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
   }
 
-  virtual bool BundlesFrontendResources() OVERRIDE {
+  virtual bool BundlesFrontendResources() override {
     return false;
   }
 
-  virtual base::FilePath GetDebugFrontendDir() OVERRIDE {
+  virtual base::FilePath GetDebugFrontendDir() override {
     return base::FilePath();
   }
 
   virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
-      std::string* name) OVERRIDE {
+      std::string* name) override {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
     return net::deprecated::UnixDomainListenSocket::
@@ -148,13 +148,13 @@ class UnixDomainServerSocketFactory
 
  private:
   // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
+  virtual scoped_ptr<net::ServerSocket> Create() const override {
     return scoped_ptr<net::ServerSocket>(
         new net::UnixDomainServerSocket(auth_callback_,
                                         true /* use_abstract_namespace */));
   }
 
-  virtual scoped_ptr<net::ServerSocket> CreateAndListen() const OVERRIDE {
+  virtual scoped_ptr<net::ServerSocket> CreateAndListen() const override {
     scoped_ptr<net::ServerSocket> socket = Create();
     if (!socket)
       return scoped_ptr<net::ServerSocket>();

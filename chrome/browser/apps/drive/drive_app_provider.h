@@ -69,17 +69,17 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   void ProcessRemovedDriveApp(const std::string& drive_app_id);
 
   // drive::DriveAppRegistryObserver overrides:
-  virtual void OnDriveAppRegistryUpdated() OVERRIDE;
+  virtual void OnDriveAppRegistryUpdated() override;
 
   // extensions::ExtensionRegistryObserver overrides:
   virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      bool is_update) OVERRIDE;
+      bool is_update) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   Profile* profile_;
 

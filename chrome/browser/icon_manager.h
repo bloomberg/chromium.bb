@@ -85,10 +85,10 @@ class IconManager : public IconLoader::Delegate {
 
   // IconLoader::Delegate interface.
   virtual bool OnGroupLoaded(IconLoader* loader,
-                             const IconGroupID& group) OVERRIDE;
+                             const IconGroupID& group) override;
   virtual bool OnImageLoaded(IconLoader* loader,
                              gfx::Image* result,
-                             const IconGroupID& group) OVERRIDE;
+                             const IconGroupID& group) override;
 
  private:
   struct CacheKey {

@@ -97,7 +97,7 @@ class ExitHandler : public content::NotificationObserver {
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
  private:
   ExitHandler();
@@ -158,7 +158,7 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   explicit ShutdownDetector(int shutdown_fd);
 
-  virtual void ThreadMain() OVERRIDE;
+  virtual void ThreadMain() override;
 
  private:
   const int shutdown_fd_;

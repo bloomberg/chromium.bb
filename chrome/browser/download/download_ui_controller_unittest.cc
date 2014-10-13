@@ -40,7 +40,7 @@ class TestDelegate : public DownloadUIController::Delegate {
   virtual ~TestDelegate() {}
 
  private:
-  virtual void OnNewDownloadReady(content::DownloadItem* item) OVERRIDE;
+  virtual void OnNewDownloadReady(content::DownloadItem* item) override;
 
   base::WeakPtr<content::DownloadItem*> receiver_;
 };
@@ -63,7 +63,7 @@ class TestDownloadService : public DownloadService {
   void set_download_history(scoped_ptr<DownloadHistory> download_history) {
     download_history_.swap(download_history);
   }
-  virtual DownloadHistory* GetDownloadHistory() OVERRIDE;
+  virtual DownloadHistory* GetDownloadHistory() override;
 
  private:
   scoped_ptr<DownloadHistory> download_history_;
@@ -87,7 +87,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   // testing::Test
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   // Returns a TestDelegate. Invoking OnNewDownloadReady on the returned
   // delegate results in the DownloadItem* being stored in |notified_item_|.
@@ -128,7 +128,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 
    private:
     virtual void QueryDownloads(
-        const HistoryService::DownloadQueryCallback& callback) OVERRIDE {
+        const HistoryService::DownloadQueryCallback& callback) override {
       download_query_callback_ = callback;
     }
   };

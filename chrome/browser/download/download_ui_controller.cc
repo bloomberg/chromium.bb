@@ -33,7 +33,7 @@ class DefaultUIControllerDelegateAndroid
 
  private:
   // DownloadUIController::Delegate
-  virtual void OnNewDownloadReady(content::DownloadItem* item) OVERRIDE;
+  virtual void OnNewDownloadReady(content::DownloadItem* item) override;
 };
 
 void DefaultUIControllerDelegateAndroid::OnNewDownloadReady(
@@ -61,7 +61,7 @@ class DefaultUIControllerDelegate : public DownloadUIController::Delegate {
 
  private:
   // DownloadUIController::Delegate
-  virtual void OnNewDownloadReady(content::DownloadItem* item) OVERRIDE;
+  virtual void OnNewDownloadReady(content::DownloadItem* item) override;
 
   Profile* profile_;
 };

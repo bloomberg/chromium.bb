@@ -15,8 +15,8 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
  public:
   explicit MockBrowsingDataQuotaHelper(Profile* profile);
 
-  virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
-  virtual void RevokeHostQuota(const std::string& host) OVERRIDE;
+  virtual void StartFetching(const FetchResultCallback& callback) override;
+  virtual void RevokeHostQuota(const std::string& host) override;
 
   void AddHost(const std::string& host,
                int64 temporary_usage,

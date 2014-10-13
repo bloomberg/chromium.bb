@@ -117,10 +117,10 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
       const base::string16& message);
   virtual ~DevToolsConfirmInfoBarDelegate();
 
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
 
   InfoBarCallback callback_;
   const base::string16 message_;
@@ -187,19 +187,19 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
  private:
   virtual ~DefaultBindingsDelegate() {}
 
-  virtual void ActivateWindow() OVERRIDE;
-  virtual void CloseWindow() OVERRIDE {}
-  virtual void SetInspectedPageBounds(const gfx::Rect& rect) OVERRIDE {}
-  virtual void InspectElementCompleted() OVERRIDE {}
-  virtual void MoveWindow(int x, int y) OVERRIDE {}
-  virtual void SetIsDocked(bool is_docked) OVERRIDE {}
-  virtual void OpenInNewTab(const std::string& url) OVERRIDE;
-  virtual void SetWhitelistedShortcuts(const std::string& message) OVERRIDE {}
+  virtual void ActivateWindow() override;
+  virtual void CloseWindow() override {}
+  virtual void SetInspectedPageBounds(const gfx::Rect& rect) override {}
+  virtual void InspectElementCompleted() override {}
+  virtual void MoveWindow(int x, int y) override {}
+  virtual void SetIsDocked(bool is_docked) override {}
+  virtual void OpenInNewTab(const std::string& url) override;
+  virtual void SetWhitelistedShortcuts(const std::string& message) override {}
 
-  virtual void InspectedContentsClosing() OVERRIDE;
-  virtual void OnLoadCompleted() OVERRIDE {}
-  virtual InfoBarService* GetInfoBarService() OVERRIDE;
-  virtual void RenderProcessGone() OVERRIDE {}
+  virtual void InspectedContentsClosing() override;
+  virtual void OnLoadCompleted() override {}
+  virtual InfoBarService* GetInfoBarService() override;
+  virtual void RenderProcessGone() override {}
 
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);
@@ -238,13 +238,13 @@ class DevToolsUIBindings::FrontendWebContentsObserver
 
  private:
   // contents::WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void RenderProcessGone(base::TerminationStatus status) override;
   virtual void AboutToNavigateRenderView(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DocumentOnLoadCompletedInMainFrame() OVERRIDE;
+      content::RenderViewHost* render_view_host) override;
+  virtual void DocumentOnLoadCompletedInMainFrame() override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   DevToolsUIBindings* devtools_bindings_;
   DISALLOW_COPY_AND_ASSIGN(FrontendWebContentsObserver);

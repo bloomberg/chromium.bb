@@ -25,32 +25,32 @@ class FakeScreen : public gfx::Screen {
   }
 
   // gfx::Screen implementation (only what's needed for testing).
-  virtual bool IsDIPEnabled() OVERRIDE { return true; }
-  virtual gfx::Point GetCursorScreenPoint() OVERRIDE { return gfx::Point(); }
-  virtual gfx::NativeWindow GetWindowUnderCursor() OVERRIDE { return NULL; }
+  virtual bool IsDIPEnabled() override { return true; }
+  virtual gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  virtual gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
   virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) OVERRIDE { return NULL; }
-  virtual int GetNumDisplays() const OVERRIDE { return 1; }
-  virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+      const gfx::Point& point) override { return NULL; }
+  virtual int GetNumDisplays() const override { return 1; }
+  virtual std::vector<gfx::Display> GetAllDisplays() const override {
     return std::vector<gfx::Display>(1, display_);
   }
   virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const OVERRIDE {
+      gfx::NativeView view) const override {
     return display_;
   }
   virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE {
+      const gfx::Point& point) const override {
     return display_;
   }
   virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const OVERRIDE {
+      const gfx::Rect& match_rect) const override {
     return display_;
   }
-  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+  virtual gfx::Display GetPrimaryDisplay() const override {
     return display_;
   }
-  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {}
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {}
+  virtual void AddObserver(gfx::DisplayObserver* observer) override {}
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {}
 
  private:
   gfx::Display display_;
@@ -81,7 +81,7 @@ class ShortcutHelperTest : public ChromeRenderViewHostTestHarness  {
         new ShortcutHelper(env, CreateShortcutHelperJava(env), web_contents());
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &fake_screen_);
     ASSERT_EQ(&fake_screen_, gfx::Screen::GetNativeScreen());
 
@@ -90,7 +90,7 @@ class ShortcutHelperTest : public ChromeRenderViewHostTestHarness  {
     ResetShorcutHelper();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     delete shortcut_helper_;
     shortcut_helper_ = NULL;
 

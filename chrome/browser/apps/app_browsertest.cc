@@ -80,7 +80,7 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   // RenderViewContextMenu implementation.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
+      ui::Accelerator* accelerator) override {
     return false;
   }
 };
@@ -99,7 +99,7 @@ class TabsAddedNotificationObserver
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     observed_tabs_.push_back(
         content::Details<WebContents>(details).ptr());
     if (observed_tabs_.size() == observations_)
@@ -130,18 +130,18 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
   }
 
   // PrintPreviewUI::TestingDelegate implementation.
-  virtual bool IsAutoCancelEnabled() OVERRIDE {
+  virtual bool IsAutoCancelEnabled() override {
     return auto_cancel_;
   }
 
   // PrintPreviewUI::TestingDelegate implementation.
-  virtual void DidGetPreviewPageCount(int page_count) OVERRIDE {
+  virtual void DidGetPreviewPageCount(int page_count) override {
     total_page_count_ = page_count;
   }
 
   // PrintPreviewUI::TestingDelegate implementation.
   virtual void DidRenderPreviewPage(content::WebContents* preview_dialog)
-      OVERRIDE {
+      override {
     dialog_size_ = preview_dialog->GetContainerBounds().size();
     ++rendered_page_count_;
     CHECK(rendered_page_count_ <= total_page_count_);
@@ -951,7 +951,7 @@ class CheckExtensionInstalledObserver : public content::NotificationObserver {
   // NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     EXPECT_FALSE(seen_);
     seen_ = true;
   }
@@ -1179,19 +1179,19 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
                                         public AppWindowRegistry::Observer {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     // Tell chromeos to launch in Guest mode, aka incognito.
     command_line->AppendSwitch(switches::kIncognito);
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Make sure the file manager actually gets loaded.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
     PlatformAppBrowserTest::SetUp();
   }
 
   // AppWindowRegistry::Observer implementation.
-  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE {
+  virtual void OnAppWindowAdded(AppWindow* app_window) override {
     opener_app_ids_.insert(app_window->extension_id());
   }
 
@@ -1238,7 +1238,7 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
   virtual ~RestartDeviceTest() {}
 
   // PlatformAppBrowserTest overrides
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpInProcessBrowserTestFixture() override {
     PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
 
     power_manager_client_ = new chromeos::FakePowerManagerClient;
@@ -1246,7 +1246,7 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
         scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();
 
     mock_user_manager_ = new chromeos::MockUserManager;
@@ -1259,12 +1259,12 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
         .WillRepeatedly(testing::Return(true));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     user_manager_enabler_.reset();
     PlatformAppBrowserTest::TearDownOnMainThread();
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+  virtual void TearDownInProcessBrowserTestFixture() override {
     PlatformAppBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

@@ -175,14 +175,14 @@ class ChromeBrowserProvider : public BaseBookmarkModelObserver,
   virtual ~ChromeBrowserProvider();
 
   // Override BaseBookmarkModelObserver.
-  virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkModelChanged() override;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
 
   // Override NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   JavaObjectWeakGlobalRef weak_java_provider_;
 

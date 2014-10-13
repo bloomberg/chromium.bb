@@ -19,8 +19,8 @@ class ChromeMimeHandlerViewGuestDelegate
   virtual ~ChromeMimeHandlerViewGuestDelegate();
 
   // MimeHandlerViewGuestDelegate.
-  virtual void AttachHelpers() OVERRIDE;
-  virtual void ChangeZoom(bool zoom_in) OVERRIDE;
+  virtual void AttachHelpers() override;
+  virtual void ChangeZoom(bool zoom_in) override;
 
  private:
   extensions::MimeHandlerViewGuest* guest_;  // Owns us.

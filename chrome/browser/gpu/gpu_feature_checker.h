@@ -28,7 +28,7 @@ class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
   void CheckGPUFeatureAvailability();
 
   // content::GpuDataManagerObserver
-  virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnGpuInfoUpdate() override;
  private:
   friend class base::RefCountedThreadSafe<GPUFeatureChecker>;
 

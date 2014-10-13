@@ -17,7 +17,7 @@ class ThreeDAPIObserver : public content::GpuDataManagerObserver {
   virtual void DidBlock3DAPIs(const GURL& url,
                               int render_process_id,
                               int render_view_id,
-                              content::ThreeDAPIType requester) OVERRIDE;
+                              content::ThreeDAPIType requester) override;
 
   DISALLOW_COPY_AND_ASSIGN(ThreeDAPIObserver);
 };

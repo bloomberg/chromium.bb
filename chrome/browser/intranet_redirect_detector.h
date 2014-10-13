@@ -62,10 +62,10 @@ class IntranetRedirectDetector
   void FinishSleep();
 
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeNotifier::IPAddressObserver
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnIPAddressChanged() override;
 
   GURL redirect_origin_;
   Fetchers fetchers_;

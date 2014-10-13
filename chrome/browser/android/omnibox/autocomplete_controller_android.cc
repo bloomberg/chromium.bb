@@ -76,7 +76,7 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
   void SelfDestruct();
 
   // AutocompleteControllerDelegate:
-  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
+  virtual void OnResultChanged(bool default_match_changed) override;
 
   scoped_ptr<AutocompleteController> controller_;
   base::OneShotTimer<ZeroSuggestPrefetcher> expire_timer_;

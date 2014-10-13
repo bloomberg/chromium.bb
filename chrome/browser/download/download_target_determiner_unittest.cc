@@ -191,8 +191,8 @@ class MockDownloadTargetDeterminerDelegate
 class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  public:
   // ::testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   // Creates MockDownloadItem and sets up default expectations.
   content::MockDownloadItem* CreateActiveDownloadItem(
@@ -1953,12 +1953,12 @@ class MockPluginServiceFilter : public content::PluginServiceFilter {
                                  const void* context,
                                  const GURL& url,
                                  const GURL& policy_url,
-                                 content::WebPluginInfo* plugin) OVERRIDE {
+                                 content::WebPluginInfo* plugin) override {
     return MockPluginAvailable(plugin->path);
   }
 
   virtual bool CanLoadPlugin(int render_process_id,
-                             const base::FilePath& path) OVERRIDE {
+                             const base::FilePath& path) override {
     return true;
   }
 };
@@ -2010,7 +2010,7 @@ class DownloadTargetDeterminerTestWithPlugin
   DownloadTargetDeterminerTestWithPlugin()
       : old_plugin_service_filter_(NULL) {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     content::PluginService* plugin_service =
         content::PluginService::GetInstance();
     plugin_service->Init();
@@ -2020,7 +2020,7 @@ class DownloadTargetDeterminerTestWithPlugin
     DownloadTargetDeterminerTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     content::PluginService::GetInstance()->SetFilter(
         old_plugin_service_filter_);
     DownloadTargetDeterminerTest::TearDown();

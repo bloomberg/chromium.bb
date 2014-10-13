@@ -114,7 +114,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
       const captive_portal::CaptivePortalDetector::Results& results);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Called when a captive portal check completes.  Passes the result to all
   // observers.

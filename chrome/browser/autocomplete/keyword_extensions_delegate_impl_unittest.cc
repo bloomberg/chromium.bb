@@ -32,7 +32,7 @@ class ScopedExtensionLoadObserver : public ExtensionRegistryObserver {
  private:
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
                                     const Extension* extension,
-                                    bool is_update) OVERRIDE;
+                                    bool is_update) override;
 
   ExtensionRegistry* registry_;
   base::Closure quit_closure_;
@@ -65,7 +65,7 @@ class KeywordExtensionsDelegateImplTest : public ExtensionServiceTestBase {
   virtual ~KeywordExtensionsDelegateImplTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
   void RunTest(bool incognito);
 

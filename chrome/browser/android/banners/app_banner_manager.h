@@ -82,16 +82,16 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // WebContentsObserver overrides.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   // BitmapFetcherDelegate overrides.
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) OVERRIDE;
+  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
  private:
   // Kicks off the process of showing a banner for the package designated by
   // |tag_content| on the page at the |expected_url|.
   virtual void HandleMetaTagContent(const std::string& tag_content,
-                                    const GURL& expected_url) OVERRIDE;
+                                    const GURL& expected_url) override;
 
   // Fetches the icon for an app.
   scoped_ptr<chrome::BitmapFetcher> fetcher_;

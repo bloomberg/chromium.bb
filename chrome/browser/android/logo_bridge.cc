@@ -57,7 +57,7 @@ class LogoObserverAndroid : public search_provider_logos::LogoObserver {
 
   // seach_provider_logos::LogoObserver:
   virtual void OnLogoAvailable(const search_provider_logos::Logo* logo,
-                               bool from_cache) OVERRIDE {
+                               bool from_cache) override {
     if (!logo_bridge_)
       return;
 
@@ -67,7 +67,7 @@ class LogoObserverAndroid : public search_provider_logos::LogoObserver {
         env, j_logo_observer_.obj(), j_logo.obj(), from_cache);
   }
 
-  virtual void OnObserverRemoved() OVERRIDE {
+  virtual void OnObserverRemoved() override {
     delete this;
   }
 

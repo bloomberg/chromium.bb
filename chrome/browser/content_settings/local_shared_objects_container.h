@@ -26,8 +26,8 @@ class LocalSharedObjectsContainer : public LocalSharedObjectsCounter {
   virtual ~LocalSharedObjectsContainer();
 
   // LocalSharedObjectsCounter:
-  virtual size_t GetObjectCount() const OVERRIDE;
-  virtual size_t GetObjectCountForDomain(const GURL& url) const OVERRIDE;
+  virtual size_t GetObjectCount() const override;
+  virtual size_t GetObjectCountForDomain(const GURL& url) const override;
 
   // Empties the container.
   void Reset();

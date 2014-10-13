@@ -19,9 +19,9 @@ class FaviconSQLHandler : public SQLHandler {
 
   // SQLHandler overrides:
   virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) OVERRIDE;
-  virtual bool Delete(const TableIDRows& ids_set) OVERRIDE;
-  virtual bool Insert(HistoryAndBookmarkRow* row) OVERRIDE;
+                      const TableIDRows& ids_set) override;
+  virtual bool Delete(const TableIDRows& ids_set) override;
+  virtual bool Insert(HistoryAndBookmarkRow* row) override;
 
  private:
   // Deletes the given favicons if they are not used by any pages. Returns

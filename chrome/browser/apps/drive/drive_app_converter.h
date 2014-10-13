@@ -54,7 +54,7 @@ class DriveAppConverter : public extensions::InstallObserver {
 
   // extensions::InstallObserver:
   virtual void OnFinishCrxInstall(const std::string& extension_id,
-                                  bool success) OVERRIDE;
+                                  bool success) override;
 
   Profile* profile_;
   const drive::DriveAppInfo drive_app_info_;

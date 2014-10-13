@@ -62,8 +62,8 @@ class FileSelectHelper
           id_(id) {}
     virtual ~DirectoryListerDispatchDelegate() {}
     virtual void OnListFile(
-        const net::DirectoryLister::DirectoryListerData& data) OVERRIDE;
-    virtual void OnListDone(int error) OVERRIDE;
+        const net::DirectoryLister::DirectoryListerData& data) override;
+    virtual void OnListDone(int error) override;
    private:
     // This FileSelectHelper owns this object.
     FileSelectHelper* parent_;
@@ -86,22 +86,22 @@ class FileSelectHelper
 
   // SelectFileDialog::Listener overrides.
   virtual void FileSelected(
-      const base::FilePath& path, int index, void* params) OVERRIDE;
+      const base::FilePath& path, int index, void* params) override;
   virtual void FileSelectedWithExtraInfo(
       const ui::SelectedFileInfo& file,
       int index,
-      void* params) OVERRIDE;
+      void* params) override;
   virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                                  void* params) OVERRIDE;
+                                  void* params) override;
   virtual void MultiFilesSelectedWithExtraInfo(
       const std::vector<ui::SelectedFileInfo>& files,
-      void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+      void* params) override;
+  virtual void FileSelectionCanceled(void* params) override;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void EnumerateDirectory(int request_id,
                           content::RenderViewHost* render_view_host,

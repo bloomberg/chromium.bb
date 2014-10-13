@@ -12,7 +12,7 @@
 class FakeCommandUpdaterDelegate : public CommandUpdaterDelegate {
  public:
   virtual void ExecuteCommandWithDisposition(int id,
-                                             WindowOpenDisposition) OVERRIDE {
+                                             WindowOpenDisposition) override {
     EXPECT_EQ(1, id);
   }
 };
@@ -21,7 +21,7 @@ class FakeCommandObserver : public CommandObserver {
  public:
   FakeCommandObserver() : enabled_(true) {}
 
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE {
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) override {
     enabled_ = enabled;
   }
 

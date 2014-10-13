@@ -30,7 +30,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   void Init(BookmarkModel* model);
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Returns the managed_node.
   const BookmarkNode* managed_node() { return managed_node_; }
@@ -43,41 +43,41 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
       const std::vector<const BookmarkNode*>& list);
 
   // bookmarks::BookmarkClient:
-  virtual bool PreferTouchIcon() OVERRIDE;
+  virtual bool PreferTouchIcon() override;
   virtual base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::IconType type,
       const favicon_base::FaviconImageCallback& callback,
-      base::CancelableTaskTracker* tracker) OVERRIDE;
-  virtual bool SupportsTypedCountForNodes() OVERRIDE;
+      base::CancelableTaskTracker* tracker) override;
+  virtual bool SupportsTypedCountForNodes() override;
   virtual void GetTypedCountForNodes(
       const NodeSet& nodes,
-      NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE;
+      NodeTypedCountPairs* node_typed_count_pairs) override;
   virtual bool IsPermanentNodeVisible(
-      const BookmarkPermanentNode* node) OVERRIDE;
-  virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
-  virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() OVERRIDE;
+      const BookmarkPermanentNode* node) override;
+  virtual void RecordAction(const base::UserMetricsAction& action) override;
+  virtual bookmarks::LoadExtraCallback GetLoadExtraNodesCallback() override;
   virtual bool CanSetPermanentNodeTitle(
-      const BookmarkNode* permanent_node) OVERRIDE;
-  virtual bool CanSyncNode(const BookmarkNode* node) OVERRIDE;
-  virtual bool CanBeEditedByUser(const BookmarkNode* node) OVERRIDE;
+      const BookmarkNode* permanent_node) override;
+  virtual bool CanSyncNode(const BookmarkNode* node) override;
+  virtual bool CanBeEditedByUser(const BookmarkNode* node) override;
 
  private:
   friend class HistoryServiceFactory;
   void SetHistoryService(HistoryService* history_service);
 
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkAllUserNodesRemoved(
       BookmarkModel* model,
-      const std::set<GURL>& removed_urls) OVERRIDE;
+      const std::set<GURL>& removed_urls) override;
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
+                                   bool ids_reassigned) override;
 
   // Helper for GetLoadExtraNodesCallback().
   static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(

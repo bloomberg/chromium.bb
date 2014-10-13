@@ -78,7 +78,7 @@ class MockInterstitialPageDelegate : public content::InterstitialPageDelegate {
 
  private:
   // InterstitialPageDelegate implementation:
-  virtual std::string GetHTMLContents() OVERRIDE {
+  virtual std::string GetHTMLContents() override {
     return "HTML Contents";
   }
 
@@ -88,7 +88,7 @@ class MockInterstitialPageDelegate : public content::InterstitialPageDelegate {
 class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
  public:
   // testing::Test:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     tab_reloader_.reset(new testing::StrictMock<TestCaptivePortalTabReloader>(
         web_contents()));
@@ -97,7 +97,7 @@ class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
     tab_reloader_->set_slow_ssl_load_time(base::TimeDelta());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     EXPECT_FALSE(tab_reloader().TimerRunning());
     tab_reloader_.reset(NULL);
     ChromeRenderViewHostTestHarness::TearDown();

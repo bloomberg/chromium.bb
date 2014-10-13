@@ -34,9 +34,9 @@ class DownloadStatusUpdater
 
   // AllDownloadItemNotifier::Observer
   virtual void OnDownloadCreated(
-      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+      content::DownloadManager* manager, content::DownloadItem* item) override;
   virtual void OnDownloadUpdated(
-      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+      content::DownloadManager* manager, content::DownloadItem* item) override;
 
  protected:
   // Platform-specific function to update the platform UI for download progress.

@@ -79,8 +79,8 @@ class ShortcutHelper : public content::WebContentsObserver {
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // WebContentsObserver
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void WebContentsDestroyed() override;
 
   // Adds a shortcut to the launcher using a FaviconRawBitmapResult.
   // Must be called from a WorkerPool task.

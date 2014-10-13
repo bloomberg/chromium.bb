@@ -36,19 +36,19 @@ class FakePermissionBubbleView : public PermissionBubbleView {
   }
 
   // PermissionBubbleView:
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE {
+  virtual void SetDelegate(Delegate* delegate) override {
     delegate_ = delegate;
   }
 
   virtual void Show(
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
-      bool customization_mode) OVERRIDE;
+      bool customization_mode) override;
 
-  virtual bool CanAcceptRequestUpdate() OVERRIDE { return false; }
+  virtual bool CanAcceptRequestUpdate() override { return false; }
 
-  virtual void Hide() OVERRIDE {}
-  virtual bool IsVisible() OVERRIDE { return false; }
+  virtual void Hide() override {}
+  virtual bool IsVisible() override { return false; }
 
  private:
   DownloadRequestLimiterTest* test_;

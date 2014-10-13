@@ -76,7 +76,7 @@ class CrashRecoveryBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableBreakpad);
   }
 };

@@ -54,17 +54,17 @@ base::TimeTicks GetLastActiveTimeForAgentHost(
 class TargetBase : public content::DevToolsTarget {
  public:
   // content::DevToolsTarget implementation:
-  virtual std::string GetParentId() const OVERRIDE { return std::string(); }
+  virtual std::string GetParentId() const override { return std::string(); }
 
-  virtual std::string GetTitle() const OVERRIDE { return title_; }
+  virtual std::string GetTitle() const override { return title_; }
 
-  virtual std::string GetDescription() const OVERRIDE { return std::string(); }
+  virtual std::string GetDescription() const override { return std::string(); }
 
-  virtual GURL GetURL() const OVERRIDE { return url_; }
+  virtual GURL GetURL() const override { return url_; }
 
-  virtual GURL GetFaviconURL() const OVERRIDE { return favicon_url_; }
+  virtual GURL GetFaviconURL() const override { return favicon_url_; }
 
-  virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
+  virtual base::TimeTicks GetLastActivityTime() const override {
     return last_activity_time_;
   }
 
@@ -109,15 +109,15 @@ class TabTarget : public TargetBase {
   }
 
   // content::DevToolsTarget implementation:
-  virtual std::string GetId() const OVERRIDE {
+  virtual std::string GetId() const override {
     return base::IntToString(tab_id_);
   }
 
-  virtual std::string GetType() const OVERRIDE {
+  virtual std::string GetType() const override {
     return kTargetTypePage;
   }
 
-  virtual bool IsAttached() const OVERRIDE {
+  virtual bool IsAttached() const override {
     TabModel* model;
     int index;
     if (!FindTab(&model, &index))
@@ -128,7 +128,7 @@ class TabTarget : public TargetBase {
     return DevToolsAgentHost::IsDebuggerAttached(web_contents);
   }
 
-  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
+  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const override {
     TabModel* model;
     int index;
     if (!FindTab(&model, &index))
@@ -150,7 +150,7 @@ class TabTarget : public TargetBase {
     return DevToolsAgentHost::GetOrCreateFor(web_contents);
   }
 
-  virtual bool Activate() const OVERRIDE {
+  virtual bool Activate() const override {
     TabModel* model;
     int index;
     if (!FindTab(&model, &index))
@@ -159,7 +159,7 @@ class TabTarget : public TargetBase {
     return true;
   }
 
-  virtual bool Close() const OVERRIDE {
+  virtual bool Close() const override {
     TabModel* model;
     int index;
     if (!FindTab(&model, &index))
@@ -206,11 +206,11 @@ class NonTabTarget : public TargetBase {
   }
 
   // content::DevToolsTarget implementation:
-  virtual std::string GetId() const OVERRIDE {
+  virtual std::string GetId() const override {
     return agent_host_->GetId();
   }
 
-  virtual std::string GetType() const OVERRIDE {
+  virtual std::string GetType() const override {
     switch (agent_host_->GetType()) {
       case DevToolsAgentHost::TYPE_WEB_CONTENTS:
         if (TabModelList::begin() == TabModelList::end()) {
@@ -227,19 +227,19 @@ class NonTabTarget : public TargetBase {
     return kTargetTypeOther;
   }
 
-  virtual bool IsAttached() const OVERRIDE {
+  virtual bool IsAttached() const override {
     return agent_host_->IsAttached();
   }
 
-  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
+  virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const override {
     return agent_host_;
   }
 
-  virtual bool Activate() const OVERRIDE {
+  virtual bool Activate() const override {
     return agent_host_->Activate();
   }
 
-  virtual bool Close() const OVERRIDE {
+  virtual bool Close() const override {
     return agent_host_->Close();
   }
 

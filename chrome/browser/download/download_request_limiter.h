@@ -103,11 +103,11 @@ class DownloadRequestLimiter
 
     // content::WebContentsObserver overrides.
     virtual void AboutToNavigateRenderView(
-        content::RenderViewHost* render_view_host) OVERRIDE;
+        content::RenderViewHost* render_view_host) override;
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestLimiter.
-    virtual void DidGetUserGesture() OVERRIDE;
-    virtual void WebContentsDestroyed() OVERRIDE;
+    virtual void DidGetUserGesture() override;
+    virtual void WebContentsDestroyed() override;
 
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
@@ -134,7 +134,7 @@ class DownloadRequestLimiter
     // content::NotificationObserver method.
     virtual void Observe(int type,
                          const content::NotificationSource& source,
-                         const content::NotificationDetails& details) OVERRIDE;
+                         const content::NotificationDetails& details) override;
 
     // Remember to either block or allow automatic downloads from this origin.
     void SetContentSetting(ContentSetting setting);

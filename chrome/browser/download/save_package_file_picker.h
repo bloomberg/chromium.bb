@@ -34,8 +34,8 @@ class SavePackageFilePicker : public ui::SelectFileDialog::Listener {
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* unused_params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* unused_params) OVERRIDE;
+                            void* unused_params) override;
+  virtual void FileSelectionCanceled(void* unused_params) override;
 
   bool ShouldSaveAsMHTML() const;
 

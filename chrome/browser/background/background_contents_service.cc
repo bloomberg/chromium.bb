@@ -104,13 +104,13 @@ class CrashNotificationDelegate : public NotificationDelegate {
         extension_id_(extension->id()) {
   }
 
-  virtual void Display() OVERRIDE {}
+  virtual void Display() override {}
 
-  virtual void Error() OVERRIDE {}
+  virtual void Error() override {}
 
-  virtual void Close(bool by_user) OVERRIDE {}
+  virtual void Close(bool by_user) override {}
 
-  virtual void Click() OVERRIDE {
+  virtual void Click() override {
     // http://crbug.com/247790 involves a crash notification balloon being
     // clicked while the extension isn't in the TERMINATED state. In that case,
     // any of the "reload" methods called below can unload the extension, which
@@ -141,13 +141,13 @@ class CrashNotificationDelegate : public NotificationDelegate {
     ScheduleCloseBalloon(copied_extension_id, profile_);
   }
 
-  virtual bool HasClickedListener() OVERRIDE { return true; }
+  virtual bool HasClickedListener() override { return true; }
 
-  virtual std::string id() const OVERRIDE {
+  virtual std::string id() const override {
     return kNotificationPrefix + extension_id_;
   }
 
-  virtual content::WebContents* GetWebContents() const OVERRIDE {
+  virtual content::WebContents* GetWebContents() const override {
     return NULL;
   }
 

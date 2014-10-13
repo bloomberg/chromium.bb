@@ -54,36 +54,36 @@ class ChromeDownloadManagerDelegate
   content::DownloadIdCallback GetDownloadIdReceiverCallback();
 
   // content::DownloadManagerDelegate
-  virtual void Shutdown() OVERRIDE;
-  virtual void GetNextId(const content::DownloadIdCallback& callback) OVERRIDE;
+  virtual void Shutdown() override;
+  virtual void GetNextId(const content::DownloadIdCallback& callback) override;
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) OVERRIDE;
+      const content::DownloadTargetCallback& callback) override;
   virtual bool ShouldOpenFileBasedOnExtension(
-      const base::FilePath& path) OVERRIDE;
+      const base::FilePath& path) override;
   virtual bool ShouldCompleteDownload(
       content::DownloadItem* item,
-      const base::Closure& complete_callback) OVERRIDE;
+      const base::Closure& complete_callback) override;
   virtual bool ShouldOpenDownload(
       content::DownloadItem* item,
-      const content::DownloadOpenDelayedCallback& callback) OVERRIDE;
-  virtual bool GenerateFileHash() OVERRIDE;
+      const content::DownloadOpenDelayedCallback& callback) override;
+  virtual bool GenerateFileHash() override;
   virtual void GetSaveDir(content::BrowserContext* browser_context,
                           base::FilePath* website_save_dir,
                           base::FilePath* download_save_dir,
-                          bool* skip_dir_check) OVERRIDE;
+                          bool* skip_dir_check) override;
   virtual void ChooseSavePath(
       content::WebContents* web_contents,
       const base::FilePath& suggested_path,
       const base::FilePath::StringType& default_extension,
       bool can_save_as_complete,
-      const content::SavePackagePathPickedCallback& callback) OVERRIDE;
-  virtual void OpenDownload(content::DownloadItem* download) OVERRIDE;
-  virtual void ShowDownloadInShell(content::DownloadItem* download) OVERRIDE;
+      const content::SavePackagePathPickedCallback& callback) override;
+  virtual void OpenDownload(content::DownloadItem* download) override;
+  virtual void ShowDownloadInShell(content::DownloadItem* download) override;
   virtual void CheckForFileExistence(
       content::DownloadItem* download,
-      const content::CheckForFileExistenceCallback& callback) OVERRIDE;
-  virtual std::string ApplicationClientIdForFileScanning() const OVERRIDE;
+      const content::CheckForFileExistenceCallback& callback) override;
+  virtual std::string ApplicationClientIdForFileScanning() const override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
   // which ends up being handled by OpenDownload(), will open a download in the
@@ -104,28 +104,28 @@ class ChromeDownloadManagerDelegate
   virtual void NotifyExtensions(
       content::DownloadItem* download,
       const base::FilePath& suggested_virtual_path,
-      const NotifyExtensionsCallback& callback) OVERRIDE;
+      const NotifyExtensionsCallback& callback) override;
   virtual void ReserveVirtualPath(
       content::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
-      const ReservedPathCallback& callback) OVERRIDE;
+      const ReservedPathCallback& callback) override;
   virtual void PromptUserForDownloadPath(
       content::DownloadItem* download,
       const base::FilePath& suggested_virtual_path,
-      const FileSelectedCallback& callback) OVERRIDE;
+      const FileSelectedCallback& callback) override;
   virtual void DetermineLocalPath(
       content::DownloadItem* download,
       const base::FilePath& virtual_path,
-      const LocalPathCallback& callback) OVERRIDE;
+      const LocalPathCallback& callback) override;
   virtual void CheckDownloadUrl(
       content::DownloadItem* download,
       const base::FilePath& suggested_virtual_path,
-      const CheckDownloadUrlCallback& callback) OVERRIDE;
+      const CheckDownloadUrlCallback& callback) override;
   virtual void GetFileMimeType(
       const base::FilePath& path,
-      const GetFileMimeTypeCallback& callback) OVERRIDE;
+      const GetFileMimeTypeCallback& callback) override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
@@ -135,7 +135,7 @@ class ChromeDownloadManagerDelegate
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Callback function after the DownloadProtectionService completes.
   void CheckClientDownloadDone(

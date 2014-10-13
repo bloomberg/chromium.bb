@@ -47,10 +47,10 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
+  virtual void OnStateChanged() override;
 
   // Registers JNI methods.
   static bool Register(JNIEnv* env);

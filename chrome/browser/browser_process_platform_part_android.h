@@ -14,7 +14,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   virtual ~BrowserProcessPlatformPart();
 
   // Overridden from BrowserProcessPlatformPartBase:
-  virtual void AttemptExit() OVERRIDE;
+  virtual void AttemptExit() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);

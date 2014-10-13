@@ -40,11 +40,11 @@ class AppShimHost : public IPC::Listener,
 
  protected:
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool Send(IPC::Message* message) override;
 
  private:
   // The app shim process is requesting to be associated with the given profile
@@ -66,13 +66,13 @@ class AppShimHost : public IPC::Listener,
   void OnQuit();
 
   // apps::AppShimHandler::Host overrides:
-  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result) OVERRIDE;
-  virtual void OnAppClosed() OVERRIDE;
-  virtual void OnAppHide() OVERRIDE;
+  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result) override;
+  virtual void OnAppClosed() override;
+  virtual void OnAppHide() override;
   virtual void OnAppRequestUserAttention(
-      apps::AppShimAttentionType type) OVERRIDE;
-  virtual base::FilePath GetProfilePath() const OVERRIDE;
-  virtual std::string GetAppId() const OVERRIDE;
+      apps::AppShimAttentionType type) override;
+  virtual base::FilePath GetProfilePath() const override;
+  virtual std::string GetAppId() const override;
 
   // Closes the channel and destroys the AppShimHost.
   void Close();

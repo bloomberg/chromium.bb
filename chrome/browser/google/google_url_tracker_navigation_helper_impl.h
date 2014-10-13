@@ -24,20 +24,20 @@ class GoogleURLTrackerNavigationHelperImpl
 
   // GoogleURLTrackerNavigationHelper:
   virtual void SetListeningForNavigationCommit(
-      bool listen) OVERRIDE;
-  virtual bool IsListeningForNavigationCommit() OVERRIDE;
+      bool listen) override;
+  virtual bool IsListeningForNavigationCommit() override;
   virtual void SetListeningForTabDestruction(
-      bool listen) OVERRIDE;
-  virtual bool IsListeningForTabDestruction() OVERRIDE;
+      bool listen) override;
+  virtual bool IsListeningForTabDestruction() override;
   virtual void OpenURL(GURL url,
                        WindowOpenDisposition disposition,
-                       bool user_clicked_on_link) OVERRIDE;
+                       bool user_clicked_on_link) override;
 
  private:
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;

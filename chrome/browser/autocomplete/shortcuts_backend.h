@@ -97,12 +97,12 @@ class ShortcutsBackend : public RefcountedKeyedService,
       const AutocompleteMatch& match, Profile* profile);
 
   // RefcountedKeyedService:
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void ShutdownOnUIThread() override;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
   // On completion posts InitCompleted() back to UI thread.

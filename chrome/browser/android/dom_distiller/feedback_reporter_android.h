@@ -34,7 +34,7 @@ class FeedbackReporterAndroid : content::WebContentsObserver {
   // WebContentsObserver implementation:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
  private:
   // FeedbackReporterAndroid on the Java side.

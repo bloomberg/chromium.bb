@@ -30,7 +30,7 @@ class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
   // FakeGCMDriver override:
   virtual void RegisterImpl(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids) OVERRIDE {
+      const std::vector<std::string>& sender_ids) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&CustomFakeGCMDriver::RegisterFinished,
@@ -51,7 +51,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
 
   virtual ~GCMInvalidationBridgeTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);

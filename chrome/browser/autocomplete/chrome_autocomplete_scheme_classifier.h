@@ -18,7 +18,7 @@ class ChromeAutocompleteSchemeClassifier : public AutocompleteSchemeClassifier {
 
   // AutocompleteInputSchemeChecker:
   virtual metrics::OmniboxInputType::Type GetInputTypeForScheme(
-      const std::string& scheme) const OVERRIDE;
+      const std::string& scheme) const override;
 
  private:
   Profile* profile_;

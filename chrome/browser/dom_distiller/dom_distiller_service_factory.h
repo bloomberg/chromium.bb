@@ -45,10 +45,10 @@ class DomDistillerServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual ~DomDistillerServiceFactory();
 
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
   virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 }  // namespace dom_distiller

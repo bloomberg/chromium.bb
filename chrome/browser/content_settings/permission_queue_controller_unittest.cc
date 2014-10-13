@@ -33,7 +33,7 @@ class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness {
 
  private:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
   }
@@ -57,7 +57,7 @@ class ObservationCountingQueueController : public PermissionQueueController {
   // PermissionQueueController:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   DISALLOW_COPY_AND_ASSIGN(ObservationCountingQueueController);
 };

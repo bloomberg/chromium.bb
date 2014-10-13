@@ -95,7 +95,7 @@ class AutocompleteController : public AutocompleteProviderListener {
   void ExpireCopiedEntries();
 
   // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
+  virtual void OnProviderUpdate(bool updated_matches) override;
 
   // Called when an omnibox event log entry is generated.
   // Populates provider_info with diagnostic information about the status

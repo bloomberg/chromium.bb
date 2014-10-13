@@ -102,17 +102,17 @@ class AutofillManagerTestDelegateImpl
   virtual ~AutofillManagerTestDelegateImpl() {}
 
   // autofill::AutofillManagerTestDelegate:
-  virtual void DidPreviewFormData() OVERRIDE {
+  virtual void DidPreviewFormData() override {
     ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
-  virtual void DidFillFormData() OVERRIDE {
+  virtual void DidFillFormData() override {
     ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
-  virtual void DidShowSuggestions() OVERRIDE {
+  virtual void DidShowSuggestions() override {
     ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
@@ -157,7 +157,7 @@ class WindowedPersonalDataManagerObserver
   }
 
   // PersonalDataManagerObserver:
-  virtual void OnPersonalDataChanged() OVERRIDE {
+  virtual void OnPersonalDataChanged() override {
     if (has_run_message_loop_) {
       base::MessageLoopForUI::current()->Quit();
       has_run_message_loop_ = false;
@@ -165,7 +165,7 @@ class WindowedPersonalDataManagerObserver
     alerted_ = true;
   }
 
-  virtual void OnInsufficientFormData() OVERRIDE {
+  virtual void OnInsufficientFormData() override {
     OnPersonalDataChanged();
   }
 
@@ -181,7 +181,7 @@ class WindowedPersonalDataManagerObserver
 
  private:
   // infobars::InfoBarManager::Observer:
-  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) OVERRIDE {
+  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) override {
     infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
         Accept();
   }
@@ -205,7 +205,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   virtual ~AutofillInteractiveTest() {}
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
 
@@ -224,7 +224,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents = GetWebContents();
     AutofillManager* autofill_manager = ContentAutofillDriver::FromWebContents(

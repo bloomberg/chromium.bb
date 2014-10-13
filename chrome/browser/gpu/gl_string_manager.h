@@ -23,7 +23,7 @@ class GLStringManager : public content::GpuDataManagerObserver {
   void Initialize();
 
   // content::GpuDataManagerObserver
-  virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnGpuInfoUpdate() override;
 
  private:
   std::string gl_vendor_;

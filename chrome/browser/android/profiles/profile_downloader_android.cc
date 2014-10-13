@@ -46,24 +46,24 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
   }
 
   // ProfileDownloaderDelegate implementation:
-  virtual bool NeedsProfilePicture() const OVERRIDE {
+  virtual bool NeedsProfilePicture() const override {
     return desired_image_side_pixels_ > 0;
   }
 
-  virtual int GetDesiredImageSideLength() const OVERRIDE {
+  virtual int GetDesiredImageSideLength() const override {
     return desired_image_side_pixels_;
   }
 
-  virtual Profile* GetBrowserProfile() OVERRIDE {
+  virtual Profile* GetBrowserProfile() override {
     return profile_;
   }
 
-  virtual std::string GetCachedPictureURL() const OVERRIDE {
+  virtual std::string GetCachedPictureURL() const override {
     return std::string();
   }
 
   virtual void OnProfileDownloadSuccess(
-      ProfileDownloader* downloader) OVERRIDE {
+      ProfileDownloader* downloader) override {
     ProfileDownloaderAndroid::OnProfileDownloadSuccess(
         email_,
         downloader->GetProfileFullName(),
@@ -73,7 +73,7 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 
   virtual void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
-      ProfileDownloaderDelegate::FailureReason reason) OVERRIDE {
+      ProfileDownloaderDelegate::FailureReason reason) override {
     LOG(ERROR) << "Failed to download the profile information: " << reason;
     Shutdown();
   }

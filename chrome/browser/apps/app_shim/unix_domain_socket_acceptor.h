@@ -40,8 +40,8 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
 
  private:
   bool CreateSocket();
-  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   base::MessageLoopForIO::FileDescriptorWatcher
       server_listen_connection_watcher_;

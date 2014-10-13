@@ -32,7 +32,7 @@ class ChromeOutOfProcessPatcher : public OutOfProcessPatcher {
                      const base::FilePath& input_abs_path,
                      const base::FilePath& patch_abs_path,
                      const base::FilePath& output_abs_path,
-                     base::Callback<void(int result)> callback) OVERRIDE;
+                     base::Callback<void(int result)> callback) override;
 
  private:
   virtual ~ChromeOutOfProcessPatcher();

@@ -44,7 +44,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
   }
 
   // PersonalDataManagerObserver:
-  virtual void OnPersonalDataChanged() OVERRIDE {
+  virtual void OnPersonalDataChanged() override {
     message_loop_runner_->Quit();
   }
 
@@ -70,7 +70,7 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
   }
 
   // net::TestURLFetcher::DelegateForTests:
-  virtual void OnRequestStart(int fetcher_id) OVERRIDE {
+  virtual void OnRequestStart(int fetcher_id) override {
     net::TestURLFetcher* fetcher = factory_->GetFetcherByID(fetcher_id);
     if (fetcher->upload_data() == expected_upload_data_)
       message_loop_runner_->Quit();
@@ -78,8 +78,8 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
     // Not interested in any further status updates from this fetcher.
     fetcher->SetDelegateForTests(NULL);
   }
-  virtual void OnChunkUpload(int fetcher_id) OVERRIDE {}
-  virtual void OnRequestEnd(int fetcher_id) OVERRIDE {}
+  virtual void OnChunkUpload(int fetcher_id) override {}
+  virtual void OnRequestEnd(int fetcher_id) override {}
 
  private:
   // Mocks out network requests.
@@ -95,7 +95,7 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
 
 class AutofillServerTest : public InProcessBrowserTest  {
  public:
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Disable interactions with the Mac Keychain.
     PrefService* pref_service = browser()->profile()->GetPrefs();
     test::DisableSystemServices(pref_service);

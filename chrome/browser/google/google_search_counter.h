@@ -61,7 +61,7 @@ class GoogleSearchCounter : content::NotificationObserver {
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
   scoped_ptr<GoogleSearchMetrics> search_metrics_;

@@ -32,8 +32,8 @@ class DownloadPathReservationTrackerTest : public testing::Test {
   DownloadPathReservationTrackerTest();
 
   // testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   MockDownloadItem* CreateDownloadItem(int32 id);
   base::FilePath GetPathInDownloadsDirectory(

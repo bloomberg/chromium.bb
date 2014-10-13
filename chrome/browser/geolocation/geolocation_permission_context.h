@@ -29,16 +29,16 @@ class GeolocationPermissionContext  : public PermissionContextBase {
       const PermissionRequestID& id,
       const GURL& requesting_frame_origin,
       bool user_gesture,
-      const BrowserPermissionCallback& callback) OVERRIDE;
+      const BrowserPermissionCallback& callback) override;
 
   // Adds special logic when called through an extension.
   virtual void CancelPermissionRequest(content::WebContents* web_contents,
-                                       const PermissionRequestID& id) OVERRIDE;
+                                       const PermissionRequestID& id) override;
 
  private:
   virtual void UpdateTabContext(const PermissionRequestID& id,
                                 const GURL& requesting_frame,
-                                bool allowed) OVERRIDE;
+                                bool allowed) override;
 
   // This must only be accessed from the UI thread.
   GeolocationPermissionContextExtensions extensions_context_;

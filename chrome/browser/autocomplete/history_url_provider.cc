@@ -280,19 +280,19 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   explicit SearchTermsDataSnapshot(const SearchTermsData& search_terms_data);
   virtual ~SearchTermsDataSnapshot();
 
-  virtual std::string GoogleBaseURLValue() const OVERRIDE;
-  virtual std::string GetApplicationLocale() const OVERRIDE;
+  virtual std::string GoogleBaseURLValue() const override;
+  virtual std::string GetApplicationLocale() const override;
   virtual base::string16 GetRlzParameterValue(
-      bool from_app_list) const OVERRIDE;
-  virtual std::string GetSearchClient() const OVERRIDE;
-  virtual bool EnableAnswersInSuggest() const OVERRIDE;
-  virtual bool IsShowingSearchTermsOnSearchResultsPages() const OVERRIDE;
+      bool from_app_list) const override;
+  virtual std::string GetSearchClient() const override;
+  virtual bool EnableAnswersInSuggest() const override;
+  virtual bool IsShowingSearchTermsOnSearchResultsPages() const override;
   virtual std::string InstantExtendedEnabledParam(
-      bool for_search) const OVERRIDE;
+      bool for_search) const override;
   virtual std::string ForceInstantResultsParam(
-      bool for_prerender) const OVERRIDE;
-  virtual std::string NTPIsThemedParam() const OVERRIDE;
-  virtual std::string GoogleImageSearchSource() const OVERRIDE;
+      bool for_prerender) const override;
+  virtual std::string NTPIsThemedParam() const override;
+  virtual std::string GoogleImageSearchSource() const override;
 
  private:
   std::string google_base_url_value_;

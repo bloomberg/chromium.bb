@@ -58,13 +58,13 @@ class ZeroSuggestProvider : public BaseSearchProvider,
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
-  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
+                     bool minimal_changes) override;
+  virtual void Stop(bool clear_cached_results) override;
+  virtual void DeleteMatch(const AutocompleteMatch& match) override;
+  virtual void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
   // Sets |field_trial_triggered_| to false.
-  virtual void ResetSession() OVERRIDE;
+  virtual void ResetSession() override;
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
@@ -74,14 +74,14 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   virtual ~ZeroSuggestProvider();
 
   // BaseSearchProvider:
-  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
-  virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
+  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const override;
+  virtual const AutocompleteInput GetInput(bool is_keyword) const override;
   virtual bool ShouldAppendExtraParams(
-      const SearchSuggestionParser::SuggestResult& result) const OVERRIDE;
-  virtual void RecordDeletionResult(bool success) OVERRIDE;
+      const SearchSuggestionParser::SuggestResult& result) const override;
+  virtual void RecordDeletionResult(bool success) override;
 
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Optionally, cache the received |json_data| and return true if we want
   // to stop processing results at this point. The |parsed_data| is the parsed

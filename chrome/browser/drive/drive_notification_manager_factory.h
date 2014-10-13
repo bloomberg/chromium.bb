@@ -41,7 +41,7 @@ class DriveNotificationManagerFactory
 
   // BrowserContextKeyedServiceFactory implementation.
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 }  // namespace drive

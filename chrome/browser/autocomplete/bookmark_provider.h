@@ -35,7 +35,7 @@ class BookmarkProvider : public AutocompleteProvider {
   // leave the previous matches for this provider unchanged, otherwise perform
   // a complete search for |input| across all bookmark titles.
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
+                     bool minimal_changes) override;
 
   // Sets the BookmarkModel for unit tests.
   void set_bookmark_model_for_testing(BookmarkModel* bookmark_model) {

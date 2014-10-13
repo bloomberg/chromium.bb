@@ -29,9 +29,9 @@ class NetworkingPrivateLinuxFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* browser_context) const OVERRIDE;
-  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+      content::BrowserContext* browser_context) const override;
+  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  virtual bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateLinuxFactory);
 };

@@ -104,12 +104,12 @@ class TryChromeDialogView : public views::ButtonListener,
   // We have two buttons and according to what the user clicked we set |result_|
   // and we should always close and end the modal loop.
   virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+                             const ui::Event& event) override;
 
   // views::LinkListener:
   // If the user selects the link we need to fire off the default browser that
   // by some convoluted logic should not be chrome.
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) override;
 
   // Controls which flavor of the heading text to use.
   size_t flavor_;

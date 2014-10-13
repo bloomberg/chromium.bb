@@ -16,25 +16,25 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   virtual ~ChromeAutocompleteProviderClient();
 
   // AutocompleteProviderClient:
-  virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
-  virtual std::string AcceptLanguages() OVERRIDE;
-  virtual bool SearchSuggestEnabled() OVERRIDE;
-  virtual bool ShowBookmarkBar() OVERRIDE;
-  virtual const AutocompleteSchemeClassifier& SchemeClassifier() OVERRIDE;
+  virtual net::URLRequestContextGetter* RequestContext() override;
+  virtual bool IsOffTheRecord() override;
+  virtual std::string AcceptLanguages() override;
+  virtual bool SearchSuggestEnabled() override;
+  virtual bool ShowBookmarkBar() override;
+  virtual const AutocompleteSchemeClassifier& SchemeClassifier() override;
   virtual void Classify(
       const base::string16& text,
       bool prefer_keyword,
       bool allow_exact_keyword_match,
       metrics::OmniboxEventProto::PageClassification page_classification,
       AutocompleteMatch* match,
-      GURL* alternate_nav_url) OVERRIDE;
-  virtual history::URLDatabase* InMemoryDatabase() OVERRIDE;
+      GURL* alternate_nav_url) override;
+  virtual history::URLDatabase* InMemoryDatabase() override;
   virtual void DeleteMatchingURLsForKeywordFromHistory(
       history::KeywordID keyword_id,
-      const base::string16& term) OVERRIDE;
-  virtual bool TabSyncEnabledAndUnencrypted() OVERRIDE;
-  virtual void PrefetchImage(const GURL& url) OVERRIDE;
+      const base::string16& term) override;
+  virtual bool TabSyncEnabledAndUnencrypted() override;
+  virtual void PrefetchImage(const GURL& url) override;
 
  private:
   Profile* profile_;

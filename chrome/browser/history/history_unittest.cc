@@ -93,16 +93,16 @@ class BackendDelegate : public HistoryBackend::Delegate {
       : history_test_(history_test) {
   }
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void NotifyProfileError(sql::InitStatus init_status) override {}
   virtual void SetInMemoryBackend(
-      scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE;
-  virtual void NotifyFaviconChanged(const std::set<GURL>& url) OVERRIDE {}
+      scoped_ptr<InMemoryHistoryBackend> backend) override;
+  virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {}
   virtual void BroadcastNotifications(
       int type,
-      scoped_ptr<HistoryDetails> details) OVERRIDE;
-  virtual void DBLoaded() OVERRIDE {}
+      scoped_ptr<HistoryDetails> details) override;
+  virtual void DBLoaded() override {}
   virtual void NotifyVisitDBObserversOnAddVisit(
-      const BriefVisitInfo& info) OVERRIDE {}
+      const BriefVisitInfo& info) override {}
  private:
   HistoryBackendDBTest* history_test_;
 };
@@ -1504,11 +1504,11 @@ class HistoryDBTaskImpl : public HistoryDBTask {
       : invoke_count_(invoke_count), done_invoked_(done_invoked) {}
 
   virtual bool RunOnDBThread(HistoryBackend* backend,
-                             HistoryDatabase* db) OVERRIDE {
+                             HistoryDatabase* db) override {
     return (++*invoke_count_ == kWantInvokeCount);
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     *done_invoked_ = true;
     base::MessageLoop::current()->Quit();
   }

@@ -33,7 +33,7 @@ class TestDriveAppRegistryObserver : public DriveAppRegistryObserver {
 
  private:
   // DriveAppRegistryObserver overrides:
-  virtual void OnDriveAppRegistryUpdated() OVERRIDE { ++update_count_; }
+  virtual void OnDriveAppRegistryUpdated() override { ++update_count_; }
 
   DriveAppRegistry* registry_;
   int update_count_;
@@ -42,7 +42,7 @@ class TestDriveAppRegistryObserver : public DriveAppRegistryObserver {
 
 class DriveAppRegistryTest : public testing::Test {
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 

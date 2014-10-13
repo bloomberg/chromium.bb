@@ -94,8 +94,8 @@ class CannedBrowsingDataLocalStorageHelper
   // BrowsingDataLocalStorageHelper implementation.
   virtual void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
-          OVERRIDE;
-  virtual void DeleteOrigin(const GURL& origin) OVERRIDE;
+          override;
+  virtual void DeleteOrigin(const GURL& origin) override;
 
  private:
   virtual ~CannedBrowsingDataLocalStorageHelper();

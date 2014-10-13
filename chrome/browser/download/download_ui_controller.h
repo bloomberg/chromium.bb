@@ -40,9 +40,9 @@ class DownloadUIController : public AllDownloadItemNotifier::Observer {
 
  private:
   virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* item) OVERRIDE;
+                                 content::DownloadItem* item) override;
   virtual void OnDownloadUpdated(content::DownloadManager* manager,
-                                 content::DownloadItem* item) OVERRIDE;
+                                 content::DownloadItem* item) override;
 
   AllDownloadItemNotifier download_notifier_;
 

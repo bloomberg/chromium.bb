@@ -58,10 +58,10 @@ class Thumbnail : public content::UIResourceClientAndroid {
 
   // content::UIResourceClient implementation.
   virtual cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
-                                         bool resource_lost) OVERRIDE;
+                                         bool resource_lost) override;
 
   // content::UIResourceClientAndroid implementation.
-  virtual void UIResourceIsInvalid() OVERRIDE;
+  virtual void UIResourceIsInvalid() override;
 
  protected:
   Thumbnail(TabId tab_id,

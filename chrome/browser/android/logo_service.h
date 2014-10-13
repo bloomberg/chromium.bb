@@ -50,7 +50,7 @@ class LogoServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_

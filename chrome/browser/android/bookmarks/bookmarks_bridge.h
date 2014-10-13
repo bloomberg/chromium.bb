@@ -172,34 +172,34 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   // Called when there are changes to the bookmark model that don't trigger
   // any of the other callback methods. For example, this is called when
   // partner bookmarks change.
-  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelChanged() override;
   virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) OVERRIDE;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+                                   bool ids_reassigned) override;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
                                  const BookmarkNode* new_parent,
-                                 int new_index) OVERRIDE;
+                                 int new_index) override;
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE;
+                                 int index) override;
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
                                    const BookmarkNode* node,
-                                   const std::set<GURL>& removed_urls) OVERRIDE;
+                                   const std::set<GURL>& removed_urls) override;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) OVERRIDE;
+                                   const BookmarkNode* node) override;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) OVERRIDE;
-  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
+                                             const BookmarkNode* node) override;
+  virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) override;
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) override;
 
   // Override PartnerBookmarksShim::Observer
-  virtual void PartnerShimChanged(PartnerBookmarksShim* shim) OVERRIDE;
-  virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) OVERRIDE;
-  virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) OVERRIDE;
+  virtual void PartnerShimChanged(PartnerBookmarksShim* shim) override;
+  virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) override;
+  virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) override;
 
   Profile* profile_;
   JavaObjectWeakGlobalRef weak_java_ref_;

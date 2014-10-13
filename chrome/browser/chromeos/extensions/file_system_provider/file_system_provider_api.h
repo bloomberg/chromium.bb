@@ -47,7 +47,7 @@ class FileSystemProviderNotifyFunction : public ChromeSyncExtensionFunction {
 
  protected:
   virtual ~FileSystemProviderNotifyFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
 };
 
 class FileSystemProviderInternalUnmountRequestedSuccessFunction

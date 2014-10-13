@@ -89,10 +89,10 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   virtual ~ImportEndedObserver() {}
 
   // importer::ImporterProgressObserver:
-  virtual void ImportStarted() OVERRIDE {}
-  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
-  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
-  virtual void ImportEnded() OVERRIDE {
+  virtual void ImportStarted() override {}
+  virtual void ImportItemStarted(importer::ImportItem item) override {}
+  virtual void ImportItemEnded(importer::ImportItem item) override {}
+  virtual void ImportEnded() override {
     ended_ = true;
     if (!callback_for_import_end_.is_null())
       callback_for_import_end_.Run();
@@ -136,7 +136,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     // After processing the notification we always delete ourselves.
     if (type == extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED) {
       Profile* profile = content::Source<Profile>(source).ptr();
@@ -316,7 +316,7 @@ class FirstRunBubbleLauncher : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

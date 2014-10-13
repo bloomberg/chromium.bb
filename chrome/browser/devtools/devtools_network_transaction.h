@@ -75,41 +75,41 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   virtual int Start(
       const net::HttpRequestInfo* request,
       const net::CompletionCallback& callback,
-      const net::BoundNetLog& net_log) OVERRIDE;
+      const net::BoundNetLog& net_log) override;
   virtual int RestartIgnoringLastError(
-      const net::CompletionCallback& callback) OVERRIDE;
+      const net::CompletionCallback& callback) override;
   virtual int RestartWithCertificate(
       net::X509Certificate* client_cert,
-      const net::CompletionCallback& callback) OVERRIDE;
+      const net::CompletionCallback& callback) override;
   virtual int RestartWithAuth(
       const net::AuthCredentials& credentials,
-      const net::CompletionCallback& callback) OVERRIDE;
-  virtual bool IsReadyToRestartForAuth() OVERRIDE;
+      const net::CompletionCallback& callback) override;
+  virtual bool IsReadyToRestartForAuth() override;
 
   virtual int Read(
       net::IOBuffer* buf,
       int buf_len,
-      const net::CompletionCallback& callback) OVERRIDE;
-  virtual void StopCaching() OVERRIDE;
+      const net::CompletionCallback& callback) override;
+  virtual void StopCaching() override;
   virtual bool GetFullRequestHeaders(
-      net::HttpRequestHeaders* headers) const OVERRIDE;
-  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
-  virtual void DoneReading() OVERRIDE;
-  virtual const net::HttpResponseInfo* GetResponseInfo() const OVERRIDE;
-  virtual net::LoadState GetLoadState() const OVERRIDE;
-  virtual net::UploadProgress GetUploadProgress() const OVERRIDE;
+      net::HttpRequestHeaders* headers) const override;
+  virtual int64 GetTotalReceivedBytes() const override;
+  virtual void DoneReading() override;
+  virtual const net::HttpResponseInfo* GetResponseInfo() const override;
+  virtual net::LoadState GetLoadState() const override;
+  virtual net::UploadProgress GetUploadProgress() const override;
   virtual void SetQuicServerInfo(
-      net::QuicServerInfo* quic_server_info) OVERRIDE;
+      net::QuicServerInfo* quic_server_info) override;
   virtual bool GetLoadTimingInfo(
-      net::LoadTimingInfo* load_timing_info) const OVERRIDE;
-  virtual void SetPriority(net::RequestPriority priority) OVERRIDE;
+      net::LoadTimingInfo* load_timing_info) const override;
+  virtual void SetPriority(net::RequestPriority priority) override;
   virtual void SetWebSocketHandshakeStreamCreateHelper(
-      net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
+      net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   virtual void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) OVERRIDE;
+      const BeforeNetworkStartCallback& callback) override;
   virtual void SetBeforeProxyHeadersSentCallback(
-      const BeforeProxyHeadersSentCallback& callback) OVERRIDE;
-  virtual int ResumeNetworkStart() OVERRIDE;
+      const BeforeProxyHeadersSentCallback& callback) override;
+  virtual int ResumeNetworkStart() override;
 
  protected:
   friend class test::DevToolsNetworkControllerHelper;

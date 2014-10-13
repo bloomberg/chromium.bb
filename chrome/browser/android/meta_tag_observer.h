@@ -19,9 +19,9 @@ class MetaTagObserver : public content::WebContentsObserver {
 
   // content::WebContentsObserver overrides:
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE;
+                             const GURL& validated_url) override;
 
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   // Called when the meta tag's content has been retrieved successfully.

@@ -107,16 +107,16 @@ class TabAndroid : public CoreTabHelperDelegate,
   virtual void SwapTabContents(content::WebContents* old_contents,
                                content::WebContents* new_contents,
                                bool did_start_load,
-                               bool did_finish_load) OVERRIDE;
+                               bool did_finish_load) override;
 
   // Overridden from SearchTabHelperDelegate:
   virtual void OnWebContentsInstantSupportDisabled(
-      const content::WebContents* web_contents) OVERRIDE;
+      const content::WebContents* web_contents) override;
 
   // NotificationObserver -----------------------------------------------------
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Methods called from Java via JNI -----------------------------------------
 

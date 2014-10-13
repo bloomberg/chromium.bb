@@ -194,8 +194,8 @@ class HistoryURLProvider : public HistoryProvider {
 
   // HistoryProvider:
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
+                     bool minimal_changes) override;
+  virtual void Stop(bool clear_cached_results) override;
 
   // Returns a match representing a navigation to |destination_url| given user
   // input of |text|.  |trim_http| controls whether the match's |fill_into_edit|

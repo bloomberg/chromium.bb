@@ -17,7 +17,7 @@ class ExternalProtocolObserver
   virtual ~ExternalProtocolObserver();
 
   // content::WebContentsObserver overrides.
-  virtual void DidGetUserGesture() OVERRIDE;
+  virtual void DidGetUserGesture() override;
 
  private:
   explicit ExternalProtocolObserver(content::WebContents* web_contents);

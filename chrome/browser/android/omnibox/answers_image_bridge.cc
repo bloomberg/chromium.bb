@@ -35,7 +35,7 @@ class AnswersImageObserverAndroid : public BitmapFetcherService::Observer {
 
   // AnswersImageObserver:
   virtual void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                              const SkBitmap& answers_image) OVERRIDE {
+                              const SkBitmap& answers_image) override {
     DCHECK(!answers_image.empty());
 
     JNIEnv* env = base::android::AttachCurrentThread();

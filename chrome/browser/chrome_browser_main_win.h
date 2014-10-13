@@ -26,13 +26,13 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   virtual ~ChromeBrowserMainPartsWin();
 
   // BrowserParts overrides.
-  virtual void ToolkitInitialized() OVERRIDE;
-  virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual int PreCreateThreads() OVERRIDE;
+  virtual void ToolkitInitialized() override;
+  virtual void PreMainMessageLoopStart() override;
+  virtual int PreCreateThreads() override;
 
   // ChromeBrowserMainParts overrides.
-  virtual void ShowMissingLocaleMessageBox() OVERRIDE;
-  virtual void PostBrowserStart() OVERRIDE;
+  virtual void ShowMissingLocaleMessageBox() override;
+  virtual void PostBrowserStart() override;
 
   // Prepares the localized strings that are going to be displayed to
   // the user if the browser process dies. These strings are stored in the

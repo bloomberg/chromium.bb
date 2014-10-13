@@ -118,7 +118,7 @@ class InstallObserver : public ExtensionRegistryObserver {
       const Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE {
+      const std::string& old_name) override {
     install_params_.push_back(
         InstallParameters(extension->id(), is_update, from_ephemeral));
   }

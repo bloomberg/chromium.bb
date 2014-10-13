@@ -32,7 +32,7 @@ const char* kSimpleArticlePath = "/dom_distiller/simple_article.html";
 
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 };
@@ -46,7 +46,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   }
 
   virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) OVERRIDE {
+                             const GURL& validated_url) override {
     if (!render_frame_host->GetParent() &&
         validated_url.scheme() == kDomDistillerScheme)
       callback_.Run();

@@ -78,10 +78,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   }
 
   // Overridden from BrowserProcessPlatformPartBase:
-  virtual void StartTearDown() OVERRIDE;
+  virtual void StartTearDown() override;
 
   virtual scoped_ptr<policy::BrowserPolicyConnector>
-      CreateBrowserPolicyConnector() OVERRIDE;
+      CreateBrowserPolicyConnector() override;
 
  private:
   void CreateProfileHelper();

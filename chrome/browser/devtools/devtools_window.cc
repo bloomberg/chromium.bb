@@ -94,15 +94,15 @@ class DevToolsToolboxDelegate
 
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual bool PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
+      bool* is_keyboard_shortcut) override;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void WebContentsDestroyed() OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) override;
+  virtual void WebContentsDestroyed() override;
 
  private:
   BrowserWindow* GetInspectedBrowserWindow();

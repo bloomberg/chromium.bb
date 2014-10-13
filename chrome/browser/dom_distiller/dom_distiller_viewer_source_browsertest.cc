@@ -82,13 +82,13 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
   DomDistillerViewerSourceBrowserTest() {}
   virtual ~DomDistillerViewerSourceBrowserTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     database_model_ = new FakeDB<ArticleEntry>::EntryMap;
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE { delete database_model_; }
+  virtual void TearDownOnMainThread() override { delete database_model_; }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 

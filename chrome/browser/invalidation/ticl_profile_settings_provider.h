@@ -21,7 +21,7 @@ class TiclProfileSettingsProvider : public TiclSettingsProvider {
   virtual ~TiclProfileSettingsProvider();
 
   // TiclInvalidationServiceSettingsProvider:
-  virtual bool UseGCMChannel() const OVERRIDE;
+  virtual bool UseGCMChannel() const override;
 
  private:
   PrefChangeRegistrar registrar_;

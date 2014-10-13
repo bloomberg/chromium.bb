@@ -48,10 +48,10 @@ class NativeMessageProcessHost :
       scoped_ptr<NativeProcessLauncher> launcher);
 
   // extensions::NativeMessageHost implementation.
-  virtual void OnMessage(const std::string& message) OVERRIDE;
-  virtual void Start(Client* client) OVERRIDE;
+  virtual void OnMessage(const std::string& message) override;
+  virtual void Start(Client* client) override;
   virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner()
-      const OVERRIDE;
+      const override;
 
 #if defined(OS_POSIX)
   // MessageLoopForIO::Watcher interface

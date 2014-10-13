@@ -30,17 +30,17 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~RegisterProtocolHandlerInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const override;
+  virtual Type GetInfoBarType() const override;
   virtual RegisterProtocolHandlerInfoBarDelegate*
-      AsRegisterProtocolHandlerInfoBarDelegate() OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool OKButtonTriggersUACPrompt() const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual base::string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+      AsRegisterProtocolHandlerInfoBarDelegate() override;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
+  virtual bool OKButtonTriggersUACPrompt() const override;
+  virtual bool Accept() override;
+  virtual bool Cancel() override;
+  virtual base::string16 GetLinkText() const override;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // Returns a user-friendly name for the protocol of this protocol handler.
   base::string16 GetProtocolName(const ProtocolHandler& handler) const;

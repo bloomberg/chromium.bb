@@ -303,20 +303,20 @@ class TabSpecificContentSettings
 
   // content::WebContentsObserver overrides.
   virtual void RenderFrameForInterstitialPageCreated(
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
-      bool is_iframe_srcdoc) OVERRIDE;
+      bool is_iframe_srcdoc) override;
   virtual void AppCacheAccessed(const GURL& manifest_url,
-                                bool blocked_by_policy) OVERRIDE;
+                                bool blocked_by_policy) override;
 
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type);
@@ -380,7 +380,7 @@ class TabSpecificContentSettings
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      std::string resource_identifier) OVERRIDE;
+      std::string resource_identifier) override;
 
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();

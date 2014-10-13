@@ -24,15 +24,15 @@ class PasswordUIViewAndroid : public PasswordUIView {
   virtual ~PasswordUIViewAndroid();
 
   // PasswordUIView implementation.
-  virtual Profile* GetProfile() OVERRIDE;
+  virtual Profile* GetProfile() override;
   virtual void ShowPassword(size_t index, const base::string16& password_value)
-      OVERRIDE;
+      override;
   virtual void SetPasswordList(
       const ScopedVector<autofill::PasswordForm>& password_list,
-      bool show_passwords) OVERRIDE;
+      bool show_passwords) override;
   virtual void SetPasswordExceptionList(
       const ScopedVector<autofill::PasswordForm>& password_exception_list)
-      OVERRIDE;
+      override;
 
   // Calls from Java.
   base::android::ScopedJavaLocalRef<jobject> GetSavedPasswordEntry(

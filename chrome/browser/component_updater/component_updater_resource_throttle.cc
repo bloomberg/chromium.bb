@@ -31,9 +31,9 @@ class CUResourceThrottle : public content::ResourceThrottle,
   virtual ~CUResourceThrottle();
 
   // Overriden from ResourceThrottle.
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
-  virtual const char* GetNameForLogging() const OVERRIDE;
+  virtual void WillStartRequest(bool* defer) override;
+  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) override;
+  virtual const char* GetNameForLogging() const override;
 
   // Component updater calls this function via PostTask to unblock the request.
   void Unblock();

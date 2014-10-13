@@ -20,7 +20,7 @@ class BrowsingDataRemoverCompletionObserver
 
  protected:
   // BrowsingDataRemover::Observer:
-  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+  virtual void OnBrowsingDataRemoverDone() override;
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -41,7 +41,7 @@ class BrowsingDataRemoverCompletionInhibitor
   // BrowsingDataRemover::CompletionInhibitor:
   virtual void OnBrowsingDataRemoverWouldComplete(
       BrowsingDataRemover* remover,
-      const base::Closure& continue_to_completion) OVERRIDE;
+      const base::Closure& continue_to_completion) override;
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;

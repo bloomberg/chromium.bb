@@ -38,20 +38,20 @@ class DownloadDangerPromptImpl : public DownloadDangerPrompt,
   virtual ~DownloadDangerPromptImpl();
 
   // DownloadDangerPrompt:
-  virtual void InvokeActionForTesting(Action action) OVERRIDE;
+  virtual void InvokeActionForTesting(Action action) override;
 
  private:
   // content::DownloadItem::Observer:
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
 
   // TabModalConfirmDialogDelegate:
-  virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetDialogMessage() OVERRIDE;
-  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual base::string16 GetCancelButtonTitle() OVERRIDE;
-  virtual void OnAccepted() OVERRIDE;
-  virtual void OnCanceled() OVERRIDE;
-  virtual void OnClosed() OVERRIDE;
+  virtual base::string16 GetTitle() override;
+  virtual base::string16 GetDialogMessage() override;
+  virtual base::string16 GetAcceptButtonTitle() override;
+  virtual base::string16 GetCancelButtonTitle() override;
+  virtual void OnAccepted() override;
+  virtual void OnCanceled() override;
+  virtual void OnClosed() override;
 
   void RunDone(Action action);
 

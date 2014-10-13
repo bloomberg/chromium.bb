@@ -17,7 +17,7 @@ struct AutocompleteMatch;
 // provides functions useful to all derived classes.
 class HistoryProvider : public AutocompleteProvider {
  public:
-  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
+  virtual void DeleteMatch(const AutocompleteMatch& match) override;
 
   // Returns true if inline autocompletion should be prevented for URL-like
   // input.  This method returns true if input.prevent_inline_autocomplete()

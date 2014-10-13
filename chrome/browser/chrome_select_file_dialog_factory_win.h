@@ -27,7 +27,7 @@ class ChromeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
 
   // ui::SelectFileDialogFactory implementation
   virtual ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                                       ui::SelectFilePolicy* policy) OVERRIDE;
+                                       ui::SelectFilePolicy* policy) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

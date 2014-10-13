@@ -23,13 +23,13 @@ class BrowsingDataChannelIDHelperTest
   BrowsingDataChannelIDHelperTest() : ssl_config_changed_count_(0) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     testing_profile_.reset(new TestingProfile());
 
     testing_profile_->GetSSLConfigService()->AddObserver(this);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     testing_profile_->GetSSLConfigService()->RemoveObserver(this);
   }
 
@@ -53,7 +53,7 @@ class BrowsingDataChannelIDHelperTest
   }
 
   // net::SSLConfigService::Observer implementation:
-  virtual void OnSSLConfigChanged() OVERRIDE {
+  virtual void OnSSLConfigChanged() override {
     ssl_config_changed_count_++;
   }
 

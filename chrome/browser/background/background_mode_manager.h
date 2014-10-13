@@ -125,7 +125,7 @@ class BackgroundModeManager
     scoped_ptr<BackgroundApplicationListModel> applications_;
 
     // Overrides from StatusIconMenuModel::Delegate implementation.
-    virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+    virtual void ExecuteCommand(int command_id, int event_flags) override;
 
     // Returns a browser window, or creates one if none are open. Used by
     // operations (like displaying the preferences dialog) that require a
@@ -193,29 +193,29 @@ class BackgroundModeManager
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Called when the kBackgroundModeEnabled preference changes.
   void OnBackgroundModeEnabledPrefChanged();
 
   // BackgroundApplicationListModel::Observer implementation.
   virtual void OnApplicationDataChanged(const extensions::Extension* extension,
-                                        Profile* profile) OVERRIDE;
-  virtual void OnApplicationListChanged(Profile* profile) OVERRIDE;
+                                        Profile* profile) override;
+  virtual void OnApplicationListChanged(Profile* profile) override;
 
   // Overrides from ProfileInfoCacheObserver
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
   virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
-      const base::string16& old_profile_name) OVERRIDE;
+      const base::string16& old_profile_name) override;
 
   // Overrides from StatusIconMenuModel::Delegate implementation.
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
 
   // chrome::BrowserListObserver implementation.
-  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) override;
 
   // Invoked when an extension is installed so we can ensure that
   // launch-on-startup is enabled if appropriate. |extension| can be NULL when

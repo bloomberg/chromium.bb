@@ -136,7 +136,7 @@ class CreatedObserver : public content::DownloadManager::Observer {
 
  private:
   virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* item) OVERRIDE {
+                                 content::DownloadItem* item) override {
     DCHECK_EQ(manager_, manager);
     if (waiting_)
       base::MessageLoopForUI::current()->Quit();
@@ -173,7 +173,7 @@ class PercentWaiter : public content::DownloadItem::Observer {
   }
 
  private:
-  virtual void OnDownloadUpdated(content::DownloadItem* item) OVERRIDE {
+  virtual void OnDownloadUpdated(content::DownloadItem* item) override {
     DCHECK_EQ(item_, item);
     if (!error_ &&
         ((prev_percent_ > item_->PercentComplete()) ||
@@ -187,7 +187,7 @@ class PercentWaiter : public content::DownloadItem::Observer {
       base::MessageLoopForUI::current()->Quit();
   }
 
-  virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE {
+  virtual void OnDownloadDestroyed(content::DownloadItem* item) override {
     DCHECK_EQ(item_, item);
     item_->RemoveObserver(this);
     item_ = NULL;
@@ -219,7 +219,7 @@ class DownloadTestObserverResumable : public content::DownloadTestObserver {
   virtual ~DownloadTestObserverResumable() {}
 
  private:
-  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE {
+  virtual bool IsDownloadInFinalState(DownloadItem* download) override {
     bool is_resumable_now = download->CanResume();
     if (!was_previously_resumable_ && is_resumable_now)
       --transitions_left_;
@@ -291,16 +291,16 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   virtual void ConfirmInstall(
       Delegate* delegate,
       const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
+      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIAbort(true);
     base::MessageLoopForUI::current()->Quit();
   }
 
   virtual void OnInstallSuccess(const Extension* extension,
-                                SkBitmap* icon) OVERRIDE {
+                                SkBitmap* icon) override {
   }
   virtual void OnInstallFailure(
-      const extensions::CrxInstallerError& error) OVERRIDE {
+      const extensions::CrxInstallerError& error) override {
   }
 };
 
@@ -316,15 +316,15 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
   virtual void ConfirmInstall(
       Delegate* delegate,
       const Extension* extension,
-      const ShowDialogCallback& show_dialog_callback) OVERRIDE {
+      const ShowDialogCallback& show_dialog_callback) override {
     delegate->InstallUIProceed();
   }
 
   virtual void OnInstallSuccess(const Extension* extension,
-                                SkBitmap* icon) OVERRIDE {
+                                SkBitmap* icon) override {
   }
   virtual void OnInstallFailure(
-      const extensions::CrxInstallerError& error) OVERRIDE {
+      const extensions::CrxInstallerError& error) override {
   }
 };
 
@@ -394,7 +394,7 @@ class HistoryObserver : public DownloadHistory::Observer {
 
   virtual void OnDownloadStored(
       content::DownloadItem* item,
-      const history::DownloadRow& info) OVERRIDE {
+      const history::DownloadRow& info) override {
     if (!callback_.is_null() && (!callback_.Run(info)))
         return;
 
@@ -403,7 +403,7 @@ class HistoryObserver : public DownloadHistory::Observer {
       base::MessageLoopForUI::current()->Quit();
   }
 
-  virtual void OnDownloadHistoryDestroyed() OVERRIDE {
+  virtual void OnDownloadHistoryDestroyed() override {
     DownloadServiceFactory::GetForBrowserContext(profile_)->
       GetDownloadHistory()->RemoveObserver(this);
   }
@@ -450,21 +450,21 @@ class DownloadTest : public InProcessBrowserTest {
 
   DownloadTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     ASSERT_TRUE(InitialSetup());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // Needs to be torn down on the main thread. file_activity_observer_ holds a
     // reference to the ChromeDownloadManagerDelegate which should be destroyed
     // on the UI thread.
     file_activity_observer_.reset();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
   }
 
@@ -3372,7 +3372,7 @@ class DisableSafeBrowsingOnInProgressDownload
   }
   virtual ~DisableSafeBrowsingOnInProgressDownload() {}
 
-  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE {
+  virtual bool IsDownloadInFinalState(DownloadItem* download) override {
     if (download->GetState() != DownloadItem::IN_PROGRESS ||
         download->GetTargetFilePath().empty())
       return false;

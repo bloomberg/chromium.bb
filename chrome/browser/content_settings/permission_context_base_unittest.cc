@@ -25,7 +25,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
  private:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
   }
@@ -68,7 +68,7 @@ class TestPermissionContext : public PermissionContextBase {
  protected:
   virtual void UpdateTabContext(const PermissionRequestID& id,
                                 const GURL& requesting_origin,
-                                bool allowed) OVERRIDE {
+                                bool allowed) override {
     tab_context_updated_ = true;
   }
 

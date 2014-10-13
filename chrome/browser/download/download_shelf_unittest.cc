@@ -48,12 +48,12 @@ class DownloadShelfTest : public testing::Test {
   }
   Profile* profile() { return profile_.get(); }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     DownloadServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &CreateDownloadService);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     DownloadServiceFactory::GetInstance()->SetTestingFactory(
         profile(), NULL);
   }

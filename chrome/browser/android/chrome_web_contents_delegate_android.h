@@ -38,55 +38,55 @@ class ChromeWebContentsDelegateAndroid
   virtual ~ChromeWebContentsDelegateAndroid();
 
   virtual void LoadingStateChanged(content::WebContents* source,
-                                   bool to_different_document) OVERRIDE;
+                                   bool to_different_document) override;
   virtual void RunFileChooser(content::WebContents* web_contents,
                               const content::FileChooserParams& params)
-                              OVERRIDE;
-  virtual void CloseContents(content::WebContents* web_contents) OVERRIDE;
+                              override;
+  virtual void CloseContents(content::WebContents* web_contents) override;
   virtual void FindReply(content::WebContents* web_contents,
                          int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
-                         bool final_update) OVERRIDE;
+                         bool final_update) override;
   virtual void FindMatchRectsReply(content::WebContents* web_contents,
                                    int version,
                                    const std::vector<gfx::RectF>& rects,
-                                   const gfx::RectF& active_rect) OVERRIDE;
+                                   const gfx::RectF& active_rect) override;
   virtual content::JavaScriptDialogManager*
-  GetJavaScriptDialogManager() OVERRIDE;
+  GetJavaScriptDialogManager() override;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
+      const content::MediaResponseCallback& callback) override;
   virtual bool CheckMediaAccessPermission(
       content::WebContents* web_contents,
       const GURL& security_origin,
-      content::MediaStreamType type) OVERRIDE;
+      content::MediaStreamType type) override;
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
       const base::FilePath& plugin_path,
-      const base::Callback<void(bool)>& callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback) override;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
+                              bool* was_blocked) override;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int opener_render_frame_id,
                                   const base::string16& frame_name,
                                   const GURL& target_url,
-                                  content::WebContents* new_contents) OVERRIDE;
+                                  content::WebContents* new_contents) override;
  private:
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   void OnFindResultAvailable(content::WebContents* web_contents,
                              const FindNotificationDetails* find_result);

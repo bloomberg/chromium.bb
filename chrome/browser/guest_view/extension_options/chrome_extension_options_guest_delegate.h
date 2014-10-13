@@ -19,13 +19,13 @@ class ChromeExtensionOptionsGuestDelegate
   explicit ChromeExtensionOptionsGuestDelegate(ExtensionOptionsGuest* guest);
   virtual ~ChromeExtensionOptionsGuestDelegate();
 
-  virtual void DidInitialize() OVERRIDE;
+  virtual void DidInitialize() override;
 
   virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params) override;
 
   virtual content::WebContents* OpenURLInNewTab(
-      const content::OpenURLParams& params) OVERRIDE;
+      const content::OpenURLParams& params) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionOptionsGuestDelegate);

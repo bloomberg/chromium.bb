@@ -40,8 +40,8 @@ class TestShimClient : public IPC::Listener {
 
  private:
   // IPC::Listener overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  virtual void OnChannelError() override;
 
   base::Thread io_thread_;
   scoped_ptr<IPC::ChannelProxy> channel_;
@@ -95,20 +95,20 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void RunAndExitGracefully();
 
   // InProcessBrowserTest overrides:
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
                             apps::AppShimLaunchType launch_type,
-                            const std::vector<base::FilePath>& files) OVERRIDE;
-  virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE {}
+                            const std::vector<base::FilePath>& files) override;
+  virtual void OnShimClose(apps::AppShimHandler::Host* host) override {}
   virtual void OnShimFocus(apps::AppShimHandler::Host* host,
                            apps::AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) OVERRIDE {}
+                           const std::vector<base::FilePath>& files) override {}
   virtual void OnShimSetHidden(apps::AppShimHandler::Host* host,
-                               bool hidden) OVERRIDE {}
-  virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
+                               bool hidden) override {}
+  virtual void OnShimQuit(apps::AppShimHandler::Host* host) override;
 
   scoped_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;
@@ -230,8 +230,8 @@ class AppShimHostManagerBrowserTestSocketFiles
   base::FilePath version_path_;
 
  private:
-  virtual bool SetUpUserDataDirectory() OVERRIDE;
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+  virtual bool SetUpUserDataDirectory() override;
+  virtual void TearDownInProcessBrowserTestFixture() override;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostManagerBrowserTestSocketFiles);
 };

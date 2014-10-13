@@ -61,7 +61,7 @@ class ClosedInfoBarTracker : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   size_t size() const { return removed_infobars_.size(); }
 
@@ -106,8 +106,8 @@ class GeolocationPermissionContextTests
     : public ChromeRenderViewHostTestHarness {
  protected:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
   PermissionRequestID RequestID(int bridge_id);
   PermissionRequestID RequestIDForTab(int tab, int bridge_id);

@@ -44,11 +44,11 @@ class WaitForHistoryTask : public history::HistoryDBTask {
   WaitForHistoryTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE {
+                             history::HistoryDatabase* db) override {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() OVERRIDE {
+  virtual void DoneRunOnMainThread() override {
     base::MessageLoop::current()->Quit();
   }
 
@@ -62,7 +62,7 @@ class WaitForHistoryTask : public history::HistoryDBTask {
 
 class HistoryBrowserTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableFileCookies);
   }
 

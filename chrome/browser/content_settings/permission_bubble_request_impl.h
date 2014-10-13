@@ -34,20 +34,20 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   virtual ~PermissionBubbleRequestImpl();
 
   // PermissionBubbleRequest:
-  virtual int GetIconID() const OVERRIDE;
-  virtual base::string16 GetMessageText() const OVERRIDE;
-  virtual base::string16 GetMessageTextFragment() const OVERRIDE;
-  virtual bool HasUserGesture() const OVERRIDE;
+  virtual int GetIconID() const override;
+  virtual base::string16 GetMessageText() const override;
+  virtual base::string16 GetMessageTextFragment() const override;
+  virtual bool HasUserGesture() const override;
 
   // TODO(miguelg) Change this method to GetOrigin()
-  virtual GURL GetRequestingHostname() const OVERRIDE;
+  virtual GURL GetRequestingHostname() const override;
 
   // Remember to call RegisterActionTaken for these methods if you are
   // overriding them.
-  virtual void PermissionGranted() OVERRIDE;
-  virtual void PermissionDenied() OVERRIDE;
-  virtual void Cancelled() OVERRIDE;
-  virtual void RequestFinished() OVERRIDE;
+  virtual void PermissionGranted() override;
+  virtual void PermissionDenied() override;
+  virtual void Cancelled() override;
+  virtual void RequestFinished() override;
 
  protected:
   void RegisterActionTaken() { action_taken_ = true; }

@@ -60,16 +60,16 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // These are called in-order by content::BrowserMainLoop.
   // Each stage calls the same stages in any ChromeBrowserMainExtraParts added
   // with AddParts() from ChromeContentBrowserClient::CreateBrowserMainParts.
-  virtual void PreEarlyInitialization() OVERRIDE;
-  virtual void PostEarlyInitialization() OVERRIDE;
-  virtual void ToolkitInitialized() OVERRIDE;
-  virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual int PreCreateThreads() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE;
-  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
-  virtual void PostMainMessageLoopRun() OVERRIDE;
-  virtual void PostDestroyThreads() OVERRIDE;
+  virtual void PreEarlyInitialization() override;
+  virtual void PostEarlyInitialization() override;
+  virtual void ToolkitInitialized() override;
+  virtual void PreMainMessageLoopStart() override;
+  virtual void PostMainMessageLoopStart() override;
+  virtual int PreCreateThreads() override;
+  virtual void PreMainMessageLoopRun() override;
+  virtual bool MainMessageLoopRun(int* result_code) override;
+  virtual void PostMainMessageLoopRun() override;
+  virtual void PostDestroyThreads() override;
 
   // Additional stages for ChromeBrowserMainExtraParts. These stages are called
   // in order from PreMainMessageLoopRun(). See implementation for details.

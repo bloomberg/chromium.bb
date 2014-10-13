@@ -23,7 +23,7 @@ class TestObserver : public BitmapFetcherService::Observer {
   virtual ~TestObserver() { target_->OnRequestFinished(); }
 
   virtual void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                              const SkBitmap& answers_image) OVERRIDE {
+                              const SkBitmap& answers_image) override {
     target_->OnImageChanged();
   }
 
@@ -38,7 +38,7 @@ class TestService : public BitmapFetcherService {
 
   // Create a fetcher, but don't start downloading. That allows side-stepping
   // the decode step, which requires a utility process.
-  virtual chrome::BitmapFetcher* CreateFetcher(const GURL& url) OVERRIDE {
+  virtual chrome::BitmapFetcher* CreateFetcher(const GURL& url) override {
     return new chrome::BitmapFetcher(url, this);
   }
 };
@@ -48,7 +48,7 @@ class TestService : public BitmapFetcherService {
 class BitmapFetcherServiceTest : public testing::Test,
                                  public TestNotificationInterface {
  public:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     service_.reset(new TestService(&profile_));
     requestsFinished_ = 0;
     imagesChanged_ = 0;
@@ -64,9 +64,9 @@ class BitmapFetcherServiceTest : public testing::Test,
   }
   size_t cache_size() { return service_->cache_.size(); }
 
-  virtual void OnImageChanged() OVERRIDE { imagesChanged_++; }
+  virtual void OnImageChanged() override { imagesChanged_++; }
 
-  virtual void OnRequestFinished() OVERRIDE { requestsFinished_++; }
+  virtual void OnRequestFinished() override { requestsFinished_++; }
 
   // Simulate finishing a URL fetch and decode for the given fetcher.
   void CompleteFetch(const GURL& url) {

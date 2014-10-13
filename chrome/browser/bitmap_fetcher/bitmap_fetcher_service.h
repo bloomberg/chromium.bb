@@ -81,7 +81,7 @@ class BitmapFetcherService : public KeyedService,
   void RemoveFetcher(const chrome::BitmapFetcher* fetcher);
 
   // BitmapFetcherDelegate implementation.
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) OVERRIDE;
+  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
   // Currently active image fetchers.
   BitmapFetchers active_fetchers_;

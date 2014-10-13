@@ -55,39 +55,39 @@ class TopSitesImpl : public TopSites {
 
   virtual bool SetPageThumbnail(const GURL& url,
                                 const gfx::Image& thumbnail,
-                                const ThumbnailScore& score) OVERRIDE;
+                                const ThumbnailScore& score) override;
   virtual bool SetPageThumbnailToJPEGBytes(
       const GURL& url,
       const base::RefCountedMemory* memory,
-      const ThumbnailScore& score) OVERRIDE;
+      const ThumbnailScore& score) override;
   virtual void GetMostVisitedURLs(
       const GetMostVisitedURLsCallback& callback,
-      bool include_forced_urls) OVERRIDE;
+      bool include_forced_urls) override;
   virtual bool GetPageThumbnail(
       const GURL& url,
       bool prefix_match,
-      scoped_refptr<base::RefCountedMemory>* bytes) OVERRIDE;
+      scoped_refptr<base::RefCountedMemory>* bytes) override;
   virtual bool GetPageThumbnailScore(const GURL& url,
-                                     ThumbnailScore* score) OVERRIDE;
+                                     ThumbnailScore* score) override;
   virtual bool GetTemporaryPageThumbnailScore(const GURL& url,
-                                              ThumbnailScore* score) OVERRIDE;
-  virtual void SyncWithHistory() OVERRIDE;
-  virtual bool HasBlacklistedItems() const OVERRIDE;
-  virtual void AddBlacklistedURL(const GURL& url) OVERRIDE;
-  virtual void RemoveBlacklistedURL(const GURL& url) OVERRIDE;
-  virtual bool IsBlacklisted(const GURL& url) OVERRIDE;
-  virtual void ClearBlacklistedURLs() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+                                              ThumbnailScore* score) override;
+  virtual void SyncWithHistory() override;
+  virtual bool HasBlacklistedItems() const override;
+  virtual void AddBlacklistedURL(const GURL& url) override;
+  virtual void RemoveBlacklistedURL(const GURL& url) override;
+  virtual bool IsBlacklisted(const GURL& url) override;
+  virtual void ClearBlacklistedURLs() override;
+  virtual void Shutdown() override;
   virtual base::CancelableTaskTracker::TaskId StartQueryForMostVisited()
-      OVERRIDE;
-  virtual bool IsKnownURL(const GURL& url) OVERRIDE;
+      override;
+  virtual bool IsKnownURL(const GURL& url) override;
   virtual const std::string& GetCanonicalURLString(
-      const GURL& url) const OVERRIDE;
-  virtual bool IsNonForcedFull() OVERRIDE;
-  virtual bool IsForcedFull() OVERRIDE;
-  virtual MostVisitedURLList GetPrepopulatePages() OVERRIDE;
-  virtual bool loaded() const OVERRIDE;
-  virtual bool AddForcedURL(const GURL& url, const base::Time& time) OVERRIDE;
+      const GURL& url) const override;
+  virtual bool IsNonForcedFull() override;
+  virtual bool IsForcedFull() override;
+  virtual MostVisitedURLList GetPrepopulatePages() override;
+  virtual bool loaded() const override;
+  virtual bool AddForcedURL(const GURL& url, const base::Time& time) override;
 
  protected:
   virtual ~TopSitesImpl();
@@ -182,7 +182,7 @@ class TopSitesImpl : public TopSites {
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Updates URLs in |cache_| and the db (in the background).
   // The non-forced URLs in |new_top_sites| replace those in |cache_|.

@@ -29,9 +29,9 @@ class ShortcutsProvider
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
+                     bool minimal_changes) override;
 
-  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
+  virtual void DeleteMatch(const AutocompleteMatch& match) override;
 
  private:
   friend class ClassifyTest;
@@ -43,7 +43,7 @@ class ShortcutsProvider
   virtual ~ShortcutsProvider();
 
   // ShortcutsBackendObserver:
-  virtual void OnShortcutsLoaded() OVERRIDE;
+  virtual void OnShortcutsLoaded() override;
 
   // Performs the autocomplete matching and scoring.
   void GetMatches(const AutocompleteInput& input);

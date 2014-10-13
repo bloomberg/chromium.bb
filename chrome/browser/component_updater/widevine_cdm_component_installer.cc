@@ -238,19 +238,19 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
 
  private:
   // The following methods override ComponentInstallerTraits.
-  virtual bool CanAutoUpdate() const OVERRIDE;
+  virtual bool CanAutoUpdate() const override;
   virtual bool OnCustomInstall(const base::DictionaryValue& manifest,
-                               const base::FilePath& install_dir) OVERRIDE;
+                               const base::FilePath& install_dir) override;
   virtual bool VerifyInstallation(
       const base::DictionaryValue& manifest,
-      const base::FilePath& install_dir) const OVERRIDE;
+      const base::FilePath& install_dir) const override;
   virtual void ComponentReady(
       const base::Version& version,
       const base::FilePath& path,
-      scoped_ptr<base::DictionaryValue> manifest) OVERRIDE;
-  virtual base::FilePath GetBaseDirectory() const OVERRIDE;
-  virtual void GetHash(std::vector<uint8_t>* hash) const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
+      scoped_ptr<base::DictionaryValue> manifest) override;
+  virtual base::FilePath GetBaseDirectory() const override;
+  virtual void GetHash(std::vector<uint8_t>* hash) const override;
+  virtual std::string GetName() const override;
 
   // Checks and updates CDM adapter if necessary to make sure the latest CDM
   // adapter is always used.

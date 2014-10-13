@@ -27,8 +27,8 @@ class QuotaManager;
 // IO thread, we have to communicate over thread using PostTask.
 class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
  public:
-  virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
-  virtual void RevokeHostQuota(const std::string& host) OVERRIDE;
+  virtual void StartFetching(const FetchResultCallback& callback) override;
+  virtual void RevokeHostQuota(const std::string& host) override;
 
  private:
   BrowsingDataQuotaHelperImpl(base::MessageLoopProxy* ui_thread,

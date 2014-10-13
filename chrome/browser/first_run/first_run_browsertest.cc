@@ -83,7 +83,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
   FirstRunMasterPrefsBrowserTestBase() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // All users of this test class need to call SetMasterPreferencesForTest()
     // before this class' SetUp() is invoked.
     ASSERT_TRUE(text_.get());
@@ -96,12 +96,12 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     EXPECT_TRUE(base::DeleteFile(prefs_file_, false));
     InProcessBrowserTest::TearDown();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kForceFirstRun);
     EXPECT_EQ(first_run::AUTO_IMPORT_NONE, first_run::auto_import_state());
@@ -127,7 +127,7 @@ class FirstRunMasterPrefsBrowserTestT
   FirstRunMasterPrefsBrowserTestT() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     SetMasterPreferencesForTest(Text);
     FirstRunMasterPrefsBrowserTestBase::SetUp();
   }
@@ -249,7 +249,7 @@ class FirstRunMasterPrefsWithTrackedPreferences
     : public FirstRunMasterPrefsBrowserTestT<kWithTrackedPrefs>,
       public testing::WithParamInterface<std::string> {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     FirstRunMasterPrefsBrowserTestT::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,

@@ -70,7 +70,7 @@ class PortForwardingStatusSerializer
   PortForwardingStatusSerializer(const Callback& callback, Profile* profile);
   virtual ~PortForwardingStatusSerializer();
 
-  virtual void PortStatusChanged(const ForwardingStatus& status) OVERRIDE;
+  virtual void PortStatusChanged(const ForwardingStatus& status) override;
 
  private:
   Callback callback_;

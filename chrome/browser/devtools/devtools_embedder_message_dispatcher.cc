@@ -155,7 +155,7 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
 
   virtual bool Dispatch(const std::string& method,
                         const base::ListValue* params,
-                        std::string* error) OVERRIDE {
+                        std::string* error) override {
     HandlerMap::iterator it = handlers_.find(method);
     if (it == handlers_.end())
       return false;

@@ -52,7 +52,7 @@ class ProfileInvalidationProviderFactoryLoginScreenBrowserTest
   ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
   virtual ~ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -88,7 +88,7 @@ class ProfileInvalidationProviderFactoryGuestBrowserTest
   ProfileInvalidationProviderFactoryGuestBrowserTest();
   virtual ~ProfileInvalidationProviderFactoryGuestBrowserTest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProviderFactoryGuestBrowserTest);

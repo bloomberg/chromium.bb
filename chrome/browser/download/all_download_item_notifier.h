@@ -66,15 +66,15 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
 
  private:
   // content::DownloadManager::Observer
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
+  virtual void ManagerGoingDown(content::DownloadManager* manager) override;
   virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                content::DownloadItem* item) OVERRIDE;
+                                content::DownloadItem* item) override;
 
   // content::DownloadItem::Observer
-  virtual void OnDownloadUpdated(content::DownloadItem* item) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* item) OVERRIDE;
-  virtual void OnDownloadRemoved(content::DownloadItem* item) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadUpdated(content::DownloadItem* item) override;
+  virtual void OnDownloadOpened(content::DownloadItem* item) override;
+  virtual void OnDownloadRemoved(content::DownloadItem* item) override;
+  virtual void OnDownloadDestroyed(content::DownloadItem* item) override;
 
   content::DownloadManager* manager_;
   AllDownloadItemNotifier::Observer* observer_;

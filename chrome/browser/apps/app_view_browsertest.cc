@@ -37,7 +37,7 @@ class TestGuestViewManager : public extensions::GuestViewManager {
  private:
   // GuestViewManager override:
   virtual void AddGuest(int guest_instance_id,
-                        content::WebContents* guest_web_contents) OVERRIDE{
+                        content::WebContents* guest_web_contents) override{
     extensions::GuestViewManager::AddGuest(
         guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
@@ -59,7 +59,7 @@ class TestGuestViewManagerFactory : public extensions::GuestViewManagerFactory {
   virtual ~TestGuestViewManagerFactory() {}
 
   virtual extensions::GuestViewManager* CreateGuestViewManager(
-      content::BrowserContext* context) OVERRIDE {
+      content::BrowserContext* context) override {
     return GetManager(context);
   }
 
@@ -131,7 +131,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
   }
 
  private:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 

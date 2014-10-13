@@ -55,10 +55,10 @@ class CustomHomePagesTableModel : public ui::TableModel {
   std::vector<GURL> GetURLs();
 
   // TableModel overrides:
-  virtual int RowCount() OVERRIDE;
-  virtual base::string16 GetText(int row, int column_id) OVERRIDE;
-  virtual base::string16 GetTooltip(int row) OVERRIDE;
-  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
+  virtual int RowCount() override;
+  virtual base::string16 GetText(int row, int column_id) override;
+  virtual base::string16 GetTooltip(int row) override;
+  virtual void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
   // Each item in the model is represented as an Entry. Entry stores the URL

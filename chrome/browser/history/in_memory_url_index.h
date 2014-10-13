@@ -161,8 +161,8 @@ class InMemoryURLIndex : public content::NotificationObserver,
         const std::set<std::string>& scheme_whitelist);
 
     virtual bool RunOnDBThread(HistoryBackend* backend,
-                               history::HistoryDatabase* db) OVERRIDE;
-    virtual void DoneRunOnMainThread() OVERRIDE;
+                               history::HistoryDatabase* db) override;
+    virtual void DoneRunOnMainThread() override;
 
    private:
     virtual ~RebuildPrivateDataFromHistoryDBTask();
@@ -234,7 +234,7 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // Handles notifications of history changes.
   virtual void Observe(int notification_type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Notification handlers.
   void OnURLVisited(const URLVisitedDetails* details);

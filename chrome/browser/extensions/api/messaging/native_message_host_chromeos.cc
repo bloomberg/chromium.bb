@@ -43,11 +43,11 @@ class EchoHost : public NativeMessageHost {
 
   EchoHost() : message_number_(0), client_(NULL) {}
 
-  virtual void Start(Client* client) OVERRIDE {
+  virtual void Start(Client* client) override {
     client_ = client;
   }
 
-  virtual void OnMessage(const std::string& request_string) OVERRIDE {
+  virtual void OnMessage(const std::string& request_string) override {
     scoped_ptr<base::Value> request_value(
         base::JSONReader::Read(request_string));
     scoped_ptr<base::DictionaryValue> request(
@@ -62,7 +62,7 @@ class EchoHost : public NativeMessageHost {
   };
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner()
-      const OVERRIDE {
+      const override {
     return base::MessageLoopProxy::current();
   };
 

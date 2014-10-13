@@ -93,7 +93,7 @@ class BackgroundContentsService : private content::NotificationObserver,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
-                              bool* was_blocked) OVERRIDE;
+                              bool* was_blocked) override;
 
   // Gets the parent application id for the passed BackgroundContents. Returns
   // an empty string if no parent application found (e.g. passed
@@ -142,20 +142,20 @@ class BackgroundContentsService : private content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) override;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      extensions::UnloadedExtensionInfo::Reason reason) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // Restarts a force-installed app/extension after a crash.
   void RestartForceInstalledExtensionOnCrash(

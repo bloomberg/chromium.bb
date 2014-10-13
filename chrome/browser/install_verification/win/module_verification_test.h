@@ -14,7 +14,7 @@ struct ModuleInfo;
 
 class ModuleVerificationTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE;
+  virtual void SetUp() override;
 
  protected:
   bool GetLoadedModuleInfoSet(std::set<ModuleInfo>* loaded_module_info_set);

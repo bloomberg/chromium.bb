@@ -57,8 +57,8 @@ class DownloadItemObserver : public DownloadItem::Observer {
   virtual ~DownloadItemObserver();
 
   // DownloadItem::Observer
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(DownloadItem* download) override;
+  virtual void OnDownloadDestroyed(DownloadItem* download) override;
 
   DownloadItem* download_item_;
 

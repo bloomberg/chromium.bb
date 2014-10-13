@@ -41,9 +41,9 @@ class SingleTabModeTabHelper
 
   // content::WebContentsObserver
   virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
-      OVERRIDE;
+      override;
   virtual void RenderViewDeleted(content::RenderViewHost* render_view_host)
-      OVERRIDE;
+      override;
 
  private:
   explicit SingleTabModeTabHelper(content::WebContents* web_contents);

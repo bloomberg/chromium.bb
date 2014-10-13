@@ -104,11 +104,11 @@ class JobObserver : public ContentVerifyJob::TestObserver {
 
   // ContentVerifyJob::TestObserver interface
   virtual void JobStarted(const std::string& extension_id,
-                          const base::FilePath& relative_path) OVERRIDE;
+                          const base::FilePath& relative_path) override;
 
   virtual void JobFinished(const std::string& extension_id,
                            const base::FilePath& relative_path,
-                           bool failed) OVERRIDE;
+                           bool failed) override;
 
  private:
   typedef std::pair<std::string, base::FilePath> ExtensionFile;

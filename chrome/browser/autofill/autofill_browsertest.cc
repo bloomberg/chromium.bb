@@ -85,7 +85,7 @@ class WindowedPersonalDataManagerObserver
   }
 
   // PersonalDataManagerObserver:
-  virtual void OnPersonalDataChanged() OVERRIDE {
+  virtual void OnPersonalDataChanged() override {
     if (has_run_message_loop_) {
       base::MessageLoopForUI::current()->Quit();
       has_run_message_loop_ = false;
@@ -93,12 +93,12 @@ class WindowedPersonalDataManagerObserver
     alerted_ = true;
   }
 
-  virtual void OnInsufficientFormData() OVERRIDE {
+  virtual void OnInsufficientFormData() override {
     OnPersonalDataChanged();
   }
 
   // infobars::InfoBarManager::Observer:
-  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) OVERRIDE {
+  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) override {
     ConfirmInfoBarDelegate* infobar_delegate =
         infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(infobar_delegate);
@@ -116,12 +116,12 @@ class AutofillTest : public InProcessBrowserTest {
  protected:
   AutofillTest() {}
 
-  virtual void SetUpOnMainThread() OVERRIDE {
+  virtual void SetUpOnMainThread() override {
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
   }
 
-  virtual void TearDownOnMainThread() OVERRIDE {
+  virtual void TearDownOnMainThread() override {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();

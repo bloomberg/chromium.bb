@@ -90,7 +90,7 @@ class MockBackgroundContents : public BackgroundContents {
         content::Source<Profile>(profile_),
         content::Details<BackgroundContents>(this));
   }
-  virtual const GURL& GetURL() const OVERRIDE { return url_; }
+  virtual const GURL& GetURL() const override { return url_; }
 
   void MockClose(Profile* profile) {
     content::NotificationService::current()->Notify(
@@ -140,13 +140,13 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
  private:
   // message_center::MessageCenterObserver overrides:
   virtual void OnNotificationAdded(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     if (notification_id == FindNotificationIdFromDelegateId(target_id_))
       run_loop_.Quit();
   }
 
   virtual void OnNotificationUpdated(
-      const std::string& notification_id) OVERRIDE {
+      const std::string& notification_id) override {
     if (notification_id == FindNotificationIdFromDelegateId(target_id_))
       run_loop_.Quit();
   }

@@ -65,22 +65,22 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver override. Must be public, because also
   // called from PrerenderContents.
   virtual void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) OVERRIDE;
+      const std::vector<content::FaviconURL>& candidates) override;
 
   // Saves the favicon for the current page.
   void SaveFavicon();
 
   // FaviconDriver methods.
-  virtual int StartDownload(const GURL& url, int max_bitmap_size) OVERRIDE;
-  virtual void NotifyFaviconUpdated(bool icon_url_changed) OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
-  virtual const gfx::Image GetActiveFaviconImage() OVERRIDE;
-  virtual const GURL GetActiveFaviconURL() OVERRIDE;
-  virtual bool GetActiveFaviconValidity() OVERRIDE;
-  virtual const GURL GetActiveURL() OVERRIDE;
-  virtual void SetActiveFaviconImage(gfx::Image image) OVERRIDE;
-  virtual void SetActiveFaviconURL(GURL url) OVERRIDE;
-  virtual void SetActiveFaviconValidity(bool validity) OVERRIDE;
+  virtual int StartDownload(const GURL& url, int max_bitmap_size) override;
+  virtual void NotifyFaviconUpdated(bool icon_url_changed) override;
+  virtual bool IsOffTheRecord() override;
+  virtual const gfx::Image GetActiveFaviconImage() override;
+  virtual const GURL GetActiveFaviconURL() override;
+  virtual bool GetActiveFaviconValidity() override;
+  virtual const GURL GetActiveURL() override;
+  virtual void SetActiveFaviconImage(gfx::Image image) override;
+  virtual void SetActiveFaviconURL(GURL url) override;
+  virtual void SetActiveFaviconValidity(bool validity) override;
 
   // Favicon download callback.
   void DidDownloadFavicon(
@@ -97,10 +97,10 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver overrides.
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
+      content::NavigationController::ReloadType reload_type) override;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+      const content::FrameNavigateParams& params) override;
 
   // Helper method that returns the active navigation entry's favicon.
   content::FaviconStatus& GetFaviconStatus();

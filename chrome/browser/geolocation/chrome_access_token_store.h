@@ -18,14 +18,14 @@ class ChromeAccessTokenStore : public content::AccessTokenStore {
   ChromeAccessTokenStore();
 
   virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& request) OVERRIDE;
+      const LoadAccessTokensCallbackType& request) override;
 
  private:
   virtual ~ChromeAccessTokenStore();
 
   // AccessTokenStore
   virtual void SaveAccessToken(
-      const GURL& server_url, const base::string16& access_token) OVERRIDE;
+      const GURL& server_url, const base::string16& access_token) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAccessTokenStore);
 };

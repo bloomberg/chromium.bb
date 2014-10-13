@@ -85,8 +85,8 @@ class UpdateRecentVisitsFromHistoryDBTask : public HistoryDBTask {
       URLID url_id);
 
   virtual bool RunOnDBThread(HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE;
-  virtual void DoneRunOnMainThread() OVERRIDE;
+                             history::HistoryDatabase* db) override;
+  virtual void DoneRunOnMainThread() override;
 
  private:
   virtual ~UpdateRecentVisitsFromHistoryDBTask();

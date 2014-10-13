@@ -29,12 +29,12 @@ class ZeroSuggestProviderTest : public testing::Test,
  public:
   ZeroSuggestProviderTest();
 
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
+  virtual void SetUp() override;
+  virtual void TearDown() override;
 
  protected:
   // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
+  virtual void OnProviderUpdate(bool updated_matches) override;
 
   void ResetFieldTrialList();
 

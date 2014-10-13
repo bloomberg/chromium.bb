@@ -33,24 +33,24 @@ class InternalExtensionProvider : public ObservableProvider,
   virtual RuleIterator* GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      bool incognito) const OVERRIDE;
+      bool incognito) const override;
 
   virtual bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      base::Value* value) OVERRIDE;
+      base::Value* value) override;
 
   virtual void ClearAllContentSettingsRules(ContentSettingsType content_type)
-      OVERRIDE;
+      override;
 
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void ShutdownOnUIThread() override;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
  private:
   void SetContentSettingForExtension(const extensions::Extension* extension,
                                      ContentSetting setting);

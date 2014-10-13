@@ -753,7 +753,7 @@ TestURLInfo ordering_test_db[] = {
 class HQPOrderingTest : public HistoryQuickProviderTest {
  protected:
   virtual void GetTestData(size_t* data_count,
-                           TestURLInfo** test_data) OVERRIDE;
+                           TestURLInfo** test_data) override;
 };
 
 void HQPOrderingTest::GetTestData(size_t* data_count, TestURLInfo** test_data) {

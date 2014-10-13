@@ -72,13 +72,13 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   }
   virtual ~CaptivePortalTabHelperTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents1_.reset(CreateTestWebContents());
     web_contents2_.reset(CreateTestWebContents());
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     web_contents2_.reset(NULL);
     web_contents1_.reset(NULL);
     ChromeRenderViewHostTestHarness::TearDown();

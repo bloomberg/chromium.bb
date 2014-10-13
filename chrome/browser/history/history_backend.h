@@ -775,11 +775,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual void BroadcastNotifications(
       int type,
-      scoped_ptr<HistoryDetails> details) OVERRIDE;
-  virtual void NotifySyncURLsModified(URLRows* rows) OVERRIDE;
+      scoped_ptr<HistoryDetails> details) override;
+  virtual void NotifySyncURLsModified(URLRows* rows) override;
   virtual void NotifySyncURLsDeleted(bool all_history,
                                      bool expired,
-                                     URLRows* rows) OVERRIDE;
+                                     URLRows* rows) override;
 
   // Deleting all history ------------------------------------------------------
 

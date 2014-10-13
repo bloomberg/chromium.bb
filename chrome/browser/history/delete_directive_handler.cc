@@ -125,8 +125,8 @@ class DeleteDirectiveHandler::DeleteDirectiveTask : public HistoryDBTask {
 
   // Implements HistoryDBTask.
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) OVERRIDE;
-  virtual void DoneRunOnMainThread() OVERRIDE;
+                             history::HistoryDatabase* db) override;
+  virtual void DoneRunOnMainThread() override;
 
  private:
   virtual ~DeleteDirectiveTask() {}

@@ -102,7 +102,7 @@ class ExtensionAccessibilityEventRouter {
 class AccessibilityPrivateSetAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityPrivateSetAccessibilityEnabledFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setAccessibilityEnabled",
                              ACCESSIBILITY_PRIVATE_SETACCESSIBILITYENABLED)
 };
@@ -111,7 +111,7 @@ class AccessibilityPrivateSetAccessibilityEnabledFunction
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityPrivateSetNativeAccessibilityEnabledFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION(
       "accessibilityPrivate.setNativeAccessibilityEnabled",
       ACCESSIBILITY_PRIVATE_SETNATIVEACCESSIBILITYENABLED)
@@ -121,7 +121,7 @@ class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
 class AccessibilityPrivateGetFocusedControlFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityPrivateGetFocusedControlFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getFocusedControl",
                              ACCESSIBILITY_PRIVATE_GETFOCUSEDCONTROL)
 };
@@ -130,7 +130,7 @@ class AccessibilityPrivateGetFocusedControlFunction
 class AccessibilityPrivateGetAlertsForTabFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityPrivateGetAlertsForTabFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getAlertsForTab",
                              ACCESSIBILITY_PRIVATE_GETALERTSFORTAB)
 };
@@ -139,7 +139,7 @@ class AccessibilityPrivateGetAlertsForTabFunction
 class AccessibilityPrivateSetFocusRingFunction
     : public ChromeSyncExtensionFunction {
   virtual ~AccessibilityPrivateSetFocusRingFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setFocusRing",
                              ACCESSIBILITY_PRIVATE_SETFOCUSRING)
 };

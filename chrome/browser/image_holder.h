@@ -40,7 +40,7 @@ class ImageHolder : public chrome::BitmapFetcherDelegate {
   bool IsFetchingDone() const;
 
   // Inherited from BitmapFetcherDelegate
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) OVERRIDE;
+  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
   // Accessors:
   GURL low_dpi_url() const { return low_dpi_url_; }

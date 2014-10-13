@@ -50,15 +50,15 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel* GetMenuModel();
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const override;
+  virtual bool IsCommandIdChecked(int command_id) const override;
+  virtual bool IsCommandIdVisible(int command_id) const override;
+  virtual void ExecuteCommand(int command_id, int event_flags) override;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
+      ui::Accelerator* accelerator) override;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
+  virtual base::string16 GetLabelForCommandId(int command_id) const override;
 
  private:
   // Detaches self from |download_item_|. Called when the DownloadItem is
@@ -66,7 +66,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   void DetachFromDownloadItem();
 
   // content::DownloadItem::Observer
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   ui::SimpleMenuModel* GetInProgressMenuModel();
   ui::SimpleMenuModel* GetFinishedMenuModel();

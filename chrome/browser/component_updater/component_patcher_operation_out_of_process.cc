@@ -33,9 +33,9 @@ class PatchHost : public content::UtilityProcessHostClient {
   void OnPatchFinished(int result);
 
   // Overrides of content::UtilityProcessHostClient.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
 
   base::Callback<void(int result)> callback_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

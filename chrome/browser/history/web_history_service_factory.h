@@ -26,7 +26,7 @@ class WebHistoryServiceFactory : public BrowserContextKeyedServiceFactory {
  protected:
   // Overridden from BrowserContextKeyedServiceFactory.
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
+      content::BrowserContext* context) const override;
 
  private:
   friend struct DefaultSingletonTraits<WebHistoryServiceFactory>;

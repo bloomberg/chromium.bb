@@ -17,7 +17,7 @@ class TestingFontFamilyCache : public FontFamilyCache {
       : FontFamilyCache(profile), fetch_font_count_(0) {}
   virtual ~TestingFontFamilyCache() {}
   virtual base::string16 FetchFont(const char* script,
-                                   const char* map_name) OVERRIDE {
+                                   const char* map_name) override {
     ++fetch_font_count_;
     return FontFamilyCache::FetchFont(script, map_name);
   }

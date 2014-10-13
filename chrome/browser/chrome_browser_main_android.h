@@ -20,12 +20,12 @@ class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
   virtual ~ChromeBrowserMainPartsAndroid();
 
   // content::BrowserMainParts overrides.
-  virtual void PreProfileInit() OVERRIDE;
-  virtual void PostProfileInit() OVERRIDE;
-  virtual void PreEarlyInitialization() OVERRIDE;
+  virtual void PreProfileInit() override;
+  virtual void PostProfileInit() override;
+  virtual void PreEarlyInitialization() override;
 
   // ChromeBrowserMainParts overrides.
-  virtual void ShowMissingLocaleMessageBox() OVERRIDE;
+  virtual void ShowMissingLocaleMessageBox() override;
 
  private:
   scoped_ptr<base::MessageLoop> main_message_loop_;

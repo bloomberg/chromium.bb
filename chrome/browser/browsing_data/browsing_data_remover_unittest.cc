@@ -136,30 +136,30 @@ class TestStoragePartition : public StoragePartition {
   virtual ~TestStoragePartition() {}
 
   // content::StoragePartition implementation.
-  virtual base::FilePath GetPath() OVERRIDE { return base::FilePath(); }
-  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE {
+  virtual base::FilePath GetPath() override { return base::FilePath(); }
+  virtual net::URLRequestContextGetter* GetURLRequestContext() override {
     return NULL;
   }
-  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() OVERRIDE {
+  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() override {
     return NULL;
   }
-  virtual storage::QuotaManager* GetQuotaManager() OVERRIDE { return NULL; }
-  virtual content::AppCacheService* GetAppCacheService() OVERRIDE {
+  virtual storage::QuotaManager* GetQuotaManager() override { return NULL; }
+  virtual content::AppCacheService* GetAppCacheService() override {
     return NULL;
   }
-  virtual storage::FileSystemContext* GetFileSystemContext() OVERRIDE {
+  virtual storage::FileSystemContext* GetFileSystemContext() override {
     return NULL;
   }
-  virtual storage::DatabaseTracker* GetDatabaseTracker() OVERRIDE {
+  virtual storage::DatabaseTracker* GetDatabaseTracker() override {
     return NULL;
   }
-  virtual content::DOMStorageContext* GetDOMStorageContext() OVERRIDE {
+  virtual content::DOMStorageContext* GetDOMStorageContext() override {
     return NULL;
   }
-  virtual content::IndexedDBContext* GetIndexedDBContext() OVERRIDE {
+  virtual content::IndexedDBContext* GetIndexedDBContext() override {
     return NULL;
   }
-  virtual content::ServiceWorkerContext* GetServiceWorkerContext() OVERRIDE {
+  virtual content::ServiceWorkerContext* GetServiceWorkerContext() override {
     return NULL;
   }
 
@@ -167,7 +167,7 @@ class TestStoragePartition : public StoragePartition {
                                   uint32 quota_storage_remove_mask,
                                   const GURL& storage_origin,
                                   net::URLRequestContextGetter* rq_context,
-                                  const base::Closure& callback) OVERRIDE {
+                                  const base::Closure& callback) override {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&TestStoragePartition::AsyncRunCallback,
@@ -181,7 +181,7 @@ class TestStoragePartition : public StoragePartition {
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,
                          const base::Time end,
-                         const base::Closure& callback) OVERRIDE {
+                         const base::Closure& callback) override {
     // Store stuff to verify parameters' correctness later.
     storage_partition_removal_data_.remove_mask = remove_mask;
     storage_partition_removal_data_.quota_storage_remove_mask =
@@ -361,7 +361,7 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   }
 
   // net::SSLConfigService::Observer implementation:
-  virtual void OnSSLConfigChanged() OVERRIDE {
+  virtual void OnSSLConfigChanged() override {
     ssl_config_changed_count_++;
   }
 
@@ -512,7 +512,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
   }
 
  private:
-  virtual void OnPersonalDataChanged() OVERRIDE {
+  virtual void OnPersonalDataChanged() override {
     base::MessageLoop::current()->Quit();
   }
 
@@ -601,13 +601,13 @@ class MockDomainReliabilityService : public DomainReliabilityService {
 
   virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-      OVERRIDE {
+      override {
     NOTREACHED();
     return scoped_ptr<DomainReliabilityMonitor>();
   }
 
   virtual void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
-                                 const base::Closure& callback) OVERRIDE {
+                                 const base::Closure& callback) override {
     clear_count_++;
     last_clear_mode_ = clear_mode;
     callback.Run();
@@ -615,7 +615,7 @@ class MockDomainReliabilityService : public DomainReliabilityService {
 
   virtual void GetWebUIData(
       const base::Callback<void(scoped_ptr<base::Value>)>& callback)
-      const OVERRIDE {
+      const override {
     NOTREACHED();
   }
 
@@ -803,7 +803,7 @@ class BrowsingDataRemoverTest : public testing::Test,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
+                       const content::NotificationDetails& details) override {
     DCHECK_EQ(type, chrome::NOTIFICATION_BROWSING_DATA_REMOVED);
 
     // We're not taking ownership of the details object, but storing a copy of

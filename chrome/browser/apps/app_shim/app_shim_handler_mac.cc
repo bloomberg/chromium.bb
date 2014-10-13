@@ -97,7 +97,7 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
   virtual void Observe(
       int type,
       const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
+      const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_BROWSER_OPENED:
       case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED:

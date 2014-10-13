@@ -23,7 +23,7 @@ class ChromeNetBenchmarkingMessageFilter
       net::URLRequestContextGetter* request_context);
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   virtual ~ChromeNetBenchmarkingMessageFilter();

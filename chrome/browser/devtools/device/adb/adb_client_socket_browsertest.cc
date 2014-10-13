@@ -38,7 +38,7 @@ class AdbClientSocketTest : public InProcessBrowserTest,
   }
 
   virtual void DeviceListChanged(
-      const DevToolsAndroidBridge::RemoteDevices& devices) OVERRIDE {
+      const DevToolsAndroidBridge::RemoteDevices& devices) override {
     devices_ = devices;
     android_bridge_->RemoveDeviceListListener(this);
     base::MessageLoop::current()->Quit();

@@ -38,19 +38,19 @@ class DefaultProvider : public ObservableProvider {
   virtual RuleIterator* GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      bool incognito) const OVERRIDE;
+      bool incognito) const override;
 
   virtual bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      base::Value* value) OVERRIDE;
+      base::Value* value) override;
 
   virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) OVERRIDE;
+      ContentSettingsType content_type) override;
 
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  virtual void ShutdownOnUIThread() override;
 
  private:
   // Sets the fields of |settings| based on the values in |dictionary|.

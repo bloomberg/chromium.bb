@@ -69,15 +69,15 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
  public:
   AndroidProviderBackendDelegate() {}
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void NotifyProfileError(sql::InitStatus init_status) override {}
   virtual void SetInMemoryBackend(
-      scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE {}
-  virtual void NotifyFaviconChanged(const std::set<GURL>& url) OVERRIDE {
+      scoped_ptr<InMemoryHistoryBackend> backend) override {}
+  virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {
     favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
   }
   virtual void BroadcastNotifications(
       int type,
-      scoped_ptr<HistoryDetails> details) OVERRIDE {
+      scoped_ptr<HistoryDetails> details) override {
     switch (type) {
       case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
         deleted_details_.reset(
@@ -89,9 +89,9 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
         break;
     }
   }
-  virtual void DBLoaded() OVERRIDE {}
+  virtual void DBLoaded() override {}
   virtual void NotifyVisitDBObserversOnAddVisit(
-      const history::BriefVisitInfo& info) OVERRIDE {}
+      const history::BriefVisitInfo& info) override {}
 
   URLsDeletedDetails* deleted_details() const {
     return deleted_details_.get();
@@ -130,7 +130,7 @@ class AndroidProviderBackendTest : public testing::Test {
   virtual ~AndroidProviderBackendTest() {}
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Setup the testing profile, so the bookmark_model_sql_handler could
     // get the bookmark model from it.
     ASSERT_TRUE(profile_manager_.SetUp());

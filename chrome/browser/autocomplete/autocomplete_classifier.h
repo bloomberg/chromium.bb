@@ -55,7 +55,7 @@ class AutocompleteClassifier : public KeyedService {
 
  private:
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   scoped_ptr<AutocompleteController> controller_;
   scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier_;

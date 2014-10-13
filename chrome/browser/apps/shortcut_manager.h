@@ -44,15 +44,15 @@ class AppShortcutManager : public KeyedService,
       const extensions::Extension* extension,
       bool is_update,
       bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      const std::string& old_name) override;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      extensions::UninstallReason reason) OVERRIDE;
+      extensions::UninstallReason reason) override;
 
   // ProfileInfoCacheObserver.
   virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) OVERRIDE;
+      const base::FilePath& profile_path) override;
 
  private:
   void DeleteApplicationShortcuts(const extensions::Extension* extension);

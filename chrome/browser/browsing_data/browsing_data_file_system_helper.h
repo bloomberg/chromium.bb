@@ -121,13 +121,13 @@ class CannedBrowsingDataFileSystemHelper
 
   // BrowsingDataFileSystemHelper implementation.
   virtual void StartFetching(const base::Callback<
-      void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;
+      void(const std::list<FileSystemInfo>&)>& callback) override;
 
   // Note that this doesn't actually have an implementation for this canned
   // class. It hasn't been necessary for anything that uses the canned
   // implementation, as the canned class is only used in tests, or in read-only
   // contexts (like the non-modal cookie dialog).
-  virtual void DeleteFileSystemOrigin(const GURL& origin) OVERRIDE {}
+  virtual void DeleteFileSystemOrigin(const GURL& origin) override {}
 
  private:
   virtual ~CannedBrowsingDataFileSystemHelper();

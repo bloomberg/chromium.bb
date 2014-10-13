@@ -23,12 +23,12 @@ class DownloadDirPolicyHandler : public policy::TypeCheckingPolicyHandler {
 
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
-                                   policy::PolicyErrorMap* errors) OVERRIDE;
+                                   policy::PolicyErrorMap* errors) override;
 
   virtual void ApplyPolicySettingsWithParameters(
       const policy::PolicyMap& policies,
       const policy::PolicyHandlerParameters& parameters,
-      PrefValueMap* prefs) OVERRIDE;
+      PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadDirPolicyHandler);

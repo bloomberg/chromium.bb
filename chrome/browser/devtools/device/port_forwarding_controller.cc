@@ -294,9 +294,9 @@ class PortForwardingController::Connection
   void UpdateSocketCount(int port, int increment);
 
   // DevToolsAndroidBridge::AndroidWebSocket::Delegate implementation:
-  virtual void OnSocketOpened() OVERRIDE;
-  virtual void OnFrameRead(const std::string& message) OVERRIDE;
-  virtual void OnSocketClosed() OVERRIDE;
+  virtual void OnSocketOpened() override;
+  virtual void OnFrameRead(const std::string& message) override;
+  virtual void OnSocketClosed() override;
 
   PortForwardingController::Registry* registry_;
   scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device_;

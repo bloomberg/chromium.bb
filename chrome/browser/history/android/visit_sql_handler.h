@@ -23,9 +23,9 @@ class VisitSQLHandler : public SQLHandler {
 
   // Overriden from SQLHandler.
   virtual bool Update(const HistoryAndBookmarkRow& row,
-                      const TableIDRows& ids_set) OVERRIDE;
-  virtual bool Insert(HistoryAndBookmarkRow* row) OVERRIDE;
-  virtual bool Delete(const TableIDRows& ids_set) OVERRIDE;
+                      const TableIDRows& ids_set) override;
+  virtual bool Insert(HistoryAndBookmarkRow* row) override;
+  virtual bool Delete(const TableIDRows& ids_set) override;
 
  private:
   // Add a row in visit table with the given |url_id| and |visit_time|.

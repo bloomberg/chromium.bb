@@ -75,7 +75,7 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   // MergeSessionHelper::Observer implementation.
   virtual void MergeSessionCompleted(
       const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+      const GoogleServiceAuthError& error) override;
 
   Profile* profile_;
 

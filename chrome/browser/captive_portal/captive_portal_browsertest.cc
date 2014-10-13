@@ -116,7 +116,7 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
                                      public base::NonThreadSafe {
  public:
   // net::URLRequestJob:
-  virtual void Start() OVERRIDE;
+  virtual void Start() override;
 
   // All the public static methods below can be called on any thread.
 
@@ -522,7 +522,7 @@ class MultiNavigationObserver : public content::NotificationObserver {
 
   // content::NotificationObserver:
   virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   int num_navigations_;
 
@@ -612,7 +612,7 @@ class FailLoadsAfterLoginObserver : public content::NotificationObserver {
 
   // content::NotificationObserver:
   virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // The set of tabs that need to be navigated.  This is the set of loading
   // tabs when the observer is created.
@@ -702,7 +702,7 @@ class CaptivePortalObserver : public content::NotificationObserver {
   // Records results and exits the message loop, if needed.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Number of times OnPortalResult has been called since construction.
   int num_results_received_;
@@ -799,8 +799,8 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   CaptivePortalBrowserTest();
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void TearDownOnMainThread() OVERRIDE;
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
 
   // Sets the captive portal checking preference.  Does not affect the command
   // line flag, which is set in SetUpCommandLine.

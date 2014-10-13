@@ -151,7 +151,7 @@ class HistoryService : public content::NotificationObserver,
   }
 
   // KeyedService:
-  virtual void Shutdown() OVERRIDE;
+  virtual void Shutdown() override;
 
   // Navigation ----------------------------------------------------------------
 
@@ -506,13 +506,13 @@ class HistoryService : public content::NotificationObserver,
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
-  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+  virtual void StopSyncing(syncer::ModelType type) override;
   virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const OVERRIDE;
+      syncer::ModelType type) const override;
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) OVERRIDE;
+      const syncer::SyncChangeList& change_list) override;
 
  protected:
   // These are not currently used, hopefully we can do something in the future
@@ -558,11 +558,11 @@ class HistoryService : public content::NotificationObserver,
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const content::NotificationDetails& details) override;
 
   // Implementation of visitedlink::VisitedLinkDelegate.
   virtual void RebuildTable(
-      const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
+      const scoped_refptr<URLEnumerator>& enumerator) override;
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.

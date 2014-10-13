@@ -45,14 +45,14 @@ class BitmapFetcher : public net::URLFetcherDelegate,
 
   // This will be called when the URL has been fetched, successfully or not.
   // Use accessor methods on |source| to get the results.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // This will be called when some part of the response is read. |current|
   // denotes the number of bytes received up to the call, and |total| is the
   // expected total size of the response (or -1 if not determined).
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
-                                          int64 total) OVERRIDE;
+                                          int64 total) override;
 
   // Methods inherited from ImageDecoder::Delegate
 
@@ -60,10 +60,10 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   // case of decoding several images simultaneously.  This will not be called
   // on the UI thread.
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
+                              const SkBitmap& decoded_image) override;
 
   // Called when decoding image failed.
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) override;
 
  private:
   // Alerts the delegate that a failure occurred.

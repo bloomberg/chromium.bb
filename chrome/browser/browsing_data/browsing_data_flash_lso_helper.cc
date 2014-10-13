@@ -22,16 +22,16 @@ class BrowsingDataFlashLSOHelperImpl
 
   // BrowsingDataFlashLSOHelper implementation:
   virtual void StartFetching(
-      const GetSitesWithFlashDataCallback& callback) OVERRIDE;
-  virtual void DeleteFlashLSOsForSite(const std::string& site) OVERRIDE;
+      const GetSitesWithFlashDataCallback& callback) override;
+  virtual void DeleteFlashLSOsForSite(const std::string& site) override;
 
   // PepperFlashSettingsManager::Client overrides:
   virtual void OnGetSitesWithDataCompleted(
       uint32 request_id,
-      const std::vector<std::string>& sites) OVERRIDE;
+      const std::vector<std::string>& sites) override;
   virtual void OnClearSiteDataCompleted(
       uint32 request_id,
-      bool success) OVERRIDE;
+      bool success) override;
 
  private:
   virtual ~BrowsingDataFlashLSOHelperImpl();

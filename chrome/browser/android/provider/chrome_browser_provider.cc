@@ -270,7 +270,7 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
       const BookmarkNode* parent,
       int old_index,
       const BookmarkNode* node,
-      const std::set<GURL>& removed_urls) OVERRIDE {
+      const std::set<GURL>& removed_urls) override {
     if (bookmark_model == model() && node->id() == id_to_delete_)
         ++deleted_;
   }
@@ -354,7 +354,7 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
 
   // Verify that the bookmark was actually updated. Called synchronously.
   virtual void BookmarkNodeChanged(BookmarkModel* bookmark_model,
-                                   const BookmarkNode* node) OVERRIDE {
+                                   const BookmarkNode* node) override {
     if (bookmark_model == model() && node->id() == id_to_update_)
       ++updated_;
   }

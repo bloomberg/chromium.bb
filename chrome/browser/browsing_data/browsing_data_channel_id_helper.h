@@ -68,8 +68,8 @@ class CannedBrowsingDataChannelIDHelper
   size_t GetChannelIDCount() const;
 
   // BrowsingDataChannelIDHelper methods.
-  virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
-  virtual void DeleteChannelID(const std::string& server_id) OVERRIDE;
+  virtual void StartFetching(const FetchResultCallback& callback) override;
+  virtual void DeleteChannelID(const std::string& server_id) override;
 
  private:
   virtual ~CannedBrowsingDataChannelIDHelper();

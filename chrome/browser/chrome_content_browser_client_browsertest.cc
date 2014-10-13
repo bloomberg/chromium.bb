@@ -26,7 +26,7 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableAboutInSettings);
   }
 #endif

@@ -72,7 +72,7 @@ class ThumbnailStore : ThumbnailDelegate {
           post_decompress_callback);
 
   // ThumbnailDelegate implementation
-  virtual void InvalidateCachedThumbnail(Thumbnail* thumbnail) OVERRIDE;
+  virtual void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
 
  private:
   class ThumbnailMetaData {

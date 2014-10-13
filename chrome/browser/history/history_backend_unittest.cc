@@ -89,16 +89,16 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   explicit HistoryBackendTestDelegate(HistoryBackendTestBase* test)
       : test_(test) {}
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void NotifyProfileError(sql::InitStatus init_status) override {}
   virtual void SetInMemoryBackend(
-      scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE;
-  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) OVERRIDE;
+      scoped_ptr<InMemoryHistoryBackend> backend) override;
+  virtual void NotifyFaviconChanged(const std::set<GURL>& urls) override;
   virtual void BroadcastNotifications(
       int type,
-      scoped_ptr<HistoryDetails> details) OVERRIDE;
-  virtual void DBLoaded() OVERRIDE;
+      scoped_ptr<HistoryDetails> details) override;
+  virtual void DBLoaded() override;
   virtual void NotifyVisitDBObserversOnAddVisit(
-      const BriefVisitInfo& info) OVERRIDE {}
+      const BriefVisitInfo& info) override {}
 
  private:
   // Not owned by us.

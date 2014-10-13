@@ -9,7 +9,7 @@
 
 class InfobarsShowFunction : public ChromeSyncExtensionFunction {
   virtual ~InfobarsShowFunction() {}
-  virtual bool RunSync() OVERRIDE;
+  virtual bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("infobars.show", INFOBARS_SHOW)
 };
 

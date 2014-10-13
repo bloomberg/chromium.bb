@@ -65,9 +65,9 @@ class GetOpenFileNameClient : public content::UtilityProcessHostClient {
   const std::vector<base::FilePath>& filenames() const { return filenames_; }
 
   // UtilityProcessHostClient implementation
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual void OnProcessLaunchFailed() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual void OnProcessLaunchFailed() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~GetOpenFileNameClient();
@@ -196,9 +196,9 @@ class GetSaveFileNameClient : public content::UtilityProcessHostClient {
   int one_based_filter_index() const { return one_based_filter_index_; }
 
   // UtilityProcessHostClient implementation
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
-  virtual void OnProcessLaunchFailed() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) override;
+  virtual void OnProcessLaunchFailed() override;
+  virtual bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~GetSaveFileNameClient();

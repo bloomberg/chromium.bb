@@ -101,13 +101,13 @@ class SwiftShaderComponentInstaller : public ComponentInstaller {
 
   virtual ~SwiftShaderComponentInstaller() {}
 
-  virtual void OnUpdateError(int error) OVERRIDE;
+  virtual void OnUpdateError(int error) override;
 
   virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) OVERRIDE;
+                       const base::FilePath& unpack_path) override;
 
   virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) OVERRIDE;
+                                base::FilePath* installed_file) override;
 
  private:
   Version current_version_;
@@ -179,7 +179,7 @@ class UpdateChecker : public content::GpuDataManagerObserver {
  public:
   explicit UpdateChecker(ComponentUpdateService* cus);
 
-  virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnGpuInfoUpdate() override;
 
  private:
   ComponentUpdateService* cus_;

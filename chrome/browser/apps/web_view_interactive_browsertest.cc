@@ -67,7 +67,7 @@ class TestGuestViewManager : public extensions::GuestViewManager {
  private:
   // GuestViewManager override:
   virtual void AddGuest(int guest_instance_id,
-                        content::WebContents* guest_web_contents) OVERRIDE{
+                        content::WebContents* guest_web_contents) override{
     GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
     ++guest_add_count_;
@@ -76,7 +76,7 @@ class TestGuestViewManager : public extensions::GuestViewManager {
       add_message_loop_runner_->Quit();
   }
 
-  virtual void RemoveGuest(int guest_instance_id) OVERRIDE {
+  virtual void RemoveGuest(int guest_instance_id) override {
     GuestViewManager::RemoveGuest(guest_instance_id);
     ++guest_remove_count_;
 
@@ -100,7 +100,7 @@ class TestGuestViewManagerFactory : public extensions::GuestViewManagerFactory {
   virtual ~TestGuestViewManagerFactory() {}
 
   virtual extensions::GuestViewManager* CreateGuestViewManager(
-      content::BrowserContext* context) OVERRIDE {
+      content::BrowserContext* context) override {
     return GetManager(context);
   }
 

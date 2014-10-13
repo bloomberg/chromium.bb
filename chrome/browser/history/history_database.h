@@ -162,7 +162,7 @@ class HistoryDatabase : public DownloadDatabase,
   friend class InMemoryURLIndexTest;
 
   // Overridden from URLDatabase:
-  virtual sql::Connection& GetDB() OVERRIDE;
+  virtual sql::Connection& GetDB() override;
 
   // Migration -----------------------------------------------------------------
 

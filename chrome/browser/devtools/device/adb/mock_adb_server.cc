@@ -376,7 +376,7 @@ class AdbParser : SimpleHttpServer::Parser, base::NonThreadSafe {
   }
 
  private:
-  virtual int Consume(const char* data, int size) OVERRIDE {
+  virtual int Consume(const char* data, int size) override {
     CHECK(CalledOnValidThread());
     if (!selected_socket_.empty()) {
       std::string message(data, size);

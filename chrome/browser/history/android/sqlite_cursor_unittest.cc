@@ -55,7 +55,7 @@ class SQLiteCursorTest : public testing::Test,
   }
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     // Setup the testing profile, so the bookmark_model_sql_handler could
     // get the bookmark model from it.
     ASSERT_TRUE(profile_manager_.SetUp());
@@ -75,26 +75,26 @@ class SQLiteCursorTest : public testing::Test,
                                                Profile::EXPLICIT_ACCESS);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() override {
     testing_profile_->DestroyHistoryService();
     profile_manager_.DeleteTestingProfile(chrome::kInitialProfile);
     testing_profile_ = NULL;
   }
 
   // Override SQLiteCursor::TestObserver.
-  virtual void OnPostMoveToTask() OVERRIDE {
+  virtual void OnPostMoveToTask() override {
     base::MessageLoop::current()->Run();
   }
 
-  virtual void OnGetMoveToResult() OVERRIDE {
+  virtual void OnGetMoveToResult() override {
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnPostGetFaviconTask() OVERRIDE {
+  virtual void OnPostGetFaviconTask() override {
     base::MessageLoop::current()->Run();
   }
 
-  virtual void OnGetFaviconResult() OVERRIDE {
+  virtual void OnGetFaviconResult() override {
     base::MessageLoop::current()->Quit();
   }
 

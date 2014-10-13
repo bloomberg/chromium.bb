@@ -295,7 +295,7 @@ class DownloadTargetDeterminer
   bool IsDangerousFile(PriorVisitsToReferrer visits);
 
   // content::DownloadItem::Observer
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   // state
   State next_state_;

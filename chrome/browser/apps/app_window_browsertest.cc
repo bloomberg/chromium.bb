@@ -49,7 +49,7 @@ class GeometryCacheChangeHelper : AppWindowGeometryCache::Observer {
   virtual void OnGeometryCacheChanged(const std::string& extension_id,
                                       const std::string& window_id,
                                       const gfx::Rect& bounds)
-      OVERRIDE {
+      override {
     if (extension_id != extension_id_ || window_id != window_id_)
       return;
 
