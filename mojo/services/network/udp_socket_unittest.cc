@@ -208,7 +208,7 @@ class UDPSocketTest : public testing::Test {
   UDPSocketTest() {}
   virtual ~UDPSocketTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() override {
     test_helper_.Init();
 
     test_helper_.application_manager()->ConnectToService(
@@ -239,7 +239,7 @@ class UDPSocketTest : public testing::Test {
 
     virtual void OnReceived(NetworkErrorPtr result,
                             NetAddressPtr src_addr,
-                            Array<uint8_t> data) OVERRIDE {
+                            Array<uint8_t> data) override {
       ReceiveResult* entry = new ReceiveResult();
       entry->result = result.Pass();
       entry->addr = src_addr.Pass();
