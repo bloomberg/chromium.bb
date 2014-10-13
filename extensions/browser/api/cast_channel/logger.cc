@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/logger.h"
 
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "base/time/tick_clock.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
@@ -96,6 +98,25 @@ scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
     *length = out_size - stream.avail_out;
 
   return out.Pass();
+}
+
+// Propagate any error fields set in |event| to |last_errors|.  If any error
+// field in |event| is set, then also set |last_errors->event_type|.
+void MaybeSetLastErrors(const SocketEvent& event, LastErrors* last_errors) {
+  if (event.has_net_return_value() &&
+      event.net_return_value() < net::ERR_IO_PENDING) {
+    last_errors->net_return_value = event.net_return_value();
+    last_errors->event_type = event.type();
+  }
+  if (event.has_challenge_reply_error_type()) {
+    last_errors->challenge_reply_error_type =
+        event.challenge_reply_error_type();
+    last_errors->event_type = event.type();
+  }
+  if (event.has_nss_error_code()) {
+    last_errors->nss_error_code = event.nss_error_code();
+    last_errors->event_type = event.type();
+  }
 }
 
 }  // namespace
@@ -287,19 +308,9 @@ AggregatedSocketEvent& Logger::LogSocketEvent(int channel_id,
     socket_events.pop_front();
     log_.set_num_evicted_socket_events(log_.num_evicted_socket_events() + 1);
   }
-
   socket_events.push_back(socket_event);
 
-  it->second->last_errors.event_type = socket_event.type();
-  if (socket_event.has_net_return_value()) {
-    it->second->last_errors.net_return_value = socket_event.net_return_value();
-  }
-  if (socket_event.has_challenge_reply_error_type()) {
-    it->second->last_errors.challenge_reply_error_type =
-        socket_event.challenge_reply_error_type();
-  }
-  if (socket_event.has_nss_error_code())
-    it->second->last_errors.nss_error_code = socket_event.nss_error_code();
+  MaybeSetLastErrors(socket_event, &(it->second->last_errors));
 
   return it->second->aggregated_socket_event;
 }
@@ -356,5 +367,5 @@ LastErrors Logger::GetLastErrors(int channel_id) const {
 }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

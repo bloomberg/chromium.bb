@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/test/simple_test_tick_clock.h"
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/zlib.h"
 
@@ -112,7 +115,7 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
 
   LastErrors last_errors = logger_->GetLastErrors(2);
   EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
-  EXPECT_EQ(last_errors.net_return_value, 0);
+  EXPECT_EQ(last_errors.net_return_value, net::OK);
   EXPECT_EQ(last_errors.challenge_reply_error_type,
             proto::CHALLENGE_REPLY_ERROR_NSS_CERT_PARSING_FAILED);
   EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
@@ -180,6 +183,60 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
       EXPECT_EQ(kTestNssErrorCode, event.nss_error_code());
     }
   }
+}
+
+TEST_F(CastChannelLoggerTest, LogLastErrorEvents) {
+  // Net return value is set to an error
+  logger_->LogSocketEventWithRv(
+      1, EventType::TCP_SOCKET_CONNECT, net::ERR_CONNECTION_FAILED);
+
+  LastErrors last_errors = logger_->GetLastErrors(1);
+  EXPECT_EQ(last_errors.event_type, proto::TCP_SOCKET_CONNECT);
+  EXPECT_EQ(last_errors.net_return_value, net::ERR_CONNECTION_FAILED);
+
+  // Challenge reply error set
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  AuthResult auth_result = AuthResult::Create(
+      "Some error", AuthResult::ErrorType::ERROR_PEER_CERT_EMPTY);
+
+  logger_->LogSocketChallengeReplyEvent(2, auth_result);
+  last_errors = logger_->GetLastErrors(2);
+  EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
+  EXPECT_EQ(last_errors.challenge_reply_error_type,
+            proto::CHALLENGE_REPLY_ERROR_PEER_CERT_EMPTY);
+
+  // Logging a non-error event does not set the LastErrors for the channel.
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(3, EventType::TCP_SOCKET_CONNECT, net::OK);
+  last_errors = logger_->GetLastErrors(3);
+  EXPECT_EQ(last_errors.event_type, proto::EVENT_TYPE_UNKNOWN);
+  EXPECT_EQ(last_errors.net_return_value, net::OK);
+  EXPECT_EQ(last_errors.challenge_reply_error_type,
+            proto::CHALLENGE_REPLY_ERROR_NONE);
+  EXPECT_EQ(last_errors.nss_error_code, 0);
+
+  // Now log a challenge reply error with NSS error code.  LastErrors will be
+  // set.
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  auth_result = AuthResult::CreateWithNSSError(
+      "Some error",
+      AuthResult::ErrorType::ERROR_WRONG_PAYLOAD_TYPE,
+      kTestNssErrorCode);
+  logger_->LogSocketChallengeReplyEvent(3, auth_result);
+  last_errors = logger_->GetLastErrors(3);
+  EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
+  EXPECT_EQ(last_errors.challenge_reply_error_type,
+            proto::CHALLENGE_REPLY_ERROR_WRONG_PAYLOAD_TYPE);
+  EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
+
+  // Logging a non-error event does not change the LastErrors for the channel.
+  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  logger_->LogSocketEventWithRv(3, EventType::TCP_SOCKET_CONNECT, net::OK);
+  last_errors = logger_->GetLastErrors(3);
+  EXPECT_EQ(last_errors.event_type, proto::AUTH_CHALLENGE_REPLY);
+  EXPECT_EQ(last_errors.challenge_reply_error_type,
+            proto::CHALLENGE_REPLY_ERROR_WRONG_PAYLOAD_TYPE);
+  EXPECT_EQ(last_errors.nss_error_code, kTestNssErrorCode);
 }
 
 TEST_F(CastChannelLoggerTest, LogSocketReadWrite) {
@@ -274,5 +331,5 @@ TEST_F(CastChannelLoggerTest, Reset) {
 }
 
 }  // namespace cast_channel
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions
