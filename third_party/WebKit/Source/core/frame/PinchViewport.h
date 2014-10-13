@@ -79,6 +79,10 @@ public:
     {
         return m_innerViewportContainerLayer.get();
     }
+    GraphicsLayer* scrollLayer()
+    {
+        return m_innerViewportScrollLayer.get();
+    }
 
     // Sets the location of the inner viewport relative to the outer viewport. The
     // coordinates are in partial CSS pixels.

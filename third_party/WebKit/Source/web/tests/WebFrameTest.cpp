@@ -66,6 +66,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/testing/URLTestHelpers.h"
@@ -141,11 +142,6 @@ const int touchPointPadding = 32;
         EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
     } while (false)
 
-
-class FakeCompositingWebViewClient : public FrameTestHelpers::TestWebViewClient {
-public:
-    virtual bool enterFullScreen() override { return true; }
-};
 
 class WebFrameTest : public testing::Test {
 protected:
@@ -700,6 +696,11 @@ class FixedLayoutTestWebViewClient : public FrameTestHelpers::TestWebViewClient 
     virtual WebScreenInfo screenInfo() override { return m_screenInfo; }
 
     WebScreenInfo m_screenInfo;
+};
+
+class FakeCompositingWebViewClient : public FixedLayoutTestWebViewClient {
+public:
+    virtual bool enterFullScreen() override { return true; }
 };
 
 // Viewport settings need to be set before the page gets loaded
@@ -6115,6 +6116,42 @@ TEST_F(WebFrameTest, DISABLED_FrameViewScrollAccountsForTopControls)
     EXPECT_POINT_EQ(IntPoint(50, 51), frameView->maximumScrollPosition());
 }
 
+TEST_F(WebFrameTest, FullscreenLayerSize)
+{
+    FakeCompositingWebViewClient client;
+    registerMockedHttpURLLoad("fullscreen_div.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+    client.m_screenInfo.rect.width = viewportWidth;
+    client.m_screenInfo.rect.height = viewportHeight;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, configurePinchVirtualViewport);
+    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->layout();
+
+    Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
+    Element* divFullscreen = document->getElementById("div1");
+    Fullscreen::from(*document).requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->layout();
+    ASSERT_TRUE(Fullscreen::isFullScreen(*document));
+
+    // Verify that the element is sized to the viewport.
+    RenderFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
+    EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalWidth().toInt());
+    EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalHeight().toInt());
+
+    // Verify it's updated after a device rotation.
+    client.m_screenInfo.rect.width = viewportHeight;
+    client.m_screenInfo.rect.height = viewportWidth;
+    webViewImpl->resize(WebSize(viewportHeight, viewportWidth));
+    webViewImpl->layout();
+    EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalWidth().toInt());
+    EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalHeight().toInt());
+
+}
+
 TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
 {
     FakeCompositingWebViewClient client;
@@ -6122,7 +6159,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     FrameTestHelpers::WebViewHelper webViewHelper;
     int viewportWidth = 640;
     int viewportHeight = 480;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, &configueCompositingWebView);
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, configurePinchVirtualViewport);
     webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->layout();
 
@@ -6133,17 +6170,19 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
-    // Verify that the main frame bounds are empty.
+    // Verify that the main frame is nonscrollable.
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
     WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
-    ASSERT_EQ(WebSize(), webScrollLayer->bounds());
+    ASSERT_FALSE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_FALSE(webScrollLayer->userScrollableVertical());
 
     // Verify that the main frame is scrollable upon exiting fullscreen.
     webViewImpl->didExitFullScreen();
     webViewImpl->layout();
     ASSERT_FALSE(Fullscreen::isFullScreen(*document));
     webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
-    ASSERT_NE(WebSize(), webScrollLayer->bounds());
+    ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
 TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
@@ -6153,7 +6192,7 @@ TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
     FrameTestHelpers::WebViewHelper webViewHelper;
     int viewportWidth = 640;
     int viewportHeight = 480;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, &configueCompositingWebView);
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, configurePinchVirtualViewport);
     webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->layout();
 
@@ -6167,6 +6206,8 @@ TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
     WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
+    ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
 TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)

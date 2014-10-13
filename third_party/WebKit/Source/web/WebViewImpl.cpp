@@ -38,6 +38,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
@@ -80,6 +81,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
+#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
@@ -1756,6 +1758,9 @@ void WebViewImpl::resize(const WebSize& newSize)
     } else {
         performResize();
     }
+
+    if (m_fullscreenController->isFullscreen())
+        Fullscreen::from(*view->frame().document()).fullScreenRenderer()->updateStyle();
 
     if (settings()->viewportEnabled()) {
         // Relayout immediately to recalculate the minimum scale limit.

@@ -33,6 +33,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/events/OverflowEvent.h"
@@ -3861,6 +3862,11 @@ void FrameView::positionScrollbarLayers()
 
 bool FrameView::userInputScrollable(ScrollbarOrientation orientation) const
 {
+    Document* document = frame().document();
+    Element* fullscreenElement = Fullscreen::fullscreenElementFrom(*document);
+    if (fullscreenElement && fullscreenElement != document->documentElement())
+        return false;
+
     ScrollbarMode mode = (orientation == HorizontalScrollbar) ?
         m_horizontalScrollbarMode : m_verticalScrollbarMode;
 

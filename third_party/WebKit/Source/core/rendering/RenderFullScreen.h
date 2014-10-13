@@ -46,6 +46,8 @@ public:
     static RenderObject* wrapRenderer(RenderObject*, RenderObject*, Document*);
     void unwrapRenderer();
 
+    void updateStyle();
+
 private:
     RenderFullScreen();
     virtual void willBeDestroyed() override;
