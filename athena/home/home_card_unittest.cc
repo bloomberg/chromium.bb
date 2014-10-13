@@ -48,13 +48,13 @@ TEST_F(HomeCardTest, BasicTransition) {
   EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
   EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_NONE, wm::GetShadowType(home_card));
 
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_EQ(screen_height - kHomeCardHeight, home_card->GetTargetBounds().y());
   EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_RECTANGULAR,
             wm::GetShadowType(home_card));
 
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->ExitOverview();
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
   EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
   EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_NONE, wm::GetShadowType(home_card));
@@ -70,7 +70,7 @@ TEST_F(HomeCardTest, VirtualKeyboardTransition) {
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 
   // bottom -> centered for virtual keyboard.
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   HomeCard::Get()->UpdateVirtualKeyboardBounds(vk_bounds);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
@@ -91,9 +91,9 @@ TEST_F(HomeCardTest, ToggleOverviewWithVirtualKeyboard) {
   HomeCard::Get()->UpdateVirtualKeyboardBounds(vk_bounds);
   EXPECT_EQ(HomeCard::HIDDEN, HomeCard::Get()->GetState());
 
-  // Toogle overview revives the bottom home card. Home card also gets
+  // EnterOverview() revives the bottom home card. Home card also gets
   /// activated which will close the virtual keyboard.
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   aura::Window* home_card = GetHomeCardWindow();
   EXPECT_TRUE(wm::IsActiveWindow(home_card));
@@ -103,7 +103,7 @@ TEST_F(HomeCardTest, ToggleOverviewWithVirtualKeyboard) {
 TEST_F(HomeCardTest, AppSelection) {
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
 
   athena::ActivityFactory::Get()->CreateWebActivity(
@@ -121,8 +121,8 @@ TEST_F(HomeCardTest, Accelerators) {
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 
-  // Do nothing for BOTTOM.
-  WindowManager::Get()->ToggleOverview();
+  // Do nothing for BOTTOM
+  WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
@@ -253,7 +253,7 @@ TEST_F(HomeCardTest, KeyboardFocus) {
   aura::Window* home_card = GetHomeCardWindow();
   ASSERT_FALSE(IsSearchBoxFocused(home_card));
 
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   ASSERT_FALSE(IsSearchBoxFocused(home_card));
 
   ui::test::EventGenerator generator(root_window());

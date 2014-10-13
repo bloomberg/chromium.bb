@@ -201,23 +201,35 @@ void WindowManagerImpl::ToggleSplitView() {
   }
 }
 
-void WindowManagerImpl::ToggleOverview() {
-  if (IsOverviewModeActive()) {
-    SetInOverview(false);
+void WindowManagerImpl::EnterOverview() {
+  if (IsOverviewModeActive())
+    return;
 
-    // Activate the window which was active prior to entering overview.
-    const aura::Window::Windows windows =
-        window_list_provider_->GetWindowList();
-    if (!windows.empty()) {
-      aura::Window* window = windows.back();
-      // Show the window in case the exit overview animation has finished and
-      // |window| was hidden.
-      window->Show();
+  bezel_controller_->set_left_right_delegate(NULL);
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
 
-      wm::ActivateWindow(window);
-    }
-  } else {
-    SetInOverview(true);
+  // Note: The window_list_provider_ resembles the exact window list of the
+  // container, so no re-stacking is required before showing the OverviewMode.
+  overview_ = WindowOverviewMode::Create(
+      container_.get(), window_list_provider_.get(),
+      split_view_controller_.get(), this);
+}
+
+void WindowManagerImpl::ExitOverview() {
+  if (!IsOverviewModeActive())
+    return;
+
+  ExitOverviewNoActivate();
+
+  // Activate the window which was active prior to entering overview.
+  const aura::Window::Windows windows = window_list_provider_->GetWindowList();
+  if (!windows.empty()) {
+    aura::Window* window_to_activate = windows.back();
+
+    // Show the window in case the exit overview animation has finished and
+    // |window| was hidden.
+    window_to_activate->Show();
+    wm::ActivateWindow(window_to_activate);
   }
 }
 
@@ -225,25 +237,13 @@ bool WindowManagerImpl::IsOverviewModeActive() {
   return overview_;
 }
 
-void WindowManagerImpl::SetInOverview(bool active) {
-  bool in_overview = !!overview_;
-  if (active == in_overview)
+void WindowManagerImpl::ExitOverviewNoActivate() {
+  if (!IsOverviewModeActive())
     return;
 
-  bezel_controller_->set_left_right_delegate(
-      active ? NULL : split_view_controller_.get());
-  if (active) {
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
-
-    // Note: The window_list_provider_ resembles the exact window list of the
-    // container, so no re-stacking is required before showing the OverviewMode.
-    overview_ = WindowOverviewMode::Create(
-        container_.get(), window_list_provider_.get(),
-        split_view_controller_.get(), this);
-  } else {
-    overview_.reset();
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeExit());
-  }
+  bezel_controller_->set_left_right_delegate(split_view_controller_.get());
+  overview_.reset();
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeExit());
 }
 
 void WindowManagerImpl::InstallAccelerators() {
@@ -286,7 +286,7 @@ WindowListProvider* WindowManagerImpl::GetWindowListProvider() {
 }
 
 void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
-  SetInOverview(false);
+  ExitOverviewNoActivate();
 
   // Show the window in case the exit overview animation has finished and
   // |window| was hidden.
@@ -325,7 +325,7 @@ void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
 void WindowManagerImpl::OnSelectSplitViewWindow(aura::Window* left,
                                                 aura::Window* right,
                                                 aura::Window* to_activate) {
-  SetInOverview(false);
+  ExitOverviewNoActivate();
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeEnter());
   split_view_controller_->ActivateSplitMode(left, right, to_activate);
 }
@@ -343,7 +343,10 @@ bool WindowManagerImpl::OnAcceleratorFired(int command_id,
                                            const ui::Accelerator& accelerator) {
   switch (command_id) {
     case CMD_TOGGLE_OVERVIEW:
-      ToggleOverview();
+      if (IsOverviewModeActive())
+        ExitOverview();
+      else
+        EnterOverview();
       break;
     case CMD_TOGGLE_SPLIT_VIEW:
       ToggleSplitView();

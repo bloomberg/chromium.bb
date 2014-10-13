@@ -42,7 +42,9 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
   void ToggleSplitView();
 
   // WindowManager:
-  virtual void ToggleOverview() override;
+  virtual void EnterOverview() override;
+  // Exits overview and activates the previously active activity
+  virtual void ExitOverview() override;
   virtual bool IsOverviewModeActive() override;
 
  private:
@@ -54,8 +56,9 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
     CMD_TOGGLE_SPLIT_VIEW,
   };
 
-  // Sets whether overview mode is active.
-  void SetInOverview(bool active);
+  // Exits overview mode without changing activation.  The caller should
+  // ensure that a window is active after exiting overview mode.
+  void ExitOverviewNoActivate();
 
   void InstallAccelerators();
 

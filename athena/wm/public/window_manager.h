@@ -23,8 +23,8 @@ class ATHENA_EXPORT WindowManager {
 
   virtual ~WindowManager() {}
 
-  virtual void ToggleOverview() = 0;
-
+  virtual void EnterOverview() = 0;
+  virtual void ExitOverview() = 0;
   virtual bool IsOverviewModeActive() = 0;
 
   virtual void AddObserver(WindowManagerObserver* observer) = 0;

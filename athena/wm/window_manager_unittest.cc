@@ -57,7 +57,7 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
   EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
 
   // Tests that going into overview mode does not change the window bounds.
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
   EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
   EXPECT_EQ(gfx::Screen::GetNativeScreen()
@@ -71,7 +71,7 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
 
   // Terminate overview mode. |first| should be hidden, since it's not visible
   // to the user anymore.
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->ExitOverview();
   ASSERT_FALSE(WindowManager::Get()->IsOverviewModeActive());
   EXPECT_FALSE(first->IsVisible());
   EXPECT_TRUE(second->IsVisible());
@@ -86,7 +86,7 @@ TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
   scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate));
   wm::ActivateWindow(w3.get());
 
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_TRUE(w3->IsVisible());
@@ -104,7 +104,7 @@ TEST_F(WindowManagerTest, NewWindowFromOverview) {
   scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate));
   scoped_ptr<aura::Window> w2(CreateAndActivateWindow(&delegate));
 
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
 
@@ -347,7 +347,7 @@ TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
 
   // Get into split-view mode, and then turn on overview mode.
   wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL, NULL);
-  WindowManager::Get()->ToggleOverview();
+  WindowManager::Get()->EnterOverview();
   EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
   EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
   EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());
