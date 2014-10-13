@@ -77,15 +77,15 @@ This directory contains the source code of ICU 52.1 for C/C++
 
 4. Converter changes :
 
-  - converters.patch :
-     a. revises existing mapping tables
-     b. Remove a lot of unused aliases in the converter alias table
-        (source/data/mappings/convrtrs.txt ) leading to 40kB size reduction.
+  - convrtrs.txt : Replaced the original by our own that only lists encodings
+    and aliases required by the WHATWG Encoding spec plus a few extra (see
+    the file as to why).
 
   - Add source/data/mappings/ucmlocal.txt : to list only converters we need.
-  - Add three new tables per WHATWG encoding standards for EUC-JP,
-    Shift_JIS and CP866.
-    They're generated with scripts/{eucjp, sjis, ibm866}_gen.sh.
+
+  - Add new tables per the WHATWG encoding standards for EUC-JP,
+    Shift_JIS and all the single byte encodings.
+    They're generated with scripts : scripts/{eucjp, sjis, single_byte}_gen.sh
 
   - uconv.patch
     a. ISO-2022-JP-[1-4] is dropped.

@@ -13,7 +13,7 @@
 #     to GBK in convrtrs.txt to treat GB2312 as a synonym of GBK.
 #   - GB-HZ is supported now that it uses the GBK table.
 # * Traditional Chinese : Big5 (Windows cp950), Big5HKSCS (no PUA)
-# * Japanese : SJIS (shift_jis-html5), EUC-JP (euc-jp_html5)
+# * Japanese : SJIS (shift_jis-html), EUC-JP (euc-jp-html)
 # * Korean : Windows-949
 #  - EUC-KR table was removed. It's different from Windows-949, but
 #    in practice EUC-KR and Windows-949 are treated synonymously.
@@ -32,23 +32,22 @@
 
 UCM_SOURCE_FILES=
 
-UCM_SOURCE_CORE=ibm-912_P100-1995.ucm ibm-913_P100-2000.ucm\
-ibm-914_P100-1995.ucm ibm-915_P100-1995.ucm\
-ibm-1089_P100-1995.ucm ibm-9005_X110-2007.ucm\
-ibm-5012_P100-1999.ucm\
-iso-8859_10-1998.ucm\
-ibm-921_P100-1995.ucm iso-8859_14-1998.ucm ibm-923_P100-1998.ucm\
-iso-8859_16-2001.ucm\
-ibm-5346_P100-1998.ucm ibm-5347_P100-1998.ucm ibm-5348_P100-1997.ucm\
-ibm-5349_P100-1998.ucm ibm-5350_P100-1998.ucm ibm-9447_P100-2002.ucm\
-ibm-9448_X100-2005.ucm ibm-9449_P100-2002.ucm ibm-5354_P100-1998.ucm\
+
+UCM_SOURCE_CORE=iso-8859-2-html.ucm iso-8859-3-html.ucm iso-8859-4-html.ucm\
+iso-8859-5-html.ucm iso-8859-6-html.ucm iso-8859-7-html.ucm \
+iso-8859-8-html.ucm iso-8859-10-html.ucm iso-8859-13-html.ucm \
+iso-8859-14-html.ucm iso-8859-15-html.ucm iso-8859-16-html.ucm \
+windows-1250-html.ucm windows-1251-html.ucm windows-1252-html.ucm\
+windows-1253-html.ucm windows-1254-html.ucm windows-1255-html.ucm\
+windows-1256-html.ucm windows-1257-html.ucm windows-1258-html.ucm\
 windows-936-2000.ucm gb18030.ucm\
 windows-950-2000.ucm ibm-1375_P100-2007.ucm\
 shift_jis-html.ucm euc-jp-html.ucm\
 windows-949-2000.ucm\
-windows-874-2000.ucm\
-macos-0_2-10.2.ucm macos-7_3-10.2.ucm\
-ibm-878_P100-1996.ucm ibm-1168_P100-2002.ucm ibm866-html.ucm
+windows-874-html.ucm \
+macintosh-html.ucm x-mac-cyrillic-html.ucm\
+ibm866-html.ucm koi8-r-html.ucm koi8-u-html.ucm
+
 
 
 # Do not build EBCDIC converters.
