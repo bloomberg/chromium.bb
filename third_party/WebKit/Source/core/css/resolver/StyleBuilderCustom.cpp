@@ -1039,47 +1039,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(StyleResolverSt
     state.document().setHasAnnotatedRegions(true);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyWebkitPerspective(StyleResolverState& state)
-{
-    applyInitialCSSPropertyPerspective(state);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyWebkitPerspective(StyleResolverState& state)
-{
-    applyInheritCSSPropertyPerspective(state);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitPerspective(StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isPrimitiveValue())
-        return;
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isNumber()) {
-        float perspectiveValue = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX)->computeLength<float>(state.cssToLengthConversionData());
-        if (perspectiveValue >= 0.0f)
-            state.style()->setPerspective(perspectiveValue);
-    } else {
-        applyValueCSSPropertyPerspective(state, value);
-    }
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyPerspective(StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isPrimitiveValue())
-        return;
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueNone) {
-        state.style()->setPerspective(0);
-        return;
-    }
-
-    if (!primitiveValue->isLength())
-        return;
-    float perspectiveValue = primitiveValue->computeLength<float>(state.cssToLengthConversionData());
-    if (perspectiveValue >= 0.0f)
-        state.style()->setPerspective(perspectiveValue);
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue())

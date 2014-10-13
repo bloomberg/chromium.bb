@@ -232,7 +232,7 @@ page-break-after type_name=EPageBreak, initial=initialPageBreak
 page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
 paint-order inherited, svg, converter=convertPaintOrder
-perspective animatable, custom_value
+perspective animatable, converter=convertPerspective
 perspective-origin animatable, custom_all
 pointer-events inherited
 position
@@ -348,7 +348,7 @@ visibility animatable, inherited
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size animatable, custom_all
--webkit-perspective custom_all
+-webkit-perspective use_handlers_for=CSSPropertyPerspective
 -webkit-perspective-origin use_handlers_for=CSSPropertyPerspectiveOrigin
 -webkit-perspective-origin-x converter=convertLength
 -webkit-perspective-origin-y converter=convertLength

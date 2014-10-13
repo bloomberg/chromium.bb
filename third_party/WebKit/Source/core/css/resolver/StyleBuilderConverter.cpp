@@ -575,6 +575,27 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
     return primitiveValue->getFloatValue() / 100.0f;
 }
 
+static float convertPerspectiveLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+{
+    return std::max(primitiveValue->computeLength<float>(state.cssToLengthConversionData()), 0.0f);
+}
+
+float StyleBuilderConverter::convertPerspective(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    if (primitiveValue->getValueID() == CSSValueNone)
+        return RenderStyle::initialPerspective();
+
+    // CSSPropertyWebkitPerspective accepts unitless numbers.
+    if (primitiveValue->isNumber()) {
+        RefPtr<CSSPrimitiveValue> px = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX);
+        return convertPerspectiveLength(state, px.get());
+    }
+
+    return convertPerspectiveLength(state, primitiveValue);
+}
+
 EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSValue* cssPaintOrder)
 {
     if (cssPaintOrder->isValueList()) {
