@@ -1459,5 +1459,3 @@ crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Time
 crbug.com/388375 http/tests/serviceworker/fetch-event.html [ NeedsManualRebaseline ]
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
-crbug.com/407079 [ XP ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ NeedsRebaseline ]
-crbug.com/407079 [ XP ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsRebaseline ]
