@@ -445,6 +445,8 @@ class SchemaVersionedMySQLConnection(object):
       The result of .execute(...)
     """
     f = lambda: engine.execute(query, *args, **kwargs)
+    logging.info('Running cidb query on pid %s, repr(query) starts with %s',
+                 os.getpid(), repr(query)[:100])
     return retry_util.GenericRetry(
         handler=_IsRetryableException,
         max_retry=4,
