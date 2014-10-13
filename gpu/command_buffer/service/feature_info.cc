@@ -132,6 +132,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       enable_shader_name_hashing(false),
       enable_samplers(false),
       ext_draw_buffers(false),
+      nv_draw_buffers(false),
       ext_frag_depth(false),
       ext_shader_texture_lod(false),
       use_async_readpixels(false),
@@ -761,11 +762,24 @@ void FeatureInfo::InitializeFeatures() {
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
   }
 
+  bool vendor_agnostic_draw_buffers =
+      extensions.Contains("GL_ARB_draw_buffers") ||
+      extensions.Contains("GL_EXT_draw_buffers");
   if (!workarounds_.disable_ext_draw_buffers &&
-      (extensions.Contains("GL_ARB_draw_buffers") ||
-       extensions.Contains("GL_EXT_draw_buffers"))) {
+      (vendor_agnostic_draw_buffers ||
+       (extensions.Contains("GL_NV_draw_buffers") && is_es3))) {
     AddExtensionString("GL_EXT_draw_buffers");
     feature_flags_.ext_draw_buffers = true;
+
+    // This flag is set to enable emulation of EXT_draw_buffers when we're
+    // running on GLES 3.0+, NV_draw_buffers extension is supported and
+    // glDrawBuffers from GLES 3.0 core has been bound. It toggles using the
+    // NV_draw_buffers extension directive instead of EXT_draw_buffers extension
+    // directive in ESSL 100 shaders translated by ANGLE, enabling them to write
+    // into multiple gl_FragData values, which is not by default possible in
+    // ESSL 100 with core GLES 3.0. For more information, see the
+    // NV_draw_buffers specification.
+    feature_flags_.nv_draw_buffers = !vendor_agnostic_draw_buffers;
 
     GLint max_color_attachments = 0;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments);

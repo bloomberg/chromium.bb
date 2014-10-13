@@ -2793,6 +2793,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     if (!draw_buffers_explicitly_enabled_)
       resources.MaxDrawBuffers = 1;
     resources.EXT_shader_texture_lod = shader_texture_lod_explicitly_enabled_;
+    resources.NV_draw_buffers =
+        draw_buffers_explicitly_enabled_ && features().nv_draw_buffers;
   } else {
     resources.OES_standard_derivatives =
         features().oes_standard_derivatives ? 1 : 0;
@@ -2806,6 +2808,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         features().ext_frag_depth ? 1 : 0;
     resources.EXT_shader_texture_lod =
         features().ext_shader_texture_lod ? 1 : 0;
+    resources.NV_draw_buffers =
+        features().nv_draw_buffers ? 1 : 0;
   }
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ? SH_WEBGL_SPEC

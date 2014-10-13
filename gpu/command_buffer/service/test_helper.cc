@@ -410,6 +410,17 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         .RetiresOnSaturation();
 #endif
   }
+
+  if (strstr(extensions, "GL_EXT_draw_buffers") ||
+      strstr(extensions, "GL_ARB_draw_buffers") ||
+      (is_es3 && strstr(extensions, "GL_NV_draw_buffers"))) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
+        .WillOnce(SetArgumentPointee<1>(8))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, _))
+        .WillOnce(SetArgumentPointee<1>(8))
+        .RetiresOnSaturation();
+  }
 }
 
 void TestHelper::SetupExpectationsForClearingUniforms(

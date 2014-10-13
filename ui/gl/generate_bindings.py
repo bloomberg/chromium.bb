@@ -216,7 +216,7 @@ GL_FUNCTIONS = [
   'names': ['glDrawBuffer'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
-  'names': ['glDrawBuffersARB', 'glDrawBuffersEXT'],
+  'names': ['glDrawBuffersARB', 'glDrawBuffersEXT', 'glDrawBuffers'],
   'arguments': 'GLsizei n, const GLenum* bufs', },
 { 'return_type': 'void',
   'names': ['glDrawElements'],

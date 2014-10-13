@@ -123,6 +123,8 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
   EXPECT_FALSE(info_->feature_flags().map_buffer_range);
   EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
+  EXPECT_FALSE(info_->feature_flags().ext_draw_buffers);
+  EXPECT_FALSE(info_->feature_flags().nv_draw_buffers);
   EXPECT_FALSE(info_->feature_flags().ext_discard_framebuffer);
   EXPECT_FALSE(info_->feature_flags().angle_depth_texture);
   EXPECT_FALSE(info_->feature_flags().is_angle);
@@ -1252,6 +1254,19 @@ TEST_F(FeatureInfoTest, InitializeWithNVFence) {
   SetupInitExpectations("GL_NV_fence");
   EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
   EXPECT_TRUE(gfx::GLFence::IsSupported());
+}
+
+TEST_F(FeatureInfoTest, InitializeWithNVDrawBuffers) {
+  SetupInitExpectationsWithGLVersion("GL_NV_draw_buffers", "", "OpenGL ES 3.0");
+  EXPECT_TRUE(info_->feature_flags().nv_draw_buffers);
+  EXPECT_TRUE(info_->feature_flags().ext_draw_buffers);
+}
+
+TEST_F(FeatureInfoTest, InitializeWithPreferredEXTDrawBuffers) {
+  SetupInitExpectationsWithGLVersion(
+      "GL_NV_draw_buffers GL_EXT_draw_buffers", "", "OpenGL ES 3.0");
+  EXPECT_FALSE(info_->feature_flags().nv_draw_buffers);
+  EXPECT_TRUE(info_->feature_flags().ext_draw_buffers);
 }
 
 TEST_F(FeatureInfoTest, ARBSyncDisabled) {
