@@ -497,7 +497,7 @@ def parse_commitrefs(*commitrefs):
     raise BadCommitRefException(commitrefs)
 
 
-RebaseRet = collections.namedtuple('RebaseRet', 'success message')
+RebaseRet = collections.namedtuple('RebaseRet', 'success stdout stderr')
 
 
 def rebase(parent, start, branch, abort=False):
@@ -521,11 +521,11 @@ def rebase(parent, start, branch, abort=False):
     if TEST_MODE:
       args.insert(0, '--committer-date-is-author-date')
     run('rebase', *args)
-    return RebaseRet(True, '')
+    return RebaseRet(True, '', '')
   except subprocess2.CalledProcessError as cpe:
     if abort:
       run('rebase', '--abort')
-    return RebaseRet(False, cpe.stdout)
+    return RebaseRet(False, cpe.stdout, cpe.stderr)
 
 
 def remove_merge_base(branch):

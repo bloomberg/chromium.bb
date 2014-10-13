@@ -130,7 +130,8 @@ def rebase_branch(branch, parent, start_hash):
   if git.hash_one(parent) != start_hash:
     # Try a plain rebase first
     print 'Rebasing:', branch
-    if not git.rebase(parent, start_hash, branch, abort=True).success:
+    rebase_ret = git.rebase(parent, start_hash, branch, abort=True)
+    if not rebase_ret.success:
       # TODO(iannucci): Find collapsible branches in a smarter way?
       print "Failed! Attempting to squash", branch, "...",
       squash_branch = branch+"_squash_attempt"
@@ -148,14 +149,19 @@ def rebase_branch(branch, parent, start_hash):
         git.rebase(parent, start_hash, branch)
       else:
         # rebase and leave in mid-rebase state.
-        git.rebase(parent, start_hash, branch)
+        # This second rebase attempt should always fail in the same
+        # way that the first one does.  If it magically succeeds then
+        # something very strange has happened.
+        second_rebase_ret = git.rebase(parent, start_hash, branch)
+        assert(not second_rebase_ret.success)
         print "Failed!"
         print
-        print "Here's what git-rebase had to say:"
-        print squash_ret.message
+        print "Here's what git-rebase (squashed) had to say:"
         print
+        print squash_ret.stdout
+        print squash_ret.stderr
         print textwrap.dedent(
-        """
+        """\
         Squashing failed. You probably have a real merge conflict.
 
         Your working copy is in mid-rebase. Either:
