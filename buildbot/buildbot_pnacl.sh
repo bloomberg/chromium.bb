@@ -198,7 +198,7 @@ unarchive-for-hw-bots() {
 gyp-arm-build() {
   local gypmode="Release"
   if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
-      gypmode="Debug"
+    gypmode="Debug"
   fi
   local toolchain_dir=native_client/toolchain/linux_x86/arm_trusted
   local extra="-isystem ${toolchain_dir}/usr/include \
@@ -211,14 +211,56 @@ gyp-arm-build() {
 
   export AR=arm-linux-gnueabihf-ar
   export AS=arm-linux-gnueabihf-as
-  export CC="arm-linux-gnueabihf-gcc ${extra} "
-  export CXX="arm-linux-gnueabihf-g++ ${extra} "
-  export LD="arm-linux-gnueabihf-g++ ${extra} "
+  export CC="arm-linux-gnueabihf-gcc ${extra}"
+  export CXX="arm-linux-gnueabihf-g++ ${extra}"
+  export LD="arm-linux-gnueabihf-g++ ${extra}"
   export RANLIB=arm-linux-gnueabihf-ranlib
-  export SYSROOT
   export GYP_DEFINES="target_arch=arm \
     sysroot=${toolchain_dir} \
     linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
+  export GYP_GENERATORS=make
+
+  # NOTE: this step is also run implicitly as part of
+  #        gclient runhooks --force
+  #       it uses the exported env vars so we have to run it again
+  #
+  echo "@@@BUILD_STEP gyp_configure [${gypmode}]@@@"
+  cd ..
+  native_client/build/gyp_nacl native_client/build/all.gyp
+  cd native_client
+
+  echo "@@@BUILD_STEP gyp_compile [${gypmode}]@@@"
+  make -C .. -k -j8 V=1 BUILDTYPE=${gypmode}
+}
+
+# Build with gyp for MIPS.
+gyp-mips32-build() {
+  local gypmode="Release"
+  if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
+    gypmode="Debug"
+  fi
+  local toolchain_dir=$(pwd)/toolchain/linux_x86/mips_trusted
+  local extra="-EL -isystem ${toolchain_dir}/usr/include \
+               -Wl,-rpath-link=${toolchain_dir}/lib/mipsel-linux-gnu \
+               -L${toolchain_dir}/lib \
+               -L${toolchain_dir}/lib/mipsel-linux-gnu \
+               -L${toolchain_dir}/usr/lib \
+               -L${toolchain_dir}/usr/lib/mipsel-linux-gnu"
+  # Setup environment for mips32.
+
+  # Check if MIPS TC has already been built. If not, build it.
+  if [ ! -f ${toolchain_dir}/bin/mipsel-linux-gnu-gcc ] ; then
+    tools/trusted_cross_toolchains/trusted-toolchain-creator.mipsel.debian.sh \
+      nacl_sdk
+  fi
+
+  export AR="$toolchain_dir/bin/mipsel-linux-gnu-ar"
+  export AS="$toolchain_dir/bin/mipsel-linux-gnu-as"
+  export CC="$toolchain_dir/bin/mipsel-linux-gnu-gcc ${extra}"
+  export CXX="$toolchain_dir/bin/mipsel-linux-gnu-g++ ${extra}"
+  export LD="$toolchain_dir/bin/mipsel-linux-gnu-g++ ${extra}"
+  export RANLIB="$toolchain_dir/bin/mipsel-linux-gnu-ranlib"
+  export GYP_DEFINES="target_arch=mipsel mips_arch_variant=mips32r2"
   export GYP_GENERATORS=make
 
   # NOTE: this step is also run implicitly as part of
@@ -362,10 +404,18 @@ mode-buildbot-arm-hw() {
 
 mode-trybot-qemu() {
   clobber
+  local arch=$1
   # TODO(dschuff): move the gyp build to buildbot_pnacl.py
-  gyp-arm-build
+  if [[ ${arch} == "arm" ]] ; then
+    gyp-arm-build
+  elif [[ ${arch} == "mips32" ]] ; then
+    gyp-mips32-build
+  fi
 
-  buildbot/buildbot_pnacl.py opt arm pnacl
+  # TODO(petarj): Enable this for MIPS arch too once all the tests pass.
+  if [[ ${arch} == "arm" ]] ; then
+    buildbot/buildbot_pnacl.py opt $arch pnacl
+  fi
 }
 
 mode-buildbot-arm-dbg() {

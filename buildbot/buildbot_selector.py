@@ -140,7 +140,7 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
     # Pnacl main trybots
     'nacl-precise_64-newlib-arm_qemu-pnacl':
-        bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu',
+        bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu arm',
     'nacl-precise_64-newlib-x86_32-pnacl':
          python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
     'nacl-precise_64-newlib-x86_64-pnacl':
@@ -221,7 +221,7 @@ BOT_ASSIGNMENT = {
 
     # MIPS toolchain buildbot.
     'linux-pnacl-x86_32-tests-mips':
-        bash + ' buildbot/buildbot_toolchain_mips_trusted.sh',
+        bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
 
     # Toolchain trybots.
     'nacl-toolchain-precise64-newlib':

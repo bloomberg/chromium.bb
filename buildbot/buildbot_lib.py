@@ -25,6 +25,10 @@ ARCH_MAP = {
         'gyp_arch': 'arm',
         'scons_platform': 'arm',
         },
+    'mips32': {
+        'gyp_arch': 'mips32',
+        'scons_platform': 'mips32',
+        },
     }
 
 
