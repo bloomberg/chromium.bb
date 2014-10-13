@@ -85,11 +85,8 @@ PlayerUtils.registerEMEEventListeners = function(player) {
 
   // TODO(sandersd): Stop registering 'needkey' after it is renamed to
   // 'encrypted'.
-  if (player.video.onencrypted) {
-    player.video.addEventListener('encrypted', encrypted_handler);
-  } else {
-    player.video.addEventListener('needkey', encrypted_handler);
-  }
+  player.video.addEventListener('encrypted', encrypted_handler);
+  player.video.addEventListener('needkey', encrypted_handler);
 
   this.registerDefaultEventListeners(player);
   try {
