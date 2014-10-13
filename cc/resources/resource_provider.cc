@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "cc/base/util.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
+#include "cc/resources/gpu_memory_buffer_manager.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -26,6 +27,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
@@ -109,6 +111,23 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
   }
   DCHECK(false) << "Unsupported resource format.";
   return kSkia8888_GrPixelConfig;
+}
+
+gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return gfx::GpuMemoryBuffer::Format::RGBA_8888;
+    case BGRA_8888:
+      return gfx::GpuMemoryBuffer::Format::BGRA_8888;
+    case RGBA_4444:
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+      break;
+  }
+  NOTREACHED();
+  return gfx::GpuMemoryBuffer::Format::RGBA_8888;
 }
 
 class ScopedSetActiveTexture {
@@ -239,7 +258,8 @@ ResourceProvider::Resource::Resource()
       hint(TextureHintImmutable),
       type(InvalidType),
       format(RGBA_8888),
-      shared_bitmap(NULL) {
+      shared_bitmap(NULL),
+      gpu_memory_buffer(NULL) {
 }
 
 ResourceProvider::Resource::~Resource() {}
@@ -285,7 +305,8 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       hint(hint),
       type(GLTexture),
       format(format),
-      shared_bitmap(NULL) {
+      shared_bitmap(NULL),
+      gpu_memory_buffer(NULL) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
   DCHECK_EQ(origin == Internal, !!texture_pool);
 }
@@ -328,7 +349,8 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       hint(TextureHintImmutable),
       type(Bitmap),
       format(RGBA_8888),
-      shared_bitmap(bitmap) {
+      shared_bitmap(bitmap),
+      gpu_memory_buffer(NULL) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
   DCHECK(origin == Delegated || pixels);
   if (bitmap)
@@ -373,7 +395,8 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       type(Bitmap),
       format(RGBA_8888),
       shared_bitmap_id(bitmap_id),
-      shared_bitmap(NULL) {
+      shared_bitmap(NULL),
+      gpu_memory_buffer(NULL) {
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
@@ -384,6 +407,7 @@ ResourceProvider::Child::~Child() {}
 scoped_ptr<ResourceProvider> ResourceProvider::Create(
     OutputSurface* output_surface,
     SharedBitmapManager* shared_bitmap_manager,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
@@ -392,6 +416,7 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface,
                            shared_bitmap_manager,
+                           gpu_memory_buffer_manager,
                            blocking_main_thread_task_runner,
                            highp_threshold_min,
                            use_rgba_4444_texture_format,
@@ -698,6 +723,12 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   if (resource->pixels) {
     DCHECK(resource->origin == Resource::Internal);
     delete[] resource->pixels;
+    resource->pixels = NULL;
+  }
+  if (resource->gpu_memory_buffer) {
+    DCHECK(resource->origin != Resource::External);
+    delete resource->gpu_memory_buffer;
+    resource->gpu_memory_buffer = NULL;
   }
   resources_.erase(it);
 }
@@ -924,16 +955,14 @@ ResourceProvider::LockForWriteToGpuMemoryBuffer(ResourceId id) {
   DCHECK_EQ(GLTexture, resource->type);
   DCHECK(CanLockForWrite(id));
 
-  if (!resource->image_id) {
+  if (!resource->gpu_memory_buffer) {
+    scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+        gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+            resource->size,
+            ToGpuMemoryBufferFormat(resource->format),
+            gfx::GpuMemoryBuffer::MAP);
+    resource->gpu_memory_buffer = gpu_memory_buffer.release();
     resource->allocated = true;
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    resource->image_id =
-        gl->CreateImageCHROMIUM(resource->size.width(),
-                                resource->size.height(),
-                                TextureToStorageFormat(resource->format),
-                                GL_IMAGE_MAP_CHROMIUM);
-    DCHECK(resource->image_id);
   }
 
   resource->locked_for_write = true;
@@ -946,6 +975,16 @@ void ResourceProvider::UnlockForWriteToGpuMemoryBuffer(ResourceId id) {
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(GLTexture, resource->type);
+
+  if (!resource->image_id) {
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    resource->image_id =
+        gl->CreateImageCHROMIUM(resource->gpu_memory_buffer->AsClientBuffer(),
+                                resource->size.width(),
+                                resource->size.height(),
+                                GL_RGBA);
+  }
 
   resource->locked_for_write = false;
   resource->dirty_image = true;
@@ -1089,18 +1128,13 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
                                    ResourceProvider::ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_id_(resource_id),
-      image_id_(resource_provider->LockForWriteToGpuMemoryBuffer(resource_id)
-                    ->image_id),
       gpu_memory_buffer_(
-          resource_provider->ContextGL()->MapImageCHROMIUM(image_id_)),
-      stride_(-1) {
-  resource_provider->ContextGL()->GetImageParameterivCHROMIUM(
-      image_id_, GL_IMAGE_ROWBYTES_CHROMIUM, &stride_);
+          resource_provider->LockForWriteToGpuMemoryBuffer(resource_id)
+              ->gpu_memory_buffer) {
 }
 
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     ~ScopedWriteLockGpuMemoryBuffer() {
-  resource_provider_->ContextGL()->UnmapImageCHROMIUM(image_id_);
   resource_provider_->UnlockForWriteToGpuMemoryBuffer(resource_id_);
 }
 
@@ -1120,6 +1154,7 @@ ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
 ResourceProvider::ResourceProvider(
     OutputSurface* output_surface,
     SharedBitmapManager* shared_bitmap_manager,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
@@ -1127,6 +1162,7 @@ ResourceProvider::ResourceProvider(
     bool use_distance_field_text)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       blocking_main_thread_task_runner_(blocking_main_thread_task_runner),
       lost_output_surface_(false),
       highp_threshold_min_(highp_threshold_min),

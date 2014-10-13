@@ -19,13 +19,13 @@ GLImageRefCountedMemory::~GLImageRefCountedMemory() {
 }
 
 bool GLImageRefCountedMemory::Initialize(
-    base::RefCountedMemory* ref_counted_memory) {
-  if (!HasValidFormat())
+    base::RefCountedMemory* ref_counted_memory,
+    gfx::GpuMemoryBuffer::Format format) {
+  if (!GLImageMemory::Initialize(ref_counted_memory->front(), format))
     return false;
 
   DCHECK(!ref_counted_memory_.get());
   ref_counted_memory_ = ref_counted_memory;
-  GLImageMemory::Initialize(ref_counted_memory_->front());
   return true;
 }
 

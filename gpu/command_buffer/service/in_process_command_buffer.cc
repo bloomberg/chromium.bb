@@ -609,18 +609,25 @@ gpu::Capabilities InProcessCommandBuffer::GetCapabilities() {
   return capabilities_;
 }
 
-gfx::GpuMemoryBuffer* InProcessCommandBuffer::CreateGpuMemoryBuffer(
+int32 InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
+                                          size_t width,
+                                          size_t height,
+                                          unsigned internalformat) {
+  NOTREACHED();
+  return -1;
+}
+
+void InProcessCommandBuffer::DestroyImage(int32 id) {
+  NOTREACHED();
+}
+
+int32 InProcessCommandBuffer::CreateGpuMemoryBufferImage(
     size_t width,
     size_t height,
     unsigned internalformat,
-    unsigned usage,
-    int32* id) {
+    unsigned usage) {
   NOTREACHED();
-  return NULL;
-}
-
-void InProcessCommandBuffer::DestroyGpuMemoryBuffer(int32 id) {
-  NOTREACHED();
+  return -1;
 }
 
 uint32 InProcessCommandBuffer::InsertSyncPoint() {

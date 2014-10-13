@@ -156,6 +156,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),
                                                   shared_bitmap_manager_.get(),
                                                   NULL,
+                                                  NULL,
                                                   0,
                                                   false,
                                                   1,
@@ -191,6 +192,7 @@ class GLRendererShaderTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),
                                                   shared_bitmap_manager_.get(),
+                                                  NULL,
                                                   NULL,
                                                   0,
                                                   false,
@@ -485,6 +487,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
                                NULL,
+                               NULL,
                                0,
                                false,
                                1,
@@ -527,6 +530,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
                                NULL,
+                               NULL,
                                0,
                                false,
                                1,
@@ -565,6 +569,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -618,6 +623,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
                                NULL,
+                               NULL,
                                0,
                                false,
                                1,
@@ -662,6 +668,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -750,6 +757,7 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
                                NULL,
+                               NULL,
                                0,
                                false,
                                1,
@@ -820,6 +828,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -911,6 +920,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -1010,6 +1020,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
                                NULL,
+                               NULL,
                                0,
                                false,
                                1,
@@ -1107,6 +1118,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -1298,6 +1310,7 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -1677,6 +1690,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(&output_surface_,
                                                   shared_bitmap_manager_.get(),
+                                                  NULL,
                                                   NULL,
                                                   0,
                                                   false,

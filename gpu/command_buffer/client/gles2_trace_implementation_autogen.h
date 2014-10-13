@@ -402,8 +402,6 @@ virtual GLuint GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
 virtual GLboolean EnableFeatureCHROMIUM(const char* feature) override;
 virtual void* MapBufferCHROMIUM(GLuint target, GLenum access) override;
 virtual GLboolean UnmapBufferCHROMIUM(GLuint target) override;
-virtual void* MapImageCHROMIUM(GLuint image_id) override;
-virtual void UnmapImageCHROMIUM(GLuint image_id) override;
 virtual void* MapBufferSubDataCHROMIUM(GLuint target,
                                        GLintptr offset,
                                        GLsizeiptr size,
@@ -434,14 +432,11 @@ virtual void GetProgramInfoCHROMIUM(GLuint program,
                                     GLsizei* size,
                                     void* info) override;
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) override;
-virtual GLuint CreateImageCHROMIUM(GLsizei width,
+virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
+                                   GLsizei width,
                                    GLsizei height,
-                                   GLenum internalformat,
-                                   GLenum usage) override;
+                                   GLenum internalformat) override;
 virtual void DestroyImageCHROMIUM(GLuint image_id) override;
-virtual void GetImageParameterivCHROMIUM(GLuint image_id,
-                                         GLenum pname,
-                                         GLint* params) override;
 virtual GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
                                                   GLsizei height,
                                                   GLenum internalformat,

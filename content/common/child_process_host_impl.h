@@ -17,13 +17,10 @@
 #include "base/strings/string16.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace base {
 class FilePath;
-}
-
-namespace gfx {
-struct GpuMemoryBufferHandle;
 }
 
 namespace IPC {
@@ -84,9 +81,14 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
                               base::SharedMemoryHandle* handle);
   void OnAllocateGpuMemoryBuffer(uint32 width,
                                  uint32 height,
-                                 uint32 internalformat,
-                                 uint32 usage,
-                                 gfx::GpuMemoryBufferHandle* handle);
+                                 gfx::GpuMemoryBuffer::Format format,
+                                 gfx::GpuMemoryBuffer::Usage usage,
+                                 IPC::Message* reply);
+  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                const gfx::GpuMemoryBufferId& id);
+
+  void GpuMemoryBufferAllocated(IPC::Message* reply,
+                                const gfx::GpuMemoryBufferHandle& handle);
 
   ChildProcessHostDelegate* delegate_;
   base::ProcessHandle peer_handle_;

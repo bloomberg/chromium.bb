@@ -48,6 +48,8 @@
       'child/child_process.h',
       'child/child_resource_message_filter.cc',
       'child/child_resource_message_filter.h',
+      'child/child_gpu_memory_buffer_manager.cc',
+      'child/child_gpu_memory_buffer_manager.h',
       'child/child_shared_bitmap_manager.cc',
       'child/child_shared_bitmap_manager.h',
       'child/child_thread.cc',

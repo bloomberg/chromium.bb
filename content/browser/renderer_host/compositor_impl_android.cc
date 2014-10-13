@@ -30,6 +30,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
@@ -402,6 +403,7 @@ void CompositorImpl::SetVisible(bool visible) {
         this,
         this,
         HostSharedBitmapManager::current(),
+        BrowserGpuMemoryBufferManager::current(),
         settings,
         base::MessageLoopProxy::current());
     host_->SetRootLayer(root_layer_);

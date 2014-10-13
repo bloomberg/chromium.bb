@@ -9,6 +9,8 @@
 
 #include "base/compiler_specific.h"
 
+extern "C" typedef struct _ClientBuffer* ClientBuffer;
+
 namespace gpu {
 namespace gles2 {
 

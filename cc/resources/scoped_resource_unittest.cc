@@ -25,6 +25,7 @@ TEST(ScopedResourceTest, NewScopedResource) {
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
                                NULL,
+                               NULL,
                                0,
                                false,
                                1,
@@ -50,6 +51,7 @@ TEST(ScopedResourceTest, CreateScopedResource) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -79,6 +81,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,
@@ -119,6 +122,7 @@ TEST(ScopedResourceTest, LeakScopedResource) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager.get(),
+                               NULL,
                                NULL,
                                0,
                                false,

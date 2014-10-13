@@ -11,21 +11,18 @@ namespace content {
 
 // static
 void GpuMemoryBufferImpl::Create(const gfx::Size& size,
-                                 unsigned internalformat,
-                                 unsigned usage,
+                                 Format format,
+                                 Usage usage,
                                  int client_id,
                                  const CreationCallback& callback) {
-  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(internalformat,
-                                                             usage)) {
-    GpuMemoryBufferImplIOSurface::Create(
-        size, internalformat, usage, client_id, callback);
+  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(format, usage)) {
+    GpuMemoryBufferImplIOSurface::Create(size, format, client_id, callback);
     return;
   }
 
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
-          size, internalformat, usage)) {
-    GpuMemoryBufferImplSharedMemory::Create(
-        size, internalformat, usage, callback);
+          size, format, usage)) {
+    GpuMemoryBufferImplSharedMemory::Create(size, format, callback);
     return;
   }
 
@@ -35,22 +32,21 @@ void GpuMemoryBufferImpl::Create(const gfx::Size& size,
 // static
 void GpuMemoryBufferImpl::AllocateForChildProcess(
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    Format format,
+    Usage usage,
     base::ProcessHandle child_process,
     int child_client_id,
     const AllocationCallback& callback) {
-  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(internalformat,
-                                                             usage)) {
+  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(format, usage)) {
     GpuMemoryBufferImplIOSurface::AllocateForChildProcess(
-        size, internalformat, usage, child_client_id, callback);
+        size, format, child_client_id, callback);
     return;
   }
 
   if (GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
-          size, internalformat, usage)) {
+          size, format, usage)) {
     GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
-        size, internalformat, child_process, callback);
+        size, format, child_process, callback);
     return;
   }
 
@@ -68,15 +64,15 @@ void GpuMemoryBufferImpl::DeletedByChildProcess(
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER:
       return GpuMemoryBufferImplSharedMemory::CreateFromHandle(
-          handle, size, internalformat, callback);
+          handle, size, format, callback);
     case gfx::IO_SURFACE_BUFFER:
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
-          handle, size, internalformat, callback);
+          handle, size, format, callback);
     default:
       return scoped_ptr<GpuMemoryBufferImpl>();
   }

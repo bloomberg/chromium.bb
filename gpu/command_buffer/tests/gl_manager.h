@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {
@@ -60,6 +61,10 @@ class GLManager : private GpuControl {
   GLManager();
   virtual ~GLManager();
 
+  static scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
+      const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format);
+
   void Initialize(const Options& options);
   void Destroy();
 
@@ -91,12 +96,15 @@ class GLManager : private GpuControl {
 
   // GpuControl implementation.
   virtual Capabilities GetCapabilities() override;
-  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
-                                                      size_t height,
-                                                      unsigned internalformat,
-                                                      unsigned usage,
-                                                      int32* id) override;
-  virtual void DestroyGpuMemoryBuffer(int32 id) override;
+  virtual int32 CreateImage(ClientBuffer buffer,
+                            size_t width,
+                            size_t height,
+                            unsigned internalformat) override;
+  virtual void DestroyImage(int32 id) override;
+  virtual int32 CreateGpuMemoryBufferImage(size_t width,
+                                           size_t height,
+                                           unsigned internalformat,
+                                           unsigned usage) override;
   virtual uint32 InsertSyncPoint() override;
   virtual uint32 InsertFutureSyncPoint() override;
   virtual void RetireSyncPoint(uint32 sync_point) override;
@@ -123,9 +131,6 @@ class GLManager : private GpuControl {
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
   bool context_lost_allowed_;
-
-  // Client GpuControl implementation.
-  base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer> gpu_memory_buffers_;
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;

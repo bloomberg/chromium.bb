@@ -5,9 +5,28 @@
 #include "ui/gl/gl_image_shared_memory.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 
 namespace gfx {
+namespace {
+
+// Returns true if the size is valid and false otherwise.
+bool SizeInBytes(const gfx::Size& size,
+                 gfx::GpuMemoryBuffer::Format format,
+                 size_t* size_in_bytes) {
+  if (size.IsEmpty())
+    return false;
+  base::CheckedNumeric<size_t> s = GLImageMemory::BytesPerPixel(format);
+  s *= size.width();
+  s *= size.height();
+  if (!s.IsValid())
+    return false;
+  *size_in_bytes = s.ValueOrDie();
+  return true;
+}
+
+}  // namespace
 
 GLImageSharedMemory::GLImageSharedMemory(const gfx::Size& size,
                                          unsigned internalformat)
@@ -18,8 +37,10 @@ GLImageSharedMemory::~GLImageSharedMemory() {
   DCHECK(!shared_memory_);
 }
 
-bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
-  if (!HasValidFormat())
+bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle,
+                                     gfx::GpuMemoryBuffer::Format format) {
+  size_t size_in_bytes;
+  if (!SizeInBytes(GetSize(), format, &size_in_bytes))
     return false;
 
   if (!base::SharedMemory::IsHandleValid(handle.handle))
@@ -37,16 +58,18 @@ bool GLImageSharedMemory::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
 
   scoped_ptr<base::SharedMemory> duped_shared_memory(
       new base::SharedMemory(duped_shared_memory_handle, true));
-
-  if (!duped_shared_memory->Map(Bytes())) {
+  if (!duped_shared_memory->Map(size_in_bytes)) {
     DVLOG(0) << "Failed to map shared memory.";
+    return false;
+  }
+
+  if (!GLImageMemory::Initialize(
+          static_cast<unsigned char*>(duped_shared_memory->memory()), format)) {
     return false;
   }
 
   DCHECK(!shared_memory_);
   shared_memory_ = duped_shared_memory.Pass();
-  GLImageMemory::Initialize(
-      static_cast<unsigned char*>(shared_memory_->memory()));
   return true;
 }
 

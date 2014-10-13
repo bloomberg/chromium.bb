@@ -13,7 +13,7 @@
 #include "ipc/message_filter.h"
 
 namespace content {
-class GpuMemoryBufferImpl;
+class BrowserGpuMemoryBufferManager;
 class GpuMemoryBufferFactoryHostImpl;
 
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
@@ -33,11 +33,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat,
-      unsigned usage) override;
 
   // Specify a task runner and callback to be used for a set of messages. The
   // callback will be set up on the current GpuProcessHost, identified by
@@ -60,7 +55,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
  private:
   struct CreateRequest;
-  struct AllocateGpuMemoryBufferRequest;
   class EstablishRequest;
 
   BrowserGpuChannelHostFactory();
@@ -75,15 +69,12 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
                                        CreateCommandBufferResult result);
   static void AddFilterOnIO(int gpu_host_id,
                             scoped_refptr<IPC::MessageFilter> filter);
-  static void AllocateGpuMemoryBufferOnIO(
-      AllocateGpuMemoryBufferRequest* request);
-  static void OnGpuMemoryBufferCreated(AllocateGpuMemoryBufferRequest* request,
-                                       scoped_ptr<GpuMemoryBufferImpl> buffer);
 
   const int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<GpuChannelHost> gpu_channel_;
   scoped_ptr<GpuMemoryBufferFactoryHostImpl> gpu_memory_buffer_factory_host_;
+  scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<base::Closure> established_callbacks_;

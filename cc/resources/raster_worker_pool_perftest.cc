@@ -21,6 +21,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_context_support.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,10 +33,10 @@ namespace {
 
 class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   // Overridden from gpu::gles2::GLES2Interface:
-  virtual GLuint CreateImageCHROMIUM(GLsizei width,
+  virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
+                                     GLsizei width,
                                      GLsizei height,
-                                     GLenum internalformat,
-                                     GLenum usage) override {
+                                     GLenum internalformat) override {
     return 1u;
   }
   virtual void GenBuffers(GLsizei n, GLuint* buffers) override {
@@ -399,9 +400,14 @@ class RasterWorkerPoolPerfTest
   void Create3dOutputSurfaceAndResourceProvider() {
     output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ =
-        ResourceProvider::Create(
-            output_surface_.get(), NULL, NULL, 0, false, 1, false).Pass();
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
+                                                  NULL,
+                                                  &gpu_memory_buffer_manager_,
+                                                  NULL,
+                                                  0,
+                                                  false,
+                                                  1,
+                                                  false).Pass();
   }
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
@@ -410,6 +416,7 @@ class RasterWorkerPoolPerfTest
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),
                                                   &shared_bitmap_manager_,
+                                                  NULL,
                                                   NULL,
                                                   0,
                                                   false,
@@ -436,6 +443,7 @@ class RasterWorkerPoolPerfTest
 
   scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
 };
 
@@ -483,7 +491,7 @@ class RasterWorkerPoolCommonPerfTest : public RasterWorkerPoolPerfTestBase,
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ =
         ResourceProvider::Create(
-            output_surface_.get(), NULL, NULL, 0, false, 1, false).Pass();
+            output_surface_.get(), NULL, NULL, NULL, 0, false, 1, false).Pass();
   }
 
   void RunBuildRasterTaskQueueTest(const std::string& test_name,

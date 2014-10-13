@@ -1903,7 +1903,7 @@ class LayerTreeHostWithProxy : public LayerTreeHost {
   LayerTreeHostWithProxy(FakeLayerTreeHostClient* client,
                          const LayerTreeSettings& settings,
                          scoped_ptr<FakeProxy> proxy)
-      : LayerTreeHost(client, NULL, settings) {
+      : LayerTreeHost(client, NULL, NULL, settings) {
     proxy->SetLayerTreeHost(this);
     client->SetLayerTreeHost(this);
     InitializeForTesting(proxy.Pass());
@@ -1978,6 +1978,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
       LayerTreeHost::CreateSingleThreaded(&client,
                                           &client,
                                           shared_bitmap_manager.get(),
+                                          NULL,
                                           settings,
                                           base::MessageLoopProxy::current());
   client.SetLayerTreeHost(host.get());
@@ -1999,6 +2000,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
       LayerTreeHost::CreateSingleThreaded(&client,
                                           &client,
                                           shared_bitmap_manager.get(),
+                                          NULL,
                                           settings,
                                           base::MessageLoopProxy::current());
   client.SetLayerTreeHost(host.get());
@@ -2020,6 +2022,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
       LayerTreeHost::CreateSingleThreaded(&client,
                                           &client,
                                           shared_bitmap_manager.get(),
+                                          NULL,
                                           settings,
                                           base::MessageLoopProxy::current());
   client.SetLayerTreeHost(host.get());
@@ -2042,6 +2045,7 @@ TEST(LayerTreeHostTest,
       LayerTreeHost::CreateSingleThreaded(&client,
                                           &client,
                                           shared_bitmap_manager.get(),
+                                          NULL,
                                           settings,
                                           base::MessageLoopProxy::current());
   client.SetLayerTreeHost(host.get());

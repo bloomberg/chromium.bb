@@ -26,6 +26,7 @@
 #include "base/threading/thread_local.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
+#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_process.h"
 #include "content/child/child_resource_message_filter.h"
@@ -360,6 +361,9 @@ void ChildThread::Init(const Options& options) {
 
   shared_bitmap_manager_.reset(
       new ChildSharedBitmapManager(thread_safe_sender()));
+
+  gpu_memory_buffer_manager_.reset(
+      new ChildGpuMemoryBufferManager(thread_safe_sender()));
 }
 
 ChildThread::~ChildThread() {

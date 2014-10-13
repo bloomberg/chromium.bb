@@ -24,7 +24,6 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/ref_counted.h"
@@ -543,15 +542,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLenum target, GLintptr offset, GLsizeiptr size, const void* data,
       ScopedTransferBufferPtr* buffer);
 
-  GLuint CreateImageCHROMIUMHelper(GLsizei width,
+  GLuint CreateImageCHROMIUMHelper(ClientBuffer buffer,
+                                   GLsizei width,
                                    GLsizei height,
-                                   GLenum internalformat,
-                                   GLenum usage);
+                                   GLenum internalformat);
   void DestroyImageCHROMIUMHelper(GLuint image_id);
-  void* MapImageCHROMIUMHelper(GLuint image_id);
-  void UnmapImageCHROMIUMHelper(GLuint image_id);
-  void GetImageParameterivCHROMIUMHelper(
-      GLuint image_id, GLenum pname, GLint* params);
   GLuint CreateGpuMemoryBufferImageCHROMIUMHelper(GLsizei width,
                                                   GLsizei height,
                                                   GLenum internalformat,
@@ -773,8 +768,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_ptr<IdAllocator> query_id_allocator_;
 
   scoped_ptr<BufferTracker> buffer_tracker_;
-
-  scoped_ptr<GpuMemoryBufferTracker> gpu_memory_buffer_tracker_;
 
   GLES2ImplementationErrorMessageCallback* error_message_callback_;
 

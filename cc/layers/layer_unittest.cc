@@ -14,6 +14,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -40,7 +41,7 @@ namespace {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, nullptr, LayerTreeSettings()) {
+      : LayerTreeHost(client, nullptr, nullptr, LayerTreeSettings()) {
     InitializeSingleThreaded(client, base::MessageLoopProxy::current());
   }
 
@@ -925,13 +926,15 @@ class LayerTreeHostFactory {
  public:
   LayerTreeHostFactory()
       : client_(FakeLayerTreeHostClient::DIRECT_3D),
-        shared_bitmap_manager_(new TestSharedBitmapManager()) {}
+        shared_bitmap_manager_(new TestSharedBitmapManager),
+        gpu_memory_buffer_manager_(new TestGpuMemoryBufferManager) {}
 
   scoped_ptr<LayerTreeHost> Create() {
     return LayerTreeHost::CreateSingleThreaded(
                &client_,
                &client_,
                shared_bitmap_manager_.get(),
+               gpu_memory_buffer_manager_.get(),
                LayerTreeSettings(),
                base::MessageLoopProxy::current()).Pass();
   }
@@ -941,13 +944,15 @@ class LayerTreeHostFactory {
                &client_,
                &client_,
                shared_bitmap_manager_.get(),
+               gpu_memory_buffer_manager_.get(),
                settings,
                base::MessageLoopProxy::current()).Pass();
   }
 
  private:
   FakeLayerTreeHostClient client_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 };
 
 void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {

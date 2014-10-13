@@ -9,12 +9,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_memory_buffer_factory_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -38,28 +38,6 @@ struct BrowserGpuChannelHostFactory::CreateRequest {
   int gpu_host_id;
   int32 route_id;
   CreateCommandBufferResult result;
-};
-
-struct BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferRequest {
-  AllocateGpuMemoryBufferRequest(size_t width,
-                                 size_t height,
-                                 unsigned internalformat,
-                                 unsigned usage,
-                                 int client_id)
-      : event(true, false),
-        width(width),
-        height(height),
-        internalformat(internalformat),
-        usage(usage),
-        client_id(client_id) {}
-  ~AllocateGpuMemoryBufferRequest() {}
-  base::WaitableEvent event;
-  size_t width;
-  size_t height;
-  unsigned internalformat;
-  unsigned usage;
-  int client_id;
-  scoped_ptr<gfx::GpuMemoryBuffer> result;
 };
 
 class BrowserGpuChannelHostFactory::EstablishRequest
@@ -244,6 +222,8 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_memory_buffer_factory_host_(new GpuMemoryBufferFactoryHostImpl),
+      gpu_memory_buffer_manager_(
+          new BrowserGpuMemoryBufferManager(gpu_client_id_)),
       gpu_host_id_(0) {
 }
 
@@ -376,10 +356,12 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
     DCHECK(!gpu_channel_.get());
   } else {
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
-    gpu_channel_ = GpuChannelHost::Create(this,
-                                          pending_request_->gpu_info(),
-                                          pending_request_->channel_handle(),
-                                          shutdown_event_.get());
+    gpu_channel_ =
+        GpuChannelHost::Create(this,
+                               pending_request_->gpu_info(),
+                               pending_request_->channel_handle(),
+                               shutdown_event_.get(),
+                               BrowserGpuMemoryBufferManager::current());
   }
   gpu_host_id_ = pending_request_->gpu_host_id();
   gpu_memory_buffer_factory_host_->set_gpu_host_id(gpu_host_id_);
@@ -389,28 +371,6 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
     established_callbacks_[n].Run();
 
   established_callbacks_.clear();
-}
-
-scoped_ptr<gfx::GpuMemoryBuffer>
-BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(size_t width,
-                                                      size_t height,
-                                                      unsigned internalformat,
-                                                      unsigned usage) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  AllocateGpuMemoryBufferRequest request(
-      width, height, internalformat, usage, gpu_client_id_);
-  GetIOLoopProxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferOnIO,
-                 base::Unretained(&request)));
-
-  // We're blocking the UI thread, which is generally undesirable.
-  TRACE_EVENT0("browser",
-               "BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer");
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  request.event.Wait();
-  return request.result.Pass();
 }
 
 // static
@@ -445,35 +405,6 @@ void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(
       base::Bind(&BrowserGpuChannelHostFactory::AddFilterOnIO,
                  gpu_host_id_,
                  filter));
-}
-
-// static
-void BrowserGpuChannelHostFactory::AllocateGpuMemoryBufferOnIO(
-    AllocateGpuMemoryBufferRequest* request) {
-  if (!GpuMemoryBufferImpl::IsFormatValid(request->internalformat) ||
-      !GpuMemoryBufferImpl::IsUsageValid(request->usage)) {
-    request->result = scoped_ptr<gfx::GpuMemoryBuffer>();
-    request->event.Signal();
-    return;
-  }
-
-  GpuMemoryBufferImpl::Create(
-      gfx::Size(request->width, request->height),
-      request->internalformat,
-      request->usage,
-      request->client_id,
-      base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
-                 base::Unretained(request)));
-}
-
-// static
-void BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated(
-    AllocateGpuMemoryBufferRequest* request,
-    scoped_ptr<GpuMemoryBufferImpl> buffer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  request->result = buffer.PassAs<gfx::GpuMemoryBuffer>();
-  request->event.Signal();
 }
 
 }  // namespace content

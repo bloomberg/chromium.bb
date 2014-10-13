@@ -19,13 +19,13 @@ void Noop() {
 
 void GpuMemoryBufferCreated(
     const gfx::Size& size,
-    unsigned internalformat,
+    gfx::GpuMemoryBuffer::Format format,
     const GpuMemoryBufferImpl::CreationCallback& callback,
     const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK_EQ(gfx::OZONE_NATIVE_BUFFER, handle.type);
 
   callback.Run(GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
-      handle, size, internalformat, base::Bind(&Noop)));
+      handle, size, format, base::Bind(&Noop)));
 }
 
 void GpuMemoryBufferCreatedForChildProcess(
@@ -40,10 +40,10 @@ void GpuMemoryBufferCreatedForChildProcess(
 
 GpuMemoryBufferImplOzoneNativeBuffer::GpuMemoryBufferImplOzoneNativeBuffer(
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback,
     const gfx::GpuMemoryBufferId& id)
-    : GpuMemoryBufferImpl(size, internalformat, callback), id_(id) {
+    : GpuMemoryBufferImpl(size, format, callback), id_(id) {
 }
 
 GpuMemoryBufferImplOzoneNativeBuffer::~GpuMemoryBufferImplOzoneNativeBuffer() {
@@ -52,8 +52,7 @@ GpuMemoryBufferImplOzoneNativeBuffer::~GpuMemoryBufferImplOzoneNativeBuffer() {
 // static
 void GpuMemoryBufferImplOzoneNativeBuffer::Create(
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    Format format,
     int client_id,
     const CreationCallback& callback) {
   gfx::GpuMemoryBufferHandle handle;
@@ -63,16 +62,15 @@ void GpuMemoryBufferImplOzoneNativeBuffer::Create(
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
       handle,
       size,
-      internalformat,
-      usage,
-      base::Bind(&GpuMemoryBufferCreated, size, internalformat, callback));
+      format,
+      SCANOUT,
+      base::Bind(&GpuMemoryBufferCreated, size, format, callback));
 }
 
 // static
 void GpuMemoryBufferImplOzoneNativeBuffer::AllocateForChildProcess(
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    Format format,
     int child_client_id,
     const AllocationCallback& callback) {
   gfx::GpuMemoryBufferHandle handle;
@@ -82,8 +80,8 @@ void GpuMemoryBufferImplOzoneNativeBuffer::AllocateForChildProcess(
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
       handle,
       size,
-      internalformat,
-      usage,
+      format,
+      SCANOUT,
       base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
 }
 
@@ -92,42 +90,47 @@ scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback) {
-  DCHECK(IsFormatSupported(internalformat));
+  DCHECK(IsFormatSupported(format));
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplOzoneNativeBuffer(
-          size, internalformat, callback, handle.global_id));
+          size, format, callback, handle.global_id));
 }
 
 // static
-bool GpuMemoryBufferImplOzoneNativeBuffer::IsFormatSupported(
-    unsigned internalformat) {
-  switch (internalformat) {
-    case GL_RGBA8_OES:
-    case GL_RGB8_OES:
+bool GpuMemoryBufferImplOzoneNativeBuffer::IsFormatSupported(Format format) {
+  switch (format) {
+    case RGBA_8888:
+    case RGBX_8888:
       return true;
-    default:
+    case BGRA_8888:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 // static
-bool GpuMemoryBufferImplOzoneNativeBuffer::IsUsageSupported(unsigned usage) {
+bool GpuMemoryBufferImplOzoneNativeBuffer::IsUsageSupported(Usage usage) {
   switch (usage) {
-    case GL_IMAGE_SCANOUT_CHROMIUM:
-      return true;
-    default:
+    case MAP:
       return false;
+    case SCANOUT:
+      return true;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 // static
 bool GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
-    unsigned internalformat,
-    unsigned usage) {
-  return IsFormatSupported(internalformat) && IsUsageSupported(usage);
+    Format format,
+    Usage usage) {
+  return IsFormatSupported(format) && IsUsageSupported(usage);
 }
 
 void* GpuMemoryBufferImplOzoneNativeBuffer::Map() {

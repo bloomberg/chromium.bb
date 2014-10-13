@@ -20,8 +20,4 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle()
 {
 }
 
-GpuMemoryBuffer::GpuMemoryBuffer() {}
-
-GpuMemoryBuffer::~GpuMemoryBuffer() {}
-
 }  // namespace gfx

@@ -721,12 +721,6 @@ void* GLES2MapBufferCHROMIUM(GLuint target, GLenum access) {
 GLboolean GLES2UnmapBufferCHROMIUM(GLuint target) {
   return gles2::GetGLContext()->UnmapBufferCHROMIUM(target);
 }
-void* GLES2MapImageCHROMIUM(GLuint image_id) {
-  return gles2::GetGLContext()->MapImageCHROMIUM(image_id);
-}
-void GLES2UnmapImageCHROMIUM(GLuint image_id) {
-  gles2::GetGLContext()->UnmapImageCHROMIUM(image_id);
-}
 void* GLES2MapBufferSubDataCHROMIUM(GLuint target,
                                     GLintptr offset,
                                     GLsizeiptr size,
@@ -780,20 +774,15 @@ void GLES2GetProgramInfoCHROMIUM(GLuint program,
 GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
   return gles2::GetGLContext()->CreateStreamTextureCHROMIUM(texture);
 }
-GLuint GLES2CreateImageCHROMIUM(GLsizei width,
+GLuint GLES2CreateImageCHROMIUM(ClientBuffer buffer,
+                                GLsizei width,
                                 GLsizei height,
-                                GLenum internalformat,
-                                GLenum usage) {
+                                GLenum internalformat) {
   return gles2::GetGLContext()->CreateImageCHROMIUM(
-      width, height, internalformat, usage);
+      buffer, width, height, internalformat);
 }
 void GLES2DestroyImageCHROMIUM(GLuint image_id) {
   gles2::GetGLContext()->DestroyImageCHROMIUM(image_id);
-}
-void GLES2GetImageParameterivCHROMIUM(GLuint image_id,
-                                      GLenum pname,
-                                      GLint* params) {
-  gles2::GetGLContext()->GetImageParameterivCHROMIUM(image_id, pname, params);
 }
 GLuint GLES2CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
                                                GLsizei height,
@@ -1650,14 +1639,6 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glUnmapBufferCHROMIUM),
     },
     {
-     "glMapImageCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glMapImageCHROMIUM),
-    },
-    {
-     "glUnmapImageCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glUnmapImageCHROMIUM),
-    },
-    {
      "glMapBufferSubDataCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glMapBufferSubDataCHROMIUM),
     },
@@ -1709,10 +1690,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glDestroyImageCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glDestroyImageCHROMIUM),
-    },
-    {
-     "glGetImageParameterivCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGetImageParameterivCHROMIUM),
     },
     {
      "glCreateGpuMemoryBufferImageCHROMIUM",

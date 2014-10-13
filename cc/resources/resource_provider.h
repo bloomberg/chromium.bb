@@ -42,12 +42,14 @@ class GLES2Interface;
 }
 
 namespace gfx {
+class GpuMemoryBuffer;
 class Rect;
 class Vector2d;
 }
 
 namespace cc {
 class BlockingTaskRunner;
+class GpuMemoryBufferManager;
 class IdAllocator;
 class SharedBitmap;
 class SharedBitmapManager;
@@ -77,6 +79,7 @@ class CC_EXPORT ResourceProvider {
   static scoped_ptr<ResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager,
+      GpuMemoryBufferManager* gpu_memory_buffer_manager,
       BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
@@ -309,15 +312,12 @@ class CC_EXPORT ResourceProvider {
                                    ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockGpuMemoryBuffer();
 
-    void* gpu_memory_buffer() { return gpu_memory_buffer_; }
-    int stride() const { return stride_; }
+    gfx::GpuMemoryBuffer* gpu_memory_buffer() { return gpu_memory_buffer_; }
 
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::ResourceId resource_id_;
-    unsigned image_id_;
-    void* gpu_memory_buffer_;
-    int stride_;
+    gfx::GpuMemoryBuffer* gpu_memory_buffer_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
@@ -456,6 +456,7 @@ class CC_EXPORT ResourceProvider {
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;
     SharedBitmap* shared_bitmap;
+    gfx::GpuMemoryBuffer* gpu_memory_buffer;
     skia::RefPtr<SkSurface> sk_surface;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
@@ -483,6 +484,7 @@ class CC_EXPORT ResourceProvider {
 
   ResourceProvider(OutputSurface* output_surface,
                    SharedBitmapManager* shared_bitmap_manager,
+                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
@@ -531,6 +533,7 @@ class CC_EXPORT ResourceProvider {
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;
+  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
   bool lost_output_surface_;
   int highp_threshold_min_;

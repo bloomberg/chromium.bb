@@ -51,6 +51,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -82,7 +83,8 @@ class LayerTreeHostImplTest : public testing::Test,
                base::MessageLoopProxy::current()),
         always_impl_thread_(&proxy_),
         always_main_thread_blocked_(&proxy_),
-        shared_bitmap_manager_(new TestSharedBitmapManager()),
+        shared_bitmap_manager_(new TestSharedBitmapManager),
+        gpu_memory_buffer_manager_(new TestGpuMemoryBufferManager),
         on_can_draw_state_changed_called_(false),
         did_notify_ready_to_activate_(false),
         did_request_commit_(false),
@@ -175,6 +177,7 @@ class LayerTreeHostImplTest : public testing::Test,
                                            &proxy_,
                                            &stats_instrumentation_,
                                            shared_bitmap_manager_.get(),
+                                           gpu_memory_buffer_manager_.get(),
                                            0);
     bool init = host_impl_->InitializeRenderer(output_surface.Pass());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
@@ -392,7 +395,8 @@ class LayerTreeHostImplTest : public testing::Test,
   DebugScopedSetImplThread always_impl_thread_;
   DebugScopedSetMainThreadBlocked always_main_thread_blocked_;
 
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
   bool on_can_draw_state_changed_called_;
@@ -1366,6 +1370,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           proxy,
                           rendering_stats_instrumentation,
                           manager,
+                          NULL,
                           0) {}
 
   virtual BeginFrameArgs CurrentBeginFrameArgs() const override {
@@ -4415,6 +4420,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
                                 &proxy_,
                                 &stats_instrumentation_,
                                 shared_bitmap_manager.get(),
+                                NULL,
                                 0);
   layer_tree_host_impl->InitializeRenderer(output_surface.Pass());
   layer_tree_host_impl->SetViewportSize(gfx::Size(500, 500));
@@ -4703,7 +4709,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   LayerTreeSettings settings;
   settings.partial_swap_enabled = partial_swap;
   scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
-      settings, client, proxy, stats_instrumentation, manager, 0);
+      settings, client, proxy, stats_instrumentation, manager, NULL, 0);
   my_host_impl->InitializeRenderer(output_surface.Pass());
   my_host_impl->SetViewportSize(gfx::Size(100, 100));
 
@@ -5987,6 +5993,7 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
                                          &proxy_,
                                          &stats_instrumentation_,
                                          shared_bitmap_manager_.get(),
+                                         gpu_memory_buffer_manager_.get(),
                                          0);
 
   scoped_ptr<OutputSurface> output_surface(
@@ -6028,7 +6035,7 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   LayerTreeSettings settings;
   settings.gpu_rasterization_enabled = true;
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_, NULL, 0);
+      settings, this, &proxy_, &stats_instrumentation_, NULL, NULL, 0);
   host_impl_->SetUseGpuRasterization(true);
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);

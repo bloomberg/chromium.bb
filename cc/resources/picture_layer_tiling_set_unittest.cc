@@ -206,6 +206,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
         ResourceProvider::Create(output_surface.get(),
                                  shared_bitmap_manager.get(),
                                  NULL,
+                                 NULL,
                                  0,
                                  false,
                                  1,

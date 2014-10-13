@@ -13,13 +13,18 @@
 #include <EGL/eglext.h>
 #endif
 
+#include "ui/gfx/gpu_memory_buffer.h"
+
 namespace gfx {
 
 class GL_EXPORT GLImageMemory : public GLImage {
  public:
   GLImageMemory(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(const unsigned char* memory);
+  static size_t BytesPerPixel(gfx::GpuMemoryBuffer::Format format);
+
+  bool Initialize(const unsigned char* memory,
+                  gfx::GpuMemoryBuffer::Format format);
 
   // Overridden from GLImage:
   virtual void Destroy(bool have_context) override;
@@ -40,15 +45,13 @@ class GL_EXPORT GLImageMemory : public GLImage {
  protected:
   virtual ~GLImageMemory();
 
-  bool HasValidFormat() const;
-  size_t Bytes() const;
-
  private:
   void DoBindTexImage(unsigned target);
 
-  const unsigned char* memory_;
   const gfx::Size size_;
   const unsigned internalformat_;
+  const unsigned char* memory_;
+  gfx::GpuMemoryBuffer::Format format_;
   bool in_use_;
   unsigned target_;
   bool need_do_bind_tex_image_;

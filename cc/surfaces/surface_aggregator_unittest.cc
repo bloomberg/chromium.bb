@@ -1037,6 +1037,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),
                                                   shared_bitmap_manager_.get(),
                                                   NULL,
+                                                  NULL,
                                                   0,
                                                   false,
                                                   1,

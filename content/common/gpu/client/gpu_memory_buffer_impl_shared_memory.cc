@@ -18,10 +18,10 @@ void Noop() {
 
 GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback,
     scoped_ptr<base::SharedMemory> shared_memory)
-    : GpuMemoryBufferImpl(size, internalformat, callback),
+    : GpuMemoryBufferImpl(size, format, callback),
       shared_memory_(shared_memory.Pass()) {
 }
 
@@ -30,34 +30,31 @@ GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
 
 // static
 void GpuMemoryBufferImplSharedMemory::Create(const gfx::Size& size,
-                                             unsigned internalformat,
-                                             unsigned usage,
+                                             Format format,
                                              const CreationCallback& callback) {
-  DCHECK(GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
-      size, internalformat, usage));
+  DCHECK(IsLayoutSupported(size, format));
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-  if (!shared_memory->CreateAnonymous(size.GetArea() *
-                                      BytesPerPixel(internalformat))) {
+  if (!shared_memory->CreateAnonymous(size.GetArea() * BytesPerPixel(format))) {
     callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
     return;
   }
 
   callback.Run(
       make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplSharedMemory(
-          size, internalformat, base::Bind(&Noop), shared_memory.Pass())));
+          size, format, base::Bind(&Noop), shared_memory.Pass())));
 }
 
 // static
 void GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     base::ProcessHandle child_process,
     const AllocationCallback& callback) {
-  DCHECK(IsLayoutSupported(size, internalformat));
+  DCHECK(IsLayoutSupported(size, format));
+
   base::SharedMemory shared_memory;
-  if (!shared_memory.CreateAnonymous(size.GetArea() *
-                                     BytesPerPixel(internalformat))) {
+  if (!shared_memory.CreateAnonymous(size.GetArea() * BytesPerPixel(format))) {
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
   }
@@ -72,9 +69,9 @@ scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback) {
-  DCHECK(IsLayoutSupported(size, internalformat));
+  DCHECK(IsLayoutSupported(size, format));
 
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return scoped_ptr<GpuMemoryBufferImpl>();
@@ -82,42 +79,61 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplSharedMemory(
           size,
-          internalformat,
+          format,
           callback,
           make_scoped_ptr(new base::SharedMemory(handle.handle, false))));
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::IsLayoutSupported(
-    const gfx::Size& size,
-    unsigned internalformat) {
-  base::CheckedNumeric<int> buffer_size = size.width();
-  buffer_size *= size.height();
-  buffer_size *= BytesPerPixel(internalformat);
-  return buffer_size.IsValid();
+bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
+  switch (format) {
+    case RGBA_8888:
+    case BGRA_8888:
+      return true;
+    case RGBX_8888:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(unsigned usage) {
+bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(Usage usage) {
   switch (usage) {
-    case GL_IMAGE_MAP_CHROMIUM:
+    case MAP:
       return true;
-    default:
+    case SCANOUT:
       return false;
   }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+bool GpuMemoryBufferImplSharedMemory::IsLayoutSupported(const gfx::Size& size,
+                                                        Format format) {
+  if (!IsFormatSupported(format))
+    return false;
+
+  base::CheckedNumeric<int> buffer_size = size.width();
+  buffer_size *= size.height();
+  buffer_size *= BytesPerPixel(format);
+  return buffer_size.IsValid();
 }
 
 // static
 bool GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage) {
-  return IsLayoutSupported(size, internalformat) && IsUsageSupported(usage);
+    Format format,
+    Usage usage) {
+  return IsLayoutSupported(size, format) && IsUsageSupported(usage);
 }
 
 void* GpuMemoryBufferImplSharedMemory::Map() {
   DCHECK(!mapped_);
-  if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(internalformat_)))
+  if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(format_)))
     return NULL;
   mapped_ = true;
   return shared_memory_->memory();
@@ -130,7 +146,7 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
 }
 
 uint32 GpuMemoryBufferImplSharedMemory::GetStride() const {
-  return size_.width() * BytesPerPixel(internalformat_);
+  return size_.width() * BytesPerPixel(format_);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {

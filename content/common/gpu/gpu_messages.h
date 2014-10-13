@@ -266,8 +266,8 @@ IPC_MESSAGE_CONTROL5(GpuMsg_CreateViewCommandBuffer,
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateGpuMemoryBuffer,
                      gfx::GpuMemoryBufferHandle, /* handle */
                      gfx::Size, /* size */
-                     unsigned, /* internalformat */
-                     unsigned /* usage */)
+                     gfx::GpuMemoryBuffer::Format, /* format */
+                     gfx::GpuMemoryBuffer::Usage /* usage */)
 
 // Tells the GPU process to destroy buffer.
 IPC_MESSAGE_CONTROL2(GpuMsg_DestroyGpuMemoryBuffer,
@@ -591,17 +591,17 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalQuery,
                     uint32 /* query */,
                     uint32 /* signal_id */)
 
-// Register an existing gpu memory buffer. The id that can be
-// used to identify the gpu memory buffer from a command buffer.
-IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
+// Create an image from an existing gpu memory buffer. The id that can be
+// used to identify the image from a command buffer.
+IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_CreateImage,
                     int32 /* id */,
                     gfx::GpuMemoryBufferHandle /* gpu_memory_buffer */,
-                    uint32 /* width */,
-                    uint32 /* height */,
+                    gfx::Size /* size */,
+                    gfx::GpuMemoryBuffer::Format /* format */,
                     uint32 /* internalformat */)
 
-// Unregister a previously registered gpu memory buffer.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UnregisterGpuMemoryBuffer,
+// Destroy a previously created image.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyImage,
                     int32 /* id */)
 
 // Attaches an external image stream to the client texture.

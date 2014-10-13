@@ -569,6 +569,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
                                 &proxy,
                                 &stats_instrumentation,
                                 shared_bitmap_manager.get(),
+                                NULL,
                                 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
@@ -608,6 +609,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
                                 &proxy,
                                 &stats_instrumentation,
                                 shared_bitmap_manager.get(),
+                                NULL,
                                 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
@@ -681,6 +683,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
                                 &proxy,
                                 &stats_instrumentation,
                                 shared_bitmap_manager.get(),
+                                NULL,
                                 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();

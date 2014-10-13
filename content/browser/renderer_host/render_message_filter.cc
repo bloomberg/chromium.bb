@@ -20,6 +20,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
@@ -338,6 +339,7 @@ RenderMessageFilter::~RenderMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(plugin_host_clients_.empty());
   HostSharedBitmapManager::current()->ProcessRemoved(PeerHandle());
+  BrowserGpuMemoryBufferManager::current()->ProcessRemoved(PeerHandle());
 }
 
 void RenderMessageFilter::OnChannelClosing() {
@@ -1234,16 +1236,12 @@ void RenderMessageFilter::OnAddNavigationTransitionData(
       selector, markup);
 }
 
-void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
-                                                    uint32 height,
-                                                    uint32 internalformat,
-                                                    uint32 usage,
-                                                    IPC::Message* reply) {
-  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat) ||
-      !GpuMemoryBufferImpl::IsUsageValid(usage)) {
-    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
-    return;
-  }
+void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
+    uint32 width,
+    uint32 height,
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage,
+    IPC::Message* reply) {
   base::CheckedNumeric<int> size = width;
   size *= height;
   if (!size.IsValid()) {
@@ -1251,13 +1249,15 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
     return;
   }
 
-  GpuMemoryBufferImpl::AllocateForChildProcess(
-      gfx::Size(width, height),
-      internalformat,
-      usage,
-      PeerHandle(),
-      render_process_id_,
-      base::Bind(&RenderMessageFilter::GpuMemoryBufferAllocated, this, reply));
+  BrowserGpuMemoryBufferManager::current()
+      ->AllocateGpuMemoryBufferForChildProcess(
+          gfx::Size(width, height),
+          format,
+          usage,
+          PeerHandle(),
+          render_process_id_,
+          base::Bind(
+              &RenderMessageFilter::GpuMemoryBufferAllocated, this, reply));
 }
 
 void RenderMessageFilter::GpuMemoryBufferAllocated(
@@ -1272,7 +1272,8 @@ void RenderMessageFilter::GpuMemoryBufferAllocated(
 void RenderMessageFilter::OnDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferType type,
     const gfx::GpuMemoryBufferId& id) {
-  GpuMemoryBufferImpl::DeletedByChildProcess(type, id, PeerHandle());
+  BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
+      type, id, PeerHandle());
 }
 
 }  // namespace content

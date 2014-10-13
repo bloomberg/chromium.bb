@@ -39,7 +39,7 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     const gfx::GpuMemoryBufferId& id,
     const gfx::Size& size,
-    unsigned internalformat) {
+    gfx::GpuMemoryBuffer::Format format) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,
@@ -49,10 +49,10 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   AddIntegerValue(properties, kIOSurfaceHeight, size.height());
   AddIntegerValue(properties,
                   kIOSurfaceBytesPerElement,
-                  GpuMemoryBufferImpl::BytesPerPixel(internalformat));
+                  GpuMemoryBufferImpl::BytesPerPixel(format));
   AddIntegerValue(properties,
                   kIOSurfacePixelFormat,
-                  GpuMemoryBufferImplIOSurface::PixelFormat(internalformat));
+                  GpuMemoryBufferImplIOSurface::PixelFormat(format));
   // TODO(reveman): Remove this when using a mach_port_t to transfer
   // IOSurface to browser and renderer process. crbug.com/323304
   AddBooleanValue(properties, kIOSurfaceIsGlobal, true);
@@ -84,7 +84,7 @@ scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferId& id,
     const gfx::Size& size,
-    unsigned internalformat) {
+    gfx::GpuMemoryBuffer::Format format) {
   IOSurfaceMapKey key(id.primary_id, id.secondary_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it == io_surfaces_.end())

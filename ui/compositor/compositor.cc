@@ -162,6 +162,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
     host_ = cc::LayerTreeHost::CreateThreaded(
         this,
         context_factory_->GetSharedBitmapManager(),
+        context_factory_->GetGpuMemoryBufferManager(),
         settings,
         task_runner_,
         compositor_thread_loop_);
@@ -170,6 +171,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
         this,
         this,
         context_factory_->GetSharedBitmapManager(),
+        context_factory_->GetGpuMemoryBufferManager(),
         settings,
         task_runner_);
   }

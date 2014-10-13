@@ -719,6 +719,8 @@
       'browser/geolocation/wifi_polling_policy.h',
       'browser/gpu/browser_gpu_channel_host_factory.cc',
       'browser/gpu/browser_gpu_channel_host_factory.h',
+      'browser/gpu/browser_gpu_memory_buffer_manager.cc',
+      'browser/gpu/browser_gpu_memory_buffer_manager.h',
       'browser/gpu/compositor_util.cc',
       'browser/gpu/compositor_util.h',
       'browser/gpu/gpu_data_manager_impl.cc',

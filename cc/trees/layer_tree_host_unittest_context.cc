@@ -855,6 +855,7 @@ class LayerTreeHostContextTestDontUseLostResources
         ResourceProvider::Create(child_output_surface_.get(),
                                  shared_bitmap_manager_.get(),
                                  NULL,
+                                 NULL,
                                  0,
                                  false,
                                  1,

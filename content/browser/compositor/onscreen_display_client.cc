@@ -9,6 +9,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_display_output_surface.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 
 namespace content {
@@ -18,8 +19,10 @@ OnscreenDisplayClient::OnscreenDisplayClient(
     cc::SurfaceManager* manager,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : output_surface_(output_surface.Pass()),
-      display_(
-          new cc::Display(this, manager, HostSharedBitmapManager::current())),
+      display_(new cc::Display(this,
+                               manager,
+                               HostSharedBitmapManager::current(),
+                               BrowserGpuMemoryBufferManager::current())),
       task_runner_(task_runner),
       scheduled_draw_(false),
       deferred_draw_(false),

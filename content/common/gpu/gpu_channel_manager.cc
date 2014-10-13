@@ -56,8 +56,8 @@ class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
 
   void OnCreateGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
                                const gfx::Size& size,
-                               unsigned internalformat,
-                               unsigned usage) {
+                               gfx::GpuMemoryBuffer::Format format,
+                               gfx::GpuMemoryBuffer::Usage usage) {
     TRACE_EVENT2("gpu",
                  "GpuChannelManagerMessageFilter::OnCreateGpuMemoryBuffer",
                  "primary_id",
@@ -66,7 +66,7 @@ class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
                  handle.global_id.secondary_id);
     sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
         gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-            handle, size, internalformat, usage)));
+            handle, size, format, usage)));
   }
 
   IPC::Sender* sender_;

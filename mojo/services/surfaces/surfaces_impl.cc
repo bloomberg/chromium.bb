@@ -76,7 +76,7 @@ void SurfacesImpl::CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
     return;
   }
   if (!display_) {
-    display_.reset(new cc::Display(this, manager_, NULL));
+    display_.reset(new cc::Display(this, manager_, NULL, NULL));
     client_->SetDisplay(display_.get());
     display_->Initialize(make_scoped_ptr(new DirectOutputSurface(
         new ContextProviderMojo(command_buffer_handle_.Pass()))));

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
+#include "cc/resources/gpu_memory_buffer_manager.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
@@ -19,8 +20,67 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
+namespace {
+
+gfx::GpuMemoryBuffer::Format ImageFormatToGpuMemoryBufferFormat(
+    unsigned internalformat) {
+  switch (internalformat) {
+    case GL_RGB:
+      return gfx::GpuMemoryBuffer::RGBX_8888;
+    case GL_RGBA:
+      return gfx::GpuMemoryBuffer::RGBA_8888;
+    default:
+      NOTREACHED();
+      return gfx::GpuMemoryBuffer::RGBA_8888;
+  }
+}
+
+gfx::GpuMemoryBuffer::Usage ImageUsageToGpuMemoryBufferUsage(unsigned usage) {
+  switch (usage) {
+    case GL_MAP_CHROMIUM:
+      return gfx::GpuMemoryBuffer::MAP;
+    case GL_SCANOUT_CHROMIUM:
+      return gfx::GpuMemoryBuffer::SCANOUT;
+    default:
+      NOTREACHED();
+      return gfx::GpuMemoryBuffer::MAP;
+  }
+}
+
+bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+    gfx::GpuMemoryBuffer::Format format,
+    unsigned internalformat) {
+  switch (internalformat) {
+    case GL_RGB:
+      switch (format) {
+        case gfx::GpuMemoryBuffer::RGBX_8888:
+          return true;
+        case gfx::GpuMemoryBuffer::RGBA_8888:
+        case gfx::GpuMemoryBuffer::BGRA_8888:
+          return false;
+      }
+      NOTREACHED();
+      return false;
+    case GL_RGBA:
+      switch (format) {
+        case gfx::GpuMemoryBuffer::RGBX_8888:
+          return false;
+        case gfx::GpuMemoryBuffer::RGBA_8888:
+        case gfx::GpuMemoryBuffer::BGRA_8888:
+          return true;
+      }
+      NOTREACHED();
+      return false;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+}  // namespace
 
 CommandBufferProxyImpl::CommandBufferProxyImpl(
     GpuChannelHost* channel,
@@ -296,57 +356,62 @@ gpu::Capabilities CommandBufferProxyImpl::GetCapabilities() {
   return capabilities_;
 }
 
-gfx::GpuMemoryBuffer* CommandBufferProxyImpl::CreateGpuMemoryBuffer(
-    size_t width,
-    size_t height,
-    unsigned internalformat,
-    unsigned usage,
-    int32* id) {
-  *id = -1;
-
+int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
+                                            size_t width,
+                                            size_t height,
+                                            unsigned internalformat) {
   if (last_state_.error != gpu::error::kNoError)
-    return NULL;
+    return -1;
 
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
-      channel_->factory()->AllocateGpuMemoryBuffer(
-          width, height, internalformat, usage));
-  if (!buffer)
-    return NULL;
+  int32 new_id = channel_->ReserveImageId();
 
-  DCHECK(GpuChannelHost::IsValidGpuMemoryBuffer(buffer->GetHandle()));
-
-  int32 new_id = channel_->ReserveGpuMemoryBufferId();
+  gfx::GpuMemoryBuffer* gpu_memory_buffer =
+      channel_->gpu_memory_buffer_manager()->GpuMemoryBufferFromClientBuffer(
+          buffer);
+  DCHECK(gpu_memory_buffer);
 
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
-  // sending of the RegisterGpuMemoryBuffer IPC below.
+  // sending of the CreateImage IPC below.
   gfx::GpuMemoryBufferHandle handle =
-      channel_->ShareGpuMemoryBufferToGpuProcess(buffer->GetHandle());
+      channel_->ShareGpuMemoryBufferToGpuProcess(
+          gpu_memory_buffer->GetHandle());
 
-  if (!Send(new GpuCommandBufferMsg_RegisterGpuMemoryBuffer(
-                route_id_,
-                new_id,
-                handle,
-                width,
-                height,
-                internalformat))) {
-    return NULL;
+  DCHECK(IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+      gpu_memory_buffer->GetFormat(), internalformat));
+  if (!Send(new GpuCommandBufferMsg_CreateImage(route_id_,
+                                                new_id,
+                                                handle,
+                                                gfx::Size(width, height),
+                                                gpu_memory_buffer->GetFormat(),
+                                                internalformat))) {
+    return -1;
   }
 
-  *id = new_id;
-  DCHECK(gpu_memory_buffers_.find(new_id) == gpu_memory_buffers_.end());
-  return gpu_memory_buffers_.add(new_id, buffer.Pass()).first->second;
+  return new_id;
 }
 
-void CommandBufferProxyImpl::DestroyGpuMemoryBuffer(int32 id) {
+void CommandBufferProxyImpl::DestroyImage(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  Send(new GpuCommandBufferMsg_UnregisterGpuMemoryBuffer(route_id_, id));
+  Send(new GpuCommandBufferMsg_DestroyImage(route_id_, id));
+}
 
-  // Remove the gpu memory buffer from the client side cache.
-  DCHECK(gpu_memory_buffers_.find(id) != gpu_memory_buffers_.end());
-  gpu_memory_buffers_.take(id);
+int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
+    size_t width,
+    size_t height,
+    unsigned internalformat,
+    unsigned usage) {
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
+      channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
+          gfx::Size(width, height),
+          ImageFormatToGpuMemoryBufferFormat(internalformat),
+          ImageUsageToGpuMemoryBufferUsage(usage)));
+  if (!buffer)
+    return -1;
+
+  return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
 int CommandBufferProxyImpl::GetRouteID() const {

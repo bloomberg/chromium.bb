@@ -29,7 +29,7 @@ class GpuMemoryBufferFactoryIOSurface {
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferId& id,
       const gfx::Size& size,
-      unsigned internalformat);
+      gfx::GpuMemoryBuffer::Format format);
 
   // Destroy a previously created GPU memory buffer.
   void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferId& id);
@@ -38,7 +38,7 @@ class GpuMemoryBufferFactoryIOSurface {
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferId& id,
       const gfx::Size& size,
-      unsigned internalformat);
+      gfx::GpuMemoryBuffer::Format format);
 
  private:
   typedef std::pair<int, int> IOSurfaceMapKey;

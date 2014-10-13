@@ -175,9 +175,6 @@ GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBufferCHROMIUM (GLidBuffer bu
 GL_APICALL GLboolean    GL_APIENTRY glEnableFeatureCHROMIUM (const char* feature);
 GL_APICALL void*        GL_APIENTRY glMapBufferCHROMIUM (GLuint target, GLenum access);
 GL_APICALL GLboolean    GL_APIENTRY glUnmapBufferCHROMIUM (GLuint target);
-GL_APICALL void*        GL_APIENTRY glMapImageCHROMIUM (GLuint image_id);
-GL_APICALL void         GL_APIENTRY glUnmapImageCHROMIUM (GLuint image_id);
-
 GL_APICALL void*        GL_APIENTRY glMapBufferSubDataCHROMIUM (GLuint target, GLintptrNotNegative offset, GLsizeiptr size, GLenum access);
 GL_APICALL void         GL_APIENTRY glUnmapBufferSubDataCHROMIUM (const void* mem);
 GL_APICALL void*        GL_APIENTRY glMapTexSubImage2DCHROMIUM (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
@@ -189,9 +186,8 @@ GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
-GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (GLsizei width, GLsizei height, GLenum internalformat, GLenum usage);
+GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (ClientBuffer buffer, GLsizei width, GLsizei height, GLenum internalformat);
 GL_APICALL void         GL_APIENTRY glDestroyImageCHROMIUM (GLuint image_id);
-GL_APICALL void         GL_APIENTRY glGetImageParameterivCHROMIUM (GLuint image_id, GLenum pname, GLint* params);
 GL_APICALL GLuint       GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM (GLsizei width, GLsizei height, GLenum internalformat, GLenum usage);
 GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* source);
 GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);

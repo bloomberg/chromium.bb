@@ -47,6 +47,10 @@ class VideoDecodeAccelerator;
 class VideoEncodeAccelerator;
 }
 
+namespace cc {
+class GpuMemoryBufferManager;
+}
+
 namespace content {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
@@ -71,11 +75,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) = 0;
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat,
-      unsigned usage) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.
@@ -90,11 +89,8 @@ class GpuChannelHost : public IPC::Sender,
       GpuChannelHostFactory* factory,
       const gpu::GPUInfo& gpu_info,
       const IPC::ChannelHandle& channel_handle,
-      base::WaitableEvent* shutdown_event);
-
-  // Returns true if |handle| is a valid GpuMemoryBuffer handle that
-  // can be shared to the GPU process.
-  static bool IsValidGpuMemoryBuffer(gfx::GpuMemoryBufferHandle handle);
+      base::WaitableEvent* shutdown_event,
+      cc::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   bool IsLost() const {
     DCHECK(channel_filter_.get());
@@ -140,6 +136,10 @@ class GpuChannelHost : public IPC::Sender,
 
   GpuChannelHostFactory* factory() const { return factory_; }
 
+  cc::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
+    return gpu_memory_buffer_manager_;
+  }
+
   // Returns a handle to the shared memory that can be sent via IPC to the
   // GPU process. The caller is responsible for ensuring it is closed. Returns
   // an invalid handle on failure.
@@ -155,8 +155,8 @@ class GpuChannelHost : public IPC::Sender,
   gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuProcess(
       gfx::GpuMemoryBufferHandle source_handle);
 
-  // Reserve one unused gpu memory buffer ID.
-  int32 ReserveGpuMemoryBufferId();
+  // Reserve one unused image ID.
+  int32 ReserveImageId();
 
   // Generate a route ID guaranteed to be unique for this channel.
   int32 GenerateRouteID();
@@ -164,7 +164,8 @@ class GpuChannelHost : public IPC::Sender,
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   GpuChannelHost(GpuChannelHostFactory* factory,
-                 const gpu::GPUInfo& gpu_info);
+                 const gpu::GPUInfo& gpu_info,
+                 cc::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   virtual ~GpuChannelHost();
   void Connect(const IPC::ChannelHandle& channel_handle,
                base::WaitableEvent* shutdown_event);
@@ -211,7 +212,7 @@ class GpuChannelHost : public IPC::Sender,
   // Threading notes: all fields are constant during the lifetime of |this|
   // except:
   // - |next_transfer_buffer_id_|, atomic type
-  // - |next_gpu_memory_buffer_id_|, atomic type
+  // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
   // - |proxies_|, protected by |context_lock_|
   GpuChannelHostFactory* const factory_;
@@ -221,14 +222,16 @@ class GpuChannelHost : public IPC::Sender,
   scoped_ptr<IPC::SyncChannel> channel_;
   scoped_refptr<MessageFilter> channel_filter_;
 
+  cc::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+
   // A filter for sending messages from thread other than the main thread.
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
   // Transfer buffer IDs are allocated in sequence.
   base::AtomicSequenceNumber next_transfer_buffer_id_;
 
-  // Gpu memory buffer IDs are allocated in sequence.
-  base::AtomicSequenceNumber next_gpu_memory_buffer_id_;
+  // Image IDs are allocated in sequence.
+  base::AtomicSequenceNumber next_image_id_;
 
   // Route IDs are allocated in sequence.
   base::AtomicSequenceNumber next_route_id_;

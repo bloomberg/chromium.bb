@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_image.h"
 
 using testing::_;
@@ -73,14 +74,11 @@ class GpuMemoryBufferTest : public testing::Test {
 TEST_F(GpuMemoryBufferTest, Lifecycle) {
   uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
 
-  // Create the image. This should add the image ID to the ImageManager.
-  GLuint image_id = glCreateImageCHROMIUM(
-      kImageWidth, kImageHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM);
-  EXPECT_NE(0u, image_id);
-  EXPECT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
+      gfx::Size(kImageWidth, kImageHeight), gfx::GpuMemoryBuffer::RGBA_8888));
 
-  // Map image for writing.
-  uint8* mapped_buffer = static_cast<uint8*>(glMapImageCHROMIUM(image_id));
+  // Map buffer for writing.
+  uint8* mapped_buffer = static_cast<uint8*>(buffer->Map());
   ASSERT_TRUE(mapped_buffer != NULL);
 
   // Assign a value to each pixel.
@@ -94,8 +92,14 @@ TEST_F(GpuMemoryBufferTest, Lifecycle) {
     }
   }
 
-  // Unmap the image.
-  glUnmapImageCHROMIUM(image_id);
+  // Unmap the buffer.
+  buffer->Unmap();
+
+  // Create the image. This should add the image ID to the ImageManager.
+  GLuint image_id = glCreateImageCHROMIUM(
+      buffer->AsClientBuffer(), kImageWidth, kImageHeight, GL_RGBA);
+  EXPECT_NE(0u, image_id);
+  EXPECT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
 
   // Bind the texture and the image.
   glBindTexture(GL_TEXTURE_2D, texture_ids_[0]);

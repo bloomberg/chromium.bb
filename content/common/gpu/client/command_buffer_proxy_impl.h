@@ -98,12 +98,15 @@ class CommandBufferProxyImpl
 
   // gpu::GpuControl implementation:
   virtual gpu::Capabilities GetCapabilities() override;
-  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(size_t width,
-                                                      size_t height,
-                                                      unsigned internalformat,
-                                                      unsigned usage,
-                                                      int32* id) override;
-  virtual void DestroyGpuMemoryBuffer(int32 id) override;
+  virtual int32 CreateImage(ClientBuffer buffer,
+                            size_t width,
+                            size_t height,
+                            unsigned internalformat) override;
+  virtual void DestroyImage(int32 id) override;
+  virtual int32 CreateGpuMemoryBufferImage(size_t width,
+                                           size_t height,
+                                           unsigned internalformat,
+                                           unsigned usage) override;
   virtual uint32 InsertSyncPoint() override;
   virtual uint32_t InsertFutureSyncPoint() override;
   virtual void RetireSyncPoint(uint32_t sync_point) override;

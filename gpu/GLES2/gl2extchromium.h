@@ -106,38 +106,22 @@ typedef GLboolean (GL_APIENTRY PFNGLUNMAPBUFFERCHROMIUM) (GLuint target);
 #ifndef GL_CHROMIUM_image
 #define GL_CHROMIUM_image 1
 
-#ifndef GL_IMAGE_ROWBYTES_CHROMIUM
-#define GL_IMAGE_ROWBYTES_CHROMIUM 0x78F0
-#endif
-
-#ifndef GL_IMAGE_MAP_CHROMIUM
-#define GL_IMAGE_MAP_CHROMIUM 0x78F1
-#endif
-
-#ifndef GL_IMAGE_SCANOUT_CHROMIUM
-#define GL_IMAGE_SCANOUT_CHROMIUM 0x78F2
-#endif
+typedef struct _ClientBuffer* ClientBuffer;
 
 #ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL GLuint GL_APIENTRY glCreateImageCHROMIUM(GLsizei width,
+GL_APICALL GLuint GL_APIENTRY glCreateImageCHROMIUM(ClientBuffer buffer,
+                                                    GLsizei width,
                                                     GLsizei height,
-                                                    GLenum internalformat,
-                                                    GLenum usage);
+                                                    GLenum internalformat);
 GL_APICALL void GL_APIENTRY glDestroyImageCHROMIUM(GLuint image_id);
-GL_APICALL void GL_APIENTRY glGetImageParameterivCHROMIUM(
-    GLuint image_id, GLenum pname, GLint* params);
-GL_APICALL void* GL_APIENTRY glMapImageCHROMIUM(GLuint image_id);
-GL_APICALL void GL_APIENTRY glUnmapImageCHROMIUM(GLuint image_id);
 #endif
 typedef GLuint(GL_APIENTRYP PFNGLCREATEIMAGECHROMIUMPROC)(
+    ClientBuffer buffer,
     GLsizei width,
     GLsizei height,
-    GLenum internalformat,
-    GLenum usage);
+    GLenum internalformat);
 typedef void (
     GL_APIENTRYP PFNGLDESTROYIMAGECHROMIUMPROC)(GLuint image_id);
-typedef void* (GL_APIENTRYP PFNGLMAPIMAGECHROMIUMPROC)(GLuint image_id);
-typedef void (GL_APIENTRYP PFNGLUNMAPIMAGECHROMIUMPROC)(GLuint image_id);
 #endif  /* GL_CHROMIUM_image */
 
   /* GL_CHROMIUM_gpu_memory_buffer_image */
@@ -159,7 +143,7 @@ GL_APICALL GLuint GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM(
     GLenum internalformat,
     GLenum usage);
 #endif
-typedef GLuint(GL_APIENTRYP PFNGLCREATEGPUMEMORYBUFFERIMAGECHROMIUMPROC) (
+typedef GLuint(GL_APIENTRYP PFNGLCREATEGPUMEMORYBUFFERIMAGECHROMIUMPROC)(
     GLsizei width,
     GLsizei height,
     GLenum internalformat,

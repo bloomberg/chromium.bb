@@ -212,10 +212,16 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     LayerTreeHostImplClient* client,
     Proxy* proxy,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    SharedBitmapManager* manager,
+    SharedBitmapManager* shared_bitmap_manager,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int id) {
-  return make_scoped_ptr(new LayerTreeHostImpl(
-      settings, client, proxy, rendering_stats_instrumentation, manager, id));
+  return make_scoped_ptr(new LayerTreeHostImpl(settings,
+                                               client,
+                                               proxy,
+                                               rendering_stats_instrumentation,
+                                               shared_bitmap_manager,
+                                               gpu_memory_buffer_manager,
+                                               id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -223,7 +229,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     LayerTreeHostImplClient* client,
     Proxy* proxy,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    SharedBitmapManager* manager,
+    SharedBitmapManager* shared_bitmap_manager,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int id)
     : BeginFrameSourceMixIn(),
       client_(client),
@@ -262,7 +269,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
-      shared_bitmap_manager_(manager),
+      shared_bitmap_manager_(shared_bitmap_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       id_(id),
       requires_high_res_to_draw_(false) {
   DCHECK(proxy_->IsImplThread());
@@ -2062,6 +2070,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   resource_provider_ =
       ResourceProvider::Create(output_surface_.get(),
                                shared_bitmap_manager_,
+                               gpu_memory_buffer_manager_,
                                proxy_->blocking_main_thread_task_runner(),
                                settings_.highp_threshold_min,
                                settings_.use_rgba_4444_textures,

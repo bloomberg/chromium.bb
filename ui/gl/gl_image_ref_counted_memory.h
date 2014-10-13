@@ -18,7 +18,8 @@ class GL_EXPORT GLImageRefCountedMemory : public GLImageMemory {
  public:
   GLImageRefCountedMemory(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(base::RefCountedMemory* ref_counted_memory);
+  bool Initialize(base::RefCountedMemory* ref_counted_memory,
+                  gfx::GpuMemoryBuffer::Format format);
 
   // Overridden from GLImage:
   virtual void Destroy(bool have_context) override;

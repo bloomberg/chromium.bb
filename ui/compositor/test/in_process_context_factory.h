@@ -5,6 +5,8 @@
 #ifndef UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_FACTORY_H_
 #define UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_FACTORY_H_
 
+#include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -39,6 +41,7 @@ class InProcessContextFactory : public ContextFactory {
   virtual void RemoveCompositor(Compositor* compositor) override;
   virtual bool DoesCreateTestContexts() override;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  virtual cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
   virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
       override;
@@ -47,7 +50,8 @@ class InProcessContextFactory : public ContextFactory {
   scoped_ptr<base::Thread> compositor_thread_;
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
-  scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
+  cc::TestSharedBitmapManager shared_bitmap_manager_;
+  cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   uint32_t next_surface_id_namespace_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);

@@ -271,10 +271,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
         OnSetClientHasMemoryAllocationChangedCallback)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
-                        OnRegisterGpuMemoryBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UnregisterGpuMemoryBuffer,
-                        OnUnregisterGpuMemoryBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyImage, OnDestroyImage);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
                         OnCreateStreamTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -943,13 +941,12 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
   }
 }
 
-void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
-    int32 id,
-    gfx::GpuMemoryBufferHandle handle,
-    uint32 width,
-    uint32 height,
-    uint32 internalformat) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterGpuMemoryBuffer");
+void GpuCommandBufferStub::OnCreateImage(int32 id,
+                                         gfx::GpuMemoryBufferHandle handle,
+                                         gfx::Size size,
+                                         gfx::GpuMemoryBuffer::Format format,
+                                         uint32 internalformat) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateImage");
 
   if (!decoder_)
     return;
@@ -964,18 +961,15 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   scoped_refptr<gfx::GLImage> image =
       manager->gpu_memory_buffer_factory()->CreateImageForGpuMemoryBuffer(
-          handle,
-          gfx::Size(width, height),
-          internalformat,
-          channel()->client_id());
+          handle, size, format, internalformat, channel()->client_id());
   if (!image.get())
     return;
 
   image_manager->AddImage(image.get(), id);
 }
 
-void GpuCommandBufferStub::OnUnregisterGpuMemoryBuffer(int32 id) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnUnregisterGpuMemoryBuffer");
+void GpuCommandBufferStub::OnDestroyImage(int32 id) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyImage");
 
   if (!decoder_)
     return;

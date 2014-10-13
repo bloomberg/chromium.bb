@@ -911,23 +911,6 @@ void WebGraphicsContext3DImpl::drawElementsInstancedANGLE(
 DELEGATE_TO_GL_2(vertexAttribDivisorANGLE, VertexAttribDivisorANGLE, WGC3Duint,
                  WGC3Duint)
 
-DELEGATE_TO_GL_4R(createImageCHROMIUM,
-                  CreateImageCHROMIUM,
-                  WGC3Dsizei,
-                  WGC3Dsizei,
-                  WGC3Denum,
-                  WGC3Denum,
-                  WGC3Duint);
-
-DELEGATE_TO_GL_1(destroyImageCHROMIUM, DestroyImageCHROMIUM, WGC3Duint);
-
-DELEGATE_TO_GL_3(getImageParameterivCHROMIUM, GetImageParameterivCHROMIUM,
-                 WGC3Duint, WGC3Denum, GLint*);
-
-DELEGATE_TO_GL_1R(mapImageCHROMIUM, MapImageCHROMIUM, WGC3Duint, void*);
-
-DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
-
 DELEGATE_TO_GL_4R(createGpuMemoryBufferImageCHROMIUM,
                   CreateGpuMemoryBufferImageCHROMIUM,
                   WGC3Dsizei,
@@ -935,6 +918,8 @@ DELEGATE_TO_GL_4R(createGpuMemoryBufferImageCHROMIUM,
                   WGC3Denum,
                   WGC3Denum,
                   WGC3Duint);
+
+DELEGATE_TO_GL_1(destroyImageCHROMIUM, DestroyImageCHROMIUM, WGC3Duint);
 
 DELEGATE_TO_GL_6(framebufferTexture2DMultisampleEXT,
                  FramebufferTexture2DMultisampleEXT,

@@ -26,15 +26,12 @@
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;
-
-namespace gfx {
-struct GpuMemoryBufferHandle;
-}
 
 namespace IPC {
 struct ChannelHandle;
@@ -125,8 +122,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // handle.
   void CreateGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
                              const gfx::Size& size,
-                             unsigned internalformat,
-                             unsigned usage,
+                             gfx::GpuMemoryBuffer::Format format,
+                             gfx::GpuMemoryBuffer::Usage usage,
                              const CreateGpuMemoryBufferCallback& callback);
 
   // Tells the GPU process to destroy GPU memory buffer.

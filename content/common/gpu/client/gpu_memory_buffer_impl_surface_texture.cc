@@ -22,13 +22,13 @@ void Noop() {
 
 void GpuMemoryBufferCreated(
     const gfx::Size& size,
-    unsigned internalformat,
+    gfx::GpuMemoryBuffer::Format format,
     const GpuMemoryBufferImpl::CreationCallback& callback,
     const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK_EQ(gfx::SURFACE_TEXTURE_BUFFER, handle.type);
 
   callback.Run(GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
-      handle, size, internalformat, base::Bind(&Noop)));
+      handle, size, format, base::Bind(&Noop)));
 }
 
 void GpuMemoryBufferCreatedForChildProcess(
@@ -43,11 +43,11 @@ void GpuMemoryBufferCreatedForChildProcess(
 
 GpuMemoryBufferImplSurfaceTexture::GpuMemoryBufferImplSurfaceTexture(
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback,
     const gfx::GpuMemoryBufferId& id,
     ANativeWindow* native_window)
-    : GpuMemoryBufferImpl(size, internalformat, callback),
+    : GpuMemoryBufferImpl(size, format, callback),
       id_(id),
       native_window_(native_window),
       stride_(0u) {
@@ -60,8 +60,7 @@ GpuMemoryBufferImplSurfaceTexture::~GpuMemoryBufferImplSurfaceTexture() {
 // static
 void GpuMemoryBufferImplSurfaceTexture::Create(
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    Format format,
     int client_id,
     const CreationCallback& callback) {
   gfx::GpuMemoryBufferHandle handle;
@@ -71,16 +70,15 @@ void GpuMemoryBufferImplSurfaceTexture::Create(
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
       handle,
       size,
-      internalformat,
-      usage,
-      base::Bind(&GpuMemoryBufferCreated, size, internalformat, callback));
+      format,
+      MAP,
+      base::Bind(&GpuMemoryBufferCreated, size, format, callback));
 }
 
 // static
 void GpuMemoryBufferImplSurfaceTexture::AllocateForChildProcess(
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    Format format,
     int child_client_id,
     const AllocationCallback& callback) {
   gfx::GpuMemoryBufferHandle handle;
@@ -90,8 +88,8 @@ void GpuMemoryBufferImplSurfaceTexture::AllocateForChildProcess(
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
       handle,
       size,
-      internalformat,
-      usage,
+      format,
+      MAP,
       base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
 }
 
@@ -100,9 +98,9 @@ scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat,
+    Format format,
     const DestructionCallback& callback) {
-  DCHECK(IsFormatSupported(internalformat));
+  DCHECK(IsFormatSupported(format));
 
   ANativeWindow* native_window =
       SurfaceTextureManager::GetInstance()->AcquireNativeWidget(
@@ -111,50 +109,59 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     return scoped_ptr<GpuMemoryBufferImpl>();
 
   ANativeWindow_setBuffersGeometry(
-      native_window, size.width(), size.height(), WindowFormat(internalformat));
+      native_window, size.width(), size.height(), WindowFormat(format));
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplSurfaceTexture(
-          size, internalformat, callback, handle.global_id, native_window));
+          size, format, callback, handle.global_id, native_window));
 }
 
 // static
-bool GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(
-    unsigned internalformat) {
-  switch (internalformat) {
-    case GL_RGBA8_OES:
+bool GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(Format format) {
+  switch (format) {
+    case RGBA_8888:
       return true;
-    default:
+    case RGBX_8888:
+    case BGRA_8888:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 // static
-bool GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(unsigned usage) {
+bool GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(Usage usage) {
   switch (usage) {
-    case GL_IMAGE_MAP_CHROMIUM:
+    case MAP:
       return true;
-    default:
+    case SCANOUT:
       return false;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 // static
-bool GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(
-    unsigned internalformat,
-    unsigned usage) {
-  return IsFormatSupported(internalformat) && IsUsageSupported(usage);
+bool GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(Format format,
+                                                                 Usage usage) {
+  return IsFormatSupported(format) && IsUsageSupported(usage);
 }
 
 // static
-int GpuMemoryBufferImplSurfaceTexture::WindowFormat(unsigned internalformat) {
-  switch (internalformat) {
-    case GL_RGBA8_OES:
+int GpuMemoryBufferImplSurfaceTexture::WindowFormat(Format format) {
+  switch (format) {
+    case RGBA_8888:
       return WINDOW_FORMAT_RGBA_8888;
-    default:
+    case RGBX_8888:
+    case BGRA_8888:
       NOTREACHED();
       return 0;
   }
+
+  NOTREACHED();
+  return 0;
 }
 
 void* GpuMemoryBufferImplSurfaceTexture::Map() {
@@ -170,7 +177,7 @@ void* GpuMemoryBufferImplSurfaceTexture::Map() {
   }
 
   DCHECK_LE(size_.width(), buffer.stride);
-  stride_ = buffer.stride * BytesPerPixel(internalformat_);
+  stride_ = buffer.stride * BytesPerPixel(format_);
   mapped_ = true;
   return buffer.bits;
 }
@@ -183,7 +190,9 @@ void GpuMemoryBufferImplSurfaceTexture::Unmap() {
   mapped_ = false;
 }
 
-uint32 GpuMemoryBufferImplSurfaceTexture::GetStride() const { return stride_; }
+uint32 GpuMemoryBufferImplSurfaceTexture::GetStride() const {
+  return stride_;
+}
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSurfaceTexture::GetHandle()
     const {

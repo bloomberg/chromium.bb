@@ -26,7 +26,7 @@ struct ScopedPtrXFree {
 
 bool ValidFormat(unsigned internalformat) {
   switch (internalformat) {
-    case GL_BGRA8_EXT:
+    case GL_RGBA:
       return true;
     default:
       return false;
@@ -35,7 +35,7 @@ bool ValidFormat(unsigned internalformat) {
 
 int TextureFormat(unsigned internalformat) {
   switch (internalformat) {
-    case GL_BGRA8_EXT:
+    case GL_RGBA:
       return GLX_TEXTURE_FORMAT_RGBA_EXT;
     default:
       NOTREACHED();
@@ -45,7 +45,7 @@ int TextureFormat(unsigned internalformat) {
 
 int BindToTextureFormat(unsigned internalformat) {
   switch (internalformat) {
-    case GL_BGRA8_EXT:
+    case GL_RGBA:
       return GLX_BIND_TO_TEXTURE_RGBA_EXT;
     default:
       NOTREACHED();
@@ -55,7 +55,7 @@ int BindToTextureFormat(unsigned internalformat) {
 
 unsigned PixmapDepth(unsigned internalformat) {
   switch (internalformat) {
-    case GL_BGRA8_EXT:
+    case GL_RGBA:
       return 32u;
     default:
       NOTREACHED();

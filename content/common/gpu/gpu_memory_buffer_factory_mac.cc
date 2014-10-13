@@ -18,12 +18,12 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      unsigned internalformat,
-      unsigned usage) override {
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage) override {
     switch (handle.type) {
       case gfx::IO_SURFACE_BUFFER:
         return io_surface_factory_.CreateGpuMemoryBuffer(
-            handle.global_id, size, internalformat);
+            handle.global_id, size, format);
       default:
         NOTREACHED();
         return gfx::GpuMemoryBufferHandle();
@@ -43,13 +43,14 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
   virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
       unsigned internalformat,
       int client_id) override {
     switch (handle.type) {
       case gfx::SHARED_MEMORY_BUFFER: {
         scoped_refptr<gfx::GLImageSharedMemory> image(
             new gfx::GLImageSharedMemory(size, internalformat));
-        if (!image->Initialize(handle))
+        if (!image->Initialize(handle, format))
           return NULL;
 
         return image;
@@ -60,7 +61,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
           return scoped_refptr<gfx::GLImage>();
 
         return io_surface_factory_.CreateImageForGpuMemoryBuffer(
-            handle.global_id, size, internalformat);
+            handle.global_id, size, format);
       }
       default:
         NOTREACHED();

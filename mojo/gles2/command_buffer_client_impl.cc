@@ -191,20 +191,28 @@ gpu::Capabilities CommandBufferClientImpl::GetCapabilities() {
   return gpu::Capabilities();
 }
 
-gfx::GpuMemoryBuffer* CommandBufferClientImpl::CreateGpuMemoryBuffer(
+int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
+                                             size_t width,
+                                             size_t height,
+                                             unsigned internalformat) {
+  // TODO(piman)
+  NOTIMPLEMENTED();
+  return -1;
+}
+
+void CommandBufferClientImpl::DestroyImage(int32 id) {
+  // TODO(piman)
+  NOTIMPLEMENTED();
+}
+
+int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
     size_t width,
     size_t height,
     unsigned internalformat,
-    unsigned usage,
-    int32* id) {
+    unsigned usage) {
   // TODO(piman)
   NOTIMPLEMENTED();
-  return NULL;
-}
-
-void CommandBufferClientImpl::DestroyGpuMemoryBuffer(int32 id) {
-  // TODO(piman)
-  NOTIMPLEMENTED();
+  return -1;
 }
 
 uint32 CommandBufferClientImpl::InsertSyncPoint() {

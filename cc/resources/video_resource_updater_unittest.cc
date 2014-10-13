@@ -32,6 +32,7 @@ class VideoResourceUpdaterTest : public testing::Test {
         ResourceProvider::Create(output_surface3d_.get(),
                                  shared_bitmap_manager_.get(),
                                  NULL,
+                                 NULL,
                                  0,
                                  false,
                                  1,

@@ -7,10 +7,10 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gfx {
 class Size;
-struct GpuMemoryBufferHandle;
 }
 
 namespace content {
@@ -25,8 +25,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHost {
   virtual void CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      unsigned internalformat,
-      unsigned usage,
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage,
       const CreateGpuMemoryBufferCallback& callback) = 0;
   virtual void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
                                       int32 sync_point) = 0;

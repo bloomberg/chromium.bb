@@ -81,7 +81,7 @@ class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
       SharedBitmapManager* manager,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-      : LayerTreeHost(client, manager, settings),
+      : LayerTreeHost(client, manager, NULL, settings),
         output_surface_created_(false) {
     LayerTreeHost::InitializeThreaded(base::MessageLoopProxy::current(),
                                       impl_task_runner);
@@ -125,6 +125,7 @@ class TiledLayerTest : public testing::Test {
         impl_thread_and_main_thread_blocked(proxy_);
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),
                                                   shared_bitmap_manager_.get(),
+                                                  nullptr,
                                                   nullptr,
                                                   0,
                                                   false,

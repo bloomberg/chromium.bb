@@ -1156,16 +1156,6 @@ GLboolean GLES2TraceImplementation::UnmapBufferCHROMIUM(GLuint target) {
   return gl_->UnmapBufferCHROMIUM(target);
 }
 
-void* GLES2TraceImplementation::MapImageCHROMIUM(GLuint image_id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MapImageCHROMIUM");
-  return gl_->MapImageCHROMIUM(image_id);
-}
-
-void GLES2TraceImplementation::UnmapImageCHROMIUM(GLuint image_id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::UnmapImageCHROMIUM");
-  gl_->UnmapImageCHROMIUM(image_id);
-}
-
 void* GLES2TraceImplementation::MapBufferSubDataCHROMIUM(GLuint target,
                                                          GLintptr offset,
                                                          GLsizeiptr size,
@@ -1247,25 +1237,17 @@ GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {
   return gl_->CreateStreamTextureCHROMIUM(texture);
 }
 
-GLuint GLES2TraceImplementation::CreateImageCHROMIUM(GLsizei width,
+GLuint GLES2TraceImplementation::CreateImageCHROMIUM(ClientBuffer buffer,
+                                                     GLsizei width,
                                                      GLsizei height,
-                                                     GLenum internalformat,
-                                                     GLenum usage) {
+                                                     GLenum internalformat) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CreateImageCHROMIUM");
-  return gl_->CreateImageCHROMIUM(width, height, internalformat, usage);
+  return gl_->CreateImageCHROMIUM(buffer, width, height, internalformat);
 }
 
 void GLES2TraceImplementation::DestroyImageCHROMIUM(GLuint image_id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DestroyImageCHROMIUM");
   gl_->DestroyImageCHROMIUM(image_id);
-}
-
-void GLES2TraceImplementation::GetImageParameterivCHROMIUM(GLuint image_id,
-                                                           GLenum pname,
-                                                           GLint* params) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::GetImageParameterivCHROMIUM");
-  gl_->GetImageParameterivCHROMIUM(image_id, pname, params);
 }
 
 GLuint GLES2TraceImplementation::CreateGpuMemoryBufferImageCHROMIUM(

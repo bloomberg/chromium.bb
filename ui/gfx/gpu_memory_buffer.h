@@ -13,6 +13,8 @@
 #include "ui/gfx/x/x11_types.h"
 #endif
 
+extern "C" typedef struct _ClientBuffer* ClientBuffer;
+
 namespace gfx {
 
 enum GpuMemoryBufferType {
@@ -53,8 +55,15 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
 // regular CPU code, but can also be read by the GPU.
 class GFX_EXPORT GpuMemoryBuffer {
  public:
-  GpuMemoryBuffer();
-  virtual ~GpuMemoryBuffer();
+  // The format needs to be taken into account when mapping a buffer into the
+  // client's address space.
+  enum Format { RGBA_8888, RGBX_8888, BGRA_8888, FORMAT_LAST = BGRA_8888 };
+
+  // The usage mode affects how a buffer can be used. Only buffers created with
+  // MAP can be mapped into the client's address space and accessed by the CPU.
+  enum Usage { MAP, SCANOUT, USAGE_LAST = SCANOUT };
+
+  virtual ~GpuMemoryBuffer() {}
 
   // Maps the buffer into the client's address space so it can be written to by
   // the CPU. This call may block, for instance if the GPU needs to finish
@@ -69,11 +78,17 @@ class GFX_EXPORT GpuMemoryBuffer {
   // Returns true iff the buffer is mapped.
   virtual bool IsMapped() const = 0;
 
+  // Returns the format for the buffer.
+  virtual Format GetFormat() const = 0;
+
   // Returns the stride in bytes for the buffer.
   virtual uint32 GetStride() const = 0;
 
   // Returns a platform specific handle for this buffer.
   virtual GpuMemoryBufferHandle GetHandle() const = 0;
+
+  // Type-checking downcast routine.
+  virtual ClientBuffer AsClientBuffer() = 0;
 };
 
 }  // namespace gfx

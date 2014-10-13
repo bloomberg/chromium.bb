@@ -20,8 +20,7 @@
 namespace ui {
 
 InProcessContextFactory::InProcessContextFactory()
-    : shared_bitmap_manager_(new cc::TestSharedBitmapManager()),
-      next_surface_id_namespace_(1u) {
+    : next_surface_id_namespace_(1u) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
@@ -95,7 +94,12 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {}
 bool InProcessContextFactory::DoesCreateTestContexts() { return false; }
 
 cc::SharedBitmapManager* InProcessContextFactory::GetSharedBitmapManager() {
-  return shared_bitmap_manager_.get();
+  return &shared_bitmap_manager_;
+}
+
+cc::GpuMemoryBufferManager*
+InProcessContextFactory::GetGpuMemoryBufferManager() {
+  return &gpu_memory_buffer_manager_;
 }
 
 base::MessageLoopProxy* InProcessContextFactory::GetCompositorMessageLoop() {

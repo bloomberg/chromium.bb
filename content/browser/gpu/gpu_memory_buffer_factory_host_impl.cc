@@ -21,8 +21,8 @@ GpuMemoryBufferFactoryHostImpl::~GpuMemoryBufferFactoryHostImpl() {
 void GpuMemoryBufferFactoryHostImpl::CreateGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage,
     const CreateGpuMemoryBufferCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -38,7 +38,7 @@ void GpuMemoryBufferFactoryHostImpl::CreateGpuMemoryBuffer(
   host->CreateGpuMemoryBuffer(
       handle,
       size,
-      internalformat,
+      format,
       usage,
       base::Bind(&GpuMemoryBufferFactoryHostImpl::OnGpuMemoryBufferCreated,
                  base::Unretained(this),

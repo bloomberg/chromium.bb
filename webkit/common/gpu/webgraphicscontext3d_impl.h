@@ -534,22 +534,12 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
       WGC3Denum type, WGC3Dintptr offset, WGC3Dsizei primcount);
   virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor);
 
-  // GL_CHROMIUM_image
-  virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width,
-                                        WGC3Dsizei height,
-                                        WGC3Denum internalformat,
-                                        WGC3Denum usage);
-  virtual void destroyImageCHROMIUM(WGC3Duint image_id);
-  virtual void getImageParameterivCHROMIUM(
-      WGC3Duint image_id, WGC3Denum pname, WGC3Dint* params);
-  virtual void* mapImageCHROMIUM(WGC3Duint image_id);
-  virtual void unmapImageCHROMIUM(WGC3Duint image_id);
-
   // GL_CHROMIUM_gpu_memory_buffer_image
   virtual WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width,
                                                        WGC3Dsizei height,
                                                        WGC3Denum internalformat,
                                                        WGC3Denum usage);
+  virtual void destroyImageCHROMIUM(WGC3Duint image_id);
 
   // GL_EXT_multisampled_render_to_texture
   virtual void framebufferTexture2DMultisampleEXT(WGC3Denum target,

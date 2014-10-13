@@ -129,10 +129,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_LINES",
     },
     {
-     0x78F0,
-     "GL_IMAGE_ROWBYTES_CHROMIUM",
-    },
-    {
      0x88B8,
      "GL_READ_ONLY",
     },
@@ -1314,7 +1310,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
      0x78F1,
-     "GL_IMAGE_MAP_CHROMIUM",
+     "GL_MAP_CHROMIUM",
     },
     {
      0x00080000,
@@ -1334,7 +1330,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
      0x78F2,
-     "GL_IMAGE_SCANOUT_CHROMIUM",
+     "GL_SCANOUT_CHROMIUM",
     },
     {
      0x93C7,

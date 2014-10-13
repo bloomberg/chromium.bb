@@ -21,7 +21,8 @@ class FakeOutputSurfaceClient;
 class OutputSurface;
 class ResourceProvider;
 class SoftwareRenderer;
-class SharedBitmapManager;
+class TestGpuMemoryBufferManager;
+class TestSharedBitmapManager;
 
 class PixelTest : public testing::Test, RendererClient {
  protected:
@@ -44,7 +45,8 @@ class PixelTest : public testing::Test, RendererClient {
   class PixelTestRendererClient;
   scoped_ptr<FakeOutputSurfaceClient> output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   scoped_ptr<BlockingTaskRunner> main_thread_task_runner_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;

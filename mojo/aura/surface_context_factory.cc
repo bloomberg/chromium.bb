@@ -52,6 +52,10 @@ cc::SharedBitmapManager* SurfaceContextFactory::GetSharedBitmapManager() {
   return nullptr;
 }
 
+cc::GpuMemoryBufferManager* SurfaceContextFactory::GetGpuMemoryBufferManager() {
+  return nullptr;
+}
+
 base::MessageLoopProxy* SurfaceContextFactory::GetCompositorMessageLoop() {
   return nullptr;
 }

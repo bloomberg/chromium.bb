@@ -413,11 +413,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat,
-      unsigned usage) override;
 
   void Init();
 
@@ -558,11 +553,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 #if defined(ENABLE_WEBRTC)
   scoped_ptr<WebRTCIdentityService> webrtc_identity_service_;
 #endif
-
-  // TODO(reveman): Allow AllocateGpuMemoryBuffer to be called from
-  // multiple threads. Current allocation mechanism for IOSurface
-  // backed GpuMemoryBuffers prevent this. crbug.com/325045
-  base::ThreadChecker allocate_gpu_memory_buffer_thread_checker_;
 
   scoped_ptr<MemoryObserver> memory_observer_;
 

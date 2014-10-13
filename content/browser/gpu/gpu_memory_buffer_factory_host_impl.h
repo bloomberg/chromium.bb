@@ -10,7 +10,6 @@
 #include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 
 namespace content {
-class GpuMemoryBufferImpl;
 
 class CONTENT_EXPORT GpuMemoryBufferFactoryHostImpl
     : public GpuMemoryBufferFactoryHost {
@@ -22,8 +21,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHostImpl
   virtual void CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      unsigned internalformat,
-      unsigned usage,
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage,
       const CreateGpuMemoryBufferCallback& callback) override;
   virtual void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
                                       int32 sync_point) override;

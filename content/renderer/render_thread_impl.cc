@@ -35,6 +35,7 @@
 #include "cc/resources/raster_worker_pool.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
+#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/db_message_filter.h"
@@ -54,7 +55,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/render_frame_setup.mojom.h"
@@ -328,13 +328,6 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
   return attributes;
 }
 
-void DeletedGpuMemoryBuffer(ThreadSafeSender* sender,
-                            gfx::GpuMemoryBufferType type,
-                            const gfx::GpuMemoryBufferId& id) {
-  TRACE_EVENT0("renderer", "RenderThreadImpl::DeletedGpuMemoryBuffer");
-  sender->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(type, id));
-}
-
 }  // namespace
 
 // For measuring memory usage after each task. Behind a command line flag.
@@ -563,10 +556,6 @@ void RenderThreadImpl::Init() {
   }
 
   base::DiscardableMemory::SetPreferredType(type);
-
-  // AllocateGpuMemoryBuffer must be used exclusively on one thread but
-  // it doesn't have to be the same thread RenderThreadImpl is created on.
-  allocate_gpu_memory_buffer_thread_checker_.DetachFromThread();
 
   if (is_impl_side_painting_enabled_) {
     int num_raster_threads = 0;
@@ -1263,49 +1252,6 @@ CreateCommandBufferResult RenderThreadImpl::CreateViewCommandBuffer(
   return result;
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
-    size_t width,
-    size_t height,
-    unsigned internalformat,
-    unsigned usage) {
-  TRACE_EVENT0("renderer", "RenderThreadImpl::AllocateGpuMemoryBuffer");
-
-  DCHECK(allocate_gpu_memory_buffer_thread_checker_.CalledOnValidThread());
-
-  if (!GpuMemoryBufferImpl::IsFormatValid(internalformat))
-    return scoped_ptr<gfx::GpuMemoryBuffer>();
-
-  gfx::GpuMemoryBufferHandle handle;
-  bool success;
-  IPC::Message* message = new ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer(
-      width, height, internalformat, usage, &handle);
-
-  // Allow calling this from the compositor thread.
-  if (base::MessageLoop::current() == message_loop())
-    success = ChildThread::Send(message);
-  else
-    success = sync_message_filter()->Send(message);
-
-  if (!success)
-    return scoped_ptr<gfx::GpuMemoryBuffer>();
-
-  scoped_ptr<GpuMemoryBufferImpl> buffer(GpuMemoryBufferImpl::CreateFromHandle(
-      handle,
-      gfx::Size(width, height),
-      internalformat,
-      base::Bind(&DeletedGpuMemoryBuffer,
-                 make_scoped_refptr(thread_safe_sender()),
-                 handle.type,
-                 handle.global_id)));
-  if (!buffer) {
-    thread_safe_sender()->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
-        handle.type, handle.global_id));
-    return scoped_ptr<gfx::GpuMemoryBuffer>();
-  }
-
-  return buffer.PassAs<gfx::GpuMemoryBuffer>();
-}
-
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }
@@ -1432,9 +1378,12 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   // implementation of GpuChannelHostFactory.
   io_message_loop_proxy_ = ChildProcess::current()->io_message_loop_proxy();
 
-  gpu_channel_ = GpuChannelHost::Create(
-      this, gpu_info, channel_handle,
-      ChildProcess::current()->GetShutDownEvent());
+  gpu_channel_ =
+      GpuChannelHost::Create(this,
+                             gpu_info,
+                             channel_handle,
+                             ChildProcess::current()->GetShutDownEvent(),
+                             gpu_memory_buffer_manager());
   return gpu_channel_.get();
 }
 

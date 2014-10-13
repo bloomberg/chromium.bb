@@ -30,8 +30,8 @@ class GpuMemoryBufferFactory {
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      unsigned internalformat,
-      unsigned usage) = 0;
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage) = 0;
 
   // Destroys GPU memory buffer identified by |handle|.
   virtual void DestroyGpuMemoryBuffer(
@@ -43,6 +43,7 @@ class GpuMemoryBufferFactory {
   virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
       unsigned internalformat,
       int client_id) = 0;
 

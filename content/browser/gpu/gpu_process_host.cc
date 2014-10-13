@@ -650,15 +650,14 @@ void GpuProcessHost::CreateViewCommandBuffer(
 void GpuProcessHost::CreateGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage,
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage,
     const CreateGpuMemoryBufferCallback& callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
 
-  if (Send(new GpuMsg_CreateGpuMemoryBuffer(
-          handle, size, internalformat, usage))) {
+  if (Send(new GpuMsg_CreateGpuMemoryBuffer(handle, size, format, usage))) {
     create_gpu_memory_buffer_requests_.push(callback);
   } else {
     callback.Run(gfx::GpuMemoryBufferHandle());

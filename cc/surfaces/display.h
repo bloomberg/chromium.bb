@@ -41,7 +41,8 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
  public:
   Display(DisplayClient* client,
           SurfaceManager* manager,
-          SharedBitmapManager* bitmap_manager);
+          SharedBitmapManager* bitmap_manager,
+          GpuMemoryBufferManager* gpu_memory_buffer_manager);
   virtual ~Display();
 
   bool Initialize(scoped_ptr<OutputSurface> output_surface);
@@ -85,6 +86,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   DisplayClient* client_;
   SurfaceManager* manager_;
   SharedBitmapManager* bitmap_manager_;
+  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   LayerTreeSettings settings_;

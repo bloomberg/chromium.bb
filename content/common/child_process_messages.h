@@ -77,6 +77,12 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
 #endif
 IPC_STRUCT_TRAITS_END()
 
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBuffer::Format,
+                          gfx::GpuMemoryBuffer::FORMAT_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBuffer::Usage,
+                          gfx::GpuMemoryBuffer::USAGE_LAST)
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -187,8 +193,8 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TcmallocStats,
 IPC_SYNC_MESSAGE_CONTROL4_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                             uint32 /* width */,
                             uint32 /* height */,
-                            uint32 /* internalformat */,
-                            uint32 /* usage */,
+                            gfx::GpuMemoryBuffer::Format,
+                            gfx::GpuMemoryBuffer::Usage,
                             gfx::GpuMemoryBufferHandle)
 
 // Informs the browser that the child deleted a gpu memory buffer.

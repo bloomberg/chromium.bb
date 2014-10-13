@@ -15,6 +15,8 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
 
+extern "C" typedef struct _ClientBuffer* ClientBuffer;
+
 namespace gfx {
 class GpuMemoryBuffer;
 }
@@ -29,17 +31,22 @@ class GPU_EXPORT GpuControl {
 
   virtual Capabilities GetCapabilities() = 0;
 
-  // Create a gpu memory buffer of the given dimensions and format. Returns
-  // its ID or -1 on error.
-  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
-      size_t width,
-      size_t height,
-      unsigned internalformat,
-      unsigned usage,
-      int32_t* id) = 0;
+  // Create an image for a client buffer with the given dimensions and
+  // format. Returns its ID or -1 on error.
+  virtual int32_t CreateImage(ClientBuffer buffer,
+                              size_t width,
+                              size_t height,
+                              unsigned internalformat) = 0;
 
-  // Destroy a gpu memory buffer. The ID must be positive.
-  virtual void DestroyGpuMemoryBuffer(int32_t id) = 0;
+  // Destroy an image. The ID must be positive.
+  virtual void DestroyImage(int32_t id) = 0;
+
+  // Create a gpu memory buffer backed image with the given dimensions and
+  // format for |usage|. Returns its ID or -1 on error.
+  virtual int32_t CreateGpuMemoryBufferImage(size_t width,
+                                             size_t height,
+                                             unsigned internalformat,
+                                             unsigned usage) = 0;
 
   // Inserts a sync point, returning its ID. Sync point IDs are global and can
   // be used for cross-context synchronization.

@@ -628,7 +628,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
  public:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                     const LayerTreeSettings& settings)
-      : LayerTreeHost(client, nullptr, settings),
+      : LayerTreeHost(client, nullptr, nullptr, settings),
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {

@@ -16,6 +16,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
                         proxy,
                         &stats_instrumentation_,
                         manager,
+                        NULL,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
@@ -34,6 +35,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                         proxy,
                         &stats_instrumentation_,
                         manager,
+                        NULL,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());

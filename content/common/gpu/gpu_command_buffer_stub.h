@@ -198,12 +198,12 @@ class GpuCommandBufferStub
 
   void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
-  void OnRegisterGpuMemoryBuffer(int32 id,
-                                 gfx::GpuMemoryBufferHandle handle,
-                                 uint32 width,
-                                 uint32 height,
-                                 uint32 internalformat);
-  void OnUnregisterGpuMemoryBuffer(int32 id);
+  void OnCreateImage(int32 id,
+                     gfx::GpuMemoryBufferHandle handle,
+                     gfx::Size size,
+                     gfx::GpuMemoryBuffer::Format format,
+                     uint32 internalformat);
+  void OnDestroyImage(int32 id);
 
   void OnCommandProcessed();
   void OnParseError();

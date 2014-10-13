@@ -28,6 +28,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -527,11 +528,13 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
       main_thread_compositor_task_runner(base::MessageLoopProxy::current());
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   cc::SharedBitmapManager* shared_bitmap_manager = NULL;
+  cc::GpuMemoryBufferManager* gpu_memory_buffer_manager = NULL;
   // render_thread may be NULL in tests.
   if (render_thread) {
     compositor_message_loop_proxy =
         render_thread->compositor_message_loop_proxy();
     shared_bitmap_manager = render_thread->shared_bitmap_manager();
+    gpu_memory_buffer_manager = render_thread->gpu_memory_buffer_manager();
     main_thread_compositor_task_runner =
         render_thread->main_thread_compositor_task_runner();
   }
@@ -539,6 +542,7 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
     layer_tree_host_ =
         cc::LayerTreeHost::CreateThreaded(this,
                                           shared_bitmap_manager,
+                                          gpu_memory_buffer_manager,
                                           settings,
                                           main_thread_compositor_task_runner,
                                           compositor_message_loop_proxy);
@@ -547,6 +551,7 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
         this,
         this,
         shared_bitmap_manager,
+        gpu_memory_buffer_manager,
         settings,
         main_thread_compositor_task_runner);
   }

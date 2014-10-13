@@ -23,10 +23,12 @@ namespace cc {
 
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
-                 SharedBitmapManager* bitmap_manager)
+                 SharedBitmapManager* bitmap_manager,
+                 GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : client_(client),
       manager_(manager),
       bitmap_manager_(bitmap_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       blocking_main_thread_task_runner_(
           BlockingTaskRunner::Create(base::MessageLoopProxy::current())),
       texture_mailbox_deleter_(
@@ -60,6 +62,7 @@ void Display::InitializeRenderer() {
   scoped_ptr<ResourceProvider> resource_provider =
       ResourceProvider::Create(output_surface_.get(),
                                bitmap_manager_,
+                               gpu_memory_buffer_manager_,
                                blocking_main_thread_task_runner_.get(),
                                highp_threshold_min,
                                use_rgba_4444_texture_format,

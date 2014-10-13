@@ -51,7 +51,7 @@ gpu::Mailbox MailboxFromChar(char value) {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, nullptr, LayerTreeSettings()) {
+      : LayerTreeHost(client, nullptr, nullptr, LayerTreeSettings()) {
     InitializeSingleThreaded(client, base::MessageLoopProxy::current());
   }
 

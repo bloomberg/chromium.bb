@@ -35,39 +35,24 @@ scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     GpuChannelHostFactory* factory,
     const gpu::GPUInfo& gpu_info,
     const IPC::ChannelHandle& channel_handle,
-    base::WaitableEvent* shutdown_event) {
+    base::WaitableEvent* shutdown_event,
+    cc::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   DCHECK(factory->IsMainThread());
-  scoped_refptr<GpuChannelHost> host = new GpuChannelHost(factory, gpu_info);
+  scoped_refptr<GpuChannelHost> host =
+      new GpuChannelHost(factory, gpu_info, gpu_memory_buffer_manager);
   host->Connect(channel_handle, shutdown_event);
   return host;
 }
 
-// static
-bool GpuChannelHost::IsValidGpuMemoryBuffer(
-    gfx::GpuMemoryBufferHandle handle) {
-  switch (handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER:
-#if defined(OS_MACOSX)
-    case gfx::IO_SURFACE_BUFFER:
-#endif
-#if defined(OS_ANDROID)
-    case gfx::SURFACE_TEXTURE_BUFFER:
-#endif
-#if defined(USE_X11)
-    case gfx::X11_PIXMAP_BUFFER:
-#endif
-      return true;
-    default:
-      return false;
-  }
-}
-
-GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory,
-                               const gpu::GPUInfo& gpu_info)
+GpuChannelHost::GpuChannelHost(
+    GpuChannelHostFactory* factory,
+    const gpu::GPUInfo& gpu_info,
+    cc::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : factory_(factory),
-      gpu_info_(gpu_info) {
+      gpu_info_(gpu_info),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   next_transfer_buffer_id_.GetNext();
-  next_gpu_memory_buffer_id_.GetNext();
+  next_image_id_.GetNext();
   next_route_id_.GetNext();
 }
 
@@ -326,8 +311,8 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
   }
 }
 
-int32 GpuChannelHost::ReserveGpuMemoryBufferId() {
-  return next_gpu_memory_buffer_id_.GetNext();
+int32 GpuChannelHost::ReserveImageId() {
+  return next_image_id_.GetNext();
 }
 
 int32 GpuChannelHost::GenerateRouteID() {

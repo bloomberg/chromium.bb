@@ -88,13 +88,17 @@ class MockClientGpuControl : public GpuControl {
   virtual ~MockClientGpuControl();
 
   MOCK_METHOD0(GetCapabilities, Capabilities());
-  MOCK_METHOD5(CreateGpuMemoryBuffer,
-               gfx::GpuMemoryBuffer*(size_t width,
-                                     size_t height,
-                                     unsigned internalformat,
-                                     unsigned usage,
-                                     int32* id));
-  MOCK_METHOD1(DestroyGpuMemoryBuffer, void(int32 id));
+  MOCK_METHOD4(CreateImage,
+               int32(ClientBuffer buffer,
+                     size_t width,
+                     size_t height,
+                     unsigned internalformat));
+  MOCK_METHOD1(DestroyImage, void(int32 id));
+  MOCK_METHOD4(CreateGpuMemoryBufferImage,
+               int32(size_t width,
+                     size_t height,
+                     unsigned internalformat,
+                     unsigned usage));
   MOCK_METHOD0(InsertSyncPoint, uint32());
   MOCK_METHOD0(InsertFutureSyncPoint, uint32());
   MOCK_METHOD1(RetireSyncPoint, void(uint32 id));

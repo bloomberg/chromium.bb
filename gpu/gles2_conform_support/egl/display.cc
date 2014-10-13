@@ -273,18 +273,24 @@ gpu::Capabilities Display::GetCapabilities() {
   return decoder_->GetCapabilities();
 }
 
-gfx::GpuMemoryBuffer* Display::CreateGpuMemoryBuffer(
-    size_t width,
-    size_t height,
-    unsigned internalformat,
-    unsigned usage,
-    int32* id) {
+int32_t Display::CreateImage(ClientBuffer buffer,
+                             size_t width,
+                             size_t height,
+                             unsigned internalformat) {
   NOTIMPLEMENTED();
-  return NULL;
+  return -1;
 }
 
-void Display::DestroyGpuMemoryBuffer(int32 id) {
+void Display::DestroyImage(int32 id) {
   NOTIMPLEMENTED();
+}
+
+int32_t Display::CreateGpuMemoryBufferImage(size_t width,
+                                            size_t height,
+                                            unsigned internalformat,
+                                            unsigned usage) {
+  NOTIMPLEMENTED();
+  return -1;
 }
 
 uint32 Display::InsertSyncPoint() {

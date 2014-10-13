@@ -100,8 +100,8 @@ class LayerTreeHostNoMessageLoopTest
   void SetupLayerTreeHost() {
     LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
-    layer_tree_host_ =
-        LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings, NULL);
+    layer_tree_host_ = LayerTreeHost::CreateSingleThreaded(
+        this, this, NULL, NULL, settings, NULL);
     layer_tree_host_->SetViewportSize(size_);
     layer_tree_host_->SetRootLayer(root_layer_);
   }

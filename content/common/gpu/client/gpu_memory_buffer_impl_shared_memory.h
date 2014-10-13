@@ -13,26 +13,26 @@ namespace content {
 class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
   static void Create(const gfx::Size& size,
-                     unsigned internalformat,
-                     unsigned usage,
+                     Format format,
                      const CreationCallback& callback);
 
   static void AllocateForChildProcess(const gfx::Size& size,
-                                      unsigned internalformat,
+                                      Format format,
                                       base::ProcessHandle child_process,
                                       const AllocationCallback& callback);
 
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
-      unsigned internalformat,
+      Format format,
       const DestructionCallback& callback);
 
-  static bool IsLayoutSupported(const gfx::Size& size, unsigned internalformat);
-  static bool IsUsageSupported(unsigned usage);
+  static bool IsFormatSupported(Format format);
+  static bool IsUsageSupported(Usage usage);
+  static bool IsLayoutSupported(const gfx::Size& size, Format format);
   static bool IsConfigurationSupported(const gfx::Size& size,
-                                       unsigned internalformat,
-                                       unsigned usage);
+                                       Format format,
+                                       Usage usage);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() override;
@@ -42,7 +42,7 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
 
  private:
   GpuMemoryBufferImplSharedMemory(const gfx::Size& size,
-                                  unsigned internalformat,
+                                  Format format,
                                   const DestructionCallback& callback,
                                   scoped_ptr<base::SharedMemory> shared_memory);
   virtual ~GpuMemoryBufferImplSharedMemory();

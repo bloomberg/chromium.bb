@@ -1485,7 +1485,8 @@ _FUNCTION_INFO = {
   'CreateImageCHROMIUM': {
     'type': 'Manual',
     'cmd_args':
-        'GLsizei width, GLsizei height, GLenum internalformat, GLenum usage',
+        'ClientBuffer buffer, GLsizei width, GLsizei height, '
+        'GLenum internalformat',
     'result': ['GLuint'],
     'client_test': False,
     'gen_cmd': False,
@@ -1497,14 +1498,6 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'client_test': False,
     'gen_cmd': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'GetImageParameterivCHROMIUM': {
-    'type': 'Manual',
-    'client_test': False,
-    'gen_cmd': False,
-    'expectation': False,
     'extension': True,
     'chromium': True,
   },
@@ -1992,12 +1985,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
   },
-  'MapImageCHROMIUM': {
-    'gen_cmd': False,
-    'extension': True,
-    'chromium': True,
-    'client_test': False,
-  },
   'MapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
     'extension': True,
@@ -2236,12 +2223,6 @@ _FUNCTION_INFO = {
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
-  },
-  'UnmapImageCHROMIUM': {
-    'gen_cmd': False,
-    'extension': True,
-    'chromium': True,
-    'client_test': False,
   },
   'UnmapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,

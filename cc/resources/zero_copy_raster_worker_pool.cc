@@ -13,6 +13,7 @@
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
 namespace {
@@ -27,23 +28,26 @@ class RasterBufferImpl : public RasterBuffer {
 
   // Overridden from RasterBuffer:
   virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
-    buffer_ = lock_.gpu_memory_buffer();
-    if (!buffer_)
+    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.gpu_memory_buffer();
+    if (!gpu_memory_buffer)
       return skia::AdoptRef(SkCreateNullCanvas());
 
+    buffer_ = gpu_memory_buffer->Map();
     RasterWorkerPool::AcquireBitmapForBuffer(&bitmap_,
                                              buffer_,
                                              resource_->format(),
                                              resource_->size(),
-                                             lock_.stride());
+                                             gpu_memory_buffer->GetStride());
     return skia::AdoptRef(new SkCanvas(bitmap_));
   }
   virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
-    if (!buffer_)
+    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.gpu_memory_buffer();
+    if (!gpu_memory_buffer)
       return;
 
     RasterWorkerPool::ReleaseBitmapForBuffer(
         &bitmap_, buffer_, resource_->format());
+    gpu_memory_buffer->Unmap();
   }
 
  private:

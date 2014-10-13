@@ -195,18 +195,25 @@ gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
   return gpu::Capabilities();
 }
 
-gfx::GpuMemoryBuffer* PpapiCommandBufferProxy::CreateGpuMemoryBuffer(
+int32 PpapiCommandBufferProxy::CreateImage(ClientBuffer buffer,
+                                           size_t width,
+                                           size_t height,
+                                           unsigned internalformat) {
+  NOTREACHED();
+  return -1;
+}
+
+void PpapiCommandBufferProxy::DestroyImage(int32 id) {
+  NOTREACHED();
+}
+
+int32 PpapiCommandBufferProxy::CreateGpuMemoryBufferImage(
     size_t width,
     size_t height,
     unsigned internalformat,
-    unsigned usage,
-    int32* id) {
+    unsigned usage) {
   NOTREACHED();
-  return NULL;
-}
-
-void PpapiCommandBufferProxy::DestroyGpuMemoryBuffer(int32 id) {
-  NOTREACHED();
+  return -1;
 }
 
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {

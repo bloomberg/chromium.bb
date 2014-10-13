@@ -1133,6 +1133,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   scoped_ptr<LayerTreeHost> layer_tree_host =
       LayerTreeHost::CreateThreaded(&client,
                                     shared_bitmap_manager.get(),
+                                    NULL,
                                     settings,
                                     base::MessageLoopProxy::current(),
                                     impl_thread.message_loop_proxy());

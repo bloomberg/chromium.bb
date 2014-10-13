@@ -43,7 +43,7 @@ void WebLayerTreeViewImplForTesting::Initialize() {
   // Accelerated animations are enabled for unit tests.
   settings.accelerated_animation_enabled = true;
   layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-      this, this, NULL, settings, base::MessageLoopProxy::current());
+      this, this, NULL, NULL, settings, base::MessageLoopProxy::current());
   DCHECK(layer_tree_host_);
 }
 

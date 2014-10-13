@@ -36,6 +36,7 @@ class WebFrame;
 }  // namespace blink
 
 namespace content {
+class ChildGpuMemoryBufferManager;
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
@@ -95,6 +96,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   ChildSharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
+  }
+
+  ChildGpuMemoryBufferManager* gpu_memory_buffer_manager() const {
+    return gpu_memory_buffer_manager_.get();
   }
 
   ResourceDispatcher* resource_dispatcher() const {
@@ -241,6 +246,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   scoped_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
+
+  scoped_ptr<ChildGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   // Observes the trace event system. When tracing is enabled, optionally
   // starts profiling the tcmalloc heap.
