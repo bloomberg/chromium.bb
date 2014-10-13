@@ -512,7 +512,12 @@ bool GpuProcessHost::Init() {
     gpu_data_manager->AppendGpuCommandLine(command_line);
 
     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(channel_id));
-    in_process_gpu_thread_->Start();
+    base::Thread::Options options;
+#if defined(OS_WIN)
+    // WGL needs to create its own window and pump messages on it.
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
+#endif
+    in_process_gpu_thread_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
   } else if (!LaunchGpuProcess(channel_id)) {
