@@ -132,4 +132,24 @@ bool StandardManagementPolicyProvider::MustRemainEnabled(
           ExternalComponentLoader::IsModifiable(extension));
 }
 
+bool StandardManagementPolicyProvider::MustRemainInstalled(
+    const Extension* extension,
+    base::string16* error) const {
+  ExtensionManagement::InstallationMode mode =
+      settings_->GetInstallationMode(extension->id());
+  // Disallow removing of recommended extension, to avoid re-install it
+  // again while policy is reload. But disabling of recommended extension is
+  // allowed.
+  if (mode == ExtensionManagement::INSTALLATION_FORCED ||
+      mode == ExtensionManagement::INSTALLATION_RECOMMENDED) {
+    if (error) {
+      *error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_CANT_UNINSTALL_POLICY_REQUIRED,
+          base::UTF8ToUTF16(extension->name()));
+    }
+    return true;
+  }
+  return false;
+}
+
 }  // namespace extensions

@@ -30,6 +30,8 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
                                      base::string16* error) const override;
   virtual bool MustRemainEnabled(const Extension* extension,
                                  base::string16* error) const override;
+  virtual bool MustRemainInstalled(const Extension* extension,
+                                   base::string16* error) const override;
 
  private:
   const ExtensionManagement* settings_;

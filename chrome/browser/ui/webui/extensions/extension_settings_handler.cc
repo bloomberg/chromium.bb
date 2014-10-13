@@ -241,8 +241,14 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       !management_policy_->UserMayModifySettings(extension, NULL);
   extension_data->SetBoolean("managedInstall", managed_install);
 
-  // We should not get into a state where both are true.
-  DCHECK(!managed_install || !suspicious_install);
+  bool recommended_install =
+      !managed_install &&
+      management_policy_->MustRemainInstalled(extension, NULL);
+  extension_data->SetBoolean("recommendedInstall", recommended_install);
+
+  // Suspicious install should always be mutually exclusive to managed and/or
+  // recommended install.
+  DCHECK(!(managed_install || recommended_install) || !suspicious_install);
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -316,7 +322,9 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
           extension_service_->GetBrowserContext()));
 
   base::string16 location_text;
-  if (Manifest::IsPolicyLocation(extension->location())) {
+  if (Manifest::IsPolicyLocation(extension->location()) ||
+      (extension->location() == Manifest::EXTERNAL_PREF_DOWNLOAD &&
+       recommended_install)) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE);
   } else if (extension->location() == Manifest::INTERNAL &&
@@ -542,6 +550,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSTORE));
   source->AddString("extensionSettingsPolicyControlled",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
+  source->AddString("extensionSettingsPolicyRecommeneded",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_RECOMMENDED));
   source->AddString("extensionSettingsDependentExtensions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEPENDENT_EXTENSIONS));
   source->AddString("extensionSettingsSupervisedUser",
@@ -1146,7 +1156,8 @@ void ExtensionSettingsHandler::HandleUninstallMessage(
   if (!extension)
     return;
 
-  if (!management_policy_->UserMayModifySettings(extension, NULL)) {
+  if (!management_policy_->UserMayModifySettings(extension, NULL) ||
+      management_policy_->MustRemainInstalled(extension, NULL)) {
     LOG(ERROR) << "An attempt was made to uninstall an extension that is "
                << "non-usermanagable. Extension id : " << extension->id();
     return;

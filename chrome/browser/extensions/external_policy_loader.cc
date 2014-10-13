@@ -4,14 +4,16 @@
 
 #include "chrome/browser/extensions/external_policy_loader.h"
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 
 namespace extensions {
 
-ExternalPolicyLoader::ExternalPolicyLoader(ExtensionManagement *settings)
-    : settings_(settings) {
+ExternalPolicyLoader::ExternalPolicyLoader(ExtensionManagement* settings,
+                                           InstallationType type)
+    : settings_(settings), type_(type) {
   settings_->AddObserver(this);
 }
 
@@ -33,7 +35,14 @@ void ExternalPolicyLoader::AddExtension(base::DictionaryValue* dict,
 }
 
 void ExternalPolicyLoader::StartLoading() {
-  prefs_ = settings_->GetForceInstallList();
+  switch (type_) {
+    case FORCED:
+      prefs_ = settings_->GetForceInstallList();
+      break;
+    case RECOMMENDED:
+      prefs_ = settings_->GetRecommendedInstallList();
+      break;
+  }
   LoadFinished();
 }
 

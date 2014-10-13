@@ -46,6 +46,7 @@
  *            packagedApp: boolean,
  *            path: (string|undefined),
  *            prettifiedPath: (string|undefined),
+ *            recommendedInstall: boolean,
  *            runtimeErrors: (Array.<RuntimeError>|undefined),
  *            suspiciousInstall: boolean,
  *            terminated: boolean,
@@ -169,6 +170,8 @@ cr.define('options', function() {
       if (extension.managedInstall ||
           extension.dependentExtensions.length > 0) {
         node.classList.add('may-not-modify');
+        node.classList.add('may-not-remove');
+      } else if (extension.recommendedInstall) {
         node.classList.add('may-not-remove');
       } else if (extension.suspiciousInstall || extension.corruptInstall) {
         node.classList.add('may-not-modify');
@@ -395,7 +398,7 @@ cr.define('options', function() {
       }
 
       // Then the 'managed, cannot uninstall/disable' message.
-      if (extension.managedInstall) {
+      if (extension.managedInstall || extension.recommendedInstall) {
         node.querySelector('.managed-message').hidden = false;
       } else {
         if (extension.suspiciousInstall) {

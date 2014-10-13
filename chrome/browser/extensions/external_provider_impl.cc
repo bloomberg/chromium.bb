@@ -367,6 +367,7 @@ void ExternalProviderImpl::CreateExternalProviders(
     Profile* profile,
     ProviderCollection* provider_list) {
   scoped_refptr<ExternalLoader> external_loader;
+  scoped_refptr<ExternalLoader> external_recommended_loader;
   extensions::Manifest::Location crx_location = Manifest::INVALID_LOCATION;
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -389,11 +390,19 @@ void ExternalProviderImpl::CreateExternalProviders(
     }
   } else {
     external_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile));
+        ExtensionManagementFactory::GetForBrowserContext(profile),
+        ExternalPolicyLoader::FORCED);
+    external_recommended_loader = new ExternalPolicyLoader(
+        ExtensionManagementFactory::GetForBrowserContext(profile),
+        ExternalPolicyLoader::RECOMMENDED);
   }
 #else
   external_loader = new ExternalPolicyLoader(
-      ExtensionManagementFactory::GetForBrowserContext(profile));
+      ExtensionManagementFactory::GetForBrowserContext(profile),
+      ExternalPolicyLoader::FORCED);
+  external_recommended_loader = new ExternalPolicyLoader(
+      ExtensionManagementFactory::GetForBrowserContext(profile),
+      ExternalPolicyLoader::RECOMMENDED);
 #endif
 
   // Policies are mandatory so they can't be skipped with command line flag.
@@ -426,6 +435,17 @@ void ExternalProviderImpl::CreateExternalProviders(
     }
 #endif
     return;
+  }
+
+  // Extensions provided by recommended policies.
+  if (external_recommended_loader.get()) {
+    provider_list->push_back(linked_ptr<ExternalProviderInterface>(
+        new ExternalProviderImpl(service,
+                                 external_recommended_loader,
+                                 profile,
+                                 crx_location,
+                                 Manifest::EXTERNAL_PREF_DOWNLOAD,
+                                 Extension::NO_FLAGS)));
   }
 
   // In tests don't install extensions from default external sources.

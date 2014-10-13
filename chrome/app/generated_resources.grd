@@ -4941,6 +4941,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text in the extensions UI informing the user that an extension is policy controlled">
         (This extension is managed and cannot be removed or disabled.)
       </message>
+      <message name="IDS_EXTENSIONS_POLICY_RECOMMENDED" desc="The text in the extensions UI informing the user that an extension is recommended installed by policy">
+        (This extension is managed and cannot be removed.)
+      </message>
       <message name="IDS_EXTENSIONS_DEPENDENT_EXTENSIONS" desc="The text in the extensions UI informing the user that an extension is depended on by on other installed extensions">
         The following extensions depend on this extension:
       </message>

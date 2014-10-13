@@ -47,6 +47,12 @@ bool ManagementPolicy::Provider::MustRemainDisabled(
   return false;
 }
 
+bool ManagementPolicy::Provider::MustRemainInstalled(
+    const Extension* extension,
+    base::string16* error) const {
+  return false;
+}
+
 void ManagementPolicy::RegisterProvider(Provider* provider) {
   providers_.insert(provider);
 }
@@ -57,20 +63,20 @@ void ManagementPolicy::UnregisterProvider(Provider* provider) {
 
 bool ManagementPolicy::UserMayLoad(const Extension* extension,
                                    base::string16* error) const {
-  return ApplyToProviderList(&Provider::UserMayLoad, "Installation",
-                             true, extension, error);
+  return ApplyToProviderList(
+      &Provider::UserMayLoad, "Installation", true, extension, error);
 }
 
 bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
                                              base::string16* error) const {
-  return ApplyToProviderList(&Provider::UserMayModifySettings, "Modification",
-                             true, extension, error);
+  return ApplyToProviderList(
+      &Provider::UserMayModifySettings, "Modification", true, extension, error);
 }
 
 bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
                                          base::string16* error) const {
-  return ApplyToProviderList(&Provider::MustRemainEnabled, "Disabling",
-                             false, extension, error);
+  return ApplyToProviderList(
+      &Provider::MustRemainEnabled, "Disabling", false, extension, error);
 }
 
 bool ManagementPolicy::MustRemainDisabled(const Extension* extension,
@@ -82,6 +88,12 @@ bool ManagementPolicy::MustRemainDisabled(const Extension* extension,
       return true;
 
   return false;
+}
+
+bool ManagementPolicy::MustRemainInstalled(const Extension* extension,
+                                           base::string16* error) const {
+  return ApplyToProviderList(
+      &Provider::MustRemainInstalled, "Removing", false, extension, error);
 }
 
 void ManagementPolicy::UnregisterAllProviders() {

@@ -36,6 +36,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
@@ -730,6 +731,15 @@ class PolicyTest : public InProcessBrowserTest {
         extensions::UNINSTALL_REASON_FOR_TESTING,
         base::Bind(&base::DoNothing),
         NULL);
+    observer.Wait();
+  }
+
+  void DisableExtension(const std::string& id) {
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+        content::NotificationService::AllSources());
+    extension_service()->DisableExtension(id,
+                                          extensions::Extension::DISABLE_NONE);
     observer.Wait();
   }
 
@@ -1729,6 +1739,50 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
                     content::RESULT_CODE_KILLED, false);
   extension_crashed_observer.Wait();
   extension_loaded_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
+  // Verifies that extensions that are recommended-installed by policies are
+  // installed, can be disabled but not uninstalled.
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+
+  base::FilePath path =
+      base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+
+  // Setting the forcelist extension should install "good_v1.crx".
+  base::DictionaryValue dict_value;
+  dict_value.SetString(std::string(kGoodCrxId) + "." +
+                           extensions::schema_constants::kInstallationMode,
+                       extensions::schema_constants::kNormalInstalled);
+  dict_value.SetString(
+      std::string(kGoodCrxId) + "." + extensions::schema_constants::kUpdateUrl,
+      url.spec());
+  PolicyMap policies;
+  policies.Set(key::kExtensionSettings,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               dict_value.DeepCopy(),
+               NULL);
+  content::WindowedNotificationObserver observer(
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      content::NotificationService::AllSources());
+  UpdateProviderPolicy(policies);
+  observer.Wait();
+
+  EXPECT_TRUE(service->GetExtensionById(kGoodCrxId, true));
+
+  // The user is not allowed to uninstall recommended-installed extensions.
+  UninstallExtension(kGoodCrxId, false);
+
+  // Explictly re-enables the extension.
+  service->EnableExtension(kGoodCrxId);
+
+  // But the user is allowed to disable them.
+  EXPECT_TRUE(service->IsExtensionEnabled(kGoodCrxId));
+  DisableExtension(kGoodCrxId);
+  EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {

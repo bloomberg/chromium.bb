@@ -56,7 +56,8 @@ class MockExternalPolicyProviderVisitor
     provider_.reset(new ExternalProviderImpl(
         this,
         new ExternalPolicyLoader(
-            ExtensionManagementFactory::GetForBrowserContext(profile_.get())),
+            ExtensionManagementFactory::GetForBrowserContext(profile_.get()),
+            ExternalPolicyLoader::FORCED),
         profile_.get(),
         Manifest::INVALID_LOCATION,
         Manifest::EXTERNAL_POLICY_DOWNLOAD,

@@ -680,6 +680,7 @@ bool ExtensionService::UninstallExtension(
   // Callers should not send us nonexistent extensions.
   CHECK(extension.get());
 
+  ManagementPolicy* by_policy = system_->management_policy();
   // Policy change which triggers an uninstall will always set
   // |external_uninstall| to true so this is the only way to uninstall
   // managed extensions.
@@ -697,8 +698,8 @@ bool ExtensionService::UninstallExtension(
       (reason == extensions::UNINSTALL_REASON_SYNC &&
            extension->was_installed_by_custodian());
   if (!external_uninstall &&
-      !system_->management_policy()->UserMayModifySettings(
-        extension.get(), error)) {
+      (!by_policy->UserMayModifySettings(extension.get(), error) ||
+       by_policy->MustRemainInstalled(extension.get(), error))) {
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::Source<Profile>(profile_),

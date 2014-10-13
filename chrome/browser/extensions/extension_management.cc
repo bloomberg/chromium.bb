@@ -78,16 +78,30 @@ ExtensionManagement::InstallationMode ExtensionManagement::GetInstallationMode(
 
 scoped_ptr<base::DictionaryValue> ExtensionManagement::GetForceInstallList()
     const {
-  scoped_ptr<base::DictionaryValue> forcelist(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> install_list(new base::DictionaryValue());
   for (SettingsIdMap::const_iterator it = settings_by_id_.begin();
        it != settings_by_id_.end();
        ++it) {
     if (it->second->installation_mode == INSTALLATION_FORCED) {
       ExternalPolicyLoader::AddExtension(
-          forcelist.get(), it->first, it->second->update_url);
+          install_list.get(), it->first, it->second->update_url);
     }
   }
-  return forcelist.Pass();
+  return install_list.Pass();
+}
+
+scoped_ptr<base::DictionaryValue>
+ExtensionManagement::GetRecommendedInstallList() const {
+  scoped_ptr<base::DictionaryValue> install_list(new base::DictionaryValue());
+  for (SettingsIdMap::const_iterator it = settings_by_id_.begin();
+       it != settings_by_id_.end();
+       ++it) {
+    if (it->second->installation_mode == INSTALLATION_RECOMMENDED) {
+      ExternalPolicyLoader::AddExtension(
+          install_list.get(), it->first, it->second->update_url);
+    }
+  }
+  return install_list.Pass();
 }
 
 bool ExtensionManagement::IsInstallationAllowed(const ExtensionId& id) const {

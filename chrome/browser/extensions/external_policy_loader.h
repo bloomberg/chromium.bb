@@ -22,7 +22,16 @@ namespace extensions {
 class ExternalPolicyLoader : public ExternalLoader,
                              public ExtensionManagement::Observer {
  public:
-  explicit ExternalPolicyLoader(ExtensionManagement* settings);
+  // Indicates the policies for installed extensions from this class, according
+  // to management polices.
+  enum InstallationType {
+    // Installed extensions are not allowed to be disabled or removed.
+    FORCED,
+    // Installed extensions are allowed to be disabled but not removed.
+    RECOMMENDED
+  };
+
+  ExternalPolicyLoader(ExtensionManagement* settings, InstallationType type);
 
   // ExtensionManagement::Observer implementation
   virtual void OnExtensionManagementSettingsChanged() override;
@@ -41,6 +50,7 @@ class ExternalPolicyLoader : public ExternalLoader,
   virtual ~ExternalPolicyLoader();
 
   ExtensionManagement* settings_;
+  InstallationType type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyLoader);
 };

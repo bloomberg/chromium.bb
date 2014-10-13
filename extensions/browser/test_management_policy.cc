@@ -13,6 +13,7 @@ TestManagementPolicyProvider::TestManagementPolicyProvider()
       may_modify_status_(true),
       must_remain_enabled_(false),
       must_remain_disabled_(false),
+      must_remain_installed_(false),
       disable_reason_(Extension::DISABLE_NONE) {
   error_message_ = base::UTF8ToUTF16(expected_error());
 }
@@ -29,6 +30,7 @@ void TestManagementPolicyProvider::SetProhibitedActions(
   may_modify_status_ = (prohibited_actions & PROHIBIT_MODIFY_STATUS) == 0;
   must_remain_enabled_ = (prohibited_actions & MUST_REMAIN_ENABLED) != 0;
   must_remain_disabled_ = (prohibited_actions & MUST_REMAIN_DISABLED) != 0;
+  must_remain_installed_ = (prohibited_actions & MUST_REMAIN_INSTALLED) != 0;
 }
 
 void TestManagementPolicyProvider::SetDisableReason(
@@ -75,5 +77,12 @@ bool TestManagementPolicyProvider::MustRemainDisabled(
   return must_remain_disabled_;
 }
 
+bool TestManagementPolicyProvider::MustRemainInstalled(
+    const Extension* extension,
+    base::string16* error) const {
+  if (error && must_remain_installed_)
+    *error = error_message_;
+  return must_remain_installed_;
+}
 
 }  // namespace extensions

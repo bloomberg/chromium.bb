@@ -84,6 +84,9 @@ class ExtensionManagement : public KeyedService {
   // ExternalPolicyLoader::AddExtension().
   scoped_ptr<base::DictionaryValue> GetForceInstallList() const;
 
+  // Like GetForceInstallList(), but returns recommended install list instead.
+  scoped_ptr<base::DictionaryValue> GetRecommendedInstallList() const;
+
   // Returns if an extension with id |id| is allowed to install or not.
   bool IsInstallationAllowed(const ExtensionId& id) const;
 
