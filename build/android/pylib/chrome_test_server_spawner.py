@@ -64,17 +64,14 @@ def _WaitUntil(predicate, max_attempts=5):
   return False
 
 
-def _CheckPortStatus(port, expected_status):
-  """Returns True if port has expected_status.
+def _CheckPortAvailable(port):
+  """Returns True if |port| is available."""
+  return _WaitUntil(lambda: ports.IsHostPortAvailable(port))
 
-  Args:
-    port: the port number.
-    expected_status: boolean of expected status.
 
-  Returns:
-    Returns True if the status is expected. Otherwise returns False.
-  """
-  return _WaitUntil(lambda: ports.IsHostPortUsed(port) == expected_status)
+def _CheckPortNotAvailable(port):
+  """Returns True if |port| is not available."""
+  return _WaitUntil(lambda: not ports.IsHostPortAvailable(port))
 
 
 def _CheckDevicePortStatus(device, port):
@@ -167,7 +164,7 @@ class TestServerThread(threading.Thread):
     port_json = json.loads(port_json)
     if port_json.has_key('port') and isinstance(port_json['port'], int):
       self.host_port = port_json['port']
-      return _CheckPortStatus(self.host_port, True)
+      return _CheckPortNotAvailable(self.host_port)
     logging.error('Failed to get port information from the server data.')
     return False
 
@@ -236,7 +233,7 @@ class TestServerThread(threading.Thread):
       if self.pipe_out:
         self.is_ready = self._WaitToStartAndGetPortFromTestServer()
       else:
-        self.is_ready = _CheckPortStatus(self.host_port, True)
+        self.is_ready = _CheckPortNotAvailable(self.host_port)
     if self.is_ready:
       Forwarder.Map([(0, self.host_port)], self.device, self.tool)
       # Check whether the forwarder is ready on the device.
@@ -346,7 +343,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     logging.info('Handling request to kill a test server on port: %d.', port)
     self.server.test_server_instance.Stop()
     # Make sure the status of test server is correct before sending response.
-    if _CheckPortStatus(port, False):
+    if _CheckPortAvailable(port):
       self._SendResponse(200, 'OK', {}, 'killed')
       logging.info('Test server on port %d is killed', port)
     else:
