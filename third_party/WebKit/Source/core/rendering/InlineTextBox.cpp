@@ -277,7 +277,7 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
         foundBox = true;
 
         // The inline box may have different directionality than it's parent.  Since truncation
-        // behavior depends both on the parent and the inline block's directionality, we
+        // behavior depends both on both the parent and the inline block's directionality, we
         // must keep track of these separately.
         bool ltr = isLeftToRightDirection();
         if (ltr != flowIsLTR) {

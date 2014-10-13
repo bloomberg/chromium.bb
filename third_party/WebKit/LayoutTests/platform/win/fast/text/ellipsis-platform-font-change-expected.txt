@@ -1,9 +1,0 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x49
-  RenderBlock {HTML} at (0,0) size 800x49
-    RenderBody {BODY} at (8,8) size 784x33
-layer at (8,8) size 42x33 clip at (9,9) size 40x31 scrollWidth 47
-  RenderBlock {DIV} at (0,0) size 42x33 [border: (1px solid #000000)]
-    RenderText {#text} at (1,4) size 47x24
-      text run at (1,4) width 47: "A,,,B"

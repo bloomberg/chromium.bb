@@ -720,31 +720,23 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
     }
 
     if (f.isFixedPitch() && f.fontDescription().variant() == FontVariantNormal && m_isAllASCII && (!glyphOverflow || !glyphOverflow->computeBounds)) {
-        bool missingGlyph = false;
         float monospaceCharacterWidth = f.spaceWidth();
         float w = 0;
         bool isSpace;
         ASSERT(m_text);
         StringImpl& text = *m_text.impl();
-        RenderStyle * renderStyle = style();
         for (int i = start; i < start + len; i++) {
             char c = text[i];
-            // If glyph is not present in primary font then we cannot calculate width based on primary
-            // font property, we need to call "width" method of Font Object.
-            if (!f.primaryFontHasGlyphForCharacter(text[i])) {
-                missingGlyph = true;
-                break;
-            }
             if (c <= space) {
                 if (c == space || c == newlineCharacter) {
                     w += monospaceCharacterWidth;
                     isSpace = true;
                 } else if (c == characterTabulation) {
-                    if (renderStyle->collapseWhiteSpace()) {
+                    if (style()->collapseWhiteSpace()) {
                         w += monospaceCharacterWidth;
                         isSpace = true;
                     } else {
-                        w += f.tabWidth(renderStyle->tabSize(), xPos + w);
+                        w += f.tabWidth(style()->tabSize(), xPos + w);
                         isSpace = false;
                     }
                 } else
@@ -756,8 +748,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
             if (isSpace && i > start)
                 w += f.fontDescription().wordSpacing();
         }
-        if (!missingGlyph)
-            return w;
+        return w;
     }
 
     TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, start, len, style(), textDirection);
