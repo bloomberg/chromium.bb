@@ -321,12 +321,6 @@ bool WebMediaPlayerMS::didLoadingProgress() {
 
 void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
                              const blink::WebRect& rect,
-                             unsigned char alpha) {
-  paint(canvas, rect, alpha, SkXfermode::kSrcOver_Mode);
-}
-
-void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
-                             const blink::WebRect& rect,
                              unsigned char alpha,
                              SkXfermode::Mode mode) {
   DVLOG(3) << "WebMediaPlayerMS::paint";

@@ -509,12 +509,6 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
 
 void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
                                const blink::WebRect& rect,
-                               unsigned char alpha) {
-  paint(canvas, rect, alpha, SkXfermode::kSrcOver_Mode);
-}
-
-void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
-                               const blink::WebRect& rect,
                                unsigned char alpha,
                                SkXfermode::Mode mode) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());

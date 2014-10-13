@@ -126,10 +126,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                      const blink::WebRect& rect,
                      unsigned char alpha,
                      SkXfermode::Mode mode);
-  // TODO(dshwang): remove it because above method replaces. crbug.com/401027
-  virtual void paint(blink::WebCanvas* canvas,
-                     const blink::WebRect& rect,
-                     unsigned char alpha);
 
   virtual bool copyVideoTextureToPlatformTexture(
       blink::WebGraphicsContext3D* web_graphics_context,
