@@ -195,17 +195,6 @@
 #define ALLOW_UNUSED_LOCAL(x) false ? (void)x : (void)0
 
 
-/* OVERRIDE and FINAL */
-
-#if COMPILER_SUPPORTS(CXX_OVERRIDE_CONTROL)
-#define OVERRIDE override
-#define FINAL final
-#else
-#define OVERRIDE
-#define FINAL
-#endif
-
-
 /* WTF_DELETED_FUNCTION */
 
 #if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
