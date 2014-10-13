@@ -312,9 +312,9 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
 
   // Some form of learning has to be enabled.
   DCHECK(config_.IsLearningEnabled());
-  if (config_.IsURLPrefetchingEnabled())
+  if (config_.IsURLPrefetchingEnabled(profile_))
     DCHECK(config_.IsURLLearningEnabled());
-  if (config_.IsHostPrefetchingEnabled())
+  if (config_.IsHostPrefetchingEnabled(profile_))
     DCHECK(config_.IsHostLearningEnabled());
 }
 
@@ -577,8 +577,9 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
   *key_type = PREFETCH_KEY_TYPE_URL;
   const GURL& main_frame_url = navigation_id.main_frame_url;
 
-  bool use_url_data = config_.IsPrefetchingEnabled() ?
-      config_.IsURLPrefetchingEnabled() : config_.IsURLLearningEnabled();
+  bool use_url_data = config_.IsPrefetchingEnabled(profile_) ?
+      config_.IsURLPrefetchingEnabled(profile_) :
+      config_.IsURLLearningEnabled();
   if (use_url_data) {
     PrefetchDataMap::const_iterator iterator =
         url_table_cache_->find(main_frame_url.spec());
@@ -588,8 +589,9 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
   if (!prefetch_requests->empty())
     return true;
 
-  bool use_host_data = config_.IsPrefetchingEnabled() ?
-      config_.IsHostPrefetchingEnabled() : config_.IsHostLearningEnabled();
+  bool use_host_data = config_.IsPrefetchingEnabled(profile_) ?
+      config_.IsHostPrefetchingEnabled(profile_) :
+      config_.IsHostLearningEnabled();
   if (use_host_data) {
     PrefetchDataMap::const_iterator iterator =
         host_table_cache_->find(main_frame_url.host());
@@ -712,7 +714,7 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
                               content::Source<Profile>(profile_));
 
   // Initialize the prefetch manager only if prefetching is enabled.
-  if (config_.IsPrefetchingEnabled()) {
+  if (config_.IsPrefetchingEnabled(profile_)) {
     prefetch_manager_ = new ResourcePrefetcherManager(
         this, config_, profile_->GetRequestContext());
   }

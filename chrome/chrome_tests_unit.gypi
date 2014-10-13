@@ -585,6 +585,7 @@
       'browser/power/process_power_collector_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_unittest.cc',
+      'browser/predictors/resource_prefetch_common_unittest.cc',
       'browser/predictors/resource_prefetch_predictor_unittest.cc',
       'browser/predictors/resource_prefetch_predictor_tables_unittest.cc',
       'browser/predictors/resource_prefetcher_unittest.cc',

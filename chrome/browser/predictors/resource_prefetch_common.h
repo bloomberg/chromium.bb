@@ -74,11 +74,16 @@ struct ResourcePrefetchPredictorConfig {
 
   // Helpers to deal with mode.
   bool IsLearningEnabled() const;
-  bool IsPrefetchingEnabled() const;
+  bool IsPrefetchingEnabled(Profile* profile) const;
   bool IsURLLearningEnabled() const;
   bool IsHostLearningEnabled() const;
-  bool IsURLPrefetchingEnabled() const;
-  bool IsHostPrefetchingEnabled() const;
+  bool IsURLPrefetchingEnabled(Profile* profile) const;
+  bool IsHostPrefetchingEnabled(Profile* profile) const;
+
+  bool IsLowConfidenceForTest() const;
+  bool IsHighConfidenceForTest() const;
+  bool IsMoreResourcesEnabledForTest() const;
+  bool IsSmallDBEnabledForTest() const;
 
   // If a navigation hasn't seen a load complete event in this much time, it
   // is considered abandoned.
