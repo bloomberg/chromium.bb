@@ -47,8 +47,7 @@ class NET_EXPORT_PRIVATE QuicFlowController {
   void AddBytesSent(uint64 bytes_sent);
 
   // Set a new send window offset.
-  // Returns true if this changes send_window_offset_, and false in the case
-  // where |new_send_window| is <= send_window_offset_.
+  // Returns true if this increases send_window_offset_ and is now blocked.
   bool UpdateSendWindowOffset(uint64 new_send_window_offset);
 
   // Returns the current available send window.

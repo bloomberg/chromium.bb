@@ -163,10 +163,12 @@ bool QuicFlowController::UpdateSendWindowOffset(uint64 new_send_window_offset) {
 
   DVLOG(1) << ENDPOINT << "UpdateSendWindowOffset for stream " << id_
            << " with new offset " << new_send_window_offset
-           << " , current offset: " << send_window_offset_;
+           << " current offset: " << send_window_offset_
+           << " bytes_sent: " << bytes_sent_;
 
+  const bool blocked = IsBlocked();
   send_window_offset_ = new_send_window_offset;
-  return true;
+  return blocked;
 }
 
 void QuicFlowController::Disable() {

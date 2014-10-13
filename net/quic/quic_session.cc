@@ -533,7 +533,9 @@ void QuicSession::OnNewStreamFlowControlWindow(uint32 new_window) {
   }
   for (DataStreamMap::iterator it = stream_map_.begin();
        it != stream_map_.end(); ++it) {
-    it->second->flow_controller()->UpdateSendWindowOffset(new_window);
+    if (it->second->flow_controller()->UpdateSendWindowOffset(new_window)) {
+      it->second->OnCanWrite();
+    }
   }
 }
 

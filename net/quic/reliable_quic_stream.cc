@@ -479,7 +479,6 @@ void ReliableQuicStream::OnWindowUpdateFrame(
     DLOG(DFATAL) << "Flow control not enabled! " << version();
     return;
   }
-
   if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
     // We can write again!
     // TODO(rjshade): This does not respect priorities (e.g. multiple

@@ -644,6 +644,9 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   stream2->SendBody(body, false);
   EXPECT_TRUE(stream2->flow_controller()->IsBlocked());
 
+  // The handshake message will call OnCanWrite, so the stream can resume
+  // writing.
+  EXPECT_CALL(*stream2, OnCanWrite());
   // Now complete the crypto handshake, resulting in an increased flow control
   // send window.
   CryptoHandshakeMessage msg;
