@@ -530,6 +530,9 @@ SkColor WebActivity::GetRepresentativeColor() const {
 base::string16 WebActivity::GetTitle() const {
   if (!title_.empty())
     return title_;
+  const base::string16& title = web_view_->GetWebContents()->GetTitle();
+  if (!title.empty())
+    return title;
   return base::UTF8ToUTF16(web_view_->GetWebContents()->GetVisibleURL().host());
 }
 
