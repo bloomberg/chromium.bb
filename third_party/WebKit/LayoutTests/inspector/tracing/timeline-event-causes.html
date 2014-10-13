@@ -1,0 +1,136 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function test()
+{
+    function checkStringContains(string, contains)
+    {
+        var doesContain = string.indexOf(contains) >= 0;
+        InspectorTest.check(doesContain, contains + " should be present in " + string);
+        InspectorTest.addResult("PASS - record contained " + contains);
+    }
+
+    InspectorTest.runTestSuite([
+        function testTimerInstall(next)
+        {
+            function setTimeoutFunction(callback)
+            {
+                setTimeout(callback, 0);
+            }
+
+            var source = setTimeoutFunction.toString();
+            source += "\n//@ sourceURL=setTimeoutFunction.js";
+            InspectorTest.evaluateInPage(source);
+
+            InspectorTest.invokeAsyncWithTimeline("setTimeoutFunction", finishAndRunNextTest);
+            function finishAndRunNextTest()
+            {
+                var linkifier = new WebInspector.Linkifier();
+                var record = InspectorTest.findFirstTimelineRecord("TimerFire");
+                InspectorTest.check(record, "Should receive a TimerFire record.");
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.traceEvent().thread.target(), linkifier, true);
+                WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
+                var causes = contentHelper.element.textContent;
+                InspectorTest.check(causes, "Should generate causes");
+                checkStringContains(causes, "Timer installed: setTimeoutFunction @ setTimeoutFunction.js:");
+                next();
+            }
+        },
+
+        function testRequestAnimationFrame(next)
+        {
+            function requestAnimationFrameFunction(callback)
+            {
+                requestAnimationFrame(callback);
+            }
+
+            var source = requestAnimationFrameFunction.toString();
+            source += "\n//@ sourceURL=requestAnimationFrameFunction.js";
+            InspectorTest.evaluateInPage(source);
+
+            InspectorTest.invokeAsyncWithTimeline("requestAnimationFrameFunction", finishAndRunNextTest);
+            function finishAndRunNextTest()
+            {
+                var linkifier = new WebInspector.Linkifier();
+                var record = InspectorTest.findFirstTimelineRecord("FireAnimationFrame");
+                InspectorTest.check(record, "Should receive a FireAnimationFrame record.");
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.traceEvent().thread.target(), linkifier, true);
+                WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
+                var causes = contentHelper.element.textContent;
+                InspectorTest.check(causes, "Should generate causes");
+                checkStringContains(causes, "Animation frame requested: requestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
+                next();
+            }
+        },
+
+        function testStyleRecalc(next)
+        {
+            function styleRecalcFunction(callback)
+            {
+                var element = document.getElementById("testElement");
+                element.style.backgroundColor = "papayawhip";
+                callback();
+            }
+
+            var source = styleRecalcFunction.toString();
+            source += "\n//@ sourceURL=styleRecalcFunction.js";
+            InspectorTest.evaluateInPage(source);
+
+            InspectorTest.invokeAsyncWithTimeline("styleRecalcFunction", finishAndRunNextTest);
+            function finishAndRunNextTest()
+            {
+                var linkifier = new WebInspector.Linkifier();
+                var record = InspectorTest.findFirstTimelineRecord("RecalculateStyles");
+                InspectorTest.check(record, "Should receive a RecalculateStyles record.");
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.traceEvent().thread.target(), linkifier, true);
+                WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
+                var causes = contentHelper.element.textContent;
+                InspectorTest.check(causes, "Should generate causes");
+                checkStringContains(causes, "Stack when first invalidated: styleRecalcFunction @ styleRecalcFunction.js:");
+                next();
+            }
+        },
+
+        function testLayout(next)
+        {
+            function layoutFunction(callback)
+            {
+                var element = document.getElementById("testElement");
+                element.style.width = "200px";
+                var forceLayout = element.offsetWidth;
+                callback();
+            }
+
+            var source = layoutFunction.toString();
+            source += "\n//@ sourceURL=layoutFunction.js";
+            InspectorTest.evaluateInPage(source);
+
+            InspectorTest.invokeAsyncWithTimeline("layoutFunction", finishAndRunNextTest);
+            function finishAndRunNextTest()
+            {
+                var linkifier = new WebInspector.Linkifier();
+                var record = InspectorTest.findFirstTimelineRecord("Layout");
+                InspectorTest.check(record, "Should receive a Layout record.");
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.traceEvent().thread.target(), linkifier, true);
+                WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
+                var causes = contentHelper.element.textContent;
+                InspectorTest.check(causes, "Should generate causes");
+                checkStringContains(causes, "Stack when layout was forced: layoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "First layout invalidation: layoutFunction @ layoutFunction.js:");
+                next();
+            }
+        }
+    ]);
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that causes are correctly generated for various types of events.
+</p>
+<div id="testElement"></div>
+</body>
+</html>
