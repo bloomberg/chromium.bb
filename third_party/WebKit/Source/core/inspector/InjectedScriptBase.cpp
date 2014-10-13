@@ -60,6 +60,9 @@ static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(Pa
     int column = 0;
     if (object->getNumber("column", &column))
         exceptionDetails->setColumn(column);
+    int originScriptId = 0;
+    object->getNumber("scriptId", &originScriptId);
+
     RefPtr<JSONArray> stackTrace = object->getArray("stackTrace");
     if (stackTrace && stackTrace->length() > 0) {
         RefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > frames = TypeBuilder::Array<TypeBuilder::Console::CallFrame>::create();
@@ -71,6 +74,9 @@ static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(Pa
             stackFrame->getNumber("column", &column);
             int scriptId = 0;
             stackFrame->getNumber("scriptId", &scriptId);
+            if (i == 0 && scriptId == originScriptId)
+                originScriptId = 0;
+
             String sourceURL;
             stackFrame->getString("scriptNameOrSourceURL", &sourceURL);
             String functionName;
@@ -87,6 +93,8 @@ static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(Pa
         }
         exceptionDetails->setStackTrace(frames.release());
     }
+    if (originScriptId)
+        exceptionDetails->setScriptId(String::number(originScriptId));
     return exceptionDetails.release();
 }
 

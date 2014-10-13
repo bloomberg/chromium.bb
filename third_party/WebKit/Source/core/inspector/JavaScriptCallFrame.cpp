@@ -198,6 +198,7 @@ v8::Handle<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Handle<v8
     v8::Handle<v8::Object> exceptionDetails = v8::Object::New(isolate);
     exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "text"), message->Get());
     exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "url"), message->GetScriptOrigin().ResourceName());
+    exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "scriptId"), v8::Integer::New(isolate, message->GetScriptOrigin().ScriptID()->Value()));
     exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "line"), v8::Integer::New(isolate, message->GetLineNumber()));
     exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "column"), v8::Integer::New(isolate, message->GetStartColumn()));
     if (!message->GetStackTrace().IsEmpty())
