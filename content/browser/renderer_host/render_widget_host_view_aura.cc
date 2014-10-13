@@ -474,8 +474,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  window_->Init(aura::WINDOW_LAYER_TEXTURED);
+  window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
+  window_->layer()->SetColor(SK_ColorWHITE);
 }
 
 void RenderWidgetHostViewAura::InitAsPopup(
@@ -502,8 +503,9 @@ void RenderWidgetHostViewAura::InitAsPopup(
   }
   popup_parent_host_view_->popup_child_host_view_ = this;
   window_->SetType(ui::wm::WINDOW_TYPE_MENU);
-  window_->Init(aura::WINDOW_LAYER_TEXTURED);
+  window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
+  window_->layer()->SetColor(SK_ColorWHITE);
 
   // Setting the transient child allows for the popup to get mouse events when
   // in a system modal dialog. Do this before calling ParentWindowWithContext
@@ -529,9 +531,10 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   is_fullscreen_ = true;
   window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window_->Init(aura::WINDOW_LAYER_TEXTURED);
+  window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window_->layer()->SetColor(SK_ColorWHITE);
 
   aura::Window* parent = NULL;
   gfx::Rect bounds;
@@ -806,6 +809,8 @@ void RenderWidgetHostViewAura::SetBackgroundOpaque(bool opaque) {
   RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
   host_->SetBackgroundOpaque(opaque);
   window_->layer()->SetFillsBoundsOpaquely(opaque);
+  SkColor background_color = opaque ? SK_ColorWHITE : SK_ColorTRANSPARENT;
+  window_->layer()->SetColor(background_color);
 }
 
 gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {
@@ -1683,11 +1688,7 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
-  // For non-opaque windows, we don't draw anything, since we depend on the
-  // canvas coming from the compositor to already be initialized as
-  // transparent.
-  if (window_->layer()->fills_bounds_opaquely())
-    canvas->DrawColor(SK_ColorWHITE);
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(

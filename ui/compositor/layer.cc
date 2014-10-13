@@ -77,7 +77,7 @@ Layer::Layer()
       owner_(NULL),
       cc_layer_(NULL),
       device_scale_factor_(1.0f) {
-  CreateWebLayer();
+  CreateCcLayer();
 }
 
 Layer::Layer(LayerType type)
@@ -101,7 +101,7 @@ Layer::Layer(LayerType type)
       owner_(NULL),
       cc_layer_(NULL),
       device_scale_factor_(1.0f) {
-  CreateWebLayer();
+  CreateCcLayer();
 }
 
 Layer::~Layer() {
@@ -491,6 +491,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   new_layer->SetOpacity(cc_layer_->opacity());
   new_layer->SetTransform(cc_layer_->transform());
   new_layer->SetPosition(cc_layer_->position());
+  new_layer->SetBackgroundColor(cc_layer_->background_color());
 
   cc_layer_ = new_layer.get();
   content_layer_ = NULL;
@@ -529,8 +530,7 @@ void Layer::SetTextureMailbox(
     const cc::TextureMailbox& mailbox,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     gfx::Size texture_size_in_dip) {
-  DCHECK_EQ(type_, LAYER_TEXTURED);
-  DCHECK(!solid_color_layer_.get());
+  DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
   DCHECK(mailbox.IsValid());
   DCHECK(release_callback);
   if (!texture_layer_.get()) {
@@ -558,7 +558,7 @@ void Layer::SetTextureSize(gfx::Size texture_size_in_dip) {
 
 void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
                                     gfx::Size frame_size_in_dip) {
-  DCHECK_EQ(type_, LAYER_TEXTURED);
+  DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   scoped_refptr<cc::DelegatedRendererLayer> new_layer =
       cc::DelegatedRendererLayer::Create(frame_provider);
@@ -570,7 +570,7 @@ void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
 }
 
 void Layer::SetShowSurface(cc::SurfaceId id, gfx::Size frame_size_in_dip) {
-  DCHECK_EQ(type_, LAYER_TEXTURED);
+  DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
   new_layer->SetSurfaceId(id);
@@ -581,17 +581,15 @@ void Layer::SetShowSurface(cc::SurfaceId id, gfx::Size frame_size_in_dip) {
   RecomputeDrawsContentAndUVRect();
 }
 
-void Layer::SetShowPaintedContent() {
-  if (content_layer_.get())
+void Layer::SetShowSolidColorContent() {
+  DCHECK_EQ(type_, LAYER_SOLID_COLOR);
+
+  if (solid_color_layer_.get())
     return;
 
-  scoped_refptr<cc::Layer> new_layer;
-  if (Layer::UsingPictureLayer())
-    new_layer = cc::PictureLayer::Create(this);
-  else
-    new_layer = cc::ContentLayer::Create(this);
+  scoped_refptr<cc::SolidColorLayer> new_layer = cc::SolidColorLayer::Create();
   SwitchToLayer(new_layer);
-  content_layer_ = new_layer;
+  solid_color_layer_ = new_layer;
 
   mailbox_ = cc::TextureMailbox();
   if (mailbox_release_callback_) {
@@ -627,9 +625,8 @@ void Layer::UpdateNinePatchLayerBorder(const gfx::Rect& border) {
 void Layer::SetColor(SkColor color) { GetAnimator()->SetColor(color); }
 
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
-  if (type_ == LAYER_SOLID_COLOR ||
-      type_ == LAYER_NINE_PATCH ||
-      (!delegate_ && !mailbox_.IsValid()))
+  if ((type_ == LAYER_SOLID_COLOR && !texture_layer_.get()) ||
+      type_ == LAYER_NINE_PATCH || (!delegate_ && !mailbox_.IsValid()))
     return false;
 
   damaged_region_.op(invalid_rect.x(),
@@ -873,7 +870,7 @@ void Layer::SetGrayscaleFromAnimation(float grayscale) {
 
 void Layer::SetColorFromAnimation(SkColor color) {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
-  solid_color_layer_->SetBackgroundColor(color);
+  cc_layer_->SetBackgroundColor(color);
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
 }
 
@@ -976,7 +973,7 @@ void Layer::SendPendingThreadedAnimations() {
     children_[i]->SendPendingThreadedAnimations();
 }
 
-void Layer::CreateWebLayer() {
+void Layer::CreateCcLayer() {
   if (type_ == LAYER_SOLID_COLOR) {
     solid_color_layer_ = cc::SolidColorLayer::Create();
     cc_layer_ = solid_color_layer_.get();

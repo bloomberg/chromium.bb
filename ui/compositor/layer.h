@@ -282,7 +282,8 @@ class COMPOSITOR_EXPORT Layer
            surface_layer_.get();
   }
 
-  void SetShowPaintedContent();
+  // Show a solid color instead of delegated or surface contents.
+  void SetShowSolidColorContent();
 
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
@@ -397,7 +398,7 @@ class COMPOSITOR_EXPORT Layer
   virtual LayerAnimatorCollection* GetLayerAnimatorCollection() override;
 
   // Creates a corresponding composited layer for |type_|.
-  void CreateWebLayer();
+  void CreateCcLayer();
 
   // Recomputes and sets to |cc_layer_|.
   void RecomputeDrawsContentAndUVRect();

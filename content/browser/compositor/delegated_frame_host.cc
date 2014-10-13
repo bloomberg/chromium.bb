@@ -523,7 +523,7 @@ void DelegatedFrameHost::ReturnResources(
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  client_->GetLayer()->SetShowPaintedContent();
+  client_->GetLayer()->SetShowSolidColorContent();
   frame_provider_ = NULL;
   if (!surface_id_.is_null()) {
     surface_factory_->Destroy(surface_id_);

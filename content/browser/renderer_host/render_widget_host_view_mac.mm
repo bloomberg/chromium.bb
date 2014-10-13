@@ -546,7 +546,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   [cocoa_view_ setWantsLayer:YES];
 
   if (IsDelegatedRendererEnabled()) {
-    root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
+    root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     delegated_frame_host_.reset(new DelegatedFrameHost(this));
   }
 

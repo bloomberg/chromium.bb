@@ -88,7 +88,7 @@ void ReflectorImpl::OnSourceSurfaceReady(
 void ReflectorImpl::Shutdown() {
   MainThreadData& main = GetMain();
   main.mailbox = NULL;
-  main.mirroring_layer->SetShowPaintedContent();
+  main.mirroring_layer->SetShowSolidColorContent();
   main.mirroring_layer = NULL;
   impl_message_loop_->PostTask(
       FROM_HERE, base::Bind(&ReflectorImpl::ShutdownOnImplThread, this));
@@ -122,7 +122,7 @@ void ReflectorImpl::ReattachToOutputSurfaceFromMainThread(
   GLHelper* helper = ImageTransportFactory::GetInstance()->GetGLHelper();
   main.mailbox = new OwnedMailbox(helper);
   main.needs_set_mailbox = true;
-  main.mirroring_layer->SetShowPaintedContent();
+  main.mirroring_layer->SetShowSolidColorContent();
   impl_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&ReflectorImpl::AttachToOutputSurfaceOnImplThread,

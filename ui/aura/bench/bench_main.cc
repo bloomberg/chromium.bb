@@ -157,7 +157,7 @@ class WebGLBench : public BenchCompositorObserver {
              int max_frames)
       : BenchCompositorObserver(max_frames),
         parent_(parent),
-        webgl_(ui::LAYER_TEXTURED),
+        webgl_(ui::LAYER_SOLID_COLOR),
         compositor_(compositor),
         fbo_(0),
         do_draw_(true) {
@@ -223,7 +223,7 @@ class WebGLBench : public BenchCompositorObserver {
   }
 
   virtual ~WebGLBench() {
-    webgl_.SetShowPaintedContent();
+    webgl_.SetShowSolidColorContent();
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     gl->DeleteFramebuffers(1, &fbo_);
     compositor_->RemoveObserver(this);
