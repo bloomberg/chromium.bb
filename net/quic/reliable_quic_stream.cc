@@ -532,6 +532,12 @@ void ReliableQuicStream::AddBytesConsumed(uint64 bytes) {
   }
 }
 
+void ReliableQuicStream::UpdateSendWindowOffset(uint64 new_window) {
+  if (flow_controller_.UpdateSendWindowOffset(new_window)) {
+    OnCanWrite();
+  }
+}
+
 bool ReliableQuicStream::IsFlowControlBlocked() {
   if (flow_controller_.IsBlocked()) {
     return true;

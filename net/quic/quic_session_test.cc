@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_flags.h"
@@ -654,6 +656,81 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
 
   // Stream is now unblocked.
   EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
+}
+
+TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
+  if (version() <= QUIC_VERSION_19) {
+    return;
+  }
+  // Test that if the crypto stream is flow control blocked, then if the SHLO
+  // contains a larger send window offset, the stream becomes unblocked.
+  session_.set_writev_consumes_all_data(true);
+  TestCryptoStream* crypto_stream = session_.GetCryptoStream();
+  EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  QuicHeadersStream* headers_stream =
+        QuicSessionPeer::GetHeadersStream(&session_);
+  EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  // Write until the crypto stream is flow control blocked.
+  int i = 0;
+  while (!crypto_stream->flow_controller()->IsBlocked() && i < 1000) {
+    QuicConfig config;
+    CryptoHandshakeMessage crypto_message;
+    config.ToHandshakeMessage(&crypto_message);
+    crypto_stream->SendHandshakeMessage(crypto_message);
+    ++i;
+  }
+  EXPECT_TRUE(crypto_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.HasDataToWrite());
+  EXPECT_TRUE(crypto_stream->HasBufferedData());
+
+  // The handshake message will call OnCanWrite, so the stream can
+  // resume writing.
+  EXPECT_CALL(*crypto_stream, OnCanWrite());
+  // Now complete the crypto handshake, resulting in an increased flow control
+  // send window.
+  CryptoHandshakeMessage msg;
+  session_.GetCryptoStream()->OnHandshakeMessage(msg);
+
+  // Stream is now unblocked and will no longer have buffered data.
+  EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+}
+
+TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
+  if (version() <= QUIC_VERSION_19) {
+    return;
+  }
+  // Test that if the header stream is flow control blocked, then if the SHLO
+  // contains a larger send window offset, the stream becomes unblocked.
+  session_.set_writev_consumes_all_data(true);
+  TestCryptoStream* crypto_stream = session_.GetCryptoStream();
+  EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  QuicHeadersStream* headers_stream =
+      QuicSessionPeer::GetHeadersStream(&session_);
+  EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  QuicStreamId stream_id = 5;
+  // Write until the header stream is flow control blocked.
+  while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
+    SpdyHeaderBlock headers;
+    headers["header"] = base::Uint64ToString(base::RandUint64()) +
+        base::Uint64ToString(base::RandUint64()) +
+        base::Uint64ToString(base::RandUint64());
+    headers_stream->WriteHeaders(stream_id, headers, true, nullptr);
+    stream_id += 2;
+  }
+  EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.HasDataToWrite());
+  EXPECT_TRUE(headers_stream->HasBufferedData());
+
+  // Now complete the crypto handshake, resulting in an increased flow control
+  // send window.
+  CryptoHandshakeMessage msg;
+  session_.GetCryptoStream()->OnHandshakeMessage(msg);
+
+  // Stream is now unblocked and will no longer have buffered data.
+  EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(headers_stream->HasBufferedData());
 }
 
 TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {

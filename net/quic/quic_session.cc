@@ -528,14 +528,12 @@ void QuicSession::OnNewStreamFlowControlWindow(uint32 new_window) {
 
   // Inform all existing streams about the new window.
   if (connection_->version() >= QUIC_VERSION_21) {
-    GetCryptoStream()->flow_controller()->UpdateSendWindowOffset(new_window);
-    headers_stream_->flow_controller()->UpdateSendWindowOffset(new_window);
+    GetCryptoStream()->UpdateSendWindowOffset(new_window);
+    headers_stream_->UpdateSendWindowOffset(new_window);
   }
   for (DataStreamMap::iterator it = stream_map_.begin();
        it != stream_map_.end(); ++it) {
-    if (it->second->flow_controller()->UpdateSendWindowOffset(new_window)) {
-      it->second->OnCanWrite();
-    }
+    it->second->UpdateSendWindowOffset(new_window);
   }
 }
 
