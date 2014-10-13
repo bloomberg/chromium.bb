@@ -10,11 +10,8 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/browser/extension_prefs.h"
@@ -150,13 +147,12 @@ void AppListControllerDelegate::ShowAppInWebStore(
       is_search_result ?
           AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH :
           AppListControllerDelegate::LAUNCH_FROM_APP_LIST);
-  chrome::NavigateParams params(
-      profile,
-      net::AppendQueryParameter(url,
-                                extension_urls::kWebstoreSourceField,
-                                source),
-      ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
+  OpenURL(profile,
+          net::AppendQueryParameter(url,
+                                    extension_urls::kWebstoreSourceField,
+                                    source),
+          ui::PAGE_TRANSITION_LINK,
+          CURRENT_TAB);
 }
 
 bool AppListControllerDelegate::HasOptionsPage(
@@ -174,11 +170,10 @@ void AppListControllerDelegate::ShowOptionsPage(
   if (!extension)
     return;
 
-  chrome::NavigateParams params(
-      profile,
-      extensions::OptionsPageInfo::GetOptionsPage(extension),
-      ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
+  OpenURL(profile,
+          extensions::OptionsPageInfo::GetOptionsPage(extension),
+          ui::PAGE_TRANSITION_LINK,
+          CURRENT_TAB);
 }
 
 extensions::LaunchType AppListControllerDelegate::GetExtensionLaunchType(
