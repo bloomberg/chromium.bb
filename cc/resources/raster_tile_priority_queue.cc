@@ -69,8 +69,23 @@ WhichTree HigherPriorityTree(
     const PictureLayerImpl::LayerRasterTileIterator* pending_iterator,
     const Tile* shared_tile) {
   switch (tree_priority) {
-    case SMOOTHNESS_TAKES_PRIORITY:
+    case SMOOTHNESS_TAKES_PRIORITY: {
+      const Tile* active_tile = shared_tile ? shared_tile : **active_iterator;
+      const Tile* pending_tile = shared_tile ? shared_tile : **pending_iterator;
+
+      const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
+      const TilePriority& pending_priority =
+          pending_tile->priority(PENDING_TREE);
+
+      // If we're down to eventually bin tiles on the active tree, process the
+      // pending tree to allow tiles required for activation to be initialized
+      // when memory policy only allows prepaint.
+      if (active_priority.priority_bin == TilePriority::EVENTUALLY &&
+          pending_priority.priority_bin == TilePriority::NOW) {
+        return PENDING_TREE;
+      }
       return ACTIVE_TREE;
+    }
     case NEW_CONTENT_TAKES_PRIORITY:
       return PENDING_TREE;
     case SAME_PRIORITY_FOR_BOTH_TREES: {

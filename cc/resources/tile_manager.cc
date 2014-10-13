@@ -500,10 +500,8 @@ bool TileManager::FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
       return false;
 
     Tile* tile = eviction_priority_queue_.Top();
-    if (!other_priority.IsHigherPriorityThan(
-            tile->priority_for_tree_priority(global_state_.tree_priority))) {
+    if (!other_priority.IsHigherPriorityThan(tile->combined_priority()))
       return false;
-    }
 
     *usage -= MemoryUsage::FromTile(tile);
     FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
@@ -560,8 +558,7 @@ void TileManager::AssignGpuMemoryToTiles(
 
   while (!raster_priority_queue_.IsEmpty()) {
     Tile* tile = raster_priority_queue_.Top();
-    TilePriority priority =
-        tile->priority_for_tree_priority(global_state_.tree_priority);
+    TilePriority priority = tile->combined_priority();
 
     if (TilePriorityViolatesMemoryPolicy(priority))
       break;

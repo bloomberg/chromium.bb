@@ -221,7 +221,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   Tile* last_tile = NULL;
   smoothness_tiles.clear();
   tile_count = 0;
-  size_t increasing_distance_tiles = 0u;
+  size_t correct_order_tiles = 0u;
   // Here we expect to get increasing ACTIVE_TREE priority_bin.
   queue.Reset();
   host_impl_.BuildRasterQueue(&queue, SMOOTHNESS_TAKES_PRIORITY);
@@ -234,11 +234,19 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
     EXPECT_LE(last_tile->priority(ACTIVE_TREE).priority_bin,
               tile->priority(ACTIVE_TREE).priority_bin);
+    bool skip_updating_last_tile = false;
     if (last_tile->priority(ACTIVE_TREE).priority_bin ==
         tile->priority(ACTIVE_TREE).priority_bin) {
-      increasing_distance_tiles +=
+      correct_order_tiles +=
           last_tile->priority(ACTIVE_TREE).distance_to_visible <=
           tile->priority(ACTIVE_TREE).distance_to_visible;
+    } else if (tile->priority(ACTIVE_TREE).priority_bin ==
+                   TilePriority::EVENTUALLY &&
+               tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW) {
+      // Since we'd return pending tree now tiles before the eventually tiles on
+      // the active tree, update the value.
+      ++correct_order_tiles;
+      skip_updating_last_tile = true;
     }
 
     if (tile->priority(ACTIVE_TREE).priority_bin == TilePriority::NOW &&
@@ -248,7 +256,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
       EXPECT_EQ(LOW_RESOLUTION, last_tile->priority(ACTIVE_TREE).resolution);
     }
 
-    last_tile = tile;
+    if (!skip_updating_last_tile)
+      last_tile = tile;
     ++tile_count;
     smoothness_tiles.insert(tile);
     queue.Pop();
@@ -258,11 +267,11 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   EXPECT_EQ(all_tiles, smoothness_tiles);
   // Since we don't guarantee increasing distance due to spiral iterator, we
   // should check that we're _mostly_ right.
-  EXPECT_GT(increasing_distance_tiles, 3 * tile_count / 4);
+  EXPECT_GT(correct_order_tiles, 3 * tile_count / 4);
 
   std::set<Tile*> new_content_tiles;
   last_tile = NULL;
-  increasing_distance_tiles = 0u;
+  size_t increasing_distance_tiles = 0u;
   // Here we expect to get increasing PENDING_TREE priority_bin.
   queue.Reset();
   host_impl_.BuildRasterQueue(&queue, NEW_CONTENT_TAKES_PRIORITY);
