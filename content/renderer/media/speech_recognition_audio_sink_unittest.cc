@@ -109,7 +109,7 @@ size_t MockSyncSocket::Receive(void* buffer, size_t length) {
 // in the production code (minus the mocks).
 class FakeSpeechRecognizer {
  public:
-  FakeSpeechRecognizer() : is_responsive_(true) { }
+  FakeSpeechRecognizer() : is_responsive_(true) {}
 
   void Initialize(
       const blink::WebMediaStreamTrack& track,
@@ -128,39 +128,40 @@ class FakeSpeechRecognizer {
     // Wrap the shared memory for the audio bus.
     media::AudioInputBuffer* buffer =
         static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
+
     audio_track_bus_ = media::AudioBus::WrapMemory(sink_params, buffer->audio);
     audio_track_bus_->Zero();
 
     // Reference to the counter used to synchronize.
-    buffer_index_ = &(buffer->params.size);
-    *buffer_index_ = 0U;
+    buffer->params.size = 0U;
 
     // Create a shared buffer for the |MockSyncSocket|s.
     shared_buffer_.reset(new MockSyncSocket::SharedBuffer());
 
     // Local socket will receive signals from the producer.
-    local_socket_.reset(new MockSyncSocket(shared_buffer_.get()));
+    receiving_socket_.reset(new MockSyncSocket(shared_buffer_.get()));
 
     // We automatically trigger a Receive when data is sent over the socket.
-    foreign_socket_ = new MockSyncSocket(
+    sending_socket_ = new MockSyncSocket(
         shared_buffer_.get(),
         base::Bind(&FakeSpeechRecognizer::EmulateReceiveThreadLoopIteration,
                    base::Unretained(this)));
 
     // This is usually done to pair the sockets. Here it's not effective.
-    base::SyncSocket::CreatePair(local_socket_.get(), foreign_socket_);
+    base::SyncSocket::CreatePair(receiving_socket_.get(), sending_socket_);
   }
 
   // Emulates a single iteraton of a thread receiving on the socket.
   // This would normally be done on a receiving thread's task on the browser.
   void EmulateReceiveThreadLoopIteration() {
-    // When not responsive do nothing as if the process is busy.
     if (!is_responsive_)
       return;
 
-    local_socket_->Receive(buffer_index_, sizeof(*buffer_index_));
+    const int kSize = sizeof(media::AudioInputBufferParameters().size);
+    receiving_socket_->Receive(&(GetAudioInputBuffer()->params.size), kSize);
+
     // Notify the producer that the audio buffer has been consumed.
-    ++(*buffer_index_);
+    GetAudioInputBuffer()->params.size++;
   }
 
   // Used to simulate an unresponsive behaviour of the consumer.
@@ -168,9 +169,13 @@ class FakeSpeechRecognizer {
     is_responsive_ = is_responsive;
   }
 
-  MockSyncSocket* foreign_socket() { return foreign_socket_; }
+  media::AudioInputBuffer * GetAudioInputBuffer() const {
+    return static_cast<media::AudioInputBuffer*>(shared_memory_->memory());
+  }
+
+  MockSyncSocket* sending_socket() { return sending_socket_; }
   media::AudioBus* audio_bus() const { return audio_track_bus_.get(); }
-  uint32 buffer_index() { return *buffer_index_; }
+
 
  private:
   bool is_responsive_;
@@ -180,14 +185,11 @@ class FakeSpeechRecognizer {
 
   // Fake sockets and their shared buffer.
   scoped_ptr<MockSyncSocket::SharedBuffer> shared_buffer_;
-  scoped_ptr<MockSyncSocket> local_socket_;
-  MockSyncSocket* foreign_socket_;
+  scoped_ptr<MockSyncSocket> receiving_socket_;
+  MockSyncSocket* sending_socket_;
 
   // Audio bus wrapping the shared memory from the renderer.
   scoped_ptr<media::AudioBus> audio_track_bus_;
-
-  // Used for synchronization of sent/received buffers.
-  uint32* buffer_index_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSpeechRecognizer);
 };
@@ -239,10 +241,10 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     recognizer_->Initialize(blink_track, sink_params_, &foreign_memory_handle);
 
     // Create the producer.
-    scoped_ptr<base::SyncSocket> foreign_socket(recognizer_->foreign_socket());
+    scoped_ptr<base::SyncSocket> sending_socket(recognizer_->sending_socket());
     speech_audio_sink_.reset(new SpeechRecognitionAudioSink(
         blink_track, sink_params_, foreign_memory_handle,
-        foreign_socket.Pass(),
+        sending_socket.Pass(),
         base::Bind(&SpeechRecognitionAudioSinkTest::StoppedCallback,
                    base::Unretained(this))));
 
@@ -295,12 +297,12 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
 
   // Used to simulate a problem with sockets.
   void SetFailureModeOnForeignSocket(bool in_failure_mode) {
-    recognizer()->foreign_socket()->SetFailureMode(in_failure_mode);
+    recognizer()->sending_socket()->SetFailureMode(in_failure_mode);
   }
 
   // Helper method for verifying captured audio data has been consumed.
   inline void AssertConsumedBuffers(const uint32 buffer_index) {
-    ASSERT_EQ(buffer_index, recognizer_->buffer_index());
+    ASSERT_EQ(buffer_index, recognizer()->GetAudioInputBuffer()->params.size);
   }
 
   // Helper method for providing audio data to producer and verifying it was
@@ -327,7 +329,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
 
     for (uint32 i = 1U; i <= consumptions; ++i) {
       CaptureAudio(kBuffersPerNotification);
-      ASSERT_EQ(i, recognizer_->buffer_index())
+      ASSERT_EQ(i, recognizer()->GetAudioInputBuffer()->params.size)
           << "Tested at rates: "
           << "In(" << input_sample_rate << ", " << input_frames_per_buffer
           << ") "
@@ -472,6 +474,30 @@ TEST_F(SpeechRecognitionAudioSinkTest, SyncSocketFailsSendingData) {
   // A failure occurs (socket cannot send).
   SetFailureModeOnForeignSocket(true);
   CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 1U);
+}
+
+// A very unlikely scenario in which the peer is not synchronizing for a long
+// time (e.g. 300 ms) which results in dropping cached buffers and restarting.
+// We check that the FIFO overflow does not occur and that the producer is able
+// to resume.
+TEST_F(SpeechRecognitionAudioSinkTest, RepeatedSycnhronizationLag) {
+  const uint32 kBuffersPerNotification = Initialize(44100, 441, 16000, 1600);
+
+  // Start with no synchronization problems.
+  AssertConsumedBuffers(0U);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 1U);
+
+  // Consumer gets out of sync.
+  recognizer()->SimulateResponsiveness(false);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 1U);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 1U);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 1U);
+
+  // Consumer recovers.
+  recognizer()->SimulateResponsiveness(true);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 2U);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 3U);
+  CaptureAudioAndAssertConsumedBuffers(kBuffersPerNotification, 4U);
 }
 
 // Checks that an OnStoppedCallback is issued when the track is stopped.

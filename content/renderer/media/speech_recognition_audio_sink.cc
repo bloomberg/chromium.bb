@@ -30,9 +30,9 @@ SpeechRecognitionAudioSink::SpeechRecognitionAudioSink(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(params.IsValid());
   DCHECK(IsSupportedTrack(track));
-  const size_t memory_length = media::AudioBus::CalculateMemorySize(params) +
-                               sizeof(media::AudioInputBufferParameters);
-  CHECK(shared_memory_.Map(memory_length));
+  const size_t kSharedMemorySize = sizeof(media::AudioInputBufferParameters) +
+                                   media::AudioBus::CalculateMemorySize(params);
+  CHECK(shared_memory_.Map(kSharedMemorySize));
 
   media::AudioInputBuffer* buffer =
       static_cast<media::AudioInputBuffer*>(shared_memory_.memory());
@@ -127,9 +127,11 @@ void SpeechRecognitionAudioSink::OnData(const int16* audio_data,
   DCHECK_EQ(input_bus_->channels(), number_of_channels);
   if (fifo_->frames() + number_of_frames > fifo_->max_frames()) {
     // This would indicate a serious issue with the browser process or the
-    // SyncSocket and/or SharedMemory. We stop delivering any data to the peer.
-    NOTREACHED() << "Audio FIFO overflow";
-    return;
+    // SyncSocket and/or SharedMemory. We drop any previous buffers and try to
+    // recover by resuming where the peer left of.
+    DLOG(ERROR) << "Audio FIFO overflow";
+    fifo_->Clear();
+    buffer_index_ = GetAudioInputBuffer()->params.size;
   }
   // TODO(xians): A better way to handle the interleaved and deinterleaved
   // format switching, see issue/317710.
@@ -146,7 +148,7 @@ void SpeechRecognitionAudioSink::OnData(const int16* audio_data,
   // The peer must write to it (incrementing by 1) once the the buffer was
   // consumed. This is intentional not to block this audio capturing thread.
   if (buffer_index_ != GetAudioInputBuffer()->params.size) {
-    DLOG(WARNING) << "Buffer synchronization lag";
+    DVLOG(1) << "Buffer synchronization lag";
     return;
   }
 
