@@ -28,7 +28,6 @@ class FakeLoginUtils : public LoginUtils {
                               bool has_active_session,
                               LoginUtils::Delegate* delegate) override;
   virtual void DelegateDeleted(LoginUtils::Delegate* delegate) override;
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) override;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       AuthStatusConsumer* consumer) override;
   virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,

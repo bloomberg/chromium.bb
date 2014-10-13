@@ -103,6 +103,9 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     LoginUtils::Set(mock_login_utils_);
     EXPECT_CALL(*mock_login_utils_, DelegateDeleted(_))
         .Times(1);
+    EXPECT_CALL(*mock_login_utils_, RestartToApplyPerSessionFlagsIfNeed(_, _))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
 
     mock_login_display_host_.reset(new MockLoginDisplayHost());
     mock_login_display_ = new MockLoginDisplay();
@@ -599,8 +602,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
       .WillOnce(WithArg<0>(CreateAuthenticator(user_context)));
-  EXPECT_CALL(*mock_login_utils_, CompleteOffTheRecordLogin(_))
-      .Times(1);
 
   existing_user_controller()->OnSigninScreenReady();
   SetAutoLoginPolicy(kPublicSessionAccountId, kAutoLoginLongDelay);

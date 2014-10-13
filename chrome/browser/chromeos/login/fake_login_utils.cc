@@ -97,10 +97,6 @@ void FakeLoginUtils::DelegateDeleted(LoginUtils::Delegate* delegate) {
   NOTREACHED() << "Method not implemented.";
 }
 
-void FakeLoginUtils::CompleteOffTheRecordLogin(const GURL& start_url) {
-  NOTREACHED() << "Method not implemented.";
-}
-
 scoped_refptr<Authenticator> FakeLoginUtils::CreateAuthenticator(
     AuthStatusConsumer* consumer) {
   authenticator_ = new MockAuthenticator(consumer, expected_user_context_);

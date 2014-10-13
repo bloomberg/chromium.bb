@@ -18,6 +18,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -57,6 +60,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -69,6 +73,7 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -237,6 +242,38 @@ UserSessionManager::~UserSessionManager() {
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+}
+
+void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
+  VLOG(1) << "Completing guest session login";
+
+  // For guest session we ask session_manager to restart Chrome with --bwsi
+  // flag. We keep only some of the arguments of this process.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine command_line(browser_command_line.GetProgram());
+  std::string cmd_line_str =
+      GetOffTheRecordCommandLine(start_url,
+                                 StartupUtils::IsOobeCompleted(),
+                                 browser_command_line,
+                                 &command_line);
+
+  // This makes sure that Chrome restarts with no per-session flags. The guest
+  // profile will always have empty set of per-session flags. If this is not
+  // done and device owner has some per-session flags, when Chrome is relaunched
+  // the guest profile session flags will not match the current command line and
+  // another restart will be attempted in order to reset the user flags for the
+  // guest user.
+  const CommandLine user_flags(CommandLine::NO_PROGRAM);
+  if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+           user_flags,
+           *CommandLine::ForCurrentProcess(),
+           NULL)) {
+    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
+        chromeos::login::kGuestUserName,
+        CommandLine::StringVector());
+  }
+
+  RestartChrome(cmd_line_str);
 }
 
 void UserSessionManager::StartSession(

@@ -10,7 +10,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 
-class GURL;
 class PrefService;
 class Profile;
 
@@ -73,11 +72,6 @@ class LoginUtils {
 
   // Invalidates |delegate|, which was passed to PrepareProfile method call.
   virtual void DelegateDeleted(Delegate* delegate) = 0;
-
-  // Invoked after the tmpfs is successfully mounted.
-  // Asks session manager to restart Chrome in Browse Without Sign In mode.
-  // |start_url| is url for launched browser to open.
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) = 0;
 
   // Creates and returns the authenticator to use.
   // Before WebUI login (Up to R14) the caller owned the returned

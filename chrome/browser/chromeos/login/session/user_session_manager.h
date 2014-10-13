@@ -23,6 +23,7 @@
 #include "components/user_manager/user_manager.h"
 #include "net/base/network_change_notifier.h"
 
+class GURL;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -81,6 +82,11 @@ class UserSessionManager
 
   // Registers session related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Invoked after the tmpfs is successfully mounted.
+  // Asks session_manager to restart Chrome in Guest session mode.
+  // |start_url| is an optional URL to be opened in Guest session browser.
+  void CompleteGuestSessionLogin(const GURL& start_url);
 
   // Start user session given |user_context| and |authenticator| which holds
   // authentication context (profile).

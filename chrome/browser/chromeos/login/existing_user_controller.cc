@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
@@ -924,7 +925,7 @@ void ExistingUserController::OnOffTheRecordAuthSuccess() {
   if (!StartupUtils::IsDeviceRegistered())
     StartupUtils::MarkDeviceRegistered(base::Closure());
 
-  LoginUtils::Get()->CompleteOffTheRecordLogin(guest_mode_url_);
+  UserSessionManager::GetInstance()->CompleteGuestSessionLogin(guest_mode_url_);
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnOffTheRecordAuthSuccess();
