@@ -56,6 +56,11 @@ public:
         virtual void error(MediaKeyErrorCode, unsigned long systemCode) = 0;
         virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& message) = 0;
 
+        // Called when the expiration time for the session changes.
+        // |updatedExpiryTimeInMS| is specified as the number of milliseconds
+        // since 01 January, 1970 UTC.
+        virtual void expirationChanged(double updatedExpiryTimeInMS) = 0;
+
     protected:
         virtual ~Client();
     };
@@ -71,7 +76,12 @@ public:
     virtual void release() = 0;
 
     virtual void initializeNewSession(const WebString& initDataType, const unsigned char* initData, size_t initDataLength, const WebString& sessionType, WebContentDecryptionModuleResult);
+    virtual void load(const WebString& sessionId, WebContentDecryptionModuleResult);
     virtual void update(const unsigned char* response, size_t responseLength, WebContentDecryptionModuleResult);
+    virtual void close(WebContentDecryptionModuleResult);
+    virtual void remove(WebContentDecryptionModuleResult);
+
+    // FIXME: Remove this method once the new methods are implemented in Chromium.
     virtual void release(WebContentDecryptionModuleResult);
 };
 

@@ -108,6 +108,7 @@ private:
     virtual void close() override;
     virtual void error(MediaKeyErrorCode, unsigned long systemCode) override;
     virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) override;
+    virtual void expirationChanged(double updatedExpiryTimeInMS) override;
 
     ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<ArrayBuffer> initData);
     ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);

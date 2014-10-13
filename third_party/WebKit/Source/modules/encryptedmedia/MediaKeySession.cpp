@@ -605,6 +605,11 @@ void MediaKeySession::error(WebContentDecryptionModuleException exception, unsig
     error(errorCode, systemCode);
 }
 
+void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
+{
+    // FIXME: Implement expiration attribute.
+}
+
 const AtomicString& MediaKeySession::interfaceName() const
 {
     return EventTargetNames::MediaKeySession;
