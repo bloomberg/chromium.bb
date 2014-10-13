@@ -61,6 +61,12 @@ class BluetoothLowEnergyEventRouter
     kStatusErrorNotConnected,
     kStatusErrorNotNotifying,
     kStatusErrorInProgress,
+    kStatusErrorAuthenticationFailed,
+    kStatusErrorCanceled,
+    kStatusErrorTimeout,
+    kStatusErrorInvalidLength,
+    kStatusErrorUnsupportedDevice,
+    kStatusErrorGattNotSupported,
     kStatusErrorFailed
   };
 

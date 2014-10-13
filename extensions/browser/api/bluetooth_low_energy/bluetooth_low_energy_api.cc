@@ -33,6 +33,13 @@ const char kErrorNotNotifying[] = "Not notifying";
 const char kErrorNotFound[] = "Instance not found";
 const char kErrorOperationFailed[] = "Operation failed";
 const char kErrorPermissionDenied[] = "Permission denied";
+const char kErrorAuthenticationFailed[] = "Authentication failed";
+const char kErrorCanceled[] = "Request canceled";
+const char kErrorTimeout[] = "Operation timed out";
+const char kErrorInvalidLength[] = "Invalid data length";
+const char kErrorGattNotSupported[] = "Operation not supported by this service";
+const char kErrorUnsupportedDevice[] =
+    "This device is not supported on the current platform";
 const char kErrorPlatformNotSupported[] =
     "This operation is not supported on the current platform";
 
@@ -55,6 +62,18 @@ std::string StatusToString(BluetoothLowEnergyEventRouter::Status status) {
       return kErrorNotNotifying;
     case BluetoothLowEnergyEventRouter::kStatusErrorInProgress:
       return kErrorInProgress;
+    case BluetoothLowEnergyEventRouter::kStatusErrorAuthenticationFailed:
+      return kErrorAuthenticationFailed;
+    case BluetoothLowEnergyEventRouter::kStatusErrorCanceled:
+      return kErrorCanceled;
+    case BluetoothLowEnergyEventRouter::kStatusErrorTimeout:
+      return kErrorTimeout;
+    case BluetoothLowEnergyEventRouter::kStatusErrorUnsupportedDevice:
+      return kErrorUnsupportedDevice;
+    case BluetoothLowEnergyEventRouter::kStatusErrorInvalidLength:
+      return kErrorInvalidLength;
+    case BluetoothLowEnergyEventRouter::kStatusErrorGattNotSupported:
+      return kErrorGattNotSupported;
     case BluetoothLowEnergyEventRouter::kStatusSuccess:
       NOTREACHED();
       break;
