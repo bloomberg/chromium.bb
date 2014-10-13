@@ -10,12 +10,12 @@ The interface is intended to be used as follows.
 
 1. For tests that simply run a native process (i.e. no activity is spawned):
 
-Call tool.CopyFiles().
+Call tool.CopyFiles(device).
 Prepend test command line with tool.GetTestWrapper().
 
 2. For tests that spawn an activity:
 
-Call tool.CopyFiles().
+Call tool.CopyFiles(device).
 Call tool.SetupEnvironment().
 Run the test as usual.
 Call tool.CleanUpEnvironment().
@@ -62,7 +62,8 @@ class BaseTool(object):
     """
     return ''
 
-  def CopyFiles(self):
+  @classmethod
+  def CopyFiles(cls, device):
     """Copies tool-specific files to the device, create directories, etc."""
     pass
 
@@ -106,21 +107,21 @@ class AddressSanitizerTool(BaseTool):
     # This is required because ASan is a compiler-based tool, and md5sum
     # includes instrumented code from base.
     device.old_interface.SetUtilWrapper(self.GetUtilWrapper())
+
+  @classmethod
+  def CopyFiles(cls, device):
+    """Copies ASan tools to the device."""
     libs = glob.glob(os.path.join(DIR_SOURCE_ROOT,
                                   'third_party/llvm-build/Release+Asserts/',
                                   'lib/clang/*/lib/linux/',
                                   'libclang_rt.asan-arm-android.so'))
     assert len(libs) == 1
-    self._lib = libs[0]
-
-  def CopyFiles(self):
-    """Copies ASan tools to the device."""
     subprocess.call([os.path.join(DIR_SOURCE_ROOT,
                                   'tools/android/asan/asan_device_setup.sh'),
-                     '--device', str(self._device),
-                     '--lib', self._lib,
+                     '--device', str(device),
+                     '--lib', libs[0],
                      '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
-    self._device.WaitUntilFullyBooted()
+    device.WaitUntilFullyBooted()
 
   def GetTestWrapper(self):
     return AddressSanitizerTool.WRAPPER_NAME
@@ -164,15 +165,16 @@ class ValgrindTool(BaseTool):
     self._wrap_properties = ['wrap.com.google.android.apps.ch',
                              'wrap.org.chromium.native_test']
 
-  def CopyFiles(self):
+  @classmethod
+  def CopyFiles(cls, device):
     """Copies Valgrind tools to the device."""
-    self._device.RunShellCommand(
+    device.RunShellCommand(
         'rm -r %s; mkdir %s' % (ValgrindTool.VG_DIR, ValgrindTool.VG_DIR))
-    self._device.RunShellCommand(
+    device.RunShellCommand(
         'rm -r %s; mkdir %s' % (ValgrindTool.VGLOGS_DIR,
                                 ValgrindTool.VGLOGS_DIR))
-    files = self.GetFilesForTool()
-    self._device.PushChangedFiles(
+    files = cls.GetFilesForTool()
+    device.PushChangedFiles(
         [((os.path.join(DIR_SOURCE_ROOT, f),
           os.path.join(ValgrindTool.VG_DIR, os.path.basename(f)))
          for f in files)])
@@ -192,7 +194,8 @@ class ValgrindTool(BaseTool):
       self._device.RunShellCommand('setprop %s ""' % (prop,))
     SetChromeTimeoutScale(self._device, None)
 
-  def GetFilesForTool(self):
+  @staticmethod
+  def GetFilesForTool():
     """Returns a list of file names for the tool."""
     raise NotImplementedError()
 
@@ -211,7 +214,8 @@ class MemcheckTool(ValgrindTool):
   def __init__(self, device):
     super(MemcheckTool, self).__init__(device)
 
-  def GetFilesForTool(self):
+  @staticmethod
+  def GetFilesForTool():
     """Returns a list of file names for the tool."""
     return ['tools/valgrind/android/vg-chrome-wrapper.sh',
             'tools/valgrind/memcheck/suppressions.txt',
@@ -232,7 +236,8 @@ class TSanTool(ValgrindTool):
   def __init__(self, device):
     super(TSanTool, self).__init__(device)
 
-  def GetFilesForTool(self):
+  @staticmethod
+  def GetFilesForTool():
     """Returns a list of file names for the tool."""
     return ['tools/valgrind/android/vg-chrome-wrapper-tsan.sh',
             'tools/valgrind/tsan/suppressions.txt',
@@ -276,3 +281,22 @@ def CreateTool(tool_name, device):
     print 'Unknown tool %s, available tools: %s' % (
         tool_name, ', '.join(sorted(TOOL_REGISTRY.keys())))
     sys.exit(1)
+
+def PushFilesForTool(tool_name, device):
+  """Pushes the files required for |tool_name| to |device|.
+
+  Args:
+    tool_name: Name of the tool to create.
+    device: A DeviceUtils instance.
+  """
+  if not tool_name:
+    return
+
+  clazz = TOOL_REGISTRY.get(tool_name)
+  if clazz:
+    clazz.CopyFiles(device)
+  else:
+    print 'Unknown tool %s, available tools: %s' % (
+        tool_name, ', '.join(sorted(TOOL_REGISTRY.keys())))
+    sys.exit(1)
+

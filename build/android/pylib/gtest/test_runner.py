@@ -6,7 +6,6 @@ import logging
 import os
 import re
 
-from pylib import constants
 from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
@@ -58,22 +57,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   #override
   def InstallTestPackage(self):
     self.test_package.Install(self.device)
-
-  #override
-  def PushDataDeps(self):
-    self.device.WaitUntilFullyBooted(timeout=20)
-    self.tool.CopyFiles()
-    if os.path.exists(constants.ISOLATE_DEPS_DIR):
-      # TODO(frankf): linux_dumper_unittest_helper needs to be in the same dir
-      # as breakpad_unittests exe. Find a better way to do this.
-      if self.test_package.suite_name == 'breakpad_unittests':
-        device_dir = constants.TEST_EXECUTABLE_DIR
-      else:
-        device_dir = self.device.GetExternalStoragePath()
-      self.device.PushChangedFiles(
-          [(os.path.join(constants.ISOLATE_DEPS_DIR, p),
-            os.path.join(device_dir, p))
-           for p in os.listdir(constants.ISOLATE_DEPS_DIR)])
 
   def _ParseTestOutput(self, p):
     """Process the test output.

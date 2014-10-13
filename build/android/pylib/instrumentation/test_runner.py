@@ -126,7 +126,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
                 dst_layer))]
     if host_device_file_tuples:
       self.device.PushChangedFiles(host_device_file_tuples)
-    self.tool.CopyFiles()
+    self.tool.CopyFiles(self.device)
     TestRunner._DEVICE_HAS_TEST_FILES[str(self.device)] = True
 
   def _GetInstrumentationArgs(self):
