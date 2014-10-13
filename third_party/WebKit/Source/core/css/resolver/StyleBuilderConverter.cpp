@@ -338,6 +338,43 @@ EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverSt
     return GO_270DEG;
 }
 
+GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&, CSSValue* value)
+{
+    CSSValueList* list = toCSSValueList(value);
+
+    ASSERT(list->length() >= 1);
+    CSSPrimitiveValue* first = toCSSPrimitiveValue(list->item(0));
+    CSSPrimitiveValue* second = list->length() == 2 ? toCSSPrimitiveValue(list->item(1)) : nullptr;
+
+    switch (first->getValueID()) {
+    case CSSValueRow:
+        if (second) {
+            if (second->getValueID() == CSSValueDense)
+                return AutoFlowRowDense;
+            return AutoFlowStackRow;
+        }
+        return AutoFlowRow;
+    case CSSValueColumn:
+        if (second) {
+            if (second->getValueID() == CSSValueDense)
+                return AutoFlowColumnDense;
+            return AutoFlowStackColumn;
+        }
+        return AutoFlowColumn;
+    case CSSValueDense:
+        if (second && second->getValueID() == CSSValueColumn)
+            return AutoFlowColumnDense;
+        return AutoFlowRowDense;
+    case CSSValueStack:
+        if (second && second->getValueID() == CSSValueColumn)
+            return AutoFlowStackColumn;
+        return AutoFlowStackRow;
+    default:
+        ASSERT_NOT_REACHED();
+        return RenderStyle::initialGridAutoFlow();
+    }
+}
+
 GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSSValue* value)
 {
     // We accept the specification's grammar:
