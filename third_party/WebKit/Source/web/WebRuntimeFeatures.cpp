@@ -290,4 +290,9 @@ void WebRuntimeFeatures::enableTextBlobs(bool enable)
     RuntimeEnabledFeatures::setTextBlobEnabled(enable);
 }
 
+void WebRuntimeFeatures::setCSSViewportEnabled(bool enable)
+{
+    RuntimeEnabledFeatures::setCSSViewportEnabled(enable);
+}
+
 } // namespace blink

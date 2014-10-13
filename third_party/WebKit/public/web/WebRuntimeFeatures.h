@@ -135,6 +135,8 @@ public:
 
     BLINK_EXPORT static void enableTextBlobs(bool);
 
+    BLINK_EXPORT static void setCSSViewportEnabled(bool);
+
 private:
     WebRuntimeFeatures();
 };
