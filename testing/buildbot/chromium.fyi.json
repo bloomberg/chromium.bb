@@ -311,5 +311,74 @@
       { "test": "content_unittests", "args": ["--site-per-process"] },
       { "test": "content_browsertests", "args": ["--site-per-process"] }
     ]
+  },
+  "Linux ChromeOS MSan Tests": {
+    "gtest_tests": [
+      "accessibility_unittests",
+      "app_list_unittests",
+      "app_shell_browsertests",
+      "aura_unittests",
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "cast_unittests",
+      "cc_unittests",
+      "chromedriver_unittests",
+      "components_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "crypto_unittests",
+      "dbus_unittests",
+      "device_unittests",
+      "display_unittests",
+      "events_unittests",
+      "extensions_unittests",
+      "gcm_unit_tests",
+      "gfx_unittests",
+      "google_apis_unittests",
+      "gpu_unittests",
+      "interactive_ui_tests",
+      "ipc_mojo_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "mojo_application_manager_unittests",
+      "mojo_apps_js_unittests",
+      "mojo_common_unittests",
+      "mojo_js_unittests",
+      "mojo_public_bindings_unittests",
+      "mojo_public_environment_unittests",
+      "mojo_public_system_unittests",
+      "mojo_public_utility_unittests",
+      "mojo_shell_tests",
+      "mojo_system_unittests",
+      "nacl_loader_unittests",
+      "net_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_unittests",
+      "unit_tests",
+      "url_unittests",
+      "views_unittests",
+      "wm_unittests"
+    ]
+  },
+  "Linux ChromeOS MSan Browser (1)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Linux ChromeOS MSan Browser (2)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Linux ChromeOS MSan Browser (3)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
   }
 }
