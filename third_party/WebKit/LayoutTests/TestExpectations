@@ -1435,6 +1435,7 @@ crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-d
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
+crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/implsidepainting/inspector/tracing [ Pass Failure ]
 
