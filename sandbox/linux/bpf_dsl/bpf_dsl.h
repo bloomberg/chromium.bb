@@ -87,6 +87,17 @@ class ResultExprImpl;
 class BoolExprImpl;
 }
 
+}  // namespace bpf_dsl
+}  // namespace sandbox
+
+extern template class SANDBOX_EXPORT
+    scoped_refptr<const sandbox::bpf_dsl::internal::BoolExprImpl>;
+extern template class SANDBOX_EXPORT
+    scoped_refptr<const sandbox::bpf_dsl::internal::ResultExprImpl>;
+
+namespace sandbox {
+namespace bpf_dsl {
+
 // ResultExpr is an opaque reference to an immutable result expression tree.
 typedef scoped_refptr<const internal::ResultExprImpl> ResultExpr;
 
@@ -357,10 +368,5 @@ ResultExpr Caser<T>::Default(ResultExpr result) const {
 
 }  // namespace bpf_dsl
 }  // namespace sandbox
-
-extern template class SANDBOX_EXPORT
-    scoped_refptr<const sandbox::bpf_dsl::internal::BoolExprImpl>;
-extern template class SANDBOX_EXPORT
-    scoped_refptr<const sandbox::bpf_dsl::internal::ResultExprImpl>;
 
 #endif  // SANDBOX_LINUX_BPF_DSL_BPF_DSL_H_
