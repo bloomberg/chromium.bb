@@ -59,7 +59,9 @@ class GCMChannelStatusSyncer {
 
  private:
   // Called when a request is completed.
-  void OnRequestCompleted(bool enabled, int poll_interval_seconds);
+  void OnRequestCompleted(bool update_received,
+                          bool enabled,
+                          int poll_interval_seconds);
 
   // Schedules next request to start after appropriate delay.
   void ScheduleRequest();

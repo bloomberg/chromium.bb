@@ -111,7 +111,8 @@ void GCMChannelStatusSyncer::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void GCMChannelStatusSyncer::OnRequestCompleted(bool enabled,
+void GCMChannelStatusSyncer::OnRequestCompleted(bool update_received,
+                                                bool enabled,
                                                 int poll_interval_seconds) {
   DCHECK(request_);
   request_.reset();
@@ -121,20 +122,23 @@ void GCMChannelStatusSyncer::OnRequestCompleted(bool enabled,
   prefs_->SetInt64(kGCMChannelLastCheckTime,
                    last_check_time_.ToInternalValue());
 
-  if (gcm_enabled_ != enabled) {
-    gcm_enabled_ = enabled;
-    prefs_->SetBoolean(kGCMChannelStatus, enabled);
-    if (gcm_enabled_)
-      driver_->Enable();
-    else
-      driver_->Disable();
-  }
+  if (update_received) {
+    if (gcm_enabled_ != enabled) {
+      gcm_enabled_ = enabled;
+      prefs_->SetBoolean(kGCMChannelStatus, enabled);
+      if (gcm_enabled_)
+        driver_->Enable();
+      else
+        driver_->Disable();
+    }
 
-  DCHECK_GE(poll_interval_seconds,
-            GCMChannelStatusRequest::min_poll_interval_seconds());
-  if (poll_interval_seconds_ != poll_interval_seconds) {
-    poll_interval_seconds_ = poll_interval_seconds;
-    prefs_->SetInteger(kGCMChannelPollIntervalSeconds, poll_interval_seconds_);
+    DCHECK_GE(poll_interval_seconds,
+              GCMChannelStatusRequest::min_poll_interval_seconds());
+    if (poll_interval_seconds_ != poll_interval_seconds) {
+      poll_interval_seconds_ = poll_interval_seconds;
+      prefs_->SetInteger(kGCMChannelPollIntervalSeconds,
+                         poll_interval_seconds_);
+    }
   }
 
   ScheduleRequest();

@@ -641,8 +641,14 @@ GCMClient::Result GCMDriverDesktop::EnsureStarted() {
   if (gcm_started_)
     return GCMClient::SUCCESS;
 
-  if (!gcm_enabled_)
+  if (!gcm_enabled_) {
+    // Poll for channel status in order to find out when it is re-enabled when
+    // GCM is currently disabled.
+    if (GCMDriver::IsAllowedForAllUsers())
+      gcm_channel_status_syncer_->EnsureStarted();
+
     return GCMClient::GCM_DISABLED;
+  }
 
   // Have any app requested the service?
   if (app_handlers().empty())
