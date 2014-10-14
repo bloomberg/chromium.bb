@@ -29,16 +29,13 @@ class GCMChannelStatusRequestTest : public testing::Test {
                                   const std::string& response_body);
   void SetResponseProtoData(GCMStatus status, int poll_interval_seconds);
   void CompleteFetch();
-  void OnRequestCompleted(bool update_received,
-                          bool enabled,
-                          int poll_interval_seconds);
+  void OnRequestCompleted(bool enabled, int poll_interval_seconds);
 
   scoped_ptr<GCMChannelStatusRequest> request_;
   base::MessageLoop message_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   bool request_callback_invoked_;
-  bool update_received_;
   bool enabled_;
   int poll_interval_seconds_;
 };
@@ -47,7 +44,6 @@ GCMChannelStatusRequestTest::GCMChannelStatusRequestTest()
     : url_request_context_getter_(new net::TestURLRequestContextGetter(
            message_loop_.message_loop_proxy())),
       request_callback_invoked_(false),
-      update_received_(false),
       enabled_(true),
       poll_interval_seconds_(0) {
 }
@@ -101,9 +97,8 @@ void GCMChannelStatusRequestTest::CompleteFetch() {
 }
 
 void GCMChannelStatusRequestTest::OnRequestCompleted(
-    bool update_received, bool enabled, int poll_interval_seconds) {
+    bool enabled, int poll_interval_seconds) {
   request_callback_invoked_ = true;
-  update_received_ = update_received;
   enabled_ = enabled;
   poll_interval_seconds_ = poll_interval_seconds;
 }
@@ -121,8 +116,7 @@ TEST_F(GCMChannelStatusRequestTest, ResponseEmpty) {
   SetResponseStatusAndString(net::HTTP_OK, "");
   CompleteFetch();
 
-  EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_FALSE(update_received_);
+  EXPECT_FALSE(request_callback_invoked_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseNotInProtoFormat) {
@@ -138,8 +132,7 @@ TEST_F(GCMChannelStatusRequestTest, ResponseEmptyProtoData) {
   SetResponseProtoData(NOT_SPECIFIED, 0);
   CompleteFetch();
 
-  EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_FALSE(update_received_);
+  EXPECT_FALSE(request_callback_invoked_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatus) {
@@ -148,7 +141,6 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatus) {
   CompleteFetch();
 
   EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_TRUE(update_received_);
   EXPECT_FALSE(enabled_);
   EXPECT_EQ(
       GCMChannelStatusRequest::default_poll_interval_seconds(),
@@ -161,7 +153,6 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithEnabledStatus) {
   CompleteFetch();
 
   EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_TRUE(update_received_);
   EXPECT_TRUE(enabled_);
   EXPECT_EQ(
       GCMChannelStatusRequest::default_poll_interval_seconds(),
@@ -178,7 +169,6 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithPollInterval) {
   CompleteFetch();
 
   EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_TRUE(update_received_);
   EXPECT_TRUE(enabled_);
   EXPECT_EQ(poll_interval_seconds, poll_interval_seconds_);
 }
@@ -193,7 +183,6 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithShortPollInterval) {
   CompleteFetch();
 
   EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_TRUE(update_received_);
   EXPECT_TRUE(enabled_);
   EXPECT_EQ(GCMChannelStatusRequest::min_poll_interval_seconds(),
             poll_interval_seconds_);
@@ -207,7 +196,6 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatusAndPollInterval) {
   CompleteFetch();
 
   EXPECT_TRUE(request_callback_invoked_);
-  EXPECT_TRUE(update_received_);
   EXPECT_FALSE(enabled_);
   EXPECT_EQ(poll_interval_seconds, poll_interval_seconds_);
 }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -20,8 +19,6 @@
 namespace gcm {
 
 namespace {
-
-const char kChannelStatusRelativePath[] = "/experimentstatus";
 
 GCMClient::ChromePlatform GetPlatform() {
 #if defined(OS_WIN)
@@ -75,9 +72,13 @@ GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
 }
 
 std::string GetChannelStatusRequestUrl() {
-  GURL sync_url(
-      ProfileSyncService::GetSyncServiceURL(*CommandLine::ForCurrentProcess()));
-  return sync_url.spec() + kChannelStatusRelativePath;
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return ProfileSyncService::kSyncServerUrl;
+  }
+
+  return ProfileSyncService::kDevServerUrl;
 }
 
 std::string GetUserAgent() {
