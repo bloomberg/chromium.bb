@@ -8,7 +8,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 
-from telemetry import test_runner
+from telemetry import benchmark_runner
 from telemetry.core import environment
 from telemetry.core import util
 from telemetry.util import bootstrap
@@ -24,8 +24,8 @@ def main():
     return 0
 
   base_dir = os.path.dirname(os.path.realpath(__file__))
-  test_runner.config = environment.Environment([base_dir])
-  sys.exit(test_runner.main())
+  benchmark_runner.config = environment.Environment([base_dir])
+  sys.exit(benchmark_runner.main())
 
 
 if __name__ == '__main__':

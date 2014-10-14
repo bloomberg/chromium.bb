@@ -9,11 +9,11 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'perf'))
 
-from telemetry import test_runner
+from telemetry import benchmark_runner
 from telemetry.core import environment
 
 
 if __name__ == '__main__':
   base_dir = os.path.dirname(os.path.realpath(__file__))
-  test_runner.config = environment.Environment([base_dir])
-  sys.exit(test_runner.main())
+  benchmark_runner.config = environment.Environment([base_dir])
+  sys.exit(benchmark_runner.main())
