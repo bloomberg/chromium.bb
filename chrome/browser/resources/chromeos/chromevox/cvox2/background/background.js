@@ -15,6 +15,10 @@ goog.require('cvox2.AutomationPredicates');
 goog.require('cvox2.AutomationUtil');
 goog.require('cvox2.Dir');
 
+goog.scope(function() {
+var EventType = chrome.automation.EventType;
+var AutomationNode = chrome.automation.AutomationNode;
+
 /** Classic Chrome accessibility API. */
 cvox2.global.accessibility =
     chrome.accessibilityPrivate || chrome.experimental.accessibility;
@@ -46,6 +50,13 @@ cvox2.Background = function() {
    */
   this.currentNode_ = null;
 
+  /**
+   * Whether ChromeVox Next is active.
+   * @type {boolean}
+   * @private
+   */
+  this.active_ = false;
+
   // Only needed with unmerged ChromeVox classic loaded before.
   cvox2.global.accessibility.setAccessibilityEnabled(false);
 
@@ -55,12 +66,24 @@ cvox2.Background = function() {
       this[func] = this[func].bind(this);
   }
 
+  /**
+   * Maps an automation event to its listener.
+   * @type {!Object.<EventType, function(Object) : void>}
+   */
+  this.listeners_ = {
+    focus: this.onFocus,
+    loadComplete: this.onLoadComplete
+  };
+
   // Register listeners for ...
   // Desktop.
   chrome.automation.getDesktop(this.onGotTree);
 
   // Tabs.
   chrome.tabs.onUpdated.addListener(this.onTabUpdated);
+
+  // Commands.
+  chrome.commands.onCommand.addListener(this.onGotCommand);
 };
 
 cvox2.Background.prototype = {
@@ -76,18 +99,8 @@ cvox2.Background.prototype = {
       if (!tab.url)
         return;
 
-      if (!this.isWhitelisted_(tab.url)) {
-        chrome.commands.onCommand.removeListener(this.onGotCommand);
-        cvox.ChromeVox.injectChromeVoxIntoTabs([tab], true);
-        return;
-      }
-
-      if (!chrome.commands.onCommand.hasListeners())
-        chrome.commands.onCommand.addListener(this.onGotCommand);
-
-      this.disableClassicChromeVox_(tab.id);
-
-      chrome.automation.getTree(this.onGotTree);
+      var next = this.isWhitelisted_(tab.url);
+      this.toggleChromeVoxVersion({next: next, classic: !next});
     }.bind(this));
   },
 
@@ -97,16 +110,11 @@ cvox2.Background.prototype = {
    */
   onGotTree: function(root) {
     // Register all automation event listeners.
-    root.addEventListener(chrome.automation.EventType.focus,
-                          this.onFocus,
-                          true);
+    for (var eventType in this.listeners_)
+      root.addEventListener(eventType, this.listeners_[eventType], true);
 
     if (root.attributes.docLoaded) {
       this.onLoadComplete({target: root});
-    } else {
-      root.addEventListener(chrome.automation.EventType.loadComplete,
-                            this.onLoadComplete,
-                            true);
     }
   },
 
@@ -115,7 +123,12 @@ cvox2.Background.prototype = {
    * @param {string} command
    */
   onGotCommand: function(command) {
-    if (!this.current_)
+    if (command == 'toggleChromeVoxVersion') {
+      this.toggleChromeVoxVersion();
+      return;
+    }
+
+    if (!this.active_ || !this.current_)
       return;
 
     var previous = this.current_;
@@ -245,8 +258,45 @@ cvox2.Background.prototype = {
           tabId,
           {'code': 'try { window.disableChromeVox(); } catch(e) { }\n',
            'allFrames': true});
+  },
+
+  /**
+   * Toggles between ChromeVox Next and Classic.
+   * @param {{classic: boolean, next: boolean}=} opt_options Forceably set.
+  */
+  toggleChromeVoxVersion: function(opt_options) {
+    if (!opt_options) {
+      opt_options = {};
+      opt_options.next = !this.active_;
+      opt_options.classic = !opt_options.next;
+    }
+
+    if (opt_options.next) {
+      chrome.automation.getTree(this.onGotTree);
+      this.active_ = true;
+    } else {
+      if (this.active_) {
+        for (var eventType in this.listeners_) {
+          this.current_.root.removeEventListener(
+              eventType, this.listeners_[eventType], true);
+        }
+      }
+      this.active_ = false;
+    }
+
+    chrome.tabs.query({active: true}, function(tabs) {
+      if (opt_options.classic) {
+        cvox.ChromeVox.injectChromeVoxIntoTabs(tabs, true);
+      } else {
+        tabs.forEach(function(tab) {
+          this.disableClassicChromeVox_(tab.id);
+        }.bind(this));
+      }
+    }.bind(this));
   }
 };
 
 /** @type {cvox2.Background} */
 cvox2.global.backgroundObj = new cvox2.Background();
+
+});  // goog.scope
