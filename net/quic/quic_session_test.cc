@@ -668,7 +668,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   TestCryptoStream* crypto_stream = session_.GetCryptoStream();
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
   QuicHeadersStream* headers_stream =
-        QuicSessionPeer::GetHeadersStream(&session_);
+      QuicSessionPeer::GetHeadersStream(&session_);
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
   // Write until the crypto stream is flow control blocked.
   int i = 0;

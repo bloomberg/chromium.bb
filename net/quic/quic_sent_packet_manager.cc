@@ -452,7 +452,7 @@ void QuicSentPacketManager::MarkPacketHandled(
     QuicTime::Delta delta_largest_observed) {
   QuicPacketSequenceNumber newest_transmission =
       info.all_transmissions == nullptr ? sequence_number
-      : *info.all_transmissions->rbegin();
+                                        : *info.all_transmissions->rbegin();
   // Remove the most recent packet, if it is pending retransmission.
   pending_retransmissions_.erase(newest_transmission);
 

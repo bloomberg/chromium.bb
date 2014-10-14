@@ -40,8 +40,8 @@ class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
   ToolsQuicClientSessionTest()
-      : connection_(new PacketSavingConnection(false,
-                                               SupportedVersions(GetParam()))) {
+      : connection_(
+            new PacketSavingConnection(false, SupportedVersions(GetParam()))) {
     session_.reset(new QuicClientSession(DefaultQuicConfig(), connection_));
     session_->InitializeSession(
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),

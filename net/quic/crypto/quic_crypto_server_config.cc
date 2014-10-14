@@ -756,13 +756,12 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
         (QuicVersionToQuicTag(supported_versions[i]));
   }
   out->SetVector(kVER, supported_version_tags);
-  out->SetStringPiece(
-      kSourceAddressTokenTag,
-      NewSourceAddressToken(*requested_config.get(),
-                            client_address,
-                            rand,
-                            info.now,
-                            nullptr));
+  out->SetStringPiece(kSourceAddressTokenTag,
+                      NewSourceAddressToken(*requested_config.get(),
+                                            client_address,
+                                            rand,
+                                            info.now,
+                                            nullptr));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);

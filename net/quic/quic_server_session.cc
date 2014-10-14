@@ -13,10 +13,9 @@
 
 namespace net {
 
-QuicServerSession::QuicServerSession(
-    const QuicConfig& config,
-    QuicConnection* connection,
-    QuicServerSessionVisitor* visitor)
+QuicServerSession::QuicServerSession(const QuicConfig& config,
+                                     QuicConnection* connection,
+                                     QuicServerSessionVisitor* visitor)
     : QuicSession(connection, config),
       visitor_(visitor),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
