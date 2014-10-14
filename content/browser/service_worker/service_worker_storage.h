@@ -238,6 +238,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void DidFindRegistrationForDocument(
       const GURL& document_url,
       const FindRegistrationCallback& callback,
+      int64 callback_id,
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status);

@@ -252,11 +252,6 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback) {
   DCHECK(!document_url.has_ref());
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "ServiceWorker",
-      "ServiceWorkerStorage::FindRegistrationForDocument",
-      base::Hash(document_url.spec()),
-      "URL", document_url.spec());
   if (!LazyInitialize(base::Bind(
           &ServiceWorkerStorage::FindRegistrationForDocument,
           weak_factory_.GetWeakPtr(), document_url, callback))) {
@@ -264,6 +259,11 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
       CompleteFindNow(scoped_refptr<ServiceWorkerRegistration>(),
                       SERVICE_WORKER_ERROR_FAILED, callback);
     }
+    TRACE_EVENT_INSTANT1(
+        "ServiceWorker",
+        "ServiceWorkerStorage::FindRegistrationForDocument:LazyInitialize",
+        TRACE_EVENT_SCOPE_THREAD,
+        "URL", document_url.spec());
     return;
   }
   DCHECK_EQ(INITIALIZED, state_);
@@ -273,14 +273,28 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
+    ServiceWorkerStatusCode status = installing_registration.get() ?
+        SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND;
+    TRACE_EVENT_INSTANT2(
+        "ServiceWorker",
+        "ServiceWorkerStorage::FindRegistrationForDocument:CheckInstalling",
+        TRACE_EVENT_SCOPE_THREAD,
+        "URL", document_url.spec(),
+        "Status", (status == SERVICE_WORKER_OK) ? "Found" : "Not Found");
     CompleteFindNow(installing_registration,
-                    installing_registration.get()
-                        ? SERVICE_WORKER_OK
-                        : SERVICE_WORKER_ERROR_NOT_FOUND,
+                    status,
                     callback);
     return;
   }
 
+  // To connect this TRACE_EVENT with the callback, TimeTicks is used for
+  // callback id.
+  int64 callback_id = base::TimeTicks::Now().ToInternalValue();
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "ServiceWorker",
+      "ServiceWorkerStorage::FindRegistrationForDocument",
+      callback_id,
+      "URL", document_url.spec());
   database_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
@@ -289,7 +303,10 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
           base::MessageLoopProxy::current(),
           document_url,
           base::Bind(&ServiceWorkerStorage::DidFindRegistrationForDocument,
-                     weak_factory_.GetWeakPtr(), document_url, callback)));
+                     weak_factory_.GetWeakPtr(),
+                     document_url,
+                     callback,
+                     callback_id)));
 }
 
 void ServiceWorkerStorage::FindRegistrationForPattern(
@@ -769,6 +786,7 @@ void ServiceWorkerStorage::DidReadInitialData(
 void ServiceWorkerStorage::DidFindRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback,
+    int64 callback_id,
     const ServiceWorkerDatabase::RegistrationData& data,
     const ResourceList& resources,
     ServiceWorkerDatabase::Status status) {
@@ -777,7 +795,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerStorage::FindRegistrationForDocument",
-        base::Hash(document_url.spec()),
+        callback_id,
         "Status", "OK");
     return;
   }
@@ -792,7 +810,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerStorage::FindRegistrationForDocument",
-        base::Hash(document_url.spec()),
+        callback_id,
         "Status", status);
     return;
   }
@@ -803,7 +821,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker",
       "ServiceWorkerStorage::FindRegistrationForDocument",
-      base::Hash(document_url.spec()),
+      callback_id,
       "Status", status);
 }
 
