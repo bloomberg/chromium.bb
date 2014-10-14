@@ -2624,23 +2624,9 @@ def SetUpLinuxEnvArm(env):
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
   else:
-    arm_suffix = None
-    for suffix in ['', '-4.5', '-4.6']:
-      if which('arm-linux-%s-g++%s' % (arm_abi, suffix)):
-        arm_suffix = suffix
-        break
-    if arm_suffix is None:
-      # This doesn't bail out completely here because we cannot
-      # tell whether scons was run with just --mode=nacl, where
-      # none of these settings will actually be used.
-      print 'NOTE: arm trusted TC is not installed'
-      bad = 'ERROR-missing-arm-trusted-toolchain'
-      env.Replace(CC=bad, CXX=bad, LD=bad)
-      return
-
-    env.Replace(CC='arm-linux-%s-gcc%s' % (arm_abi, arm_suffix),
-                CXX='arm-linux-%s-g++%s' % (arm_abi, arm_suffix),
-                LD='arm-linux-%s-ld%s' % (arm_abi, arm_suffix),
+    env.Replace(CC='arm-linux-%s-gcc' % arm_abi,
+                CXX='arm-linux-%s-g++' % arm_abi,
+                LD='arm-linux-%s-ld' % arm_abi,
                 ASFLAGS=[],
                 # The -rpath-link argument is needed on Ubuntu/Precise to
                 # avoid linker warnings about missing ld.linux.so.3.
