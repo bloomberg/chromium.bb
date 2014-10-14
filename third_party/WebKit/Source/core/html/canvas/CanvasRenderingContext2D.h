@@ -278,7 +278,7 @@ private:
         RGBA32 m_shadowColor;
         float m_globalAlpha;
         CompositeOperator m_globalComposite;
-        blink::WebBlendMode m_globalBlend;
+        WebBlendMode m_globalBlend;
         AffineTransform m_transform;
         bool m_invertibleCTM;
         Vector<float> m_lineDash;
@@ -323,7 +323,7 @@ private:
     void applyStrokePattern();
     void applyFillPattern();
 
-    void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&, CompositeOperator, blink::WebBlendMode, GraphicsContext* = 0);
+    void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
     void drawVideo(HTMLVideoElement*, FloatRect srcRect, FloatRect dstRect);
 
     void fillInternal(const Path&, const String& windingRuleString);
@@ -345,8 +345,8 @@ private:
 
     void inflateStrokeRect(FloatRect&) const;
 
-    template<class T> void fullCanvasCompositedFill(const T&);
-    template<class T> void fullCanvasCompositedStroke(const T&);
+    enum DrawingType { Fill, Stroke };
+    template<DrawingType drawingType, class T> void fullCanvasCompositedDraw(const T&);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
@@ -363,7 +363,7 @@ private:
 
     virtual bool isTransformInvertible() const override { return state().m_invertibleCTM; }
 
-    virtual blink::WebLayer* platformLayer() const override;
+    virtual WebLayer* platformLayer() const override;
     TextDirection toTextDirection(Direction, RenderStyle** computedStyle = nullptr) const;
 
     WillBeHeapVector<OwnPtrWillBeMember<State> > m_stateStack;

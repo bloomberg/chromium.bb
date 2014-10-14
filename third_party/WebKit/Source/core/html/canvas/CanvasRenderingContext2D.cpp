@@ -254,7 +254,7 @@ CanvasRenderingContext2D::State::State()
     , m_shadowColor(Color::transparent)
     , m_globalAlpha(1)
     , m_globalComposite(CompositeSourceOver)
-    , m_globalBlend(blink::WebBlendModeNormal)
+    , m_globalBlend(WebBlendModeNormal)
     , m_invertibleCTM(true)
     , m_lineDashOffset(0)
     , m_imageSmoothingEnabled(true)
@@ -698,7 +698,7 @@ String CanvasRenderingContext2D::globalCompositeOperation() const
 void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operation)
 {
     CompositeOperator op = CompositeSourceOver;
-    blink::WebBlendMode blendMode = blink::WebBlendModeNormal;
+    WebBlendMode blendMode = WebBlendModeNormal;
     if (!parseCompositeAndBlendOperator(operation, op, blendMode))
         return;
     if ((state().m_globalComposite == op) && (state().m_globalBlend == blendMode))
@@ -1025,7 +1025,7 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
     c->setFillRule(parseWinding(windingRuleString));
 
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedFill(path);
+        fullCanvasCompositedDraw<Fill>(path);
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1075,7 +1075,7 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
     }
 
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedStroke(path);
+        fullCanvasCompositedDraw<Stroke>(path);
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1294,7 +1294,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         c->fillRect(rect);
         didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedFill(rect);
+        fullCanvasCompositedDraw<Fill>(rect);
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1332,9 +1332,8 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
         return;
 
     FloatRect rect(x, y, width, height);
-
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedStroke(rect);
+        fullCanvasCompositedDraw<Stroke>(rect);
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1459,31 +1458,28 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
 
 void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource, float x, float y, ExceptionState& exceptionState)
 {
+    FloatSize sourceRectSize = imageSource->sourceSize();
     FloatSize destRectSize = imageSource->defaultDestinationSize();
-    drawImage(imageSource, x, y, destRectSize.width(), destRectSize.height(), exceptionState);
+    drawImageInternal(imageSource, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
 }
 
 void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     FloatSize sourceRectSize = imageSource->sourceSize();
-    drawImage(imageSource, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
+    drawImageInternal(imageSource, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
 }
 
 void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     float sx, float sy, float sw, float sh,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
 {
-    GraphicsContext* c = drawingContext(); // Do not exit yet if !c because we may need to throw exceptions first
-    CompositeOperator op = c ? c->compositeOperation() : CompositeSourceOver;
-    blink::WebBlendMode blendMode = c ? c->blendModeOperation() : blink::WebBlendModeNormal;
-    drawImageInternal(imageSource, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState, op, blendMode, c);
+    drawImageInternal(imageSource, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
 }
 
 void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     float sx, float sy, float sw, float sh,
-    float dx, float dy, float dw, float dh, ExceptionState& exceptionState,
-    CompositeOperator op, blink::WebBlendMode blendMode, GraphicsContext* c)
+    float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
 {
     RefPtr<Image> image;
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
@@ -1496,8 +1492,7 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
             return;
     }
 
-    if (!c)
-        c = drawingContext();
+    GraphicsContext* c = drawingContext();
     if (!c)
         return;
 
@@ -1523,6 +1518,8 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
+    CompositeOperator op = state().m_globalComposite;
+    WebBlendMode blendMode = state().m_globalBlend;
     if (rectContainsTransformedRect(dstRect, clipBounds)) {
         if (!imageSource->isVideoElement()) {
             c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
@@ -1531,9 +1528,6 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
         }
         didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(op)) {
-        CompositeOperator previousOperator = c->compositeOperation();
-        WebBlendMode previousBlendMode = c->blendModeOperation();
-        c->setCompositeOperation(previousOperator, blendMode);
         // TODO(dshwang): this code is unnecessarily complicated because beginLayer() uses current blendMode slightly.
         c->beginLayer(1, op);
         if (!imageSource->isVideoElement()) {
@@ -1542,8 +1536,8 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
             c->setCompositeOperation(CompositeSourceOver, WebBlendModeNormal);
             drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
         }
+        c->setCompositeOperation(op, blendMode);
         c->endLayer();
-        c->setCompositeOperation(previousOperator, previousBlendMode);
         didDraw(clipBounds);
     } else if (op == CompositeCopy) {
         clearCanvas();
@@ -1592,12 +1586,10 @@ void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
 {
     if (!image)
         return;
-    CompositeOperator op;
-    blink::WebBlendMode blendOp = blink::WebBlendModeNormal;
-    if (!parseCompositeAndBlendOperator(compositeOperation, op, blendOp) || blendOp != blink::WebBlendModeNormal)
-        op = CompositeSourceOver;
-
-    drawImageInternal(image, sx, sy, sw, sh, dx, dy, dw, dh, IGNORE_EXCEPTION, op, blendOp);
+    save();
+    setGlobalCompositeOperation(compositeOperation);
+    drawImageInternal(image, sx, sy, sw, sh, dx, dy, dw, dh, IGNORE_EXCEPTION);
+    restore();
 }
 
 void CanvasRenderingContext2D::setAlpha(float alpha)
@@ -1640,20 +1632,6 @@ static void fillPrimitive(const Path& path, GraphicsContext* context)
     context->fillPath(path);
 }
 
-template<class T> void CanvasRenderingContext2D::fullCanvasCompositedFill(const T& area)
-{
-    ASSERT(isFullCanvasCompositeMode(state().m_globalComposite));
-
-    GraphicsContext* c = drawingContext();
-    ASSERT(c);
-    c->beginLayer(1, state().m_globalComposite);
-    CompositeOperator previousOperator = c->compositeOperation();
-    c->setCompositeOperation(CompositeSourceOver);
-    fillPrimitive(area, c);
-    c->setCompositeOperation(previousOperator);
-    c->endLayer();
-}
-
 static void strokePrimitive(const FloatRect& rect, GraphicsContext* context)
 {
     context->strokeRect(rect);
@@ -1664,7 +1642,7 @@ static void strokePrimitive(const Path& path, GraphicsContext* context)
     context->strokePath(path);
 }
 
-template<class T> void CanvasRenderingContext2D::fullCanvasCompositedStroke(const T& area)
+template<CanvasRenderingContext2D::DrawingType drawingType, class T> void CanvasRenderingContext2D::fullCanvasCompositedDraw(const T& area)
 {
     ASSERT(isFullCanvasCompositeMode(state().m_globalComposite));
 
@@ -1673,7 +1651,11 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedStroke(cons
     c->beginLayer(1, state().m_globalComposite);
     CompositeOperator previousOperator = c->compositeOperation();
     c->setCompositeOperation(CompositeSourceOver);
-    strokePrimitive(area, c);
+    if (drawingType == Fill) {
+        fillPrimitive(area, c);
+    } else {
+        strokePrimitive(area, c);
+    }
     c->setCompositeOperation(previousOperator);
     c->endLayer();
 }
@@ -2308,7 +2290,7 @@ void CanvasRenderingContext2D::setIsHidden(bool hidden)
         buffer->setIsHidden(hidden);
 }
 
-blink::WebLayer* CanvasRenderingContext2D::platformLayer() const
+WebLayer* CanvasRenderingContext2D::platformLayer() const
 {
     return canvas()->buffer() ? canvas()->buffer()->platformLayer() : 0;
 }
@@ -2394,7 +2376,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     c->save();
     c->setAlphaAsFloat(1.0);
     c->clearShadow();
-    c->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
+    c->setCompositeOperation(CompositeSourceOver, WebBlendModeNormal);
     c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);
     c->restore();
     validateStateStack();
