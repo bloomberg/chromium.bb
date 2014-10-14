@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <limits>
 
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/template_util.h"
 
@@ -362,8 +361,8 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
       : value_(static_cast<T>(value)),
         validity_(GetRangeConstraint(validity |
                                      DstRangeRelationToSrcRange<T>(value))) {
-    COMPILE_ASSERT(std::numeric_limits<Src>::is_specialized,
-                   argument_must_be_numeric);
+    static_assert(std::numeric_limits<Src>::is_specialized,
+                  "Argument must be numeric.");
   }
 
   // Copy constructor.
