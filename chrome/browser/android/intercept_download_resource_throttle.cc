@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/intercept_download_resource_throttle.h"
 
-#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/resource_controller.h"
 #include "net/http/http_request_headers.h"

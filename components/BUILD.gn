@@ -31,8 +31,8 @@ group("all_components") {
     "//components/crash/app",
     "//components/crash/browser",
     "//components/crx_file",
-    "//components/data_reduction_proxy/browser",
-    "//components/data_reduction_proxy/common",
+    "//components/data_reduction_proxy/core/browser",
+    "//components/data_reduction_proxy/core/common",
     "//components/dom_distiller/core",
     "//components/domain_reliability",
     "//components/enhanced_bookmarks",
@@ -141,8 +141,8 @@ group("all_components") {
       "//components/cdm/browser",  # Blocked on content.
       "//components/cdm/common",  # Blocked on content.
       "//components/cdm/renderer",  # Blocked on content.
-      "//components/data_reduction_proxy/browser",  # Should work, needs checking.
-      "//components/data_reduction_proxy/common",  # Should work, needs checking.
+      "//components/data_reduction_proxy/core/browser",  # Should work, needs checking.
+      "//components/data_reduction_proxy/core/common",  # Should work, needs checking.
       "//components/dom_distiller/core",  # Blocked on content.
       "//components/domain_reliability",  # Blocked on content.
       "//components/favicon_base",  # Should work, needs checking.
@@ -222,8 +222,8 @@ test("components_unittests") {
     "//components/content_settings/core/browser:unit_tests",
     "//components/content_settings/core/common:unit_tests",
     "//components/crx_file:unit_tests",
-    "//components/data_reduction_proxy/browser:unit_tests",
-    "//components/data_reduction_proxy/common:unit_tests",
+    "//components/data_reduction_proxy/core/browser:unit_tests",
+    "//components/data_reduction_proxy/core/common:unit_tests",
     "//components/dom_distiller/core:unit_tests",
     "//components/domain_reliability:unit_tests",
     "//components/omnibox:unit_tests",

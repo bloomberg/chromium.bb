@@ -60,7 +60,7 @@
         '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:cdm_browser',
         '../components/components.gyp:cdm_renderer',
-        '../components/components.gyp:data_reduction_proxy_browser',
+        '../components/components.gyp:data_reduction_proxy_core_browser',
         '../components/components.gyp:navigation_interception',
         '../components/components.gyp:visitedlink_browser',
         '../components/components.gyp:visitedlink_renderer',

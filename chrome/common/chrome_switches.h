@@ -11,7 +11,7 @@
 
 #include "base/base_switches.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/common/content_switches.h"

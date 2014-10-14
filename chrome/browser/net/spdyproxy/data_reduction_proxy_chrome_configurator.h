@@ -10,7 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/task_runner.h"
-#include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "net/proxy/proxy_config.h"
 
 namespace base {

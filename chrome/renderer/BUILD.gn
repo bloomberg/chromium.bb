@@ -37,7 +37,7 @@ static_library("renderer") {
     "//chrome:strings",
     "//components/autofill/content/renderer",
     "//components/cdm/renderer",
-    "//components/data_reduction_proxy/common",
+    "//components/data_reduction_proxy/core/common",
     "//components/password_manager/content/renderer",
     "//components/startup_metric_utils",
     "//components/translate/content/renderer",

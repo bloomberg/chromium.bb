@@ -1,0 +1,39 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/data_reduction_proxy/core/common/version.gni")
+
+static_library("common") {
+  sources = [
+    "data_reduction_proxy_headers.cc",
+    "data_reduction_proxy_headers.h",
+    "data_reduction_proxy_pref_names.cc",
+    "data_reduction_proxy_pref_names.h",
+    "data_reduction_proxy_switches.cc",
+    "data_reduction_proxy_switches.h",
+  ]
+
+  deps = [
+    ":version_header",
+    "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "data_reduction_proxy_headers_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//testing/gtest",
+  ]
+}
+
+process_version("version_header") {
+  source = "version.h.in"
+  output = "$target_gen_dir/version.h"
+} 
+

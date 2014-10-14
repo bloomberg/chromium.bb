@@ -43,7 +43,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/common/chrome_version_info.h"
-#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/omnibox/omnibox_switches.h"
 #else
 #include "ui/message_center/message_center_switches.h"

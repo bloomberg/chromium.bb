@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "components/data_reduction_proxy/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_thread.h"
