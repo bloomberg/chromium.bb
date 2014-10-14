@@ -389,7 +389,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
   // to fire.
-  static const int kUnloadTimeoutMS;
+  static const int64 kUnloadTimeoutMS;
 
   bool CanAccessFilesOfPageState(const PageState& state) const;
 

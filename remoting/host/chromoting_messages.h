@@ -159,7 +159,7 @@ IPC_STRUCT_BEGIN(SerializedDesktopFrame)
   IPC_STRUCT_MEMBER(webrtc::DesktopSize, dimensions)
 
   // Time spent in capture. Unit is in milliseconds.
-  IPC_STRUCT_MEMBER(int, capture_time_ms)
+  IPC_STRUCT_MEMBER(int64, capture_time_ms)
 
   // Sequence number supplied by client for performance tracking.
   IPC_STRUCT_MEMBER(int64, client_sequence_number)

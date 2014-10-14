@@ -11,7 +11,7 @@
 namespace content {
 
 // How long to wait before we consider a renderer hung.
-CONTENT_EXPORT extern const int kHungRendererDelayMs;
+CONTENT_EXPORT extern const int64 kHungRendererDelayMs;
 
 // The maximum plugin width and height.
 extern const uint16 kMaxPluginSideLength;

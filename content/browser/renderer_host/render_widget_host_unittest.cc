@@ -163,7 +163,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return unresponsive_timer_fired_;
   }
 
-  void set_hung_renderer_delay_ms(int delay_ms) {
+  void set_hung_renderer_delay_ms(int64 delay_ms) {
     hung_renderer_delay_ms_ = delay_ms;
   }
 

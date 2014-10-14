@@ -106,7 +106,7 @@ const QuicStreamId kCryptoStreamId = 1;
 const QuicStreamId kHeadersStreamId = 3;
 
 // Maximum delayed ack time, in ms.
-const int kMaxDelayedAckTimeMs = 25;
+const int64 kMaxDelayedAckTimeMs = 25;
 
 // The timeout before the handshake succeeds.
 const int64 kInitialIdleTimeoutSecs = 5;

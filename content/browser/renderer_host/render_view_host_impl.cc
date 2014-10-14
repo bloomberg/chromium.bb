@@ -130,7 +130,7 @@ void DismissVirtualKeyboardTask() {
 }  // namespace
 
 // static
-const int RenderViewHostImpl::kUnloadTimeoutMS = 1000;
+const int64 RenderViewHostImpl::kUnloadTimeoutMS = 1000;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, public:

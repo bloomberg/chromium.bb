@@ -167,7 +167,7 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     uint32 sequence_gap = ack_frame_.largest_observed - sequence_number;
     stats_->max_sequence_reordering =
         max(stats_->max_sequence_reordering, sequence_gap);
-    uint32 reordering_time_us =
+    int64 reordering_time_us =
         receipt_time.Subtract(time_largest_observed_).ToMicroseconds();
     stats_->max_time_reordering_us = max(stats_->max_time_reordering_us,
                                          reordering_time_us);

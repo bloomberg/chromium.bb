@@ -26,17 +26,17 @@ namespace net {
 int32 FLAGS_quic_recent_min_rtt_window_s = 60;
 
 namespace {
-static const int kDefaultRetransmissionTimeMs = 500;
+static const int64 kDefaultRetransmissionTimeMs = 500;
 // TCP RFC calls for 1 second RTO however Linux differs from this default and
 // define the minimum RTO to 200ms, we will use the same until we have data to
 // support a higher or lower value.
-static const int kMinRetransmissionTimeMs = 200;
-static const int kMaxRetransmissionTimeMs = 60000;
+static const int64 kMinRetransmissionTimeMs = 200;
+static const int64 kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 
 // Only exponentially back off the handshake timer 5 times due to a timeout.
 static const size_t kMaxHandshakeRetransmissionBackoffs = 5;
-static const size_t kMinHandshakeTimeoutMs = 10;
+static const int64 kMinHandshakeTimeoutMs = 10;
 
 // Sends up to two tail loss probes before firing an RTO,
 // per draft RFC draft-dukkipati-tcpm-tcp-loss-probe.
@@ -758,7 +758,7 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
 // of (likely, tail) latency, then consider such a mechanism.
 const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
   return QuicTime::Delta::FromMilliseconds(min(kMaxDelayedAckTimeMs,
-                                               kMinRetransmissionTimeMs/2));
+                                               kMinRetransmissionTimeMs / 2));
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
@@ -801,8 +801,9 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
     const {
   // This is equivalent to the TailLossProbeDelay, but slightly more aggressive
   // because crypto handshake messages don't incur a delayed ack time.
-  int64 delay_ms = max<int64>(kMinHandshakeTimeoutMs,
-                              1.5 * rtt_stats_.SmoothedRtt().ToMilliseconds());
+  int64 delay_ms =
+      max(kMinHandshakeTimeoutMs,
+          static_cast<int64>(1.5 * rtt_stats_.SmoothedRtt().ToMilliseconds()));
   return QuicTime::Delta::FromMilliseconds(
       delay_ms << consecutive_crypto_retransmission_count_);
 }
@@ -811,8 +812,9 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   QuicTime::Delta srtt = rtt_stats_.SmoothedRtt();
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(
-        srtt.Multiply(2), srtt.Multiply(1.5)
-          .Add(QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs/2)));
+        srtt.Multiply(2),
+        srtt.Multiply(1.5).Add(
+            QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs / 2)));
   }
   return QuicTime::Delta::FromMilliseconds(
       max(kMinTailLossProbeTimeoutMs,

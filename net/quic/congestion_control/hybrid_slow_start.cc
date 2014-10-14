@@ -18,8 +18,8 @@ const int64 kHybridStartLowWindow = 16;
 const uint32 kHybridStartMinSamples = 8;
 const int kHybridStartDelayFactorExp = 4;  // 2^4 = 16
 // The original paper specifies 2 and 8ms, but those have changed over time.
-const int kHybridStartDelayMinThresholdUs = 4000;
-const int kHybridStartDelayMaxThresholdUs = 16000;
+const int64 kHybridStartDelayMinThresholdUs = 4000;
+const int64 kHybridStartDelayMaxThresholdUs = 16000;
 
 HybridSlowStart::HybridSlowStart(const QuicClock* clock)
     : clock_(clock),
@@ -116,7 +116,7 @@ bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
   // We only need to check this once per round.
   if (rtt_sample_count_ == kHybridStartMinSamples) {
     // Divide min_rtt by 16 to get a rtt increase threshold for exiting.
-    int min_rtt_increase_threshold_us = min_rtt.ToMicroseconds() >>
+    int64 min_rtt_increase_threshold_us = min_rtt.ToMicroseconds() >>
         kHybridStartDelayFactorExp;
     // Ensure the rtt threshold is never less than 2ms or more than 16ms.
     min_rtt_increase_threshold_us = min(min_rtt_increase_threshold_us,

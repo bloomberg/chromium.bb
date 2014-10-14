@@ -29,7 +29,7 @@ const media::cast::CastLoggingEvent kVideoPacketEvents[] = {
 
 // The frame event fields cycle through these numbers.
 const int kEncodedFrameSize[] = {512, 425, 399, 400, 237};
-const int kDelayMillis[] = {15, 4, 8, 42, 23, 16};
+const int64 kDelayMillis[] = {15, 4, 8, 42, 23, 16};
 
 const int kMaxSerializedBytes = 10000;
 

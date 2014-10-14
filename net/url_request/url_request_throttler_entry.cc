@@ -54,12 +54,13 @@ const char URLRequestThrottlerEntry::kExponentialThrottlingDisableValue[] =
 // Returns NetLog parameters when a request is rejected by throttling.
 base::Value* NetLogRejectedRequestCallback(const std::string* url_id,
                                            int num_failures,
-                                           int release_after_ms,
+                                           const base::TimeDelta& release_after,
                                            NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("url", *url_id);
   dict->SetInteger("num_failures", num_failures);
-  dict->SetInteger("release_after_ms", release_after_ms);
+  dict->SetInteger("release_after_ms",
+                   static_cast<int>(release_after.InMilliseconds()));
   return dict;
 }
 
@@ -156,15 +157,12 @@ bool URLRequestThrottlerEntry::ShouldRejectRequest(
   if (!is_backoff_disabled_ && !ExplicitUserRequest(request.load_flags()) &&
       (!network_delegate || network_delegate->CanThrottleRequest(request)) &&
       GetBackoffEntry()->ShouldRejectRequest()) {
-    int num_failures = GetBackoffEntry()->failure_count();
-    int release_after_ms =
-        GetBackoffEntry()->GetTimeUntilRelease().InMilliseconds();
-
     net_log_.AddEvent(
         NetLog::TYPE_THROTTLING_REJECTED_REQUEST,
         base::Bind(&NetLogRejectedRequestCallback,
-                   &url_id_, num_failures, release_after_ms));
-
+                   &url_id_,
+                   GetBackoffEntry()->failure_count(),
+                   GetBackoffEntry()->GetTimeUntilRelease()));
     reject_request = true;
   }
 

@@ -571,7 +571,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool renderer_initialized_;
 
   // This value indicates how long to wait before we consider a renderer hung.
-  int hung_renderer_delay_ms_;
+  int64 hung_renderer_delay_ms_;
 
  private:
   friend class MockRenderWidgetHost;

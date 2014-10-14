@@ -6,7 +6,7 @@
 
 namespace content {
 
-const int kHungRendererDelayMs = 30000;
+const int64 kHungRendererDelayMs = 30000;
 
 const uint16 kMaxPluginSideLength = 1 << 15;
 // 8m pixels.

@@ -51,8 +51,8 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   uint32 rto_count;  // Count of times the rto timer fired.
   uint32 spurious_rto_count;
 
-  uint32 min_rtt_us;  // Minimum RTT in microseconds.
-  uint32 srtt_us;  // Smoothed RTT in microseconds.
+  int64 min_rtt_us;  // Minimum RTT in microseconds.
+  int64 srtt_us;  // Smoothed RTT in microseconds.
   uint32 max_packet_size;  // In bytes.
   uint64 estimated_bandwidth;  // In bytes per second.
   uint32 congestion_window;  // In bytes
@@ -64,7 +64,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   // Maximum reordering observed in sequence space.
   uint32 max_sequence_reordering;
   // Maximum reordering observed in microseconds
-  uint32 max_time_reordering_us;
+  int64 max_time_reordering_us;
 
   // The following stats are used only in TcpCubicSender.
   // The number of loss events from TCP's perspective.  Each loss event includes

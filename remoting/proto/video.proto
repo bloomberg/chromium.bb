@@ -50,10 +50,10 @@ message VideoPacket {
   repeated Rect dirty_rects = 6;
 
   // Time in milliseconds spent in capturing this video frame.
-  optional int32 capture_time_ms = 7;
+  optional int64 capture_time_ms = 7;
 
   // Time in milliseconds spent in encoding this video frame.
-  optional int32 encode_time_ms = 8;
+  optional int64 encode_time_ms = 8;
 
   // The most recent sequence number received from the client on the event
   // channel.

@@ -120,7 +120,7 @@ message AggregatedFrameEvent {
   optional int32 encoded_frame_size = 4;
 
   // Only set if there is a frame playout event.
-  optional int32 delay_millis = 5;
+  optional int64 delay_millis = 5;
 
   // Only set if there is a video frame encoded event.
   optional bool key_frame = 6;
