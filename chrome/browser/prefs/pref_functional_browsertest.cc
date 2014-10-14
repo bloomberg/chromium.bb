@@ -125,16 +125,6 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestJavascriptEnableDisable) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
-// Verify DNS prefetching pref.
-IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestNetworkPredictionEnabledPref) {
-  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
-      prefs::kNetworkPredictionEnabled));
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kNetworkPredictionEnabled,
-                                               false);
-  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
-      prefs::kNetworkPredictionEnabled));
-}
-
 // Verify restore for bookmark bar visibility.
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest,
                        TestSessionRestoreShowBookmarkBar) {
