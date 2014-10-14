@@ -77,7 +77,7 @@ login.createScreen('TermsOfServiceScreen', 'terms-of-service',
 
       var acceptButton = this.ownerDocument.createElement('button');
       acceptButton.id = 'tos-accept-button';
-      acceptButton.disabled = this.classList.contains('tos-loading');
+      acceptButton.disabled = true;
       acceptButton.classList.add('preserve-disabled-state');
       acceptButton.textContent =
           loadTimeData.getString('termsOfServiceAcceptButton');

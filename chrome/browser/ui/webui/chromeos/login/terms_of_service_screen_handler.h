@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
@@ -43,8 +42,9 @@ class TermsOfServiceScreenHandler : public BaseScreenHandler,
   virtual void Initialize() override;
 
   // Callback invoked after the UI locale has been changed.
-  void OnLanguageChangedCallback(
-      const locale_util::LanguageSwitchResult& result);
+  void OnLanguageChangedCallback(const std::string& requested_locale,
+                                 const std::string& loaded_locale,
+                                 const bool success);
 
   // Switch to the user's preferred input method and show the screen. This
   // method is called after it has been ensured that the current UI locale

@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -21,7 +20,8 @@ namespace chromeos {
 
 class CoreOobeActor;
 class IdleDetector;
-class InputEventsBlocker;
+
+struct NetworkScreenHandlerOnLanguageChangedCallbackData;
 
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
@@ -55,10 +55,10 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
                                   bool show_message) override;
 
- private:
   // Reloads localized contents.
   void ReloadLocalizedContent();
 
+ private:
   // Handles moving off the screen.
   void HandleOnExit();
 
@@ -66,9 +66,11 @@ class NetworkScreenHandler : public NetworkScreenActor,
   void HandleOnLanguageChanged(const std::string& locale);
 
   // Async callback after ReloadResourceBundle(locale) completed.
-  void OnLanguageChangedCallback(
-      const InputEventsBlocker* input_events_blocker,
-      const locale_util::LanguageSwitchResult& result);
+  static void OnLanguageChangedCallback(
+      scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> context,
+      const std::string& requested_locale,
+      const std::string& loaded_locale,
+      const bool success);
 
   // Handles change of the input method.
   void HandleOnInputMethodChanged(const std::string& id);
@@ -81,15 +83,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // Returns available timezones. Caller gets the ownership.
   static base::ListValue* GetTimezoneList();
-
-  // Starts resolving language list on BlockingPool.
-  void ScheduleResolveLanguageList(
-      scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result);
-
-  // Callback for chromeos::ResolveUILanguageList() (from l10n_util).
-  void OnLanguageListResolved(scoped_ptr<base::ListValue> new_language_list,
-                              std::string new_language_list_locale,
-                              std::string new_selected_language);
 
   NetworkScreenActor::Delegate* screen_;
   CoreOobeActor* core_oobe_actor_;
@@ -106,11 +99,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;
-
-  // Creation of language list happens on Blocking Pool, so we cache resolved
-  // data.
-  std::string language_list_locale_;
-  scoped_ptr<base::ListValue> language_list_;
 
   base::WeakPtrFactory<NetworkScreenHandler> weak_ptr_factory_;
 

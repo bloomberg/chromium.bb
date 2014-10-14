@@ -98,13 +98,14 @@ void TermsOfServiceScreenHandler::Show() {
   }
 
   // Switch to the user's UI locale before showing the screen.
-  locale_util::SwitchLanguageCallback callback(
-      base::Bind(&TermsOfServiceScreenHandler::OnLanguageChangedCallback,
-                 base::Unretained(this)));
+  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
+      new locale_util::SwitchLanguageCallback(
+          base::Bind(&TermsOfServiceScreenHandler::OnLanguageChangedCallback,
+                     base::Unretained(this))));
   locale_util::SwitchLanguage(locale,
                               true,   // enable_locale_keyboard_layouts
                               false,  // login_layouts_only
-                              callback);
+                              callback.Pass());
 }
 
 void TermsOfServiceScreenHandler::Hide() {
@@ -136,7 +137,9 @@ void TermsOfServiceScreenHandler::Initialize() {
 }
 
 void TermsOfServiceScreenHandler::OnLanguageChangedCallback(
-    const locale_util::LanguageSwitchResult& result) {
+    const std::string& requested_locale,
+    const std::string& loaded_locale,
+    const bool success) {
   // Update the screen contents to the new locale.
   base::DictionaryValue localized_strings;
   static_cast<OobeUI*>(web_ui()->GetController())

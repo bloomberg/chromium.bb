@@ -212,7 +212,9 @@ class LoginUtilsImpl : public LoginUtils,
   static void RunCallbackOnLocaleLoaded(
       const base::Closure& callback,
       InputEventsBlocker* input_events_blocker,
-      const locale_util::LanguageSwitchResult& result);
+      const std::string& locale,
+      const std::string& loaded_locale,
+      const bool success);
 
   // Attempts restarting the browser process and esures that this does
   // not happen while we are still fetching new OAuth refresh tokens.
@@ -322,7 +324,9 @@ void LoginUtilsImpl::DoBrowserLaunchInternal(Profile* profile,
 void LoginUtilsImpl::RunCallbackOnLocaleLoaded(
     const base::Closure& callback,
     InputEventsBlocker* /* input_events_blocker */,
-    const locale_util::LanguageSwitchResult& /* result */) {
+    const std::string& /* locale */,
+    const std::string& /* loaded_locale */,
+    const bool /* success */) {
   callback.Run();
 }
 
@@ -333,14 +337,17 @@ void LoginUtilsImpl::RespectLocalePreference(Profile* profile,
 
   user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  locale_util::SwitchLanguageCallback locale_switched_callback(base::Bind(
-      &LoginUtilsImpl::RunCallbackOnLocaleLoaded,
-      callback,
-      base::Owned(new InputEventsBlocker)));  // Block UI events until
-                                              // the ResourceBundle is
-                                              // reloaded.
+  scoped_ptr<locale_util::SwitchLanguageCallback> locale_switched_callback(
+      new locale_util::SwitchLanguageCallback(base::Bind(
+              &LoginUtilsImpl::RunCallbackOnLocaleLoaded,
+              callback,
+              base::Owned(new InputEventsBlocker))));  // Block UI events until
+                                                       // the ResourceBundle is
+                                                       // reloaded.
   if (!UserSessionManager::GetInstance()->RespectLocalePreference(
-          profile, user, locale_switched_callback)) {
+          profile,
+          user,
+          locale_switched_callback.Pass())) {
     callback.Run();
   }
 }
