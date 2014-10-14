@@ -970,16 +970,41 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   uint64_t uid_str_length = my_uint64_len(uid);
   my_uint64tos(uid_buf, uid, uid_str_length);
   uid_buf[uid_str_length] = '\0';
+
+  const char kChromeFlag[] = "--chrome=";
+  size_t buf_len = my_strlen(dumpfile) + sizeof(kChromeFlag);
+  char* chrome_flag = reinterpret_cast<char*>(allocator->Alloc(buf_len));
+  chrome_flag[0] = '\0';
+  my_strlcat(chrome_flag, kChromeFlag, buf_len);
+  my_strlcat(chrome_flag, dumpfile, buf_len);
+
+  const char kPidFlag[] = "--pid=";
+  buf_len = my_strlen(pid_buf) + sizeof(kPidFlag);
+  char* pid_flag = reinterpret_cast<char*>(allocator->Alloc(buf_len));
+  pid_flag[0] = '\0';
+  my_strlcat(pid_flag, kPidFlag, buf_len);
+  my_strlcat(pid_flag, pid_buf, buf_len);
+
+  const char kUidFlag[] = "--uid=";
+  buf_len = my_strlen(uid_buf) + sizeof(kUidFlag);
+  char* uid_flag = reinterpret_cast<char*>(allocator->Alloc(buf_len));
+  uid_flag[0] = '\0';
+  my_strlcat(uid_flag, kUidFlag, buf_len);
+  my_strlcat(uid_flag, uid_buf, buf_len);
+
+  const char kExeBuf[] = "--exe=";
+  buf_len = my_strlen(exe_buf) + sizeof(kExeBuf);
+  char* exe_flag = reinterpret_cast<char*>(allocator->Alloc(buf_len));
+  exe_flag[0] = '\0';
+  my_strlcat(exe_flag, kExeBuf, buf_len);
+  my_strlcat(exe_flag, exe_buf, buf_len);
+
   const char* args[] = {
     kCrashReporterBinary,
-    "--chrome",
-    dumpfile,
-    "--pid",
-    pid_buf,
-    "--uid",
-    uid_buf,
-    "--exe",
-    exe_buf,
+    chrome_flag,
+    pid_flag,
+    uid_flag,
+    exe_flag,
     NULL,
   };
   static const char msg[] = "Cannot upload crash dump: cannot exec "
