@@ -12309,6 +12309,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.BlacklistedDevice"
+    enum="BlacklistedVideoCaptureDeviceNames">
+  <owner>mcasas@chromium.org</owner>
+  <summary>
+    Counts appearances of Blacklisted Video Capture devices during enumeration.
+    This collection happens during first enumeration in the appropriate
+    platforms' VideoCaptureDeviceFactory.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.FrameRate" units="fps">
   <owner>mcasas@chromium.org</owner>
   <summary>
@@ -39438,6 +39448,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Unknown"/>
   <int value="1" label="0"/>
   <int value="2" label="1+"/>
+</enum>
+
+<enum name="BlacklistedVideoCaptureDeviceNames" type="int">
+  <int value="0" label="Google GTalk Camera Adapter"/>
+  <int value="1" label="IP Camera"/>
+  <int value="2" label="Cyberlink YouCam Webcam Splitter"/>
 </enum>
 
 <enum name="BlacklistSetup" type="int">

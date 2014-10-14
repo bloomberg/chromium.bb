@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/metro.h"
@@ -27,6 +28,17 @@ using Names = media::VideoCaptureDevice::Names;
 
 namespace media {
 
+// We would like to avoid enumerating and/or using certain devices due to they
+// provoking crashes or any other reason. This enum is defined for the purposes
+// of UMA collection. Existing entries cannot be removed.
+enum BlacklistedCameraNames {
+  BLACKLISTED_CAMERA_GOOGLE_CAMERA_ADAPTER,
+  BLACKLISTED_CAMERA_IP_CAMERA,
+  BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER,
+   // This one must be last, and equal to the previous enumerated value.
+  BLACKLISTED_CAMERA_MAX = BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER
+};
+
 // Lazy Instance to initialize the MediaFoundation Library.
 class MFInitializerSingleton {
  public:
@@ -36,6 +48,17 @@ class MFInitializerSingleton {
 
 static base::LazyInstance<MFInitializerSingleton> g_mf_initialize =
     LAZY_INSTANCE_INITIALIZER;
+
+// Blacklisted devices are identified by a characteristic prefix of the name.
+// This prefix is used case-insensitively. This list must be kept in sync with
+// |BlacklistedCameraNames|.
+static const char* kBlacklistedCameraNames[] = {
+  // Name of a fake DirectShow filter on computers with GTalk installed.
+  {"Google Camera Adapter"},
+  // The following two software WebCams cause crashes.
+  {"IP Camera [JPEG/MJPEG]"},
+  {"CyberLink Webcam Splitter"}
+};
 
 static void EnsureMediaFoundationInit() {
   g_mf_initialize.Get();
@@ -90,6 +113,20 @@ static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
   return SUCCEEDED(MFEnumDeviceSources(attributes, devices, count));
 }
 
+static bool IsDeviceBlackListed(const std::string& name) {
+  DCHECK_EQ(BLACKLISTED_CAMERA_MAX,
+            static_cast<int>(arraysize(kBlacklistedCameraNames)));
+  for (size_t i = 0; i < arraysize(kBlacklistedCameraNames); ++i) {
+    if (StartsWithASCII(name, kBlacklistedCameraNames[i], false)) {
+      DVLOG(1) << "Enumerated blacklisted device: " << name;
+      UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.BlacklistedDevice",
+          i, BLACKLISTED_CAMERA_MAX + 1);
+      return true;
+    }
+  }
+  return false;
+}
+
 static void GetDeviceNamesDirectShow(
     const CLSID& class_id,
     const Name::CaptureApiType capture_api_type,
@@ -128,21 +165,10 @@ static void GetDeviceNamesDirectShow(
     if (FAILED(hr) || name.type() != VT_BSTR)
       continue;
 
-    // Ignore all VFW drivers and the special Google Camera Adapter.
-    // Google Camera Adapter is not a real DirectShow camera device.
-    // VFW are very old Video for Windows drivers that can not be used.
-    const wchar_t* str_ptr = V_BSTR(&name);
-    // Name of a fake DirectShow filter that exist on computers with
-    // GTalk installed.
-    static const char kGoogleCameraAdapter[] = "google camera adapter";
-    if (wcsstr(str_ptr, L"(VFW)") != NULL ||
-        LowerCaseEqualsASCII(str_ptr,
-                             str_ptr + arraysize(kGoogleCameraAdapter) - 1,
-                             kGoogleCameraAdapter)) {
+    const std::string device_name(base::SysWideToUTF8(V_BSTR(&name)));
+    if (IsDeviceBlackListed(device_name))
       continue;
-    }
 
-    const std::string device_name(base::SysWideToUTF8(str_ptr));
     name.Reset();
     hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
     std::string id;
