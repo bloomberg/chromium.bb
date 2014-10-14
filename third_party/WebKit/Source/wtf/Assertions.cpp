@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if HAVE(SIGNAL_H)
-#include <signal.h>
-#endif
-
 #if USE(CF)
 #include <AvailabilityMacros.h>
 #include <CoreFoundation/CFString.h>
@@ -293,55 +289,6 @@ void WTFPrintBacktrace(void** stack, int size)
         else
             printf_stderr_common("%-3d %p\n", frameNumber, stack[i]);
     }
-}
-
-static WTFCrashHookFunction globalHook = 0;
-
-void WTFSetCrashHook(WTFCrashHookFunction function)
-{
-    globalHook = function;
-}
-
-void WTFInvokeCrashHook()
-{
-    if (globalHook)
-        globalHook();
-}
-
-#if HAVE(SIGNAL_H)
-static NO_RETURN void dumpBacktraceSignalHandler(int sig)
-{
-    WTFReportBacktrace();
-    exit(128 + sig);
-}
-
-static void installSignalHandlersForFatalErrors(void (*handler)(int))
-{
-    signal(SIGILL, handler); //    4: illegal instruction (not reset when caught).
-    signal(SIGTRAP, handler); //   5: trace trap (not reset when caught).
-    signal(SIGFPE, handler); //    8: floating point exception.
-    signal(SIGBUS, handler); //   10: bus error.
-    signal(SIGSEGV, handler); //  11: segmentation violation.
-    signal(SIGSYS, handler); //   12: bad argument to system call.
-    signal(SIGPIPE, handler); //  13: write on a pipe with no reader.
-    signal(SIGXCPU, handler); //  24: exceeded CPU time limit.
-    signal(SIGXFSZ, handler); //  25: exceeded file size limit.
-}
-
-static void resetSignalHandlersForFatalErrors()
-{
-    installSignalHandlersForFatalErrors(SIG_DFL);
-}
-#endif
-
-void WTFInstallReportBacktraceOnCrashHook()
-{
-#if HAVE(SIGNAL_H)
-    // Needed otherwise we are going to dump the stack trace twice
-    // in case we hit an assertion.
-    WTFSetCrashHook(&resetSignalHandlersForFatalErrors);
-    installSignalHandlersForFatalErrors(&dumpBacktraceSignalHandler);
-#endif
 }
 
 void WTFReportFatalError(const char* file, int line, const char* function, const char* format, ...)

@@ -108,11 +108,6 @@ WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);
 WTF_EXPORT void WTFReportBacktrace(int framesToShow = 31);
 WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 
-typedef void (*WTFCrashHookFunction)();
-WTF_EXPORT void WTFSetCrashHook(WTFCrashHookFunction);
-WTF_EXPORT void WTFInvokeCrashHook();
-WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
-
 namespace WTF {
 
 class WTF_EXPORT FrameToNameScope {
@@ -150,7 +145,6 @@ using WTF::FrameToNameScope;
 #ifndef CRASH
 #define CRASH() \
     (WTFReportBacktrace(), \
-     WTFInvokeCrashHook(), \
      (*(int*)0xfbadbeef = 0), \
      IMMEDIATE_CRASH())
 #endif
