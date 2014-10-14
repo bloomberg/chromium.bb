@@ -95,7 +95,7 @@ int ExDataDup(CRYPTO_EX_DATA* to,
   return 0;
 }
 
-// ExDataFree is called when one of the RSA, DSA or EC_KEY object is freed.
+// ExDataFree is called when one of the RSA, DSA or EC_KEY objects is freed.
 void ExDataFree(void* parent,
                 void* ptr,
                 CRYPTO_EX_DATA* ad,
@@ -204,7 +204,7 @@ int RsaMethodSignRaw(RSA* rsa,
   // Retrieve private key JNI reference.
   const KeyExData *ex_data = RsaGetExData(rsa);
   if (!ex_data || !ex_data->private_key) {
-    LOG(WARNING) << "Null JNI reference passed to RsaMethodPrivEnc!";
+    LOG(WARNING) << "Null JNI reference passed to RsaMethodSignRaw!";
     OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
     return 0;
   }
@@ -214,7 +214,7 @@ int RsaMethodSignRaw(RSA* rsa,
     int ret = ex_data->legacy_rsa->meth->rsa_priv_enc(
         in_len, in, out, ex_data->legacy_rsa, ANDROID_RSA_PKCS1_PADDING);
     if (ret < 0) {
-      LOG(WARNING) << "Could not sign message in RsaMethodPrivEnc!";
+      LOG(WARNING) << "Could not sign message in RsaMethodSignRaw!";
       // System OpenSSL will use a separate error queue, so it is still
       // necessary to push a new error.
       //
@@ -234,7 +234,7 @@ int RsaMethodSignRaw(RSA* rsa,
   // For RSA keys, this function behaves as RSA_private_encrypt with
   // PKCS#1 padding.
   if (!RawSignDigestWithPrivateKey(ex_data->private_key, from_piece, &result)) {
-    LOG(WARNING) << "Could not sign message in RsaMethodPrivEnc!";
+    LOG(WARNING) << "Could not sign message in RsaMethodSignRaw!";
     OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
     return 0;
   }
