@@ -5848,8 +5848,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
           "  helper_->%s(%s%sGetResultShmId(), GetResultShmOffset());\n" %
                  (func.name, arg_string, comma))
       file.Write("  WaitForCmd();\n")
-      file.Write("  %s result_value = *result;\n" % func.return_type)
-      file.Write('  GPU_CLIENT_LOG("returned " << result_value);\n')
+      file.Write("  %s result_value = *result" % func.return_type)
+      if func.return_type == "GLboolean":
+        file.Write(" != 0")
+      file.Write(';\n  GPU_CLIENT_LOG("returned " << result_value);\n')
       file.Write("  CheckGLError();\n")
       file.Write("  return result_value;\n")
       file.Write("}\n")

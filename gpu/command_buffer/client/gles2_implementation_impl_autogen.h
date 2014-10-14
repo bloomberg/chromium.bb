@@ -964,7 +964,7 @@ GLboolean GLES2Implementation::IsBuffer(GLuint buffer) {
   *result = 0;
   helper_->IsBuffer(buffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;
@@ -983,7 +983,7 @@ GLboolean GLES2Implementation::IsFramebuffer(GLuint framebuffer) {
   *result = 0;
   helper_->IsFramebuffer(framebuffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;
@@ -1001,7 +1001,7 @@ GLboolean GLES2Implementation::IsProgram(GLuint program) {
   *result = 0;
   helper_->IsProgram(program, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;
@@ -1020,7 +1020,7 @@ GLboolean GLES2Implementation::IsRenderbuffer(GLuint renderbuffer) {
   *result = 0;
   helper_->IsRenderbuffer(renderbuffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;
@@ -1038,7 +1038,7 @@ GLboolean GLES2Implementation::IsShader(GLuint shader) {
   *result = 0;
   helper_->IsShader(shader, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;
@@ -1056,7 +1056,7 @@ GLboolean GLES2Implementation::IsTexture(GLuint texture) {
   *result = 0;
   helper_->IsTexture(texture, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;
@@ -1936,7 +1936,7 @@ GLboolean GLES2Implementation::IsVertexArrayOES(GLuint array) {
   *result = 0;
   helper_->IsVertexArrayOES(array, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  GLboolean result_value = *result;
+  GLboolean result_value = *result != 0;
   GPU_CLIENT_LOG("returned " << result_value);
   CheckGLError();
   return result_value;

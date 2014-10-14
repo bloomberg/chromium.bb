@@ -2828,7 +2828,7 @@ GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
   GPU_CLIENT_LOG("   returned " << GLES2Util::GetStringBool(*result));
-  return *result;
+  return *result != 0;
 }
 
 void* GLES2Implementation::MapBufferSubDataCHROMIUM(
