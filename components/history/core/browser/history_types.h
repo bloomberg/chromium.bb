@@ -524,13 +524,6 @@ struct BriefVisitInfo {
   ui::PageTransition transition;
 };
 
-// An observer of VisitDatabase.
-class VisitDatabaseObserver {
- public:
-  virtual ~VisitDatabaseObserver();
-  virtual void OnAddVisit(const BriefVisitInfo& info) = 0;
-};
-
 struct ExpireHistoryArgs {
   ExpireHistoryArgs();
   ~ExpireHistoryArgs();

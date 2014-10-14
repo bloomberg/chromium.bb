@@ -72,6 +72,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyProfileError(sql::InitStatus init_status) override {}
   virtual void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) override {}
+  virtual void NotifyAddVisit(const history::BriefVisitInfo& info) override {}
   virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {
     favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
   }
@@ -90,8 +91,6 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
     }
   }
   virtual void DBLoaded() override {}
-  virtual void NotifyVisitDBObserversOnAddVisit(
-      const history::BriefVisitInfo& info) override {}
 
   URLsDeletedDetails* deleted_details() const {
     return deleted_details_.get();

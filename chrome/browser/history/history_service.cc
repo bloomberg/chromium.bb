@@ -50,6 +50,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
@@ -158,6 +159,12 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                    base::Passed(&backend)));
   }
 
+  virtual void NotifyAddVisit(const history::BriefVisitInfo& info) override {
+    service_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::NotifyAddVisit, history_service_, info));
+  }
+
   virtual void NotifyFaviconChanged(const std::set<GURL>& urls) override {
     // Send the notification to the history service on the main thread.
     service_task_runner_->PostTask(
@@ -186,14 +193,6 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&HistoryService::OnDBLoaded, history_service_));
-  }
-
-  virtual void NotifyVisitDBObserversOnAddVisit(
-      const history::BriefVisitInfo& info) override {
-    service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&HistoryService::NotifyVisitDBObserversOnAddVisit,
-                   history_service_, info));
   }
 
  private:
@@ -332,6 +331,16 @@ void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::URLsNoLongerBookmarked,
                     urls);
+}
+
+void HistoryService::AddObserver(history::HistoryServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.AddObserver(observer);
+}
+
+void HistoryService::RemoveObserver(history::HistoryServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.RemoveObserver(observer);
 }
 
 void HistoryService::ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
@@ -1221,23 +1230,10 @@ bool HistoryService::GetRowForURL(const GURL& url, history::URLRow* url_row) {
   return db && (db->GetRowForURL(url, url_row) != 0);
 }
 
-void HistoryService::AddVisitDatabaseObserver(
-    history::VisitDatabaseObserver* observer) {
+void HistoryService::NotifyAddVisit(const history::BriefVisitInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  visit_database_observers_.AddObserver(observer);
-}
-
-void HistoryService::RemoveVisitDatabaseObserver(
-    history::VisitDatabaseObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  visit_database_observers_.RemoveObserver(observer);
-}
-
-void HistoryService::NotifyVisitDBObserversOnAddVisit(
-    const history::BriefVisitInfo& info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(history::VisitDatabaseObserver, visit_database_observers_,
-                    OnAddVisit(info));
+  FOR_EACH_OBSERVER(
+      history::HistoryServiceObserver, observers_, OnAddVisit(this, info));
 }
 
 scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>

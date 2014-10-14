@@ -120,6 +120,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual void SetInMemoryBackend(
         scoped_ptr<InMemoryHistoryBackend> backend) = 0;
 
+    // Notify HistoryService that VisitDatabase was changed. The event will be
+    // forwarded to the history::HistoryServiceObservers in the UI thread.
+    virtual void NotifyAddVisit(const history::BriefVisitInfo& info) = 0;
+
     // Notify HistoryService that some URLs favicon changed that will forward
     // the events to the FaviconChangedObservers in the correct thread.
     virtual void NotifyFaviconChanged(const std::set<GURL>& urls) = 0;
@@ -133,9 +137,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
     // Invoked when the backend has finished loading the db.
     virtual void DBLoaded() = 0;
-
-    virtual void NotifyVisitDBObserversOnAddVisit(
-        const history::BriefVisitInfo& info) = 0;
   };
 
   // Init must be called to complete object creation. This object can be

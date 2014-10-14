@@ -528,7 +528,7 @@ class PrerenderLocalPredictor::PrefetchList {
 PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
-      is_visit_database_observer_(false),
+      is_history_service_observer_(false),
       prefetch_list_(new PrefetchList()),
       weak_factory_(this) {
   RecordEvent(EVENT_CONSTRUCTED);
@@ -583,15 +583,16 @@ PrerenderLocalPredictor::~PrerenderLocalPredictor() {
 
 void PrerenderLocalPredictor::Shutdown() {
   timer_.Stop();
-  if (is_visit_database_observer_) {
+  if (is_history_service_observer_) {
     HistoryService* history = GetHistoryIfExists();
     CHECK(history);
-    history->RemoveVisitDatabaseObserver(this);
-    is_visit_database_observer_ = false;
+    history->RemoveObserver(this);
+    is_history_service_observer_ = false;
   }
 }
 
-void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
+void PrerenderLocalPredictor::OnAddVisit(HistoryService* history_service,
+                                         const history::BriefVisitInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RecordEvent(EVENT_ADD_VISIT);
   if (!visit_history_.get())
@@ -1138,13 +1139,13 @@ void PrerenderLocalPredictor::Init() {
   }
   HistoryService* history = GetHistoryIfExists();
   if (history) {
-    CHECK(!is_visit_database_observer_);
+    CHECK(!is_history_service_observer_);
     history->ScheduleDBTask(
         scoped_ptr<history::HistoryDBTask>(
             new GetVisitHistoryTask(this, kMaxVisitHistory)),
         &history_db_tracker_);
-    history->AddVisitDatabaseObserver(this);
-    is_visit_database_observer_ = true;
+    history->AddObserver(this);
+    is_history_service_observer_ = true;
   } else {
     RecordEvent(EVENT_INIT_FAILED_NO_HISTORY);
   }

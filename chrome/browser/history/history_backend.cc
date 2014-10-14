@@ -2682,7 +2682,7 @@ void HistoryBackend::NotifyVisitObservers(const VisitRow& visit) {
   // If we don't have a delegate yet during setup or shutdown, we will drop
   // these notifications.
   if (delegate_)
-    delegate_->NotifyVisitDBObserversOnAddVisit(info);
+    delegate_->NotifyAddVisit(info);
 }
 
 #if defined(OS_ANDROID)

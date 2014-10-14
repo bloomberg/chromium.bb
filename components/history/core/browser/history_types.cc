@@ -307,10 +307,6 @@ FaviconBitmap::FaviconBitmap()
 FaviconBitmap::~FaviconBitmap() {
 }
 
-// VisitDatabaseObserver -------------------------------------------------------
-
-VisitDatabaseObserver::~VisitDatabaseObserver() {}
-
 // ExpireHistoryArgs ----------------------------------------------------------
 
 ExpireHistoryArgs::ExpireHistoryArgs() {

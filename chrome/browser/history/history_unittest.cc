@@ -96,13 +96,13 @@ class BackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyProfileError(sql::InitStatus init_status) override {}
   virtual void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) override;
+  virtual void NotifyAddVisit(const BriefVisitInfo& info) override {}
   virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {}
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override;
   virtual void DBLoaded() override {}
-  virtual void NotifyVisitDBObserversOnAddVisit(
-      const BriefVisitInfo& info) override {}
+
  private:
   HistoryBackendDBTest* history_test_;
 };

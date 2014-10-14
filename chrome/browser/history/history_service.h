@@ -64,12 +64,12 @@ class HistoryClient;
 class HistoryDatabase;
 class HistoryDBTask;
 class HistoryQueryTest;
+class HistoryServiceObserver;
 class HistoryTest;
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
 class InMemoryURLIndexTest;
 class URLDatabase;
-class VisitDatabaseObserver;
 class VisitFilter;
 struct DownloadRow;
 struct HistoryAddPageArgs;
@@ -430,18 +430,18 @@ class HistoryService : public content::NotificationObserver,
   // Notification that a URL is no longer bookmarked.
   void URLsNoLongerBookmarked(const std::set<GURL>& urls);
 
+  // Observers -----------------------------------------------------------------
+
+  // Adds/Removes an Observer.
+  void AddObserver(history::HistoryServiceObserver* observer);
+  void RemoveObserver(history::HistoryServiceObserver* observer);
+
   // Generic Stuff -------------------------------------------------------------
 
   // Schedules a HistoryDBTask for running on the history backend thread. See
   // HistoryDBTask for details on what this does. Takes ownership of |task|.
   virtual void ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
                               base::CancelableTaskTracker* tracker);
-
-  // Adds or removes observers for the VisitDatabase.
-  void AddVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
-  void RemoveVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
-
-  void NotifyVisitDBObserversOnAddVisit(const history::BriefVisitInfo& info);
 
   // This callback is invoked when favicon change for urls.
   typedef base::Callback<void(const std::set<GURL>&)> OnFaviconChangedCallback;
@@ -588,6 +588,11 @@ class HistoryService : public content::NotificationObserver,
   // Reads a URLRow from in-memory database. Returns false if database is not
   // available or the URL does not exist.
   bool GetRowForURL(const GURL& url, history::URLRow* url_row);
+
+  // Observers -----------------------------------------------------------------
+
+  // Notify all Observers registered that the VisitDatabase was changed.
+  void NotifyAddVisit(const history::BriefVisitInfo& info);
 
   // Favicon -------------------------------------------------------------------
 
@@ -873,8 +878,7 @@ class HistoryService : public content::NotificationObserver,
   // See http://crbug.com/138321
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
-  ObserverList<history::VisitDatabaseObserver> visit_database_observers_;
-
+  ObserverList<history::HistoryServiceObserver> observers_;
   base::CallbackList<void(const std::set<GURL>&)>
       favicon_changed_callback_list_;
 
