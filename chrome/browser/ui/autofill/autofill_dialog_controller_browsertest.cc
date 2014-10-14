@@ -1772,4 +1772,19 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_EQ(ASCIIToUTF16("USD"), controller->transaction_currency_);
 }
 
+// Same as above, plus readonly attribute.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       TransactionAmountReadonly) {
+  std::string html(
+      "<input type='number' step='0.01'"
+      "   autocomplete='transaction-amount' value='24' readonly>"
+      "<input autocomplete='transaction-currency' value='USD' readonly>"
+      "<input autocomplete='cc-csc'>");
+  AutofillDialogControllerImpl* controller = SetUpHtmlAndInvoke(html);
+  ASSERT_TRUE(controller);
+
+  EXPECT_EQ(ASCIIToUTF16("24"), controller->transaction_amount_);
+  EXPECT_EQ(ASCIIToUTF16("USD"), controller->transaction_currency_);
+}
+
 }  // namespace autofill

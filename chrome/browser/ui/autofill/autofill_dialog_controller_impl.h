@@ -332,6 +332,8 @@ class AutofillDialogControllerImpl
                            CorrectCountryFromInputs);
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
                            TransactionAmount);
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
+                           TransactionAmountReadonly);
 
   // Initializes or updates |suggested_cc_| et al.
   void SuggestionsUpdated();
