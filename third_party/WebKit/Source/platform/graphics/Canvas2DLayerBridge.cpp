@@ -567,7 +567,7 @@ void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     ASSERT(!m_destructionInProgress);
     Canvas2DLayerManager::get().layerDidDraw(this);
-    m_layer->layer()->invalidateRect(dirtyRect);
+    m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
     m_didRecordDrawCommand = true;
 }
 

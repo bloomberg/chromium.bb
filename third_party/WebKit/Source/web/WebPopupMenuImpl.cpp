@@ -372,7 +372,7 @@ void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
     if (m_client)
         m_client->didInvalidateRect(paintRect);
     if (m_rootLayer)
-        m_rootLayer->layer()->invalidateRect(FloatRect(paintRect));
+        m_rootLayer->layer()->invalidateRect(paintRect);
 }
 
 void WebPopupMenuImpl::invalidateContentsForSlowScroll(const IntRect& updateRect)

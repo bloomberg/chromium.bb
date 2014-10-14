@@ -47,7 +47,6 @@ class WebFilterOperations;
 class WebLayerClient;
 class WebLayerScrollClient;
 struct WebFloatPoint;
-struct WebFloatRect;
 struct WebLayerPositionConstraint;
 
 class WebLayer {
@@ -58,7 +57,7 @@ public:
     virtual int id() const = 0;
 
     // Sets a region of the layer as invalid, i.e. needs to update its content.
-    virtual void invalidateRect(const WebFloatRect&) = 0;
+    virtual void invalidateRect(const WebRect&) = 0;
 
     // Sets the entire layer as invalid, i.e. needs to update its content.
     virtual void invalidate() = 0;

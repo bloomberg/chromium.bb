@@ -898,7 +898,7 @@ void GraphicsLayer::setNeedsDisplay()
     }
 }
 
-void GraphicsLayer::setNeedsDisplayInRect(const FloatRect& rect, PaintInvalidationReason invalidationReason)
+void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidationReason invalidationReason)
 {
     if (drawsContent()) {
         m_layer->layer()->invalidateRect(rect);

@@ -182,8 +182,8 @@ public:
     void setPaintingPhase(GraphicsLayerPaintingPhase);
 
     void setNeedsDisplay();
-    // mark the given rect (in layer coords) as needing dispay. Never goes deep.
-    void setNeedsDisplayInRect(const FloatRect&, PaintInvalidationReason);
+    // Mark the given rect (in layer coords) as needing display. Never goes deep.
+    void setNeedsDisplayInRect(const IntRect&, PaintInvalidationReason);
 
     void setContentsNeedsDisplay();
 
