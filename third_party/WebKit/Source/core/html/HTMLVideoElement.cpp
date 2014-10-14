@@ -41,6 +41,7 @@
 #include "core/rendering/RenderVideo.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebGraphicsContext3D.h"

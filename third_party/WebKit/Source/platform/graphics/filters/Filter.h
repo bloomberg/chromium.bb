@@ -22,8 +22,9 @@
 #define Filter_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/ImageBuffer.h" // FIXME: remove this, but be prepared to keeping pulling that string a while...
+#include "platform/geometry/IntRect.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {

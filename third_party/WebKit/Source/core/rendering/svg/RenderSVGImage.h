@@ -25,6 +25,7 @@
 #define RenderSVGImage_h
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
+#include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
 

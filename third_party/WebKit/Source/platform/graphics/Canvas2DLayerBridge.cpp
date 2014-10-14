@@ -34,6 +34,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/Canvas2DLayerManager.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
