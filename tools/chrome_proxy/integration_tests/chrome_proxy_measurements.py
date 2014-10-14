@@ -260,6 +260,29 @@ class ChromeProxyClientVersion(ChromeProxyValidation):
     self._metrics.AddResultsForClientVersion(tab, results)
 
 
+class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
+  """Correctness measurement for HTTP proxy fallback to direct."""
+
+  def __init__(self):
+    super(ChromeProxyHTTPToDirectFallback, self).__init__(
+        restart_after_each_page=True)
+
+  def WillNavigateToPage(self, page, tab):
+    super(ChromeProxyHTTPToDirectFallback, self).WillNavigateToPage(page, tab)
+    # In order to have this test run starting from the HTTP fallback proxy,
+    # the startup URL is set such that it will trigger a proxy fallback.
+    # Verify that this is true before beginning the test proper.
+    proxies = [
+        self._metrics.effective_proxies['proxy'],
+        self._metrics.effective_proxies['fallback'],
+        self._metrics.effective_proxies['direct']]
+    bad_proxies = [self._metrics.effective_proxies['proxy']]
+    self._metrics.VerifyProxyInfo(tab, proxies, bad_proxies)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForHTTPToDirectFallback(tab, results)
+
+
 class ChromeProxySmoke(ChromeProxyValidation):
   """Smoke measurement for basic chrome proxy correctness."""
 

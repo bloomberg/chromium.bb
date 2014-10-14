@@ -117,6 +117,13 @@ class ChromeProxyHTTPFallbackViaHeader(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
+class ChromeProxyHTTPToDirectFallback(benchmark.Benchmark):
+  tag = 'http-to-direct-fallback'
+  test = measurements.ChromeProxyHTTPToDirectFallback
+  page_set = pagesets.HTTPToDirectFallbackPageSet
+
+
+@benchmark.Enabled('android')
 class ChromeProxySmoke(benchmark.Benchmark):
   tag = 'smoke'
   test = measurements.ChromeProxySmoke
