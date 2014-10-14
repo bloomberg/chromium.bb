@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -64,12 +65,18 @@ void ContentCredentialManagerDispatcher::OnNotifySignedIn(
 
   // TODO(mkwst): This is a stub; we should be checking the PasswordStore to
   // determine whether or not the credential exists, and calling UpdateLogin
-  // accordingly. Also, of course, the user should be somehow involved.
-  GetPasswordStore()->AddLogin(*form);
+  // accordingly.
+  form_manager_.reset(
+      new CredentialManagerPasswordFormManager(client_, *form, this));
 
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
+}
+
+void ContentCredentialManagerDispatcher::OnProvisionalSaveComplete() {
+  DCHECK(form_manager_);
+  client_->PromptUserToSavePassword(form_manager_.Pass());
 }
 
 void ContentCredentialManagerDispatcher::OnNotifySignedOut(int request_id) {

@@ -22,6 +22,7 @@ class WebContents;
 
 namespace password_manager {
 
+class CredentialManagerPasswordFormManager;
 class PasswordManagerClient;
 class PasswordStore;
 struct CredentialInfo;
@@ -35,6 +36,8 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   ContentCredentialManagerDispatcher(content::WebContents* web_contents,
                                      PasswordManagerClient* client);
   virtual ~ContentCredentialManagerDispatcher();
+
+  void OnProvisionalSaveComplete();
 
   // CredentialManagerDispatcher implementation.
   virtual void OnNotifyFailedSignIn(
@@ -60,6 +63,7 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   PasswordStore* GetPasswordStore();
 
   PasswordManagerClient* client_;
+  scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
 
   // When 'OnRequestCredential' is called, it in turn calls out to the
   // PasswordStore; we store the request ID here in order to properly respond

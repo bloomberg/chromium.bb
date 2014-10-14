@@ -171,6 +171,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return pending_credentials_.signon_realm;
   }
 
+ protected:
+  const autofill::PasswordForm& observed_form() const { return observed_form_; }
+
  private:
   friend class PasswordFormManagerTest;
 

@@ -8,9 +8,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/password_manager/content/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -30,15 +32,35 @@ class TestPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
   TestPasswordManagerClient(password_manager::PasswordStore* store)
-      : store_(store) {}
+      : did_prompt_user_to_save_(false), store_(store) {}
   virtual ~TestPasswordManagerClient() {}
 
   virtual password_manager::PasswordStore* GetPasswordStore() override {
     return store_;
   }
 
+  virtual password_manager::PasswordManagerDriver* GetDriver() override {
+    return &driver_;
+  }
+
+  virtual bool PromptUserToSavePassword(
+      scoped_ptr<password_manager::PasswordFormManager> manager) override {
+    did_prompt_user_to_save_ = true;
+    manager_.reset(manager.release());
+    return true;
+  }
+
+  bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
+
+  password_manager::PasswordFormManager* pending_manager() const {
+    return manager_.get();
+  }
+
  private:
+  bool did_prompt_user_to_save_;
   password_manager::PasswordStore* store_;
+  password_manager::StubPasswordManagerDriver driver_;
+  scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
 
 void RunAllPendingTasks() {
@@ -115,13 +137,15 @@ TEST_F(ContentCredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   process()->sink().ClearMessages();
 
-  // Make sure that the PasswordStore has a chance to update.
+  // Allow the PasswordFormManager to talk to the password store, determine
+  // that the form is new, and set it as pending.
   RunAllPendingTasks();
 
-  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  EXPECT_EQ(1U, passwords.size());
-  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
-  const autofill::PasswordForm& new_form = passwords[form_.signon_realm][0];
+  EXPECT_TRUE(client_->did_prompt_user_to_save());
+  EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
+
+  autofill::PasswordForm new_form =
+      client_->pending_manager()->pending_credentials();
   EXPECT_EQ(form_.username_value, new_form.username_value);
   EXPECT_EQ(form_.display_name, new_form.display_name);
   EXPECT_EQ(form_.password_value, new_form.password_value);

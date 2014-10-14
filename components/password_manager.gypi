@@ -225,6 +225,8 @@
             'password_manager/content/browser/content_credential_manager_dispatcher.h',
             'password_manager/content/browser/content_password_manager_driver.cc',
             'password_manager/content/browser/content_password_manager_driver.h',
+            'password_manager/content/browser/credential_manager_password_form_manager.cc',
+            'password_manager/content/browser/credential_manager_password_form_manager.h',
             'password_manager/content/browser/password_manager_internals_service_factory.cc',
             'password_manager/content/browser/password_manager_internals_service_factory.h',
           ],
