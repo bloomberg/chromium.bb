@@ -15,6 +15,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "grit/platform_locale_settings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -318,10 +321,20 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   PrefService* prefs = GetProfile()->GetPrefs();
   pref_change_registrar_.Init(prefs);
   if (prefs) {
+    // TODO(wjmaclean): Convert this to use the content-specific zoom-level
+    // prefs when HostZoomMap moves to StoragePartition.
+    chrome::ChromeZoomLevelPrefs* zoom_level_prefs =
+        GetProfile()->GetZoomLevelPrefs();
+
     base::Closure renderer_callback = base::Bind(
         &PrefsTabHelper::UpdateRendererPreferences, base::Unretained(this));
+    // Incognito mode does not have a zoom_level_prefs, and not all tests
+    // should need to create one either.
+    if (zoom_level_prefs) {
+      default_zoom_level_subscription_ =
+          zoom_level_prefs->RegisterDefaultZoomLevelCallback(renderer_callback);
+    }
     pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
-    pref_change_registrar_.Add(prefs::kDefaultZoomLevel, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
 
@@ -359,11 +372,15 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
                                   webkit_callback);
   }
 
-  renderer_preferences_util::UpdateFromSystemSettings(
-      web_contents_->GetMutableRendererPrefs(), GetProfile());
+  content::RendererPreferences* render_prefs =
+      web_contents_->GetMutableRendererPrefs();
+  renderer_preferences_util::UpdateFromSystemSettings(render_prefs,
+                                                      GetProfile(),
+                                                      web_contents_);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
 #endif
@@ -567,8 +584,10 @@ void PrefsTabHelper::UpdateWebPreferences() {
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
+  content::RendererPreferences* prefs =
+      web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      web_contents_->GetMutableRendererPrefs(), GetProfile());
+      prefs, GetProfile(), web_contents_);
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 

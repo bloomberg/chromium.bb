@@ -798,6 +798,18 @@ void BrowserOptionsHandler::PageLoadStarted() {
 void BrowserOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
+  chrome::ChromeZoomLevelPrefs* zoom_level_prefs = profile->GetZoomLevelPrefs();
+  // Only regular profiles are able to edit default zoom level, or delete per-
+  // host zoom levels, via the settings menu. We only require a zoom_level_prefs
+  // if the profile is able to change these preference types.
+  DCHECK(zoom_level_prefs ||
+         profile->GetProfileType() != Profile::REGULAR_PROFILE);
+  if (zoom_level_prefs) {
+    default_zoom_level_subscription_ =
+        zoom_level_prefs->RegisterDefaultZoomLevelCallback(
+            base::Bind(&BrowserOptionsHandler::SetupPageZoomSelector,
+                       base::Unretained(this)));
+  }
 
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
@@ -853,10 +865,6 @@ void BrowserOptionsHandler::InitializeHandler() {
   auto_open_files_.Init(
       prefs::kDownloadExtensionsToOpen, prefs,
       base::Bind(&BrowserOptionsHandler::SetupAutoOpenFileTypes,
-                 base::Unretained(this)));
-  default_zoom_level_.Init(
-      prefs::kDefaultZoomLevel, prefs,
-      base::Bind(&BrowserOptionsHandler::SetupPageZoomSelector,
                  base::Unretained(this)));
   profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
@@ -1525,7 +1533,8 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(
     const base::ListValue* args) {
   double zoom_factor;
   if (ExtractDoubleValue(args, &zoom_factor)) {
-    default_zoom_level_.SetValue(content::ZoomFactorToZoomLevel(zoom_factor));
+    Profile::FromWebUI(web_ui())->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(
+        content::ZoomFactorToZoomLevel(zoom_factor));
   }
 }
 
@@ -1782,8 +1791,9 @@ void BrowserOptionsHandler::SetupFontSizeSelector() {
 }
 
 void BrowserOptionsHandler::SetupPageZoomSelector() {
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  double default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
+  double default_zoom_level =
+      content::HostZoomMap::GetDefaultForBrowserContext(
+          Profile::FromWebUI(web_ui()))->GetDefaultZoomLevel();
   double default_zoom_factor =
       content::ZoomLevelToZoomFactor(default_zoom_level);
 

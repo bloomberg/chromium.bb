@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -103,7 +105,8 @@ void OfflineLoadPage::OverrideRendererPrefs(
     content::RendererPreferences* prefs) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
-  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
+  renderer_preferences_util::UpdateFromSystemSettings(
+      prefs, profile, web_contents_);
 }
 
 void OfflineLoadPage::OnProceed() {

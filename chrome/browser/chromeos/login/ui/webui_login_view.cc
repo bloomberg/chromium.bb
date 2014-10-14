@@ -26,6 +26,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/render_messages.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/renderer_preferences.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -207,9 +209,9 @@ void WebUILoginView::Init() {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   WebContentsObserver::Observe(web_contents);
+  content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      web_contents->GetMutableRendererPrefs(),
-      signin_profile);
+      prefs, signin_profile, web_contents);
 }
 
 const char* WebUILoginView::GetClassName() const {

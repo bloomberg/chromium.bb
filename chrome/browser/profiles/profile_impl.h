@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/host_zoom_map.h"
 
@@ -111,6 +112,7 @@ class ProfileImpl : public Profile {
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() override;
   virtual PrefService* GetPrefs() override;
+  virtual chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
   virtual PrefService* GetOffTheRecordPrefs() override;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() override;
@@ -172,11 +174,9 @@ class ProfileImpl : public Profile {
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit();
 
+  // TODO(wjmaclean): Delete this once the HostZoomMap moves to
+  // StoragePartition.
   void InitHostZoomMap();
-
-  void OnDefaultZoomLevelChanged();
-  void OnZoomLevelChanged(
-      const content::HostZoomMap::ZoomLevelChange& change);
 
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
@@ -208,7 +208,6 @@ class ProfileImpl : public Profile {
   scoped_ptr<domain_reliability::DomainReliabilityMonitor>
       CreateDomainReliabilityMonitor(PrefService* local_state);
 
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
@@ -241,6 +240,10 @@ class ProfileImpl : public Profile {
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
   scoped_ptr<PrefServiceSyncable> prefs_;
   scoped_ptr<PrefServiceSyncable> otr_prefs_;
+  // TODO(wjmaclean): This is only here temporarily until HostZoomMap moves
+  // into StoragePartition, after which it will also move to StoragePartition.
+  // Must declare this here so it is destroyed before the profile prefs service.
+  scoped_ptr<chrome::ChromeZoomLevelPrefs> zoom_level_prefs_;
   ProfileImplIOData::Handle io_data_;
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>

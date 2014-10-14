@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/renderer_preferences.h"
 #include "grit/browser_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -218,7 +220,8 @@ class PDFUnsupportedFeatureInterstitial
       content::RendererPreferences* prefs) override {
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-    renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
+    renderer_preferences_util::UpdateFromSystemSettings(
+        prefs, profile, web_contents_);
   }
 
  private:

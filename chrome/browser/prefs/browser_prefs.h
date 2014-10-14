@@ -36,6 +36,10 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state);
 // Migrates prefs in |profile|'s pref store.
 void MigrateUserPrefs(Profile* profile);
 
+// Migrates zoom level prefs in |profile|'s pref store to a per-StoragePartition
+// set of prefs.
+void MigrateProfileZoomLevelPrefs(Profile* profile);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_PREFS_BROWSER_PREFS_H_

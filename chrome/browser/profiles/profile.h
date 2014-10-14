@@ -36,6 +36,10 @@ class SequencedTaskRunner;
 class Time;
 }
 
+namespace chrome {
+class ChromeZoomLevelPrefs;
+}
+
 namespace chrome_browser_net {
 class Predictor;
 }
@@ -219,6 +223,11 @@ class Profile : public content::BrowserContext {
   // Retrieves a pointer to the PrefService that manages the
   // preferences for this user profile.
   virtual PrefService* GetPrefs() = 0;
+
+  // Retrieves a pointer to the PrefService that manages the default zoom
+  // level and the per-host zoom levels for this user profile.
+  // TODO(wjmaclean): Remove this when HostZoomMap migrates to StoragePartition.
+  virtual chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs();
 
   // Retrieves a pointer to the PrefService that manages the preferences
   // for OffTheRecord Profiles.  This PrefService is lazily created the first

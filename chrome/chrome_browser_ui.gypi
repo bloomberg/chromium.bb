@@ -1126,6 +1126,8 @@
       'browser/ui/webui/version_ui.cc',
       'browser/ui/webui/version_ui.h',
       'browser/ui/window_sizer/window_sizer_mac.mm',
+      'browser/ui/zoom/chrome_zoom_level_prefs.cc',
+      'browser/ui/zoom/chrome_zoom_level_prefs.h',
       'browser/ui/zoom/zoom_controller.cc',
       'browser/ui/zoom/zoom_controller.h',
       'browser/ui/zoom/zoom_event_manager.cc',

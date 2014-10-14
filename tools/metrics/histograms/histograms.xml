@@ -30241,6 +30241,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Settings.ZoomLevelPreferencesMigrated" enum="BooleanMigrated">
+  <owner>wjmaclean@chromium.org</owner>
+  <summary>
+    Tracks migration to per-partition zoom-level preferences during profile
+    initialization.
+  </summary>
+</histogram>
+
 <histogram name="SettingsResetBubble.NumNoThanksPerReset">
   <owner>mad@chromium.org</owner>
   <summary>

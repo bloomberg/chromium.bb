@@ -72,9 +72,7 @@ void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
   DCHECK(zoom_controller);
 
   double current_zoom_level = zoom_controller->GetZoomLevel();
-  double default_zoom_level =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())->
-          GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
+  double default_zoom_level = zoom_controller->GetDefaultZoomLevel();
 
   if (zoom == content::PAGE_ZOOM_RESET) {
     zoom_controller->SetZoomLevel(default_zoom_level);

@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/debug/trace_event.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
@@ -78,6 +80,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
@@ -638,6 +641,56 @@ void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(TOOLKIT_VIEWS)
   MigrateBrowserTabStripPrefs(local_state);
 #endif
+}
+
+// As part of the migration from per-profile to per-partition HostZoomMaps,
+// we need to detect if an existing per-profile set of preferences exist, and
+// if so convert them to be per-partition. We migrate any per-profile zoom
+// level prefs via zoom_level_prefs.
+// Code that updates zoom prefs in the profile prefs store has been removed,
+// so once we clear these values here, they should never get set again.
+// TODO(wjmaclean): Remove this migration machinery after histograms show
+// that an aceptable percentage of users have been migrated.
+// crbug.com/420643
+void MigrateProfileZoomLevelPrefs(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  chrome::ChromeZoomLevelPrefs* zoom_level_prefs = profile->GetZoomLevelPrefs();
+  DCHECK(zoom_level_prefs);
+
+  bool migrated = false;
+  // Only migrate the default zoom level if it is not equal to the registered
+  // default for the preference.
+  const base::Value* per_profile_default_zoom_level_value =
+      prefs->GetUserPrefValue(prefs::kDefaultZoomLevelDeprecated);
+  if (per_profile_default_zoom_level_value) {
+    if (per_profile_default_zoom_level_value->GetType() ==
+           base::Value::TYPE_DOUBLE) {
+      double per_profile_default_zoom_level = 0.0;
+      bool success = per_profile_default_zoom_level_value->GetAsDouble(
+          &per_profile_default_zoom_level);
+      DCHECK(success);
+      zoom_level_prefs->SetDefaultZoomLevelPref(per_profile_default_zoom_level);
+    }
+    prefs->ClearPref(prefs::kDefaultZoomLevelDeprecated);
+    migrated = true;
+  }
+
+  const base::DictionaryValue* host_zoom_dictionary =
+      prefs->GetDictionary(prefs::kPerHostZoomLevelsDeprecated);
+  // Collect stats on frequency with which migrations are occuring. This measure
+  // is not perfect, since it will consider an un-migrated user with only
+  // default value as being already migrated, but it will catch all non-trivial
+  // migrations.
+  migrated |= !host_zoom_dictionary->empty();
+  UMA_HISTOGRAM_BOOLEAN("Settings.ZoomLevelPreferencesMigrated", migrated);
+
+  zoom_level_prefs->ExtractPerHostZoomLevels(host_zoom_dictionary);
+
+  // We're done migrating the profile per-host zoom level values, so we clear
+  // them all.
+  DictionaryPrefUpdate host_zoom_dictionary_update(
+      prefs, prefs::kPerHostZoomLevelsDeprecated);
+  host_zoom_dictionary_update->Clear();
 }
 
 }  // namespace chrome

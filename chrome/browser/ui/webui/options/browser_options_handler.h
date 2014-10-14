@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/notification_observer.h"
@@ -372,7 +373,9 @@ class BrowserOptionsHandler
   bool cloud_print_mdns_ui_enabled_;
 
   StringPrefMember auto_open_files_;
-  DoublePrefMember default_zoom_level_;
+
+  scoped_ptr<chrome::ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
+      default_zoom_level_subscription_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 #if defined(OS_CHROMEOS)

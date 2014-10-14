@@ -73,6 +73,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -521,10 +522,6 @@ void ProfileImpl::DoFinalInit() {
       prefs::kSupervisedUserId,
       base::Bind(&ProfileImpl::UpdateProfileSupervisedUserIdCache,
                  base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kDefaultZoomLevel,
-      base::Bind(&ProfileImpl::OnDefaultZoomLevelChanged,
-                 base::Unretained(this)));
 
   // Changes in the profile avatar.
   pref_change_registrar_.Add(
@@ -753,49 +750,13 @@ void ProfileImpl::DoFinalInit() {
 
 void ProfileImpl::InitHostZoomMap() {
   HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
-  host_zoom_map->SetDefaultZoomLevel(
-      prefs_->GetDouble(prefs::kDefaultZoomLevel));
+  DCHECK(!zoom_level_prefs_);
+  zoom_level_prefs_.reset(
+      new chrome::ChromeZoomLevelPrefs(prefs_.get(), GetPath()));
+  zoom_level_prefs_->InitPrefsAndCopyToHostZoomMap(GetPath(), host_zoom_map);
 
-  const base::DictionaryValue* host_zoom_dictionary =
-      prefs_->GetDictionary(prefs::kPerHostZoomLevels);
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (host_zoom_dictionary != NULL) {
-    std::vector<std::string> keys_to_remove;
-    for (base::DictionaryValue::Iterator i(*host_zoom_dictionary); !i.IsAtEnd();
-         i.Advance()) {
-      const std::string& host(i.key());
-      double zoom_level = 0;
-
-      bool success = i.value().GetAsDouble(&zoom_level);
-      DCHECK(success);
-
-      // Filter out A) the empty host, B) zoom levels equal to the default; and
-      // remember them, so that we can later erase them from Prefs.
-      // Values of type A and B could have been stored due to crbug.com/364399.
-      // Values of type B could further have been stored before the default zoom
-      // level was set to its current value. In either case, SetZoomLevelForHost
-      // will ignore type B values, thus, to have consistency with HostZoomMap's
-      // internal state, these values must also be removed from Prefs.
-      if (host.empty() ||
-          content::ZoomValuesEqual(zoom_level,
-                                   host_zoom_map->GetDefaultZoomLevel())) {
-        keys_to_remove.push_back(host);
-        continue;
-      }
-
-      host_zoom_map->SetZoomLevelForHost(host, zoom_level);
-    }
-
-    DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
-    base::DictionaryValue* host_zoom_dictionary = update.Get();
-    for (std::vector<std::string>::const_iterator it = keys_to_remove.begin();
-         it != keys_to_remove.end(); ++it) {
-      host_zoom_dictionary->RemoveWithoutPathExpansion(*it, NULL);
-    }
-  }
-
-  zoom_subscription_ = host_zoom_map->AddZoomLevelChangedCallback(
-      base::Bind(&ProfileImpl::OnZoomLevelChanged, base::Unretained(this)));
+  // TODO(wjmaclean): Remove this. crbug.com/420643
+  chrome::MigrateProfileZoomLevelPrefs(this);
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -1016,6 +977,10 @@ PrefService* ProfileImpl::GetPrefs() {
   return prefs_.get();
 }
 
+chrome::ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
+  return zoom_level_prefs_.get();
+}
+
 PrefService* ProfileImpl::GetOffTheRecordPrefs() {
   DCHECK(prefs_);
   if (!otr_prefs_) {
@@ -1162,26 +1127,6 @@ history::TopSites* ProfileImpl::GetTopSites() {
 
 history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_.get();
-}
-
-void ProfileImpl::OnDefaultZoomLevelChanged() {
-  HostZoomMap::GetDefaultForBrowserContext(this)->SetDefaultZoomLevel(
-      pref_change_registrar_.prefs()->GetDouble(prefs::kDefaultZoomLevel));
-}
-
-void ProfileImpl::OnZoomLevelChanged(
-    const HostZoomMap::ZoomLevelChange& change) {
-
-  if (change.mode != HostZoomMap::ZOOM_CHANGED_FOR_HOST)
-    return;
-  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
-  double level = change.zoom_level;
-  DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
-  base::DictionaryValue* host_zoom_dictionary = update.Get();
-  if (content::ZoomValuesEqual(level, host_zoom_map->GetDefaultZoomLevel()))
-    host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
-  else
-    host_zoom_dictionary->SetDoubleWithoutPathExpansion(change.host, level);
 }
 
 #if defined(ENABLE_SESSION_SERVICE)

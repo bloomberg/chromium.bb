@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -75,8 +76,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
 
  protected:
   void SetDefaultZoomLevel(double level) {
-    browser()->profile()->GetPrefs()->SetDouble(
-        prefs::kDefaultZoomLevel, level);
+    browser()->profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(level);
   }
 
   double GetZoomLevel(const GURL& url) {
@@ -103,8 +103,12 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
 
   std::vector<std::string> GetHostsWithZoomLevelsFromPrefs() {
     PrefService* prefs = browser()->profile()->GetPrefs();
-    const base::DictionaryValue* values =
-        prefs->GetDictionary(prefs::kPerHostZoomLevels);
+    const base::DictionaryValue* dictionaries =
+        prefs->GetDictionary(prefs::kPartitionPerHostZoomLevels);
+    const base::DictionaryValue* values = NULL;
+    std::string partition_key =
+        chrome::ChromeZoomLevelPrefs::GetHashForTesting(base::FilePath());
+    dictionaries->GetDictionary(partition_key, &values);
     std::vector<std::string> results;
     if (values) {
       for (base::DictionaryValue::Iterator it(*values);
@@ -137,24 +141,29 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HostZoomMapBrowserTest);
 };
 
-class HostZoomMapSanitizationBrowserTest : public HostZoomMapBrowserTest {
+#define PARTITION_KEY_PLACEHOLDER "NNN"
+
+class HostZoomMapBrowserTestWithPrefs : public HostZoomMapBrowserTest {
  public:
-  HostZoomMapSanitizationBrowserTest() {}
+  explicit HostZoomMapBrowserTestWithPrefs(const std::string& prefs_data)
+      : prefs_data_(prefs_data) {}
 
  private:
   // InProcessBrowserTest:
   virtual bool SetUpUserDataDirectory() override {
-    // Zoom-related preferences demonstrating the two problems that could be
-    // caused by the bug. They incorrectly contain a per-host zoom level for the
-    // empty host; and a value for 'host1' that only differs from the default by
-    // epsilon. Neither should have been persisted.
-    const char kBrokenPrefs[] =
-        "{'profile': {"
-        "   'default_zoom_level': 1.2,"
-        "   'per_host_zoom_levels': {'': 1.1, 'host1': 1.20001, 'host2': 1.3}"
-        "}}";
-    std::string broken_prefs(kBrokenPrefs);
-    std::replace(broken_prefs.begin(), broken_prefs.end(), '\'', '\"');
+    std::replace(prefs_data_.begin(), prefs_data_.end(), '\'', '\"');
+    // It seems the hash functions on different platforms can return different
+    // values for the same input, so make sure we test with the hash appropriate
+    // for the platform.
+    std::string hash_string =
+        chrome::ChromeZoomLevelPrefs::GetHashForTesting(base::FilePath());
+    std::string partition_key_placeholder(PARTITION_KEY_PLACEHOLDER);
+    size_t start_index;
+    while ((start_index = prefs_data_.find(partition_key_placeholder)) !=
+           std::string::npos) {
+      prefs_data_.replace(
+          start_index, partition_key_placeholder.size(), hash_string);
+    }
 
     base::FilePath user_data_directory, path_to_prefs;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
@@ -162,10 +171,39 @@ class HostZoomMapSanitizationBrowserTest : public HostZoomMapBrowserTest {
         .AppendASCII(TestingProfile::kTestUserProfileDir)
         .Append(chrome::kPreferencesFilename);
     base::CreateDirectory(path_to_prefs.DirName());
-    base::WriteFile(path_to_prefs, broken_prefs.c_str(), broken_prefs.size());
+    base::WriteFile(
+        path_to_prefs, prefs_data_.c_str(), prefs_data_.size());
     return true;
   }
 
+  std::string prefs_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostZoomMapBrowserTestWithPrefs);
+};
+
+// Zoom-related preferences demonstrating the two problems that
+// could be caused by the bug. They incorrectly contain a per-host
+// zoom level for the empty host; and a value for 'host1' that only
+// differs from the default by epsilon. Neither should have been
+// persisted.
+const char kSanitizationTestPrefs[] =
+    "{'partition': {"
+    "   'default_zoom_level': { '" PARTITION_KEY_PLACEHOLDER "': 1.2 },"
+    "   'per_host_zoom_levels': {"
+    "     '" PARTITION_KEY_PLACEHOLDER "': {"
+    "       '': 1.1, 'host1': 1.20001, 'host2': 1.3 }"
+    "   }"
+    "}}";
+
+#undef PARTITION_KEY_PLACEHOLDER
+
+class HostZoomMapSanitizationBrowserTest
+    : public HostZoomMapBrowserTestWithPrefs {
+ public:
+  HostZoomMapSanitizationBrowserTest()
+      : HostZoomMapBrowserTestWithPrefs(kSanitizationTestPrefs) {}
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(HostZoomMapSanitizationBrowserTest);
 };
 
@@ -216,3 +254,90 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapSanitizationBrowserTest, ClearOnStartup) {
   EXPECT_THAT(GetHostsWithZoomLevels(), testing::ElementsAre("host2"));
   EXPECT_THAT(GetHostsWithZoomLevelsFromPrefs(), testing::ElementsAre("host2"));
 }
+
+// In this case we migrate the zoom level data from the profile prefs.
+const char kMigrationTestPrefs[] =
+    "{'profile': {"
+    "   'default_zoom_level': 1.2,"
+    "   'per_host_zoom_levels': {'': 1.1, 'host1': 1.20001, 'host2': "
+    "1.3}"
+    "}}";
+
+class HostZoomMapMigrationBrowserTest : public HostZoomMapBrowserTestWithPrefs {
+ public:
+  HostZoomMapMigrationBrowserTest()
+      : HostZoomMapBrowserTestWithPrefs(kMigrationTestPrefs) {}
+
+  static const double kOriginalDefaultZoomLevel;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HostZoomMapMigrationBrowserTest);
+};
+
+const double HostZoomMapMigrationBrowserTest::kOriginalDefaultZoomLevel = 1.2;
+
+// This test is the same as HostZoomMapSanitizationBrowserTest, except that the
+// zoom level data is loaded from the profile prefs, transfered to the
+// zoom-level prefs, and we verify that the profile zoom level prefs are
+// erased in the process. We also test that changes to the host zoom map and the
+// default zoom level don't propagate back to the profile prefs.
+IN_PROC_BROWSER_TEST_F(HostZoomMapMigrationBrowserTest,
+                       MigrateProfileZoomPreferences) {
+  EXPECT_THAT(GetHostsWithZoomLevels(), testing::ElementsAre("host2"));
+  EXPECT_THAT(GetHostsWithZoomLevelsFromPrefs(), testing::ElementsAre("host2"));
+
+  PrefService* profile_prefs =
+      browser()->profile()->GetPrefs();
+  chrome::ChromeZoomLevelPrefs* zoom_level_prefs =
+      browser()->profile()->GetZoomLevelPrefs();
+  // Make sure that the profile pref for default zoom level has been set to
+  // its default value of 0.0.
+  EXPECT_EQ(0.0, profile_prefs->GetDouble(prefs::kDefaultZoomLevelDeprecated));
+  EXPECT_EQ(kOriginalDefaultZoomLevel,
+            zoom_level_prefs->GetDefaultZoomLevelPref());
+
+  // Make sure that the profile prefs for per-host zoom levels are erased.
+  {
+    const base::DictionaryValue* profile_host_zoom_dictionary =
+        profile_prefs->GetDictionary(prefs::kPerHostZoomLevelsDeprecated);
+    EXPECT_EQ(0UL, profile_host_zoom_dictionary->size());
+  }
+
+  ZoomLevelChangeObserver observer(browser()->profile());
+  content::HostZoomMap* host_zoom_map = static_cast<content::HostZoomMap*>(
+      content::HostZoomMap::GetDefaultForBrowserContext(
+          browser()->profile()));
+
+  // Make sure that a change to a host zoom level doesn't propagate to the
+  // profile prefs.
+  std::string host3("host3");
+  host_zoom_map->SetZoomLevelForHost(host3, 1.3);
+  observer.BlockUntilZoomLevelForHostHasChanged(host3);
+  EXPECT_THAT(GetHostsWithZoomLevelsFromPrefs(),
+              testing::ElementsAre("host2", host3));
+  {
+    const base::DictionaryValue* profile_host_zoom_dictionary =
+        profile_prefs->GetDictionary(prefs::kPerHostZoomLevelsDeprecated);
+    EXPECT_EQ(0UL, profile_host_zoom_dictionary->size());
+  }
+
+  // Make sure a change to the default zoom level doesn't propagate to the
+  // profile prefs.
+
+  // First, we need a host at the default zoom level to respond when the
+  // default zoom level changes.
+  const double kNewDefaultZoomLevel = 1.5;
+  GURL test_url = ConstructTestServerURL("http://host4:%d/");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  EXPECT_TRUE(content::ZoomValuesEqual(kOriginalDefaultZoomLevel,
+                                       GetZoomLevel(test_url)));
+
+  // Change the default zoom level and observe.
+  SetDefaultZoomLevel(kNewDefaultZoomLevel);
+  observer.BlockUntilZoomLevelForHostHasChanged(test_url.host());
+  EXPECT_TRUE(
+      content::ZoomValuesEqual(kNewDefaultZoomLevel, GetZoomLevel(test_url)));
+  EXPECT_EQ(kNewDefaultZoomLevel, zoom_level_prefs->GetDefaultZoomLevelPref());
+  EXPECT_EQ(0.0, profile_prefs->GetDouble(prefs::kDefaultZoomLevelDeprecated));
+}
+

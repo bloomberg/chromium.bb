@@ -60,6 +60,10 @@ TestingProfile* Profile::AsTestingProfile() {
   return NULL;
 }
 
+chrome::ChromeZoomLevelPrefs* Profile::GetZoomLevelPrefs() {
+  return NULL;
+}
+
 Profile::Delegate::~Delegate() {
 }
 
@@ -138,12 +142,21 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSelectFileLastDirectory,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  // TODO(wjmaclean): remove the following two prefs once migration to per-
+  // partition zoom is complete.
   registry->RegisterDoublePref(
-      prefs::kDefaultZoomLevel,
+      prefs::kDefaultZoomLevelDeprecated,
       0.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
-      prefs::kPerHostZoomLevels,
+      prefs::kPerHostZoomLevelsDeprecated,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterDictionaryPref(
+      prefs::kPartitionDefaultZoomLevel,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kPartitionPerHostZoomLevels,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kDefaultApps,

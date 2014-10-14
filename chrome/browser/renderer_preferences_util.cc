@@ -7,7 +7,9 @@
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -27,14 +29,23 @@
 
 namespace renderer_preferences_util {
 
-void UpdateFromSystemSettings(
-    content::RendererPreferences* prefs, Profile* profile) {
+void UpdateFromSystemSettings(content::RendererPreferences* prefs,
+                              Profile* profile,
+                              content::WebContents* web_contents) {
   const PrefService* pref_service = profile->GetPrefs();
   prefs->accept_languages = pref_service->GetString(prefs::kAcceptLanguages);
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
-  prefs->default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+  if (zoom_controller) {
+    prefs->default_zoom_level = zoom_controller->GetDefaultZoomLevel();
+  } else {
+    prefs->default_zoom_level =
+        content::HostZoomMap::GetDefaultForBrowserContext(
+            web_contents->GetBrowserContext())->GetDefaultZoomLevel();
+  }
 
 #if defined(USE_DEFAULT_RENDER_THEME)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);

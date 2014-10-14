@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -107,8 +108,8 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, OnPreferenceChanged) {
   ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
   // TODO(wjmaclean): Convert this to call partition-specific zoom level prefs
   // when they become available.
-  browser()->profile()->GetPrefs()->SetDouble(prefs::kDefaultZoomLevel,
-                                              new_default_zoom_level);
+  browser()->profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(
+      new_default_zoom_level);
   // Because this test relies on a round-trip IPC to/from the renderer process,
   // we need to wait for it to propagate.
   zoom_change_watcher.Wait();
