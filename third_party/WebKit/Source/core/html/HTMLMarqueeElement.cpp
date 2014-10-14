@@ -27,6 +27,7 @@
 #include "bindings/core/v8/V8HTMLMarqueeElement.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -35,6 +36,7 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
 {
     v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(document.frame(), "HTMLMarqueeElement");
     RELEASE_ASSERT(!classObject.IsEmpty());
+    UseCounter::count(document, UseCounter::HTMLMarqueeElement);
 }
 
 PassRefPtrWillBeRawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
