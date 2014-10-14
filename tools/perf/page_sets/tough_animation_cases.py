@@ -15,7 +15,7 @@ class ToughAnimationCasesPage(page_module.Page):
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
     if self._need_measurement_ready:
-      action_runner.WaitForJavaScriptCondition('measurementReady')
+      action_runner.WaitForJavaScriptCondition('window.measurementReady')
 
   def RunSmoothness(self, action_runner):
     action_runner.Wait(10)
@@ -54,7 +54,55 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
       # animatable properties.
       'file://tough_animation_cases/balls_css_transition_all_properties.html',
       # pylint: disable=C0301
-      'file://tough_animation_cases/overlay_background_color_css_transitions.html'
+      'file://tough_animation_cases/overlay_background_color_css_transitions.html',
+      # Why: Tests many CSS Transitions all starting at the same time triggered
+      # by inserting new elements.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_simultaneous_by_inserting_new_elements.html?N=0316',
+      # Why: Tests many CSS Transitions all starting at the same time triggered
+      # by inserting style sheets.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_simultaneous_by_inserting_style_element.html?N=0316',
+      # Why: Tests many CSS Transitions all starting at the same time triggered
+      # by updating class.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_simultaneous_by_updating_class.html?N=0316',
+      # Why: Tests many CSS Transitions all starting at the same time triggered
+      # by updating inline style.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_simultaneous_by_updating_inline_style.html?N=0316',
+      # Why: Tests many CSS Transitions chained together using events at
+      # different times triggered by inserting new elements.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_chaining_by_inserting_new_element.html?N=0316',
+      # Why: Tests many CSS Transitions chained together using events at
+      # different times triggered by inserting style sheets.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_chaining_by_inserting_style_element.html?N=0316',
+      # Why: Tests many CSS Transitions chained together using events at
+      # different times triggered by updating class.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_chaining_by_updating_class.html?N=0316',
+      # Why: Tests many CSS Transitions chained together using events at
+      # different times triggered by updating inline style.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_chaining_by_updating_inline_style.html?N=0316',
+      # Why: Tests many CSS Transitions starting at different times triggered by
+      # inserting new elements.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_triggering_by_inserting_new_element.html?N=0316',
+      # Why: Tests many CSS Transitions starting at different times triggered by
+      # inserting style sheets.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_triggering_by_inserting_style.html?N=0316',
+      # Why: Tests many CSS Transitions starting at different times triggered by
+      # updating class.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_triggering_by_updating_class.html?N=0316',
+      # Why: Tests many CSS Transitions starting at different times triggered by
+      # updating inline style.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_transitions_staggered_triggering_by_updating_inline_style.html?N=0316',
     ]
 
     for url in urls_list_one:

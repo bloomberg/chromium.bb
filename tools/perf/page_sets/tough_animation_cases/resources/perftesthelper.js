@@ -23,4 +23,26 @@ window.PerfTestHelper.random = function() {
     return (randomSeed & 0xfffffff) / 0x10000000;
 };
 
+window.PerfTestHelper.getN = function(defaultN) {
+    var match = /N=(\d+)/.exec(window.location.search);
+    if (match) {
+        return Number(match[1]);
+    }
+    if (typeof defaultN === 'undefined') {
+        throw 'Default N value required';
+    }
+    return defaultN;
+};
+
+window.PerfTestHelper.signalReady = function() {
+    requestAnimationFrame(function() {
+        // FIXME: We must wait at least two frames before
+        // measuring to allow the GC to clean up the
+        // previous test.
+        requestAnimationFrame(function() {
+            window.measurementReady = true;
+        });
+    });
+};
+
 })();

@@ -59,7 +59,7 @@ body {
 </style>
 <script src="resources/perftesthelper.js"></script>
 <script>
-var measurementReady = false;
+window.measurementReady = false;
 var maxOverlays = 500;
 var colors = ["rgba(204, 0, 0, 0.5)", "rgba(255, 204, 0, 0.5)", "rgba(170, 255, 0, 0.5)"
               , "rgba(0, 153, 204, 0.5)", "rgba(25, 76, 153, 0.5)", "rgba(102, 25, 153, 0.5)"];
@@ -75,7 +75,7 @@ window.onload = function () {
         overlays.push(overlay);
     }
 
-    measurementReady = true;
+    window.measurementReady = true;
 }
 
 function Overlay()
