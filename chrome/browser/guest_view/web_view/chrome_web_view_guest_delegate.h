@@ -37,6 +37,7 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate,
   virtual void OnDidInitialize() override;
   virtual void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
+  virtual void OnGuestReady() override;
   virtual void OnGuestDestroyed() override;
   virtual void OnSetZoom(double zoom_factor) override;
   virtual void OnShowContextMenu(

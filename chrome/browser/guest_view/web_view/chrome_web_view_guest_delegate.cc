@@ -135,6 +135,13 @@ void ChromeWebViewGuestDelegate::OnDocumentLoadedInFrame(
     InjectChromeVoxIfNeeded(render_frame_host->GetRenderViewHost());
 }
 
+void ChromeWebViewGuestDelegate::OnGuestReady() {
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(guest_web_contents());
+  DCHECK(zoom_controller);
+  zoom_controller->SetZoomMode(ZoomController::ZOOM_MODE_ISOLATED);
+}
+
 void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
   // Clean up custom context menu items for this guest.
   extensions::MenuManager* menu_manager = extensions::MenuManager::Get(

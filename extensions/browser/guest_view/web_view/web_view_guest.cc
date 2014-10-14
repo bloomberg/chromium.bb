@@ -379,6 +379,8 @@ void WebViewGuest::GuestReady() {
   // to apply to web pages.
   web_contents()->GetRenderViewHost()->GetView()->
       SetBackgroundOpaque(guest_opaque_);
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnGuestReady();
 }
 
 void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,

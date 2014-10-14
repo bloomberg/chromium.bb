@@ -53,6 +53,9 @@ class WebViewGuestDelegate {
   virtual void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) = 0;
 
+  // Called immediately after the guest WebContents is ready.
+  virtual void OnGuestReady() = 0;
+
   // Called immediately after the guest WebContents has been destroyed.
   virtual void OnGuestDestroyed() = 0;
 
