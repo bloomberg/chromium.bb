@@ -7,7 +7,9 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -95,4 +97,57 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Basic) {
   std::string id = browser_actions_bar()->GetExtensionId(0);
   UnloadExtension(id);
   EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
+}
+
+// Test moving various browser actions. This is not to check the logic of the
+// move (that's in the toolbar model tests), but just to check our ui.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
+  LoadExtensions();
+
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
+
+  extensions::ExtensionToolbarModel* model =
+      extensions::ExtensionToolbarModel::Get(profile());
+  ASSERT_TRUE(model);
+
+  // Order is now A B C.
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
+
+  // Move C to first position. Order is C A B.
+  model->MoveExtensionIcon(extension_c(), 0);
+  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
+
+  // Move B to third position. Order is still C A B.
+  model->MoveExtensionIcon(extension_b(), 2);
+  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
+
+  // Move B to middle position. Order is C B A.
+  model->MoveExtensionIcon(extension_b(), 1);
+  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(2));
+}
+
+// Test that explicitly hiding an extension action results in it disappearing
+// from the browser actions bar.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, ForceHide) {
+  LoadExtensions();
+
+  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
+  // Force hide one of the extensions' browser action.
+  extensions::ExtensionActionAPI::SetBrowserActionVisibility(
+      extensions::ExtensionPrefs::Get(browser()->profile()),
+      extension_a()->id(),
+      false);
+  // The browser action for Extension A should be removed.
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
 }

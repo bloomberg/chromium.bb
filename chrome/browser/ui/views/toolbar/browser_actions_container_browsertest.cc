@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_testing_views.h"
@@ -25,42 +24,6 @@
 // TODO(devlin): Continue moving any tests that should be platform independent
 // from this file to the crossplatform tests in
 // chrome/browser/ui/toolbar/browser_actions_bar_browsertest.cc.
-
-// Test moving various browser actions. This is not to check the logic of the
-// move (that's in the toolbar model tests), but just to check our ui.
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
-  LoadExtensions();
-
-  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-
-  extensions::ExtensionToolbarModel* model =
-      extensions::ExtensionToolbarModel::Get(profile());
-  ASSERT_TRUE(model);
-
-  // Order is now A B C.
-  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
-  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
-
-  // Move C to first position. Order is C A B.
-  model->MoveExtensionIcon(extension_c(), 0);
-  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
-  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
-
-  // Move B to third position. Order is still C A B.
-  model->MoveExtensionIcon(extension_b(), 2);
-  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
-  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
-
-  // Move B to middle position. Order is C B A.
-  model->MoveExtensionIcon(extension_b(), 1);
-  EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
-  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(2));
-}
 
 // Test that dragging browser actions works, and that dragging a browser action
 // from the overflow menu results in it "popping" out (growing the container
@@ -314,21 +277,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   // The first and second container should each have resized.
   EXPECT_EQ(2u, first->VisibleBrowserActions());
   EXPECT_EQ(2u, second->VisibleBrowserActions());
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, ForceHide) {
-  LoadExtensions();
-
-  EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
-  // Force hide one of the extensions' browser action.
-  extensions::ExtensionActionAPI::SetBrowserActionVisibility(
-      extensions::ExtensionPrefs::Get(browser()->profile()),
-      extension_a()->id(),
-      false);
-  // The browser action for Extension A should be removed.
-  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
 }
 
 // Test that the BrowserActionsContainer responds correctly when the underlying
