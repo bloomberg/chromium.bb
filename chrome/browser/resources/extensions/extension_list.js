@@ -274,17 +274,24 @@ cr.define('options', function() {
         fileAccess.hidden = false;
       }
 
-      // The 'Options' link.
+      // The 'Options' button or link, depending on its behaviour.
       if (extension.enabled && extension.optionsUrl) {
-        var options = node.querySelector('.options-link');
-        options.addEventListener('click', function(e) {
-          if (!extension.optionsOpenInTab) {
-            this.showEmbeddedExtensionOptions_(extension.id, false);
-          } else {
+        var options, optionsClickListener;
+        if (extension.optionsOpenInTab) {
+          options = node.querySelector('.options-link');
+          optionsClickListener = function() {
             chrome.send('extensionSettingsOptions', [extension.id]);
-          }
+          };
+        } else {
+          options = node.querySelector('.options-button');
+          optionsClickListener = function() {
+            this.showEmbeddedExtensionOptions_(extension.id, false);
+          }.bind(this);
+        }
+        options.addEventListener('click', function(e) {
+          optionsClickListener(e);
           e.preventDefault();
-        }.bind(this));
+        });
         options.hidden = false;
       }
 
