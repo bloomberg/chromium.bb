@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_TARGET_TYPE_CONVERSION_H_
 #define CONTENT_CHILD_TARGET_TYPE_CONVERSION_H_
 
+#include <string>
+
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 
@@ -16,6 +18,10 @@ namespace content {
 
 CONTENT_EXPORT ResourceType WebURLRequestToResourceType(
     const blink::WebURLRequest& request);
+
+std::string GetWebURLRequestHeaders(const blink::WebURLRequest& request);
+
+int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
 
 }  // namespace content
 

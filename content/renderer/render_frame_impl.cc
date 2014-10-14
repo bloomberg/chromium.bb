@@ -364,20 +364,47 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
 }
 
 WebURLRequest CreateURLRequestForNavigation(
-    const CommonNavigationParams& params,
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
     scoped_ptr<StreamOverrideParameters> stream_override,
     bool is_view_source_mode_enabled) {
-  WebURLRequest request(params.url);
+  WebURLRequest request(common_params.url);
   if (is_view_source_mode_enabled)
     request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
 
-  if (params.referrer.url.is_valid()) {
+  if (common_params.referrer.url.is_valid()) {
     WebString web_referrer = WebSecurityPolicy::generateReferrerHeader(
-        params.referrer.policy,
-        params.url,
-        WebString::fromUTF8(params.referrer.url.spec()));
+        common_params.referrer.policy,
+        common_params.url,
+        WebString::fromUTF8(common_params.referrer.url.spec()));
     if (!web_referrer.isEmpty())
-      request.setHTTPReferrer(web_referrer, params.referrer.policy);
+      request.setHTTPReferrer(web_referrer, common_params.referrer.policy);
+  }
+
+  if (!request_params.extra_headers.empty()) {
+    for (net::HttpUtil::HeadersIterator i(request_params.extra_headers.begin(),
+                                          request_params.extra_headers.end(),
+                                          "\n");
+         i.GetNext();) {
+      request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                 WebString::fromUTF8(i.values()));
+    }
+  }
+
+  if (request_params.is_post) {
+    request.setHTTPMethod(WebString::fromUTF8("POST"));
+
+    // Set post data.
+    WebHTTPBody http_body;
+    http_body.initialize();
+    const char* data = NULL;
+    if (request_params.browser_initiated_post_data.size()) {
+      data = reinterpret_cast<const char*>(
+          &request_params.browser_initiated_post_data.front());
+    }
+    http_body.appendData(
+        WebData(data, request_params.browser_initiated_post_data.size()));
+    request.setHTTPBody(http_body);
   }
 
   RequestExtraData* extra_data = new RequestExtraData();
@@ -408,6 +435,35 @@ void UpdateFrameNavigationTiming(WebFrame* frame,
     // TODO(clamy): We need to provide additional timing values for the
     // Navigation Timing API to work with browser-side navigations.
   }
+}
+
+// PlzNavigate
+FrameHostMsg_BeginNavigation_Params MakeBeginNavigationParams(
+    const blink::WebURLRequest& request) {
+  FrameHostMsg_BeginNavigation_Params params;
+  params.method = request.httpMethod().latin1();
+  params.headers = GetWebURLRequestHeaders(request);
+  params.load_flags = GetLoadFlagsForWebURLRequest(request);
+  // TODO(clamy): fill the http body.
+  params.has_user_gesture = request.hasUserGesture();
+  return params;
+}
+
+// PlzNavigate
+CommonNavigationParams MakeCommonNavigationParams(
+    const blink::WebURLRequest& request) {
+  const RequestExtraData kEmptyData;
+  const RequestExtraData* extra_data =
+      static_cast<RequestExtraData*>(request.extraData());
+  if (!extra_data)
+    extra_data = &kEmptyData;
+  CommonNavigationParams params;
+  params.url = request.url();
+  params.referrer = Referrer(
+      GURL(request.httpHeaderField(WebString::fromUTF8("Referer")).latin1()),
+      request.referrerPolicy());
+  params.transition = extra_data->transition_type();
+  return params;
 }
 
 }  // namespace
@@ -847,6 +903,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameMsg_RequestNavigation, OnRequestNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
@@ -958,39 +1015,14 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     }
   } else {
     // Navigate to the given URL.
-    WebURLRequest request = CreateURLRequestForNavigation(
-        params.common_params, scoped_ptr<StreamOverrideParameters>(),
-        frame->isViewSourceModeEnabled());
+    WebURLRequest request =
+        CreateURLRequestForNavigation(params.common_params,
+                                      params.request_params,
+                                      scoped_ptr<StreamOverrideParameters>(),
+                                      frame->isViewSourceModeEnabled());
 
     // A session history navigation should have been accompanied by state.
     CHECK_EQ(params.page_id, -1);
-
-    if (!params.request_params.extra_headers.empty()) {
-      for (net::HttpUtil::HeadersIterator i(
-               params.request_params.extra_headers.begin(),
-               params.request_params.extra_headers.end(),
-               "\n");
-           i.GetNext();) {
-        request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
-                                   WebString::fromUTF8(i.values()));
-      }
-    }
-
-    if (params.request_params.is_post) {
-      request.setHTTPMethod(WebString::fromUTF8("POST"));
-
-      // Set post data.
-      WebHTTPBody http_body;
-      http_body.initialize();
-      const char* data = NULL;
-      if (params.request_params.browser_initiated_post_data.size()) {
-        data = reinterpret_cast<const char*>(
-            &params.request_params.browser_initiated_post_data.front());
-      }
-      http_body.appendData(WebData(
-          data, params.request_params.browser_initiated_post_data.size()));
-      request.setHTTPBody(http_body);
-    }
 
     // Record this before starting the load, we need a lower bound of this time
     // to sanitize the navigationStart override set below.
@@ -3448,6 +3480,40 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
 }
 
 // PlzNavigate
+void RenderFrameImpl::OnRequestNavigation(
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params) {
+  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
+
+  // TODO(clamy): Execute the beforeunload event.
+
+  WebURLRequest request =
+      CreateURLRequestForNavigation(common_params,
+                                    request_params,
+                                    scoped_ptr<StreamOverrideParameters>(),
+                                    frame_->isViewSourceModeEnabled());
+
+  // Note: At this stage, the goal is to apply all the modifications the
+  // renderer wants to make to the request, and then send it to the browser, so
+  // that the actual network request can be started. Ideally, all such
+  // modifications should take place in willSendRequest, and in the
+  // implementation of willSendRequest for the various InspectorAgents
+  // (devtools).
+  //
+  // TODO(clamy): Apply devtools override.
+  // TODO(clamy): Make sure that navigation requests are not modified somewhere
+  // else in blink.
+  willSendRequest(frame_, 0, request, blink::WebURLResponse());
+
+  // TODO(clamy): Same-document navigations should not be sent back to the
+  // browser.
+  Send(new FrameHostMsg_BeginNavigation(routing_id_,
+                                        MakeBeginNavigationParams(request),
+                                        MakeCommonNavigationParams(request)));
+}
+
+// PlzNavigate
 void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
@@ -3475,8 +3541,11 @@ void RenderFrameImpl::OnCommitNavigation(
       new StreamOverrideParameters());
   stream_override->stream_url = stream_url;
   stream_override->response = response;
-  WebURLRequest request = CreateURLRequestForNavigation(
-      common_params, stream_override.Pass(), frame_->isViewSourceModeEnabled());
+  WebURLRequest request =
+      CreateURLRequestForNavigation(common_params,
+                                    RequestNavigationParams(),
+                                    stream_override.Pass(),
+                                    frame_->isViewSourceModeEnabled());
 
   // Record this before starting the load. A lower bound of this time is needed
   // to sanitize the navigationStart override set below.

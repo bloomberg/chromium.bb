@@ -829,8 +829,10 @@ bool NavigatorImpl::RequestNavigation(
   navigation_request_map_.set(frame_tree_node_id, navigation_request.Pass());
 
   if (frame_tree_node->current_frame_host()->IsRenderFrameLive()) {
-    // TODO(clamy): send a RequestNavigation IPC.
-    NOTIMPLEMENTED();
+    frame_tree_node->current_frame_host()->Send(new FrameMsg_RequestNavigation(
+        frame_tree_node->current_frame_host()->GetRoutingID(),
+        navigation_request_map_.get(frame_tree_node_id)->common_params(),
+        request_params));
     return true;
   }
 

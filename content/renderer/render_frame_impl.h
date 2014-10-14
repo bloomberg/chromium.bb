@@ -37,7 +37,7 @@
 class GURL;
 class TransportDIB;
 struct FrameMsg_Navigate_Params;
-struct FrameMsg_CommitNavigation_Params;
+struct FrameMsg_RequestNavigation_Params;
 
 namespace blink {
 class WebGeolocationClient;
@@ -85,6 +85,7 @@ class UserMediaClientImpl;
 struct CommitNavigationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
+struct RequestNavigationParams;
 struct ResourceResponseHead;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -556,6 +557,8 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // PlzNavigate
+  void OnRequestNavigation(const CommonNavigationParams& common_params,
+                           const RequestNavigationParams& request_params);
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,

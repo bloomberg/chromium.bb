@@ -466,6 +466,12 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
 #endif
 
 // PlzNavigate
+// Tells the renderer that a navigation has been requested.
+IPC_MESSAGE_ROUTED2(FrameMsg_RequestNavigation,
+                    content::CommonNavigationParams, /* common_params */
+                    content::RequestNavigationParams /* request_params */)
+
+// PlzNavigate
 // Tells the renderer that a navigation is ready to commit.  The renderer should
 // request |stream_url| to get access to the stream containing the body of the
 // response.

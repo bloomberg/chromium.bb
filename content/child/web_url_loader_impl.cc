@@ -28,14 +28,12 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
-#include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_data_job.h"
-#include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -71,45 +69,6 @@ namespace {
 const char kThrottledErrorDescription[] =
     "Request throttled. Visit http://dev.chromium.org/throttling for more "
     "information.";
-
-class HeaderFlattener : public WebHTTPHeaderVisitor {
- public:
-  HeaderFlattener() : has_accept_header_(false) {}
-
-  virtual void visitHeader(const WebString& name, const WebString& value) {
-    // Headers are latin1.
-    const std::string& name_latin1 = name.latin1();
-    const std::string& value_latin1 = value.latin1();
-
-    // Skip over referrer headers found in the header map because we already
-    // pulled it out as a separate parameter.
-    if (LowerCaseEqualsASCII(name_latin1, "referer"))
-      return;
-
-    if (LowerCaseEqualsASCII(name_latin1, "accept"))
-      has_accept_header_ = true;
-
-    if (!buffer_.empty())
-      buffer_.append("\r\n");
-    buffer_.append(name_latin1 + ": " + value_latin1);
-  }
-
-  const std::string& GetBuffer() {
-    // In some cases, WebKit doesn't add an Accept header, but not having the
-    // header confuses some web servers.  See bug 808613.
-    if (!has_accept_header_) {
-      if (!buffer_.empty())
-        buffer_.append("\r\n");
-      buffer_.append("Accept: */*");
-      has_accept_header_ = true;
-    }
-    return buffer_;
-  }
-
- private:
-  std::string buffer_;
-  bool has_accept_header_;
-};
 
 typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
 
@@ -471,48 +430,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
   const std::string& method = request.httpMethod().latin1();
 
-  int load_flags = net::LOAD_NORMAL;
-  switch (request.cachePolicy()) {
-    case WebURLRequest::ReloadIgnoringCacheData:
-      // Required by LayoutTests/http/tests/misc/refresh-headers.php
-      load_flags |= net::LOAD_VALIDATE_CACHE;
-      break;
-    case WebURLRequest::ReloadBypassingCache:
-      load_flags |= net::LOAD_BYPASS_CACHE;
-      break;
-    case WebURLRequest::ReturnCacheDataElseLoad:
-      load_flags |= net::LOAD_PREFERRING_CACHE;
-      break;
-    case WebURLRequest::ReturnCacheDataDontLoad:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
-      break;
-    case WebURLRequest::UseProtocolCachePolicy:
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  if (request.reportUploadProgress())
-    load_flags |= net::LOAD_ENABLE_UPLOAD_PROGRESS;
-  if (request.reportRawHeaders())
-    load_flags |= net::LOAD_REPORT_RAW_HEADERS;
-
-  if (!request.allowStoredCredentials()) {
-    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  }
-
-  if (!request.allowStoredCredentials())
-    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-
-  if (request.requestContext() == WebURLRequest::RequestContextXMLHttpRequest &&
-      (url.has_username() || url.has_password())) {
-    load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
-  }
-
-  HeaderFlattener flattener;
-  request.visitHTTPHeaderFields(&flattener);
-
   // TODO(brettw) this should take parameter encoding into account when
   // creating the GURLs.
 
@@ -524,8 +441,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.url = url;
   request_info.first_party_for_cookies = request.firstPartyForCookies();
   request_info.referrer = referrer_url;
-  request_info.headers = flattener.GetBuffer();
-  request_info.load_flags = load_flags;
+  request_info.headers = GetWebURLRequestHeaders(request);
+  ;
+  request_info.load_flags = GetLoadFlagsForWebURLRequest(request);
   request_info.enable_load_timing = true;
   // requestor_pid only needs to be non-zero if the request originates outside
   // the render process, so we can use requestorProcessID even for requests
