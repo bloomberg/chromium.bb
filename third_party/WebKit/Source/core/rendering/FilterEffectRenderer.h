@@ -26,66 +26,34 @@
 #ifndef FilterEffectRenderer_h
 #define FilterEffectRenderer_h
 
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRectExtent.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/graphics/filters/SourceGraphic.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
+class FilterOperations;
+class FloatRect;
 class GraphicsContext;
 class ReferenceFilter;
-class RenderLayer;
 class RenderObject;
 
-class FilterEffectRendererHelper {
-public:
-    FilterEffectRendererHelper(bool haveFilterEffect)
-        : m_renderLayer(0)
-        , m_haveFilterEffect(haveFilterEffect)
-    {
-    }
-
-    bool haveFilterEffect() const { return m_haveFilterEffect; }
-
-    bool prepareFilterEffect(RenderLayer*, const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect);
-    void beginFilterEffect(GraphicsContext*);
-    void endFilterEffect(GraphicsContext*);
-private:
-    RenderLayer* m_renderLayer;
-
-    FloatRect m_filterBoxRect;
-    bool m_haveFilterEffect;
-};
-
-class FilterEffectRenderer final : public Filter
+class FilterEffectRenderer final : public RefCounted<FilterEffectRenderer>
 {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+    virtual ~FilterEffectRenderer();
     static PassRefPtr<FilterEffectRenderer> create()
     {
         return adoptRef(new FilterEffectRenderer());
     }
 
-    void setSourceImageRect(const IntRect& sourceImageRect)
-    {
-        m_sourceDrawingRegion = sourceImageRect;
-    }
-    virtual IntRect sourceImageRect() const override { return m_sourceDrawingRegion; }
-
     bool build(RenderObject* renderer, const FilterOperations&);
-    void updateBackingStoreRect(const FloatRect& filterRect);
+    bool beginFilterEffect(GraphicsContext*, const FloatRect& filterBoxRect);
+    void endFilterEffect(GraphicsContext*);
     void clearIntermediateResults();
-
-    LayoutRect computeSourceImageRectForDirtyRect(const LayoutRect& dirtyRect);
 
     PassRefPtr<FilterEffect> lastEffect() const
     {
@@ -94,11 +62,7 @@ public:
 private:
 
     FilterEffectRenderer();
-    virtual ~FilterEffectRenderer();
 
-    IntRect m_sourceDrawingRegion;
-
-    RefPtr<SourceGraphic> m_sourceGraphic;
     RefPtr<FilterEffect> m_lastEffect;
     Vector<RefPtr<ReferenceFilter> > m_referenceFilters;
 };

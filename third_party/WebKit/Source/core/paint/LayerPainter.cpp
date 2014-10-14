@@ -253,7 +253,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
-    FilterEffectRendererHelper filterPainter(m_renderLayer.filterRenderer() && m_renderLayer.paintsWithFilters());
+    bool haveFilterEffect = m_renderLayer.filterRenderer() && m_renderLayer.paintsWithFilters();
 
     LayerFragments layerFragments;
     if (shouldPaintContent || shouldPaintOutline || isPaintingOverlayScrollbars) {
@@ -265,34 +265,29 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         updatePaintingInfoForFragments(layerFragments, localPaintingInfo, paintFlags, shouldPaintContent, &offsetFromRoot);
     }
 
-    if (filterPainter.haveFilterEffect()) {
+    if (haveFilterEffect) {
         ASSERT(m_renderLayer.filterInfo());
 
         if (!rootRelativeBoundsComputed)
             rootRelativeBounds = m_renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
 
-        if (filterPainter.prepareFilterEffect(&m_renderLayer, rootRelativeBounds, paintingInfo.paintDirtyRect)) {
-
-            // Do transparency and clipping before starting filter processing.
-            if (haveTransparency) {
-                // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
-                beginTransparencyLayers(context, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
-            }
-            // We'll handle clipping to the dirty rect before filter rasterization.
-            // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
-            // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
-            ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
-            clipToRect(localPaintingInfo, context, backgroundRect, paintFlags);
-            // Subsequent code should not clip to the dirty rect, since we've already
-            // done it above, and doing it later will defeat the outsets.
-            localPaintingInfo.clipToDirtyRect = false;
-            filterPainter.beginFilterEffect(context);
-
-            if (!filterPainter.haveFilterEffect()) {
-                // If the the filter failed to start, undo the clip immediately
-                restoreClip(context, localPaintingInfo.paintDirtyRect, backgroundRect);
-            }
-
+        // Do transparency and clipping before starting filter processing.
+        if (haveTransparency) {
+            // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
+            beginTransparencyLayers(context, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
+        }
+        // We'll handle clipping to the dirty rect before filter rasterization.
+        // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
+        // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
+        ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
+        clipToRect(localPaintingInfo, context, backgroundRect, paintFlags);
+        // Subsequent code should not clip to the dirty rect, since we've already
+        // done it above, and doing it later will defeat the outsets.
+        localPaintingInfo.clipToDirtyRect = false;
+        haveFilterEffect = m_renderLayer.filterRenderer()->beginFilterEffect(context, rootRelativeBounds);
+        if (!haveFilterEffect) {
+            // If the the filter failed to start, undo the clip immediately
+            restoreClip(context, localPaintingInfo.paintDirtyRect, backgroundRect);
         }
     }
 
@@ -343,11 +338,11 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     if (shouldPaintOverlayScrollbars)
         paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo, paintFlags);
 
-    if (filterPainter.haveFilterEffect()) {
+    if (haveFilterEffect) {
         // Apply the correct clipping (ie. overflow: hidden).
         // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
         ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
-        filterPainter.endFilterEffect(context);
+        m_renderLayer.filterRenderer()->endFilterEffect(context);
         restoreClip(context, localPaintingInfo.paintDirtyRect, backgroundRect);
     }
 

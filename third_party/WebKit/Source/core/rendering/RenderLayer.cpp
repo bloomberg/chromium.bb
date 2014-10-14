@@ -2714,9 +2714,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
                 continue;
             ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
-            RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
-            float zoom = style->effectiveZoom();
-            referenceFilter->setAbsoluteTransform(AffineTransform().scale(zoom, zoom));
+            RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(style->effectiveZoom());
             referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), renderer(), referenceFilter->sourceGraphic(),
                 referenceOperation));
             referenceOperation->setFilter(referenceFilter.release());

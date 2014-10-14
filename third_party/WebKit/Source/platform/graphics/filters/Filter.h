@@ -30,39 +30,16 @@ namespace blink {
 
 class PLATFORM_EXPORT Filter : public RefCounted<Filter> {
 public:
-    Filter(const AffineTransform& absoluteTransform)
-    : m_absoluteTransform(absoluteTransform)
-    , m_inverseTransform(absoluteTransform.inverse())
-    {
-        // Filters can only accept scaling and translating transformations, as coordinates
-        // in most primitives are given in horizontal and vertical directions.
-        ASSERT(!absoluteTransform.b() && !absoluteTransform.c());
-    }
+    Filter(float scale)
+    : m_scale(scale) { }
     virtual ~Filter() { }
 
-    const AffineTransform& absoluteTransform() const { return m_absoluteTransform; }
+    float scale() const { return m_scale; }
+    FloatRect mapLocalRectToAbsoluteRect(const FloatRect& rect) const { FloatRect result(rect); result.scale(m_scale); return result; }
+    FloatRect mapAbsoluteRectToLocalRect(const FloatRect& rect) const { FloatRect result(rect); result.scale(1.0f / m_scale); return result; }
+    virtual float applyHorizontalScale(float value) const { return m_scale * value; }
+    virtual float applyVerticalScale(float value) const { return m_scale * value; }
 
-    void setAbsoluteTransform(const AffineTransform& absoluteTransform)
-    {
-        // Filters can only accept scaling and translating transformations, as coordinates
-        // in most primitives are given in horizontal and vertical directions.
-        ASSERT(!absoluteTransform.b() && !absoluteTransform.c());
-        m_absoluteTransform = absoluteTransform;
-        m_inverseTransform = absoluteTransform.inverse();
-        m_absoluteFilterRegion = m_absoluteTransform.mapRect(m_filterRegion);
-    }
-    FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return m_inverseTransform.mapPoint(point); }
-    FloatRect mapLocalRectToAbsoluteRect(const FloatRect& rect) const { return m_absoluteTransform.mapRect(rect); }
-    FloatRect mapAbsoluteRectToLocalRect(const FloatRect& rect) const { return m_inverseTransform.mapRect(rect); }
-
-    virtual float applyHorizontalScale(float value) const
-    {
-        return value * m_absoluteTransform.a();
-    }
-    virtual float applyVerticalScale(float value) const
-    {
-        return value * m_absoluteTransform.d();
-    }
     virtual FloatPoint3D resolve3dPoint(const FloatPoint3D& point) const { return point; }
 
     virtual IntRect sourceImageRect() const = 0;
@@ -73,12 +50,12 @@ public:
     void setFilterRegion(const FloatRect& rect)
     {
         m_filterRegion = rect;
-        m_absoluteFilterRegion = m_absoluteTransform.mapRect(m_filterRegion);
+        m_absoluteFilterRegion = rect;
+        m_absoluteFilterRegion.scale(m_scale);
     }
 
 private:
-    AffineTransform m_absoluteTransform;
-    AffineTransform m_inverseTransform;
+    float m_scale;
     FloatRect m_absoluteFilterRegion;
     FloatRect m_filterRegion;
 };

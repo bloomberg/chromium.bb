@@ -37,8 +37,8 @@
 
 namespace blink {
 
-ReferenceFilter::ReferenceFilter()
-    : Filter(AffineTransform())
+ReferenceFilter::ReferenceFilter(float scale)
+    : Filter(scale)
     , m_sourceGraphic(SourceGraphic::create(this))
 {
 }

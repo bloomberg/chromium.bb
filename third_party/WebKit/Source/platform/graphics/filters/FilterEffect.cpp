@@ -260,7 +260,7 @@ SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) c
         rect.setHeight(boundaries.height());
         flags |= SkImageFilter::CropRect::kHasBottom_CropEdge;
     }
-    rect.scale(filter()->absoluteTransform().a(), filter()->absoluteTransform().d());
+    rect.scale(filter()->scale());
     return SkImageFilter::CropRect(rect, flags);
 }
 

@@ -42,7 +42,7 @@ protected:
     void colorSpaceTest()
     {
         // Build filter tree
-        RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
+        RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(1.0f);
 
         // Add a dummy source graphic input
         RefPtr<FilterEffect> sourceEffect = referenceFilter->sourceGraphic();

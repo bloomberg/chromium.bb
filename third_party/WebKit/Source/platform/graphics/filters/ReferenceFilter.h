@@ -43,9 +43,9 @@ class FilterEffect;
 
 class PLATFORM_EXPORT ReferenceFilter: public Filter {
 public:
-    static PassRefPtr<ReferenceFilter> create()
+    static PassRefPtr<ReferenceFilter> create(float scale)
     {
-        return adoptRef(new ReferenceFilter());
+        return adoptRef(new ReferenceFilter(scale));
     }
 
     virtual IntRect sourceImageRect() const override { return IntRect(); };
@@ -56,7 +56,7 @@ public:
     SourceGraphic* sourceGraphic() const { return m_sourceGraphic.get(); }
 
 private:
-    ReferenceFilter();
+    ReferenceFilter(float scale);
     virtual ~ReferenceFilter();
 
     RefPtr<SourceGraphic> m_sourceGraphic;
