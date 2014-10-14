@@ -52,6 +52,7 @@ private:
     virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
     virtual void didDispatchClick(Event*, const ClickHandlingState&) override;
     virtual bool shouldAppearIndeterminate() const override;
+    virtual HTMLInputElement* findNextFocusableRadioButtonInGroup(HTMLInputElement*, bool);
 };
 
 } // namespace blink

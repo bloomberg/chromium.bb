@@ -37,9 +37,9 @@ namespace blink {
 
 namespace {
 
-HTMLElement* nextElement(const HTMLElement& element, bool forward)
+HTMLElement* nextElement(const HTMLElement& element, HTMLFormElement* stayWithin, bool forward)
 {
-    return forward ? Traversal<HTMLElement>::next(element) : Traversal<HTMLElement>::previous(element);
+    return forward ? Traversal<HTMLElement>::next(element, (Node* )stayWithin) : Traversal<HTMLElement>::previous(element, (Node* )stayWithin);
 }
 
 } // namespace
@@ -71,6 +71,19 @@ void RadioInputType::handleClickEvent(MouseEvent* event)
     event->setDefaultHandled();
 }
 
+HTMLInputElement* RadioInputType::findNextFocusableRadioButtonInGroup(HTMLInputElement* currentElement, bool forward)
+{
+    HTMLElement* htmlElement;
+    for (htmlElement = nextElement(*currentElement, element().form(), forward); htmlElement; htmlElement = nextElement(*htmlElement, element().form(), forward)) {
+        if (!isHTMLInputElement(*htmlElement))
+            continue;
+        HTMLInputElement* inputElement = toHTMLInputElement(htmlElement);
+        if (element().form() == inputElement->form() && inputElement->type() == InputTypeNames::radio && inputElement->name() == element().name() && inputElement->isFocusable())
+            return inputElement;
+    }
+    return nullptr;
+}
+
 void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     BaseCheckableInputType::handleKeydownEvent(event);
@@ -93,23 +106,22 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
 
     // We can only stay within the form's children if the form hasn't been demoted to a leaf because
     // of malformed HTML.
-    for (HTMLElement* htmlElement = nextElement(element(), forward); htmlElement; htmlElement = nextElement(*htmlElement, forward)) {
-        // Once we encounter a form element, we know we're through.
-        if (isHTMLFormElement(*htmlElement))
-            break;
-        // Look for more radio buttons.
-        if (!isHTMLInputElement(*htmlElement))
-            continue;
-        HTMLInputElement* inputElement = toHTMLInputElement(htmlElement);
-        if (inputElement->form() != element().form())
-            break;
-        if (inputElement->type() == InputTypeNames::radio && inputElement->name() == element().name() && inputElement->isFocusable()) {
-            RefPtrWillBeRawPtr<HTMLInputElement> protector(inputElement);
-            document.setFocusedElement(inputElement);
-            inputElement->dispatchSimulatedClick(event, SendNoEvents);
-            event->setDefaultHandled();
-            return;
+    HTMLInputElement* inputElement = findNextFocusableRadioButtonInGroup(toHTMLInputElement(&element()), forward);
+    if (!inputElement) {
+        // Traverse in reverse direction till last or first radio button
+        forward = !(forward);
+        HTMLInputElement* nextInputElement = findNextFocusableRadioButtonInGroup(toHTMLInputElement(&element()), forward);
+        while (nextInputElement) {
+            inputElement = nextInputElement;
+            nextInputElement = findNextFocusableRadioButtonInGroup(nextInputElement, forward);
         }
+    }
+    if (inputElement) {
+        RefPtrWillBeRawPtr<HTMLInputElement> protector(inputElement);
+        document.setFocusedElement(inputElement);
+        inputElement->dispatchSimulatedClick(event, SendNoEvents);
+        event->setDefaultHandled();
+        return;
     }
 }
 
