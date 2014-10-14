@@ -12,7 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
-#include "base/values.h"
+#include "base/debug/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "skia/ext/refptr.h"
@@ -21,11 +21,8 @@
 
 class SkCanvas;
 class SkPicture;
-struct AwDrawGLInfo;
-struct AwDrawSWFunctionTable;
 
 namespace content {
-class ContentViewCore;
 struct SynchronousCompositorMemoryPolicy;
 class WebContents;
 }
@@ -158,7 +155,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool CompositeSW(SkCanvas* canvas);
   void DidComposite();
   void SkippedCompositeInDraw();
-  scoped_ptr<base::Value> RootLayerStateAsValue(
+  scoped_refptr<base::debug::ConvertableToTraceFormat> RootLayerStateAsValue(
       const gfx::Vector2dF& total_scroll_offset_dip,
       const gfx::SizeF& scrollable_size_dip);
 
@@ -185,8 +182,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   content::SynchronousCompositorMemoryPolicy CalculateDesiredMemoryPolicy();
   // For debug tracing or logging. Return the string representation of this
-  // view renderer's state and the |draw_info| if provided.
-  std::string ToString(AwDrawGLInfo* draw_info) const;
+  // view renderer's state.
+  std::string ToString() const;
 
   BrowserViewRendererClient* client_;
   SharedRendererState* shared_renderer_state_;

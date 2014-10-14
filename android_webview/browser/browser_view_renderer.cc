@@ -7,17 +7,13 @@
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/public/browser/draw_gl.h"
-#include "base/android/jni_android.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
-#include "base/json/json_writer.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/compositor_frame.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -27,10 +23,6 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/vector2d_conversions.h"
 
-using base::android::AttachCurrentThread;
-using base::android::JavaRef;
-using base::android::ScopedJavaLocalRef;
-using content::BrowserThread;
 using content::SynchronousCompositorMemoryPolicy;
 
 namespace android_webview {
@@ -48,30 +40,9 @@ uint64 g_memory_override_in_bytes = 0u;
 // Used to calculate tile allocation. Determined experimentally.
 const size_t kTileMultiplier = 12;
 const size_t kTileAllocationStep = 20;
-// This will be set by static function CalculateTileMemoryPolicy() during init.
-// See AwMainDelegate::BasicStartupComplete.
-size_t g_tile_area;
-
-class TracedValue : public base::debug::ConvertableToTraceFormat {
- public:
-  explicit TracedValue(base::Value* value) : value_(value) {}
-  static scoped_refptr<base::debug::ConvertableToTraceFormat> FromValue(
-      base::Value* value) {
-    return scoped_refptr<base::debug::ConvertableToTraceFormat>(
-        new TracedValue(value));
-  }
-  virtual void AppendAsTraceFormat(std::string* out) const override {
-    std::string tmp;
-    base::JSONWriter::Write(value_.get(), &tmp);
-    *out += tmp;
-  }
-
- private:
-  virtual ~TracedValue() {}
-  scoped_ptr<base::Value> value_;
-
-  DISALLOW_COPY_AND_ASSIGN(TracedValue);
-};
+// Use chrome's default tile size, which varies from 256 to 512.
+// Be conservative here and use the smallest tile size possible.
+const size_t kTileArea = 256 * 256;
 
 }  // namespace
 
@@ -89,10 +60,6 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy() {
         &g_memory_override_in_bytes);
     g_memory_override_in_bytes *= 1024 * 1024;
   }
-
-  // Use chrome's default tile size, which varies from 256 to 512.
-  // Be conservative here and use the smallest tile size possible.
-  g_tile_area = 256 * 256;
 
   // Also use a high tile limit since there are no file descriptor issues.
   GlobalTileManager::GetInstance()->SetTileLimit(1000);
@@ -137,7 +104,7 @@ BrowserViewRenderer::~BrowserViewRenderer() {
 
 // This function updates the resource allocation in GlobalTileManager.
 void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   // Constants from Android ComponentCallbacks2.
   enum {
     TRIM_MEMORY_RUNNING_LOW = 10,
@@ -180,7 +147,7 @@ BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
   if (g_memory_override_in_bytes)
     policy.bytes_limit = static_cast<size_t>(g_memory_override_in_bytes);
 
-  size_t tiles = width * height * kTileMultiplier / g_tile_area;
+  size_t tiles = width * height * kTileMultiplier / kTileArea;
   // Round up to a multiple of kTileAllocationStep. The minimum number of tiles
   // is also kTileAllocationStep.
   tiles = (tiles / kTileAllocationStep + 1) * kTileAllocationStep;
@@ -619,9 +586,7 @@ void BrowserViewRenderer::UpdateRootLayerState(
       "BrowserViewRenderer::UpdateRootLayerState",
       TRACE_EVENT_SCOPE_THREAD,
       "state",
-      TracedValue::FromValue(
-          RootLayerStateAsValue(total_scroll_offset_dip, scrollable_size_dip)
-              .release()));
+      RootLayerStateAsValue(total_scroll_offset_dip, scrollable_size_dip));
 
   DCHECK_GT(dip_scale_, 0);
 
@@ -640,10 +605,12 @@ void BrowserViewRenderer::UpdateRootLayerState(
   SetTotalRootLayerScrollOffset(total_scroll_offset_dip);
 }
 
-scoped_ptr<base::Value> BrowserViewRenderer::RootLayerStateAsValue(
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+BrowserViewRenderer::RootLayerStateAsValue(
     const gfx::Vector2dF& total_scroll_offset_dip,
     const gfx::SizeF& scrollable_size_dip) {
-  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
 
   state->SetDouble("total_scroll_offset_dip.x", total_scroll_offset_dip.x());
   state->SetDouble("total_scroll_offset_dip.y", total_scroll_offset_dip.y());
@@ -655,7 +622,7 @@ scoped_ptr<base::Value> BrowserViewRenderer::RootLayerStateAsValue(
   state->SetDouble("scrollable_size_dip.height", scrollable_size_dip.height());
 
   state->SetDouble("page_scale_factor", page_scale_factor_);
-  return state.PassAs<base::Value>();
+  return state;
 }
 
 void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
@@ -780,7 +747,7 @@ void BrowserViewRenderer::SkippedCompositeInDraw() {
   EnsureContinuousInvalidation(false, true);
 }
 
-std::string BrowserViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
+std::string BrowserViewRenderer::ToString() const {
   std::string str;
   base::StringAppendF(&str, "is_paused: %d ", is_paused_);
   base::StringAppendF(&str, "view_visible: %d ", view_visible_);
@@ -804,19 +771,6 @@ std::string BrowserViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
   base::StringAppendF(
       &str, "on_new_picture_enable: %d ", on_new_picture_enable_);
   base::StringAppendF(&str, "clear_view: %d ", clear_view_);
-  if (draw_info) {
-    base::StringAppendF(&str,
-                        "clip left top right bottom: [%d %d %d %d] ",
-                        draw_info->clip_left,
-                        draw_info->clip_top,
-                        draw_info->clip_right,
-                        draw_info->clip_bottom);
-    base::StringAppendF(&str,
-                        "surface width height: [%d %d] ",
-                        draw_info->width,
-                        draw_info->height);
-    base::StringAppendF(&str, "is_layer: %d ", draw_info->is_layer);
-  }
   return str;
 }
 

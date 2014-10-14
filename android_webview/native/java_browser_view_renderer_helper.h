@@ -9,6 +9,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 
+struct AwDrawSWFunctionTable;
+
 namespace android_webview {
 
 // Native side of java-class of same name.
