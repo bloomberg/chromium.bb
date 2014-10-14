@@ -2810,7 +2810,7 @@ void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
   proxy_->DisplayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
-                                      base::Unretained(this),
+                                      weak_factory_.GetWeakPtr(),
                                       base::Passed(&task)));
 }
 
@@ -2820,7 +2820,7 @@ void TestRunner::GetManifestThen(v8::Handle<v8::Function> callback) {
 
   FetchManifest(web_view_, web_view_->mainFrame()->document().manifestURL(),
       base::Bind(&TestRunner::GetManifestCallback,
-                 base::Unretained(this),
+                 weak_factory_.GetWeakPtr(),
                  base::Passed(&task)));
 }
 
@@ -2828,7 +2828,7 @@ void TestRunner::CapturePixelsAsyncThen(v8::Handle<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
   proxy_->CapturePixelsAsync(base::Bind(&TestRunner::CapturePixelsCallback,
-                                        base::Unretained(this),
+                                        weak_factory_.GetWeakPtr(),
                                         base::Passed(&task)));
 }
 
@@ -2838,7 +2838,7 @@ void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
       new InvokeCallbackTask(this, callback));
   proxy_->CopyImageAtAndCapturePixels(
       x, y, base::Bind(&TestRunner::CapturePixelsCallback,
-                       base::Unretained(this),
+                       weak_factory_.GetWeakPtr(),
                        base::Passed(&task)));
 }
 
