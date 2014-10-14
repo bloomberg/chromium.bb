@@ -128,6 +128,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
           tabWasDragged_ = NO;
         } else {
           [targetController_ removePlaceholder];
+          [[sourceController_ window] makeMainWindow];
           if ([sourceController_ numberOfTabs] < 2) {
             // Revert to a single-tab window.
             targetController_ = nil;
