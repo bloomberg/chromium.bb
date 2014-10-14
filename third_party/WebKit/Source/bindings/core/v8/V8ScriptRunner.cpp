@@ -35,6 +35,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -175,6 +176,8 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     // Run the script and keep track of the current recursion depth.
     v8::Local<v8::Value> result;
     {
+        if (ScriptForbiddenScope::isScriptForbidden())
+            return v8::Local<v8::Value>();
         V8RecursionScope recursionScope(isolate);
         result = script->Run();
     }
@@ -220,6 +223,8 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
 
     RELEASE_ASSERT(!context->isIteratingOverObservers());
 
+    if (ScriptForbiddenScope::isScriptForbidden())
+        return v8::Local<v8::Value>();
     V8RecursionScope recursionScope(isolate);
     v8::Local<v8::Value> result = function->Call(receiver, argc, args);
     crashIfV8IsDead();
@@ -273,6 +278,8 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* i
 {
     TRACE_EVENT0("v8", "v8.newInstance");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
+    if (ScriptForbiddenScope::isScriptForbidden())
+        return v8::Local<v8::Object>();
     V8RecursionScope scope(isolate);
     v8::Local<v8::Object> result = function->NewInstance(argc, argv);
     crashIfV8IsDead();

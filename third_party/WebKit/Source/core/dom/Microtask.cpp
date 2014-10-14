@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8RecursionScope.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/Task.h"
 #include "public/platform/WebThread.h"
 #include <v8.h>
@@ -44,7 +45,7 @@ void Microtask::performCheckpoint()
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
     ASSERT(isolateData);
-    if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint() || isolateData->destructionPending())
+    if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint() || isolateData->destructionPending() || ScriptForbiddenScope::isScriptForbidden())
         return;
     isolateData->setPerformingMicrotaskCheckpoint(true);
     {
