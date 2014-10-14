@@ -261,39 +261,23 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 {
     timing.assertValid();
 
-    // All fill modes are supported (the calling code handles them).
-
-    if (timing.iterationCount <= 0)
+    if (!timing.iterationCount || !timing.iterationDuration)
         return false;
-
-    if (std::isnan(timing.iterationDuration) || !timing.iterationDuration)
-        return false;
-
-    // All directions are supported.
-
-    // Now attempt an actual conversion
-    out.scaledDuration = timing.iterationDuration;
-    ASSERT(out.scaledDuration > 0);
-
-    double scaledStartDelay = timing.startDelay;
-    if (scaledStartDelay > 0 && scaledStartDelay > out.scaledDuration * timing.iterationCount)
-        return false;
-
-    out.direction = timing.direction;
 
     if (!std::isfinite(timing.iterationCount)) {
         out.adjustedIterationCount = -1;
     } else {
         out.adjustedIterationCount = timing.iterationCount;
-        ASSERT(out.adjustedIterationCount > 0);
     }
 
+    out.scaledDuration = timing.iterationDuration;
+    out.direction = timing.direction;
     // Compositor's time offset is positive for seeking into the animation.
-    out.scaledTimeOffset = -scaledStartDelay + timeOffset;
+    out.scaledTimeOffset = -timing.startDelay + timeOffset;
     out.playbackRate = timing.playbackRate * playerPlaybackRate;
     out.fillMode = timing.fillMode == Timing::FillModeAuto ? Timing::FillModeNone : timing.fillMode;
     out.iterationStart = timing.iterationStart;
-
+    out.assertValid();
     return true;
 }
 

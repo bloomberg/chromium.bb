@@ -379,7 +379,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationsAn
     EXPECT_DOUBLE_EQ(4.0, m_compositorTiming.adjustedIterationCount);
 
     m_timing.startDelay = 21.0;
-    EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
+    EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorPlaybackRate)

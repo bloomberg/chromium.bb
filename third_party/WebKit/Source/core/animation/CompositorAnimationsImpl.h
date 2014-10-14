@@ -41,6 +41,15 @@ class WebCompositorAnimationCurve;
 class CompositorAnimationsImpl {
 private:
     struct CompositorTiming {
+        void assertValid() const
+        {
+            ASSERT(scaledDuration > 0);
+            ASSERT(std::isfinite(scaledTimeOffset));
+            ASSERT(adjustedIterationCount > 0 || adjustedIterationCount == -1);
+            ASSERT(std::isfinite(playbackRate) && playbackRate);
+            ASSERT(iterationStart >= 0);
+        }
+
         Timing::PlaybackDirection direction;
         double scaledDuration;
         double scaledTimeOffset;
