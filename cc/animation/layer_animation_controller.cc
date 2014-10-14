@@ -287,6 +287,7 @@ bool LayerAnimationController::IsAnimatingProperty(
     Animation::TargetProperty target_property) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
+        animations_[i]->InEffect(last_tick_time_) &&
         animations_[i]->target_property() == target_property)
       return true;
   }

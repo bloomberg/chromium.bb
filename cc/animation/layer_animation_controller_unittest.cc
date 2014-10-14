@@ -2326,5 +2326,51 @@ TEST(LayerAnimationControllerTest, StartAnimationsAffectingDifferentObservers) {
   EXPECT_EQ(1.f, dummy_impl.opacity());
 }
 
+TEST(LayerAnimationControllerTest, TestIsAnimatingProperty) {
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  scoped_ptr<Animation> animation(CreateAnimation(
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
+      1,
+      Animation::Opacity));
+  controller->AddAnimation(animation.Pass());
+  controller->Animate(kInitialTickTime);
+  EXPECT_TRUE(controller->IsAnimatingProperty(Animation::Opacity));
+  controller->UpdateState(true, nullptr);
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_TRUE(controller->IsAnimatingProperty(Animation::Opacity));
+  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::Filter));
+  EXPECT_EQ(0.f, dummy.opacity());
+}
+
+TEST(LayerAnimationControllerTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
+  FakeLayerAnimationValueObserver dummy;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+
+  scoped_ptr<Animation> animation(CreateAnimation(
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
+      1,
+      Animation::Opacity));
+  animation->set_fill_mode(Animation::FillModeNone);
+  animation->set_time_offset(TimeDelta::FromMilliseconds(-2000));
+  controller->AddAnimation(animation.Pass());
+
+  controller->Animate(kInitialTickTime);
+  controller->UpdateState(true, nullptr);
+  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::Opacity));
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::Opacity));
+  EXPECT_FALSE(controller->IsAnimatingProperty(Animation::Filter));
+
+  controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
+  controller->UpdateState(true, nullptr);
+  EXPECT_TRUE(controller->IsAnimatingProperty(Animation::Opacity));
+}
+
 }  // namespace
 }  // namespace cc
