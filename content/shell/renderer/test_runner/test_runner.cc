@@ -1527,9 +1527,9 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       web_history_item_count_(0),
       intercept_post_message_(false),
       test_interfaces_(interfaces),
-      delegate_(NULL),
-      web_view_(NULL),
-      page_overlay_(NULL),
+      delegate_(nullptr),
+      web_view_(nullptr),
+      page_overlay_(nullptr),
       web_permissions_(new WebPermissions()),
       notification_presenter_(new NotificationPresenter()),
       weak_factory_(this) {}
@@ -1569,11 +1569,11 @@ void TestRunner::Reset() {
     if (page_overlay_) {
       web_view_->removePageOverlay(page_overlay_);
       delete page_overlay_;
-      page_overlay_ = NULL;
+      page_overlay_ = nullptr;
     }
   }
 
-  top_loading_frame_ = NULL;
+  top_loading_frame_ = nullptr;
   wait_until_done_ = false;
   wait_until_external_url_load_ = false;
   policy_delegate_enabled_ = false;
@@ -1825,7 +1825,7 @@ void TestRunner::setTopLoadingFrame(WebFrame* frame, bool clear) {
   if (!test_is_running_)
     return;
   if (clear) {
-    top_loading_frame_ = NULL;
+    top_loading_frame_ = nullptr;
     LocationChangeDone();
   } else if (!top_loading_frame_) {
     top_loading_frame_ = frame;
@@ -2124,7 +2124,7 @@ void TestRunner::SetDomainRelaxationForbiddenForURLScheme(
 v8::Handle<v8::Value> TestRunner::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const std::string& script) {
-  WebVector<v8::Local<v8::Value> > values;
+  WebVector<v8::Local<v8::Value>> values;
   WebScriptSource source(WebString::fromUTF8(script));
   // This relies on the iframe focusing itself when it loads. This is a bit
   // sketchy, but it seems to be what other tests do.
@@ -2223,8 +2223,7 @@ bool TestRunner::FindString(const std::string& search_text,
   find_options.matchCase = true;
   find_options.findNext = true;
 
-  for (size_t i = 0; i < options_array.size(); ++i) {
-    const std::string& option = options_array[i];
+  for (const std::string& option : options_array) {
     if (option == "CaseInsensitive")
       find_options.matchCase = false;
     else if (option == "Backwards")
@@ -2741,10 +2740,8 @@ void TestRunner::SetMIDIAccessorResult(bool result) {
 }
 
 void TestRunner::SetMIDISysexPermission(bool value) {
-  const std::vector<WebTestProxyBase*>& windowList =
-      test_interfaces_->GetWindowList();
-  for (unsigned i = 0; i < windowList.size(); ++i)
-    windowList.at(i)->GetMIDIClientMock()->setSysexPermission(value);
+  for (auto* window : test_interfaces_->GetWindowList())
+    window->GetMIDIClientMock()->setSysexPermission(value);
 }
 
 void TestRunner::GrantWebNotificationPermission(const GURL& origin,
@@ -2798,7 +2795,7 @@ void TestRunner::RemoveWebPageOverlay() {
   if (web_view_ && page_overlay_) {
     web_view_->removePageOverlay(page_overlay_);
     delete page_overlay_;
-    page_overlay_ = NULL;
+    page_overlay_ = nullptr;
   }
 }
 
