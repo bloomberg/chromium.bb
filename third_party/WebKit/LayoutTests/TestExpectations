@@ -638,7 +638,6 @@ crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video
 crbug.com/342574 fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
 
 crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
-crbug.com/254449 css3/filters/effect-reference-tile.html [ NeedsRebaseline ]
 
 crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 
