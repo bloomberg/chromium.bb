@@ -8,7 +8,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_util.h"
-#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -135,10 +134,6 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       size_value_(NULL),
       version_title_(NULL),
       version_value_(NULL),
-      installed_time_title_(NULL),
-      installed_time_value_(NULL),
-      last_run_time_title_(NULL),
-      last_run_time_value_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
   // Create UI elements.
@@ -213,42 +208,8 @@ void AppInfoSummaryPanel::CreateDetailsControl() {
     version_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
 
-  // The install date doesn't make sense for component apps.
-  if (app_->location() != extensions::Manifest::COMPONENT) {
-    installed_time_title_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_INSTALLED_LABEL));
-    installed_time_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    installed_time_value_ =
-        new views::Label(base::TimeFormatShortDate(GetInstalledTime()));
-    installed_time_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  }
-
-  // The last run time is currently incorrect for:
-  // - extensions
-  // - component apps
-  // - hosted apps (but not bookmark apps)
-  // since it is not updated when they are accessed outside of their shortcuts.
-  // TODO(sashab): Update the run time for these correctly: crbug.com/398716
-  if (!(app_->is_extension() ||
-        app_->location() == extensions::Manifest::COMPONENT ||
-        (app_->is_hosted_app() && !app_->from_bookmark()))) {
-    last_run_time_title_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LAST_RUN_LABEL));
-    last_run_time_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    // Display 'Never' if the app has never been run.
-    base::string16 last_run_value_str =
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LAST_RUN_NEVER_LABEL);
-    if (GetLastLaunchedTime() != base::Time())
-      last_run_value_str = base::TimeFormatShortDate(GetLastLaunchedTime());
-
-    last_run_time_value_ = new views::Label(last_run_value_str);
-    last_run_time_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  }
-
   // Only generate the heading if we have at least one field to display.
-  if (version_title_ || installed_time_title_ || last_run_time_title_) {
+  if (version_title_ || size_title_) {
     details_heading_ = CreateHeading(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_DETAILS_TITLE));
   }
@@ -284,16 +245,6 @@ void AppInfoSummaryPanel::LayoutDetailsControl() {
     if (version_title_ && version_value_) {
       details_stack->AddChildView(
           CreateKeyValueField(version_title_, version_value_));
-    }
-
-    if (installed_time_title_ && installed_time_value_) {
-      details_stack->AddChildView(
-          CreateKeyValueField(installed_time_title_, installed_time_value_));
-    }
-
-    if (last_run_time_title_ && last_run_time_value_) {
-      details_stack->AddChildView(
-          CreateKeyValueField(last_run_time_title_, last_run_time_value_));
     }
 
     if (size_title_ && size_value_) {
@@ -334,15 +285,6 @@ void AppInfoSummaryPanel::OnAppSizeCalculated(int64 app_size_in_bytes) {
     size_value_->SetText(ui::FormatBytesWithUnits(
         app_size_in_bytes, ui::DATA_UNITS_MEBIBYTE, true));
   }
-}
-
-base::Time AppInfoSummaryPanel::GetInstalledTime() const {
-  return extensions::ExtensionPrefs::Get(profile_)->GetInstallTime(app_->id());
-}
-
-base::Time AppInfoSummaryPanel::GetLastLaunchedTime() const {
-  return extensions::ExtensionPrefs::Get(profile_)
-      ->GetLastLaunchTime(app_->id());
 }
 
 extensions::LaunchType AppInfoSummaryPanel::GetLaunchType() const {

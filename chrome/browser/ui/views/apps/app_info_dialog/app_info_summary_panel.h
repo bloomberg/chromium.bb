@@ -50,13 +50,6 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   void StartCalculatingAppSize();
   void OnAppSizeCalculated(int64 app_size_in_bytes);
 
-  // Returns the time this app was installed.
-  base::Time GetInstalledTime() const;
-
-  // Returns the time the app was last launched, or base::Time() if it's never
-  // been launched.
-  base::Time GetLastLaunchedTime() const;
-
   // Returns the launch type of the app (e.g. pinned tab, fullscreen, etc).
   extensions::LaunchType GetLaunchType() const;
 
@@ -74,10 +67,6 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   views::Label* size_value_;
   views::Label* version_title_;
   views::Label* version_value_;
-  views::Label* installed_time_title_;
-  views::Label* installed_time_value_;
-  views::Label* last_run_time_title_;
-  views::Label* last_run_time_value_;
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;
