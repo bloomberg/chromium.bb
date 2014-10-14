@@ -73,39 +73,34 @@ TiclProfileSettingsProviderTest::GetNetworkChannel() {
 }
 
 TEST_F(TiclProfileSettingsProviderTest, ChannelSelectionTest) {
-  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
+  // Default value should be GCM channel.
+  EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
   PrefService* prefs =  profile_.GetPrefs();
 
-  // If stars align, use GCM channel.
+  // If GCM is enabled and invalidation channel setting is not set or set to
+  // true then use GCM channel.
   prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
   prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, true);
   EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 
-  // If invalidation channel setting is not set or says false, fall back to push
-  // channel.
   prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
-
   prefs->ClearPref(prefs::kInvalidationServiceUseGCMChannel);
-  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
-
-  prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, false);
-  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
-
-  // If invalidation channel setting says use GCM but GCM is not ALWAYS_ENABLED,
-  // fall back to push channel.
-  prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, false);
+  EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 
   prefs->ClearPref(prefs::kGCMChannelEnabled);
-  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
-
-  prefs->SetBoolean(prefs::kGCMChannelEnabled, false);
-  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
-
-  // If invalidation channel setting is enabled first and the GCM setting is
-  // enabled after that, switch to GCM channel.
   prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, true);
-  prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
   EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
+
+  // If invalidation channel setting is set to false, fall back to push channel.
+  prefs->SetBoolean(prefs::kGCMChannelEnabled, true);
+  prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, false);
+  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
+
+  // If invalidation channel setting says use GCM but GCM is not enabled, fall
+  // back to push channel.
+  prefs->SetBoolean(prefs::kGCMChannelEnabled, false);
+  prefs->SetBoolean(prefs::kInvalidationServiceUseGCMChannel, true);
+  EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
 }
 
 }  // namespace invalidation

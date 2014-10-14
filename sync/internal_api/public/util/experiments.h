@@ -29,7 +29,8 @@ struct Experiments {
       : favicon_sync_limit(200),
         gcm_channel_state(UNSET),
         enhanced_bookmarks_enabled(false),
-        gcm_invalidations_enabled(false) {}
+        gcm_invalidations_enabled(true)  // By default GCM channel is enabled.
+  {}
 
   bool Matches(const Experiments& rhs) {
     return (favicon_sync_limit == rhs.favicon_sync_limit &&

@@ -63,7 +63,7 @@ TiclInvalidationService::TiclInvalidationService(
       settings_provider_(settings_provider.Pass()),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
-      network_channel_type_(PUSH_CLIENT_CHANNEL),
+      network_channel_type_(GCM_NETWORK_CHANNEL),
       gcm_driver_(gcm_driver),
       request_context_(request_context),
       logger_() {}
