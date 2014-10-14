@@ -50,12 +50,6 @@
 // The expression is a compile-time constant, and therefore can be
 // used in defining new arrays, for example.  If you use arraysize on
 // a pointer by mistake, you will get a compile-time error.
-//
-// One caveat is that arraysize() doesn't accept any array of an
-// anonymous type or a type defined inside a function.  In these rare
-// cases, you have to use the unsafe ARRAYSIZE_UNSAFE() macro below.  This is
-// due to a limitation in C++'s template system.  The limitation might
-// eventually be removed, but it hasn't happened yet.
 
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
@@ -73,46 +67,10 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
-// ARRAYSIZE_UNSAFE performs essentially the same calculation as arraysize,
-// but can be used on anonymous types or types defined inside
-// functions.  It's less safe than arraysize as it accepts some
-// (although not all) pointers.  Therefore, you should use arraysize
-// whenever possible.
-//
-// The expression ARRAYSIZE_UNSAFE(a) is a compile-time constant of type
-// size_t.
-//
-// ARRAYSIZE_UNSAFE catches a few type errors.  If you see a compiler error
-//
-//   "warning: division by zero in ..."
-//
-// when using ARRAYSIZE_UNSAFE, you are (wrongfully) giving it a pointer.
-// You should only use ARRAYSIZE_UNSAFE on statically allocated arrays.
-//
-// The following comments are on the implementation details, and can
-// be ignored by the users.
-//
-// ARRAYSIZE_UNSAFE(arr) works by inspecting sizeof(arr) (the # of bytes in
-// the array) and sizeof(*(arr)) (the # of bytes in one array
-// element).  If the former is divisible by the latter, perhaps arr is
-// indeed an array, in which case the division result is the # of
-// elements in the array.  Otherwise, arr cannot possibly be an array,
-// and we generate a compiler error to prevent the code from
-// compiling.
-//
-// Since the size of bool is implementation-defined, we need to cast
-// !(sizeof(a) & sizeof(*(a))) to size_t in order to ensure the final
-// result has type size_t.
-//
-// This macro is not perfect as it wrongfully accepts certain
-// pointers, namely where the pointer size is divisible by the pointee
-// size.  Since all our code has to go through a 32-bit compiler,
-// where a pointer is 4 bytes, this means all pointers to a type whose
-// size is 3 or greater than 4 will be (righteously) rejected.
-
-#define ARRAYSIZE_UNSAFE(a) \
-  ((sizeof(a) / sizeof(*(a))) / \
-   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+// DEPRECATED: Just use |arraysize()|, now that C++11 has removed the
+// limitations that forced the use of |ARRAYSIZE_UNSAFE()|.
+// TODO(viettrungluu): Convert all instances and delete. crbug.com/423134
+#define ARRAYSIZE_UNSAFE(a) arraysize(a)
 
 
 // Use implicit_cast as a safe version of static_cast or const_cast
@@ -141,7 +99,7 @@ inline To implicit_cast(From const &f) {
 // expression is true. For example, you could use it to verify the
 // size of a static array:
 //
-//   COMPILE_ASSERT(ARRAYSIZE_UNSAFE(content_type_names) == CONTENT_NUM_TYPES,
+//   COMPILE_ASSERT(arraysize(content_type_names) == CONTENT_NUM_TYPES,
 //                  content_type_names_incorrect_size);
 //
 // or to make sure a struct is smaller than a certain size:

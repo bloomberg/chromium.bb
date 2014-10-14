@@ -349,14 +349,13 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
   EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
 
-  static const char* kSupported[] = {
 #if !defined(OS_MACOSX)
+  static const char* kSupported[] = {
     "en-AU", "en-CA", "en-GB", "en-US",
-#endif
   };
   // If spellcheck is allowed, then suggest is not since spellcheck is a
   // superset of suggest.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSupported); ++i) {
+  for (size_t i = 0; i < arraysize(kSupported); ++i) {
     pref->SetString(prefs::kSpellCheckDictionary, kSupported[i]);
     EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSpellcheck));
@@ -365,19 +364,18 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   // This function returns true for suggestions for all and false for
   // spellcheck for unsupported locales.
   static const char* kUnsupported[] = {
-#if !defined(OS_MACOSX)
     "af-ZA", "bg-BG", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "es-ES",
     "et-EE", "fo-FO", "fr-FR", "he-IL", "hi-IN", "hr-HR", "hu-HU", "id-ID",
     "it-IT", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT",
     "ro-RO", "ru-RU", "sk-SK", "sl-SI", "sh", "sr", "sv-SE", "tr-TR",
     "uk-UA", "vi-VN",
-#endif
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kUnsupported); ++i) {
     pref->SetString(prefs::kSpellCheckDictionary, kUnsupported[i]);
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
   }
+#endif  // !defined(OS_MACOSX)
 }
 
 // Verify that an error in JSON response from spelling service will result in
