@@ -278,6 +278,9 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void SetSelectedText(const base::string16& selection_text,
                                size_t offset,
                                const gfx::Range& range) override;
+  virtual void EnsureMojoBuiltinsAreAvailable(
+      v8::Isolate* isolate,
+      v8::Handle<v8::Context> context) override;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,

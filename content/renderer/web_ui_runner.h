@@ -20,8 +20,6 @@ class WebUIRunner : public gin::Runner {
   WebUIRunner(blink::WebFrame* frame, gin::ContextHolder* context_holder);
   virtual ~WebUIRunner();
 
-  void RegisterBuiltinModules();
-
   // Runner overrides:
   virtual void Run(const std::string& source,
                    const std::string& resource_name) override;

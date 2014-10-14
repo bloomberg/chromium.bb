@@ -25,6 +25,12 @@ namespace gfx {
 class Range;
 }
 
+namespace v8 {
+template <typename T> class Handle;
+class Context;
+class Isolate;
+}
+
 namespace content {
 class ContextMenuClient;
 class RenderView;
@@ -107,6 +113,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetSelectedText(const base::string16& selection_text,
                                size_t offset,
                                const gfx::Range& range) = 0;
+
+  // Ensures that builtin mojo bindings modules are available in |context|.
+  virtual void EnsureMojoBuiltinsAreAvailable(
+      v8::Isolate* isolate,
+      v8::Handle<v8::Context> context) = 0;
 
  protected:
   virtual ~RenderFrame() {}

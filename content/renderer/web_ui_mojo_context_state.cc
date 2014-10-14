@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/resource_fetcher.h"
 #include "content/renderer/web_ui_runner.h"
 #include "gin/converter.h"
@@ -13,9 +14,6 @@
 #include "gin/per_context_data.h"
 #include "gin/public/context_holder.h"
 #include "gin/try_catch.h"
-#include "mojo/bindings/js/core.h"
-#include "mojo/bindings/js/handle.h"
-#include "mojo/bindings/js/support.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -56,7 +54,8 @@ WebUIMojoContextState::WebUIMojoContextState(blink::WebFrame* frame,
   runner_.reset(new WebUIRunner(frame_, context_holder));
   gin::Runner::Scope scoper(runner_.get());
   gin::ModuleRegistry::From(context)->AddObserver(this);
-  runner_->RegisterBuiltinModules();
+  content::RenderFrame::FromWebFrame(frame)
+      ->EnsureMojoBuiltinsAreAvailable(context_holder->isolate(), context);
   gin::ModuleRegistry::InstallGlobals(context->GetIsolate(), context->Global());
   // Warning |frame| may be destroyed.
   // TODO(sky): add test for this.

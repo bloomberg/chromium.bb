@@ -80,6 +80,7 @@
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
+#include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -95,10 +96,13 @@
 #include "content/renderer/shared_worker_repository.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
+#include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
+#include "mojo/bindings/js/core.h"
+#include "mojo/bindings/js/support.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -1575,6 +1579,25 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                         selection_text,
                                         offset,
                                         range));
+}
+
+void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
+    v8::Isolate* isolate,
+    v8::Handle<v8::Context> context) {
+  gin::ModuleRegistry* registry = gin::ModuleRegistry::From(context);
+  if (registry->available_modules().count(mojo::js::Core::kModuleName))
+    return;
+
+  v8::HandleScope handle_scope(isolate);
+  registry->AddBuiltinModule(
+      isolate, mojo::js::Core::kModuleName, mojo::js::Core::GetModule(isolate));
+  registry->AddBuiltinModule(isolate,
+                             mojo::js::Support::kModuleName,
+                             mojo::js::Support::GetModule(isolate));
+  registry->AddBuiltinModule(
+      isolate,
+      ServiceRegistryJsWrapper::kModuleName,
+      ServiceRegistryJsWrapper::Create(isolate, &service_registry_).ToV8());
 }
 
 // blink::WebFrameClient implementation ----------------------------------------
