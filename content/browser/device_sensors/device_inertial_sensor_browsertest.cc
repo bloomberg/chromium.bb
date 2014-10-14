@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
 }
 
 // Flaking in the android try bot. See http://crbug.com/360578.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 #define MAYBE_MotionNullTestWithAlert DISABLED_MotionNullTestWithAlert
 #else
 #define MAYBE_MotionNullTestWithAlert MotionNullTestWithAlert
