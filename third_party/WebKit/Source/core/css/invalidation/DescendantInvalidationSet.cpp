@@ -33,8 +33,23 @@
 
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
+#include "core/inspector/InspectorTraceEvents.h"
+#include "platform/TracedValue.h"
+#include "wtf/Compiler.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
+
+static const unsigned char* s_tracingEnabled = nullptr;
+
+#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, reason, singleSelectorPart) \
+    if (UNLIKELY(*s_tracingEnabled)) \
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, singleSelectorPart);
+
+void DescendantInvalidationSet::cacheTracingFlag()
+{
+    s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
+}
 
 DescendantInvalidationSet::DescendantInvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
@@ -48,24 +63,32 @@ bool DescendantInvalidationSet::invalidatesElement(Element& element) const
     if (m_allDescendantsMightBeInvalid)
         return true;
 
-    if (m_tagNames && m_tagNames->contains(element.tagQName().localName()))
+    if (m_tagNames && m_tagNames->contains(element.tagQName().localName())) {
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedTagName, element.tagQName().localName());
         return true;
+    }
 
-    if (element.hasID() && m_ids && m_ids->contains(element.idForStyleResolution()))
+    if (element.hasID() && m_ids && m_ids->contains(element.idForStyleResolution())) {
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedId, element.idForStyleResolution());
         return true;
+    }
 
     if (element.hasClass() && m_classes) {
         const SpaceSplitString& classNames = element.classNames();
         for (const auto& className : *m_classes) {
-            if (classNames.contains(className))
+            if (classNames.contains(className)) {
+                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedClass, className);
                 return true;
+            }
         }
     }
 
     if (element.hasAttributes() && m_attributes) {
         for (const auto& attribute : *m_attributes) {
-            if (element.hasAttribute(attribute))
+            if (element.hasAttribute(attribute)) {
+                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedAttribute, attribute);
                 return true;
+            }
         }
     }
 
@@ -189,33 +212,54 @@ void DescendantInvalidationSet::trace(Visitor* visitor)
 #endif
 }
 
+void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
+{
+    value->beginDictionary();
+
+    if (m_allDescendantsMightBeInvalid)
+        value->setBoolean("allDescendantsMightBeInvalid", true);
+    if (m_customPseudoInvalid)
+        value->setBoolean("customPseudoInvalid", true);
+    if (m_treeBoundaryCrossing)
+        value->setBoolean("treeBoundaryCrossing", true);
+
+    if (m_ids) {
+        value->beginArray("ids");
+        for (const auto& id : *m_ids)
+            value->pushString(id);
+        value->endArray();
+    }
+
+    if (m_classes) {
+        value->beginArray("classes");
+        for (const auto& className : *m_classes)
+            value->pushString(className);
+        value->endArray();
+    }
+
+    if (m_tagNames) {
+        value->beginArray("tagNames");
+        for (const auto& tagName : *m_tagNames)
+            value->pushString(tagName);
+        value->endArray();
+    }
+
+    if (m_attributes) {
+        value->beginArray("attributes");
+        for (const auto& attribute : *m_attributes)
+            value->pushString(attribute);
+        value->endArray();
+    }
+
+    value->endDictionary();
+}
+
 #ifndef NDEBUG
 void DescendantInvalidationSet::show() const
 {
-    fprintf(stderr, "DescendantInvalidationSet { ");
-    if (m_allDescendantsMightBeInvalid)
-        fprintf(stderr, "* ");
-    if (m_customPseudoInvalid)
-        fprintf(stderr, "::custom ");
-    if (m_treeBoundaryCrossing)
-        fprintf(stderr, "::shadow/deep/ ");
-    if (m_ids) {
-        for (const auto& id : *m_ids)
-            fprintf(stderr, "#%s ", id.ascii().data());
-    }
-    if (m_classes) {
-        for (const auto& className : *m_classes)
-            fprintf(stderr, ".%s ", className.ascii().data());
-    }
-    if (m_tagNames) {
-        for (const auto& tagName : *m_tagNames)
-            fprintf(stderr, "<%s> ", tagName.ascii().data());
-    }
-    if (m_attributes) {
-        for (const auto& attribute : *m_attributes)
-            fprintf(stderr, "[%s] ", attribute.ascii().data());
-    }
-    fprintf(stderr, "}\n");
+    RefPtr<TracedValue> value = TracedValue::create();
+    toTracedValue(value.get());
+    fprintf(stderr, "%s\n", value->asTraceFormat().ascii().data());
 }
 #endif // NDEBUG
 
