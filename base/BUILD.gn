@@ -863,6 +863,10 @@ component("base") {
 
   # Mac.
   if (is_mac) {
+    sources += [
+       "memory/discardable_memory_mach.cc",
+       "memory/discardable_memory_mach.h",
+    ]
     sources -= [
       "base_paths_posix.cc",
       "native_library_posix.cc",

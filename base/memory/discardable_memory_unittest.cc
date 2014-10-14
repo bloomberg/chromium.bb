@@ -38,9 +38,8 @@ TEST_P(DiscardableMemoryTest, IsNamed) {
 }
 
 bool IsNativeType(DiscardableMemoryType type) {
-  return
-      type == DISCARDABLE_MEMORY_TYPE_ASHMEM ||
-      type == DISCARDABLE_MEMORY_TYPE_MAC;
+  return type == DISCARDABLE_MEMORY_TYPE_ASHMEM ||
+         type == DISCARDABLE_MEMORY_TYPE_MACH;
 }
 
 TEST_P(DiscardableMemoryTest, SupportedNatively) {

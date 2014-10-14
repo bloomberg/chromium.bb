@@ -15,7 +15,7 @@ const struct TypeNamePair {
   const char* name;
 } kTypeNamePairs[] = {
   { DISCARDABLE_MEMORY_TYPE_ASHMEM, "ashmem" },
-  { DISCARDABLE_MEMORY_TYPE_MAC, "mac" },
+  { DISCARDABLE_MEMORY_TYPE_MACH, "mach" },
   { DISCARDABLE_MEMORY_TYPE_EMULATED, "emulated" }
 };
 
