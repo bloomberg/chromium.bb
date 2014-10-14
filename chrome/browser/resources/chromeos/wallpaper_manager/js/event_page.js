@@ -301,6 +301,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
             WallpaperUtil.setCustomWallpaperFromSyncFS(newValue.url,
                                                        newValue.layout);
           });
+        } else if (newValue.source == Constants.WallpaperSourceEnum.Default) {
+          chrome.wallpaperPrivate.resetWallpaper();
         }
         WallpaperUtil.saveToStorage(Constants.AccessLocalWallpaperInfoKey,
                                     newValue, false);

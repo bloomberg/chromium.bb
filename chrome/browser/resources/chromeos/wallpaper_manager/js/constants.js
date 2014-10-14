@@ -59,7 +59,8 @@
       Online: 'ONLINE',
       OEM: 'OEM',
       Custom: 'CUSTOM',
-      AddNew: 'ADDNEW'
+      AddNew: 'ADDNEW',
+      Default: 'DEFAULT'
   },
 
   /**

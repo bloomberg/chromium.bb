@@ -358,6 +358,8 @@ function WallpaperManager(dialogDom) {
         // to be deleted.
         chrome.wallpaperPrivate.resetWallpaper();
         this.onWallpaperChanged_(null, null);
+        WallpaperUtil.saveWallpaperInfo('', '',
+                                        Constants.WallpaperSourceEnum.Default);
       } else {
         selectedIndex = Math.min(selectedIndex, customWallpaperCount - 1);
         wallpaperGrid.selectionModel.selectedIndex = selectedIndex;
