@@ -1459,3 +1459,6 @@ crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pa
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
+
+crbug.com/422050 [ Mac ] fast/text/justification-padding-mid-word.html [ NeedsRebaseline ]
+crbug.com/422050 [ Mac ] virtual/antialiasedtext/fast/text/justification-padding-mid-word.html [ NeedsRebaseline ]
