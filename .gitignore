@@ -241,6 +241,7 @@ v8.log
 /sandbox/linux/seccomp-legacy/
 /sdch/open-vcdiff
 /seccompsandbox
+/signing_keys
 /skia/tools/clusterfuzz-data/
 /sql/sql_unittests_run.xml
 /sync/sync.xml
