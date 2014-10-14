@@ -34,7 +34,7 @@ void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
   output->append("</script>");
 }
 
-// Appends the source for JsTemplates in a script tag.
+// Appends the source for load_time_data.js in a script tag.
 void AppendLoadTimeData(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   base::StringPiece load_time_data_src(
@@ -102,6 +102,7 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
 std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
                                 const base::DictionaryValue* json) {
   std::string output(html_template.data(), html_template.size());
+  AppendLoadTimeData(&output);
   AppendJsonHtml(json, &output);
   AppendI18nTemplateSourceHtml(&output);
   return output;
