@@ -3353,6 +3353,11 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
   EnterFunction(result);
 
   if (result == OK) {
+    if (ssl_config_.version_fallback &&
+        ssl_config_.version_max < ssl_config_.version_fallback_min) {
+      return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
+    }
+
     // SSL handshake is completed. Let's verify the certificate.
     GotoState(STATE_VERIFY_CERT);
     // Done!

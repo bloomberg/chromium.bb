@@ -32,6 +32,9 @@ NET_EXPORT extern const uint16 kDefaultSSLVersionMin;
 // Default maximum protocol version.
 NET_EXPORT extern const uint16 kDefaultSSLVersionMax;
 
+// Default minimum protocol version that it's acceptable to fallback to.
+NET_EXPORT extern const uint16 kDefaultSSLVersionFallbackMin;
+
 // A collection of SSL-related configuration settings.
 struct NET_EXPORT SSLConfig {
   // Default to revocation checking.
@@ -72,6 +75,12 @@ struct NET_EXPORT SSLConfig {
   // protocol versions are enabled.
   uint16 version_min;
   uint16 version_max;
+
+  // version_fallback_min contains the minimum version that is acceptable to
+  // fallback to. Versions before this may be tried to see whether they would
+  // have succeeded and thus to give a better message to the user, but the
+  // resulting connection won't be used in these cases.
+  uint16 version_fallback_min;
 
   // Presorted list of cipher suites which should be explicitly prevented from
   // being used in addition to those disabled by the net built-in policy.

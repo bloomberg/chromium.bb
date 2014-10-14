@@ -1121,6 +1121,10 @@ const char kSSLVersionMax[]                 = "ssl-version-max";
 // "tls1.2").
 const char kSSLVersionMin[]                 = "ssl-version-min";
 
+// Specifies the minimum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
+// "tls1.2") that TLS fallback will accept.
+const char kSSLVersionFallbackMin[]         = "ssl-version-fallback-min";
+
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 

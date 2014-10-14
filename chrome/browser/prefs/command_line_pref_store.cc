@@ -33,6 +33,7 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
           data_reduction_proxy::prefs::kDataReductionProxy },
       { switches::kSSLVersionMin, prefs::kSSLVersionMin },
       { switches::kSSLVersionMax, prefs::kSSLVersionMax },
+      { switches::kSSLVersionFallbackMin, prefs::kSSLVersionFallbackMin },
 };
 
 const CommandLinePrefStore::PathSwitchToPreferenceMapEntry

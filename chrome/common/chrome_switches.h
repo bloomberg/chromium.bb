@@ -307,6 +307,7 @@ extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
+extern const char kSSLVersionFallbackMin[];
 extern const char kStartMaximized[];
 extern const char kSupervisedUserId[];
 extern const char kSupervisedUserSyncToken[];

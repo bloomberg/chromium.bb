@@ -336,6 +336,10 @@ NET_ERROR(SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE, -163)
 // library.
 NET_ERROR(SSL_CLIENT_AUTH_CERT_BAD_FORMAT, -164)
 
+// The SSL server requires falling back to a version older than the configured
+// minimum fallback version, and thus fallback failed.
+NET_ERROR(SSL_FALLBACK_BEYOND_MINIMUM_VERSION, -165)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
