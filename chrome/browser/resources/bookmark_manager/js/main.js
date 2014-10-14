@@ -982,8 +982,8 @@ function restoreTree(node, opt_parentId) {
  * Restores the last set of bookmarks that was deleted.
  */
 function undoDelete() {
-  lastDeleted.nodes.forEach(function(node) {
-    restoreTree(node);
+  lastDeleted.nodes.forEach(function(arr) {
+    arr.forEach(restoreTree);
   });
   lastDeleted = null;
   $('undo-delete-command').canExecuteChange();
