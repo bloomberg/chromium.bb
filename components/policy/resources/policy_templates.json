@@ -6717,12 +6717,12 @@
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 272,
-      'caption': '''Allows EasyUnlock to be used''',
-      'desc': '''Allows EasyUnlock to be used on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
+      'caption': '''Allows Smart Lock to be used''',
+      'desc': '''Allows Smart Lock to be used on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
 
-      If you enable this setting, users will be allowed to use EasyUnlock if the requirements for the feature are satified.
+      If you enable this setting, users will be allowed to use Smart Lock if the requirements for the feature are satisfied.
 
-      If you disable this setting, users will not be allowed to use EasyUnlock.
+      If you disable this setting, users will not be allowed to use Smart Lock.
 
       If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
