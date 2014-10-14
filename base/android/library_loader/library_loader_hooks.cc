@@ -46,6 +46,14 @@ enum BrowserHistogramCode {
 
 RendererHistogramCode g_renderer_histogram_code = NO_PENDING_HISTOGRAM_CODE;
 
+enum LibraryLoadFromApkSupportCode {
+  // The device's support for loading a library directly from the APK file.
+  NOT_SUPPORTED = 0,
+  SUPPORTED = 1,
+
+  MAX_LIBRARY_LOAD_FROM_APK_SUPPORT_CODE = 2,
+};
+
 } // namespace
 
 static void RegisterChromiumAndroidLinkerRendererHistogram(
@@ -76,7 +84,8 @@ static void RecordChromiumAndroidLinkerBrowserHistogram(
     JNIEnv* env,
     jclass clazz,
     jboolean is_using_browser_shared_relros,
-    jboolean load_at_fixed_address_failed) {
+    jboolean load_at_fixed_address_failed,
+    jboolean library_load_from_apk_supported) {
   // For low-memory devices, record whether or not we successfully loaded the
   // browser at a fixed address. Otherwise just record a normal invocation.
   BrowserHistogramCode histogram_code;
@@ -89,6 +98,13 @@ static void RecordChromiumAndroidLinkerBrowserHistogram(
   UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.BrowserStates",
                             histogram_code,
                             MAX_BROWSER_HISTOGRAM_CODE);
+
+  // Record whether the device supports loading a library directly from the APK
+  // file.
+  UMA_HISTOGRAM_ENUMERATION("ChromiumAndroidLinker.LibraryLoadFromApkSupported",
+                            library_load_from_apk_supported ?
+                                SUPPORTED : NOT_SUPPORTED,
+                            MAX_LIBRARY_LOAD_FROM_APK_SUPPORT_CODE);
 }
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {

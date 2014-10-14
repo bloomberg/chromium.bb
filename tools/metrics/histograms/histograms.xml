@@ -2707,6 +2707,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Is low memory device.</summary>
 </histogram>
 
+<histogram name="ChromiumAndroidLinker.LibraryLoadFromApkSupported"
+    enum="BooleanSupported">
+  <owner>petrcermak@chromium.org</owner>
+  <summary>
+    Whether the device supports loading a library directly from the APK file.
+    The functionality is checked and reported during every Chromium browser
+    process start up.
+  </summary>
+</histogram>
+
 <histogram name="ChromiumAndroidLinker.LoadedAtFixedAddressFailed"
     enum="Boolean">
   <obsolete>
@@ -39658,6 +39668,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanSuccess" type="int">
   <int value="0" label="Failure"/>
   <int value="1" label="Success"/>
+</enum>
+
+<enum name="BooleanSupported" type="int">
+  <int value="0" label="Not supported"/>
+  <int value="1" label="Supported"/>
 </enum>
 
 <enum name="BooleanSuppressed" type="int">

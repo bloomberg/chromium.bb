@@ -50,6 +50,10 @@ public class LibraryLoader {
     private static boolean sIsUsingBrowserSharedRelros = false;
     private static boolean sLoadAtFixedAddressFailed = false;
 
+    // One-way switch recording whether the device supports memory mapping
+    // APK files with executable permissions. Only used in the browser.
+    private static boolean sLibraryLoadFromApkSupported = false;
+
     // One-way switch becomes true if the system library loading failed,
     // and the right native library was found and loaded by the hack.
     // The flag is used to report UMA stats later.
@@ -160,10 +164,17 @@ public class LibraryLoader {
                     // Load libraries using the Chromium linker.
                     Linker.prepareLibraryLoad();
 
+                    // Check if the device supports loading a library directly from the APK file.
+                    String apkfile = context.getApplicationInfo().sourceDir;
+                    if (Linker.isInBrowserProcess()) {
+                        sLibraryLoadFromApkSupported = Linker.checkLibraryLoadFromApkSupport(
+                                apkfile);
+                    }
+
                     for (String library : NativeLibraries.LIBRARIES) {
                         String zipfile = null;
                         if (Linker.isInZipFile()) {
-                            zipfile = context.getApplicationInfo().sourceDir;
+                            zipfile = apkfile;
                             Log.i(TAG, "Loading " + library + " from within " + zipfile);
                         } else {
                             Log.i(TAG, "Loading: " + library);
@@ -305,8 +316,10 @@ public class LibraryLoader {
     // onNativeInitializationComplete().
     private static void recordBrowserProcessHistogram() {
         if (Linker.isUsed()) {
+            assert Linker.isInBrowserProcess();
             nativeRecordChromiumAndroidLinkerBrowserHistogram(sIsUsingBrowserSharedRelros,
-                                                              sLoadAtFixedAddressFailed);
+                                                              sLoadAtFixedAddressFailed,
+                                                              sLibraryLoadFromApkSupported);
         }
     }
 
@@ -334,10 +347,12 @@ public class LibraryLoader {
 
     // Method called to record statistics about the Chromium linker operation for the main
     // browser process. Indicates whether the linker attempted relro sharing for the browser,
-    // and if it did, whether the library failed to load at a fixed address.
+    // and if it did, whether the library failed to load at a fixed address. Also records
+    // support for memory mapping APK files with executable permissions.
     private static native void nativeRecordChromiumAndroidLinkerBrowserHistogram(
             boolean isUsingBrowserSharedRelros,
-            boolean loadAtFixedAddressFailed);
+            boolean loadAtFixedAddressFailed,
+            boolean apkMemoryMappingSupported);
 
     // Method called to register (for later recording) statistics about the Chromium linker
     // operation for a renderer process. Indicates whether the linker attempted relro sharing,

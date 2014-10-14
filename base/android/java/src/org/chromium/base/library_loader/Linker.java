@@ -136,7 +136,7 @@ import javax.annotation.Nullable;
  *
  *    This behaviour is altered by the BROWSER_SHARED_RELRO_CONFIG configuration
  *    variable below, which may force the browser to load the libraries at
- *    fixed addresses to.
+ *    fixed addresses too.
  *
  *  - Once all libraries are loaded in the browser process, one can call
  *    getSharedRelros() which returns a Bundle instance containing a map that
@@ -378,6 +378,19 @@ public class Linker {
         synchronized (Linker.class) {
             ensureInitializedLocked();
             return sBrowserUsesSharedRelro;
+        }
+    }
+
+    /**
+     * Call this method to determine if the linker is running in the browser
+     * process.
+     *
+     * @return true if the linker is running in the browser process.
+     */
+    public static boolean isInBrowserProcess() {
+        synchronized (Linker.class) {
+            ensureInitializedLocked();
+            return sInBrowserProcess;
         }
     }
 
@@ -820,6 +833,24 @@ public class Linker {
     }
 
     /**
+     * Check whether the device supports loading a library directly from the APK file.
+     *
+     * @param apkFile Filename of the APK.
+     * @return true if supported.
+     */
+    public static boolean checkLibraryLoadFromApkSupport(String apkFile) {
+        synchronized (Linker.class) {
+            ensureInitializedLocked();
+
+            if (DEBUG) Log.i(TAG, "checkLibraryLoadFromApkSupported: " + apkFile);
+            boolean supported = nativeCheckLibraryLoadFromApkSupport(apkFile);
+            if (DEBUG) Log.i(TAG, "Loading a library directly from the APK file " +
+                    (supported ? "" : "NOT ") + "supported");
+            return supported;
+        }
+    }
+
+    /**
      * Move activity from the native thread to the main UI thread.
      * Called from native code on its own thread.  Posts a callback from
      * the UI thread back to native code.
@@ -915,6 +946,16 @@ public class Linker {
      * @return address to pass to future mmap, or 0 on error.
      */
     private static native long nativeGetRandomBaseLoadAddress(long sizeBytes);
+
+    /**
+     * Native method which checks whether the device supports loading a library
+     * directly from the APK file.
+     *
+     * @param apkFile Filename of the APK.
+     * @return true if supported.
+     *
+     */
+    private static native boolean nativeCheckLibraryLoadFromApkSupport(String apkFile);
 
     /**
      * Record information for a given library.

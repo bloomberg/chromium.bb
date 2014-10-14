@@ -15,7 +15,9 @@
 
 #include <android/log.h>
 #include <crazy_linker.h>
+#include <fcntl.h>
 #include <jni.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -574,6 +576,44 @@ jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz, jlong bytes) {
   return static_cast<jlong>(reinterpret_cast<uintptr_t>(address));
 }
 
+// Check whether the device supports loading a library directly from the APK
+// file.
+//
+// |env| is the current JNI environment handle.
+// |clazz| is the static class handle which is not used here.
+// |apkfile_name| is the filename of the APK.
+// Returns true if supported.
+jboolean CheckLibraryLoadFromApkSupport(JNIEnv* env, jclass clazz,
+                                          jstring apkfile_name) {
+  String apkfile_name_str(env, apkfile_name);
+  const char* apkfile_name_c_str = apkfile_name_str.c_str();
+
+  int fd = open(apkfile_name_c_str, O_RDONLY);
+  if (fd == -1) {
+    LOG_ERROR("%s: Failed to open %s\n", __FUNCTION__, apkfile_name_c_str);
+    return false;
+  }
+
+  LOG_INFO(
+      "%s: Memory mapping the first page of %s with executable permissions\n",
+      __FUNCTION__, apkfile_name_c_str);
+  void* address = mmap(NULL, PAGE_SIZE, PROT_EXEC, MAP_PRIVATE, fd, 0);
+
+  jboolean success;
+  if (address == MAP_FAILED) {
+    success = false;
+  } else {
+    success = true;
+    munmap(address, PAGE_SIZE);
+  }
+
+  close(fd);
+
+  LOG_INFO("  %ssupported\n", success ? "" : "NOT ");
+  return success;
+
+}
+
 const JNINativeMethod kNativeMethods[] = {
     {"nativeLoadLibrary",
      "("
@@ -623,7 +663,13 @@ const JNINativeMethod kNativeMethods[] = {
      "J"
      ")"
      "J",
-     reinterpret_cast<void*>(&GetRandomBaseLoadAddress)}, };
+     reinterpret_cast<void*>(&GetRandomBaseLoadAddress)},
+     {"nativeCheckLibraryLoadFromApkSupport",
+      "("
+      "Ljava/lang/String;"
+      ")"
+      "Z",
+      reinterpret_cast<void*>(&CheckLibraryLoadFromApkSupport)}, };
 
 }  // namespace
 
