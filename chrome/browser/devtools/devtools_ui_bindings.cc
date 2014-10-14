@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -790,14 +790,14 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
   base::ListValue results;
   for (extensions::ExtensionSet::const_iterator extension(extensions->begin());
        extension != extensions->end(); ++extension) {
-    if (extensions::ManifestURL::GetDevToolsPage(extension->get()).is_empty())
+    if (extensions::chrome_manifest_urls::GetDevToolsPage(extension->get())
+            .is_empty())
       continue;
     base::DictionaryValue* extension_info = new base::DictionaryValue();
     extension_info->Set(
         "startPage",
-        new base::StringValue(
-            extensions::ManifestURL::GetDevToolsPage(
-                extension->get()).spec()));
+        new base::StringValue(extensions::chrome_manifest_urls::GetDevToolsPage(
+                                  extension->get()).spec()));
     extension_info->Set("name", new base::StringValue((*extension)->name()));
     extension_info->Set("exposeExperimentalAPIs",
                         new base::FundamentalValue(

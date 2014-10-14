@@ -21,8 +21,8 @@ namespace extensions {
 struct ManifestURL : public Extension::ManifestData {
   GURL url_;
 
-  // Returns the DevTools Page for this extension.
-  static const GURL& GetDevToolsPage(const Extension* extension);
+  // Returns the value of a URL key for an extension, or an empty URL if unset.
+  static const GURL& Get(const Extension* extension, const std::string& key);
 
   // Returns the Homepage URL for this extension.
   // If homepage_url was not specified in the manifest,
@@ -46,37 +46,6 @@ struct ManifestURL : public Extension::ManifestData {
 
   // Returns the webstore page URL for this extension.
   static const GURL GetDetailsURL(const Extension* extension);
-};
-
-// A structure to hold the chrome URL overrides that may be specified
-// in the manifest of an extension.
-struct URLOverrides : public Extension::ManifestData {
-  typedef std::map<const std::string, GURL> URLOverrideMap;
-
-  // Define out of line constructor/destructor to please Clang.
-  URLOverrides();
-  virtual ~URLOverrides();
-
-  static const URLOverrideMap&
-      GetChromeURLOverrides(const Extension* extension);
-
-  // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
-  // which override the handling of those URLs. (see ExtensionOverrideUI).
-  URLOverrideMap chrome_url_overrides_;
-};
-
-// Parses the "devtools_page" manifest key.
-class DevToolsPageHandler : public ManifestHandler {
- public:
-  DevToolsPageHandler();
-  virtual ~DevToolsPageHandler();
-
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-
- private:
-  virtual const std::vector<std::string> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsPageHandler);
 };
 
 // Parses the "homepage_url" manifest key.
@@ -126,20 +95,6 @@ class AboutPageHandler : public ManifestHandler {
   virtual const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AboutPageHandler);
-};
-
-// Parses the "chrome_url_overrides" manifest key.
-class URLOverridesHandler : public ManifestHandler {
- public:
-  URLOverridesHandler();
-  virtual ~URLOverridesHandler();
-
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-
- private:
-  virtual const std::vector<std::string> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(URLOverridesHandler);
 };
 
 }  // namespace extensions

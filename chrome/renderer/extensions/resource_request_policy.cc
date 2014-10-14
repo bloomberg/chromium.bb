@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -75,8 +75,9 @@ bool ResourceRequestPolicy::CanRequestResource(
         page_url.GetOrigin() == extension->url();
     // - devtools (chrome-extension:// URLs are loaded into frames of devtools
     //     to support the devtools extension APIs)
-    bool is_dev_tools = page_url.SchemeIs(content::kChromeDevToolsScheme) &&
-                        !ManifestURL::GetDevToolsPage(extension).is_empty();
+    bool is_dev_tools =
+        page_url.SchemeIs(content::kChromeDevToolsScheme) &&
+        !chrome_manifest_urls::GetDevToolsPage(extension).is_empty();
     bool transition_allowed =
         !ui::PageTransitionIsWebTriggerable(transition_type);
     // - unreachable web page error page (to allow showing the icon of the

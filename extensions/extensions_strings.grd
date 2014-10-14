@@ -178,6 +178,9 @@
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
         This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
       </message>
+      <message name="IDS_EXTENSION_LOAD_ABOUT_PAGE_FAILED" desc="">
+        Could not load about page '<ph name="ABOUT_PAGE">$1<ex>page.html</ex></ph>'.
+      </message>
       <message name="IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED" desc="">
         Could not load background script '<ph name="BACKGROUND_SCRIPT">$1<ex>script.js</ex></ph>'.
       </message>

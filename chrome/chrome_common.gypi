@@ -184,6 +184,8 @@
       'common/extensions/api/webstore/webstore_api_constants.h',
       'common/extensions/chrome_manifest_handlers.cc',
       'common/extensions/chrome_manifest_handlers.h',
+      'common/extensions/chrome_manifest_url_handlers.cc',
+      'common/extensions/chrome_manifest_url_handlers.h',
       'common/extensions/extension_file_util.cc',
       'common/extensions/extension_file_util.h',
       'common/extensions/manifest_handlers/app_isolation_info.cc',

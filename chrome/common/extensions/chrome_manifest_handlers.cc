@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
