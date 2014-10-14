@@ -47,7 +47,7 @@ class MediaStreamTrack final
     , public MediaStreamSource::Observer {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStreamTrack>);
     DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
 public:
     static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);
     virtual ~MediaStreamTrack();
@@ -100,7 +100,7 @@ private:
     HeapHashSet<Member<MediaStream> > m_registeredMediaStreams;
     bool m_isIteratingRegisteredMediaStreams;
     bool m_stopped;
-    Member<MediaStreamComponent> m_component;
+    RefPtr<MediaStreamComponent> m_component;
 };
 
 typedef HeapVector<Member<MediaStreamTrack> > MediaStreamTrackVector;

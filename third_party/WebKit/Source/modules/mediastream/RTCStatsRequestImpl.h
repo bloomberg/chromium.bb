@@ -60,7 +60,7 @@ private:
     void clear();
 
     Member<RTCStatsCallback> m_successCallback;
-    Member<MediaStreamComponent> m_component;
+    RefPtr<MediaStreamComponent> m_component;
     Member<RTCPeerConnection> m_requester;
 };
 
