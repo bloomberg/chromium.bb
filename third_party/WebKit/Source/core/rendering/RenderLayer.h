@@ -228,8 +228,7 @@ public:
     LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const RenderLayer* ancestorLayer, const LayoutPoint& offsetFromRoot) const;
     LayoutRect fragmentsBoundingBox(const RenderLayer* ancestorLayer) const;
 
-    // FIXME: This function is inconsistent as to whether the returned rect has been flipped for writing mode.
-    LayoutRect boundingBoxForCompositingOverlapTest() const { return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : logicalBoundingBox(); }
+    LayoutRect boundingBoxForCompositingOverlapTest() const { return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : flippedLogicalBoundingBox(); }
 
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
