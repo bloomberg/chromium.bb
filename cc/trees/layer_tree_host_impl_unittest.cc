@@ -2266,8 +2266,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
   }
 
   void SetupTopControlsAndScrollLayer() {
-    CreateHostImpl(settings_, CreateOutputSurface());
-
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_->active_tree(), 1);
     scoped_ptr<LayerImpl> root_clip =
@@ -2290,8 +2288,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     host_impl_->SetViewportSize(viewport_size_);
     host_impl_->SetTopControlsLayoutHeight(
         settings_.top_controls_height);
-    LayerImpl* root_clip_ptr = host_impl_->active_tree()->root_layer();
-    EXPECT_EQ(clip_size_, root_clip_ptr->bounds());
 
     host_impl_->CreatePendingTree();
     root =
@@ -2316,8 +2312,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     host_impl_->SetViewportSize(viewport_size_);
     host_impl_->sync_tree()->set_top_controls_layout_height(
         settings_.top_controls_height);
-    root_clip_ptr = host_impl_->sync_tree()->root_layer();
-    EXPECT_EQ(clip_size_, root_clip_ptr->bounds());
   }
 
   void SetupTopControlsAndScrollLayerWithVirtualViewport(
@@ -2384,7 +2378,30 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
   LayerTreeSettings settings_;
 };  // class LayerTreeHostImplTopControlsTest
 
+TEST_F(LayerTreeHostImplTopControlsTest,
+       TopControlsDeltaOnlySentWithRootLayer) {
+  CreateHostImpl(settings_, CreateOutputSurface());
+
+  host_impl_->active_tree()->set_top_controls_delta(-20.f);
+
+  // Because LTH::ApplyScrollAndScale doesn't know what to do with a scroll
+  // delta packet when the root layer doesn't exist yet, make sure not to set
+  // sent_top_controls_delta either to avoid the delta getting clobbered on the
+  // next commit.
+  scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
+  EXPECT_EQ(scroll_info->top_controls_delta, 0.f);
+  EXPECT_EQ(host_impl_->active_tree()->sent_top_controls_delta(), 0.f);
+
+  SetupTopControlsAndScrollLayer();
+
+  // After the root layer exists, it should be set normally.
+  scroll_info = host_impl_->ProcessScrollDeltas();
+  EXPECT_EQ(scroll_info->top_controls_delta, -20.f);
+  EXPECT_EQ(host_impl_->active_tree()->sent_top_controls_delta(), -20.f);
+}
+
 TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
+  CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
@@ -2408,6 +2425,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
 }
 
 TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsWithPageScale) {
+  CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
@@ -2441,6 +2459,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsWithPageScale) {
 // Ensure setting the top controls position explicitly using the setters on the
 // TreeImpl correctly affects the top controls manager and viewport bounds.
 TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
+  CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
@@ -2464,6 +2483,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, PositionTopControlsExplicitly) {
 // applied on sync tree activation. The total top controls offset shouldn't
 // change after the activation.
 TEST_F(LayerTreeHostImplTopControlsTest, ApplyDeltaOnTreeActivation) {
+  CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
@@ -2498,6 +2518,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, ApplyDeltaOnTreeActivation) {
 // height is the amount that the inner viewport container was shrunk outside
 // the compositor to accommodate the top controls.
 TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
+  CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
@@ -2689,6 +2710,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
 
 TEST_F(LayerTreeHostImplTopControlsTest,
        ScrollNonScrollableRootWithTopControls) {
+  CreateHostImpl(settings_, CreateOutputSurface());
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 

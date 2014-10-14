@@ -21,7 +21,9 @@
 
 namespace cc {
 
-ScrollAndScaleSet::ScrollAndScaleSet() {}
+ScrollAndScaleSet::ScrollAndScaleSet()
+    : page_scale_delta(1.f), top_controls_delta(0.f) {
+}
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
 
