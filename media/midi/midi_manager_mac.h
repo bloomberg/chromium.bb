@@ -46,11 +46,6 @@ class MEDIA_EXPORT MidiManagerMac : public MidiManager {
                     const std::vector<uint8>& data,
                     double timestamp);
 
-  // Helper
-  static media::MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint);
-  static double MIDITimeStampToSeconds(MIDITimeStamp timestamp);
-  static MIDITimeStamp SecondsToMIDITimeStamp(double seconds);
-
   // CoreMIDI
   MIDIClientRef midi_client_;
   MIDIPortRef coremidi_input_;

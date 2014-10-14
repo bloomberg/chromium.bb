@@ -23,6 +23,63 @@ using std::string;
 
 namespace media {
 
+namespace {
+
+MidiPortInfo GetPortInfoFromEndpoint(
+    MIDIEndpointRef endpoint) {
+  SInt32 id_number = 0;
+  MIDIObjectGetIntegerProperty(endpoint, kMIDIPropertyUniqueID, &id_number);
+  string id = IntToString(id_number);
+
+  string manufacturer;
+  CFStringRef manufacturer_ref = NULL;
+  OSStatus result = MIDIObjectGetStringProperty(
+      endpoint, kMIDIPropertyManufacturer, &manufacturer_ref);
+  if (result == noErr) {
+    manufacturer = SysCFStringRefToUTF8(manufacturer_ref);
+  } else {
+    // kMIDIPropertyManufacturer is not supported in IAC driver providing
+    // endpoints, and the result will be kMIDIUnknownProperty (-10835).
+    DLOG(WARNING) << "Failed to get kMIDIPropertyManufacturer with status "
+                  << result;
+  }
+
+  string name;
+  CFStringRef name_ref = NULL;
+  result = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyName, &name_ref);
+  if (result == noErr)
+    name = SysCFStringRefToUTF8(name_ref);
+  else
+    DLOG(WARNING) << "Failed to get kMIDIPropertyName with status " << result;
+
+  string version;
+  SInt32 version_number = 0;
+  result = MIDIObjectGetIntegerProperty(
+      endpoint, kMIDIPropertyDriverVersion, &version_number);
+  if (result == noErr) {
+    version = IntToString(version_number);
+  } else {
+    // kMIDIPropertyDriverVersion is not supported in IAC driver providing
+    // endpoints, and the result will be kMIDIUnknownProperty (-10835).
+    DLOG(WARNING) << "Failed to get kMIDIPropertyDriverVersion with status "
+                  << result;
+  }
+
+  return MidiPortInfo(id, manufacturer, name, version);
+}
+
+double MIDITimeStampToSeconds(MIDITimeStamp timestamp) {
+  UInt64 nanoseconds = AudioConvertHostTimeToNanos(timestamp);
+  return static_cast<double>(nanoseconds) / 1.0e9;
+}
+
+MIDITimeStamp SecondsToMIDITimeStamp(double seconds) {
+  UInt64 nanos = UInt64(seconds * 1.0e9);
+  return AudioConvertNanosToHostTime(nanos);
+}
+
+}  // namespace
+
 MidiManager* MidiManager::Create() {
   return new MidiManagerMac();
 }
@@ -189,62 +246,6 @@ void MidiManagerMac::SendMidiData(MidiManagerClient* client,
   midi_packet_ = MIDIPacketListInit(packet_list_);
 
   client->AccumulateMidiBytesSent(data.size());
-}
-
-// static
-MidiPortInfo MidiManagerMac::GetPortInfoFromEndpoint(
-    MIDIEndpointRef endpoint) {
-  SInt32 id_number = 0;
-  MIDIObjectGetIntegerProperty(endpoint, kMIDIPropertyUniqueID, &id_number);
-  string id = IntToString(id_number);
-
-  string manufacturer;
-  CFStringRef manufacturer_ref = NULL;
-  OSStatus result = MIDIObjectGetStringProperty(
-      endpoint, kMIDIPropertyManufacturer, &manufacturer_ref);
-  if (result == noErr) {
-    manufacturer = SysCFStringRefToUTF8(manufacturer_ref);
-  } else {
-    // kMIDIPropertyManufacturer is not supported in IAC driver providing
-    // endpoints, and the result will be kMIDIUnknownProperty (-10835).
-    DLOG(WARNING) << "Failed to get kMIDIPropertyManufacturer with status "
-                  << result;
-  }
-
-  string name;
-  CFStringRef name_ref = NULL;
-  result = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyName, &name_ref);
-  if (result == noErr)
-    name = SysCFStringRefToUTF8(name_ref);
-  else
-    DLOG(WARNING) << "Failed to get kMIDIPropertyName with status " << result;
-
-  string version;
-  SInt32 version_number = 0;
-  result = MIDIObjectGetIntegerProperty(
-      endpoint, kMIDIPropertyDriverVersion, &version_number);
-  if (result == noErr) {
-    version = IntToString(version_number);
-  } else {
-    // kMIDIPropertyDriverVersion is not supported in IAC driver providing
-    // endpoints, and the result will be kMIDIUnknownProperty (-10835).
-    DLOG(WARNING) << "Failed to get kMIDIPropertyDriverVersion with status "
-                  << result;
-  }
-
-  return MidiPortInfo(id, manufacturer, name, version);
-}
-
-// static
-double MidiManagerMac::MIDITimeStampToSeconds(MIDITimeStamp timestamp) {
-  UInt64 nanoseconds = AudioConvertHostTimeToNanos(timestamp);
-  return static_cast<double>(nanoseconds) / 1.0e9;
-}
-
-// static
-MIDITimeStamp MidiManagerMac::SecondsToMIDITimeStamp(double seconds) {
-  UInt64 nanos = UInt64(seconds * 1.0e9);
-  return AudioConvertNanosToHostTime(nanos);
 }
 
 }  // namespace media
