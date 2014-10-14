@@ -284,26 +284,31 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
 // against descendants in the same subtree only. features.adjacent is set to false, and
 // we start adding features instead of calling setWholeSubtreeInvalid.
 
+void RuleFeatureSet::addFeaturesToInvalidationSet(DescendantInvalidationSet& invalidationSet, const InvalidationSetFeatures& features)
+{
+    if (features.treeBoundaryCrossing)
+        invalidationSet.setTreeBoundaryCrossing();
+    if (features.adjacent) {
+        invalidationSet.setWholeSubtreeInvalid();
+        return;
+    }
+    if (!features.id.isEmpty())
+        invalidationSet.addId(features.id);
+    if (!features.tagName.isEmpty())
+        invalidationSet.addTagName(features.tagName);
+    for (const auto& className : features.classes)
+        invalidationSet.addClass(className);
+    for (const auto& attribute : features.attributes)
+        invalidationSet.addAttribute(attribute);
+    if (features.customPseudoElement)
+        invalidationSet.setCustomPseudoInvalid();
+}
+
 void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
-            if (features.treeBoundaryCrossing)
-                invalidationSet->setTreeBoundaryCrossing();
-            if (features.adjacent) {
-                invalidationSet->setWholeSubtreeInvalid();
-            } else {
-                if (!features.id.isEmpty())
-                    invalidationSet->addId(features.id);
-                if (!features.tagName.isEmpty())
-                    invalidationSet->addTagName(features.tagName);
-                for (const auto& className : features.classes)
-                    invalidationSet->addClass(className);
-                for (const auto& attribute : features.attributes)
-                    invalidationSet->addAttribute(attribute);
-                if (features.customPseudoElement)
-                    invalidationSet->setCustomPseudoInvalid();
-            }
+            addFeaturesToInvalidationSet(*invalidationSet, features);
         } else {
             if (current->pseudoType() == CSSSelector::PseudoHost)
                 features.treeBoundaryCrossing = true;
@@ -314,11 +319,13 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
             }
         }
 
+        if (current->relation() == CSSSelector::SubSelector)
+            continue;
+
         if (current->isShadowSelector())
             features.treeBoundaryCrossing = true;
 
-        if (current->relation() != CSSSelector::SubSelector)
-            features.adjacent = current->isAdjacentSelector();
+        features.adjacent = current->isAdjacentSelector();
     }
 }
 
