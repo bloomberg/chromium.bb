@@ -139,13 +139,6 @@
 //   virtual void foo() OVERRIDE;
 #define OVERRIDE override
 
-// Annotate a virtual method indicating that subclasses must not override it,
-// or annotate a class to indicate that it cannot be subclassed.
-// Use like:
-//   virtual void foo() FINAL;
-//   class B FINAL : public A {};
-#define FINAL final
-
 // Annotate a function indicating the caller must examine the return value.
 // Use like:
 //   int foo() WARN_UNUSED_RESULT;
