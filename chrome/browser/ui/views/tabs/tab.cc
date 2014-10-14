@@ -743,10 +743,10 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
 void Tab::Layout() {
   gfx::Rect lb = GetContentsBounds();
-  lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);
   if (lb.IsEmpty())
     return;
 
+  lb.Inset(kLeftPadding, kTopPadding, kRightPadding, kBottomPadding);
   showing_icon_ = ShouldShowIcon();
   favicon_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   if (showing_icon_) {
