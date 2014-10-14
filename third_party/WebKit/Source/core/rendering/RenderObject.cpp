@@ -1370,11 +1370,6 @@ void RenderObject::invalidatePaintForOverflowIfNeeded()
         invalidatePaintForOverflow();
 }
 
-bool RenderObject::checkForPaintInvalidation() const
-{
-    return !document().view()->needsFullPaintInvalidation() && everHadLayout();
-}
-
 LayoutRect RenderObject::rectWithOutlineForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
 {
     LayoutRect r(clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState));

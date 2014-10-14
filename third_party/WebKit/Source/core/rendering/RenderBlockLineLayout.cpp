@@ -1070,9 +1070,8 @@ void RenderBlockFlow::markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>&
     for (size_t i = 0; i < floatCount; ++i) {
         if (!floats[i].everHadLayout) {
             RenderBox* f = floats[i].object;
-            if (!f->x() && !f->y() && f->checkForPaintInvalidation()) {
+            if (!f->x() && !f->y())
                 f->setShouldDoFullPaintInvalidation();
-            }
         }
     }
 }

@@ -595,7 +595,6 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     if (!child->needsLayout())
         child->markForPaginationRelayoutIfNeeded(layoutScope);
 
-    bool childHadLayout = child->everHadLayout();
     bool childNeededLayout = child->needsLayout();
     if (childNeededLayout)
         child->layout();
@@ -670,13 +669,10 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     if (childRenderBlockFlow)
         addOverhangingFloats(childRenderBlockFlow, !childNeededLayout);
 
-    // If the child moved, we have to invalidate it's paint  as well as any floating/positioned
+    // If the child moved, we have to invalidate its paint as well as any floating/positioned
     // descendants. An exception is if we need a layout. In this case, we know we're going to
     // invalidate our paint (and the child) anyway.
-    bool didNotDoFullLayoutAndMoved = childHadLayout && !selfNeedsLayout() && (childOffset.width() || childOffset.height());
-    bool didNotLayoutAndNeedsPaintInvalidation = !childHadLayout && child->checkForPaintInvalidation();
-
-    if (didNotDoFullLayoutAndMoved || didNotLayoutAndNeedsPaintInvalidation)
+    if (!selfNeedsLayout() && (childOffset.width() || childOffset.height()))
         child->invalidatePaintForOverhangingFloats(true);
 
     if (paginated) {

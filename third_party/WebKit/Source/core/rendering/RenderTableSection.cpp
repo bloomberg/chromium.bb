@@ -1058,7 +1058,7 @@ void RenderTableSection::layoutRows()
                 // If the child moved, we have to issue paint invalidations to it as well as any floating/positioned
                 // descendants. An exception is if we need a layout. In this case, we know we're going to
                 // issue paint invalidations ourselves (and the child) anyway.
-                if (!table()->selfNeedsLayout() && cell->checkForPaintInvalidation())
+                if (!table()->selfNeedsLayout())
                     cell->setMayNeedPaintInvalidation(true);
             }
         }

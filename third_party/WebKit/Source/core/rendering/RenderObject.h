@@ -854,8 +854,6 @@ public:
 
     void invalidatePaintIncludingNonCompositingDescendants();
 
-    bool checkForPaintInvalidation() const;
-
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
     // coordinate space. This method deals with outlines and overflow.
     LayoutRect absoluteClippedOverflowRect() const;
