@@ -172,7 +172,9 @@ Device.prototype.getDOMNode = function(maxNumTabs, row) {
 
   // Name heading
   var heading = document.createElement('h3');
-  heading.textContent = this.session_.name;
+  var name = heading.appendChild(
+      createElementWithClassName('span', 'device-name'));
+  name.textContent = this.session_.name;
   heading.sessionData_ = this.session_;
   deviceDiv.appendChild(heading);
 
@@ -199,7 +201,7 @@ Device.prototype.getDOMNode = function(maxNumTabs, row) {
 
   var timeSpan = createElementWithClassName('div', 'device-timestamp');
   timeSpan.textContent = this.session_.modifiedTime;
-  heading.appendChild(timeSpan);
+  deviceDiv.appendChild(timeSpan);
 
   cr.ui.contextMenuHandler.setContextMenu(
       heading, DeviceContextMenuController.getInstance().menu);
@@ -445,7 +447,7 @@ DevicesView.prototype.displayResults_ = function() {
     if (i % MAX_NUM_COLUMNS == 0) {
       if (currentRowElement)
         resultsFragment.appendChild(currentRowElement);
-      currentRowElement = createElementWithClassName('div', 'devices-row');
+      currentRowElement = createElementWithClassName('div', 'device-row');
       rowIndex++;
       if (rowIndex < this.rowHeights_.length)
         maxNumTabs = this.rowHeights_[rowIndex];
