@@ -82,7 +82,7 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   }
 
   // WebContentsObserver.
-  virtual void WasHidden() OVERRIDE {
+  virtual void WasHidden() override {
     hidden_observed_ = true;
     hidden_callback_.Run();
   }
