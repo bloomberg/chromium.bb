@@ -72,14 +72,6 @@ class SANDBOX_EXPORT CodeGen {
                                Instruction* jt,
                                Instruction* jf);
 
-  // Traverse the graph of instructions and visit each instruction once.
-  // Traversal order is implementation-defined. It is acceptable to make
-  // changes to the graph from within the callback function. These changes
-  // do not affect traversal.
-  // The "fnc" function gets called with both the instruction and the opaque
-  // "aux" pointer.
-  void Traverse(Instruction*, void (*fnc)(Instruction*, void* aux), void* aux);
-
   // Compiles the graph of instructions into a BPF program that can be passed
   // to the kernel. Please note that this function modifies the graph in place
   // and must therefore only be called once per graph.

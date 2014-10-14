@@ -14,31 +14,6 @@
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 
-namespace {
-
-// Helper function for Traverse().
-void TraverseRecursively(std::set<sandbox::Instruction*>* visited,
-                         sandbox::Instruction* instruction) {
-  if (visited->find(instruction) == visited->end()) {
-    visited->insert(instruction);
-    switch (BPF_CLASS(instruction->code)) {
-      case BPF_JMP:
-        if (BPF_OP(instruction->code) != BPF_JA) {
-          TraverseRecursively(visited, instruction->jf_ptr);
-        }
-        TraverseRecursively(visited, instruction->jt_ptr);
-        break;
-      case BPF_RET:
-        break;
-      default:
-        TraverseRecursively(visited, instruction->next);
-        break;
-    }
-  }
-}
-
-}  // namespace
-
 namespace sandbox {
 
 CodeGen::CodeGen() : compiled_(false) {}
@@ -187,18 +162,6 @@ Instruction* CodeGen::MakeInstruction(uint16_t code,
   Instruction* insn = new Instruction(code, k, jt, jf);
   instructions_.push_back(insn);
   return insn;
-}
-
-void CodeGen::Traverse(Instruction* instruction,
-                       void (*fnc)(Instruction*, void*),
-                       void* aux) {
-  std::set<Instruction*> visited;
-  TraverseRecursively(&visited, instruction);
-  for (std::set<Instruction*>::const_iterator iter = visited.begin();
-       iter != visited.end();
-       ++iter) {
-    fnc(*iter, aux);
-  }
 }
 
 void CodeGen::FindBranchTargets(const Instruction& instructions,
