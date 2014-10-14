@@ -719,6 +719,65 @@
                 });
             }, 'Test MediaKeySession remove().');
 
+            var kSetServerCertificateExceptionsTestCases = [
+                // Too few parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.setServerCertificate(); }
+                },
+                // Invalid parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.setServerCertificate(''); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.setServerCertificate(null); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.setServerCertificate(undefined); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk) { return mk.setServerCertificate(1); }
+                },
+                // Empty array.
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk) { return mk.setServerCertificate(new Uint8Array(0)); }
+                },
+                // Valid calls, but not supported by ClearKey.
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk) { var cert = new Uint8Array(200); assert_true(ArrayBuffer.isView(cert)); return mk.setServerCertificate(cert); }
+                },
+                {
+                    // Pass in ArrayBuffer
+                    exception: 'NotSupportedError',
+                    func: function(mk) { var cert = new Uint8Array(200); assert_false(ArrayBuffer.isView(cert.buffer)); return mk.setServerCertificate(cert.buffer); }
+                }
+            ];
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var promises = kSetServerCertificateExceptionsTestCases.map(function(testCase) {
+                        return test_exception(testCase, mediaKeys);
+                    });
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'setServerCertificate() exception tests failed');
+                });
+            }, 'Test MediaKeys setServerCertificate() exceptions.');
+
+            // FIXME: Add test for successful setServerCertificate(). Note that
+            // ClearKey does not support it.
+
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
             // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.
             // FIXME: Add HTMLMediaElement syntax checks, e.g. setMediaKeys, mediakeys, onencrypted.
