@@ -7,20 +7,30 @@
 namespace chromeos {
 namespace file_system_provider {
 
-ProvidedFileSystemInfo::ProvidedFileSystemInfo() {}
+MountOptions::MountOptions() : writable(false), supports_notify_tag(false) {
+}
+
+MountOptions::MountOptions(const std::string& file_system_id,
+                           const std::string& display_name)
+    : file_system_id(file_system_id),
+      display_name(display_name),
+      writable(false),
+      supports_notify_tag(false) {
+}
+
+ProvidedFileSystemInfo::ProvidedFileSystemInfo()
+    : writable_(false), supports_notify_tag_(false) {
+}
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
     const std::string& extension_id,
-    const std::string& file_system_id,
-    const std::string& display_name,
-    bool writable,
-    bool supports_notify_tag,
+    const MountOptions& mount_options,
     const base::FilePath& mount_path)
     : extension_id_(extension_id),
-      file_system_id_(file_system_id),
-      display_name_(display_name),
-      writable_(writable),
-      supports_notify_tag_(supports_notify_tag),
+      file_system_id_(mount_options.file_system_id),
+      display_name_(mount_options.display_name),
+      writable_(mount_options.writable),
+      supports_notify_tag_(mount_options.supports_notify_tag),
       mount_path_(mount_path) {
 }
 

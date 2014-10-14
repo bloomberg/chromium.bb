@@ -77,13 +77,10 @@ class FileSystemProviderOperationsGetMetadataTest : public testing::Test {
   virtual ~FileSystemProviderOperationsGetMetadataTest() {}
 
   virtual void SetUp() override {
-    file_system_info_ =
-        ProvidedFileSystemInfo(kExtensionId,
-                               kFileSystemId,
-                               "" /* display_name */,
-                               false /* writable */,
-                               false /* supports_notify_tag */,
-                               base::FilePath() /* mount_path */);
+    file_system_info_ = ProvidedFileSystemInfo(
+        kExtensionId,
+        MountOptions(kFileSystemId, "" /* display_name */),
+        base::FilePath());
   }
 
   ProvidedFileSystemInfo file_system_info_;

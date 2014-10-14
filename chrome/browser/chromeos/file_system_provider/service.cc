@@ -101,15 +101,12 @@ void Service::SetFileSystemFactoryForTesting(
 }
 
 bool Service::MountFileSystem(const std::string& extension_id,
-                              const std::string& file_system_id,
-                              const std::string& display_name,
-                              bool writable,
-                              bool supports_notify_tag) {
+                              const MountOptions& options) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If already exists a file system provided by the same extension with this
   // id, then abort.
-  if (GetProvidedFileSystem(extension_id, file_system_id)) {
+  if (GetProvidedFileSystem(extension_id, options.file_system_id)) {
     FOR_EACH_OBSERVER(Observer,
                       observers_,
                       OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
@@ -134,7 +131,7 @@ bool Service::MountFileSystem(const std::string& extension_id,
   // The mount point path and name are unique per system, since they are system
   // wide. This is necessary for copying between profiles.
   const base::FilePath& mount_path =
-      util::GetMountPath(profile_, extension_id, file_system_id);
+      util::GetMountPath(profile_, extension_id, options.file_system_id);
   const std::string mount_point_name = mount_path.BaseName().AsUTF8Unsafe();
 
   if (!mount_points->RegisterFileSystem(mount_point_name,
@@ -157,19 +154,15 @@ bool Service::MountFileSystem(const std::string& extension_id,
   //   writable = false
   //   supports_notify_tag = false
   //   mount_path = /provided/b33f1337-hello_world-5aa5
-  ProvidedFileSystemInfo file_system_info(extension_id,
-                                          file_system_id,
-                                          display_name,
-                                          writable,
-                                          supports_notify_tag,
-                                          mount_path);
+  ProvidedFileSystemInfo file_system_info(extension_id, options, mount_path);
 
   ProvidedFileSystemInterface* file_system =
       file_system_factory_.Run(profile_, file_system_info);
   DCHECK(file_system);
-  file_system_map_[FileSystemKey(extension_id, file_system_id)] = file_system;
+  file_system_map_[FileSystemKey(extension_id, options.file_system_id)] =
+      file_system;
   mount_point_name_to_key_map_[mount_point_name] =
-      FileSystemKey(extension_id, file_system_id);
+      FileSystemKey(extension_id, options.file_system_id);
   RememberFileSystem(file_system_info);
 
   FOR_EACH_OBSERVER(
@@ -450,11 +443,12 @@ void Service::RestoreFileSystems(const std::string& extension_id) {
           << "Malformed provided file system information in preferences.";
       continue;
     }
-    const bool result = MountFileSystem(extension_id,
-                                        file_system_id,
-                                        display_name,
-                                        writable,
-                                        supports_notify_tag);
+    MountOptions options;
+    options.file_system_id = file_system_id;
+    options.display_name = display_name;
+    options.writable = writable;
+    options.supports_notify_tag = supports_notify_tag;
+    const bool result = MountFileSystem(extension_id, options);
     if (!result) {
       LOG(ERROR) << "Failed to restore a provided file system from "
                  << "preferences: " << extension_id << ", " << file_system_id

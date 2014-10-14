@@ -193,13 +193,12 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     profile_.reset(new TestingProfile);
     const base::FilePath mount_path =
         util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+    MountOptions mount_options;
+    mount_options.file_system_id = kFileSystemId;
+    mount_options.display_name = kDisplayName;
+    mount_options.supports_notify_tag = true;
     file_system_info_.reset(
-        new ProvidedFileSystemInfo(kExtensionId,
-                                   kFileSystemId,
-                                   kDisplayName,
-                                   false /* writable */,
-                                   true /* supports_notify_tag */,
-                                   mount_path));
+        new ProvidedFileSystemInfo(kExtensionId, mount_options, mount_path));
     provided_file_system_.reset(
         new ProvidedFileSystem(profile_.get(), *file_system_info_.get()));
     event_router_.reset(

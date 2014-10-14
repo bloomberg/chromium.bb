@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
 
+using chromeos::file_system_provider::MountOptions;
 using chromeos::file_system_provider::ProvidedFileSystemInfo;
 using chromeos::file_system_provider::ProvidedFileSystemInterface;
 using chromeos::file_system_provider::RequestValue;
@@ -59,12 +60,14 @@ bool FileSystemProviderMountFunction::RunSync() {
   if (!service)
     return false;
 
+  MountOptions options;
+  options.file_system_id = params->options.file_system_id;
+  options.display_name = params->options.display_name;
+  options.writable = params->options.writable;
+  options.supports_notify_tag = params->options.supports_notify_tag;
+
   // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
-  if (!service->MountFileSystem(extension_id(),
-                                params->options.file_system_id,
-                                params->options.display_name,
-                                params->options.writable,
-                                params->options.supports_notify_tag)) {
+  if (!service->MountFileSystem(extension_id(), options)) {
     base::ListValue* const result = new base::ListValue();
     result->Append(CreateError(kSecurityErrorName, kMountFailedErrorMessage));
     SetResult(result);

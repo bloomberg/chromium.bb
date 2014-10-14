@@ -48,6 +48,7 @@ class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
 class ProvidedFileSystemInterface;
 class ServiceFactory;
+struct MountOptions;
 
 // Registers preferences to remember registered file systems between reboots.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -83,10 +84,7 @@ class Service : public KeyedService,
   // it is required in order to enable the internal cache. For success, returns
   // true, otherwise false.
   bool MountFileSystem(const std::string& extension_id,
-                       const std::string& file_system_id,
-                       const std::string& display_name,
-                       bool writable,
-                       bool supports_notify_tag);
+                       const MountOptions& options);
 
   // Unmounts a file system with the specified |file_system_id| for the
   // |extension_id|. For success returns true, otherwise false.
