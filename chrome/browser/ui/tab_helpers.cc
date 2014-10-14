@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/chrome_content_settings_client.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -150,7 +151,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       ChromePasswordManagerClient::GetManagerFromWebContents(web_contents));
   SearchTabHelper::CreateForWebContents(web_contents);
+  // TODO(vabr): Remove TabSpecificContentSettings from here once their function
+  // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);
+  ChromeContentSettingsClient::CreateForWebContents(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
 
   // --- Platform-specific tab helpers ---

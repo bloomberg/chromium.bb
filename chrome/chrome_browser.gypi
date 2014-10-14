@@ -279,6 +279,8 @@
       'browser/component_updater/sw_reporter_installer_win.h',
       'browser/component_updater/swiftshader_component_installer.cc',
       'browser/component_updater/swiftshader_component_installer.h',
+      'browser/content_settings/chrome_content_settings_client.cc',
+      'browser/content_settings/chrome_content_settings_client.h',
       'browser/content_settings/content_settings_default_provider.cc',
       'browser/content_settings/content_settings_default_provider.h',
       'browser/content_settings/content_settings_override_provider.cc',

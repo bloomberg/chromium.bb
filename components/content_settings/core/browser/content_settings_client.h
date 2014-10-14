@@ -9,12 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "net/cookies/canonical_cookie.h"
 
 class GURL;
 class LocalSharedObjectsCounter;
 
 namespace net {
-class CookieList;
 class CookieOptions;
 }
 
