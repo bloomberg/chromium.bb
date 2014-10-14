@@ -629,7 +629,6 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
             { alignment_baselineAttr, AnimatedString },
             { baseline_shiftAttr, AnimatedString },
             { buffered_renderingAttr, AnimatedString },
-            { clipAttr, AnimatedRect },
             { clip_pathAttr, AnimatedString },
             { clip_ruleAttr, AnimatedString },
             { SVGNames::colorAttr, AnimatedColor },
