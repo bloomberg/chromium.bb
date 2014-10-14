@@ -190,10 +190,12 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         // Some fonts do not have a glyph for zero-width-space,
         // in that case use the space character and override the width.
         float width;
+        bool spaceUsedAsZeroWidthSpace = false;
         if (!glyphData.glyph && Character::treatAsZeroWidthSpaceInComplexScript(charData.character)) {
             charData.character = space;
             glyphData = glyphDataForCharacter(charData);
             width = 0;
+            spaceUsedAsZeroWidthSpace = true;
         } else {
             width = characterWidth(charData.character, glyphData);
         }
@@ -207,7 +209,7 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
             cacheFallbackFont(fontData, primaryFont);
         }
 
-        if (hasExtraSpacing)
+        if (hasExtraSpacing && !spaceUsedAsZeroWidthSpace)
             width = adjustSpacing(width, charData, *fontData, glyphBuffer);
 
         if (m_bounds)
