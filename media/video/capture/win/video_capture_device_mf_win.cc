@@ -34,34 +34,26 @@ static bool GetFrameSize(IMFMediaType* type, gfx::Size* frame_size) {
   return true;
 }
 
-static bool GetFrameRate(IMFMediaType* type,
-                         int* frame_rate_numerator,
-                         int* frame_rate_denominator) {
+static bool GetFrameRate(IMFMediaType* type, float* frame_rate) {
   UINT32 numerator, denominator;
   if (FAILED(MFGetAttributeRatio(type, MF_MT_FRAME_RATE, &numerator,
                                  &denominator))||
       !denominator) {
     return false;
   }
-  *frame_rate_numerator = numerator;
-  *frame_rate_denominator = denominator;
+  *frame_rate = static_cast<float>(numerator) / denominator;
   return true;
 }
 
-static bool FillCapabilitiesFromType(IMFMediaType* type,
-                                     VideoCaptureCapabilityWin* capability) {
+static bool FillFormat(IMFMediaType* type, VideoCaptureFormat* format) {
   GUID type_guid;
   if (FAILED(type->GetGUID(MF_MT_SUBTYPE, &type_guid)) ||
-      !GetFrameSize(type, &capability->supported_format.frame_size) ||
-      !GetFrameRate(type,
-                    &capability->frame_rate_numerator,
-                    &capability->frame_rate_denominator) ||
+      !GetFrameSize(type, &format->frame_size) ||
+      !GetFrameRate(type, &format->frame_rate) ||
       !VideoCaptureDeviceMFWin::FormatFromGuid(type_guid,
-          &capability->supported_format.pixel_format)) {
+                                               &format->pixel_format)) {
     return false;
   }
-  capability->supported_format.frame_rate =
-      capability->frame_rate_numerator / capability->frame_rate_denominator;
 
   return true;
 }
@@ -71,15 +63,13 @@ HRESULT FillCapabilities(IMFSourceReader* source,
   DWORD stream_index = 0;
   ScopedComPtr<IMFMediaType> type;
   HRESULT hr;
-  for (hr = source->GetNativeMediaType(kFirstVideoStream, stream_index,
-                                       type.Receive());
-       SUCCEEDED(hr);
-       hr = source->GetNativeMediaType(kFirstVideoStream, stream_index,
-                                       type.Receive())) {
-    VideoCaptureCapabilityWin capability(stream_index++);
-    if (FillCapabilitiesFromType(type, &capability))
-      capabilities->Add(capability);
+  while (SUCCEEDED(hr = source->GetNativeMediaType(
+                       kFirstVideoStream, stream_index, type.Receive()))) {
+    VideoCaptureFormat format;
+    if (FillFormat(type, &format))
+      capabilities->emplace_back(stream_index, format);
     type.Release();
+    ++stream_index;
   }
 
   if (capabilities->empty() && (SUCCEEDED(hr) || hr == MF_E_NO_MORE_TYPES))
@@ -251,12 +241,8 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   if (reader_) {
     hr = FillCapabilities(reader_, &capabilities);
     if (SUCCEEDED(hr)) {
-      VideoCaptureCapabilityWin found_capability =
-          capabilities.GetBestMatchedFormat(
-              params.requested_format.frame_size.width(),
-              params.requested_format.frame_size.height(),
-              params.requested_format.frame_rate);
-
+      const CapabilityWin found_capability =
+          GetBestMatchedCapability(params.requested_format, capabilities);
       ScopedComPtr<IMFMediaType> type;
       hr = reader_->GetNativeMediaType(
           kFirstVideoStream, found_capability.stream_index, type.Receive());
