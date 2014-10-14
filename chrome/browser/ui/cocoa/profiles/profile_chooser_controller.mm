@@ -745,6 +745,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [[self cell] setBackgroundColor:backgroundColor];
 }
 
+- (BOOL)canBecomeKeyView {
+  return YES;
+}
+
 @end
 
 // A custom view with the given background color.
@@ -784,7 +788,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (BOOL)canBecomeKeyView {
-  return false;
+  return NO;
 }
 
 @end
