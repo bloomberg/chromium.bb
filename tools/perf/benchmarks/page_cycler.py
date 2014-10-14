@@ -71,10 +71,7 @@ class PageCyclerNetsimTop10(benchmark.Benchmark):
   page_set = page_sets.Top10PageSet
   options = {
       'cold_load_percent': 100,
-      'extra_wpr_args': [
-          '--shaping_type=proxy',
-          '--net=cable'
-      ],
+      'extra_wpr_args_as_string': '--shaping_type=proxy --net=cable',
       'pageset_repeat': 5,
   }
 
