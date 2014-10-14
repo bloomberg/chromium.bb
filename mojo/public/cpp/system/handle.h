@@ -136,7 +136,8 @@ class ScopedHandleBase {
   void CloseIfNecessary() {
     if (!handle_.is_valid())
       return;
-    MojoResult result MOJO_ALLOW_UNUSED = MojoClose(handle_.value());
+    MojoResult result = MojoClose(handle_.value());
+    MOJO_ALLOW_UNUSED_LOCAL(result);
     assert(result == MOJO_RESULT_OK);
   }
 

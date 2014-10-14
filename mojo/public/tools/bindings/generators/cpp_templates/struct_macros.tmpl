@@ -8,8 +8,8 @@
     return false;
   }
 
-  const {{class_name}}* MOJO_ALLOW_UNUSED object =
-      static_cast<const {{class_name}}*>(data);
+  const {{class_name}}* object = static_cast<const {{class_name}}*>(data);
+  MOJO_ALLOW_UNUSED_LOCAL(object);
 
 {%-   for packed_field in struct.packed.packed_fields %}
 {%-     set name = packed_field.field.name %}

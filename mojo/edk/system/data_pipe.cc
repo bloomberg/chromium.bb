@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/memory.h"
@@ -442,7 +441,7 @@ DataPipe::DataPipe(bool has_local_producer,
       producer_two_phase_max_num_bytes_written_(0),
       consumer_two_phase_max_num_bytes_read_(0) {
   // Check that the passed in options actually are validated.
-  MojoCreateDataPipeOptions unused ALLOW_UNUSED = {0};
+  MojoCreateDataPipeOptions unused = {0};
   DCHECK_EQ(ValidateCreateOptions(MakeUserPointer(&validated_options), &unused),
             MOJO_RESULT_OK);
 }

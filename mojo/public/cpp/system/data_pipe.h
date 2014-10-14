@@ -120,14 +120,16 @@ class DataPipe {
 };
 
 inline DataPipe::DataPipe() {
-  MojoResult result MOJO_ALLOW_UNUSED =
+  MojoResult result =
       CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+  MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 
 inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
-  MojoResult result MOJO_ALLOW_UNUSED =
+  MojoResult result =
       CreateDataPipe(&options, &producer_handle, &consumer_handle);
+  MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 

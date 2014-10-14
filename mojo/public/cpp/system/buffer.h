@@ -91,16 +91,16 @@ class SharedBuffer {
 };
 
 inline SharedBuffer::SharedBuffer(uint64_t num_bytes) {
-  MojoResult result MOJO_ALLOW_UNUSED =
-      CreateSharedBuffer(nullptr, num_bytes, &handle);
+  MojoResult result = CreateSharedBuffer(nullptr, num_bytes, &handle);
+  MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 
 inline SharedBuffer::SharedBuffer(
     uint64_t num_bytes,
     const MojoCreateSharedBufferOptions& options) {
-  MojoResult result MOJO_ALLOW_UNUSED =
-      CreateSharedBuffer(&options, num_bytes, &handle);
+  MojoResult result = CreateSharedBuffer(&options, num_bytes, &handle);
+  MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 

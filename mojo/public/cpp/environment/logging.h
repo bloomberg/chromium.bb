@@ -46,7 +46,8 @@
 
 #define MOJO_DLOG(level) MOJO_LAZY_LOG_STREAM(level, false)
 #define MOJO_DLOG_IF(level, condition) MOJO_LAZY_LOG_STREAM(level, false)
-#define MOJO_DCHECK(condition) MOJO_LAZY_LOG_STREAM(FATAL, false && (condition))
+#define MOJO_DCHECK(condition) \
+    MOJO_LAZY_LOG_STREAM(FATAL, false ? !(condition) : false)
 
 #else
 

@@ -82,14 +82,14 @@ class MessagePipe {
 };
 
 inline MessagePipe::MessagePipe() {
-  MojoResult result MOJO_ALLOW_UNUSED =
-      CreateMessagePipe(nullptr, &handle0, &handle1);
+  MojoResult result = CreateMessagePipe(nullptr, &handle0, &handle1);
+  MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 
 inline MessagePipe::MessagePipe(const MojoCreateMessagePipeOptions& options) {
-  MojoResult result MOJO_ALLOW_UNUSED =
-      CreateMessagePipe(&options, &handle0, &handle1);
+  MojoResult result = CreateMessagePipe(&options, &handle0, &handle1);
+  MOJO_ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
 }
 

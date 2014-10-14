@@ -96,7 +96,7 @@ class LazyResponseGenerator : public ResponseGenerator {
  private:
   MessageReceiver* responder_;
   uint32_t name_;
-  uint32_t request_id_;
+  uint64_t request_id_;
 };
 
 class RouterTest : public testing::Test {

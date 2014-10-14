@@ -21,7 +21,8 @@ namespace {
 
 TEST(MacrosTest, AllowUnused) {
   // Test that no warning/error is issued even though |x| is unused.
-  int x MOJO_ALLOW_UNUSED = 123;
+  int x = 123;
+  MOJO_ALLOW_UNUSED_LOCAL(x);
 }
 
 int MustUseReturnedResult() MOJO_WARN_UNUSED_RESULT;
