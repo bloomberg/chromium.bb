@@ -1,3 +1,7 @@
+# crbug.com/395172
+WebRtcBrowserTest.CanForwardRemoteStream
+WebRtcBrowserTest.CanForwardRemoteStream720p
+
 # crbug.com/399289
 WebRtcBrowserTest.NoCrashWhenConnectChromiumSinkToRemoteTrack
 
