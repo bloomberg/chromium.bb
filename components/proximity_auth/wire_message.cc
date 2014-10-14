@@ -4,11 +4,11 @@
 
 #include "components/proximity_auth/wire_message.h"
 
-#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "components/proximity_auth/base64url.h"
 
 // The wire messages have a simple format:
 // [ message version ] [ body length ] [ JSON body ]
@@ -103,7 +103,7 @@ scoped_ptr<WireMessage> WireMessage::Deserialize(
   }
 
   std::string payload;
-  if (!base::Base64Decode(payload_base64, &payload)) {
+  if (!Base64UrlDecode(payload_base64, &payload)) {
     VLOG(1) << "Error: Invalid base64 encoding for payload.";
     return scoped_ptr<WireMessage>();
   }

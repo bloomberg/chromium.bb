@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +17,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/login/auth/key.h"
+#include "components/proximity_auth/base64url.h"
 #include "crypto/encryptor.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
@@ -61,14 +61,6 @@ const char kTpmPubKey[] = {
     0x48, 0x60, 0x1d, 0xd5, 0x37, 0xdc, 0x91, 0x01, 0x5d, 0x31, 0xf0, 0xc2,
     0xc1, 0x10, 0x81, 0x80, 0x04
 };
-
-bool WebSafeBase64Decode(const std::string& encoded, std::string* decoded) {
-  std::string adjusted_encoded = encoded;
-  base::ReplaceChars(adjusted_encoded, "-", "+", &adjusted_encoded);
-  base::ReplaceChars(adjusted_encoded, "_", "/", &adjusted_encoded);
-
-  return base::Base64Decode(adjusted_encoded, decoded);
-}
 
 }  // namespace
 
@@ -152,7 +144,7 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEcKeyPairGenerated(
   }
 
   std::string device_pub_key;
-  if (!WebSafeBase64Decode(device_->public_key, &device_pub_key)) {
+  if (!proximity_auth::Base64UrlDecode(device_->public_key, &device_pub_key)) {
     LOG(ERROR) << "Easy unlock failed to decode device public key.";
     callback_.Run(false);
     return;

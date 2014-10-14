@@ -667,6 +667,7 @@
                 'copresence/rpc/http_post_unittest.cc',
                 'copresence/rpc/rpc_handler_unittest.cc',
                 'copresence/timed_map_unittest.cc',
+                'proximity_auth/base64url_unittest.cc',
                 'proximity_auth/bluetooth_connection_unittest.cc',
                 'proximity_auth/connection_unittest.cc',
                 'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
