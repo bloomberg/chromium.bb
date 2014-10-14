@@ -164,7 +164,7 @@ class TestCLActionLogic(unittest.TestCase):
       stack.Add(mock.patch.object, gather_builder_stats.CLStats,
                 'GatherFailureReasons')
       cl_stats = gather_builder_stats.CLStats('foo@bar.com')
-      cl_stats.Gather(datetime.date.today())
+      cl_stats.Gather(datetime.date.today(), datetime.date.today())
       cl_stats.reasons = {1: '', 2: '', 3: REASON_BAD_CL, 4: REASON_BAD_CL}
       cl_stats.blames =  {1: '', 2: '', 3: 'crosreview.com/1',
                           4: 'crosreview.com/1'}

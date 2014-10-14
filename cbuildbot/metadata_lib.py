@@ -824,15 +824,16 @@ def GetLatestMilestone():
     raise GetMilestoneError('LATEST file missing: %s' % latest_url)
 
 
-def GetMetadataURLsSince(target, start_date):
-  """Get metadata.json URLs for |target| since |start_date|.
+def GetMetadataURLsSince(target, start_date, end_date):
+  """Get metadata.json URLs for |target| from |start_date| until |end_date|.
 
   The modified time of the GS files is used to compare with start_date, so
   the completion date of the builder run is what is important here.
 
   Args:
     target: Builder target name.
-    start_date: datetime.date object.
+    start_date: datetime.date object of starting date.
+    end_date: datetime.date object of ending date.
 
   Returns:
     Metadata urls for runs found.
@@ -862,7 +863,9 @@ def GetMetadataURLsSince(target, start_date):
     # in the current batch.
     if urls[-1].creation_time.date() < start_date:
       # We want a subset of these URLs, then we are done.
-      ret.extend([x.url for x in urls if x.creation_time.date() >= start_date])
+      ret.extend([x.url for x in urls
+                  if (x.creation_time.date() >= start_date and
+                      x.creation_time.date() <= end_date)])
       break
 
     else:

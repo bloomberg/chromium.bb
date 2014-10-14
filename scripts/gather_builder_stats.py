@@ -608,20 +608,22 @@ class StatsManager(object):
 
 
   #pylint: disable-msg=W0613
-  def Gather(self, start_date, sort_by_build_number=True,
+  def Gather(self, start_date, end_date, sort_by_build_number=True,
              starting_build_number=0, creds=None):
     """Fetches build data into self.builds.
 
     Args:
       start_date: A datetime.date instance for the earliest build to
                   examine.
+      end_date: A datetime.date instance for the latest build to
+                examine.
       sort_by_build_number: Optional boolean. If True, builds will be
                             sorted by build number.
       starting_build_number: The lowest build number to include in
                              self.builds.
       creds: Login credentials as returned by _PrepareCreds. (optional)
     """
-    self.builds = self._FetchBuildData(start_date, self.config_target,
+    self.builds = self._FetchBuildData(start_date, end_date, self.config_target,
                                        self.gs_ctx)
 
     if sort_by_build_number:
@@ -677,21 +679,24 @@ class StatsManager(object):
     return (per_patch_actions, per_cl_actions)
 
   @classmethod
-  def _FetchBuildData(cls, start_date, config_target, gs_ctx):
+  def _FetchBuildData(cls, start_date, end_date, config_target, gs_ctx):
     """Fetches BuildData for builds of |config_target| since |start_date|.
 
     Args:
       start_date: A datetime.date instance.
+      end_date: A datetime.date instance for the latest build to
+                examine.
       config_target: String config name to fetch metadata for.
       gs_ctx: A gs.GSContext instance.
 
     Returns:
       A list of of metadata_lib.BuildData objects that were fetched.
     """
-    cros_build_lib.Info('Gathering data for %s since %s', config_target,
-                        start_date)
+    cros_build_lib.Info('Gathering data for %s from %s until %s',
+                        config_target, start_date, end_date)
     urls = metadata_lib.GetMetadataURLsSince(config_target,
-                                                   start_date)
+                                             start_date,
+                                             end_date)
     cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
                         '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
 
@@ -997,13 +1002,15 @@ class CLStats(StatsManager):
 
     return urls
 
-  def Gather(self, start_date, sort_by_build_number=True,
+  def Gather(self, start_date, end_date, sort_by_build_number=True,
              starting_build_number=0, creds=None):
     """Fetches build data and failure reasons.
 
     Args:
       start_date: A datetime.date instance for the earliest build to
                   examine.
+      end_date: A datetime.date instance for the latest build to
+                examine.
       sort_by_build_number: Optional boolean. If True, builds will be
                             sorted by build number.
       starting_build_number: The lowest build number from the CQ to include in
@@ -1013,6 +1020,7 @@ class CLStats(StatsManager):
     if not creds:
       creds = _PrepareCreds(self.email)
     super(CLStats, self).Gather(start_date,
+                                end_date,
                                 sort_by_build_number=sort_by_build_number,
                                 starting_build_number=starting_build_number)
     self.GatherFailureReasons(creds)
@@ -1021,6 +1029,7 @@ class CLStats(StatsManager):
     # the pre-cq has different build numbers. We intentionally represent the
     # Pre-CQ stats in a different object to help keep things simple.
     self.pre_cq_stats.Gather(start_date,
+                             end_date,
                              sort_by_build_number=sort_by_build_number)
 
   def GetSubmittedPatchNumber(self, actions):
@@ -1472,7 +1481,8 @@ def GetParser():
 
   parser.add_argument('--starting-build', action='store', type=int, default=0,
                       help='Filter to builds after given number (inclusive).')
-
+  parser.add_argument('--end-date', action='store', type='date', default=None,
+                      help='Limit scope to an end date in the past.')
   parser.add_argument('--save', action='store_true', default=False,
                       help='Save results to DB, if applicable.')
   parser.add_argument('--email', action='store', type=str, default=None,
@@ -1506,18 +1516,22 @@ def main(argv):
   if not (_CheckOptions(options)):
     sys.exit(1)
 
+  if options.end_date:
+    end_date = options.end_date
+  else:
+    end_date = datetime.datetime.today()
+
   # Determine the start date to use, which is required.
   if options.start_date:
     start_date = options.start_date
   else:
     assert options.past_month or options.past_week or options.past_day
-    now = datetime.datetime.now()
     if options.past_month:
-      start_date = (now - datetime.timedelta(days=30)).date()
+      start_date = end_date - datetime.timedelta(days=30)
     elif options.past_week:
-      start_date = (now - datetime.timedelta(days=7)).date()
+      start_date = end_date - datetime.timedelta(days=7)
     else:
-      start_date = (now - datetime.timedelta(days=1)).date()
+      start_date = end_date - datetime.timedelta(days=1)
 
   # Prepare the rounds of stats gathering to do.
   stats_managers = []
@@ -1572,7 +1586,8 @@ def main(argv):
 
   # Now run through all the stats gathering that is requested.
   for stats_mgr in stats_managers:
-    stats_mgr.Gather(start_date, starting_build_number=options.starting_build,
+    stats_mgr.Gather(start_date, end_date,
+                     starting_build_number=options.starting_build,
                      creds=creds)
     stats_mgr.Summarize()
 
@@ -1597,12 +1612,13 @@ def main(argv):
 # place, in a very different form, before the migration to
 # gather_builder_stats.  It is simplified here, but entirely untested and
 # not plumbed into gather_builder_stats anywhere.
-def GraphiteTryJobInfoUpToNow(internal, start_date):
+def GraphiteTryJobInfoUpToNow(internal, start_date, end_date):
   """Find the amount of tryjobs that finished on a particular day.
 
   Args:
     internal: If true report for internal, if false report external.
     start_date: datetime.date object for date to start on.
+    end_date: datetime.date object for date to end on.
   """
   carbon_lines = []
 
@@ -1621,11 +1637,10 @@ def GraphiteTryJobInfoUpToNow(internal, start_date):
   cros_build_lib.RunCommand(['git', 'pull'], cwd=repo_path)
 
   # Now get a list of datetime objects, in hourly deltas.
-  now = datetime.datetime.now()
   start = datetime.datetime(start_date.year, start_date.month, start_date.day)
   hour_delta = datetime.timedelta(hours=1)
   end = start + hour_delta
-  while end < now:
+  while end < end_date:
     git_cmd = ['git', 'log', '--since="%s"' % start,
                '--until="%s"' % end, '--name-only', '--pretty=format:']
     result = cros_build_lib.RunCommand(git_cmd, cwd=repo_path)
