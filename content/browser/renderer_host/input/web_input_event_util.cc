@@ -256,9 +256,7 @@ void UpdateWindowsKeyCodeAndKeyIdentifier(blink::WebKeyboardEvent* event,
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const ui::MotionEvent& event) {
-  // TODO(mustaq): Temporarily changing the equality below to "less-or-equal"
-  // before changing touchesLengthCap. See crbug.com/392959
-  COMPILE_ASSERT(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) <=
+  COMPILE_ASSERT(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) ==
                      static_cast<int>(blink::WebTouchEvent::touchesLengthCap),
                  inconsistent_maximum_number_of_active_touch_points);
 

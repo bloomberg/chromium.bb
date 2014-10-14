@@ -42,7 +42,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
 
   // The implementer promises that |GetPointerId()| will never exceed
   // MAX_POINTER_ID.
-  enum { MAX_POINTER_ID = 31, MAX_TOUCH_POINT_COUNT = 12 };
+  enum { MAX_POINTER_ID = 31, MAX_TOUCH_POINT_COUNT = 16 };
 
   virtual ~MotionEvent() {}
 
