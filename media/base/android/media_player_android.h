@@ -73,9 +73,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Associates the |cdm| with this player.
   virtual void SetCdm(BrowserCdm* cdm);
 
-  // Check whether the player still uses the current surface.
-  virtual bool IsSurfaceInUse() const = 0;
-
   int player_id() { return player_id_; }
 
   GURL frame_url() { return frame_url_; }

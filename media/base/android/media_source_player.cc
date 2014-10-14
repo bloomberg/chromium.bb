@@ -200,10 +200,6 @@ void MediaSourcePlayer::SetVolume(double volume) {
   audio_decoder_job_->SetVolume(volume);
 }
 
-bool MediaSourcePlayer::IsSurfaceInUse() const {
-  return video_decoder_job_ && video_decoder_job_->is_decoding();
-}
-
 bool MediaSourcePlayer::CanPause() {
   return Seekable();
 }
