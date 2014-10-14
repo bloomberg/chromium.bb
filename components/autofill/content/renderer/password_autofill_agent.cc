@@ -533,8 +533,10 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
     // handlers run, so save away a copy of the password in case it gets lost.
     // To honor the user having explicitly cleared the password, even an empty
     // password will be saved here.
-    ProvisionallySavePassword(
-        element.document().frame(), element.form(), RESTRICTION_NONE);
+    if (blink::WebLocalFrame* element_frame = element.document().frame()) {
+      ProvisionallySavePassword(
+          element_frame, element.form(), RESTRICTION_NONE);
+    }
 
     PasswordToLoginMap::iterator iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
