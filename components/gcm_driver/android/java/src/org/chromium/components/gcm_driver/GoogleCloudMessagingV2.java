@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Temporary hack letting us send subtypes when (un)registering with GCM.
+ * Temporary code for sending subtypes when (un)registering with GCM.
+ * Subtypes are experimental and may change without notice!
  * TODO(johnme): Remove this file, once we switch to the GMS client library.
  */
 public class GoogleCloudMessagingV2 {
