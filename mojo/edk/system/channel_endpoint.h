@@ -131,11 +131,16 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
 
   // Methods called by |Channel|:
 
-  // Called by |Channel| when it takes a reference to this object.
+  // TODO(vtl): Remove these once we've switched over to |AttachAndRun()|.
   void AttachToChannel(Channel* channel, ChannelEndpointId local_id);
-
-  // TODO(vtl): Combine this with |AttachToChannel()|.
   void Run(ChannelEndpointId remote_id);
+
+  // Called by |Channel| when it takes a reference to this object. It will send
+  // all queue messages (in |paused_message_queue_|).
+  // TODO(vtl): Maybe rename this "OnAttach"?
+  void AttachAndRun(Channel* channel,
+                    ChannelEndpointId local_id,
+                    ChannelEndpointId remote_id);
 
   // Called by |Channel| when it receives a message for the message pipe.
   bool OnReadMessage(const MessageInTransit::View& message_view,

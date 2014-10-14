@@ -93,6 +93,27 @@ void ChannelEndpoint::Run(ChannelEndpointId remote_id) {
   }
 }
 
+void ChannelEndpoint::AttachAndRun(Channel* channel,
+                                   ChannelEndpointId local_id,
+                                   ChannelEndpointId remote_id) {
+  DCHECK(channel);
+  DCHECK(local_id.is_valid());
+  DCHECK(remote_id.is_valid());
+
+  base::AutoLock locker(lock_);
+  DCHECK(!channel_);
+  DCHECK(!local_id_.is_valid());
+  DCHECK(!remote_id_.is_valid());
+  channel_ = channel;
+  local_id_ = local_id;
+  remote_id_ = remote_id;
+
+  while (!paused_message_queue_.IsEmpty()) {
+    LOG_IF(WARNING, !WriteMessageNoLock(paused_message_queue_.GetMessage()))
+        << "Failed to write enqueue message to channel";
+  }
+}
+
 bool ChannelEndpoint::OnReadMessage(
     const MessageInTransit::View& message_view,
     embedder::ScopedPlatformHandleVectorPtr platform_handles) {

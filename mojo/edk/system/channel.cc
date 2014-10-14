@@ -125,6 +125,42 @@ void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
   endpoint->Run(remote_id);
 }
 
+void Channel::AttachAndRunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
+                                   bool is_bootstrap) {
+  DCHECK(endpoint.get());
+
+  ChannelEndpointId local_id;
+  ChannelEndpointId remote_id;
+  {
+    base::AutoLock locker(lock_);
+
+    DLOG_IF(WARNING, is_shutting_down_)
+        << "AttachEndpoint() while shutting down";
+
+    if (is_bootstrap) {
+      local_id = ChannelEndpointId::GetBootstrap();
+      DCHECK(local_id_to_endpoint_map_.find(local_id) ==
+             local_id_to_endpoint_map_.end());
+
+      remote_id = ChannelEndpointId::GetBootstrap();
+    } else {
+      // TODO(vtl): More work needs to be done to enable the non-bootstrap case.
+      NOTREACHED() << "Non-bootstrap case not yet fully implemented";
+      do {
+        local_id = local_id_generator_.GetNext();
+      } while (local_id_to_endpoint_map_.find(local_id) !=
+               local_id_to_endpoint_map_.end());
+
+      // TODO(vtl): We also need to check for collisions of remote IDs here.
+      remote_id = remote_id_generator_.GetNext();
+    }
+
+    local_id_to_endpoint_map_[local_id] = endpoint;
+  }
+
+  endpoint->AttachAndRun(this, local_id, remote_id);
+}
+
 void Channel::RunRemoteMessagePipeEndpoint(ChannelEndpointId local_id,
                                            ChannelEndpointId remote_id) {
 #if DCHECK_IS_ON

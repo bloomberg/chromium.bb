@@ -78,16 +78,13 @@ void ChannelThread::InitChannelOnIOThread(
   channel_ = new Channel(platform_support_);
   CHECK(channel_->Init(RawChannel::Create(platform_handle.Pass())));
 
-  // Attach the message pipe endpoint.
-  // Note: On the "server" (parent process) side, we need not attach the
-  // message pipe endpoint immediately. However, on the "client" (child
-  // process) side, this *must* be done here -- otherwise, the |Channel| may
-  // receive/process messages (which it can do as soon as it's hooked up to
-  // the IO thread message loop, and that message loop runs) before the
-  // message pipe endpoint is attached.
-  CHECK_EQ(channel_->AttachEndpoint(channel_endpoint),
-           ChannelEndpointId::GetBootstrap());
-  channel_->RunEndpoint(channel_endpoint, ChannelEndpointId::GetBootstrap());
+  // Attach and run the endpoint.
+  // Note: On the "server" (parent process) side, we need not attach/run the
+  // endpoint immediately. However, on the "client" (child process) side, this
+  // *must* be done here -- otherwise, the |Channel| may receive/process
+  // messages (which it can do as soon as it's hooked up to the IO thread
+  // message loop, and that message loop runs) before the endpoint is attached.
+  channel_->AttachAndRunEndpoint(channel_endpoint, true);
 }
 
 void ChannelThread::ShutdownChannelOnIOThread() {

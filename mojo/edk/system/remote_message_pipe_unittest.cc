@@ -150,14 +150,7 @@ class RemoteMessagePipeTest : public testing::Test {
     CHECK(channel_index == 0 || channel_index == 1);
 
     CreateAndInitChannel(channel_index);
-    ChannelEndpointId endpoint_id =
-        channels_[channel_index]->AttachEndpoint(ep);
-    if (!endpoint_id.is_valid())
-      return;
-
-    CHECK_EQ(endpoint_id, ChannelEndpointId::GetBootstrap());
-    channels_[channel_index]->RunEndpoint(ep,
-                                          ChannelEndpointId::GetBootstrap());
+    channels_[channel_index]->AttachAndRunEndpoint(ep, true);
   }
 
   void RestoreInitialStateOnIOThread() {

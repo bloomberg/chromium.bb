@@ -11,7 +11,6 @@
 #include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
-#include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/entrypoints.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
@@ -57,20 +56,7 @@ scoped_refptr<system::Channel> MakeChannel(
   // Once |Init()| has succeeded, we have to return |channel| (since
   // |Shutdown()| will have to be called on it).
 
-  // Attach the endpoint.
-  system::ChannelEndpointId endpoint_id =
-      channel->AttachEndpoint(channel_endpoint);
-  if (!endpoint_id.is_valid()) {
-    // This means that, e.g., the other endpoint of the message pipe was closed
-    // first. But it's not necessarily an error per se.
-    DVLOG(2) << "Channel::AttachEndpoint() failed";
-    return channel;
-  }
-  CHECK_EQ(endpoint_id, system::ChannelEndpointId::GetBootstrap());
-
-  channel->RunEndpoint(channel_endpoint,
-                       system::ChannelEndpointId::GetBootstrap());
-
+  channel->AttachAndRunEndpoint(channel_endpoint, true);
   return channel;
 }
 
