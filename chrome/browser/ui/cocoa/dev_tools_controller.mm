@@ -30,7 +30,8 @@ using content::WebContents;
   NSView* contentsView_;
 }
 
-- (void)setDevToolsView:(NSView*)devToolsView
+// Returns true iff layout has changed.
+- (BOOL)setDevToolsView:(NSView*)devToolsView
            withStrategy:(const DevToolsContentsResizingStrategy&)strategy;
 - (void)adjustSubviews;
 - (BOOL)hasDevToolsView;
@@ -40,13 +41,14 @@ using content::WebContents;
 
 @implementation DevToolsContainerView
 
-- (void)setDevToolsView:(NSView*)devToolsView
+- (BOOL)setDevToolsView:(NSView*)devToolsView
            withStrategy:(const DevToolsContentsResizingStrategy&)strategy {
+  BOOL strategy_changed = !strategy_.Equals(strategy);
   strategy_.CopyFrom(strategy);
   if (devToolsView == devToolsView_) {
     if (contentsView_)
       [contentsView_ setHidden:strategy.hide_inspected_contents()];
-    return;
+    return strategy_changed;
   }
 
   if (devToolsView_) {
@@ -67,6 +69,8 @@ using content::WebContents;
 
     [contentsView_ setHidden:strategy.hide_inspected_contents()];
   }
+
+  return YES;
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
@@ -118,7 +122,7 @@ using content::WebContents;
   return devToolsContainerView_.get();
 }
 
-- (void)updateDevToolsForWebContents:(WebContents*)contents
+- (BOOL)updateDevToolsForWebContents:(WebContents*)contents
                          withProfile:(Profile*)profile {
   DevToolsContentsResizingStrategy strategy;
   WebContents* devTools = DevToolsWindow::GetInTabWebContents(
@@ -151,8 +155,10 @@ using content::WebContents;
     contents->SetAllowOtherViews(false);
   }
 
-  [devToolsContainerView_ setDevToolsView:devToolsView withStrategy:strategy];
+  BOOL result = [devToolsContainerView_ setDevToolsView:devToolsView
+                                           withStrategy:strategy];
   [devToolsContainerView_ adjustSubviews];
+  return result;
 }
 
 @end

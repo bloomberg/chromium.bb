@@ -560,8 +560,11 @@ using content::WebContents;
 }
 
 - (void)updateDevToolsForContents:(WebContents*)contents {
-  [devToolsController_ updateDevToolsForWebContents:contents
-                                        withProfile:browser_->profile()];
+  BOOL layout_changed =
+      [devToolsController_ updateDevToolsForWebContents:contents
+                                            withProfile:browser_->profile()];
+  if (layout_changed && [findBarCocoaController_ isFindBarVisible])
+    [self layoutSubviews];
 }
 
 // Called when the user wants to close a window or from the shutdown process.

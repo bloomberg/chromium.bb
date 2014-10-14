@@ -36,7 +36,8 @@ class WebContents;
 
 // Depending on |contents|'s state, decides whether the docked web inspector
 // should be shown or hidden and adjusts inspected page position.
-- (void)updateDevToolsForWebContents:(content::WebContents*)contents
+// Returns true iff layout has changed.
+- (BOOL)updateDevToolsForWebContents:(content::WebContents*)contents
                          withProfile:(Profile*)profile;
 
 @end
