@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -757,6 +758,11 @@ void OAuth2TokenService::CancelFetchers(
 
 void OAuth2TokenService::FireRefreshTokenAvailable(
     const std::string& account_id) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::FireRefreshTokenAvailable"));
+
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnRefreshTokenAvailable(account_id));
 }
@@ -768,6 +774,11 @@ void OAuth2TokenService::FireRefreshTokenRevoked(
 }
 
 void OAuth2TokenService::FireRefreshTokensLoaded() {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::FireRefreshTokensLoaded"));
+
   FOR_EACH_OBSERVER(Observer, observer_list_, OnRefreshTokensLoaded());
 }
 
