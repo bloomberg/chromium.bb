@@ -1459,3 +1459,6 @@ crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pa
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
+
+crbug.com/415031 [ Mac ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
+crbug.com/415031 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
