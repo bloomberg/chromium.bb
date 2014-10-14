@@ -5,27 +5,27 @@ div {
     height: 100px;
     width: 100px;
     background: blue;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
     -webkit-animation-duration: 2s;
     -webkit-animation-timing-function: linear;
     -webkit-animation-fill-mode: both;
     -webkit-animation-iteration-count: 2;
 }
 
-.test0 {
+.normal {
     -webkit-animation-direction: normal;
 }
 
-.test1 {
+.reverse {
      -webkit-animation-direction: reverse;
 }
 
-.test2 {
+.alternate {
      -webkit-animation-direction: alternate;
 }
 
-.test3 {
-     -webkit-animation-direction: reverse;
+.alternate-reverse {
+     -webkit-animation-direction: alternate-reverse;
 }
 
 .anim-left {
@@ -49,10 +49,10 @@ div {
 
 @-webkit-keyframes anim-transform {
     0% {
-        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
     }
     100% {
-        -webkit-transform: translateX(300px);
+        transform: translateX(300px);
     }
 }
 </style>
@@ -62,30 +62,30 @@ Each section below has two boxes, the top runs on the main thread, the bottom
 on the compositor. The animations should be identical but start at different
 times.
 </p><p>
-This test is successful if the boxes are mostly in sync (there might be a small
-offset between them).
+This test is successful if the each pair of boxes are mostly in sync (there
+might be a small offset between them).
 </p>
 <hr>
 
-Direction normal
+Direction normal - forwards twice
 <br>
-<div class='test0 anim-left'></div>
-<div class='test0 anim-transform'></div>
+<div class='normal anim-left'></div>
+<div class='normal anim-transform'></div>
 
-Direction reverse
+Direction reverse - backwards twice
 <br>
-<div class='test1 anim-left'></div>
-<div class='test1 anim-transform'></div>
+<div class='reverse anim-left'></div>
+<div class='reverse anim-transform'></div>
 
-Direction alternate
+Direction alternate - forwards then backwards
 <br>
-<div class='test2 anim-left'></div>
-<div class='test2 anim-transform'></div>
+<div class='alternate anim-left'></div>
+<div class='alternate anim-transform'></div>
 
-Direction alternate-reverse
+Direction alternate-reverse - backwards then forwards
 <br>
-<div class='test3 anim-left'></div>
-<div class='test3 anim-transform'></div>
+<div class='alternate-reverse anim-left'></div>
+<div class='alternate-reverse anim-transform'></div>
 
 </body>
 </html>
