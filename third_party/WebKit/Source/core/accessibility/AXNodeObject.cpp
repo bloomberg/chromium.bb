@@ -245,6 +245,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return HeadingRole;
     if (isHTMLDivElement(*node()))
         return DivRole;
+    if (isHTMLMeterElement(*node()))
+        return MeterRole;
     if (isHTMLParagraphElement(*node()))
         return ParagraphRole;
     if (isHTMLLabelElement(*node()))

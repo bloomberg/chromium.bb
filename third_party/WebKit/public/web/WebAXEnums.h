@@ -143,6 +143,7 @@ enum WebAXRole {
     WebAXRoleMenuListOption,
     WebAXRoleMenuListPopup,
     WebAXRoleMenu,
+    WebAXRoleMeter,
     WebAXRoleNavigation,
     WebAXRoleNone,
     WebAXRoleNote,

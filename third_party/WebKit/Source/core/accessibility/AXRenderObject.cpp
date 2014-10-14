@@ -385,6 +385,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isHTMLDivElement(node))
         return DivRole;
 
+    if (isHTMLMeterElement(node))
+        return MeterRole;
+
     if (isHTMLFormElement(node))
         return FormRole;
 
