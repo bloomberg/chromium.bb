@@ -24,7 +24,7 @@ function test()
         var request = InspectorTest.networkRequests().pop();
         InspectorTest.addResult("URL: " + request.url);
         InspectorTest.addResult("Finished: " + request.finished);
-        InspectorTest.addResult("Cached: " + request.cached);
+        InspectorTest.addResult("Cached: " + request.cached());
         InspectorTest.addResult("Method: " + request.requestMethod);
         InspectorTest.addResult("Status: " + request.statusCode + " " + request.statusText);
         InspectorTest.addResult("Has raw request headers: " + (typeof request.requestHeadersText() === "string"));
