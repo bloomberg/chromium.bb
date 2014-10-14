@@ -57,14 +57,12 @@ class CoreTest(mojo_unittest.MojoTestCase):
     self.assertGreaterEqual(system.MAP_BUFFER_FLAG_NONE, 0)
 
   def testGetTimeTicksNow(self):
-    pt1 = time.time()
     v1 = system.GetTimeTicksNow()
     time.sleep(1e-3)
     v2 = system.GetTimeTicksNow()
-    pt2 = time.time()
     self.assertGreater(v1, 0)
-    self.assertGreater(v2, v1 + 1000)
-    self.assertGreater(1e6 * (pt2 - pt1), v2 - v1)
+    self.assertGreater(v2, v1 + 1e2)
+    self.assertLess(v2, v1 + 1e5)
 
   def _testHandlesCreation(self, *args):
     for handle in args:
