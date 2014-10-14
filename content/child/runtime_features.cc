@@ -181,6 +181,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableCredentialManagerAPI))
     WebRuntimeFeatures::enableCredentialManagerAPI(true);
+
+  if (command_line.HasSwitch(switches::kEnableViewport))
+    WebRuntimeFeatures::setCSSViewportEnabled(true);
 }
 
 }  // namespace content
