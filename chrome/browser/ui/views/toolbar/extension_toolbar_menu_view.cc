@@ -38,10 +38,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(Browser* browser,
   BrowserActionsContainer* main =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()->browser_actions();
-  container_ = new BrowserActionsContainer(
-      browser_,
-      NULL,  // No owner view, means no extra keybindings are registered.
-      main);
+  container_ = new BrowserActionsContainer(browser_, main);
   container_->Init();
   AddChildView(container_);
   // We Layout() the container here so that we know the number of actions

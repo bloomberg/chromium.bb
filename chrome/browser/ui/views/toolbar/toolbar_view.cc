@@ -215,7 +215,6 @@ void ToolbarView::Init() {
 
   browser_actions_ = new BrowserActionsContainer(
       browser_,
-      this,   // Owner.
       NULL);  // No master container for this one (it is master).
 
   app_menu_ = new WrenchToolbarButton(this);

@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/feature_switch.h"
@@ -37,10 +35,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/resize_area.h"
-#include "ui/views/metrics.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -85,12 +80,10 @@ bool BrowserActionsContainer::disable_animations_during_testing_ = false;
 
 BrowserActionsContainer::BrowserActionsContainer(
     Browser* browser,
-    View* owner_view,
     BrowserActionsContainer* main_container)
     : initialized_(false),
       profile_(browser->profile()),
       browser_(browser),
-      owner_view_(owner_view),
       main_container_(main_container),
       popup_owner_(NULL),
       model_(extensions::ExtensionToolbarModel::Get(browser->profile())),
@@ -109,12 +102,6 @@ BrowserActionsContainer::BrowserActionsContainer(
   DCHECK(!in_overflow_mode() || overflow_experiment);
 
   if (!in_overflow_mode()) {
-    extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-        browser->profile(),
-        owner_view->GetFocusManager(),
-        extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
-        this));
-
     resize_animation_.reset(new gfx::SlideAnimation(this));
     resize_area_ = new views::ResizeArea(this);
     AddChildView(resize_area_);
@@ -348,40 +335,40 @@ void BrowserActionsContainer::Layout() {
   } else if (chevron_) {
     chevron_->SetVisible(false);
   }
-  // Subtract off the trailing padding.
-  max_x -= ToolbarView::kStandardSpacing;
 
-  // Now draw the icons for the browser actions in the available space.
-  int icon_width = IconWidth(false);
-  if (in_overflow_mode()) {
-    for (size_t i = 0;
-         i < main_container_->VisibleBrowserActionsAfterAnimation(); ++i) {
-      // Ensure that any browser actions shown in the main view are hidden in
-      // the overflow view.
-      browser_action_views_[i]->SetVisible(false);
-    }
+  // The padding before the first icon and after the last icon in the container.
+  int container_padding =
+      in_overflow_mode() ? kItemSpacing : ToolbarView::kStandardSpacing;
+  // The range of visible icons, from start_index (inclusive) to end_index
+  // (exclusive).
+  size_t start_index = in_overflow_mode() ?
+      main_container_->VisibleBrowserActionsAfterAnimation() : 0u;
+  // For the main container's last visible icon, we calculate how many icons we
+  // can display with the given width. We add an extra kItemSpacing because the
+  // last icon doesn't need padding, but we want it to divide easily.
+  size_t end_index = in_overflow_mode() ?
+      browser_action_views_.size() :
+      (max_x - 2 * container_padding + kItemSpacing) / IconWidth(true);
+  // The maximum length for one row of icons.
+  size_t row_length =
+      in_overflow_mode() ? icons_per_overflow_menu_row_ : end_index;
 
-    for (size_t i = main_container_->VisibleBrowserActionsAfterAnimation();
-         i < browser_action_views_.size(); ++i) {
-      BrowserActionView* view = browser_action_views_[i];
-      size_t index = i - main_container_->VisibleBrowserActionsAfterAnimation();
-      int row_index = static_cast<int>(index) / icons_per_overflow_menu_row_;
-      int x = kItemSpacing + (index * IconWidth(true)) -
-          (row_index * IconWidth(true) * icons_per_overflow_menu_row_);
-      gfx::Rect rect_bounds(
-          x, IconHeight() * row_index, icon_width, IconHeight());
-      view->SetBoundsRect(rect_bounds);
+  // Now draw the icons for the browser actions in the available space. Once
+  // all the variables are in place, the layout works equally well for the main
+  // and overflow container.
+  for (size_t i = 0u; i < browser_action_views_.size(); ++i) {
+    BrowserActionView* view = browser_action_views_[i];
+    if (i < start_index || i >= end_index) {
+      view->SetVisible(false);
+    } else {
+      size_t relative_index = i - start_index;
+      size_t index_in_row = relative_index % row_length;
+      size_t row_index = relative_index / row_length;
+      view->SetBounds(container_padding + index_in_row * IconWidth(true),
+                      row_index * IconHeight(),
+                      IconWidth(false),
+                      IconHeight());
       view->SetVisible(true);
-    }
-  } else {
-    for (BrowserActionViews::const_iterator it = browser_action_views_.begin();
-         it < browser_action_views_.end(); ++it) {
-      BrowserActionView* view = *it;
-      int x = ToolbarView::kStandardSpacing +
-          ((it - browser_action_views_.begin()) * IconWidth(true));
-      view->SetVisible(x + icon_width <= max_x);
-      if (view->visible())
-        view->SetBounds(x, 0, icon_width, IconHeight());
     }
   }
 }
@@ -538,21 +525,17 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
                                                    OSExchangeData* data) {
   DCHECK(data);
 
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    BrowserActionView* view = browser_action_views_[i];
-    if (view == sender) {
-      // Set the dragging image for the icon.
-      gfx::ImageSkia badge(view->GetIconWithBadge());
-      drag_utils::SetDragImageOnDataObject(badge,
-                                           press_pt.OffsetFromOrigin(),
-                                           data);
-
-      // Fill in the remaining info.
-      BrowserActionDragData drag_data(view->extension()->id(), i);
-      drag_data.Write(profile_, data);
-      break;
-    }
-  }
+  BrowserActionViews::iterator iter = std::find(browser_action_views_.begin(),
+                                                browser_action_views_.end(),
+                                                sender);
+  DCHECK(iter != browser_action_views_.end());
+  drag_utils::SetDragImageOnDataObject((*iter)->GetIconWithBadge(),
+                                       press_pt.OffsetFromOrigin(),
+                                       data);
+  // Fill in the remaining info.
+  BrowserActionDragData drag_data((*iter)->extension()->id(),
+                                  iter - browser_action_views_.begin());
+  drag_data.Write(profile_, data);
 }
 
 int BrowserActionsContainer::GetDragOperationsForView(View* sender,
@@ -629,7 +612,8 @@ ExtensionPopup* BrowserActionsContainer::TestGetPopup() {
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // If the views haven't been initialized yet, wait for the next call to
   // paint (one will be triggered by entering highlight mode).
-  if (model_->is_highlighting() && !browser_action_views_.empty()) {
+  if (model_->is_highlighting() && !browser_action_views_.empty() &&
+      !in_overflow_mode()) {
     views::Painter::PaintPainterAt(
         canvas, highlight_painter_.get(), GetLocalBounds());
   }
@@ -683,6 +667,14 @@ void BrowserActionsContainer::ViewHierarchyChanged(
     return;
 
   if (details.is_add && details.child == this) {
+    if (!in_overflow_mode()) {  // We only need one keybinding registry.
+      extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
+          browser_->profile(),
+          parent()->GetFocusManager(),
+          extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
+          this));
+    }
+
     // Initial toolbar button creation and placement in the widget hierarchy.
     // We do this here instead of in the constructor because AddBrowserAction
     // calls Layout on the Toolbar, which needs this object to be constructed
@@ -827,8 +819,8 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
 void BrowserActionsContainer::ToolbarExtensionUpdated(
     const Extension* extension) {
   BrowserActionView* view = GetViewForExtension(extension);
-  if (view)
-    view->UpdateState();
+  DCHECK(view);
+  view->UpdateState();
 }
 
 bool BrowserActionsContainer::ShowExtensionActionPopup(
@@ -864,29 +856,24 @@ Browser* BrowserActionsContainer::GetBrowser() {
 }
 
 void BrowserActionsContainer::LoadImages() {
+  if (in_overflow_mode())
+    return;  // Overflow mode has neither a chevron nor highlighting.
+
   ui::ThemeProvider* tp = GetThemeProvider();
   if (tp && chevron_) {
     chevron_->SetImage(views::Button::STATE_NORMAL,
                        *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
   }
-  // Highlighting only takes place on the main bar, so no need for it in
-  // overflow.
-  if (!in_overflow_mode()) {
-    const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
-    highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
-  }
+
+  const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
+  highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
   SetVisible(!browser_action_views_.empty());
-  if (owner_view_) {
-    owner_view_->Layout();
-    owner_view_->SchedulePaint();
-  } else {
-    // In overflow mode, we don't have an owner view, but we still have to
-    // update ourselves.
-    Layout();
-    SchedulePaint();
+  if (parent()) {  // Parent can be null in testing.
+    parent()->Layout();
+    parent()->SchedulePaint();
   }
 }
 

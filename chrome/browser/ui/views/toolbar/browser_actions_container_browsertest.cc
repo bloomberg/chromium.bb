@@ -435,7 +435,7 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   BrowserActionsBarBrowserTest::SetUpOnMainThread();
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
-  overflow_bar_.reset(new BrowserActionsContainer(browser(), NULL, main_bar_));
+  overflow_bar_.reset(new BrowserActionsContainer(browser(), main_bar_));
   overflow_bar_->set_owned_by_client();
   model_ = extensions::ExtensionToolbarModel::Get(profile());
 }

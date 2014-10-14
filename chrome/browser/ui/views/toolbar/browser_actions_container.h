@@ -133,11 +133,9 @@ class BrowserActionsContainer
   // the last item or chevron (if visible).
   static const int kItemSpacing;
 
-  // Constructs a BrowserActionContainer for a particular |browser| object, and
-  // specifies which view is the |owner_view|. For documentation of
-  // |main_container|, see class comments.
+  // Constructs a BrowserActionContainer for a particular |browser| object. For
+  // documentation of |main_container|, see class comments.
   BrowserActionsContainer(Browser* browser,
-                          views::View* owner_view,
                           BrowserActionsContainer* main_container);
   virtual ~BrowserActionsContainer();
 
@@ -346,9 +344,6 @@ class BrowserActionsContainer
 
   // The Browser object the container is associated with.
   Browser* browser_;
-
-  // The view that owns us.
-  views::View* owner_view_;
 
   // The main container we are serving as overflow for, or NULL if this
   // class is the the main container. See class comments for details on
