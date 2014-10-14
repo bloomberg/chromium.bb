@@ -61,10 +61,6 @@ std::string HostPairingScreen::GetName() const {
 void HostPairingScreen::PairingStageChanged(Stage new_stage) {
   std::string desired_page;
   switch (new_stage) {
-    case HostPairingController::STAGE_NONE:
-    case HostPairingController::STAGE_INITIALIZATION_ERROR: {
-      break;
-    }
     case HostPairingController::STAGE_WAITING_FOR_CONTROLLER:
     case HostPairingController::STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE: {
       desired_page = kPageWelcome;
@@ -76,36 +72,17 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
                          controller_->GetConfirmationCode());
       break;
     }
-    case HostPairingController::STAGE_UPDATING: {
-      desired_page = kPageUpdate;
-      context_.SetDouble(kContextKeyUpdateProgress, 0.0);
-      break;
-    }
-    case HostPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
-      controller_->RemoveObserver(this);
-      get_screen_observer()->OnExit(
-          WizardController::HOST_PAIRING_FINISHED);
-      // TODO(achuith, zork): Remove the rest of the stages.
-      break;
-    }
-    case HostPairingController::STAGE_ENROLLING: {
-      desired_page = kPageEnrollment;
-      context_.SetString(kContextKeyEnrollmentDomain,
-                         controller_->GetEnrollmentDomain());
-      break;
-    }
-    case HostPairingController::STAGE_ENROLLMENT_ERROR: {
-      desired_page = kPageEnrollmentError;
-      break;
-    }
     case HostPairingController::STAGE_PAIRING_DONE: {
       desired_page = kPagePairingDone;
       break;
     }
-    case HostPairingController::STAGE_FINISHED: {
-      // This page is closed in EnrollHost.
+    case HostPairingController::STAGE_UPDATING: {
+      controller_->RemoveObserver(this);
+      get_screen_observer()->OnExit(WizardController::HOST_PAIRING_FINISHED);
       break;
     }
+    default:
+      break;
   }
   current_stage_ = new_stage;
   context_.SetString(kContextKeyDeviceName, controller_->GetDeviceName());

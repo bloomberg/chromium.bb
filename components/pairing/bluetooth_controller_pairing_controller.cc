@@ -23,7 +23,6 @@ namespace pairing_chromeos {
 
 BluetoothControllerPairingController::BluetoothControllerPairingController()
     : current_stage_(STAGE_NONE),
-      got_initial_status_(false),
       proto_decoder_(new ProtoDecoder(this)),
       ptr_factory_(this) {
 }
@@ -53,7 +52,6 @@ void BluetoothControllerPairingController::ChangeStage(Stage new_stage) {
 }
 
 void BluetoothControllerPairingController::Reset() {
-  got_initial_status_ = false;
   controller_device_id_.clear();
   discovery_session_.reset();
 
@@ -356,27 +354,38 @@ void BluetoothControllerPairingController::StartSession() {
 
 void BluetoothControllerPairingController::OnHostStatusMessage(
     const pairing_api::HostStatus& message) {
-  if (got_initial_status_) {
-    // TODO(zork): Check that the domain matches. (http://crbug.com/405761)
-    // TODO(zork): Handling updating stages (http://crbug.com/405754).
-    pairing_api::CompleteSetup complete_setup;
-    complete_setup.set_api_version(kPairingAPIVersion);
-    // TODO(zork): Get AddAnother from UI (http://crbug.com/405757)
-    complete_setup.mutable_parameters()->set_add_another(false);
-
-    int size = 0;
-    scoped_refptr<net::IOBuffer> io_buffer(
-        ProtoDecoder::SendCompleteSetup(complete_setup, &size));
-
-    SendBuffer(io_buffer, size);
-    ChangeStage(STAGE_PAIRING_DONE);
-  } else {
-    got_initial_status_ = true;
-
-    // TODO(zork): Check domain. (http://crbug.com/405761)
-    // TODO(achuith): Need STAGE_HOST_UPDATE_IN_PROGRESS here.
+  pairing_api::HostStatusParameters::UpdateStatus update_status =
+      message.parameters().update_status();
+  pairing_api::HostStatusParameters::EnrollmentStatus enrollment_status =
+      message.parameters().enrollment_status();
+  VLOG(1) << "OnHostStatusMessage, update_status=" << update_status;
+  // TODO(zork): Check domain. (http://crbug.com/405761)
+  if (enrollment_status ==
+      pairing_api::HostStatusParameters::ENROLLMENT_STATUS_SUCCESS) {
+    // TODO(achuith, zork): Need to ensure that controller has also successfully
+    // enrolled.
+    CompleteSetup();
+  } else if (update_status ==
+      pairing_api::HostStatusParameters::UPDATE_STATUS_UPDATING) {
+    ChangeStage(STAGE_HOST_UPDATE_IN_PROGRESS);
+  } else if (update_status ==
+      pairing_api::HostStatusParameters::UPDATE_STATUS_UPDATED) {
     ChangeStage(STAGE_WAITING_FOR_CREDENTIALS);
   }
+}
+
+void BluetoothControllerPairingController::CompleteSetup() {
+  pairing_api::CompleteSetup complete_setup;
+  complete_setup.set_api_version(kPairingAPIVersion);
+  // TODO(zork): Get AddAnother from UI (http://crbug.com/405757)
+  complete_setup.mutable_parameters()->set_add_another(false);
+
+  int size = 0;
+  scoped_refptr<net::IOBuffer> io_buffer(
+      ProtoDecoder::SendCompleteSetup(complete_setup, &size));
+
+  SendBuffer(io_buffer, size);
+  ChangeStage(STAGE_PAIRING_DONE);
 }
 
 void BluetoothControllerPairingController::OnConfigureHostMessage(

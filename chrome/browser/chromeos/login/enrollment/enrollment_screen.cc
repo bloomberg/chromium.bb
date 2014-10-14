@@ -78,12 +78,10 @@ void EnrollmentScreen::SetParameters(
     EnrollmentScreenActor::EnrollmentMode enrollment_mode,
     const std::string& management_domain,
     const std::string& user,
-    const std::string& auth_token,
     pairing_chromeos::ControllerPairingController* shark_controller,
     pairing_chromeos::HostPairingController* remora_controller) {
   enrollment_mode_ = enrollment_mode;
   user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
-  auth_token_ = auth_token;
   shark_controller_ = shark_controller;
   if (remora_controller_)
     remora_controller_->RemoveObserver(this);
@@ -103,14 +101,10 @@ void EnrollmentScreen::Show() {
     UMA(policy::kMetricEnrollmentAutoStarted);
     actor_->ShowEnrollmentSpinnerScreen();
     actor_->FetchOAuthToken();
-  } else if (auth_token_.empty()) {
+  } else {
     UMA(policy::kMetricEnrollmentTriggered);
     actor_->ResetAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
                                  weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    actor_->Show();
-    actor_->ShowEnrollmentSpinnerScreen();
-    OnOAuthTokenAvailable(auth_token_);
   }
 }
 
@@ -128,9 +122,7 @@ void EnrollmentScreen::PairingStageChanged(Stage new_stage) {
   if (new_stage == HostPairingController::STAGE_FINISHED) {
     remora_controller_->RemoveObserver(this);
     remora_controller_ = NULL;
-    // TODO(zork): Check that this is the best exit status. crbug.com/412798
-    get_screen_observer()->OnExit(
-        WizardController::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
+    OnConfirmationClosed();
   }
 }
 
@@ -148,6 +140,10 @@ void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
   actor_->Show();
   actor_->ShowEnrollmentSpinnerScreen();
   OnOAuthTokenAvailable(auth_token);
+  if (remora_controller_) {
+    remora_controller_->OnEnrollmentStatusChanged(
+        HostPairingController::ENROLLMENT_STATUS_ENROLLING);
+  }
 }
 
 void EnrollmentScreen::OnLoginDone(const std::string& user) {
@@ -326,8 +322,10 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
                      status));
       UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
                                : policy::kMetricEnrollmentOK);
-      if (remora_controller_)
-        remora_controller_->SetEnrollmentComplete(true);
+      if (remora_controller_) {
+        remora_controller_->OnEnrollmentStatusChanged(
+            HostPairingController::ENROLLMENT_STATUS_SUCCESS);
+      }
       return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
@@ -420,8 +418,10 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
       break;
   }
 
-  if (remora_controller_)
-    remora_controller_->SetEnrollmentComplete(false);
+  if (remora_controller_) {
+    remora_controller_->OnEnrollmentStatusChanged(
+        HostPairingController::ENROLLMENT_STATUS_FAILURE);
+  }
   enrollment_failed_once_ = true;
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME("Enterprise.EnrollmentTime.Failure", elapsed_timer_);

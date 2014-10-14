@@ -26,10 +26,18 @@ message HostStatusParameters {
     UPDATE_STATUS_UPDATED = 3;
   }
 
+  enum EnrollmentStatus {
+    ENROLLMENT_STATUS_UNKNOWN = 0;
+    ENROLLMENT_STATUS_ENROLLING = 1;
+    ENROLLMENT_STATUS_FAILURE = 2;
+    ENROLLMENT_STATUS_SUCCESS = 3;
+  }
+
   optional string domain = 1;
   optional Connectivity connectivity = 2;
   optional UpdateStatus update_status = 3;
-  repeated string paired_controllers = 4;
+  optional EnrollmentStatus enrollment_status = 4;
+  repeated string paired_controllers = 5;
 }
 
 message HostStatus {

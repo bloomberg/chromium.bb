@@ -293,7 +293,9 @@ WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
                                      oobe_display_->GetErrorScreenActor());
   } else if (screen_name == kUpdateScreenName) {
     chromeos::UpdateScreen* result =
-        new chromeos::UpdateScreen(this, oobe_display_->GetUpdateScreenActor());
+        new chromeos::UpdateScreen(this,
+                                   oobe_display_->GetUpdateScreenActor(),
+                                   remora_controller_.get());
     result->SetRebootCheckDelay(kWaitForRebootTimeSec);
     return result;
   } else if (screen_name == kUserImageScreenName) {
@@ -329,22 +331,22 @@ WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new chromeos::AutoEnrollmentCheckScreen(
         this, oobe_display_->GetAutoEnrollmentCheckScreenActor());
   } else if (screen_name == kControllerPairingScreenName) {
-    if (!controller_pairing_controller_) {
-      controller_pairing_controller_.reset(
+    if (!shark_controller_) {
+      shark_controller_.reset(
           new pairing_chromeos::BluetoothControllerPairingController());
     }
     return new ControllerPairingScreen(
         this, oobe_display_->GetControllerPairingScreenActor(),
-        controller_pairing_controller_.get());
+        shark_controller_.get());
   } else if (screen_name == kHostPairingScreenName) {
-    if (!host_pairing_controller_) {
-      host_pairing_controller_.reset(
+    if (!remora_controller_) {
+      remora_controller_.reset(
           new pairing_chromeos::BluetoothHostPairingController());
-      host_pairing_controller_->StartPairing();
+      remora_controller_->StartPairing();
     }
     return new HostPairingScreen(this,
                                  oobe_display_->GetHostPairingScreenActor(),
-                                 host_pairing_controller_.get());
+                                 remora_controller_.get());
   }
   return NULL;
 }
@@ -436,9 +438,9 @@ void WizardController::ShowEnrollmentScreen() {
     mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
   }
 
-  screen->SetParameters(mode, enrollment_domain, user, auth_token_,
-                        controller_pairing_controller_.get(),
-                        host_pairing_controller_.get());
+  screen->SetParameters(mode, enrollment_domain, user,
+                        shark_controller_.get(),
+                        remora_controller_.get());
   SetCurrentScreen(screen);
 }
 
@@ -581,10 +583,6 @@ void WizardController::OnUpdateCompleted() {
                             ->IsSharkRequisition();
   if (is_shark) {
     ShowControllerPairingScreen();
-  } else if (!auth_token_.empty()) {
-    // TODO(achuith): There is an issue with the auto enrollment check and
-    // remote enrollment. crbug.com/403147.
-    ShowEnrollmentScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
   }
@@ -1253,9 +1251,9 @@ void WizardController::MaybeStartListeningForSharkConnection() {
 }
 
 void WizardController::OnSharkConnected(
-    scoped_ptr<pairing_chromeos::HostPairingController> pairing_controller) {
+    scoped_ptr<pairing_chromeos::HostPairingController> remora_controller) {
   VLOG(1) << "OnSharkConnected";
-  host_pairing_controller_ = pairing_controller.Pass();
+  remora_controller_ = remora_controller.Pass();
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, shark_connection_listener_.release());
   shark_controller_detected_ = true;

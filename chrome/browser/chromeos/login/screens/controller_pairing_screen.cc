@@ -110,26 +110,7 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       controller_->RemoveObserver(this);
       get_screen_observer()->OnExit(
           WizardController::CONTROLLER_PAIRING_FINISHED);
-      // TODO(achuith, zork): Move the rest of the stages to the proper
-      // location.
       desired_page = kPageEnrollmentIntroduction;
-      break;
-    }
-    case ControllerPairingController::STAGE_HOST_ENROLLMENT_IN_PROGRESS: {
-      desired_page = kPageHostEnrollment;
-      break;
-    }
-    case ControllerPairingController::STAGE_HOST_ENROLLMENT_ERROR: {
-      desired_page = kPageHostEnrollmentError;
-      break;
-    }
-    case ControllerPairingController::STAGE_PAIRING_DONE: {
-      desired_page = kPagePairingDone;
-      break;
-    }
-    case ControllerPairingController::STAGE_FINISHED: {
-      get_screen_observer()->OnExit(
-          WizardController::CONTROLLER_PAIRING_FINISHED);
       break;
     }
     default:

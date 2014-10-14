@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
 
@@ -33,7 +34,9 @@ class UpdateScreen: public UpdateEngineClient::Observer,
                     public WizardScreen,
                     public NetworkPortalDetector::Observer {
  public:
-  UpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
+  UpdateScreen(ScreenObserver* screen_observer,
+               UpdateScreenActor* actor,
+               pairing_chromeos::HostPairingController* remora_controller);
   virtual ~UpdateScreen();
 
   static UpdateScreen* Get(ScreenManager* manager);
@@ -105,6 +108,10 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   // Checks that screen is shown, shows if not.
   void MakeSureScreenIsShown();
 
+  // Send update status to host pairing controller.
+  void SetHostPairingControllerStatus(
+      pairing_chromeos::HostPairingController::UpdateStatus update_status);
+
   // Returns an instance of the error screen.
   ErrorScreen* GetErrorScreen();
 
@@ -144,6 +151,9 @@ class UpdateScreen: public UpdateEngineClient::Observer,
 
   // Keeps actor which is delegated with all showing operations.
   UpdateScreenActor* actor_;
+
+  // Used to track updates over Bluetooth.
+  pairing_chromeos::HostPairingController* remora_controller_;
 
   // Time of the first notification from the downloading stage.
   base::Time download_start_time_;

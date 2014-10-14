@@ -11,7 +11,7 @@ using ::testing::NotNull;
 
 MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer,
                                    UpdateScreenActor* actor)
-    : UpdateScreen(screen_observer, actor) {
+    : UpdateScreen(screen_observer, actor, NULL) {
 }
 
 MockUpdateScreen::~MockUpdateScreen() {

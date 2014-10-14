@@ -128,7 +128,8 @@ void FakeHostPairingController::OnUpdateStatusChanged(
     UpdateStatus update_status) {
 }
 
-void FakeHostPairingController::SetEnrollmentComplete(bool success) {
+void FakeHostPairingController::OnEnrollmentStatusChanged(
+    EnrollmentStatus enrollment_status) {
 }
 
 void FakeHostPairingController::PairingStageChanged(Stage new_stage) {

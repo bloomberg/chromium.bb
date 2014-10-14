@@ -33,7 +33,11 @@ class FakeHostPairingController
   // Applies given |config| to flow.
   void ApplyConfig(const std::string& config);
 
-  // Overridden from HostPairingFlow:
+ private:
+  void ChangeStage(Stage new_stage);
+  void ChangeStageLater(Stage new_stage);
+
+  // HostPairingController:
   virtual void AddObserver(Observer* observer) override;
   virtual void RemoveObserver(Observer* observer) override;
   virtual Stage GetCurrentStage() override;
@@ -42,13 +46,10 @@ class FakeHostPairingController
   virtual std::string GetConfirmationCode() override;
   virtual std::string GetEnrollmentDomain() override;
   virtual void OnUpdateStatusChanged(UpdateStatus update_status) override;
-  virtual void SetEnrollmentComplete(bool success) override;
+  virtual void OnEnrollmentStatusChanged(
+      EnrollmentStatus enrollment_status) override;
 
- private:
-  void ChangeStage(Stage new_stage);
-  void ChangeStageLater(Stage new_stage);
-
-  // HostPairingFlow::Observer:
+  // HostPairingController::Observer:
   virtual void PairingStageChanged(Stage new_stage) override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,

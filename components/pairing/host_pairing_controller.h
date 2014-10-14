@@ -34,6 +34,13 @@ class HostPairingController {
     UPDATE_STATUS_UPDATED,
   };
 
+  enum EnrollmentStatus {
+    ENROLLMENT_STATUS_UNKNOWN,
+    ENROLLMENT_STATUS_ENROLLING,
+    ENROLLMENT_STATUS_FAILURE,
+    ENROLLMENT_STATUS_SUCCESS,
+  };
+
   class Observer {
    public:
     Observer();
@@ -80,8 +87,10 @@ class HostPairingController {
   // Can be called on stage |STAGE_UPDATING|.
   virtual void OnUpdateStatusChanged(UpdateStatus update_status) = 0;
 
-  // Called when enrollment has completed.
-  virtual void SetEnrollmentComplete(bool success) = 0;
+  // Notify that enrollment status has changed.
+  // Can be called on stage |STAGE_WAITING_FOR_CREDENTIALS|.
+  virtual void OnEnrollmentStatusChanged(
+      EnrollmentStatus enrollment_status) = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;

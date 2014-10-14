@@ -39,6 +39,7 @@ class BluetoothControllerPairingController
   void DeviceFound(device::BluetoothDevice* device);
   void DeviceLost(device::BluetoothDevice* device);
   void SendBuffer(scoped_refptr<net::IOBuffer> io_buffer, int size);
+  void CompleteSetup();
 
   void OnSetPowered();
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
@@ -108,7 +109,6 @@ class BluetoothControllerPairingController
   virtual void AuthorizePairing(device::BluetoothDevice* device) override;
 
   Stage current_stage_;
-  bool got_initial_status_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
   scoped_refptr<device::BluetoothSocket> socket_;

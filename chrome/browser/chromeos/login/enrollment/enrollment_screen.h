@@ -47,7 +47,6 @@ class EnrollmentScreen
   static EnrollmentScreen* Get(ScreenManager* manager);
 
   // Setup how this screen will handle enrollment.
-  //   |auth_token| is an optional OAuth token to attempt to enroll with.
   //   |shark_controller| is an interface that is used to communicate with a
   //     remora device for remote enrollment.
   //   |remora_controller| is an interface that is used to communicate with a
@@ -56,7 +55,6 @@ class EnrollmentScreen
       EnrollmentScreenActor::EnrollmentMode enrollment_mode,
       const std::string& management_domain,
       const std::string& enrollment_user,
-      const std::string& auth_token,
       pairing_chromeos::ControllerPairingController* shark_controller,
       pairing_chromeos::HostPairingController* remora_controller);
 
@@ -133,7 +131,6 @@ class EnrollmentScreen
   bool enrollment_failed_once_;
   bool remora_token_sent_;
   std::string user_;
-  std::string auth_token_;
   scoped_ptr<base::ElapsedTimer> elapsed_timer_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
