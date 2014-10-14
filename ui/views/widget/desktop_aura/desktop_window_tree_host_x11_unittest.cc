@@ -266,7 +266,7 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
     gfx::Rect maximized_bounds;
-    ui::GetWindowRect(xid1, &maximized_bounds);
+    ui::GetOuterWindowBounds(xid1, &maximized_bounds);
 
     shape_rects = GetShapeRects(xid1);
     ASSERT_FALSE(shape_rects.empty());
