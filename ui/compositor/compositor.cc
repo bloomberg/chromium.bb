@@ -74,15 +74,15 @@ class SatisfySwapPromise : public cc::SwapPromise {
   explicit SatisfySwapPromise(uint32_t id) : id_(id) {}
 
  private:
-  virtual void DidSwap(cc::CompositorFrameMetadata* metadata) OVERRIDE {
+  virtual void DidSwap(cc::CompositorFrameMetadata* metadata) override {
     metadata->satisfies_sequences.push_back(id_);
   }
 
-  virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE {
+  virtual void DidNotSwap(DidNotSwapReason reason) override {
     // TODO(jbauman): Send to the SurfaceManager immediately.
     DCHECK(false);
   }
-  virtual int64 TraceId() const OVERRIDE { return 0; }
+  virtual int64 TraceId() const override { return 0; }
   uint32_t id_;
 };
 

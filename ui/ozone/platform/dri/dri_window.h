@@ -52,8 +52,8 @@ class DriWindow : public PlatformWindow,
   virtual uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // ChannelObserver:
-  virtual void OnChannelEstablished() OVERRIDE;
-  virtual void OnChannelDestroyed() OVERRIDE;
+  virtual void OnChannelEstablished() override;
+  virtual void OnChannelDestroyed() override;
 
  private:
   PlatformWindowDelegate* delegate_;   // Not owned.
