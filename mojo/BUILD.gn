@@ -12,7 +12,8 @@ group("mojo") {
   }
   deps = [
     ":tests",
-    "//mojo/apps/js",
+    "//mojo/apps/js:mojo_js_content_handler",
+    "//mojo/apps/js:mojo_js_standalone",
     "//mojo/common",
     "//mojo/examples",
     "//mojo/public",

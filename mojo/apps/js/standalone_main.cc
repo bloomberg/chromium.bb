@@ -34,6 +34,7 @@ class StandaloneJSApp : public JSApp {
 class StandaloneApplicationDelegateImpl : public ApplicationDelegateImpl {
  private:
   virtual void Initialize(ApplicationImpl* app) override {
+    base::i18n::InitializeICU();
     ApplicationDelegateImpl::Initialize(app);
 
     for (size_t i = 1; i < app->args().size(); i++) {
@@ -48,7 +49,6 @@ class StandaloneApplicationDelegateImpl : public ApplicationDelegateImpl {
 }  // namespace mojo
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  base::i18n::InitializeICU();
   mojo::ApplicationRunnerChromium runner(
       new mojo::apps::StandaloneApplicationDelegateImpl());
   return runner.Run(shell_handle);

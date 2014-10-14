@@ -2,8 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+group("js") {
+  # Meta-target, don't link into production code.
+  testonly = true
+  deps = [
+    ":mojo_js_content_handler",
+    ":mojo_js_standalone"
+  ]
+}
+
 # GYP version: part of mojo/mojo_apps.gypi:mojo_js_lib
-source_set("js") {
+source_set("mojo_runner") {
   sources = [
     "mojo_runner_delegate.cc",
     "mojo_runner_delegate.h",
@@ -33,7 +42,7 @@ source_set("js_apps") {
     "//mojo/bindings/js",
   ]
   deps = [
-    ":js",
+    ":mojo_runner",
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/utility",

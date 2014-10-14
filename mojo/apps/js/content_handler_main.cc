@@ -21,6 +21,11 @@ class ContentHandlerApplicationDelegateImpl : public ApplicationDelegateImpl {
   }
 
  private:
+  virtual void Initialize(ApplicationImpl* app) override {
+    base::i18n::InitializeICU();
+    ApplicationDelegateImpl::Initialize(app);
+  }
+
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) override {
     connection->AddService(&content_handler_factory_);
@@ -35,7 +40,6 @@ class ContentHandlerApplicationDelegateImpl : public ApplicationDelegateImpl {
 }  // namespace mojo
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  base::i18n::InitializeICU();
   mojo::ApplicationRunnerChromium runner(
       new mojo::apps::ContentHandlerApplicationDelegateImpl());
   return runner.Run(shell_handle);
