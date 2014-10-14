@@ -719,7 +719,7 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IRD_SECURITY_INTERSTITIAL_HTML));
+          IDR_SECURITY_INTERSTITIAL_HTML));
   return webui::GetI18nTemplateHtml(html, &load_time_data);
 }
 
