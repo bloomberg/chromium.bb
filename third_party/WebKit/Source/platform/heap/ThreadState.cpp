@@ -110,11 +110,37 @@ static void* getStackStart()
 #endif
 }
 
+static size_t getUnderestimatedStackSize()
+{
+#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
+    // We cannot get the stack size in these platforms because
+    // pthread_getattr_np() can fail for the main thread.
+    // This is OK because ThreadState::current() doesn't use the stack size
+    // in these platforms.
+    return 0;
+#elif OS(MACOSX)
+    return pthread_get_stacksize_np(pthread_self());
+#elif OS(WIN) && COMPILER(MSVC)
+    // On Windows stack limits for the current thread are available in
+    // the thread information block (TIB). Its fields can be accessed through
+    // FS segment register on x86 and GS segment register on x86_64.
+#ifdef _WIN64
+    return __readgsqword(offsetof(NT_TIB64, StackBase)) - __readgsqword(offsetof(NT_TIB64, StackLimit));
+#else
+    return __readfsdword(offsetof(NT_TIB, StackBase)) - __readfsdword(offsetof(NT_TIB, StackLimit));
+#endif
+#else
+    return 0;
+#endif
+}
+
 // The maximum number of WrapperPersistentRegions to keep around in the
 // m_pooledWrapperPersistentRegions pool.
 static const size_t MaxPooledWrapperPersistentRegionCount = 2;
 
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = 0;
+uintptr_t ThreadState::s_mainThreadStackStart = 0;
+uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 SafePointBarrier* ThreadState::s_safePointBarrier = 0;
 bool ThreadState::s_inGC = false;
@@ -325,6 +351,11 @@ ThreadState::ThreadState()
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
+    if (isMainThread()) {
+        s_mainThreadStackStart = reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
+        s_mainThreadUnderestimatedStackSize = getUnderestimatedStackSize() - sizeof(void*);
+    }
+
     InitializeHeaps<NumberOfHeaps>::init(m_heaps, this);
 
     m_weakCallbackStack = new CallbackStack();
@@ -350,6 +381,8 @@ ThreadState::~ThreadState()
         delete region;
     }
     **s_threadSpecific = 0;
+    s_mainThreadStackStart = 0;
+    s_mainThreadUnderestimatedStackSize = 0;
 }
 
 void ThreadState::init()

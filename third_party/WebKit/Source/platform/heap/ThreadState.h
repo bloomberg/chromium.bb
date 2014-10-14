@@ -375,7 +375,27 @@ public:
     // can no longer use the garbage collected heap after this call.
     static void detach();
 
-    static ThreadState* current() { return **s_threadSpecific; }
+    static ThreadState* current()
+    {
+#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
+        // TLS lookup is fast in these platforms.
+        return **s_threadSpecific;
+#else
+        uintptr_t dummy;
+        uintptr_t addressDiff = s_mainThreadStackStart - reinterpret_cast<uintptr_t>(&dummy);
+        // This is a fast way to judge if we are in the main thread.
+        // If |&dummy| is within |s_mainThreadUnderestimatedStackSize| byte from
+        // the stack start of the main thread, we judge that we are in
+        // the main thread.
+        if (LIKELY(addressDiff < s_mainThreadUnderestimatedStackSize)) {
+            ASSERT(**s_threadSpecific == mainThreadState());
+            return mainThreadState();
+        }
+        // TLS lookup is slow.
+        return **s_threadSpecific;
+#endif
+    }
+
     static ThreadState* mainThreadState()
     {
         return reinterpret_cast<ThreadState*>(s_mainThreadStateStorage);
@@ -740,6 +760,8 @@ private:
     void invokePreFinalizers(Visitor&);
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
+    static uintptr_t s_mainThreadStackStart;
+    static uintptr_t s_mainThreadUnderestimatedStackSize;
     static SafePointBarrier* s_safePointBarrier;
 
     // This variable is flipped to true after all threads are stoped
