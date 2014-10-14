@@ -63,6 +63,7 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
   enum SegmentStyle {
     SEGMENT_STYLE_UNDERLINE,
     SEGMENT_STYLE_DOUBLE_UNDERLINE,
+    SEGMENT_STYLE_NO_UNDERLINE,
   };
 
   enum CandidateWindowPosition {

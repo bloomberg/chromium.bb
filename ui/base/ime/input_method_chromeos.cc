@@ -617,6 +617,9 @@ void InputMethodChromeOS::ExtractCompositionText(
       else if (underline_attributes[i].type ==
                chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_ERROR)
         underline.color = SK_ColorRED;
+      else if (underline_attributes[i].type ==
+               chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_NONE)
+        underline.color = SK_ColorTRANSPARENT;
       out_composition->underlines.push_back(underline);
     }
   }

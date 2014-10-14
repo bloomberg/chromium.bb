@@ -101,8 +101,8 @@
                       "type": "integer"
                     },
                     "style": {
-                      "description": "How to render this segment",
-                      "enum": ["underline", "doubleUnderline"],
+                      "description": "The type of the underline to modify this segment.",
+                      "enum": ["underline", "doubleUnderline", "noUnderline"],
                       "type": "string"
                     }
                   }

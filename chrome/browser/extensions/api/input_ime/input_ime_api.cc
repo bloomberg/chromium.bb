@@ -490,9 +490,14 @@ bool InputImeSetCompositionFunction::RunSync() {
           SetComposition::Params::Parameters::SegmentsType::STYLE_UNDERLINE) {
         segments.back().style =
             InputMethodEngineInterface::SEGMENT_STYLE_UNDERLINE;
-      } else {
+      } else if (segments_args[i]->style ==
+                 SetComposition::Params::Parameters::SegmentsType::
+                     STYLE_DOUBLEUNDERLINE) {
         segments.back().style =
             InputMethodEngineInterface::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+      } else {
+        segments.back().style =
+            InputMethodEngineInterface::SEGMENT_STYLE_NO_UNDERLINE;
       }
     }
   }

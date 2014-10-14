@@ -218,6 +218,9 @@ bool InputMethodEngine::SetComposition(
       case SEGMENT_STYLE_DOUBLE_UNDERLINE:
         underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE;
         break;
+      case SEGMENT_STYLE_NO_UNDERLINE:
+        underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_NONE;
+        break;
       default:
         continue;
     }
