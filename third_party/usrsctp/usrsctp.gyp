@@ -115,7 +115,6 @@
         'usrsctplib/user_recv_thread.c',
         'usrsctplib/user_recv_thread.h',
         'usrsctplib/user_route.h',
-        'usrsctplib/user_sctp_timer_iterate.c',
         'usrsctplib/user_socket.c',
         'usrsctplib/user_socketvar.h',
         'usrsctplib/user_uma.h',
