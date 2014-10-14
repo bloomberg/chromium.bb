@@ -266,6 +266,8 @@ def ComputeStaticValues(module):
 
   return module
 
+def MojomToPythonImport(mojom):
+  return mojom.replace('.mojom', '_mojom')
 
 class Generator(generator.Generator):
 
@@ -285,12 +287,13 @@ class Generator(generator.Generator):
     }
 
   def GenerateFiles(self, args):
+    import_path = MojomToPythonImport(self.module.name)
     self.Write(self.GeneratePythonModule(),
-               '%s.py' % self.module.name.replace('.mojom', '_mojom'))
+               self.MatchMojomFilePath('%s.py' % import_path))
 
   def GetImports(self):
     for each in self.module.imports:
-      each['python_module'] = each['module_name'].replace('.mojom', '_mojom')
+      each['python_module'] = MojomToPythonImport(each['module_name'])
     return self.module.imports
 
   def GetJinjaParameters(self):

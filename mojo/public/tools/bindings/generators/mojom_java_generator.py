@@ -496,8 +496,8 @@ class Generator(generator.Generator):
 
     # Generate the java files in a temporary directory and place a single
     # srcjar in the output directory.
-    zip_filename = os.path.join(self.output_dir,
-                                "%s.srcjar" % self.module.name)
+    basename = self.MatchMojomFilePath("%s.srcjar" % self.module.name)
+    zip_filename = os.path.join(self.output_dir, basename)
     with TempDir() as temp_java_root:
       self.output_dir = os.path.join(temp_java_root, package_path)
       self.DoGenerateFiles();

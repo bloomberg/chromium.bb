@@ -271,8 +271,10 @@ class Generator(generator.Generator):
     return self.GetParameters()
 
   def GenerateFiles(self, args):
-    self.Write(self.GenerateAMDModule(), "%s.js" % self.module.name)
-    self.Write(self.GenerateHTMLModule(), "%s.html" % self.module.name)
+    self.Write(self.GenerateAMDModule(),
+        self.MatchMojomFilePath("%s.js" % self.module.name))
+    self.Write(self.GenerateHTMLModule(),
+        self.MatchMojomFilePath("%s.html" % self.module.name))
 
   def GetImports(self):
     used_names = set()

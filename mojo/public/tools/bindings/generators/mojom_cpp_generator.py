@@ -365,7 +365,9 @@ class Generator(generator.Generator):
     return self.GetJinjaExports()
 
   def GenerateFiles(self, args):
-    self.Write(self.GenerateModuleHeader(), "%s.h" % self.module.name)
+    self.Write(self.GenerateModuleHeader(),
+        self.MatchMojomFilePath("%s.h" % self.module.name))
     self.Write(self.GenerateModuleInternalHeader(),
-        "%s-internal.h" % self.module.name)
-    self.Write(self.GenerateModuleSource(), "%s.cc" % self.module.name)
+        self.MatchMojomFilePath("%s-internal.h" % self.module.name))
+    self.Write(self.GenerateModuleSource(),
+        self.MatchMojomFilePath("%s.cc" % self.module.name))

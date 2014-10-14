@@ -86,78 +86,78 @@ def FindImportFile(dir_name, file_name, search_dirs):
       return path
   return os.path.join(dir_name, file_name)
 
+class MojomProcessor(object):
+  def __init__(self, should_generate):
+    self._should_generate = should_generate
+    self._processed_files = {}
 
-# Disable check for dangerous default arguments (they're "private" keyword
-# arguments; note that we want |_processed_files| to memoize across invocations
-# of |ProcessFile()|):
-# pylint: disable=W0102
-def ProcessFile(args, remaining_args, generator_modules, filename,
-                _processed_files={}, _imported_filename_stack=None):
-  # Memoized results.
-  if filename in _processed_files:
-    return _processed_files[filename]
+  def ProcessFile(self, args, remaining_args, generator_modules, filename,
+                  _imported_filename_stack=None):
+    # Memoized results.
+    if filename in self._processed_files:
+      return self._processed_files[filename]
 
-  if _imported_filename_stack is None:
-    _imported_filename_stack = []
+    if _imported_filename_stack is None:
+      _imported_filename_stack = []
 
-  # Ensure we only visit each file once.
-  if filename in _imported_filename_stack:
-    print "%s: Error: Circular dependency" % filename + \
-        MakeImportStackMessage(_imported_filename_stack + [filename])
-    sys.exit(1)
+    # Ensure we only visit each file once.
+    if filename in _imported_filename_stack:
+      print "%s: Error: Circular dependency" % filename + \
+          MakeImportStackMessage(_imported_filename_stack + [filename])
+      sys.exit(1)
 
-  try:
-    with open(filename) as f:
-      source = f.read()
-  except IOError as e:
-    print "%s: Error: %s" % (e.filename, e.strerror) + \
-        MakeImportStackMessage(_imported_filename_stack + [filename])
-    sys.exit(1)
+    try:
+      with open(filename) as f:
+        source = f.read()
+    except IOError as e:
+      print "%s: Error: %s" % (e.filename, e.strerror) + \
+          MakeImportStackMessage(_imported_filename_stack + [filename])
+      sys.exit(1)
 
-  try:
-    tree = Parse(source, filename)
-  except Error as e:
-    print str(e) + MakeImportStackMessage(_imported_filename_stack + [filename])
-    sys.exit(1)
+    try:
+      tree = Parse(source, filename)
+    except Error as e:
+      full_stack = _imported_filename_stack + [filename]
+      print str(e) + MakeImportStackMessage(full_stack)
+      sys.exit(1)
 
-  dirname, name = os.path.split(filename)
-  mojom = Translate(tree, name)
-  if args.debug_print_intermediate:
-    pprint.PrettyPrinter().pprint(mojom)
+    dirname, name = os.path.split(filename)
+    mojom = Translate(tree, name)
+    if args.debug_print_intermediate:
+      pprint.PrettyPrinter().pprint(mojom)
 
-  # Process all our imports first and collect the module object for each.
-  # We use these to generate proper type info.
-  for import_data in mojom['imports']:
-    import_filename = FindImportFile(dirname,
-                                     import_data['filename'],
-                                     args.import_directories)
-    import_data['module'] = ProcessFile(
-        args, remaining_args, generator_modules, import_filename,
-        _processed_files=_processed_files,
-        _imported_filename_stack=_imported_filename_stack + [filename])
+    # Process all our imports first and collect the module object for each.
+    # We use these to generate proper type info.
+    for import_data in mojom['imports']:
+      import_filename = FindImportFile(dirname,
+                                       import_data['filename'],
+                                       args.import_directories)
+      import_data['module'] = self.ProcessFile(
+          args, remaining_args, generator_modules, import_filename,
+          _imported_filename_stack=_imported_filename_stack + [filename])
 
-  module = OrderedModuleFromData(mojom)
+    module = OrderedModuleFromData(mojom)
 
-  # Set the path as relative to the source root.
-  module.path = os.path.relpath(os.path.abspath(filename),
-                                os.path.abspath(args.depth))
+    # Set the path as relative to the source root.
+    module.path = os.path.relpath(os.path.abspath(filename),
+                                  os.path.abspath(args.depth))
 
-  # Normalize to unix-style path here to keep the generators simpler.
-  module.path = module.path.replace('\\', '/')
+    # Normalize to unix-style path here to keep the generators simpler.
+    module.path = module.path.replace('\\', '/')
 
-  for generator_module in generator_modules:
-    generator = generator_module.Generator(module, args.output_dir)
-    filtered_args = []
-    if hasattr(generator_module, 'GENERATOR_PREFIX'):
-      prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
-      filtered_args = [arg for arg in remaining_args if arg.startswith(prefix)]
-    generator.GenerateFiles(filtered_args)
+    if self._should_generate(filename):
+      for generator_module in generator_modules:
+        generator = generator_module.Generator(module, args.output_dir)
+        filtered_args = []
+        if hasattr(generator_module, 'GENERATOR_PREFIX'):
+          prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
+          filtered_args = [arg for arg in remaining_args
+                           if arg.startswith(prefix)]
+        generator.GenerateFiles(filtered_args)
 
-  # Save result.
-  _processed_files[filename] = module
-  return module
-# pylint: enable=W0102
-
+    # Save result.
+    self._processed_files[filename] = module
+    return module
 
 def main():
   parser = argparse.ArgumentParser(
@@ -186,8 +186,9 @@ def main():
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
+  processor = MojomProcessor(lambda filename: filename in args.filename)
   for filename in args.filename:
-    ProcessFile(args, remaining_args, generator_modules, filename)
+    processor.ProcessFile(args, remaining_args, generator_modules, filename)
 
   return 0
 
