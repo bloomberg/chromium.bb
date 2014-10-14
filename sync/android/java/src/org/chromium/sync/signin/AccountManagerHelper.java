@@ -117,8 +117,7 @@ public class AccountManagerHelper {
 
     public List<String> getGoogleAccountNames() {
         List<String> accountNames = new ArrayList<String>();
-        Account[] accounts = mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
-        for (Account account : accounts) {
+        for (Account account : getGoogleAccounts()) {
             accountNames.add(account.name);
         }
         return accountNames;
@@ -185,8 +184,8 @@ public class AccountManagerHelper {
      */
     @Deprecated
     public String getAuthTokenFromBackground(Account account, String authTokenType) {
-        AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account,
-                authTokenType, true, null, null);
+        AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(
+                account, authTokenType, true, null, null);
         AtomicBoolean errorEncountered = new AtomicBoolean(false);
         return getAuthTokenInner(future, errorEncountered);
     }
@@ -262,15 +261,8 @@ public class AccountManagerHelper {
             final String authTokenType, final GetAuthTokenCallback callback,
             final AtomicInteger numTries, final AtomicBoolean errorEncountered,
             final ConnectionRetry retry) {
-        AccountManagerFuture<Bundle> future;
-        if (numTries.get() == 0 && activity != null) {
-            future = mAccountManager.getAuthToken(
-                    account, authTokenType, null, activity, null, null);
-        } else {
-            future = mAccountManager.getAuthToken(
-                    account, authTokenType, true, null, null);
-        }
-        final AccountManagerFuture<Bundle> finalFuture = future;
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(
+                account, authTokenType, true, null, null);
         errorEncountered.set(false);
 
         // On ICS onPostExecute is never called when running an AsyncTask from a different thread
@@ -279,7 +271,7 @@ public class AccountManagerHelper {
             new AsyncTask<Void, Void, String>() {
                 @Override
                 public String doInBackground(Void... params) {
-                    return getAuthTokenInner(finalFuture, errorEncountered);
+                    return getAuthTokenInner(future, errorEncountered);
                 }
                 @Override
                 public void onPostExecute(String authToken) {
@@ -288,7 +280,7 @@ public class AccountManagerHelper {
                 }
             }.execute();
         } else {
-            String authToken = getAuthTokenInner(finalFuture, errorEncountered);
+            String authToken = getAuthTokenInner(future, errorEncountered);
             onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
                     errorEncountered, retry);
         }
@@ -322,13 +314,11 @@ public class AccountManagerHelper {
      */
     @Deprecated
     public String getNewAuthToken(Account account, String authToken, String authTokenType) {
+        invalidateAuthToken(authToken);
+
         // TODO(dsmyers): consider reimplementing using an AccountManager function with an
         // explicit timeout.
         // Bug: https://code.google.com/p/chromium/issues/detail?id=172394.
-        if (authToken != null && !authToken.isEmpty()) {
-            mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
-        }
-
         try {
             return mAccountManager.blockingGetAuthToken(account, authTokenType, true);
         } catch (OperationCanceledException e) {
@@ -348,9 +338,7 @@ public class AccountManagerHelper {
      */
     public void getNewAuthTokenFromForeground(Account account, String authToken,
                 String authTokenType, GetAuthTokenCallback callback) {
-        if (authToken != null && !authToken.isEmpty()) {
-            mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
-        }
+        invalidateAuthToken(authToken);
         AtomicInteger numTries = new AtomicInteger(0);
         AtomicBoolean errorEncountered = new AtomicBoolean(false);
         getAuthTokenAsynchronously(
@@ -361,6 +349,8 @@ public class AccountManagerHelper {
      * Removes an auth token from the AccountManager's cache.
      */
     public void invalidateAuthToken(String authToken) {
-        mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
+        if (authToken != null && !authToken.isEmpty()) {
+            mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
+        }
     }
 }
