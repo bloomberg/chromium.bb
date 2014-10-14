@@ -153,7 +153,7 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
-      logger_(new QuicConnectionLogger(net_log_)),
+      logger_(new QuicConnectionLogger(this, net_log_)),
       num_packets_read_(0),
       going_away_(false),
       weak_factory_(this) {

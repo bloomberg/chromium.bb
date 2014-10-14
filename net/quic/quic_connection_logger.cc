@@ -322,8 +322,10 @@ AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
 
 }  // namespace
 
-QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
+QuicConnectionLogger::QuicConnectionLogger(QuicSession* session,
+                                           const BoundNetLog& net_log)
     : net_log_(net_log),
+      session_(session),
       last_received_packet_sequence_number_(0),
       last_received_packet_size_(0),
       largest_received_packet_sequence_number_(0),
@@ -452,6 +454,10 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
                      frame.stop_waiting_frame));
       break;
     case PING_FRAME:
+      UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionFlowControlBlocked",
+                            session_->IsConnectionFlowControlBlocked());
+      UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StreamFlowControlBlocked",
+                            session_->IsStreamFlowControlBlocked());
       // PingFrame has no contents to log, so just record that it was sent.
       net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PING_FRAME_SENT);
       break;

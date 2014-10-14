@@ -19,7 +19,7 @@ class QuicConnectionLoggerPeer {
 
 class QuicConnectionLoggerTest : public ::testing::Test {
  protected:
-  QuicConnectionLoggerTest() : logger_(net_log_) {}
+  QuicConnectionLoggerTest() : logger_(nullptr, net_log_) {}
 
   BoundNetLog net_log_;
   QuicConnectionLogger logger_;

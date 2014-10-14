@@ -206,6 +206,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicFlowController* flow_controller() { return flow_controller_.get(); }
 
+  // Returns true if connection is flow controller blocked.
+  bool IsConnectionFlowControlBlocked() const;
+
+  // Returns true if any stream is flow controller blocked.
+  bool IsStreamFlowControlBlocked();
+
   size_t get_max_open_streams() const { return max_open_streams_; }
 
  protected:

@@ -17299,6 +17299,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ConnectionFlowControlBlocked"
+    enum="BooleanBlocked">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Whether QUIC session's connection is flow control blocked when a PING
+    message is sent to server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ConnectionTypeFromPeer" enum="AddressFamily">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -17528,6 +17537,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The number of request for secure resources over QUIC sessions. True if the
     session is secure, false if it is not.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.StreamFlowControlBlocked"
+    enum="BooleanBlocked">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Whether any of QUIC session's streams are flow control blocked when a PING
+    message is sent to server.
   </summary>
 </histogram>
 
@@ -39488,6 +39506,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanAvailable" type="int">
   <int value="0" label="Not Available"/>
   <int value="1" label="Available"/>
+</enum>
+
+<enum name="BooleanBlocked" type="int">
+  <int value="0" label="Not Blocked"/>
+  <int value="1" label="Blocked"/>
 </enum>
 
 <enum name="BooleanCloseTimeout" type="int">

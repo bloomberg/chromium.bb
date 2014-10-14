@@ -782,4 +782,22 @@ void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
   }
 }
 
+bool QuicSession::IsConnectionFlowControlBlocked() const {
+  return flow_controller_->IsBlocked();
+}
+
+bool QuicSession::IsStreamFlowControlBlocked() {
+  if (headers_stream_->flow_controller()->IsBlocked() ||
+      GetCryptoStream()->flow_controller()->IsBlocked()) {
+    return true;
+  }
+  for (DataStreamMap::iterator it = stream_map_.begin();
+       it != stream_map_.end(); ++it) {
+    if (it->second->flow_controller()->IsBlocked()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace net

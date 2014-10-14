@@ -536,6 +536,8 @@ TEST_P(QuicSessionTest, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
   // Ensure connection level flow control blockage.
   QuicFlowControllerPeer::SetSendWindowOffset(session_.flow_controller(), 0);
   EXPECT_TRUE(session_.flow_controller()->IsBlocked());
+  EXPECT_TRUE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 
   // Mark the crypto and headers streams as write blocked, we expect them to be
   // allowed to write later.
@@ -643,8 +645,12 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   string body(kDefaultFlowControlSendWindow, '.');
   EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   stream2->SendBody(body, false);
   EXPECT_TRUE(stream2->flow_controller()->IsBlocked());
+  EXPECT_TRUE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
 
   // The handshake message will call OnCanWrite, so the stream can resume
   // writing.
@@ -656,6 +662,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
 
   // Stream is now unblocked.
   EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
 
 TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
@@ -667,12 +675,18 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   session_.set_writev_consumes_all_data(true);
   TestCryptoStream* crypto_stream = session_.GetCryptoStream();
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   QuicHeadersStream* headers_stream =
       QuicSessionPeer::GetHeadersStream(&session_);
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   // Write until the crypto stream is flow control blocked.
   int i = 0;
   while (!crypto_stream->flow_controller()->IsBlocked() && i < 1000) {
+    EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+    EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     QuicConfig config;
     CryptoHandshakeMessage crypto_message;
     config.ToHandshakeMessage(&crypto_message);
@@ -681,6 +695,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   }
   EXPECT_TRUE(crypto_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
   EXPECT_FALSE(session_.HasDataToWrite());
   EXPECT_TRUE(crypto_stream->HasBufferedData());
 
@@ -694,6 +710,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
 
   // Stream is now unblocked and will no longer have buffered data.
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
 
 TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
@@ -705,12 +723,18 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   session_.set_writev_consumes_all_data(true);
   TestCryptoStream* crypto_stream = session_.GetCryptoStream();
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   QuicHeadersStream* headers_stream =
       QuicSessionPeer::GetHeadersStream(&session_);
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   QuicStreamId stream_id = 5;
   // Write until the header stream is flow control blocked.
   while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
+    EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+    EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     SpdyHeaderBlock headers;
     headers["header"] = base::Uint64ToString(base::RandUint64()) +
         base::Uint64ToString(base::RandUint64()) +
@@ -720,6 +744,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   }
   EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
   EXPECT_FALSE(session_.HasDataToWrite());
   EXPECT_TRUE(headers_stream->HasBufferedData());
 
@@ -730,6 +756,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
 
   // Stream is now unblocked and will no longer have buffered data.
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   EXPECT_FALSE(headers_stream->HasBufferedData());
 }
 
@@ -986,6 +1014,8 @@ TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
   QuicFlowControllerPeer::SetSendWindowOffset(headers_stream->flow_controller(),
                                               0);
   EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
 
   // Unblock the headers stream by supplying a WINDOW_UPDATE.
   QuicWindowUpdateFrame window_update_frame(headers_stream->id(),
@@ -994,6 +1024,8 @@ TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
   frames.push_back(window_update_frame);
   session_.OnWindowUpdateFrames(frames);
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
+  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
+  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
 
 TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {

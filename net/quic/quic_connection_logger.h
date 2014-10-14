@@ -12,6 +12,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session.h"
 
 namespace net {
 namespace test {
@@ -26,7 +27,7 @@ class CertVerifyResult;
 class NET_EXPORT_PRIVATE QuicConnectionLogger
     : public QuicConnectionDebugVisitor {
  public:
-  explicit QuicConnectionLogger(const BoundNetLog& net_log);
+  QuicConnectionLogger(QuicSession* session, const BoundNetLog& net_log);
 
   virtual ~QuicConnectionLogger();
 
@@ -119,6 +120,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void RecordLossHistograms() const;
 
   BoundNetLog net_log_;
+  QuicSession* session_;  // Unowned.
   // The last packet sequence number received.
   QuicPacketSequenceNumber last_received_packet_sequence_number_;
   // The size of the most recently received packet.
