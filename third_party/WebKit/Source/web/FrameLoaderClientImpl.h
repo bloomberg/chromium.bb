@@ -150,7 +150,6 @@ public:
     virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*, LocalFrame* sourceFrame) const override;
     virtual void didChangeName(const String&) override;
 
-    virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) override;
     virtual void dispatchWillOpenWebSocket(WebSocketHandle*) override;
 
     virtual void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) override;

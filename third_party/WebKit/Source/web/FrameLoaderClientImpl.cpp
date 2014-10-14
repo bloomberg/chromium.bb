@@ -61,7 +61,6 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
-#include "platform/network/SocketStreamHandleInternal.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
@@ -69,7 +68,6 @@
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
-#include "public/platform/WebSocketStreamHandle.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
@@ -784,11 +782,6 @@ void FrameLoaderClientImpl::didChangeName(const String& name)
     if (!m_webFrame->client())
         return;
     m_webFrame->client()->didChangeName(m_webFrame, name);
-}
-
-void FrameLoaderClientImpl::dispatchWillOpenSocketStream(SocketStreamHandle* handle)
-{
-    m_webFrame->client()->willOpenSocketStream(SocketStreamHandleInternal::toWebSocketStreamHandle(handle));
 }
 
 void FrameLoaderClientImpl::dispatchWillOpenWebSocket(WebSocketHandle* handle)

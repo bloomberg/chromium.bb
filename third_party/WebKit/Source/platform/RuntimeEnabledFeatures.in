@@ -54,7 +54,6 @@ EncryptedMedia status=test
 ExecCommandInJavaScript status=test
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
-ExperimentalWebSocket status=stable
 FastMobileScrolling
 FileAPIBlobClose status=experimental
 FileConstructor status=stable

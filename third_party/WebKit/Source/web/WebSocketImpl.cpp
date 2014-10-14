@@ -33,10 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/ConsoleTypes.h"
-#include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 #include "modules/websockets/WebSocketChannel.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -57,11 +55,7 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     , m_bufferedAmountAfterClose(0)
 {
     RefPtrWillBeRawPtr<Document> coreDocument = PassRefPtrWillBeRawPtr<Document>(document);
-    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
-        m_private = NewWebSocketChannelImpl::create(coreDocument.get(), m_channelProxy.get());
-    } else {
-        m_private = MainThreadWebSocketChannel::create(coreDocument.get(), m_channelProxy.get());
-    }
+    m_private = NewWebSocketChannelImpl::create(coreDocument.get(), m_channelProxy.get());
 }
 
 WebSocketImpl::~WebSocketImpl()
