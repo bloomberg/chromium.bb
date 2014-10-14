@@ -58,14 +58,12 @@ DOMFormData::DOMFormData(HTMLFormElement* form)
 
 void DOMFormData::append(const String& name, const String& value)
 {
-    if (!name.isEmpty())
-        appendData(name, value);
+    appendData(name, value);
 }
 
 void DOMFormData::append(const String& name, Blob* blob, const String& filename)
 {
-    if (!name.isEmpty())
-        appendBlob(name, blob, filename);
+    appendBlob(name, blob, filename);
 }
 
 } // namespace blink
