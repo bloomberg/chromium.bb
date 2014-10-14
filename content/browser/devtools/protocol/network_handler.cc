@@ -24,12 +24,14 @@ void NetworkHandler::SetRenderViewHost(RenderViewHost* host) {
 }
 
 Response NetworkHandler::ClearBrowserCache() {
-  GetContentClient()->browser()->ClearCache(host_);
+  if (host_)
+    GetContentClient()->browser()->ClearCache(host_);
   return Response::OK();
 }
 
 Response NetworkHandler::ClearBrowserCookies() {
-  GetContentClient()->browser()->ClearCookies(host_);
+  if (host_)
+    GetContentClient()->browser()->ClearCookies(host_);
   return Response::OK();
 }
 

@@ -41,7 +41,7 @@ void ColorPicker::SetRenderViewHost(RenderViewHostImpl* host) {
     host_->RemoveMouseEventCallback(mouse_event_callback_);
   ResetFrame();
   host_ = host;
-  if (enabled_)
+  if (enabled_ && host)
     host->AddMouseEventCallback(mouse_event_callback_);
 }
 

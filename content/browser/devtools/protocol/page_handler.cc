@@ -229,10 +229,14 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
 Response PageHandler::SetGeolocationOverride(double* latitude,
                                              double* longitude,
                                              double* accuracy) {
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(host_));
   if (!web_contents)
     return Response::InternalError("No WebContents to override");
+
   GeolocationDispatcherHost* geolocation_host =
       web_contents->geolocation_dispatcher_host();
   scoped_ptr<Geoposition> geoposition(new Geoposition());
@@ -252,10 +256,14 @@ Response PageHandler::SetGeolocationOverride(double* latitude,
 }
 
 Response PageHandler::ClearGeolocationOverride() {
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(host_));
   if (!web_contents)
     return Response::InternalError("No WebContents to override");
+
   GeolocationDispatcherHost* geolocation_host =
       web_contents->geolocation_dispatcher_host();
   geolocation_host->ClearOverride();
@@ -293,8 +301,12 @@ Response PageHandler::CanEmulate(bool* result) {
 #if defined(OS_ANDROID)
   *result = false;
 #else
-  if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
-    *result = !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+  if (host_) {
+    if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
+      *result = !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+    } else {
+      *result = true;
+    }
   } else {
     *result = true;
   }
@@ -513,7 +525,7 @@ void PageHandler::ScreencastFrameCaptured(
 
   ScreencastFrameMetadata param_metadata;
   // Consider metadata empty in case it has no device scale factor.
-  if (metadata.device_scale_factor != 0) {
+  if (metadata.device_scale_factor != 0 && host_) {
     RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
         host_->GetView());
     if (!view)
