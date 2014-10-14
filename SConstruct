@@ -383,9 +383,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'android', default=False,
                   desc='Build for Android target')
 
-  BitFromArgument(env, 'arm_hard_float', default=True,
-                  desc='Build for hard float ARM ABI')
-
   BitFromArgument(env, 'skip_nonstable_bitcode', default=False,
                   desc='Skip tests involving non-stable bitcode')
 
@@ -2610,10 +2607,6 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 def SetUpLinuxEnvArm(env):
   jail = env.GetToolchainDir(toolchain_name='arm_trusted')
-  if env.Bit('arm_hard_float'):
-    arm_abi = 'gnueabihf'
-  else:
-    arm_abi = 'gnueabi'
   if not platform.machine().startswith('arm'):
     # Allow emulation on non-ARM hosts.
     env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
@@ -2624,16 +2617,16 @@ def SetUpLinuxEnvArm(env):
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
   else:
-    env.Replace(CC='arm-linux-%s-gcc' % arm_abi,
-                CXX='arm-linux-%s-g++' % arm_abi,
-                LD='arm-linux-%s-ld' % arm_abi,
+    env.Replace(CC='arm-linux-gnueabihf-gcc',
+                CXX='arm-linux-gnueabihf-g++',
+                LD='arm-linux-gnueabihf-ld',
                 ASFLAGS=[],
                 # The -rpath-link argument is needed on Ubuntu/Precise to
                 # avoid linker warnings about missing ld.linux.so.3.
                 # TODO(sbc): remove this once we stop supporting Precise
                 # as a build environment.
                 LINKFLAGS=['-Wl,-rpath-link=' + jail +
-                           '/lib/arm-linux-' + arm_abi]
+                           '/lib/arm-linux-gnueabihf']
                 )
     # Note we let the compiler choose whether it's -marm or -mthumb by
     # default.  The hope is this will have the best chance of testing
