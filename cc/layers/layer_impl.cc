@@ -365,11 +365,18 @@ void LayerImpl::SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta) {
 }
 
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
+  gfx::Vector2dF adjusted_scroll = scroll;
+  if (layer_tree_impl()->settings().use_pinch_virtual_viewport) {
+    if (!user_scrollable_horizontal_)
+      adjusted_scroll.set_x(0);
+    if (!user_scrollable_vertical_)
+      adjusted_scroll.set_y(0);
+  }
   DCHECK(scrollable());
   gfx::Vector2dF min_delta = -ScrollOffsetToVector2dF(scroll_offset_);
   gfx::Vector2dF max_delta = MaxScrollOffset().DeltaFrom(scroll_offset_);
   // Clamp new_delta so that position + delta stays within scroll bounds.
-  gfx::Vector2dF new_delta = (ScrollDelta() + scroll);
+  gfx::Vector2dF new_delta = (ScrollDelta() + adjusted_scroll);
   new_delta.SetToMax(min_delta);
   new_delta.SetToMin(max_delta);
   gfx::Vector2dF unscrolled =

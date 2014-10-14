@@ -2659,9 +2659,11 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
         unused_root_delta.set_y(0.0f);
       // Disable overscroll on axes which is impossible to scroll.
       if (settings_.report_overscroll_only_for_scrollable_axes) {
-        if (std::abs(active_tree_->TotalMaxScrollOffset().x()) <= kEpsilon)
+        if (std::abs(active_tree_->TotalMaxScrollOffset().x()) <= kEpsilon ||
+            !layer_impl->user_scrollable_horizontal())
           unused_root_delta.set_x(0.0f);
-        if (std::abs(active_tree_->TotalMaxScrollOffset().y()) <= kEpsilon)
+        if (std::abs(active_tree_->TotalMaxScrollOffset().y()) <= kEpsilon ||
+            !layer_impl->user_scrollable_vertical())
           unused_root_delta.set_y(0.0f);
       }
     }

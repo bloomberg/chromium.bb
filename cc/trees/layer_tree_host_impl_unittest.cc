@@ -104,6 +104,7 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.impl_side_painting = true;
     settings.texture_id_allocation_chunk_size = 1;
     settings.report_overscroll_only_for_scrollable_axes = true;
+    settings.use_pinch_virtual_viewport = true;
     return settings;
   }
 
@@ -827,9 +828,7 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
       gfx::Point(), SCROLL_BACKWARD));
 }
 
-// The user-scrollability breaks for zoomed-in pages. So disable this.
-// http://crbug.com/322223
-TEST_F(LayerTreeHostImplTest, DISABLED_ScrollWithUserUnscrollableLayers) {
+TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->SetViewportSize(gfx::Size(100, 100));
 

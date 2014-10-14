@@ -411,9 +411,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void set_user_scrollable_horizontal(bool scrollable) {
     user_scrollable_horizontal_ = scrollable;
   }
+  bool user_scrollable_horizontal() const {
+    return user_scrollable_horizontal_;
+  }
   void set_user_scrollable_vertical(bool scrollable) {
     user_scrollable_vertical_ = scrollable;
   }
+  bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
 
   void ApplySentScrollDeltasFromAbortedCommit();
   void ApplyScrollDeltasSinceBeginMainFrame();

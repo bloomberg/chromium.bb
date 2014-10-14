@@ -416,7 +416,7 @@ TEST(LayerImplTest, TransformInvertibility) {
 class LayerImplScrollTest : public testing::Test {
  public:
   LayerImplScrollTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_), root_id_(7) {
+      : host_impl_(settings(), &proxy_, &shared_bitmap_manager_), root_id_(7) {
     host_impl_.active_tree()->SetRootLayer(
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
     host_impl_.active_tree()->root_layer()->AddChild(
@@ -435,6 +435,12 @@ class LayerImplScrollTest : public testing::Test {
   }
 
   LayerTreeImpl* tree() { return host_impl_.active_tree(); }
+
+  LayerTreeSettings settings() {
+    LayerTreeSettings settings;
+    settings.use_pinch_virtual_viewport = true;
+    return settings;
+  }
 
  private:
   FakeImplProxy proxy_;
@@ -659,9 +665,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
   EXPECT_VECTOR_EQ(gfx::Vector2d(), layer()->sent_scroll_delta());
 }
 
-// The user-scrollability breaks for zoomed-in pages. So disable this.
-// http://crbug.com/322223
-TEST_F(LayerImplScrollTest, DISABLED_ScrollUserUnscrollableLayer) {
+TEST_F(LayerImplScrollTest, ScrollUserUnscrollableLayer) {
   gfx::ScrollOffset scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
 
