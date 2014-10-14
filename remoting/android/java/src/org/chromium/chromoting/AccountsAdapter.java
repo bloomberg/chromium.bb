@@ -26,7 +26,10 @@ public class AccountsAdapter extends ArrayAdapter<Account> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = mInflater.inflate(R.layout.account_selected, parent, false);
+        View view = convertView;
+        if (view == null) {
+            view = mInflater.inflate(R.layout.account_selected, parent, false);
+        }
         Account account = getItem(position);
         TextView target = (TextView) view.findViewById(R.id.account_name);
         target.setText(account.name);
