@@ -20,7 +20,6 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
   ServerBackedStateKeysBrokerTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
         broker_(&fake_session_manager_client_, task_runner_),
-        first_boot_(false),
         updated_(false),
         callback_invoked_(false) {
     state_keys_.push_back("1");
@@ -41,11 +40,9 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
     EXPECT_EQ(state_keys_.front(), broker_.current_state_key());
   }
 
-  void HandleStateKeysCallback(const std::vector<std::string>& state_keys,
-                               bool first_boot) {
+  void HandleStateKeysCallback(const std::vector<std::string>& state_keys) {
     callback_invoked_ = true;
     callback_state_keys_ = state_keys;
-    first_boot_ = first_boot;
   }
 
  protected:
@@ -54,7 +51,6 @@ class ServerBackedStateKeysBrokerTest : public testing::Test {
   chromeos::FakeSessionManagerClient fake_session_manager_client_;
   ServerBackedStateKeysBroker broker_;
   std::vector<std::string> state_keys_;
-  bool first_boot_;
   bool updated_;
   std::vector<std::string> callback_state_keys_;
   bool callback_invoked_;
@@ -137,7 +133,6 @@ TEST_F(ServerBackedStateKeysBrokerTest, Request) {
   base::RunLoop().RunUntilIdle();
   ExpectGood();
   EXPECT_TRUE(callback_invoked_);
-  EXPECT_FALSE(first_boot_);
   EXPECT_EQ(state_keys_, callback_state_keys_);
 }
 

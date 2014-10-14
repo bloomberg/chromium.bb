@@ -121,8 +121,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   };
 
   // Handles the response to a request for server-backed state keys.
-  void HandleStateKeysResult(const std::vector<std::string>& state_keys,
-                             bool first_boot);
+  void HandleStateKeysResult(const std::vector<std::string>& state_keys);
 
   // Starts registration if the store is initialized.
   void StartRegistration();

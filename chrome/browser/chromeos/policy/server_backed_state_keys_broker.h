@@ -30,7 +30,7 @@ namespace policy {
 class ServerBackedStateKeysBroker {
  public:
   typedef scoped_ptr<base::CallbackList<void()>::Subscription> Subscription;
-  typedef base::Callback<void(const std::vector<std::string>&, bool)>
+  typedef base::Callback<void(const std::vector<std::string>&)>
       StateKeysCallback;
 
   ServerBackedStateKeysBroker(
@@ -71,8 +71,7 @@ class ServerBackedStateKeysBroker {
   void FetchStateKeys();
 
   // Stores newly-received state keys and notifies consumers.
-  void StoreStateKeys(const std::vector<std::string>& state_keys,
-                      bool first_boot);
+  void StoreStateKeys(const std::vector<std::string>& state_keys);
 
   chromeos::SessionManagerClient* session_manager_client_;
 
@@ -80,9 +79,6 @@ class ServerBackedStateKeysBroker {
 
   // The current set of state keys.
   std::vector<std::string> state_keys_;
-
-  // Set to true on first run after factory reset.
-  bool first_boot_;
 
   // Whether a request for state keys is pending.
   bool requested_;

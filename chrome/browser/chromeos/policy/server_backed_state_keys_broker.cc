@@ -28,7 +28,6 @@ ServerBackedStateKeysBroker::ServerBackedStateKeysBroker(
     scoped_refptr<base::TaskRunner> delayed_task_runner)
     : session_manager_client_(session_manager_client),
       delayed_task_runner_(delayed_task_runner),
-      first_boot_(false),
       requested_(false),
       initial_retrieval_completed_(false),
       weak_factory_(this) {
@@ -54,7 +53,7 @@ void ServerBackedStateKeysBroker::RequestStateKeys(
   }
 
   if (!callback.is_null())
-    callback.Run(state_keys_, first_boot_);
+    callback.Run(state_keys_);
   return;
 }
 
@@ -68,7 +67,7 @@ void ServerBackedStateKeysBroker::FetchStateKeys() {
 }
 
 void ServerBackedStateKeysBroker::StoreStateKeys(
-    const std::vector<std::string>& state_keys, bool first_boot) {
+    const std::vector<std::string>& state_keys) {
   bool send_notification = !initial_retrieval_completed_;
 
   requested_ = false;
@@ -81,7 +80,6 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
   } else {
     send_notification |= state_keys_ != state_keys;
     state_keys_ = state_keys;
-    first_boot_ = first_boot;
   }
 
   if (send_notification)
@@ -94,7 +92,7 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
        callback != callbacks.end();
        ++callback) {
     if (!callback->is_null())
-      callback->Run(state_keys_, first_boot_);
+      callback->Run(state_keys_);
   }
 
   delayed_task_runner_->PostDelayedTask(
