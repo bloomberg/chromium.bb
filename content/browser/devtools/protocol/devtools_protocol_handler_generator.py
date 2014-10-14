@@ -96,9 +96,9 @@ tmpl_struct_field = string.Template("""\
 
 tmpl_enum = string.Template("""\
 namespace ${domain} {
-namespace ${command_underscored} {
+namespace ${subdomain} {
 ${values}\
-}  // namespace ${command_underscored}
+}  // namespace ${subdomain}
 }  // namespace ${domain}
 """)
 
@@ -582,7 +582,10 @@ def ResolvePrimitive(json, mapping):
     if "enum" in json:
       values = []
       value_defs = []
-      mapping["command_underscored"] = Uncamelcase(mapping["command"])
+      if "declared_name" in mapping:
+        mapping["subdomain"] = Uncamelcase(mapping["declared_name"])
+      else:
+        mapping["subdomain"] = Uncamelcase(mapping["command"])
       mapping["Param"] = Capitalize(mapping["proto_param"])
       for enum_value in json["enum"]:
         values.append(tmpl_enum_value.substitute(mapping,

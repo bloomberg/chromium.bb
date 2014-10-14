@@ -99,6 +99,10 @@ class PageHandler {
 
   void OnColorPicked(int r, int g, int b, int a);
 
+  void QueryUsageAndQuotaCompleted(
+      scoped_refptr<DevToolsProtocol::Command> command,
+      scoped_ptr<QueryUsageAndQuotaResponse> response);
+
   bool enabled_;
   bool touch_emulation_enabled_;
 

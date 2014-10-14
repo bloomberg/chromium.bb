@@ -29,7 +29,6 @@ namespace content {
 
 class DevToolsProtocolHandlerImpl;
 class DevToolsTracingHandler;
-class RendererOverridesHandler;
 class RenderViewHost;
 class RenderViewHostImpl;
 
@@ -118,7 +117,6 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   scoped_ptr<devtools::page::PageHandler> page_handler_;
   scoped_ptr<devtools::power::PowerHandler> power_handler_;
   scoped_ptr<DevToolsProtocolHandlerImpl> handler_impl_;
-  scoped_ptr<RendererOverridesHandler> overrides_handler_;
   scoped_ptr<DevToolsTracingHandler> tracing_handler_;
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;

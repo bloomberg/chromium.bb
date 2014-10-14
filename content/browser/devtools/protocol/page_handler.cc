@@ -11,17 +11,21 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/color_picker.h"
+#include "content/browser/devtools/protocol/usage_and_quota_query.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
@@ -42,6 +46,24 @@ static const char kJpeg[] = "jpeg";
 static int kDefaultScreenshotQuality = 80;
 static int kFrameRateThresholdMs = 100;
 static int kCaptureRetryLimit = 2;
+
+void QueryUsageAndQuotaCompletedOnIOThread(
+  const UsageAndQuotaQuery::Callback& callback,
+  scoped_ptr<QueryUsageAndQuotaResponse> response) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, base::Passed(&response)));
+}
+
+void QueryUsageAndQuotaOnIOThread(
+    scoped_refptr<storage::QuotaManager> quota_manager,
+    const GURL& security_origin,
+    const UsageAndQuotaQuery::Callback& callback) {
+  new UsageAndQuotaQuery(
+      quota_manager,
+      security_origin,
+      base::Bind(&QueryUsageAndQuotaCompletedOnIOThread,
+                 callback));
+}
 
 }  // namespace
 
@@ -340,7 +362,23 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
 scoped_refptr<DevToolsProtocol::Response> PageHandler::QueryUsageAndQuota(
     const std::string& security_origin,
     scoped_refptr<DevToolsProtocol::Command> command) {
-  return NULL;
+  if (!host_)
+    return command->InternalErrorResponse("Could not connect to view");
+
+  scoped_refptr<storage::QuotaManager> quota_manager =
+      host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&QueryUsageAndQuotaOnIOThread,
+                 quota_manager,
+                 GURL(security_origin),
+                 base::Bind(&PageHandler::QueryUsageAndQuotaCompleted,
+                            weak_factory_.GetWeakPtr(),
+                            command)));
+
+  return command->AsyncResponsePromise();
 }
 
 Response PageHandler::SetColorPickerEnabled(bool enabled) {
@@ -543,6 +581,12 @@ void PageHandler::OnColorPicked(int r, int g, int b, int a) {
   ColorPickedParams params;
   params.set_color(color);
   client_->ColorPicked(params);
+}
+
+void PageHandler::QueryUsageAndQuotaCompleted(
+    scoped_refptr<DevToolsProtocol::Command> command,
+    scoped_ptr<QueryUsageAndQuotaResponse> response_data) {
+  client_->SendQueryUsageAndQuotaResponse(command, *response_data);
 }
 
 }  // namespace page

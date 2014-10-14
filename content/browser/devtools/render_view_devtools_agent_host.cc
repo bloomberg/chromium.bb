@@ -13,7 +13,6 @@
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
-#include "content/browser/devtools/renderer_overrides_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -115,7 +114,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       page_handler_(new devtools::page::PageHandler()),
       power_handler_(new devtools::power::PowerHandler()),
       handler_impl_(new DevToolsProtocolHandlerImpl()),
-      overrides_handler_(new RendererOverridesHandler()),
       tracing_handler_(
           new DevToolsTracingHandler(DevToolsTracingHandler::Renderer)),
       reattaching_(false) {
@@ -129,7 +127,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend,
       base::Unretained(this)));
   handler_impl_->SetNotifier(notifier);
-  overrides_handler_->SetNotifier(notifier);
   tracing_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
@@ -161,8 +158,6 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
         overridden_response = DevToolsProtocol::ParseResponse(
             overridden_response_value.get());
     }
-    if (!overridden_response.get())
-      overridden_response = overrides_handler_->HandleCommand(command);
     if (!overridden_response.get())
       overridden_response = tracing_handler_->HandleCommand(command);
     if (!overridden_response.get())
@@ -217,7 +212,6 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
-  overrides_handler_->OnClientDetached();
   tracing_handler_->OnClientDetached();
   page_handler_->Detached();
   power_handler_->Detached();
@@ -376,7 +370,6 @@ void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
   render_view_host_ = static_cast<RenderViewHostImpl*>(rvh);
 
   WebContentsObserver::Observe(WebContents::FromRenderViewHost(rvh));
-  overrides_handler_->SetRenderViewHost(render_view_host_);
   dom_handler_->SetRenderViewHost(render_view_host_);
   input_handler_->SetRenderViewHost(render_view_host_);
   network_handler_->SetRenderViewHost(render_view_host_);
@@ -395,7 +388,6 @@ void RenderViewDevToolsAgentHost::ClearRenderViewHost() {
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       content::Source<RenderWidgetHost>(render_view_host_));
   render_view_host_ = nullptr;
-  overrides_handler_->ClearRenderViewHost();
   dom_handler_->SetRenderViewHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
   network_handler_->SetRenderViewHost(nullptr);
