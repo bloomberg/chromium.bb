@@ -552,66 +552,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTransform(StyleResolverState& s
     state.style()->setTransform(operations);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyTransformOrigin(StyleResolverState& state)
-{
-    applyInitialCSSPropertyWebkitTransformOriginX(state);
-    applyInitialCSSPropertyWebkitTransformOriginY(state);
-    applyInitialCSSPropertyWebkitTransformOriginZ(state);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyTransformOrigin(StyleResolverState& state)
-{
-    applyInheritCSSPropertyWebkitTransformOriginX(state);
-    applyInheritCSSPropertyWebkitTransformOriginY(state);
-    applyInheritCSSPropertyWebkitTransformOriginZ(state);
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyTransformOrigin(StyleResolverState& state, CSSValue* value)
-{
-    CSSValueList* list = toCSSValueList(value);
-    ASSERT(list->length() == 3);
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
-    if (primitiveValue->isValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueLeft:
-            state.style()->setTransformOriginX(Length(0, Percent));
-            break;
-        case CSSValueRight:
-            state.style()->setTransformOriginX(Length(100, Percent));
-            break;
-        case CSSValueCenter:
-            state.style()->setTransformOriginX(Length(50, Percent));
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    } else {
-        state.style()->setTransformOriginX(StyleBuilderConverter::convertLength(state, primitiveValue));
-    }
-
-    primitiveValue = toCSSPrimitiveValue(list->item(1));
-    if (primitiveValue->isValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueTop:
-            state.style()->setTransformOriginY(Length(0, Percent));
-            break;
-        case CSSValueBottom:
-            state.style()->setTransformOriginY(Length(100, Percent));
-            break;
-        case CSSValueCenter:
-            state.style()->setTransformOriginY(Length(50, Percent));
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    } else {
-        state.style()->setTransformOriginY(StyleBuilderConverter::convertLength(state, primitiveValue));
-    }
-
-    primitiveValue = toCSSPrimitiveValue(list->item(2));
-    state.style()->setTransformOriginZ(StyleBuilderConverter::convertComputedLength<float>(state, primitiveValue));
-}
-
 void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(StyleResolverState& state)
 {
     EVerticalAlign verticalAlign = state.parentStyle()->verticalAlign();

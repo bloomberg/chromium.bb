@@ -145,6 +145,14 @@ inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthPoint(cons
         createFromLength(lengthPoint.y(), style));
 }
 
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromTransformOrigin(const TransformOrigin& transformOrigin, const RenderStyle& style)
+{
+    return AnimatableLengthPoint3D::create(
+        createFromLength(transformOrigin.x(), style),
+        createFromLength(transformOrigin.y(), style),
+        createFromDouble(transformOrigin.z()));
+}
+
 inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthSize(const LengthSize& lengthSize, const RenderStyle& style)
 {
     return AnimatableLengthSize::create(
@@ -483,10 +491,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyTransform:
         return AnimatableTransform::create(style.transform());
     case CSSPropertyTransformOrigin:
-        return AnimatableLengthPoint3D::create(
-            createFromLength(style.transformOriginX(), style),
-            createFromLength(style.transformOriginY(), style),
-            createFromDouble(style.transformOriginZ()));
+        return createFromTransformOrigin(style.transformOrigin(), style);
     case CSSPropertyWidows:
         return createFromDouble(style.widows());
     case CSSPropertyWidth:

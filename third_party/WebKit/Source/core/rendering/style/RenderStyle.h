@@ -57,6 +57,7 @@
 #include "core/rendering/style/StyleTransformData.h"
 #include "core/rendering/style/StyleVisualData.h"
 #include "core/rendering/style/StyleWillChangeData.h"
+#include "core/rendering/style/TransformOrigin.h"
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
 #include "platform/LengthPoint.h"
@@ -862,9 +863,10 @@ public:
     EPageBreak columnBreakAfter() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakAfter); }
     bool hasInlineTransform() const { return rareNonInheritedData->m_hasInlineTransform; }
     const TransformOperations& transform() const { return rareNonInheritedData->m_transform->m_operations; }
-    const Length& transformOriginX() const { return rareNonInheritedData->m_transform->m_x; }
-    const Length& transformOriginY() const { return rareNonInheritedData->m_transform->m_y; }
-    float transformOriginZ() const { return rareNonInheritedData->m_transform->m_z; }
+    const TransformOrigin& transformOrigin() const { return rareNonInheritedData->m_transform->m_origin; }
+    const Length& transformOriginX() const { return transformOrigin().x(); }
+    const Length& transformOriginY() const { return transformOrigin().y(); }
+    float transformOriginZ() const { return transformOrigin().z(); }
     bool hasTransform() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     bool transformDataEquivalent(const RenderStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
@@ -1342,9 +1344,10 @@ public:
     void inheritColumnPropertiesFrom(RenderStyle* parent) { rareNonInheritedData.access()->m_multiCol = parent->rareNonInheritedData->m_multiCol; }
     void setHasInlineTransform(bool b) { SET_VAR(rareNonInheritedData, m_hasInlineTransform, b); }
     void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
-    void setTransformOriginX(const Length& l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_x, l); }
-    void setTransformOriginY(const Length& l) { SET_VAR(rareNonInheritedData.access()->m_transform, m_y, l); }
-    void setTransformOriginZ(float f) { SET_VAR(rareNonInheritedData.access()->m_transform, m_z, f); }
+    void setTransformOriginX(const Length& v) { setTransformOrigin(TransformOrigin(v, transformOriginY(), transformOriginZ())); }
+    void setTransformOriginY(const Length& v) { setTransformOrigin(TransformOrigin(transformOriginX(), v, transformOriginZ())); }
+    void setTransformOriginZ(float f) { setTransformOrigin(TransformOrigin(transformOriginX(), transformOriginY(), f)); }
+    void setTransformOrigin(const TransformOrigin& o) { SET_VAR(rareNonInheritedData.access()->m_transform, m_origin, o); }
     void setSpeak(ESpeak s) { SET_VAR(rareInheritedData, speak, s); }
     void setTextCombine(TextCombine v) { SET_VAR(rareNonInheritedData, m_textCombine, v); }
     void setTextDecorationColor(const StyleColor& c) { SET_VAR(rareNonInheritedData, m_textDecorationColor, c); }
@@ -1662,8 +1665,9 @@ public:
     static const TransformOperations& initialTransform() { DEFINE_STATIC_LOCAL(TransformOperations, ops, ()); return ops; }
     static Length initialTransformOriginX() { return Length(50.0, Percent); }
     static Length initialTransformOriginY() { return Length(50.0, Percent); }
-    static EPointerEvents initialPointerEvents() { return PE_AUTO; }
     static float initialTransformOriginZ() { return 0; }
+    static TransformOrigin initialTransformOrigin() { return TransformOrigin(Length(50.0, Percent), Length(50.0, Percent), 0); }
+    static EPointerEvents initialPointerEvents() { return PE_AUTO; }
     static ETransformStyle3D initialTransformStyle3D() { return TransformStyle3DFlat; }
     static EBackfaceVisibility initialBackfaceVisibility() { return BackfaceVisibilityVisible; }
     static float initialPerspective() { return 0; }

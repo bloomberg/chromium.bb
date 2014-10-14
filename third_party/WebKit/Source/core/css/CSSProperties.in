@@ -277,7 +277,7 @@ top animatable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>
 touch-action-delay runtime_flag=CSSTouchActionDelay, inherited, type_name=TouchActionDelay
 transform animatable, custom_value
-transform-origin animatable, custom_all
+transform-origin animatable, converter=convertTransformOrigin
 transform-style name_for_methods=TransformStyle3D
 unicode-bidi
 vector-effect svg

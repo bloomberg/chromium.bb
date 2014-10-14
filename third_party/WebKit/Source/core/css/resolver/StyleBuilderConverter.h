@@ -33,6 +33,7 @@
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleReflection.h"
+#include "core/rendering/style/TransformOrigin.h"
 #include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
@@ -79,6 +80,7 @@ public:
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
+    static TransformOrigin convertTransformOrigin(StyleResolverState&, CSSValue*);
 
     static bool convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
     static void createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap&, NamedGridLinesMap&, GridTrackSizingDirection);

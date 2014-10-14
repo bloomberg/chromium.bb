@@ -780,4 +780,20 @@ float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, C
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
+TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState& state, CSSValue* value)
+{
+    CSSValueList* list = toCSSValueList(value);
+    ASSERT(list->length() == 3);
+
+    CSSPrimitiveValue* primitiveValueX = toCSSPrimitiveValue(list->item(0));
+    CSSPrimitiveValue* primitiveValueY = toCSSPrimitiveValue(list->item(1));
+    CSSPrimitiveValue* primitiveValueZ = toCSSPrimitiveValue(list->item(2));
+
+    return TransformOrigin(
+        convertOriginLength<CSSValueLeft, CSSValueRight>(state, primitiveValueX),
+        convertOriginLength<CSSValueTop, CSSValueBottom>(state, primitiveValueY),
+        StyleBuilderConverter::convertComputedLength<float>(state, primitiveValueZ)
+    );
+}
+
 } // namespace blink
