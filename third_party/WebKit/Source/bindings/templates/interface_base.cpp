@@ -111,7 +111,23 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
 {% endif %}
 {% endblock %}
 {##############################################################################}
-{% block security_check_functions %}{% endblock %}
+{% block security_check_functions %}
+{% if has_access_check_callbacks %}
+bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
+{
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(host);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
+}
+
+bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
+{
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(host);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
+}
+
+{% endif %}
+{% endblock %}
+{##############################################################################}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor,
@@ -389,8 +405,49 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 {% block get_dom_template %}{% endblock %}
 {% block has_instance %}{% endblock %}
 {% block to_impl_with_type_check %}{% endblock %}
-{% block install_conditional_attributes %}{% endblock %}
-{% block install_conditional_methods %}{% endblock %}
+{##############################################################################}
+{% block install_conditional_attributes %}
+{% if has_conditional_attributes %}
+void {{v8_class}}::installConditionallyEnabledProperties(v8::Handle<v8::Object> instanceObject, v8::Isolate* isolate)
+{
+    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+
+    {% for attribute in attributes if attribute.per_context_enabled_function or attribute.exposed_test %}
+    {% filter per_context_enabled(attribute.per_context_enabled_function) %}
+    {% filter exposed(attribute.exposed_test) %}
+    static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+    {{attribute_configuration(attribute)}};
+    V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
+    {% endfilter %}
+    {% endfilter %}
+    {% endfor %}
+}
+
+{% endif %}
+{% endblock %}
+{##############################################################################}
+{% block install_conditional_methods %}
+{% if conditionally_enabled_methods %}
+void {{v8_class}}::installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeObject, v8::Isolate* isolate)
+{
+    {# Define per-context enabled operations #}
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
+    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+    ASSERT(context);
+
+    {% for method in conditionally_enabled_methods %}
+    {% filter per_context_enabled(method.per_context_enabled_function) %}
+    {% filter exposed(method.exposed_test) %}
+    prototypeObject->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
+    {% endfilter %}
+    {% endfilter %}
+    {% endfor %}
+}
+
+{% endif %}
+{% endblock %}
+{##############################################################################}
 {% block to_active_dom_object %}{% endblock %}
 {% block to_event_target %}{% endblock %}
 {% block get_shadow_object_template %}{% endblock %}
