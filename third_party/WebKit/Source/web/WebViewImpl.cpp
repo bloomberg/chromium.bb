@@ -1714,7 +1714,11 @@ void WebViewImpl::setTopControlsLayoutHeight(float height)
 
 void WebViewImpl::didUpdateTopControls()
 {
-    FrameView* view = localFrameRootTemporary()->frameView();
+    WebLocalFrameImpl* localFrameRoot = localFrameRootTemporary();
+    if (!localFrameRoot)
+        return;
+
+    FrameView* view = localFrameRoot->frameView();
     if (!view)
         return;
 
@@ -1730,7 +1734,11 @@ void WebViewImpl::resize(const WebSize& newSize)
     if (m_shouldAutoResize || m_size == newSize)
         return;
 
-    FrameView* view = localFrameRootTemporary()->frameView();
+    WebLocalFrameImpl* localFrameRoot = localFrameRootTemporary();
+    if (!localFrameRoot)
+        return;
+
+    FrameView* view = localFrameRoot->frameView();
     if (!view)
         return;
 
