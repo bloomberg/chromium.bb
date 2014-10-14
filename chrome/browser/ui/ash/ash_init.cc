@@ -36,14 +36,6 @@
 
 namespace chrome {
 
-bool ShouldOpenAshOnStartup() {
-#if defined(OS_CHROMEOS)
-  return true;
-#endif
-  // TODO(scottmg): http://crbug.com/133312, will need this for Win8 too.
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kOpenAsh);
-}
-
 void OpenAsh(gfx::AcceleratedWidget remote_window) {
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)

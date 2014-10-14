@@ -9,6 +9,9 @@
 
 namespace chrome {
 
+// Returns true if Ash should be run at startup.
+bool ShouldOpenAshOnStartup();
+
 // Returns true if |native_view/native_window| exists within the Ash
 // environment.
 bool IsNativeViewInAsh(gfx::NativeView native_view);

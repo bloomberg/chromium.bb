@@ -31,7 +31,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #endif  // defined(USE_ASH)
 
 #if !defined(OS_CHROMEOS)

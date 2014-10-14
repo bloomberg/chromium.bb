@@ -1871,8 +1871,6 @@
       'browser/ui/views/apps/glass_app_window_frame_view_win.h',
       'browser/ui/views/apps/shaped_app_window_targeter.cc',
       'browser/ui/views/apps/shaped_app_window_targeter.h',
-      'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
-      'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
       'browser/ui/views/ash/tab_scrubber.cc',
       'browser/ui/views/ash/tab_scrubber.h',
       'browser/ui/views/autofill/autofill_dialog_views.cc',
@@ -2329,10 +2327,6 @@
       'browser/ui/ash/accessibility/ax_tree_source_ash.h',
       'browser/ui/ash/ash_keyboard_controller_proxy.cc',
       'browser/ui/ash/ash_keyboard_controller_proxy.h',
-      'browser/ui/ash/app_list/app_list_controller_ash.cc',
-      'browser/ui/ash/app_list/app_list_controller_ash.h',
-      'browser/ui/ash/app_list/app_list_service_ash.cc',
-      'browser/ui/ash/app_list/app_list_service_ash.h',
       'browser/ui/ash/app_list/app_sync_ui_state_watcher.cc',
       'browser/ui/ash/app_list/app_sync_ui_state_watcher.h',
       'browser/ui/ash/app_sync_ui_state.cc',
@@ -2340,8 +2334,6 @@
       'browser/ui/ash/app_sync_ui_state_observer.h',
       'browser/ui/ash/app_sync_ui_state_factory.cc',
       'browser/ui/ash/app_sync_ui_state_factory.h',
-      'browser/ui/ash/ash_init.cc',
-      'browser/ui/ash/ash_init.h',
       'browser/ui/ash/ash_util.cc',
       'browser/ui/ash/ash_util.h',
       'browser/ui/ash/chrome_launcher_prefs.cc',
@@ -2445,6 +2437,17 @@
       'browser/ui/views/frame/scroll_end_effect_controller_ash.h',
       'browser/ui/views/tabs/window_finder_ash.cc',
     ],
+    # Used when Ash is enabled but not Athena.
+    'chrome_browser_ui_ash_non_athena_sources': [
+      'browser/ui/ash/ash_init.cc',
+      'browser/ui/ash/ash_init.h',
+      'browser/ui/ash/app_list/app_list_controller_ash.cc',
+      'browser/ui/ash/app_list/app_list_controller_ash.h',
+      'browser/ui/ash/app_list/app_list_service_ash.cc',
+      'browser/ui/ash/app_list/app_list_service_ash.h',
+      'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
+      'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
+    ],
     # Used when Ash is enabled but not ChromeOS.
     'chrome_browser_ui_ash_non_chromeos': [
       'browser/ui/ash/chrome_shell_delegate_views.cc',
@@ -2455,6 +2458,9 @@
     ],
     # Used when athena is enabled.
     'chrome_browser_ui_athena_sources': [
+      #TODO(mukai): Port AppListService to Athena (crbug.com/417571)
+      'browser/ui/app_list/app_list_service_disabled.cc',
+
       'browser/ui/views/athena/athena_util.cc',
       'browser/ui/views/athena/athena_util.h',
       'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.cc',
@@ -2723,6 +2729,12 @@
             '<(DEPTH)/athena/athena.gyp:athena_chrome_lib',
             '<(DEPTH)/athena/athena.gyp:athena_content_lib',
             '<(DEPTH)/athena/main/athena_main.gyp:athena_main_lib',
+          ],
+        }, { # use_athena==0
+          'conditions': [
+            ['use_ash==1', {
+              'sources': [ '<@(chrome_browser_ui_ash_non_athena_sources)' ],
+            }],
           ],
         }],
         ['toolkit_views==1', {

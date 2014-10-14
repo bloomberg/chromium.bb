@@ -9,9 +9,6 @@
 
 namespace chrome {
 
-// Returns true if Ash should be run at startup.
-bool ShouldOpenAshOnStartup();
-
 // Creates the Ash Shell and opens the Ash window. |remote_window| is only used
 // on windows. It provides the HWND to the remote window.
 void OpenAsh(gfx::AcceleratedWidget remote_window);

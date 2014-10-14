@@ -22,7 +22,7 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/window_positioner.h"
-#include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
 namespace {

@@ -106,6 +106,12 @@ scoped_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
   return scoped_ptr<WebstoreInstaller::Approval>();
 }
 
+chrome::HostDesktopType GetHostDesktopTypeForWebContents(
+    content::WebContents* contents) {
+  return chrome::GetHostDesktopTypeForNativeWindow(
+      contents->GetTopLevelNativeWindow());
+}
+
 static base::LazyInstance<PendingApprovals> g_pending_approvals =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -473,8 +479,8 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
   scoped_active_install_.reset(new ScopedActiveInstall(
       InstallTracker::Get(GetProfile()), params->expected_id));
 
-  AppListService* app_list_service =
-      AppListService::Get(GetCurrentBrowser()->host_desktop_type());
+  AppListService* app_list_service = AppListService::Get(
+      GetHostDesktopTypeForWebContents(GetAssociatedWebContents()));
 
   if (approval_->enable_launcher) {
     app_list_service->EnableAppList(GetProfile(),
@@ -568,8 +574,10 @@ WebstorePrivateEnableAppLauncherFunction::
     ~WebstorePrivateEnableAppLauncherFunction() {}
 
 bool WebstorePrivateEnableAppLauncherFunction::RunSync() {
-  AppListService::Get(GetCurrentBrowser()->host_desktop_type())
-      ->EnableAppList(GetProfile(), AppListService::ENABLE_VIA_WEBSTORE_LINK);
+  AppListService* app_list_service = AppListService::Get(
+      GetHostDesktopTypeForWebContents(GetAssociatedWebContents()));
+  app_list_service->EnableAppList(GetProfile(),
+                                  AppListService::ENABLE_VIA_WEBSTORE_LINK);
   return true;
 }
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
-#include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
