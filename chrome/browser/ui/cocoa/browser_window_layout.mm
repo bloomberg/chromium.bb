@@ -237,7 +237,7 @@ const CGFloat kLocationBarRightOffset = 35;
   if (!NSIsEmptyRect(parameters_.fullscreenButtonFrame)) {
     maxX = NSMinX(parameters_.fullscreenButtonFrame);
   }
-  if (parameters_.shouldUseNewAvatar) {
+  if (parameters_.shouldShowAvatar) {
     maxX = std::min(maxX, NSMinX(layout.avatarFrame));
   }
   layout.rightIndent = width - maxX;

@@ -172,6 +172,24 @@ TEST_F(BrowserWindowLayoutTest, TestNewStyleAvatarButton) {
             tabStripLayout.rightIndent);
 }
 
+// There is no fullscreen button when in fullscreen mode.
+// The tab strip's right indent goes up to the left side of the avatar
+// button.
+TEST_F(BrowserWindowLayoutTest, TestAvatarButtonFullscreen) {
+  [layout setInAnyFullscreen:YES];
+  [layout setFullscreenButtonFrame:NSZeroRect];
+
+  [layout setShouldUseNewAvatar:YES];
+  chrome::TabStripLayout tabStripLayout = [layout computeLayout].tabStripLayout;
+  EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
+            tabStripLayout.rightIndent);
+
+  [layout setShouldUseNewAvatar:NO];
+  tabStripLayout = [layout computeLayout].tabStripLayout;
+  EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
+            tabStripLayout.rightIndent);
+}
+
 TEST_F(BrowserWindowLayoutTest, TestInfobarLayoutWithoutToolbarOrLocationBar) {
   [layout setHasTabStrip:NO];
   [layout setHasToolbar:NO];
