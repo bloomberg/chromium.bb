@@ -369,6 +369,10 @@ TEST_F(ServiceWorkerContextTest, MAYBE_DeleteAndStartOver) {
                  true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 
+  // Next handle ids should be 0 (the next call should return 1).
+  EXPECT_EQ(0, context()->GetNewServiceWorkerHandleId());
+  EXPECT_EQ(0, context()->GetNewRegistrationHandleId());
+
   context()->ScheduleDeleteAndStartOver();
 
   // The storage is disabled while the recovery process is running, so the
@@ -412,6 +416,10 @@ TEST_F(ServiceWorkerContextTest, MAYBE_DeleteAndStartOver) {
                  false /* expect_waiting */,
                  true /* expect_active */));
   base::RunLoop().RunUntilIdle();
+
+  // The new context should take over next handle ids.
+  EXPECT_EQ(1, context()->GetNewServiceWorkerHandleId());
+  EXPECT_EQ(1, context()->GetNewRegistrationHandleId());
 }
 
 }  // namespace content
