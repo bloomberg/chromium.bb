@@ -478,9 +478,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['delta_generator',
-           '-in_file', gen.payload_file,
-           '-out_hash_file', mox.IsA(str),
-           '-signature_size', '256']
+           '-in_file=' + gen.payload_file,
+           mox.IsA(str),
+           '-signature_size=256']
     gen._RunGeneratorCmd(cmd)
 
     # Run the test.
@@ -498,9 +498,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['delta_generator',
-           '-in_file', gen.payload_file,
-           '-out_metadata_hash_file', mox.IsA(str),
-           '-signature_size', '256']
+           '-in_file=' + gen.payload_file,
+           mox.IsA(str),
+           '-signature_size=256']
     gen._RunGeneratorCmd(cmd)
 
     # Run the test.
@@ -540,9 +540,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['delta_generator',
-           '-in_file', gen.payload_file,
-           '-signature_file', mox.IsA(str),
-           '-out_file', gen.signed_payload_file]
+           '-in_file=' + gen.payload_file,
+           mox.IsA(str),
+           '-out_file=' + gen.signed_payload_file]
     gen._RunGeneratorCmd(cmd)
 
     # Run the test.

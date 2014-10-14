@@ -341,9 +341,9 @@ class _PaygenPayload(object):
 
     with tempfile.NamedTemporaryFile('rb') as payload_hash_file:
       cmd = ['delta_generator',
-             '-in_file', self.payload_file,
-             '-out_hash_file', payload_hash_file.name,
-             '-signature_size', ':'.join(signature_sizes)]
+             '-in_file=' + self.payload_file,
+             '-out_hash_file=' + payload_hash_file.name,
+             '-signature_size=' + ':'.join(signature_sizes)]
 
       self._RunGeneratorCmd(cmd)
       return payload_hash_file.read()
@@ -363,9 +363,9 @@ class _PaygenPayload(object):
 
     with tempfile.NamedTemporaryFile('rb') as metadata_hash_file:
       cmd = ['delta_generator',
-             '-in_file', self.payload_file,
-             '-out_metadata_hash_file', metadata_hash_file.name,
-             '-signature_size', ':'.join(signature_sizes)]
+             '-in_file=' + self.payload_file,
+             '-out_metadata_hash_file=' + metadata_hash_file.name,
+             '-signature_size=' + ':'.join(signature_sizes)]
 
       self._RunGeneratorCmd(cmd)
       return metadata_hash_file.read()
@@ -438,9 +438,9 @@ class _PaygenPayload(object):
     signature_file_names = [f.name for f in signature_files]
 
     cmd = ['delta_generator',
-           '-in_file', self.payload_file,
-           '-signature_file', ':'.join(signature_file_names),
-           '-out_file', self.signed_payload_file]
+           '-in_file=' + self.payload_file,
+           '-signature_file=' + ':'.join(signature_file_names),
+           '-out_file=' + self.signed_payload_file]
 
     self._RunGeneratorCmd(cmd)
 
