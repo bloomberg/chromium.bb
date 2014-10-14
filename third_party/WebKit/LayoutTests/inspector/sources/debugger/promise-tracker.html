@@ -46,7 +46,7 @@ var test = function ()
         {
             var t1 = x.creationTime || 0;
             var t2 = y.creationTime || 0;
-            return t1 - t2;
+            return t1 - t2 || x.id - y.id;
         }
 
         InspectorTest.assertEquals(3, response.length, "FAIL: Invalid number of Promises.");
@@ -73,7 +73,8 @@ var test = function ()
             output.push(promiseInfo);
         }
 
-        InspectorTest.assertTrue(response[0].settlementTime <= response[1].settlementTime && !response[2].settlementTime, "FAIL: invalid Promise settlement time.");
+        InspectorTest.assertGreaterOrEqual(response[1].settlementTime, response[0].settlementTime, "FAIL: invalid Promise settlement time.");
+        InspectorTest.assertTrue(!response[2].settlementTime, "FAIL: a pending Promise should not have settlement time.");
 
         InspectorTest.addResults(output);
 
@@ -88,7 +89,8 @@ var test = function ()
         RuntimeAgent.getProperties(response.objectId, didGetProperties);
     }
 
-    function didGetProperties(error, properties, internalProperties) {
+    function didGetProperties(error, properties, internalProperties)
+    {
         InspectorTest.assertTrue(!error, "FAIL: " + error);
         InspectorTest.assertTrue(internalProperties && internalProperties.length > 0, "FAIL: no internal properties.");
 
