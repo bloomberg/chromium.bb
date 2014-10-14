@@ -41,8 +41,6 @@ namespace blink {
 
 class Event;
 class FloatQuad;
-class InspectorFrontend;
-class IntRect;
 class ResourceRequest;
 class ResourceResponse;
 

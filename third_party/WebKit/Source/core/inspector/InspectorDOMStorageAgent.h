@@ -39,9 +39,7 @@ namespace blink {
 
 class LocalFrame;
 class InspectorPageAgent;
-class InstrumentingAgents;
 class JSONObject;
-class Storage;
 class StorageArea;
 
 typedef String ErrorString;

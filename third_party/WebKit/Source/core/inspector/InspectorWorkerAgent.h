@@ -37,7 +37,6 @@
 #include "wtf/HashMap.h"
 
 namespace blink {
-class InstrumentingAgents;
 class JSONObject;
 class KURL;
 class WorkerInspectorProxy;

@@ -48,8 +48,6 @@ class EventListener;
 class EventTarget;
 class InspectorDOMAgent;
 class InspectorDebuggerAgent;
-class InspectorFrontend;
-class InstrumentingAgents;
 class JSONObject;
 class Node;
 

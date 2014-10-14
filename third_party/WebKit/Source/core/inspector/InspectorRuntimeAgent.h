@@ -40,7 +40,6 @@ namespace blink {
 
 class InjectedScript;
 class InjectedScriptManager;
-class InstrumentingAgents;
 class JSONArray;
 class ScriptState;
 class ScriptDebugServer;

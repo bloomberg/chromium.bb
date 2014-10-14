@@ -57,8 +57,6 @@ class InspectorFrontend;
 class InspectorHistory;
 class InspectorOverlay;
 class InspectorPageAgent;
-class InspectorState;
-class InstrumentingAgents;
 class Node;
 class PlatformGestureEvent;
 class PlatformTouchEvent;

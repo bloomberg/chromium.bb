@@ -41,7 +41,6 @@
 namespace blink {
 
 class ContextMenuProvider;
-class DOMWrapperWorld;
 class LocalFrame;
 class GraphicsContext;
 class GraphicsLayer;
@@ -60,10 +59,7 @@ class InspectorResourceAgent;
 class InspectorTimelineAgent;
 class InspectorTracingAgent;
 class InspectorOverlay;
-class InspectorState;
 class InstrumentingAgents;
-class IntPoint;
-class IntSize;
 class Page;
 class PlatformGestureEvent;
 class PlatformKeyboardEvent;

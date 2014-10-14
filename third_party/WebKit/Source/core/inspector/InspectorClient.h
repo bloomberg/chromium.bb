@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class IntPoint;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 

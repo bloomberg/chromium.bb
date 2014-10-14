@@ -36,7 +36,6 @@ namespace blink {
 class LocalFrame;
 class InspectorFrontend;
 class InspectorPageAgent;
-class InstrumentingAgents;
 
 typedef String ErrorString;
 

@@ -37,7 +37,6 @@
 namespace blink {
 
 class WorkerGlobalScope;
-class WorkerThread;
 class WorkerDebuggerAgent;
 
 class WorkerDebuggerAgent final : public InspectorDebuggerAgent {

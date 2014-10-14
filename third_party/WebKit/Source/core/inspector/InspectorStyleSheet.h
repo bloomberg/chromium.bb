@@ -42,7 +42,6 @@ class ParsedStyleSheet;
 namespace blink {
 
 class CSSMediaRule;
-class CSSRuleList;
 class CSSStyleDeclaration;
 class CSSStyleRule;
 class CSSStyleSheet;

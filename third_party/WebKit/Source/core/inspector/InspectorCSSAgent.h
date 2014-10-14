@@ -42,7 +42,6 @@
 
 namespace blink {
 
-struct CSSParserString;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleRule;
@@ -51,12 +50,9 @@ class Document;
 class Element;
 class InspectorFrontend;
 class InspectorResourceAgent;
-class InstrumentingAgents;
 class MediaList;
 class Node;
-class PlatformFontUsage;
 class RenderText;
-class StyleResolver;
 
 class InspectorCSSAgent final
     : public InspectorBaseAgent<InspectorCSSAgent>

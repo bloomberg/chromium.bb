@@ -40,9 +40,7 @@ namespace blink {
 class DocumentLoader;
 class InspectorOverlay;
 class InspectorPageAgent;
-class Page;
 class PageScriptDebugServer;
-class ScriptSourceCode;
 
 class PageDebuggerAgent final
     : public InspectorDebuggerAgent

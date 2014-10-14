@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class InstrumentingAgents;
-
 typedef String ErrorString;
 
 class InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent>, public InspectorBackendDispatcher::MemoryCommandHandler {

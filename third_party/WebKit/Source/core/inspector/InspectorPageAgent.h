@@ -41,7 +41,6 @@
 namespace blink {
 
 class Resource;
-class DOMWrapperWorld;
 class Document;
 class DocumentLoader;
 class LocalFrame;
@@ -51,8 +50,6 @@ class InjectedScriptManager;
 class InspectorClient;
 class InspectorOverlay;
 class InspectorResourceContentLoader;
-class InstrumentingAgents;
-class IntSize;
 class KURL;
 class LayoutRect;
 class Page;

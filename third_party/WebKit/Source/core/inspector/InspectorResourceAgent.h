@@ -39,10 +39,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WTF {
-class String;
-}
-
 namespace blink {
 
 class Resource;
@@ -54,11 +50,9 @@ class LocalFrame;
 class HTTPHeaderMap;
 class InspectorFrontend;
 class InspectorPageAgent;
-class InstrumentingAgents;
 class JSONObject;
 class KURL;
 class NetworkResourcesData;
-class Page;
 class ResourceError;
 class ResourceLoader;
 class ResourceRequest;

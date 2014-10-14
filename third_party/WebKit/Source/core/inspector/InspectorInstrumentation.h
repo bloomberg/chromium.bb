@@ -51,16 +51,11 @@
 
 namespace blink {
 
-struct CSSParserString;
 class Document;
-class Element;
 class EventTarget;
 class ExecutionContext;
-class GraphicsContext;
-class GraphicsLayer;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
-class RenderLayer;
 class ThreadableLoaderClient;
 class WorkerGlobalScope;
 class WorkerInspectorProxy;

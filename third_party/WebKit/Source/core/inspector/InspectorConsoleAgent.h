@@ -43,21 +43,12 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class DocumentLoader;
-class LocalDOMWindow;
 class LocalFrame;
-class InspectorConsoleMessage;
 class InspectorFrontend;
 class InjectedScriptManager;
 class InspectorTimelineAgent;
-class InstrumentingAgents;
-class ResourceError;
-class ResourceLoader;
-class ResourceResponse;
-class ScriptArguments;
-class ScriptCallStack;
 class ScriptProfile;
 class ThreadableLoaderClient;
-class WorkerGlobalScopeProxy;
 class XMLHttpRequest;
 
 typedef String ErrorString;

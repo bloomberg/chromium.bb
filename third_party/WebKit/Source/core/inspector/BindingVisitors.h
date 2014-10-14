@@ -30,7 +30,6 @@
 #define BindingVisitors_h
 
 namespace WTF {
-class ArrayBufferView;
 class StringImpl;
 }
 

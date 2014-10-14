@@ -43,7 +43,6 @@ namespace blink {
 
 class InjectedScriptModule;
 class Node;
-class SerializedScriptValue;
 
 class InjectedScript final : public InjectedScriptBase {
 public:

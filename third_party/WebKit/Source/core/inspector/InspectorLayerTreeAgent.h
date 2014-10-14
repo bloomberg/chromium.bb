@@ -43,7 +43,6 @@
 namespace blink {
 
 class GraphicsContextSnapshot;
-class InstrumentingAgents;
 class Page;
 class RenderLayerCompositor;
 

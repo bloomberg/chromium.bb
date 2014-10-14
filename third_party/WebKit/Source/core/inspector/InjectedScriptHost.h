@@ -39,15 +39,12 @@
 
 namespace blink {
 
-class Database;
 class EventTarget;
-class InjectedScript;
 class InstrumentingAgents;
 class JSONValue;
 class Node;
 class ScriptDebugServer;
 class ScriptValue;
-class Storage;
 
 struct EventListenerInfo;
 

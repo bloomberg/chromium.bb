@@ -38,11 +38,8 @@
 
 namespace blink {
 
-class DOMWrapperWorld;
-class DocumentLoader;
 class LocalFrame;
 class InjectedScriptManager;
-class InstrumentingAgents;
 class JSONObject;
 class Page;
 

@@ -44,7 +44,6 @@ namespace blink {
 
 class InjectedScriptManager;
 class HeapStatsUpdateTask;
-class ScriptHeapSnapshot;
 
 typedef String ErrorString;
 
