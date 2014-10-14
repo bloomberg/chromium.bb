@@ -836,6 +836,11 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   load_handle_ = 0;
 
   if (!result) {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 1"));
+
     // Results are null if the database went away or (most likely) wasn't
     // loaded.
     load_failed_ = true;
@@ -846,18 +851,31 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
   TemplateURLVector template_urls;
   int new_resource_keyword_version = 0;
-  GetSearchProvidersUsingKeywordResult(
-      *result,
-      web_data_service_.get(),
-      prefs_,
-      &template_urls,
-      (default_search_provider_source_ == DefaultSearchManager::FROM_USER) ?
-          initial_default_search_provider_.get() : NULL,
-      search_terms_data(),
-      &new_resource_keyword_version,
-      &pre_sync_deletes_);
+  {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 2"));
+
+    GetSearchProvidersUsingKeywordResult(
+        *result,
+        web_data_service_.get(),
+        prefs_,
+        &template_urls,
+        (default_search_provider_source_ == DefaultSearchManager::FROM_USER)
+            ? initial_default_search_provider_.get()
+            : NULL,
+        search_terms_data(),
+        &new_resource_keyword_version,
+        &pre_sync_deletes_);
+  }
 
   if (client_) {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 3"));
+
     // Restore extension info of loaded TemplateURLs.
     for (size_t i = 0; i < template_urls.size(); ++i) {
       DCHECK(!template_urls[i]->extension_info_);
@@ -867,23 +885,35 @@ void TemplateURLService::OnWebDataServiceRequestDone(
 
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
 
-  PatchMissingSyncGUIDs(&template_urls);
-  SetTemplateURLs(&template_urls);
+  {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 4"));
 
-  // This initializes provider_map_ which should be done before
-  // calling UpdateKeywordSearchTermsForURL.
-  // This also calls NotifyObservers.
-  ChangeToLoadedState();
+    PatchMissingSyncGUIDs(&template_urls);
+    SetTemplateURLs(&template_urls);
 
-  // Index any visits that occurred before we finished loading.
-  for (size_t i = 0; i < visits_to_add_.size(); ++i)
-    UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
-  visits_to_add_.clear();
+    // This initializes provider_map_ which should be done before
+    // calling UpdateKeywordSearchTermsForURL.
+    // This also calls NotifyObservers.
+    ChangeToLoadedState();
 
-  if (new_resource_keyword_version)
-    web_data_service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
+    // Index any visits that occurred before we finished loading.
+    for (size_t i = 0; i < visits_to_add_.size(); ++i)
+      UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
+    visits_to_add_.clear();
+
+    if (new_resource_keyword_version)
+      web_data_service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
+  }
 
   if (default_search_provider_) {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedProfile tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 TemplateURLService::OnWebDataServiceRequestDone 5"));
+
     UMA_HISTOGRAM_ENUMERATION(
         "Search.DefaultSearchProviderType",
         TemplateURLPrepopulateData::GetEngineType(
