@@ -28,8 +28,11 @@ source_set("lib") {
   sources = [
     "window_manager_app.cc",
     "window_manager_app.h",
+    "window_manager_delegate.h",
     "window_manager_service_impl.cc",
     "window_manager_service_impl.h",
+    "window_manager_service2_impl.cc",
+    "window_manager_service2_impl.h",
   ]
 
   public_deps = [
@@ -44,6 +47,7 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/interfaces/application:application",
     "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
     "//mojo/services/public/interfaces/window_manager2",
     "//ui/aura",
     "//ui/base",
@@ -68,6 +72,7 @@ test("mojo_core_window_manager_unittests") {
     "//mojo/environment:chromium",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
     "//mojo/services/public/interfaces/window_manager2",
     "//mojo/shell:test_support",
     "//testing/gtest",

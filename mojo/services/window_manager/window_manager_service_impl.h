@@ -2,43 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_WINDOW_MANAGER_WINDOW_MANAGER_SERVICE_IMPL_H_
-#define MOJO_SERVICES_WINDOW_MANAGER_WINDOW_MANAGER_SERVICE_IMPL_H_
+#ifndef MOJO_SERVICES_WINDOW_MANAGER_WNDOW_MANAGER_SERVICE_IMPL_H_
+#define MOJO_SERVICES_WINDOW_MANAGER_WNDOW_MANAGER_SERVICE_IMPL_H_
 
 #include "base/basictypes.h"
-#include "mojo/services/public/cpp/view_manager/types.h"
-#include "mojo/services/public/interfaces/window_manager2/window_manager2.mojom.h"
+#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
 
 namespace mojo {
 
 class WindowManagerApp;
 
-class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService2> {
+class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
  public:
-  explicit WindowManagerServiceImpl(WindowManagerApp* manager);
+  explicit WindowManagerServiceImpl(WindowManagerApp* app);
   virtual ~WindowManagerServiceImpl();
 
-  void NotifyReady();
-  void NotifyViewFocused(Id new_focused_id, Id old_focused_id);
-  void NotifyWindowActivated(Id new_active_id, Id old_active_id);
-
  private:
-  // Overridden from WindowManagerService:
-  virtual void SetCapture(Id view,
-                          const Callback<void(bool)>& callback) override;
-  virtual void FocusWindow(Id view,
-                           const Callback<void(bool)>& callback) override;
-  virtual void ActivateWindow(Id view,
-                              const Callback<void(bool)>& callback) override;
+  // WindowManagerServiceImpl:
+  virtual void Embed(
+      const String& url,
+      InterfaceRequest<ServiceProvider> service_provider) override;
+  virtual void OnViewInputEvent(mojo::EventPtr event) override;
 
-  // Overridden from InterfaceImpl:
+  // InterfaceImpl:
   virtual void OnConnectionEstablished() override;
 
-  WindowManagerApp* window_manager_;
+  WindowManagerApp* app_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerServiceImpl);
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_WINDOW_MANAGER_WINDOW_MANAGER_SERVICE_IMPL_H_
+#endif  // MOJO_SERVICES_WINDOW_MANAGER_WNDOW_MANAGER_SERVICE_IMPL_H_

@@ -20,10 +20,10 @@
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/services/window_manager/window_manager_app.h"
+#include "mojo/services/window_manager/window_manager_delegate.h"
 #include "mojo/views/views_init.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -181,32 +181,9 @@ class KeyboardManager : public KeyboardClient,
   virtual void OnKeyboardEvent(Id view_id,
                                int32_t code,
                                int32_t flags) override {
-    View* view = view_manager_->GetViewById(view_id);
-    if (!view)
-      return;
-#if defined(OS_WIN)
-    const bool is_char = code != ui::VKEY_BACK && code != ui::VKEY_RETURN;
-#else
-    const bool is_char = false;
-#endif
-    if (is_char) {
-      view_manager_->DispatchEvent(
-          view,
-          Event::From(ui::KeyEvent(ui::ET_KEY_PRESSED,
-                                   static_cast<ui::KeyboardCode>(code),
-                                   flags)));
-    } else {
-      view_manager_->DispatchEvent(
-          view,
-          Event::From(ui::KeyEvent(static_cast<base::char16>(code),
-                                   static_cast<ui::KeyboardCode>(code),
-                                   flags)));
-    }
-    view_manager_->DispatchEvent(
-        view,
-        Event::From(ui::KeyEvent(ui::ET_KEY_RELEASED,
-                                 static_cast<ui::KeyboardCode>(code),
-                                 flags)));
+    // TODO(sky): figure this out. Code use to dispatch events, but that's a
+    // hack. Instead strings should be passed through, or maybe a richer text
+    // input interface.
   }
 
   // Overridden from ViewObserver:
@@ -463,7 +440,6 @@ class WindowManager
     const Id kInvalidSourceViewId = 0;
     OnLaunch(kInvalidSourceViewId, TARGET_DEFAULT, url);
   }
-  virtual void DispatchEvent(EventPtr event) override {}
 
   // Overridden from ui::EventHandler:
   virtual void OnEvent(ui::Event* event) override {

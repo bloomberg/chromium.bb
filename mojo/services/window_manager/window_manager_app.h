@@ -16,7 +16,7 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
+#include "mojo/services/window_manager/window_manager_service2_impl.h"
 #include "mojo/services/window_manager/window_manager_service_impl.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/events/event_handler.h"
@@ -39,8 +39,9 @@ namespace mojo {
 
 class AuraInit;
 class DummyDelegate;
-class WindowManagerServiceImpl;
-class WindowTreeHostMojo;
+class WindowManagerClient;
+class WindowManagerDelegate;
+class WindowManagerService2Impl;
 
 // Implements core window manager functionality that could conceivably be shared
 // across multiple window managers implementing superficially different user
@@ -56,7 +57,6 @@ class WindowTreeHostMojo;
 class WindowManagerApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
-      public WindowManagerDelegate,
       public ViewObserver,
       public ui::EventHandler,
       public aura::client::FocusChangeObserver,
@@ -70,8 +70,8 @@ class WindowManagerApp
   aura::Window* GetWindowForViewId(Id view);
 
   // Register/deregister new connections to the window manager service.
-  void AddConnection(WindowManagerServiceImpl* connection);
-  void RemoveConnection(WindowManagerServiceImpl* connection);
+  void AddConnection(WindowManagerService2Impl* connection);
+  void RemoveConnection(WindowManagerService2Impl* connection);
 
   // These are canonical implementations of the window manager API methods.
   void SetCapture(Id view);
@@ -82,9 +82,17 @@ class WindowManagerApp
 
   // A client of this object will use this accessor to gain access to the
   // aura::Window hierarchy and attach event handlers.
-  aura::WindowTreeHost* host() { return window_tree_host_.get(); }
+  WindowTreeHostMojo* host() { return window_tree_host_.get(); }
+
+  WindowManagerDelegate* window_manager_delegate() {
+    return window_manager_delegate_;
+  }
 
   void InitFocus(wm::FocusRules* rules);
+
+  void set_window_manager_client(WindowManagerClient* client) {
+    window_manager_client_ = client;
+  }
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* impl) override;
@@ -92,7 +100,7 @@ class WindowManagerApp
       ApplicationConnection* connection) override;
 
  private:
-  typedef std::set<WindowManagerServiceImpl*> Connections;
+  typedef std::set<WindowManagerService2Impl*> Connections;
   typedef std::map<Id, aura::Window*> ViewIdToWindowMap;
 
   // Overridden from ViewManagerDelegate:
@@ -101,12 +109,6 @@ class WindowManagerApp
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) override;
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) override;
-
-  // Overridden from WindowManagerDelegate:
-  virtual void Embed(
-      const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) override;
-  virtual void DispatchEvent(EventPtr event) override;
 
   // Overridden from ViewObserver:
   virtual void OnTreeChanged(
@@ -140,11 +142,14 @@ class WindowManagerApp
 
   Shell* shell_;
 
+  InterfaceFactoryImplWithContext<WindowManagerService2Impl, WindowManagerApp>
+      window_manager_service2_factory_;
+
   InterfaceFactoryImplWithContext<WindowManagerServiceImpl, WindowManagerApp>
       window_manager_service_factory_;
 
   ViewManagerDelegate* wrapped_view_manager_delegate_;
-  WindowManagerDelegate* wrapped_window_manager_delegate_;
+  WindowManagerDelegate* window_manager_delegate_;
 
   ViewManager* view_manager_;
   scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
@@ -161,6 +166,8 @@ class WindowManagerApp
   ViewIdToWindowMap view_id_to_window_map_;
 
   scoped_ptr<DummyDelegate> dummy_delegate_;
+
+  WindowManagerClient* window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApp);
 };

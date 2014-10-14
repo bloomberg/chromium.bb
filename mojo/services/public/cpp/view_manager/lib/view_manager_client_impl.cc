@@ -17,7 +17,6 @@
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 
 namespace mojo {
 
@@ -93,11 +92,7 @@ class RootObserver : public ViewObserver {
 
 ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
                                              Shell* shell)
-    : connected_(false),
-      connection_id_(0),
-      next_id_(1),
-      delegate_(delegate),
-      window_manager_delegate_(NULL) {
+    : connected_(false), connection_id_(0), next_id_(1), delegate_(delegate) {
   // TODO(beng): Come up with a better way of establishing a configuration for
   //             what the active window manager is.
   std::string window_manager_url = "mojo:mojo_window_manager";
@@ -220,18 +215,6 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
 
-void ViewManagerClientImpl::SetWindowManagerDelegate(
-    WindowManagerDelegate* window_manager_delegate) {
-  CHECK(NULL != GetViewById(1));
-  CHECK(!window_manager_delegate_);
-  window_manager_delegate_ = window_manager_delegate;
-}
-
-void ViewManagerClientImpl::DispatchEvent(View* target, EventPtr event) {
-  CHECK(window_manager_delegate_);
-  service_->DispatchOnViewInputEvent(target->id(), event.Pass());
-}
-
 const std::string& ViewManagerClientImpl::GetEmbedderURL() const {
   return creator_url_;
 }
@@ -351,18 +334,6 @@ void ViewManagerClientImpl::OnViewInputEvent(
                       OnViewInputEvent(view, event));
   }
   ack_callback.Run();
-}
-
-void ViewManagerClientImpl::Embed(
-    const String& url,
-    InterfaceRequest<ServiceProvider> service_provider) {
-  if (window_manager_delegate_)
-    window_manager_delegate_->Embed(url, service_provider.Pass());
-}
-
-void ViewManagerClientImpl::DispatchOnViewInputEvent(EventPtr event) {
-  if (window_manager_delegate_)
-    window_manager_delegate_->DispatchEvent(event.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

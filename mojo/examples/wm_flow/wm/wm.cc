@@ -13,9 +13,9 @@
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/window_manager/window_manager_app.h"
+#include "mojo/services/window_manager/window_manager_delegate.h"
 #include "mojo/views/views_init.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/focus_rules.h"
@@ -148,7 +148,6 @@ class SimpleWM : public mojo::ApplicationDelegate,
     app_view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(
         new mojo::ServiceProviderImpl).Pass());
   }
-  virtual void DispatchEvent(mojo::EventPtr event) override {}
 
   // Overridden from mojo::ViewObserver:
   virtual void OnViewInputEvent(mojo::View* view,

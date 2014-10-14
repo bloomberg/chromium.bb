@@ -77,9 +77,6 @@ class ViewManagerClientImpl : public ViewManager,
   typedef std::map<Id, View*> IdToViewMap;
 
   // Overridden from ViewManager:
-  virtual void SetWindowManagerDelegate(
-      WindowManagerDelegate* delegate) override;
-  virtual void DispatchEvent(View* target, EventPtr event) override;
   virtual const std::string& GetEmbedderURL() const override;
   virtual const std::vector<View*>& GetRoots() const override;
   virtual View* GetViewById(Id id) override;
@@ -108,10 +105,6 @@ class ViewManagerClientImpl : public ViewManager,
   virtual void OnViewInputEvent(Id view_id,
                                 EventPtr event,
                                 const Callback<void()>& callback) override;
-  virtual void Embed(
-      const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) override;
-  virtual void DispatchOnViewInputEvent(EventPtr event) override;
 
     // Overridden from WindowManagerClient2:
   virtual void OnWindowManagerReady() override;
@@ -139,7 +132,6 @@ class ViewManagerClientImpl : public ViewManager,
   base::Callback<void(void)> change_acked_callback_;
 
   ViewManagerDelegate* delegate_;
-  WindowManagerDelegate* window_manager_delegate_;
 
   std::vector<View*> roots_;
 

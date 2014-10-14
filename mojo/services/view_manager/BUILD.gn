@@ -25,6 +25,7 @@ shared_library("view_manager") {
     "//mojo/services/public/interfaces/native_viewport",
     "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
     "//ui/base",
     "//ui/events",
     "//ui/events:events_base",
@@ -58,6 +59,8 @@ shared_library("view_manager") {
     "view_manager_service_impl.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
+    "window_manager_client_impl.cc",
+    "window_manager_client_impl.h",
   ]
 }
 
@@ -75,6 +78,8 @@ test("mojo_view_manager_unittests") {
     "//mojo/public/cpp/bindings",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/cpp/view_manager/lib:run_unittests",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
     "//mojo/shell:test_support",
     "//testing/gtest",
     "//ui/gfx/geometry",

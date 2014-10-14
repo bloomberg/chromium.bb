@@ -9,8 +9,8 @@
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/window_manager/window_manager_app.h"
+#include "mojo/services/window_manager/window_manager_delegate.h"
 
 // ApplicationDelegate implementation file for WindowManager users (e.g.
 // core window manager tests) that do not want to provide their own
@@ -46,7 +46,6 @@ class DefaultWindowManager : public ApplicationDelegate,
                        scoped_ptr<ServiceProvider> imported_services) override {
     view_manager_ = view_manager;
     root_ = root;
-    view_manager_->SetWindowManagerDelegate(this);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 
@@ -59,7 +58,6 @@ class DefaultWindowManager : public ApplicationDelegate,
     view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(
         new mojo::ServiceProviderImpl).Pass());
   }
-  virtual void DispatchEvent(EventPtr event) override {}
 
   scoped_ptr<WindowManagerApp> window_manager_app_;
 

@@ -20,11 +20,13 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
+#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/test_change_tracker.h"
 #include "mojo/shell/shell_test_helper.h"
@@ -54,10 +56,11 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
  public:
   explicit ViewManagerProxy(TestChangeTracker* tracker)
       : tracker_(tracker),
-        main_loop_(NULL),
-        view_manager_(NULL),
+        main_loop_(nullptr),
+        view_manager_(nullptr),
+        window_manager_client_(nullptr),
         quit_count_(0),
-        router_(NULL) {
+        router_(nullptr) {
     SetInstance(this);
   }
 
@@ -79,6 +82,9 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
 
   ViewManagerService* view_manager() { return view_manager_; }
+  WindowManagerClient* window_manager_client() {
+    return window_manager_client_;
+  }
 
   // Runs the main loop until |count| changes have been received.
   std::vector<Change> DoRunLoopUntilChangesCount(size_t count) {
@@ -224,11 +230,16 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
 
  private:
   friend class TestViewManagerClientConnection;
+  friend class WindowManagerServiceImpl;
 
   void set_router(mojo::internal::Router* router) { router_ = router; }
 
   void set_view_manager(ViewManagerService* view_manager) {
     view_manager_ = view_manager;
+  }
+
+  void set_window_manager_client(WindowManagerClient* client) {
+    window_manager_client_ = client;
   }
 
   static void RunMainLoop() {
@@ -291,6 +302,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   base::MessageLoop* main_loop_;
 
   ViewManagerService* view_manager_;
+  WindowManagerClient* window_manager_client_;
 
   // Number of changes we're waiting on until we quit the current loop.
   size_t quit_count_;
@@ -314,14 +326,18 @@ bool ViewManagerProxy::in_embed_ = false;
 class TestViewManagerClientConnection
     : public InterfaceImpl<ViewManagerClient> {
  public:
-  TestViewManagerClientConnection() : connection_(&tracker_) {
-    tracker_.set_delegate(&connection_);
+  TestViewManagerClientConnection() : proxy_(&tracker_) {
+    tracker_.set_delegate(&proxy_);
   }
+
+  TestChangeTracker* tracker() { return &tracker_; }
+
+  ViewManagerProxy* proxy() { return &proxy_; }
 
   // InterfaceImpl:
   virtual void OnConnectionEstablished() override {
-    connection_.set_router(internal_state()->router());
-    connection_.set_view_manager(client());
+    proxy_.set_router(internal_state()->router());
+    proxy_.set_view_manager(client());
   }
 
   // ViewManagerClient:
@@ -360,28 +376,47 @@ class TestViewManagerClientConnection
                                 const Callback<void()>& callback) override {
     tracker_.OnViewInputEvent(view_id, event.Pass());
   }
-  virtual void Embed(
-      const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) override {
-    tracker_.DelegateEmbed(url);
-  }
-  virtual void DispatchOnViewInputEvent(mojo::EventPtr event) override {
-  }
 
  private:
   TestChangeTracker tracker_;
-  ViewManagerProxy connection_;
+  ViewManagerProxy proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewManagerClientConnection);
+};
+
+class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
+ public:
+  explicit WindowManagerServiceImpl(TestViewManagerClientConnection* connection)
+      : connection_(connection) {}
+  virtual ~WindowManagerServiceImpl() {}
+
+  // InterfaceImpl:
+  virtual void OnConnectionEstablished() override {
+    connection_->proxy()->set_window_manager_client(client());
+  }
+
+  // WindowManagerService:
+  virtual void Embed(
+      const String& url,
+      InterfaceRequest<ServiceProvider> service_provider) override {
+    connection_->tracker()->DelegateEmbed(url);
+  }
+  virtual void OnViewInputEvent(mojo::EventPtr event) override {}
+
+ private:
+  TestViewManagerClientConnection* connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerServiceImpl);
 };
 
 // Used with ViewManagerService::Embed(). Creates a
 // TestViewManagerClientConnection, which creates and owns the ViewManagerProxy.
 class EmbedApplicationLoader : public ApplicationLoader,
                                ApplicationDelegate,
-                               public InterfaceFactory<ViewManagerClient> {
+                               public InterfaceFactory<ViewManagerClient>,
+                               public InterfaceFactory<WindowManagerService> {
  public:
-  EmbedApplicationLoader() {}
+  EmbedApplicationLoader() : last_view_manager_client_(nullptr) {}
   virtual ~EmbedApplicationLoader() {}
 
   // ApplicationLoader implementation:
@@ -401,17 +436,27 @@ class EmbedApplicationLoader : public ApplicationLoader,
   // ApplicationDelegate implementation:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       override {
-    connection->AddService(this);
+    connection->AddService<ViewManagerClient>(this);
+    connection->AddService<WindowManagerService>(this);
     return true;
   }
 
   // InterfaceFactory<ViewManagerClient> implementation:
   virtual void Create(ApplicationConnection* connection,
                       InterfaceRequest<ViewManagerClient> request) override {
-    BindToRequest(new TestViewManagerClientConnection, &request);
+    last_view_manager_client_ = new TestViewManagerClientConnection;
+    BindToRequest(last_view_manager_client_, &request);
+  }
+  virtual void Create(ApplicationConnection* connection,
+                      InterfaceRequest<WindowManagerService> request) override {
+    BindToRequest(new WindowManagerServiceImpl(last_view_manager_client_),
+                  &request);
   }
 
  private:
+  // Used so that TestViewManagerClientConnection and
+  // WindowManagerServiceImpl can share the same TestChangeTracker.
+  TestViewManagerClientConnection* last_view_manager_client_;
   ScopedVector<ApplicationImpl> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbedApplicationLoader);
@@ -1190,8 +1235,8 @@ TEST_F(ViewManagerTest, OnViewInput) {
   {
     EventPtr event(Event::New());
     event->action = static_cast<EventType>(1);
-    connection_->view_manager()->DispatchOnViewInputEvent(BuildViewId(1, 1),
-                                                          event.Pass());
+    connection_->window_manager_client()->DispatchInputEventToView(
+        BuildViewId(1, 1), event.Pass());
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());

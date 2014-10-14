@@ -424,7 +424,6 @@
         'services/public/cpp/view_manager/view_manager_context.h',
         'services/public/cpp/view_manager/view_manager_delegate.h',
         'services/public/cpp/view_manager/view_observer.h',
-        'services/public/cpp/view_manager/window_manager_delegate.h',
       ],
       'export_dependent_settings': [
         'services/public/mojo_services_public.gyp:mojo_view_manager_bindings',
@@ -522,6 +521,7 @@
             'services/public/mojo_services_public.gyp:mojo_surfaces_bindings',
             'services/public/mojo_services_public.gyp:mojo_view_manager_bindings',
             'services/public/mojo_services_public.gyp:mojo_view_manager_common',
+            'services/public/mojo_services_public.gyp:mojo_window_manager_bindings',
             '<(mojo_system_for_loadable_module)',
           ],
           'sources': [
@@ -547,6 +547,8 @@
             'services/view_manager/view_manager_service_impl.h',
             'services/view_manager/window_manager_access_policy.cc',
             'services/view_manager/window_manager_access_policy.h',
+            'services/view_manager/window_manager_client_impl.cc',
+            'services/view_manager/window_manager_client_impl.h',
           ],
           'includes': [
             'mojo_public_gles2_for_loadable_module.gypi',
@@ -577,6 +579,7 @@
             'services/public/mojo_services_public.gyp:mojo_input_events_bindings',
             'services/public/mojo_services_public.gyp:mojo_view_manager_bindings',
             'services/public/mojo_services_public.gyp:mojo_view_manager_common',
+            'services/public/mojo_services_public.gyp:mojo_window_manager_bindings',
             # Included only to force deps for bots.
             'mojo_native_viewport_service',
             'mojo_surfaces_service',
@@ -617,13 +620,18 @@
             'mojo_base.gyp:mojo_common_lib',
             'mojo_input_events_lib',
             'mojo_view_manager_lib',
+            'public/mojo_public.gyp:mojo_application_bindings',
             'services/public/mojo_services_public.gyp:mojo_core_window_manager_bindings',
+            'services/public/mojo_services_public.gyp:mojo_window_manager_bindings',
           ],
           'sources': [
             'services/window_manager/window_manager_app.cc',
             'services/window_manager/window_manager_app.h',
+            'services/window_manager/window_manager_delegate.h',
             'services/window_manager/window_manager_service_impl.cc',
             'services/window_manager/window_manager_service_impl.h',
+            'services/window_manager/window_manager_service2_impl.cc',
+            'services/window_manager/window_manager_service2_impl.h',
           ],
         },
         {

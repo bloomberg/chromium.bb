@@ -31,10 +31,9 @@ ConnectionManager::ConnectionManager(
     ApplicationConnection* app_connection,
     const Callback<void()>& native_viewport_closed_callback)
     : app_connection_(app_connection),
+      wm_client_impl_(this),
       next_connection_id_(1),
-      display_manager_(app_connection,
-                       this,
-                       native_viewport_closed_callback),
+      display_manager_(app_connection, this, native_viewport_closed_callback),
       root_(new ServerView(this, RootViewId())),
       current_change_(NULL) {
   root_->SetBounds(gfx::Rect(800, 600));
@@ -71,21 +70,22 @@ void ConnectionManager::RemoveConnection(ViewManagerServiceImpl* connection) {
   }
 }
 
-void ConnectionManager::EmbedRoot(
+void ConnectionManager::Embed(
     const std::string& url,
     InterfaceRequest<ServiceProvider> service_provider) {
   if (connection_map_.empty()) {
+    // TODO(sky): this is unsafe and racy. Need a better way to determine the
+    // window manager.
     EmbedImpl(kInvalidConnectionId,
               String::From(url),
               RootViewId(),
               service_provider.Pass());
     return;
   }
-  ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
-  connection->client()->Embed(url, service_provider.Pass());
+  wm_client_impl_.client()->Embed(url, service_provider.Pass());
 }
 
-void ConnectionManager::Embed(
+void ConnectionManager::EmbedAtView(
     ConnectionSpecificId creator_id,
     const String& url,
     Id transport_view_id,
@@ -130,13 +130,9 @@ const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
   return NULL;
 }
 
-void ConnectionManager::DispatchViewInputEventToWindowManager(EventPtr event) {
-  // Input events are forwarded to the WindowManager. The WindowManager
-  // eventually calls back to us with DispatchOnViewInputEvent().
-  ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
-  if (!connection)
-    return;
-  connection->client()->DispatchOnViewInputEvent(event.Pass());
+void ConnectionManager::DispatchViewInputEventToDelegate(EventPtr event) {
+  if (wm_client_impl_.client())
+    wm_client_impl_.client()->OnViewInputEvent(event.Pass());
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
@@ -214,8 +210,16 @@ ViewManagerServiceImpl* ConnectionManager::EmbedImpl(
 
   ServiceProvider* view_manager_service_provider =
       app_connection_->ConnectToApplication(url)->GetServiceProvider();
+
   view_manager_service_provider->ConnectToService(
       ViewManagerServiceImpl::Client::Name_, pipe.handle1.Pass());
+
+  if (root_id == RootViewId()) {
+    MessagePipe wm_pipe;
+    view_manager_service_provider->ConnectToService(
+        WindowManagerClientImpl::Client::Name_, wm_pipe.handle1.Pass());
+    WeakBindToPipe(&wm_client_impl_, wm_pipe.handle0.Pass());
+  }
 
   std::string creator_url;
   ConnectionMap::const_iterator it = connection_map_.find(creator_id);

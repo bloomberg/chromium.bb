@@ -177,7 +177,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                      Id view_id,
                      ServiceProviderPtr service_provider,
                      const Callback<void(bool)>& callback) override;
-  virtual void DispatchOnViewInputEvent(Id view_id, EventPtr event) override;
 
   // InterfaceImpl:
   virtual void OnConnectionEstablished() override;

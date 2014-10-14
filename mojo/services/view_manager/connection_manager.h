@@ -15,6 +15,7 @@
 #include "mojo/services/view_manager/server_view.h"
 #include "mojo/services/view_manager/server_view_delegate.h"
 #include "mojo/services/view_manager/view_manager_export.h"
+#include "mojo/services/view_manager/window_manager_client_impl.h"
 
 namespace ui {
 class Event;
@@ -75,17 +76,19 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   void AddConnection(ViewManagerServiceImpl* connection);
   void RemoveConnection(ViewManagerServiceImpl* connection);
 
-  // Establishes the initial client. Similar to Connect(), but the resulting
-  // client is allowed to do anything.
-  void EmbedRoot(const std::string& url,
-                 InterfaceRequest<ServiceProvider> service_provider);
+  // Used in two cases:
+  // . Establishes the client for the root.
+  // . Requests to Embed() at an unspecified view. For this case the request
+  //   is passed on to the WindowManagerService.
+  void Embed(const std::string& url,
+             InterfaceRequest<ServiceProvider> service_provider);
 
   // See description of ViewManagerService::Embed() for details. This assumes
   // |transport_view_id| is valid.
-  void Embed(ConnectionSpecificId creator_id,
-             const String& url,
-             Id transport_view_id,
-             InterfaceRequest<ServiceProvider> service_provider);
+  void EmbedAtView(ConnectionSpecificId creator_id,
+                   const String& url,
+                   Id transport_view_id,
+                   InterfaceRequest<ServiceProvider> service_provider);
 
   // Returns the connection by id.
   ViewManagerServiceImpl* GetConnection(ConnectionSpecificId connection_id);
@@ -115,7 +118,7 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   }
   const ViewManagerServiceImpl* GetConnectionWithRoot(const ViewId& id) const;
 
-  void DispatchViewInputEventToWindowManager(EventPtr event);
+  void DispatchViewInputEventToDelegate(EventPtr event);
 
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
@@ -178,6 +181,8 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   virtual void OnWillChangeViewVisibility(const ServerView* view) override;
 
   ApplicationConnection* app_connection_;
+
+  WindowManagerClientImpl wm_client_impl_;
 
   // ID to use for next ViewManagerServiceImpl.
   ConnectionSpecificId next_connection_id_;

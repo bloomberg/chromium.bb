@@ -481,7 +481,7 @@ void ViewManagerServiceImpl::Embed(
   spir.Bind(service_provider.PassMessagePipe());
 
   if (ViewIdFromTransportId(transport_view_id) == InvalidViewId()) {
-    connection_manager_->EmbedRoot(url, spir.Pass());
+    connection_manager_->Embed(url, spir.Pass());
     callback.Run(true);
     return;
   }
@@ -503,31 +503,8 @@ void ViewManagerServiceImpl::Embed(
     connection_manager_->OnConnectionMessagedClient(id_);
     existing_owner->RemoveRoot(view_id);
   }
-  connection_manager_->Embed(id_, url, transport_view_id, spir.Pass());
+  connection_manager_->EmbedAtView(id_, url, transport_view_id, spir.Pass());
   callback.Run(true);
-}
-
-void ViewManagerServiceImpl::DispatchOnViewInputEvent(Id transport_view_id,
-                                                      EventPtr event) {
-  // We only allow the WM to dispatch events. At some point this function will
-  // move to a separate interface and the check can go away.
-  if (id_ != kWindowManagerConnection)
-    return;
-
-  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
-
-  // If another app is embedded at this view, we forward the input event to the
-  // embedded app, rather than the app that created the view.
-  ViewManagerServiceImpl* connection =
-      connection_manager_->GetConnectionWithRoot(view_id);
-  if (!connection)
-    connection = connection_manager_->GetConnection(view_id.connection_id);
-  if (connection) {
-    connection->client()->OnViewInputEvent(
-        transport_view_id,
-        event.Pass(),
-        base::Bind(&base::DoNothing));
-  }
 }
 
 void ViewManagerServiceImpl::OnConnectionEstablished() {

@@ -137,11 +137,6 @@ interface ViewManagerService {
   Embed(string url,
         uint32 view_id,
         ServiceProvider? service_provider) => (bool success);
-
-  // TODO(sky): move these to a separate interface when FIFO works.
-
-  // Sends OnViewInputEvent() to the owner of the specified view.
-  DispatchOnViewInputEvent(uint32 view_id, mojo.Event event);
 };
 
 // Changes to views are not sent to the connection that originated the
@@ -197,18 +192,6 @@ interface ViewManagerClient {
 
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();
-
-  // TODO(sky): The following methods represent an interface between the view
-  //            manager and the application embedded at the service root view
-  //            (i.e. the window manager). These methods are not called on
-  //            any other clients. They should be moved to a separate interface
-  //            once support for derived FIFOs is landed.
-
-  // Requests the window manager create a "top level" view embedding |url|.
-  Embed(string url, ServiceProvider&? service_provider);
-
-  // Requests the view manager dispatch the event.
-  DispatchOnViewInputEvent(mojo.Event event);
 };
 
 }

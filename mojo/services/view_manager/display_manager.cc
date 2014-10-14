@@ -160,7 +160,7 @@ void DisplayManager::OnSizeChanged(SizePtr size) {
 
 void DisplayManager::OnEvent(EventPtr event,
                              const mojo::Callback<void()>& callback) {
-  connection_manager_->DispatchViewInputEventToWindowManager(event.Pass());
+  connection_manager_->DispatchViewInputEventToDelegate(event.Pass());
   callback.Run();
 }
 
