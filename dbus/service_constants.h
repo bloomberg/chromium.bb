@@ -200,6 +200,10 @@ const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
 const char kSessionManagerStartSessionService[] = "StartSessionService";
 const char kSessionManagerStopSessionService[] = "StopSessionService";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
+const char kSessionManagerHandleSupervisedUserCreationStarting[] =
+    "HandleSupervisedUserCreationStarting";
+const char kSessionManagerHandleSupervisedUserCreationFinished[] =
+    "HandleSupervisedUserCreationFinished";
 const char kSessionManagerLockScreen[] = "LockScreen";
 const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
 const char kSessionManagerHandleLockScreenDismissed[] =
