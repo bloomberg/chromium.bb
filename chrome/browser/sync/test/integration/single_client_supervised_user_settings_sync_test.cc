@@ -11,8 +11,11 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 
 class SingleClientSupervisedUserSettingsSyncTest : public SyncTest {
@@ -28,29 +31,32 @@ class SingleClientSupervisedUserSettingsSyncTest : public SyncTest {
   }
 };
 
+void TestAuthErrorCallback(const GoogleServiceAuthError& error) {}
+
 IN_PROC_BROWSER_TEST_F(SingleClientSupervisedUserSettingsSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients());
-  for (int i = 0; i < num_clients(); ++i) {
-    Profile* profile = GetProfile(i);
-    // Supervised users are prohibited from signing into the browser. Currently
-    // that means they're also unable to sync anything, so override that for
-    // this test.
-    // TODO(pamg): Remove this override (and the supervised user setting it
-    // requires) once sync and signin are properly separated for supervised
-    // users.
-    // See http://crbug.com/239785.
-    SupervisedUserSettingsService* settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(profile);
-    scoped_ptr<base::Value> allow_signin(new base::FundamentalValue(true));
-    settings_service->SetLocalSettingForTesting(
-        supervised_users::kSigninAllowed,
-        allow_signin.Pass());
 
-    // The user should not be signed in.
-    std::string username;
-    // ProfileSyncServiceHarness sets the password, which can't be empty.
-    std::string password = "password";
-    GetClient(i)->SetCredentials(username, password);
-  }
-  ASSERT_TRUE(SetupSync());
+  EXPECT_EQ(num_clients(), 1);
+  Profile* profile = GetProfile(0);
+
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile);
+
+  // This call triggers a separate, supervised user-specific codepath
+  // that does not normally execute for sync.
+  supervised_user_service->OnSupervisedUserRegistered(
+      base::Bind(&TestAuthErrorCallback),
+      // Use the Browser's main profile as the custodian.
+      browser()->profile(),
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+      std::string("token value doesn't matter in tests"));
+
+  ASSERT_TRUE(GetClient(0)->AwaitBackendInitialization());
+  // TODO(pvalenzuela): Remove the following line after crbug.com/422508 is
+  // fixed.
+  GetSyncService(0)->SetSetupInProgress(false);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+
+  // TODO(pvalenzuela): Add additional tests and some verification of sync-
+  // specific features (e.g., assert certain datatypes are syncing).
 }

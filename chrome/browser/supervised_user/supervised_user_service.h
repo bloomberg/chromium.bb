@@ -203,6 +203,7 @@ class SupervisedUserService : public KeyedService,
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
+  FRIEND_TEST_ALL_PREFIXES(SingleClientSupervisedUserSettingsSyncTest, Sanity);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest, ClearOmitOnRegistration);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
                            ChangesIncludedSessionOnChangedSettings);
