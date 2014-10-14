@@ -382,6 +382,58 @@ IN_PROC_BROWSER_TEST_F(AdInjectionBrowserTest, DetectAdInjections) {
   }
 }
 
+// If this test grows, we should consolidate it and AdInjectionBrowserTest.
+class ExecuteScriptAdInjectionBrowserTest : public ExtensionBrowserTest {
+ protected:
+  virtual void SetUpOnMainThread() override;
+  virtual void TearDownOnMainThread() override;
+};
+
+void ExecuteScriptAdInjectionBrowserTest::SetUpOnMainThread() {
+  ExtensionBrowserTest::SetUpOnMainThread();
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  embedded_test_server()->RegisterRequestHandler(base::Bind(&HandleRequest));
+
+  // Enable the activity log for this test.
+  ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(true);
+
+  // Set the ad network database.
+  AdNetworkDatabase::SetForTesting(
+      scoped_ptr<AdNetworkDatabase>(new TestAdNetworkDatabase));
+}
+
+void ExecuteScriptAdInjectionBrowserTest::TearDownOnMainThread() {
+  ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(false);
+  ExtensionBrowserTest::TearDownOnMainThread();
+}
+
+// Test that using chrome.tabs.executeScript doesn't circumvent our detection.
+// Since each type of injection is tested more thoroughly in the test above,
+// this test just needs to make sure that we detect anything from executeScript.
+IN_PROC_BROWSER_TEST_F(ExecuteScriptAdInjectionBrowserTest,
+                       ExecuteScriptAdInjection) {
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("activity_log")
+                                  .AppendASCII("execute_script_ad_injection"));
+  ASSERT_TRUE(extension);
+
+  ExtensionTestMessageListener listener(false);  // Won't reply.
+  listener.set_extension_id(extension->id());
+  ActivityLogObserver observer(profile());
+  observer.enable();
+
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
+
+  // The extension sends a "Done" message when the script has executed.
+  listener.WaitUntilSatisfied();
+  EXPECT_EQ("Done", listener.message());
+
+  // We should have injected an ad.
+  EXPECT_EQ(Action::INJECTION_NEW_AD, observer.injection_type());
+  EXPECT_FALSE(observer.found_multiple_injections());
+}
+
 // TODO(rdevlin.cronin): We test a good amount of ways of injecting ads with
 // the above test, but more is better in testing.
 // See crbug.com/357204.
