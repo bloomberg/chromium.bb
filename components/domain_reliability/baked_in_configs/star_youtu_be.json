@@ -1,7 +1,7 @@
 {
-  "config_version": "t3-gstatic-com-v1",
-  "config_valid_until": 1432944000.0,
-  "monitored_domain": "t3.gstatic.com",
+  "config_version": "star-youtu-be-v1",
+  "config_valid_until": 1432944000,
+  "monitored_domain": "*.youtu.be",
   "collectors": [
     {
       "upload_url": "https://clients2.google.com/domainreliability/upload"
@@ -12,7 +12,7 @@
   ],
   "monitored_resources": [
     {
-      "resource_name": "t3-gstatic-com-other",
+      "resource_name": "star-youtu-be-other",
       "url_patterns": ["*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
