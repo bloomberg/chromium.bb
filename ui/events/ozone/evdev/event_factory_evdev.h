@@ -41,8 +41,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
  private:
   // Open device at path & starting processing events (on UI thread).
-  void AttachInputDevice(const base::FilePath& file_path,
-                         scoped_ptr<EventConverterEvdev> converter);
+  void AttachInputDevice(scoped_ptr<EventConverterEvdev> converter);
 
   // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);

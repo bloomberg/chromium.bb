@@ -11,17 +11,15 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+#include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h"
 
 namespace ui {
 
-class Event;
 class EventDeviceInfo;
 class EventModifiersEvdev;
 class CursorDelegateEvdev;
-
-typedef base::Callback<void(Event*)> EventDispatchCallback;
 
 // Convert libevdev-cros events to ui::Events using libgestures.
 //

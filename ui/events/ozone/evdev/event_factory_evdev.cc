@@ -33,6 +33,24 @@ namespace ui {
 
 namespace {
 
+typedef base::Callback<void(scoped_ptr<EventConverterEvdev>)>
+    OpenInputDeviceReplyCallback;
+
+struct OpenInputDeviceParams {
+  // Unique identifier for the new device.
+  int id;
+
+  // Device path to open.
+  base::FilePath path;
+
+  // Callback for dispatching events. Call on UI thread only.
+  EventDispatchCallback dispatch_callback;
+
+  // State shared between devices. Must not be dereferenced on worker thread.
+  EventModifiersEvdev* modifiers;
+  CursorDelegateEvdev* cursor;
+};
+
 #if defined(USE_EVDEV_GESTURES)
 bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
   if (devinfo.HasAbsXY() && !devinfo.IsMappedToScreen())
@@ -46,24 +64,21 @@ bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
 #endif
 
 scoped_ptr<EventConverterEvdev> CreateConverter(
+    const OpenInputDeviceParams& params,
     int fd,
-    const base::FilePath& path,
-    int id,
-    const EventDeviceInfo& devinfo,
-    const EventDispatchCallback& dispatch,
-    EventModifiersEvdev* modifiers,
-    CursorDelegateEvdev* cursor) {
+    const EventDeviceInfo& devinfo) {
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
   if (UseGesturesLibraryForDevice(devinfo)) {
-    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp = make_scoped_ptr(
-        new GestureInterpreterLibevdevCros(modifiers, cursor, dispatch));
+    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
+        make_scoped_ptr(new GestureInterpreterLibevdevCros(
+            params.modifiers, params.cursor, params.dispatch_callback));
     scoped_ptr<EventReaderLibevdevCros> libevdev_reader =
         make_scoped_ptr(new EventReaderLibevdevCros(
             fd,
-            path,
-            id,
+            params.path,
+            params.id,
             gesture_interp.PassAs<EventReaderLibevdevCros::Delegate>()));
     return libevdev_reader.PassAs<EventConverterEvdev>();
   }
@@ -72,12 +87,12 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Touchscreen: use TouchEventConverterEvdev.
   scoped_ptr<EventConverterEvdev> converter;
   if (devinfo.HasAbsXY())
-    return make_scoped_ptr<EventConverterEvdev>(
-        new TouchEventConverterEvdev(fd, path, id, devinfo, dispatch));
+    return make_scoped_ptr<EventConverterEvdev>(new TouchEventConverterEvdev(
+        fd, params.path, params.id, devinfo, params.dispatch_callback));
 
   // Everything else: use KeyEventConverterEvdev.
-  return make_scoped_ptr<EventConverterEvdev>(
-      new KeyEventConverterEvdev(fd, path, id, modifiers, dispatch));
+  return make_scoped_ptr<EventConverterEvdev>(new KeyEventConverterEvdev(
+      fd, params.path, params.id, params.modifiers, params.dispatch_callback));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -86,14 +101,11 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 //
 // This takes a TaskRunner and runs the reply on that thread, so that we
 // can hop threads if necessary (back to the UI thread).
-void OpenInputDevice(
-    const base::FilePath& path,
-    EventModifiersEvdev* modifiers,
-    CursorDelegateEvdev* cursor,
-    int device_id,
-    scoped_refptr<base::TaskRunner> reply_runner,
-    const EventDispatchCallback& dispatch,
-    base::Callback<void(scoped_ptr<EventConverterEvdev>)> reply_callback) {
+void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
+                     scoped_refptr<base::TaskRunner> reply_runner,
+                     const OpenInputDeviceReplyCallback& reply_callback) {
+  const base::FilePath& path = params->path;
+
   TRACE_EVENT1("ozone", "OpenInputDevice", "path", path.value());
 
   int fd = open(path.value().c_str(), O_RDONLY | O_NONBLOCK);
@@ -116,8 +128,8 @@ void OpenInputDevice(
     return;
   }
 
-  scoped_ptr<EventConverterEvdev> converter = CreateConverter(
-      fd, path, device_id, devinfo, dispatch, modifiers, cursor);
+  scoped_ptr<EventConverterEvdev> converter =
+      CreateConverter(*params, fd, devinfo);
 
   // Reply with the constructed converter.
   reply_runner->PostTask(FROM_HERE,
@@ -154,8 +166,9 @@ void EventFactoryEvdev::DispatchUiEvent(Event* event) {
 }
 
 void EventFactoryEvdev::AttachInputDevice(
-    const base::FilePath& path,
     scoped_ptr<EventConverterEvdev> converter) {
+  const base::FilePath& path = converter->path();
+
   TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
@@ -180,20 +193,24 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
     case DeviceEvent::CHANGE: {
       TRACE_EVENT1("ozone", "OnDeviceAdded", "path", event.path().value());
 
+      scoped_ptr<OpenInputDeviceParams> params(new OpenInputDeviceParams);
+      params->id = NextDeviceId();
+      params->path = event.path();
+      params->dispatch_callback = dispatch_callback_;
+      params->modifiers = &modifiers_;
+      params->cursor = cursor_;
+
+      OpenInputDeviceReplyCallback reply_callback =
+          base::Bind(&EventFactoryEvdev::AttachInputDevice,
+                     weak_ptr_factory_.GetWeakPtr());
+
       // Dispatch task to open from the worker pool, since open may block.
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&OpenInputDevice,
-                     event.path(),
-                     &modifiers_,
-                     cursor_,
-                     NextDeviceId(),
-                     ui_task_runner_,
-                     dispatch_callback_,
-                     base::Bind(&EventFactoryEvdev::AttachInputDevice,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                event.path())),
-          true);
+      base::WorkerPool::PostTask(FROM_HERE,
+                                 base::Bind(&OpenInputDevice,
+                                            base::Passed(&params),
+                                            ui_task_runner_,
+                                            reply_callback),
+                                 true /* task_is_slow */);
     }
       break;
     case DeviceEvent::REMOVE: {
