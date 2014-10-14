@@ -44,5 +44,6 @@
     // session operations
     [CallWith=ScriptState] Promise update(ArrayBuffer response);
     [CallWith=ScriptState] Promise update(ArrayBufferView response);
-    [CallWith=ScriptState] Promise release();
+    [CallWith=ScriptState] Promise close();
+    [CallWith=ScriptState] Promise remove();
 };

@@ -47,11 +47,11 @@
                     // Should be 2 MediaKeySessions.
                     assert_equals(numActiveDOMObjectsCreated(), 2, 'mediaKeys.createSession(2)');
 
-                    // Release the sessions. Once completed, only the JS
+                    // Close the sessions. Once completed, only the JS
                     // reference to them keeps them around.
-                    return mediaKeySession1.release();
+                    return mediaKeySession1.close();
                 }).then(function(result) {
-                    return mediaKeySession2.release();
+                    return mediaKeySession2.close();
                 }).then(function(result) {
                     // Since both sessions have been closed, dropping the
                     // reference to them from JS will result in the session

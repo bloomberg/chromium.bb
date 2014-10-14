@@ -50,6 +50,16 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 
+namespace {
+
+// The list of possible values for |sessionType| passed to createSession().
+#if ENABLE(ASSERT)
+const char* kTemporary = "temporary";
+#endif
+const char* kPersistent = "persistent";
+
+} // namespace
+
 namespace blink {
 
 static bool isKeySystemSupportedWithInitDataType(const String& keySystem, const String& initDataType)
@@ -75,7 +85,8 @@ public:
     enum Type {
         GenerateRequest,
         Update,
-        Release
+        Close,
+        Remove
     };
 
     Type type() const { return m_type; }
@@ -111,10 +122,16 @@ public:
         return new PendingAction(Update, result, String(), data);
     }
 
-    static PendingAction* CreatePendingRelease(ContentDecryptionModuleResult* result)
+    static PendingAction* CreatePendingClose(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Release, result, String(), PassRefPtr<ArrayBuffer>());
+        return new PendingAction(Close, result, String(), PassRefPtr<ArrayBuffer>());
+    }
+
+    static PendingAction* CreatePendingRemove(ContentDecryptionModuleResult* result)
+    {
+        ASSERT(result);
+        return new PendingAction(Remove, result, String(), PassRefPtr<ArrayBuffer>());
     }
 
     ~PendingAction()
@@ -207,6 +224,7 @@ private:
 
 MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* mediaKeys, const String& sessionType)
 {
+    ASSERT(sessionType == kTemporary || sessionType == kPersistent);
     RefPtrWillBeRawPtr<MediaKeySession> session = new MediaKeySession(scriptState, mediaKeys, sessionType);
     session->suspendIfNeeded();
     return session.get();
@@ -402,36 +420,84 @@ ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefP
     return promise;
 }
 
-ScriptPromise MediaKeySession::release(ScriptState* scriptState)
+ScriptPromise MediaKeySession::close(ScriptState* scriptState)
 {
-    WTF_LOG(Media, "MediaKeySession(%p)::release", this);
-    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
-    ScriptPromise promise = result->promise();
+    WTF_LOG(Media, "MediaKeySession(%p)::close", this);
 
-    // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-close>:
+    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-close:
     // The close() method allows an application to indicate that it no longer
     // needs the session and the CDM should release any resources associated
     // with this object and close it. The returned promise is resolved when the
     // request has been processed, and the closed attribute promise is resolved
     // when the session is closed. It must run the following steps:
     //
-    // 1. If the Session Close algorithm has been run on this object, return a
-    //    promise fulfilled with undefined.
-    if (m_isClosed) {
-        result->complete();
-        return promise;
+    // 1. If this object's callable value is false, return a promise rejected
+    //    with a new DOMException whose name is "InvalidStateError".
+    if (!m_isCallable) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState, DOMException::create(InvalidStateError, "The session is not callable."));
     }
 
-    // 2. Let promise be a new promise.
-    // (Created earlier so it was available in step 1.)
+    // 2. If the Session Close algorithm has been run on this object,
+    //    return a resolved promise.
+    if (m_isClosed)
+        return ScriptPromise::cast(scriptState, ScriptValue());
 
-    // 3. Run the following steps asynchronously (documented in
+    // 3. Let promise be a new promise.
+    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
+    ScriptPromise promise = result->promise();
+
+    // 4. Run the following steps asynchronously (documented in
     //    actionTimerFired()).
-    m_pendingActions.append(PendingAction::CreatePendingRelease(result));
+    m_pendingActions.append(PendingAction::CreatePendingClose(result));
     if (!m_actionTimer.isActive())
         m_actionTimer.startOneShot(0, FROM_HERE);
 
-    // 4. Return promise.
+    // 5. Return promise.
+    return promise;
+}
+
+ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
+{
+    WTF_LOG(Media, "MediaKeySession(%p)::remove", this);
+
+    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-remove:
+    // The remove() method allows an application to remove stored session data
+    // associated with this object. It must run the following steps:
+
+    // 1. If this object's callable value is false, return a promise rejected
+    //    with a new DOMException whose name is "InvalidStateError".
+    if (!m_isCallable) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState, DOMException::create(InvalidStateError, "The session is not callable."));
+    }
+
+    // 2. If this object's session type is not "persistent", return a promise
+    //    rejected with a new DOMException whose name is "InvalidAccessError".
+    if (m_sessionType != kPersistent) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState, DOMException::create(InvalidAccessError, "The session type is not 'persistent'."));
+    }
+
+    // 3. If the Session Close algorithm has been run on this object, return a
+    //    promise rejected with a new DOMException whose name is
+    //    "InvalidStateError".
+    if (m_isClosed) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState, DOMException::create(InvalidStateError, "The session is already closed."));
+    }
+
+    // 4. Let promise be a new promise.
+    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
+    ScriptPromise promise = result->promise();
+
+    // 5. Run the following steps asynchronously (documented in
+    //    actionTimerFired()).
+    m_pendingActions.append(PendingAction::CreatePendingRemove(result));
+    if (!m_actionTimer.isActive())
+        m_actionTimer.startOneShot(0, FROM_HERE);
+
+    // 6. Return promise.
     return promise;
 }
 
@@ -479,16 +545,43 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
             m_session->update(static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), action->result()->result());
             break;
 
-        case PendingAction::Release:
-            WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Release", this);
-            // NOTE: Continued from step 3 of MediaKeySession::release().
-            // 3.1 Let cdm be the cdm loaded in create().
-            // 3.2 Use the cdm to execute the following steps:
-            // 3.2.1 Process the close request. Do not remove stored session data.
-            // 3.2.2 If the previous step caused the session to be closed, run the
-            //       Session Close algorithm on this object.
-            // 3.3 Resolve promise with undefined.
-            m_session->release(action->result()->result());
+        case PendingAction::Close:
+            WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Close", this);
+            // NOTE: Continued from step 4 of MediaKeySession::close().
+            // 4.1 Let cdm be the CDM loaded during the initialization of the
+            //     MediaKeys object that created this object.
+            //     (Already captured when creating m_session).
+            // 4.2 Use the cdm to execute the following steps:
+            // 4.2.1 Process the close request. Do not remove stored session
+            //       data.
+            // 4.2.3 If the previous step caused the session to be closed,
+            //       run the Session Close algorithm on this object.
+            // 4.3 Resolve promise.
+            m_session->close(action->result()->result());
+            break;
+
+        case PendingAction::Remove:
+            WTF_LOG(Media, "MediaKeySession(%p)::actionTimerFired: Remove", this);
+            // NOTE: Continued from step 5 of MediaKeySession::remove().
+            // 5.1 Let cdm be the CDM loaded during the initialization of the
+            //     MediaKeys object that created this object.
+            //     (Already captured when creating m_session).
+            // 5.2 Use the cdm to execute the following steps:
+            // 5.2.1 Process the remove request. This may involve exchanging
+            //       message(s) with the application. Unless this step fails,
+            //       the CDM must have cleared all stored session data
+            //       associated with this object, including the sessionId,
+            //       before proceeding to the next step. (A subsequent call
+            //       to load() with sessionId would fail because there is no
+            //       data stored for the sessionId.)
+            // 5.3 Run the following steps asynchronously once the above step
+            //     has completed:
+            // 5.3.1 If any of the preceding steps failed, reject promise
+            //       with a new DOMException whose name is the appropriate
+            //       error name.
+            // 5.3.2 Run the Session Close algorithm on this object.
+            // 5.3.3 Resolve promise.
+            m_session->remove(action->result()->result());
             break;
         }
     }

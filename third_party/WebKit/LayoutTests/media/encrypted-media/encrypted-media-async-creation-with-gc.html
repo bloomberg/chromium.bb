@@ -20,7 +20,7 @@
                     mediaKeySession = mediaKeys.createSession();
                     return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
                 }).then(function() {
-                    return mediaKeySession.release();
+                    return mediaKeySession.close();
                 }).then(function(result) {
                     test.done();
                 }).catch(function(error) {

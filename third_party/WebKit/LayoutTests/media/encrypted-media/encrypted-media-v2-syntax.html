@@ -378,7 +378,8 @@
                 assert_equals(typeof mediaKeySession.addEventListener, 'function');
                 assert_equals(typeof mediaKeySession.generateRequest, 'function');
                 assert_equals(typeof mediaKeySession.update, 'function');
-                assert_equals(typeof mediaKeySession.release, 'function');
+                assert_equals(typeof mediaKeySession.close, 'function');
+                assert_equals(typeof mediaKeySession.remove, 'function');
                 assert_equals(mediaKeySession.error, null);
                 assert_equals(mediaKeySession.sessionId, '');
                 assert_equals(typeof mediaKeySession.sessionId, 'string');
@@ -553,16 +554,50 @@
                 });
             }, 'Test MediaKeySession update().');
 
-            function create_release_test(mediaKeys, type, initData)
+            function create_close_exception_test(mediaKeys, type, initData)
+            {
+                var mediaKeySession = mediaKeys.createSession();
+                return mediaKeySession.close().then(function(result) {
+                    assert_unreached('close() should not succeed if session uninitialized');
+                }).catch(function(error) {
+                    assert_equals(error.name, 'InvalidStateError');
+                    // Return something so the promise resolves.
+                    return Promise.resolve();
+                });
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var promises = [];
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        promises.push(create_close_exception_test(mediaKeys, 'webm', getInitData('webm')));
+                    }
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        promises.push(create_close_exception_test(mediaKeys, 'cenc', getInitData('cenc')));
+                    }
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'close() exception tests failed');
+                });
+            }, 'Test MediaKeySession close() exceptions.');
+
+
+            function create_close_test(mediaKeys, type, initData)
             {
                 var mediaKeySession = mediaKeys.createSession();
                 var promise = mediaKeySession.generateRequest(type, initData).then(function(result) {
-                    return mediaKeySession.release();
-                // FIXME: Uncomment once the code supports multiple release() calls.
-//              }).then(function(result) {
-//                  // Call release() again with an extra parameter. The extra
-//                  // parameter is ignored.
-//                  return mediaKeySession.release('extra');
+                    return mediaKeySession.close();
+                }).then(function(result) {
+                    // Call close() again with an extra parameter. The extra
+                    // parameter is ignored.
+                    return mediaKeySession.close('extra');
                 });
                 return promise;
             }
@@ -573,11 +608,11 @@
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
-                        promises.push(create_release_test(mediaKeys, 'webm', getInitData('webm')));
+                        promises.push(create_close_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
-                        promises.push(create_release_test(mediaKeys, 'cenc', getInitData('cenc')));
+                        promises.push(create_close_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 
                     assert_not_equals(promises.length, 0);
@@ -585,9 +620,104 @@
                 }).then(function(result) {
                     test.done();
                 }).catch(function(error) {
-                    forceTestFailureFromPromise(test, error, 'release() tests failed');
+                    forceTestFailureFromPromise(test, error, 'close() tests failed');
                 });
-            }, 'Test MediaKeySession release().');
+            }, 'Test MediaKeySession close().');
+
+            function create_remove_exception_test(mediaKeys, type, initData)
+            {
+                // remove() on an uninitialized session should fail.
+                var mediaKeySession = mediaKeys.createSession('temporary');
+                return mediaKeySession.remove().then(function(result) {
+                    assert_unreached('remove() should not succeed if session uninitialized');
+                }).catch(function(error) {
+                    assert_equals(error.name, 'InvalidStateError');
+
+                    // remove() on a temporary session should fail.
+                    return mediaKeySession.generateRequest(type, initData);
+                }).then(function(result) {
+                    return mediaKeySession.remove();
+                }).then(function(result) {
+                    assert_unreached('remove() should not succeed for temporary sessions');
+                }).catch(function(error) {
+                    assert_equals(error.name, 'InvalidAccessError');
+
+                    // remove() on a closed persistent session should also fail.
+                    mediaKeySession = mediaKeys.createSession('persistent');
+                    return mediaKeySession.generateRequest(type, initData);
+                }).then(function(result) {
+                    return mediaKeySession.close();
+                }).then(function(result) {
+                    return mediaKeySession.remove();
+                }).then(function(result) {
+                    assert_unreached('remove() should not succeed for closed persistent sessions');
+                }).catch(function(error) {
+                    assert_equals(error.name, 'InvalidStateError');
+
+                    // Return something so the promise resolves.
+                    return Promise.resolve();
+                });
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var promises = [];
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        promises.push(create_remove_exception_test(mediaKeys, 'webm', getInitData('webm')));
+                    }
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        promises.push(create_remove_exception_test(mediaKeys, 'cenc', getInitData('cenc')));
+                    }
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'remove() exception tests failed');
+                });
+            }, 'Test MediaKeySession remove() exceptions.');
+
+            function create_remove_test(mediaKeys, type, initData)
+            {
+                // ClearKey may not support persistent sessions.
+                var mediaKeySession;
+                try {
+                    mediaKeySession = mediaKeys.createSession('persistent');
+                } catch (error) {
+                    // Not supported, so return a resolved promise.
+                    assert_equals(error.name, 'NotSupportedError');
+                    return Promise.resolve();
+                }
+                return mediaKeySession.generateRequest(type, initData).then(function(result) {
+                    return mediaKeySession.remove();
+                });
+            }
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    var promises = [];
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
+                        promises.push(create_remove_test(mediaKeys, 'webm', getInitData('webm')));
+                    }
+
+                    if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
+                        promises.push(create_remove_test(mediaKeys, 'cenc', getInitData('cenc')));
+                    }
+
+                    assert_not_equals(promises.length, 0);
+                    return Promise.all(promises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'remove() tests failed');
+                });
+            }, 'Test MediaKeySession remove().');
 
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
             // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.

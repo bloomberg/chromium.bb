@@ -80,7 +80,8 @@ public:
 
     ScriptPromise update(ScriptState*, ArrayBuffer* response);
     ScriptPromise update(ScriptState*, ArrayBufferView* response);
-    ScriptPromise release(ScriptState*);
+    ScriptPromise close(ScriptState*);
+    ScriptPromise remove(ScriptState*);
 
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
