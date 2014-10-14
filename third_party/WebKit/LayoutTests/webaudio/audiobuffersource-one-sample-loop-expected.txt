@@ -1,0 +1,10 @@
+Test AudioBufferSourceNode With Looping a Single-Sample Buffer
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS All samples equal to 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

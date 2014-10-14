@@ -236,7 +236,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
     double pitchRate = totalPitchRate();
 
     // Sanity check that our playback rate isn't larger than the loop size.
-    if (pitchRate >= virtualDeltaFrames)
+    if (pitchRate > virtualDeltaFrames)
         return false;
 
     // Get local copy.

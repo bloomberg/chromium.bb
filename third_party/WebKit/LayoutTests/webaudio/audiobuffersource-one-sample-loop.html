@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test AudioBufferSourceNode With Looping a Single-Sample Buffer</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test AudioBufferSourceNode With Looping a Single-Sample Buffer");
+
+      var context;
+      var source;
+      var buffer;
+      var renderedData;
+
+      var sampleRate = 44100;
+      var testDurationSamples = 1000;
+
+      function checkResult (event) {
+          var success = true;
+
+          renderedData = event.renderedBuffer.getChannelData(0);
+          // Check that the rendered data is all ones, like the buffer source.
+          for (k = 0; k < renderedData.length; ++k) {
+              if (renderedData[k] != 1) {
+                  success = false;
+                  testFailed("Expected all ones, but sample " + k + " is " + renderedData[k]);
+                  break;
+              }
+          }
+          if (success)
+              testPassed("All samples equal to 1");
+          finishJSTest();
+      }
+
+      function runTest() {
+          window.jsTestIsAsync = true;
+
+          // Create the offline context for the test.
+          context = new OfflineAudioContext(1, testDurationSamples, sampleRate);
+          context.oncomplete = checkResult;
+
+          // Create the single sample buffer
+          buffer = createConstantBuffer(context, 1, 1);
+
+          // Create the source and connect it to the destination
+          source = context.createBufferSource();
+          source.buffer = buffer;
+          source.loop = true;
+          source.connect(context.destination);
+          source.start();
+
+          // Render it!
+          context.startRendering();
+      }
+
+      runTest();
+      succesfullyParsed = true;
+    </script>
+  </body>
+</html>
