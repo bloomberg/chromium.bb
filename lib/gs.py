@@ -1029,10 +1029,9 @@ def TemporaryURL(prefix):
 
   At the end, the URL will be deleted.
   """
-  md5 = hashlib.md5(os.urandom(20))
-  md5.update(cros_build_lib.UserDateTimeFormat())
   url = '%s/chromite-temp/%s/%s/%s' % (constants.TRASH_BUCKET, prefix,
-                                       getpass.getuser(), md5.hexdigest())
+                                       getpass.getuser(),
+                                       cros_build_lib.GetRandomString())
   ctx = GSContext()
   ctx.Remove(url, ignore_missing=True, recursive=True)
   try:

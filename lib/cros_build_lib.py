@@ -12,6 +12,7 @@ from datetime import datetime
 import email.utils
 import errno
 import functools
+import hashlib
 import logging
 import operator
 import os
@@ -1903,3 +1904,10 @@ def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
   infos = func(lines, unit)
   selector = operator.attrgetter(key_selector)
   return dict((selector(x), x) for x in infos)
+
+
+def GetRandomString(length=20):
+  """Returns a random string of |length|."""
+  md5 = hashlib.md5(os.urandom(length))
+  md5.update(UserDateTimeFormat())
+  return md5.hexdigest()
