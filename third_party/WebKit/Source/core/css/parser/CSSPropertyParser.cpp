@@ -122,7 +122,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID property, bool important,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties, CSSRuleSourceData::Type ruleType)
 {
     CSSPropertyParser parser(valueList, context, inViewport, parsedProperties, ruleType);
-    return parser.parseValue(property, important);
+    bool parseSuccess = parser.parseValue(property, important);
+
+    // This doesn't count UA style sheets
+    if (parseSuccess && context.useCounter())
+        context.useCounter()->count(context, property);
+
+    return parseSuccess;
 }
 
 void CSSPropertyParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
@@ -427,10 +433,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
 {
     if (!isInternalPropertyAndValueParsingEnabledForMode(m_context.mode()) && isInternalProperty(propId))
         return false;
-
-    // We don't count the UA style sheet in our statistics.
-    if (m_context.useCounter())
-        m_context.useCounter()->count(m_context, propId);
 
     if (!m_valueList)
         return false;
