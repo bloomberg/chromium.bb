@@ -173,9 +173,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
 
 void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
     const base::Time& new_expiry_time) {
-  // TODO(jrummell): Update this once Blink client supports this.
-  // The EME spec has expiration attribute as the time in milliseconds, so use
-  // InMillisecondsF() to convert.
+  client_->expirationChanged(new_expiry_time.ToJsTime());
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
