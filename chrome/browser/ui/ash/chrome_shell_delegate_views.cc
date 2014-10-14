@@ -9,7 +9,6 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/media_delegate.h"
-#include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
 #include "chrome/browser/ui/ash/solid_color_user_wallpaper_delegate.h"
+#include "chrome/browser/ui/ash/system_tray_delegate_common.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -33,14 +33,6 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/ash/system_tray_delegate_win.h"
-#endif
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/system_tray_delegate_linux.h"
-#endif
 
 namespace {
 
@@ -189,13 +181,7 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
-#if defined(OS_WIN)
-  return CreateWindowsSystemTrayDelegate();
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  return CreateLinuxSystemTrayDelegate();
-#else
-  return new ash::DefaultSystemTrayDelegate;
-#endif
+  return new SystemTrayDelegateCommon();
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
