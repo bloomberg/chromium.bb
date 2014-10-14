@@ -46,6 +46,8 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -964,6 +966,9 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
   // Fake an auto enrollment is going to be enforced.
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
+                                                "2000-01");
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnterpriseEnrollmentInitialModulus, "1");
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(

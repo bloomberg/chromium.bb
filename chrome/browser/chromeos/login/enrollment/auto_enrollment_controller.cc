@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -46,6 +47,18 @@ int GetSanitizedArg(const std::string& switch_name) {
     return policy::AutoEnrollmentClient::kMaximumPower;
   }
   return int_value;
+}
+
+// Checks whether the device is yet to be set up by the first user in its
+// lifetime. After first setup, the activation date gets stored in the R/W VPD,
+// the absence of this key signals the device is factory-fresh. The requirement
+// for the machine serial number to be present as well is a sanity-check to
+// ensure that the VPD has actually been read successfully.
+bool IsFirstDeviceSetup() {
+  std::string activate_date;
+  return !system::StatisticsProvider::GetInstance()->HasMachineStatistic(
+             system::kActivateDateKey) &&
+         !policy::DeviceCloudPolicyManagerChromeOS::GetMachineID().empty();
 }
 
 }  // namespace
@@ -95,6 +108,9 @@ void AutoEnrollmentController::Start() {
   // 1. we are running telemetry tests.
   // 2. modulus configuration is not present.
   // 3. Auto-enrollment is disabled via the command line.
+  // 4. This is the first boot ever, so re-enrollment checks are pointless. This
+  //    also enables factories to start full guest sessions for testing, see
+  //    http://crbug.com/397354 for more context.
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kDisableGaiaServices) ||
@@ -102,7 +118,8 @@ void AutoEnrollmentController::Start() {
            chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
        !command_line->HasSwitch(
            chromeos::switches::kEnterpriseEnrollmentModulusLimit)) ||
-      GetMode() == MODE_NONE) {
+      GetMode() == MODE_NONE ||
+      IsFirstDeviceSetup()) {
     VLOG(1) << "Auto-enrollment disabled.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;

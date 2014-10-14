@@ -62,6 +62,8 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
+#include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -693,7 +695,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
 class WizardControllerEnrollmentFlowTest : public WizardControllerFlowTest {
  protected:
-  WizardControllerEnrollmentFlowTest() {}
+  WizardControllerEnrollmentFlowTest() {
+    fake_statistics_provider_.SetMachineStatistic("serial_number", "test");
+    fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
+                                                  "2000-01");
+  }
 
   virtual void SetUpCommandLine(CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
@@ -706,6 +712,8 @@ class WizardControllerEnrollmentFlowTest : public WizardControllerFlowTest {
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnrollmentModulusLimit, "2");
   }
+
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerEnrollmentFlowTest);
@@ -763,6 +771,43 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnrollmentFlowTest,
   OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
 
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerEnrollmentFlowTest,
+                       ControlFlowNoForcedReEnrollmentOnFirstBoot) {
+  fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
+  EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+            LoginDisplayHostImpl::default_host()
+                ->GetAutoEnrollmentController()
+                ->state());
+
+  CheckCurrentScreen(WizardController::kNetworkScreenName);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(WizardController::kEulaScreenName);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::EULA_ACCEPTED);
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  CheckCurrentScreen(WizardController::kUpdateScreenName);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::UPDATE_INSTALLED);
+
+  AutoEnrollmentCheckScreen* screen =
+      AutoEnrollmentCheckScreen::Get(WizardController::default_controller());
+  EXPECT_EQ(screen,
+            WizardController::default_controller()->current_screen());
+  screen->Start();
+  EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+            LoginDisplayHostImpl::default_host()
+                ->GetAutoEnrollmentController()
+                ->state());
 }
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {

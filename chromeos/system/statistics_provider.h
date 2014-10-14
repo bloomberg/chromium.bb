@@ -49,6 +49,9 @@ CHROMEOS_EXPORT extern const char kOffersGroupCodeKey[];
 // Release Brand Code key.
 CHROMEOS_EXPORT extern const char kRlzBrandCodeKey[];
 
+// Activation date key.
+CHROMEOS_EXPORT extern const char kActivateDateKey[];
+
 // This interface provides access to Chrome OS statistics.
 class CHROMEOS_EXPORT StatisticsProvider {
  public:
@@ -66,8 +69,14 @@ class CHROMEOS_EXPORT StatisticsProvider {
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) = 0;
 
+  // Checks whether a machine statistic is present.
+  virtual bool HasMachineStatistic(const std::string& name) = 0;
+
   // Similar to GetMachineStatistic for boolean flags.
   virtual bool GetMachineFlag(const std::string& name, bool* result) = 0;
+
+  // Checks whether a machine flag is present.
+  virtual bool HasMachineFlag(const std::string& name) = 0;
 
   // Cancels any pending file operations.
   virtual void Shutdown() = 0;
