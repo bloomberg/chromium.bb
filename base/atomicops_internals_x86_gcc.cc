@@ -10,15 +10,11 @@
 
 #include "base/atomicops.h"
 
-// This file only makes sense with atomicops_internals_x86_gcc.h -- it
-// depends on structs that are defined in that file.  If atomicops.h
-// doesn't sub-include that file, then we aren't needed, and shouldn't
-// try to do anything.
-#ifdef BASE_ATOMICOPS_INTERNALS_X86_GCC_H_
-
 // Inline cpuid instruction.  In PIC compilations, %ebx contains the address
 // of the global offset table.  To avoid breaking such executables, this code
 // must preserve that register's value across cpuid instructions.
+//
+// The include guards are the same as in atomicops.h.
 #if defined(__i386__)
 #define cpuid(a, b, c, d, inp) \
   asm("mov %%ebx, %%edi\n"     \
@@ -39,7 +35,10 @@
 // if we haven't been initialized yet, we're probably single threaded, and our
 // default values should hopefully be pretty safe.
 struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures = {
-  false,          // bug can't exist before process spawns multiple threads
+  false, // bug can't exist before process spawns multiple threads
+  false, // Chrome requires SSE2, but for transition assume not and initialize
+         // this properly.
+  false, // cmpxchg16b isn't present on early AMD64 CPUs.
 };
 
 namespace {
@@ -81,6 +80,12 @@ void AtomicOps_Internalx86CPUFeaturesInit() {
   } else {
     AtomicOps_Internalx86CPUFeatures.has_amd_lock_mb_bug = false;
   }
+
+  // edx bit 26 is SSE2 which we use to tell use whether we can use mfence
+  AtomicOps_Internalx86CPUFeatures.has_sse2 = ((edx >> 26) & 1);
+
+  // ecx bit 13 indicates whether the cmpxchg16b instruction is supported
+  AtomicOps_Internalx86CPUFeatures.has_cmpxchg16b = ((ecx >> 13) & 1);
 }
 
 class AtomicOpsx86Initializer {
@@ -96,5 +101,3 @@ AtomicOpsx86Initializer g_initer;
 }  // namespace
 
 #endif  // if x86
-
-#endif  // ifdef BASE_ATOMICOPS_INTERNALS_X86_GCC_H_
