@@ -3046,7 +3046,7 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
     return objectIsRelayoutBoundary(this);
 }
 
-void RenderObject::setShouldDoFullPaintInvalidationWithReason(PaintInvalidationReason reason)
+void RenderObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reason)
 {
     // Only full invalidation reasons are allowed.
     ASSERT(isFullPaintInvalidationReason(reason));
@@ -3054,7 +3054,7 @@ void RenderObject::setShouldDoFullPaintInvalidationWithReason(PaintInvalidationR
     // RenderText objects don't know how to invalidate paint for themselves, since they don't know how to compute their bounds.
     // Instead the parent fully invalidate when any text needs full paint invalidation.
     if (isText()) {
-        parent()->setShouldDoFullPaintInvalidationWithReason(reason);
+        parent()->setShouldDoFullPaintInvalidation(reason);
         return;
     }
 

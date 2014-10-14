@@ -996,8 +996,7 @@ public:
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking) { m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking; }
 
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone; }
-    void setShouldDoFullPaintInvalidation() { setShouldDoFullPaintInvalidationWithReason(PaintInvalidationFull); }
-    void setShouldDoFullPaintInvalidationWithReason(PaintInvalidationReason);
+    void setShouldDoFullPaintInvalidation(PaintInvalidationReason = PaintInvalidationFull);
     void clearShouldDoFullPaintInvalidation() { m_bitfields.setFullPaintInvalidationReason(PaintInvalidationNone); }
 
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }

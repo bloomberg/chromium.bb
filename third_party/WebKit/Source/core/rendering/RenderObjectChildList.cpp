@@ -162,7 +162,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
     }
 
     newChild->setNeedsLayoutAndPrefWidthsRecalc();
-    newChild->setShouldDoFullPaintInvalidationWithReason(PaintInvalidationRendererInsertion);
+    newChild->setShouldDoFullPaintInvalidation(PaintInvalidationRendererInsertion);
     if (!owner->normalChildNeedsLayout())
         owner->setChildNeedsLayout(); // We may supply the static position for an absolute positioned child.
 
