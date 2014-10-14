@@ -1,20 +1,19 @@
-CONSOLE MESSAGE: line 18: PositionUnavailable
-CONSOLE MESSAGE: line 11: Latitude: -510 Longitude: 500
-CONSOLE MESSAGE: line 11: Latitude: 100 Longitude: 200
-CONSOLE MESSAGE: line 29: PASSED
+CONSOLE MESSAGE: line 37: Position unavailable
+CONSOLE MESSAGE: line 30: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 30: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 48: PASSED
 Tests that geolocation emulation with latitude and longitude works as expected.
 
-
-Running: setUp
 
 Running: testGeolocationUnavailable
 
 Running: testOverridenGeolocation
 
-Running: testClearOverridenGeolocation
-
 Running: testInvalidParam
-error: Protocol Error: Invalid type of argument 'latitude' for method 'Geolocation.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
+error: Protocol Error: Invalid type of argument 'latitude' for method 'Page.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
+
+Running: testInvalidGeolocation
+error: Request with id = 30 failed. {"code":-32603,"message":"Invalid geolocation"}
 
 Running: testTimestampOfOverridenPosition
 

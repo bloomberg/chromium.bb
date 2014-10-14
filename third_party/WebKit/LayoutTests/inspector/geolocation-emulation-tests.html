@@ -3,6 +3,25 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
+function serializeGeolocationError(error) {
+    var result = "Unknown error"
+    switch (error.code)
+    {
+        case error.PERMISSION_DENIED:
+            result = "Permission denied";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            result = "Position unavailable";
+            break;
+        case error.TIMEOUT:
+            result = "Request timed out";
+            break;
+    }
+    if (error.message)
+        result += " (" + error.message + ")";
+    return result;
+}
+
 function overrideGeolocation()
 {
     function testSuccess(position)
@@ -15,7 +34,7 @@ function overrideGeolocation()
 
     function testFailed(error)
     {
-        console.log(error.message);
+        console.log(serializeGeolocationError(error));
     }
 
     navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
@@ -33,64 +52,45 @@ function overridenTimestampGeolocation()
 
     function testFailed(error)
     {
-        console.log(error.message);
+        console.log(serializeGeolocationError(error));
     }
 
     navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
 }
 
-function setup()
-{
-    var mockLatitude = 100;
-    var mockLongitude = 200;
-    var mockAccuracy = 94;
-
-    if (window.internals) {
-        internals.setGeolocationClientMock(document);
-        internals.setGeolocationPermission(document, true);
-        internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
-    }
-}
-
 function test()
 {
     InspectorTest.runTestSuite([
-        function setUp(next)
-        {
-            InspectorTest.evaluateInPage("setup()", next);
-        },
-
         function testGeolocationUnavailable(next)
         {
-            GeolocationAgent.setGeolocationOverride();
+            PageAgent.setGeolocationOverride();
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overrideGeolocation()");
         },
 
         function testOverridenGeolocation(next)
         {
-            GeolocationAgent.setGeolocationOverride(-510, 500, 100);
-            InspectorTest.addConsoleSniffer(next);
-            InspectorTest.evaluateInPage("overrideGeolocation()");
-        },
-
-        function testClearOverridenGeolocation(next)
-        {
-            GeolocationAgent.setGeolocationOverride(-510, 500, 100);
-            GeolocationAgent.clearGeolocationOverride();
+            PageAgent.setGeolocationOverride(50, 100, 95);
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overrideGeolocation()");
         },
 
         function testInvalidParam(next)
         {
-            GeolocationAgent.setGeolocationOverride(true, 500, 100);
+            PageAgent.setGeolocationOverride(true, 100, 95);
             next();
+        },
+
+        function testInvalidGeolocation(next)
+        {
+            PageAgent.setGeolocationOverride(200, 300, 95);
+            InspectorTest.addConsoleSniffer(next);
+            InspectorTest.evaluateInPage("overrideGeolocation()");
         },
 
         function testTimestampOfOverridenPosition(next)
         {
-            GeolocationAgent.setGeolocationOverride(-510, 500, 100);
+            PageAgent.setGeolocationOverride(50, 100, 95);
             InspectorTest.addConsoleSniffer(next);
             InspectorTest.evaluateInPage("overridenTimestampGeolocation()");
         }

@@ -519,7 +519,6 @@
       'geolocation/Coordinates.cpp',
       'geolocation/Geolocation.cpp',
       'geolocation/GeolocationController.cpp',
-      'geolocation/GeolocationInspectorAgent.cpp',
       'geolocation/GeoNotifier.cpp',
       'geolocation/GeoNotifier.h',
       'geolocation/GeolocationWatchers.cpp',
