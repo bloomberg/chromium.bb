@@ -6,6 +6,18 @@
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Ensemble tests still take too long on Debug Windows so disabling for now
+// TODO(dgarrett) http://code.google.com/p/chromium/issues/detail?id=101614
+#define MAYBE_PE DISABLED_PE
+#define MAYBE_PE64 DISABLED_PE64
+#define MAYBE_Elf32 DISABLED_Elf32
+#else
+#define MAYBE_PE PE
+#define MAYBE_PE64 PE64
+#define MAYBE_Elf32 Elf32
+#endif
+
 class EnsembleTest : public BaseTest {
  public:
 
@@ -103,17 +115,14 @@ void EnsembleTest::Pe64Ensemble() const {
   TestEnsemble(src_bytes, tgt_bytes);
 }
 
-// Ensemble tests still take too long on Windows so disabling for now
-// TODO(dgarrett) http://code.google.com/p/chromium/issues/detail?id=101614
-
-TEST_F(EnsembleTest, DISABLED_PE) {
+TEST_F(EnsembleTest, MAYBE_PE) {
   PeEnsemble();
 }
 
-TEST_F(EnsembleTest, DISABLED_PE64) {
+TEST_F(EnsembleTest, MAYBE_PE64) {
   Pe64Ensemble();
 }
 
-TEST_F(EnsembleTest, DISABLED_Elf32) {
+TEST_F(EnsembleTest, MAYBE_Elf32) {
   Elf32Ensemble();
 }
