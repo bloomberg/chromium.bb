@@ -34,7 +34,7 @@ class TestRetryStats(cros_test_lib.TestCase):
   SUCCESS_RESULT = 'success result'
 
   def setUp(self):
-    retry_stats._ResetStatsForUnittests()
+    retry_stats._STATS_COLLECTION = None
 
   def handlerNoRetry(self, _e):
     return False
@@ -51,44 +51,29 @@ class TestRetryStats(cros_test_lib.TestCase):
 
   def _verifyStats(self, category, success=0, failure=0, retry=0):
     """Verify that the given category has the specified values collected."""
-    stats = retry_stats._STATS_COLLECTION[category]
+    stats = [e for e in retry_stats._STATS_COLLECTION if e.category == category]
 
-    self.assertEqual(stats.success.value, success)
-    self.assertEqual(stats.failure.value, failure)
-    self.assertEqual(stats.retry.value, retry)
+    stats_success = len([e for e in stats if retry_stats._SuccessFilter(e)])
+    stats_failure = len(stats) - stats_success
+    stats_retry = sum([retry_stats._RetryCount(e) for e in stats])
+
+    self.assertEqual(stats_success, success)
+    self.assertEqual(stats_failure, failure)
+    self.assertEqual(stats_retry, retry)
 
   def testSetupStats(self):
     """Verify that we do something when we setup a new stats category."""
-    # We start out empty.
-    self.assertEqual(retry_stats._STATS_COLLECTION, {})
-
-    # We add something else
+    # Show that setup does something.
+    self.assertEqual(retry_stats._STATS_COLLECTION, None)
     retry_stats.SetupStats()
-    self.assertItemsEqual(
-        retry_stats._STATS_COLLECTION.keys(),
-        retry_stats.CATEGORIES)
+    self.assertNotEqual(retry_stats._STATS_COLLECTION, None)
 
-    for category in retry_stats.CATEGORIES:
-      self._verifyStats(category)
-
-  def testSetupStatsExplicit(self):
-    """Verify that we do something when we setup a new stats category."""
-    # We start out empty.
-    self.assertEqual(retry_stats._STATS_COLLECTION, {})
-
-    # We add something else
-    retry_stats.SetupStats([self.CAT, self.CAT_B])
-    self.assertEqual(len(retry_stats._STATS_COLLECTION), 2)
-    self.assertTrue(self.CAT_B in retry_stats._STATS_COLLECTION)
-    self._verifyStats(self.CAT)
-    self._verifyStats(self.CAT_B)
-
-  def testReportStatsEmpty(self):
-    retry_stats.SetupStats([self.CAT])
+  def testReportCategoryStatsEmpty(self):
+    retry_stats.SetupStats()
 
     out = StringIO.StringIO()
 
-    retry_stats.ReportStats(out)
+    retry_stats.ReportCategoryStats(out, self.CAT)
 
     expected = """************************************************************
 ** Performance Statistics for Test Service A
@@ -102,8 +87,54 @@ class TestRetryStats(cros_test_lib.TestCase):
 
     self.assertEqual(out.getvalue(), expected)
 
+  def testReportStatsEmpty(self):
+    retry_stats.SetupStats()
+
+    out = StringIO.StringIO()
+    retry_stats.ReportStats(out)
+
+    # No data collected means no categories are known, nothing to report.
+    self.assertEqual(out.getvalue(), '')
+
+  def testReportStats(self):
+    retry_stats.SetupStats()
+
+    # Insert some stats to report.
+    retry_stats.RetryWithStats(
+        self.CAT, self.handlerNoRetry, 3, self.callSuccess)
+    retry_stats.RetryWithStats(
+        self.CAT_B, self.handlerNoRetry, 3, self.callSuccess)
+    self.assertRaises(TestRetryException,
+                      retry_stats.RetryWithStats,
+                      self.CAT, self.handlerRetry, 3, self.callFailure)
+
+    out = StringIO.StringIO()
+    retry_stats.ReportStats(out)
+
+    # Expecting reports for both CAT and CAT_B used above.
+    expected = """************************************************************
+** Performance Statistics for Test Service A
+**
+** Success: 1
+** Failure: 1
+** Retries: 3
+** Total: 2
+************************************************************
+************************************************************
+** Performance Statistics for Test Service B
+**
+** Success: 1
+** Failure: 0
+** Retries: 0
+** Total: 1
+************************************************************
+"""
+
+    self.assertEqual(out.getvalue(), expected)
+
   def testSuccessNoSetup(self):
-    self.assertEqual(retry_stats._STATS_COLLECTION, {})
+    """Verify that we can handle a successful call if we're never setup."""
+    self.assertEqual(retry_stats._STATS_COLLECTION, None)
 
     result = retry_stats.RetryWithStats(
         self.CAT, self.handlerNoRetry, 3, self.callSuccess)
@@ -113,11 +144,11 @@ class TestRetryStats(cros_test_lib.TestCase):
         self.CAT, self.handlerNoRetry, 3, self.callSuccess)
     self.assertEqual(result, self.SUCCESS_RESULT)
 
-    self.assertEqual(retry_stats._STATS_COLLECTION, {})
-
+    self.assertEqual(retry_stats._STATS_COLLECTION, None)
 
   def testFailureNoRetryNoSetup(self):
-    self.assertEqual(retry_stats._STATS_COLLECTION, {})
+    """Verify that we can handle a failure call if we're never setup."""
+    self.assertEqual(retry_stats._STATS_COLLECTION, None)
 
     self.assertRaises(TestRetryException,
                       retry_stats.RetryWithStats,
@@ -127,10 +158,11 @@ class TestRetryStats(cros_test_lib.TestCase):
                       retry_stats.RetryWithStats,
                       self.CAT, self.handlerNoRetry, 3, self.callFailure)
 
-    self.assertEqual(retry_stats._STATS_COLLECTION, {})
+    self.assertEqual(retry_stats._STATS_COLLECTION, None)
 
   def testSuccess(self):
-    retry_stats.SetupStats([self.CAT])
+    """Verify that we can handle a successful call."""
+    retry_stats.SetupStats()
     self._verifyStats(self.CAT)
 
     # Succeed once.
@@ -146,7 +178,8 @@ class TestRetryStats(cros_test_lib.TestCase):
     self._verifyStats(self.CAT, success=2)
 
   def testSuccessRetry(self):
-    retry_stats.SetupStats([self.CAT])
+    """Verify that we can handle a successful call after tries."""
+    retry_stats.SetupStats()
     self._verifyStats(self.CAT)
 
     # Use this scoped list as a persistent counter.
@@ -165,7 +198,8 @@ class TestRetryStats(cros_test_lib.TestCase):
     self._verifyStats(self.CAT, success=1, retry=2)
 
   def testFailureNoRetry(self):
-    retry_stats.SetupStats([self.CAT])
+    """Verify that we can handle a failure if the handler doesn't retry."""
+    retry_stats.SetupStats()
     self._verifyStats(self.CAT)
 
     # Fail once without retries.
@@ -181,7 +215,8 @@ class TestRetryStats(cros_test_lib.TestCase):
     self._verifyStats(self.CAT, failure=2)
 
   def testFailureRetry(self):
-    retry_stats.SetupStats([self.CAT])
+    """Verify that we can handle a failure if we use all retries."""
+    retry_stats.SetupStats()
     self._verifyStats(self.CAT)
 
     # Fail once with exhausted retries.

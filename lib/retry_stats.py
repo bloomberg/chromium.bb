@@ -7,62 +7,66 @@
 from __future__ import print_function
 
 import collections
+import datetime
 
 from chromite.lib import parallel
 from chromite.lib import retry_util
 
 
+# Well known categories we gather stats for.
 GSUTIL = 'Google Storage'
-
-
-CATEGORIES = frozenset([
-  GSUTIL,
-])
 
 
 class UnconfiguredStatsCategory(Exception):
   """We tried to use a Stats Category without configuring it."""
 
 
-# Always hold the lock before adjusting any other values.
-StatValue = collections.namedtuple(
-    'StatValue',
-    ('lock', 'success', 'failure', 'retry'))
+# Create one of these for each retry call.
+#   attempts: a list of all attempts to perform the action.
+StatEntry = collections.namedtuple(
+    'StatEntry',
+    ('category', 'attempts'))
+
+# Create one of these for each attempt to call the function.
+#  time: The time for this attempt in seconds.
+#  exception: None for a successful attempt, or a string exception description.
+Attempt = collections.namedtuple(
+    'Attempt',
+    ('time', 'exception'))
 
 
-# map[category_name]StatValue
-_STATS_COLLECTION = {}
+# After Setup, contains a multiprocess proxy array.
+# The array holds StatEntry values for each event seen.
+_STATS_COLLECTION = None
 
 
-def _ResetStatsForUnittests():
-  """Helper for test code. Resets our global state."""
-  _STATS_COLLECTION.clear()
-
-
-def SetupStats(category_list=CATEGORIES):
+def SetupStats():
   """Prepare a given category to collect stats.
 
   This must be called BEFORE any new processes that might read or write to
   these stat values are created. It is safe to call this more than once,
   but most efficient to only make a single call.
-
-  Args:
-    category_list: Iterable of categories to collect stats for.
   """
-  # Pylint think our manager has no members.
+  # Pylint thinks our manager has no members.
   # pylint: disable=E1101
   m = parallel.Manager()
 
+  # pylint: disable=W0603
   # Create a new stats collection structure that is multiprocess usable.
-  for category in category_list:
-    lock = m.RLock()
+  global _STATS_COLLECTION
+  _STATS_COLLECTION = m.list()
 
-    _STATS_COLLECTION[category] = StatValue(
-        lock,
-        m.Value('i', 0, lock),
-        m.Value('i', 0, lock),
-        m.Value('i', 0, lock),
-    )
+
+def _SuccessFilter(entry):
+  """Returns True if the StatEntry succeeded (perhaps after retries)."""
+  # If all attempts contain an exception, they all failed.
+  return not all(a.exception for a in entry.attempts)
+
+
+def _RetryCount(entry):
+  """Returns the number of retries in this StatEntry."""
+  # If all attempts contain an exception, they all failed.
+  return max(len(entry.attempts) - 1, 0)
 
 
 def ReportCategoryStats(out, category):
@@ -72,17 +76,18 @@ def ReportCategoryStats(out, category):
     out: Output stream to write to (e.g. sys.stdout).
     category: A string that defines the 'namespace' for these stats.
   """
-  if category not in _STATS_COLLECTION:
-    raise UnconfiguredStatsCategory('%s not configured before use' % category)
+  # Convert the multiprocess proxy list into a local simple list.
+  local_stats_collection = list(_STATS_COLLECTION)
 
-  stats = _STATS_COLLECTION[category]
+  # Extract the values for the category we care about.
+  stats = [e for e in local_stats_collection if e.category == category]
 
   line = '*' * 60 + '\n'
   edge = '*' * 2
 
-  success = stats.success.value
-  failure = stats.failure.value
-  retry = stats.retry.value
+  success = len([e for e in stats if _SuccessFilter(e)])
+  failure = len(stats) - success
+  retry = sum([_RetryCount(e) for e in stats])
 
   out.write(line)
   out.write(edge + ' Performance Statistics for %s' % category + '\n')
@@ -93,6 +98,7 @@ def ReportCategoryStats(out, category):
   out.write(edge + ' Total: %d' % (success + failure) + '\n')
   out.write(line)
 
+
 def ReportStats(out):
   """Dump stats reports for a given category.
 
@@ -100,8 +106,7 @@ def ReportStats(out):
     out: Output stream to write to (e.g. sys.stdout).
     category: A string that defines the 'namespace' for these stats.
   """
-  categories = _STATS_COLLECTION.keys()
-  categories.sort()
+  categories = sorted(set([e.category for e in _STATS_COLLECTION]))
 
   for category in categories:
     ReportCategoryStats(out, category)
@@ -130,31 +135,27 @@ def RetryWithStats(category, handler, max_retry, functor, *args, **kwargs):
   Raises:
     See retry_util.GenericRetry raises.
   """
-  stats = _STATS_COLLECTION.get(category, None)
-  failures = []
+  statEntry = StatEntry(category, attempts=[])
 
   # Wrap the work method, so we can gather info.
   def wrapper(*args, **kwargs):
+    start = datetime.datetime.now()
+
     try:
-      return functor(*args, **kwargs)
+      result = functor(*args, **kwargs)
     except Exception as e:
-      failures.append(e)
+      end = datetime.datetime.now()
+      e_description = '%s: %s' % (type(e).__name__, e)
+      statEntry.attempts.append(Attempt(end - start, e_description))
       raise
 
+    end = datetime.datetime.now()
+    statEntry.attempts.append(Attempt(end - start, None))
+    return result
+
   try:
-    result = retry_util.GenericRetry(handler, max_retry, wrapper,
-                                     *args, **kwargs)
-  except Exception:
-    if stats:
-      with stats.lock:
-        stats.retry.value += (len(failures) - 1)
-        stats.failure.value += 1
-    raise
-
-  if stats:
-    with stats.lock:
-      stats.retry.value += len(failures)
-      stats.success.value += 1
-
-  return result
-
+    return retry_util.GenericRetry(handler, max_retry, wrapper,
+                                   *args, **kwargs)
+  finally:
+    if _STATS_COLLECTION is not None:
+      _STATS_COLLECTION.append(statEntry)
