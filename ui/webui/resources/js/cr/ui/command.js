@@ -290,7 +290,7 @@ cr.define('cr.ui', function() {
    * @class
    */
   function CanExecuteEvent(command) {
-    var e = new Event('canExecute', {bubbles: true});
+    var e = new Event('canExecute', {bubbles: true, cancelable: true});
     e.__proto__ = CanExecuteEvent.prototype;
     e.command = command;
     return e;
@@ -307,7 +307,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Whether the target can execute the command. Setting this also stops the
-     * propagation.
+     * propagation and prevents the default. Callers can tell if an event has
+     * been handled via |this.defaultPrevented|.
      * @type {boolean}
      */
     canExecute_: false,
@@ -317,6 +318,7 @@ cr.define('cr.ui', function() {
     set canExecute(canExecute) {
       this.canExecute_ = !!canExecute;
       this.stopPropagation();
+      this.preventDefault();
     }
   };
 

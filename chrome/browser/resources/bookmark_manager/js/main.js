@@ -498,7 +498,8 @@ function handleCanExecuteForDocument(e) {
 
     default:
       canExecuteForList(e);
-      canExecuteForTree(e);
+      if (!e.defaultPrevented)
+        canExecuteForTree(e);
       break;
   }
 }
