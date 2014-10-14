@@ -1887,8 +1887,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (time_source_client_adapter_ && time_source_client_adapter_->Active())
     DCHECK(active_tree_->root_layer());
 
-  page_scale_animation_ = active_tree_->TakePageScaleAnimation();
-  if (page_scale_animation_) {
+  scoped_ptr<PageScaleAnimation> page_scale_animation =
+      active_tree_->TakePageScaleAnimation();
+  if (page_scale_animation) {
+    page_scale_animation_ = page_scale_animation.Pass();
     SetNeedsAnimate();
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();

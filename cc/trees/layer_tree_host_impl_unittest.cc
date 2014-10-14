@@ -1293,6 +1293,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   base::TimeTicks start_time = base::TimeTicks() +
                                base::TimeDelta::FromSeconds(1);
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+  base::TimeTicks third_through_animation = start_time + duration / 3;
   base::TimeTicks halfway_through_animation = start_time + duration / 2;
   base::TimeTicks end_time = start_time + duration;
   float target_scale = 2.f;
@@ -1337,6 +1338,15 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   host_impl_->Animate(start_time);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_animate_);
+
+  did_request_redraw_ = false;
+  did_request_animate_ = false;
+  host_impl_->Animate(third_through_animation);
+  EXPECT_TRUE(did_request_redraw_);
+  EXPECT_TRUE(did_request_animate_);
+
+  // Another activation shouldn't have any effect on the animation.
+  host_impl_->ActivateSyncTree();
 
   did_request_redraw_ = false;
   did_request_animate_ = false;
