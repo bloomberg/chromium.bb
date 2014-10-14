@@ -19,7 +19,7 @@ function test()
         InspectorTest.addResult("  fragment: " + parsedURL.fragment);
         InspectorTest.addResult("  folderPathComponents: " + parsedURL.folderPathComponents);
         InspectorTest.addResult("  lastPathComponent: " + parsedURL.lastPathComponent);
-        var splittedURL = WebInspector.ParsedURL.splitURL(url);
+        var splittedURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
         InspectorTest.addResult("  splittedURL: " + JSON.stringify(splittedURL));
     }
 

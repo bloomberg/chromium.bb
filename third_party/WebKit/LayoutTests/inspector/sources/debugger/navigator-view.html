@@ -65,7 +65,8 @@ function test()
     addUISourceCode("http://example.com/", false);
     addUISourceCode("http://example.com/?a=b", false);
     addUISourceCode("http://example.com/the%2fdir/foo?bar=100&baz=a%20%2fb", false);
-    addUISourceCode("http://example.com/the%2fdir/foo?bar=100%&baz=a%20%2fb", false);
+    addUISourceCode("http://example.com/the%2fdir/foo?bar=100%25&baz=a%20%2fb", false);
+    addUISourceCode("http://example.com/path%20with%20spaces/white%20space.html", false);
     addUISourceCode("?a=b", false);
     addUISourceCode("very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_url", false);
     dumpNavigator();
