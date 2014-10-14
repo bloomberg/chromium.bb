@@ -7,6 +7,10 @@ Import('env')
 env.Append(CPPDEFINES=[['NONSFI_MODE',
                         str(int(env.Bit('pnacl_unsandboxed') or
                                 env.Bit('nonsfi_nacl')))]])
+
+env.Append(CPPDEFINES=[['USE_NEWLIB_NONSFI_LOADER',
+                        str(int(env.Bit('use_newlib_nonsfi_loader')))]])
+
 extra_flags = []
 if env.IsRunningUnderValgrind():
   extra_flags.extend(['-E', 'RUNNING_ON_VALGRIND=1'])

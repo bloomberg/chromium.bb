@@ -12,6 +12,18 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
+
+/*
+ * Non-SFI NaCl does not need alignment with 0xc0000000 etc, and it is
+ * actually harmful to do so. Use this macro to enable NaCl only
+ * conditions.
+ */
+#if defined(__native_client_nonsfi__)
+#define SFI_OR_NONSFI_CODE(nacl, nonsfi) nonsfi
+#else
+#define SFI_OR_NONSFI_CODE(nacl, nonsfi) nacl
+#endif
+
 /*
  * ASM_WITH_REGS(regs, asm_code) executes asm_code with most registers
  * restored from regs, a pointer of type "struct NaClSignalContext *".
@@ -72,7 +84,7 @@
  * Rather than debug Clang, I'm just writing out the register
  * restoration in the long form.
  */
-# define REGS_MASK_R0 "bic r0, r0, #0xc0000000\n"
+# define REGS_MASK_R0 SFI_OR_NONSFI_CODE("bic r0, r0, #0xc0000000\n", "")
 # define ASM_WITH_REGS(regs, asm_code) \
     __asm__( \
         ".p2align 4\n" \
@@ -82,7 +94,7 @@
         "msr apsr_nzcvqg, r1\n" \
         /* Set stack pointer */ \
         REGS_MASK_R0 "ldr r1, [r0, #0x34]\n" \
-        "bic sp, r1, #0xc0000000\n" \
+        SFI_OR_NONSFI_CODE("bic sp, r1, #0xc0000000\n", "mov sp, r1\n") \
         /* Ensure later superinstructions don't cross bundle boundaries */ \
         "nop\n" \
         /* Set general purpose registers */ \
@@ -349,7 +361,7 @@ extern const uint8_t kX86FlagBits[5];
         /* Set argument to callee_func() */ \
         "mov r0, sp\n" \
         /* Align the stack pointer */ \
-        "bic sp, sp, #0xc000000f\n" \
+        SFI_OR_NONSFI_CODE("bic sp, sp, #0xc000000f\n", "") \
         "b " #callee_func "\n" \
         ".popsection\n")
 

@@ -686,6 +686,7 @@ nacl_glibc_skiplist.update(['%s_irt' % test for test in nacl_glibc_skiplist])
 nonsfi_test_whitelist = set([
     'run_clock_get_test',
     'run_dup_test',
+    'run_exception_test',
     'run_fcntl_test',
     'run_float_test',
     'run_fork_test',

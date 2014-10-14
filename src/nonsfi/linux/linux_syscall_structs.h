@@ -58,7 +58,7 @@ static inline struct linux_user_desc create_linux_user_desc(
   return desc;
 }
 
-#endif
+#endif  /* __i386__ */
 
 typedef struct {
   int si_signo;
@@ -66,16 +66,19 @@ typedef struct {
   int si_code;
 } linux_siginfo_t;
 
+/*
+ * newlib's sigset_t is 32 bits, whereas kernel's sigset_t is 64
+ * bits (or on MIPS, 128 bits).
+ */
+typedef struct {
+  uint32_t sig[2];
+} linux_sigset_t;
+
 struct linux_sigaction {
   void (*sa_sigaction)(int, linux_siginfo_t *, void *);
-  int sa_flags;
-  void *sa_restorer;
-  /*
-   * Though newlib's sigset_t is bigger than linux kernel's, their
-   * layout is compatible. We do not define linux_sigset_t and helper
-   * functions such as sigaddset by ourselves.
-   */
-  sigset_t sa_mask;
+  int32_t sa_flags;
+  void (*sa_restorer)(void);
+  linux_sigset_t sa_mask;
 };
 
 #endif

@@ -25,7 +25,9 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/nonsfi/linux/irt_exception_handling.h"
 #include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #if !defined(__native_client__)
@@ -676,6 +678,19 @@ const struct nacl_irt_dev_getpid nacl_irt_dev_getpid = {
   irt_getpid,
 };
 
+/*
+ * The following condition is true when building for Non-SFI Mode,
+ * when we're calling Linux syscalls directly.  (Counter-intuitively,
+ * "__linux__" is not #defined in this case.)
+ */
+#if defined(__native_client__)
+const struct nacl_irt_exception_handling nacl_irt_exception_handling = {
+  nacl_exception_get_and_set_handler,
+  nacl_exception_set_stack,
+  nacl_exception_clear_flag,
+};
+#endif
+
 static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
@@ -690,6 +705,10 @@ static const struct nacl_irt_interface irt_interfaces[] = {
     sizeof(nacl_irt_dev_filename), NULL },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
     sizeof(nacl_irt_dev_getpid), NULL },
+#if defined(__native_client__)
+  { NACL_IRT_EXCEPTION_HANDLING_v0_1, &nacl_irt_exception_handling,
+    sizeof(nacl_irt_exception_handling), NULL},
+#endif
 };
 
 size_t nacl_irt_query_core(const char *interface_ident,

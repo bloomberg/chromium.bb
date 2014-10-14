@@ -39,7 +39,11 @@ size_t g_registered_stack_size;
 
 #if defined(__mips__)
 #define STACK_ALIGNMENT 8
+#elif defined(__arm__) && defined(__native_client_nonsfi__)
+/* AAPCS stack alignment, for Non-SFI NaCl. */
+#define STACK_ALIGNMENT 8
 #else
+/* NaCl stack alignment. */
 #define STACK_ALIGNMENT 16
 #endif
 
@@ -84,7 +88,7 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
         ".p2align 4\n"
         "crash_at_known_address:\n"
         "mov r0, #0\n"
-        "bic r0, r0, #0xc0000000\n"
+        SFI_OR_NONSFI_CODE("bic r0, r0, #0xc0000000\n", "")
         "prog_ctr_at_crash:\n"
         "str r0, [r0]\n"
         ".popsection\n");
@@ -144,7 +148,10 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 #elif defined(__arm__)
   assert(portable->frame_ptr == g_regs_at_crash.r11);
   assert(context->arch == EM_ARM);
+#  if !defined(__native_client_nonsfi__)
+  /* Verify we have scrubbed r9 for NaCl arm. */
   assert(context->regs.r9 == -1);
+#  endif
 #elif defined(__mips__)
   assert(portable->frame_ptr == g_regs_at_crash.frame_ptr);
   assert(context->arch == EM_MIPS);
@@ -180,8 +187,17 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   assert(frame_base % STACK_ALIGNMENT == 0);
   char *frame_top = (char *) (frame_base + kArgSizeOnStack +
                               sizeof(struct CombinedContext));
+#if defined(__native_client_nonsfi__)
+  /*
+   * Non-SFI mode exception stack will have ucontext_t and
+   * siginfo_t, which would be anywhere from 400 bytes to 1.5k
+   */
+  assert(stack_top - 1500 < frame_top);
+#else
   /* Check that no more than the stack alignment size is wasted. */
   assert(stack_top - STACK_ALIGNMENT < frame_top);
+#endif
+
   assert(frame_top <= stack_top);
 
 #if defined(__x86_64__)
@@ -198,12 +214,15 @@ void test_exception_stack_with_size(char *stack, size_t stack_size) {
     printf("failed to set exception handler\n");
     exit(4);
   }
+#if !defined(__native_client_nonsfi__)
+  /* TODO(uekawa): Implement set_stack for Non-SFI mode. */
   if (0 != nacl_exception_set_stack(stack, stack_size)) {
     printf("failed to set alt stack\n");
     exit(5);
   }
   g_registered_stack = stack;
   g_registered_stack_size = stack_size;
+#endif
 
   char crash_stack[0x1000];
   RegsFillTestValues(&g_regs_at_crash, /* seed= */ 0);
@@ -389,9 +408,13 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 
 int TestMain(void) {
   RUN_TEST(test_exceptions_minimally);
-  RUN_TEST(test_exception_stack_alignments);
   RUN_TEST(test_getting_previous_handler);
+#if !defined(__native_client_nonsfi__)
+  /* TODO(uekawa): Implement set_stack for Non-SFI mode. */
+  RUN_TEST(test_exception_stack_alignments);
+  /* Those handlers are not invalid in NonSFI NaCl. */
   RUN_TEST(test_invalid_handlers);
+#endif
   /* pthread_join() is broken under qemu-arm. */
   if (getenv("UNDER_QEMU_ARM") == NULL)
     RUN_TEST(test_exceptions_on_non_main_thread);

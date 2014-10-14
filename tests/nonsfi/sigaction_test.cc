@@ -30,8 +30,9 @@ int main(int argc, char *argv[]) {
   memset(&sa, 0, sizeof(sa));
   sa.sa_sigaction = return_from_signal_handler;
   sa.sa_flags = LINUX_SA_SIGINFO;
-  sigemptyset(&sa.sa_mask);
-  sigaddset(&sa.sa_mask, LINUX_SIGSEGV);
+  sigset_t *mask = (sigset_t *)&sa.sa_mask;
+  sigemptyset(mask);
+  sigaddset(mask, LINUX_SIGSEGV);
 
   int rc = linux_sigaction(LINUX_SIGSEGV, &sa, NULL);
   ASSERT_EQ(rc, 0);

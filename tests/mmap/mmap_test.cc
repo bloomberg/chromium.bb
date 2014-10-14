@@ -66,11 +66,14 @@ static void assert_addr_is_unreadable(volatile char *addr) {
     return;
   }
   /*
-   * TODO(hamaji): Non-SFI mode does not have signal handlers yet. Add
-   * support for it.
+   * Non-SFI Mode nonsfi_loader with host libc does not have signal
+   * handler implementation.
    */
-  if (NONSFI_MODE)
+  if (!USE_NEWLIB_NONSFI_LOADER) {
+    fprintf(stderr, "Skipping assert_addr_is_unreadable() under "
+            "nonsfi_loader with host libc\n");
     return;
+  }
 
   int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);
@@ -103,11 +106,14 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
     return;
   }
   /*
-   * TODO(hamaji): Non-SFI mode does not have signal handlers yet. Add
-   * support for it.
+   * Non-SFI Mode nonsfi_loader with host libc does not have signal
+   * handler implementation.
    */
-  if (NONSFI_MODE)
+  if (!USE_NEWLIB_NONSFI_LOADER) {
+    fprintf(stderr, "Skipping assert_addr_is_unwritable() under "
+            "nonsfi_loader with host libc\n");
     return;
+  }
 
   int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);

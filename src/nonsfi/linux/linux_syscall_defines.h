@@ -15,12 +15,12 @@
 #define CLONE_SYSVSEM        0x00040000
 #define CLONE_SETTLS         0x00080000
 
-#define LINUX_SIGCHLD 17
-
 #define FUTEX_WAIT_PRIVATE 128
 #define FUTEX_WAKE_PRIVATE 129
 
 #define LINUX_TCGETS 0x5401
+
+#define LINUX_SIG_UNBLOCK 1
 
 #define LINUX_SA_SIGINFO 0x00000004
 #define LINUX_SA_RESTART 0x10000000
@@ -51,6 +51,7 @@
 #define LINUX_SIGALRM         14
 #define LINUX_SIGTERM         15
 #define LINUX_SIGSTKFLT       16
+#define LINUX_SIGCHLD         17
 #define LINUX_SIGSYS          31
 
 #endif

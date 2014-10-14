@@ -15,4 +15,5 @@ elif env.Bit('target_arm'):
   env.Append(CCFLAGS=['--target=arm-unknown-nacl', '-mfloat-abi=hard'])
 else:
   raise Exception('Unsupported architecture')
-env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c'])
+env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c',
+                                             'irt_exception_handling.c'])

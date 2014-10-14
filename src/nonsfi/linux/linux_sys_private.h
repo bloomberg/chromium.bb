@@ -14,6 +14,7 @@ EXTERN_C_BEGIN
 
 int linux_sigaction(int signum, const struct linux_sigaction *act,
                     struct linux_sigaction *oldact);
+int linux_sigprocmask(int how, const linux_sigset_t *set, linux_sigset_t *oset);
 
 EXTERN_C_END
 

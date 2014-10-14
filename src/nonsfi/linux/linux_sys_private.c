@@ -484,18 +484,26 @@ pid_t waitpid(pid_t pid, int *status, int options) {
 
 int linux_sigaction(int signum, const struct linux_sigaction *act,
                     struct linux_sigaction *oldact) {
-  /* This is the size of Linux kernel's sigset_t. */
-  const int kSigsetSize = 8;
   /*
-   * We do not support returning from a signal handler invoked by a
-   * real time signal. To support this, we need to set sa_restorer
-   * when it is not set by the caller, but we probably will not need
-   * this. See the following for how we do it.
+   * We do not support returning via sigreturn from a signal handler
+   * invoked by a real time signal. To support this, we need to set
+   * sa_restorer when it is not set by the caller, but we probably
+   * will not need this. See the following for how we do it.
    * https://code.google.com/p/linux-syscall-support/source/browse/trunk/lss/linux_syscall_support.h
    */
   return errno_value_call(
       linux_syscall4(__NR_rt_sigaction, signum,
-                     (uintptr_t) act, (uintptr_t) oldact, kSigsetSize));
+                     (uintptr_t) act, (uintptr_t) oldact,
+                     sizeof(act->sa_mask)));
+}
+
+int linux_sigprocmask(int how,
+                      const linux_sigset_t *set,
+                      linux_sigset_t *oset) {
+  return errno_value_call(
+      linux_syscall4(__NR_rt_sigprocmask, how,
+                     (uintptr_t) set, (uintptr_t) oset,
+                     sizeof(*set)));
 }
 
 /*
@@ -540,8 +548,13 @@ sighandler_t signal(int signum, sighandler_t handler) {
    */
   sa.sa_sigaction = (void (*)(int, linux_siginfo_t *, void *)) handler;
   sa.sa_flags = LINUX_SA_RESTART;
-  sigemptyset(&sa.sa_mask);
-  sigaddset(&sa.sa_mask, linux_signum);
+  /*
+   * Reuse the sigemptyset/sigaddset for the first 32 bits of the
+   * sigmask. Works on little endian systems only.
+   */
+  sigset_t *mask = (sigset_t *)&sa.sa_mask;
+  sigemptyset(mask);
+  sigaddset(mask, linux_signum);
   struct linux_sigaction osa;
   int result = linux_sigaction(linux_signum, &sa, &osa);
   if (result != 0)
