@@ -320,6 +320,23 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, EmbedderVisibilityChanged) {
     loop_runner->Run();
 }
 
+// Test for http://crbug.com/419611.
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, DisplayNoneSetSrc) {
+  LaunchApp("web_view/display_none_set_src");
+  // Navigate the guest while it's in "display: none" state.
+  SendMessageToEmbedder("navigate-guest");
+  GetGuestViewManager()->WaitForSingleGuestCreated();
+
+  // Now attempt to navigate the guest again.
+  SendMessageToEmbedder("navigate-guest");
+
+  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
+                                                    false);
+  // Making the guest visible would trigger loadstop.
+  SendMessageToEmbedder("show-guest");
+  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
+}
+
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, GuestVisibilityChanged) {
   LaunchApp("web_view/visibility_changed");
@@ -333,6 +350,22 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, GuestVisibilityChanged) {
   SendMessageToEmbedder("hide-guest");
   if (!observer.hidden_observed())
     loop_runner->Run();
+}
+
+// This test ensures that closing app window on 'loadcommit' does not crash.
+// The test launches an app with guest and closes the window on loadcommit. It
+// then launches the app window again. The process is repeated 3 times.
+// http://crbug.com/291278
+#if defined(OS_WIN)
+#define MAYBE_CloseOnLoadcommit DISABLED_CloseOnLoadcommit
+#else
+#define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_CloseOnLoadcommit) {
+  LaunchApp("web_view/close_on_loadcommit");
+  ExtensionTestMessageListener test_done_listener("done-close-on-loadcommit",
+                                                  false);
+  ASSERT_TRUE(test_done_listener.WaitUntilSatisfied());
 }
 
 // This test verifies that reloading the embedder reloads the guest (and doest

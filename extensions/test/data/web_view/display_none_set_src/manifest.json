@@ -1,0 +1,12 @@
+{
+  "name": "<webview> check set src multiple times while display: none.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
