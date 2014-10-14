@@ -78,7 +78,6 @@
               'domain_reliability/baked_in_configs/partner_googleadservices_com.json',
               'domain_reliability/baked_in_configs/pubads_g_doubleclick_net.json',
               'domain_reliability/baked_in_configs/redirector_googlevideo_com.json',
-              'domain_reliability/baked_in_configs/redirector_gvt1_com.json',
               'domain_reliability/baked_in_configs/s0_2mdn_net.json',
               'domain_reliability/baked_in_configs/ssl_gstatic_com.json',
               'domain_reliability/baked_in_configs/star_2mdn_net.json',
