@@ -27,7 +27,7 @@ class PortForwardingController {
   virtual ~PortForwardingController();
 
   ForwardingStatus DeviceListChanged(
-      const DevToolsAndroidBridge::RemoteDevices& devices);
+      const DevToolsAndroidBridge::CompleteDevices& complete_devices);
 
  private:
   class Connection;

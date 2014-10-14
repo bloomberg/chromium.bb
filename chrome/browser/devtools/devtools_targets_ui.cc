@@ -292,7 +292,10 @@ class AdbTargetsUIHandler
   virtual void DeviceListChanged(
       const DevToolsAndroidBridge::RemoteDevices& devices) override;
 
+  DevToolsAndroidBridge* GetAndroidBridge();
+
   Profile* profile_;
+  scoped_refptr<DevToolsAndroidBridge> android_bridge_;
 
   typedef std::map<std::string,
       scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> > RemoteBrowsers;
@@ -302,18 +305,15 @@ class AdbTargetsUIHandler
 AdbTargetsUIHandler::AdbTargetsUIHandler(const Callback& callback,
                                          Profile* profile)
     : DevToolsTargetsUIHandler(kTargetSourceRemote, callback),
-      profile_(profile) {
-  DevToolsAndroidBridge* android_bridge =
-      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
-  if (android_bridge)
-    android_bridge->AddDeviceListListener(this);
+      profile_(profile),
+      android_bridge_(
+          DevToolsAndroidBridge::Factory::GetForProfile(profile_)) {
+  DCHECK(android_bridge_.get());
+  android_bridge_->AddDeviceListListener(this);
 }
 
 AdbTargetsUIHandler::~AdbTargetsUIHandler() {
-  DevToolsAndroidBridge* android_bridge =
-      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
-  if (android_bridge)
-    android_bridge->RemoveDeviceListListener(this);
+  android_bridge_->RemoveDeviceListListener(this);
 }
 
 static void CallOnTarget(
@@ -328,15 +328,21 @@ void AdbTargetsUIHandler::Open(
     const std::string& url,
     const DevToolsTargetsUIHandler::TargetCallback& callback) {
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
-  if (it !=  remote_browsers_.end())
-    it->second->Open(url, base::Bind(&CallOnTarget, callback));
+  if (it == remote_browsers_.end())
+    return;
+
+  android_bridge_->OpenRemotePage(it->second, url,
+                                  base::Bind(&CallOnTarget, callback));
 }
 
 scoped_refptr<content::DevToolsAgentHost>
 AdbTargetsUIHandler::GetBrowserAgentHost(
     const std::string& browser_id) {
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
-  return it != remote_browsers_.end() ? it->second->GetAgentHost() : NULL;
+  if (it == remote_browsers_.end())
+    return NULL;
+
+  return android_bridge_->GetBrowserAgentHost(it->second);
 }
 
 void AdbTargetsUIHandler::DeviceListChanged(
@@ -389,7 +395,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
       remote_browsers_[browser_id] = browser;
             browser_data->Set(kAdbPagesList, page_list);
       std::vector<DevToolsAndroidBridge::RemotePage*> pages =
-          browser->CreatePages();
+          android_bridge_->CreatePages(browser);
       for (std::vector<DevToolsAndroidBridge::RemotePage*>::iterator it =
           pages.begin(); it != pages.end(); ++it) {
         DevToolsAndroidBridge::RemotePage* page =  *it;
@@ -398,7 +404,7 @@ void AdbTargetsUIHandler::DeviceListChanged(
         target_data->SetBoolean(
             kAdbAttachedForeignField,
             target->IsAttached() &&
-                !DevToolsAndroidBridge::HasDevToolsWindow(target->GetId()));
+                !android_bridge_->HasDevToolsWindow(target->GetId()));
         // Pass the screen size in the target object to make sure that
         // the caching logic does not prevent the target item from updating
         // when the screen size changes.

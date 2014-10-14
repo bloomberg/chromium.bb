@@ -252,10 +252,10 @@ FindBestBrowserForTethering(
 }  // namespace
 
 class PortForwardingController::Connection
-    : public DevToolsAndroidBridge::AndroidWebSocket::Delegate {
+    : public AndroidDeviceManager::AndroidWebSocket::Delegate {
  public:
   Connection(Registry* registry,
-             scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device,
+             scoped_refptr<AndroidDeviceManager::Device> device,
              scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
              const ForwardingMap& forwarding_map);
   virtual ~Connection();
@@ -299,9 +299,9 @@ class PortForwardingController::Connection
   virtual void OnSocketClosed() override;
 
   PortForwardingController::Registry* registry_;
-  scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device_;
+  scoped_refptr<AndroidDeviceManager::Device> device_;
   scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser_;
-  scoped_ptr<DevToolsAndroidBridge::AndroidWebSocket> web_socket_;
+  scoped_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
   int command_id_;
   bool connected_;
   ForwardingMap forwarding_map_;
@@ -314,7 +314,7 @@ class PortForwardingController::Connection
 
 PortForwardingController::Connection::Connection(
     Registry* registry,
-    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device,
+    scoped_refptr<AndroidDeviceManager::Device> device,
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser,
     const ForwardingMap& forwarding_map)
     : registry_(registry),
@@ -327,10 +327,12 @@ PortForwardingController::Connection::Connection(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   (*registry_)[device_->serial()] = this;
   web_socket_.reset(
-      browser->CreateWebSocket(kDevToolsRemoteBrowserTarget, this));
+      device_->CreateWebSocket(browser->socket(),
+                               kDevToolsRemoteBrowserTarget, this));
 }
 
 PortForwardingController::Connection::~Connection() {
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(registry_->find(device_->serial()) != registry_->end());
   registry_->erase(device_->serial());
@@ -536,23 +538,23 @@ PortForwardingController::~PortForwardingController() {}
 
 PortForwardingController::ForwardingStatus
 PortForwardingController::DeviceListChanged(
-    const DevToolsAndroidBridge::RemoteDevices& devices) {
+    const DevToolsAndroidBridge::CompleteDevices& complete_devices) {
   ForwardingStatus status;
   if (forwarding_map_.empty())
     return status;
 
-  for (DevToolsAndroidBridge::RemoteDevices::const_iterator it =
-      devices.begin(); it != devices.end(); ++it) {
-    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> device = *it;
-    if (!device->is_connected())
+  for (const auto& pair : complete_devices) {
+    scoped_refptr<AndroidDeviceManager::Device> device(pair.first);
+    scoped_refptr<DevToolsAndroidBridge::RemoteDevice> remote_device(
+        pair.second);
+    if (!remote_device->is_connected())
       continue;
-    Registry::iterator rit = registry_.find(device->serial());
+    Registry::iterator rit = registry_.find(remote_device->serial());
     if (rit == registry_.end()) {
-      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser =
-          FindBestBrowserForTethering(device->browsers());
-      if (browser.get()) {
+      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser(
+          FindBestBrowserForTethering(remote_device->browsers()));
+      if (browser.get())
         new Connection(&registry_, device, browser, forwarding_map_);
-      }
     } else {
       status.push_back(std::make_pair(rit->second->browser(),
                                       rit->second->GetPortStatusMap()));

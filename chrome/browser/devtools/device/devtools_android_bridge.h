@@ -41,9 +41,6 @@ class DevToolsAndroidBridge
           DevToolsAndroidBridge,
           content::BrowserThread::DeleteOnUIThread> {
  public:
-  typedef base::Callback<void(int result,
-                              const std::string& response)> Callback;
-
   class Wrapper : public KeyedService {
    public:
     explicit Wrapper(content::BrowserContext* context);
@@ -81,73 +78,33 @@ class DevToolsAndroidBridge
     virtual std::string GetFrontendURL() = 0;
   };
 
-  typedef base::Callback<void(RemotePage*)> RemotePageCallback;
   typedef base::Callback<void(int, const std::string&)> JsonRequestCallback;
-  typedef AndroidDeviceManager::Device Device;
-  typedef AndroidDeviceManager::AndroidWebSocket AndroidWebSocket;
 
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
-    RemoteBrowser(scoped_refptr<Device> device,
-                  const AndroidDeviceManager::BrowserInfo& browser_info);
+    const std::string& serial() { return serial_; }
+    const std::string& socket() { return socket_; }
+    const std::string& display_name() { return display_name_; }
+    const std::string& version() { return version_; }
 
-    std::string serial() { return device_->serial(); }
-    std::string socket() { return socket_; }
-
-    std::string display_name() { return display_name_; }
-    void set_display_name(const std::string& name) { display_name_ = name; }
-
-    std::string version() { return version_; }
-    void set_version(const std::string& version) { version_ = version; }
-
-    bool IsChrome() const;
-    bool IsWebView() const;
+    bool IsChrome();
+    bool IsWebView();
 
     typedef std::vector<int> ParsedVersion;
-    ParsedVersion GetParsedVersion() const;
+    ParsedVersion GetParsedVersion();
 
-    std::vector<RemotePage*> CreatePages();
-    void SetPageDescriptors(const base::ListValue&);
-
-    void SendJsonRequest(const std::string& request,
-                         const JsonRequestCallback& callback);
-
-    void SendProtocolCommand(const std::string& debug_url,
-                             const std::string& method,
-                             base::DictionaryValue* params,
-                             const base::Closure callback);
-
-    void Open(const std::string& url,
-              const RemotePageCallback& callback);
-
-    scoped_refptr<content::DevToolsAgentHost> GetAgentHost();
-
-    AndroidWebSocket* CreateWebSocket(
-        const std::string& url,
-        DevToolsAndroidBridge::AndroidWebSocket::Delegate* delegate);
+    const base::ListValue& page_descriptors();
 
    private:
     friend class base::RefCounted<RemoteBrowser>;
+    friend class DevToolsAndroidBridge;
+
+    RemoteBrowser(const std::string& serial,
+                  const AndroidDeviceManager::BrowserInfo& browser_info);
+
     virtual ~RemoteBrowser();
 
-    void InnerOpen(const std::string& url,
-                   const JsonRequestCallback& callback);
-
-    void PageCreatedOnUIThread(
-        const JsonRequestCallback& callback,
-        const std::string& url, int result, const std::string& response);
-
-    void NavigatePageOnUIThread(const JsonRequestCallback& callback,
-        int result,
-        const std::string& response,
-        const std::string& url);
-
-    void RespondToOpenOnUIThread(
-        const DevToolsAndroidBridge::RemotePageCallback& callback,
-        int result,
-        const std::string& response);
-
-    scoped_refptr<Device> device_;
+    std::string serial_;
     const std::string socket_;
     std::string display_name_;
     const AndroidDeviceManager::BrowserInfo::Type type_;
@@ -161,23 +118,22 @@ class DevToolsAndroidBridge
 
   class RemoteDevice : public base::RefCounted<RemoteDevice> {
    public:
-    RemoteDevice(scoped_refptr<Device> device,
-                 const AndroidDeviceManager::DeviceInfo& device_info);
-
-    std::string serial() { return device_->serial(); }
+    std::string serial() { return serial_; }
     std::string model() { return model_; }
     bool is_connected() { return connected_; }
     RemoteBrowsers& browsers() { return browsers_; }
     gfx::Size screen_size() { return screen_size_; }
 
-    void OpenSocket(const std::string& socket_name,
-                    const AndroidDeviceManager::SocketCallback& callback);
-
    private:
     friend class base::RefCounted<RemoteDevice>;
+    friend class DevToolsAndroidBridge;
+
+    RemoteDevice(const std::string& serial,
+                 const AndroidDeviceManager::DeviceInfo& device_info);
+
     virtual ~RemoteDevice();
 
-    scoped_refptr<Device> device_;
+    std::string serial_;
     std::string model_;
     bool connected_;
     RemoteBrowsers browsers_;
@@ -239,21 +195,42 @@ class DevToolsAndroidBridge
     task_scheduler_ = scheduler;
   }
 
-  static bool HasDevToolsWindow(const std::string& agent_id);
+  bool HasDevToolsWindow(const std::string& agent_id);
+
+  std::vector<RemotePage*> CreatePages(scoped_refptr<RemoteBrowser> browser);
+
+  typedef base::Callback<void(RemotePage*)> RemotePageCallback;
+  void OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
+                      const std::string& url,
+                      const RemotePageCallback& callback);
+
+  scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
+      scoped_refptr<RemoteBrowser> browser);
+
+  typedef std::pair<scoped_refptr<AndroidDeviceManager::Device>,
+                    scoped_refptr<RemoteDevice>> CompleteDevice;
+  typedef std::vector<CompleteDevice> CompleteDevices;
+  typedef base::Callback<void(const CompleteDevices&)> DeviceListCallback;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DevToolsAndroidBridge>;
 
+  class AgentHostDelegate;
+  class DiscoveryRequest;
+  class RemotePageTarget;
+
   virtual ~DevToolsAndroidBridge();
 
   void StartDeviceListPolling();
   void StopDeviceListPolling();
   bool NeedsDeviceListPolling();
-  void RequestDeviceList(
-      const base::Callback<void(const RemoteDevices&)>& callback);
-  void ReceivedDeviceList(const RemoteDevices& devices);
+
+  void RequestDeviceList(const DeviceListCallback& callback);
+
+  void ReceivedDeviceList(const CompleteDevices& complete_devices);
+
   void StartDeviceCountPolling();
   void StopDeviceCountPolling();
   void RequestDeviceCount(const base::Callback<void(int)>& callback);
@@ -263,13 +240,51 @@ class DevToolsAndroidBridge
 
   void CreateDeviceProviders();
 
+  void SendJsonRequest(scoped_refptr<RemoteBrowser> browser,
+                       const std::string& url,
+                       const JsonRequestCallback& callback);
+
+  void SendProtocolCommand(scoped_refptr<RemoteBrowser> browser,
+                           const std::string& debug_url,
+                           const std::string& method,
+                           base::DictionaryValue* params,
+                           const base::Closure callback);
+
+  AndroidDeviceManager::AndroidWebSocket* CreateWebSocket(
+      scoped_refptr<RemoteBrowser> browser,
+      const std::string& url,
+      AndroidDeviceManager::AndroidWebSocket::Delegate* delegate);
+
+  void PageCreatedOnUIThread(scoped_refptr<RemoteBrowser> browser,
+                             const RemotePageCallback& callback,
+                             const std::string& url,
+                             int result,
+                             const std::string& response);
+
+  void NavigatePageOnUIThread(scoped_refptr<RemoteBrowser> browser,
+                              const RemotePageCallback& callback,
+                              int result,
+                              const std::string& response,
+                              const std::string& url);
+
+  void RespondToOpenOnUIThread(scoped_refptr<RemoteBrowser> browser,
+                               const RemotePageCallback& callback,
+                               int result,
+                               const std::string& response);
+
   Profile* profile_;
   scoped_refptr<AndroidDeviceManager> device_manager_;
-  RemoteDevices devices_;
+
+  typedef std::map<std::string, scoped_refptr<AndroidDeviceManager::Device>>
+      DeviceMap;
+  DeviceMap device_map_;
+
+  typedef std::map<std::string, AgentHostDelegate*> AgentHostDelegates;
+  AgentHostDelegates host_delegates_;
 
   typedef std::vector<DeviceListListener*> DeviceListListeners;
   DeviceListListeners device_list_listeners_;
-  base::CancelableCallback<void(const RemoteDevices&)> device_list_callback_;
+  base::CancelableCallback<void(const CompleteDevices&)> device_list_callback_;
 
   typedef std::vector<DeviceCountListener*> DeviceCountListeners;
   DeviceCountListeners device_count_listeners_;

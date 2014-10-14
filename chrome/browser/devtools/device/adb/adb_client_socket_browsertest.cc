@@ -94,11 +94,11 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     ASSERT_EQ("4.0", webview->version());
 
     std::vector<DevToolsAndroidBridge::RemotePage*> chrome_pages =
-        chrome->CreatePages();
+        android_bridge_->CreatePages(chrome);
     std::vector<DevToolsAndroidBridge::RemotePage*> chrome_beta_pages =
-        chrome_beta->CreatePages();
+        android_bridge_->CreatePages(chrome_beta);
     std::vector<DevToolsAndroidBridge::RemotePage*> webview_pages =
-        webview->CreatePages();
+        android_bridge_->CreatePages(webview);
 
     ASSERT_EQ(1U, chrome_pages.size());
     ASSERT_EQ(1U, chrome_beta_pages.size());

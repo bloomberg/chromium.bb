@@ -322,8 +322,11 @@ bool OpenRemotePageRequest::OpenInBrowser(
   if (browser->serial() == kLocalSerial)
     return false;
 #endif  // defined(DEBUG_DEVTOOLS)
-  browser->Open(url_, base::Bind(&OpenRemotePageRequest::RemotePageOpened,
-                base::Unretained(this)));
+  android_bridge_->OpenRemotePage(
+      browser,
+      url_,
+      base::Bind(&OpenRemotePageRequest::RemotePageOpened,
+                 base::Unretained(this)));
   return true;
 }
 
