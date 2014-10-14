@@ -1259,6 +1259,21 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
               (fpath.LocalPath(), line_num, deprecated_value, value)))
   return results
 
+def _CheckForOverrideAndFinalRules(input_api, output_api):
+  """Checks for override and final used as per C++11"""
+  problems = []
+  for f in input_api.AffectedFiles():
+    if (f.LocalPath().endswith(('.cc', '.mm', '.cpp', '.h'))):
+      for line_num, line in f.ChangedContents():
+        if ' OVERRIDE' or ' FINAL' in line:
+          problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitError('Use C++11\'s |override| and'
+      ' |final| rather than OVERRIDE and FINAL. \n' +
+      '\n'.join(problems))]
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -1300,6 +1315,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
+  results.extend(_CheckForOverrideAndFinalRules(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
