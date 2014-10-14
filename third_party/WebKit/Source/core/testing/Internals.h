@@ -253,7 +253,8 @@ public:
     void mediaPlayerRequestFullscreen(HTMLMediaElement*);
     double effectiveMediaVolume(HTMLMediaElement*);
 
-    void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement *, bool);
+    void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);
+    void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);

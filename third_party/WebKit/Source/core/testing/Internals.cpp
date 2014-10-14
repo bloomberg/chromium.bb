@@ -1768,6 +1768,14 @@ void Internals::mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement* medi
     mediaElement->remoteRouteAvailabilityChanged(available);
 }
 
+void Internals::mediaPlayerPlayingRemotelyChanged(HTMLMediaElement* mediaElement, bool remote)
+{
+    if (remote)
+        mediaElement->connectedToRemoteDevice();
+    else
+        mediaElement->disconnectedFromRemoteDevice();
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme)
 {
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);

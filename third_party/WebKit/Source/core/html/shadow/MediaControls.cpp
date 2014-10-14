@@ -244,7 +244,7 @@ void MediaControls::makeTransparent()
 bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const
 {
     // Never hide for a media element without visual representation.
-    if (!mediaElement().hasVideo())
+    if (!mediaElement().hasVideo() || mediaElement().isPlayingRemotely())
         return false;
     // Don't hide if the mouse is over the controls.
     const bool ignoreControlsHover = behaviorFlags & IgnoreControlsHover;

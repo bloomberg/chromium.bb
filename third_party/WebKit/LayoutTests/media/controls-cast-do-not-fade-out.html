@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+    <head>
+        <title>This tests that controls do not fade out when the video is playing remotely.</title>
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
+        <script src="media-file.js"></script>
+        <script src="media-controls.js"></script>
+        <script src="video-test.js"></script>
+    </head>
+    <body>
+        <video controls loop></video>
+        <script>
+        var controls;
+        var test;
+
+        function playing()
+        {
+            internals.mediaPlayerPlayingRemotelyChanged(video, true);
+            runAfterHideMediaControlsTimerFired(function()
+            {
+                controls = mediaControlsButton(video, "panel");
+                testExpected("getComputedStyle(controls).opacity", 1);
+
+                consoleWrite("");
+
+                internals.mediaPlayerPlayingRemotelyChanged(video, false);
+                runAfterHideMediaControlsTimerFired(function()
+                {
+                    testExpected("getComputedStyle(controls).opacity", 0);
+
+                    consoleWrite("");
+
+                    test.done();
+                },
+                video);
+            }, video);
+        }
+
+        async_test(function(t)
+        {
+            test = t;
+            findMediaElement();
+            video.src = findMediaFile("video", "content/test");
+            video.addEventListener("playing", playing);
+            video.play();
+        });
+        </script>
+    </body>
+</html>
