@@ -1,0 +1,15 @@
+CONSOLE ERROR: Unhandled promise rejection
+CONSOLE ERROR: Unhandled promise rejection
+Tests uncaught promise rejections fired during pause.
+
+Set timer for test function.
+debugger-uncaught-promise-on-pause.html:10 Console was cleared
+Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: inspector.err1}
+    __proto__: Promise
+    [[PromiseStatus]]: "rejected"
+    [[PromiseValue]]: Error: inspector.err1
+Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: inspector.err2}
+    __proto__: Promise
+    [[PromiseStatus]]: "rejected"
+    [[PromiseValue]]: Error: inspector.err2
+

@@ -50,8 +50,11 @@ function onload()
     bigmap.set(42, 42);
     bigmap.set({foo:"from"}, {foo:"to"});
 
+    var p = Promise.reject(-0);
+    p.catch(function() {});
+
     globals = [
-        Promise.reject(-0), smb1, smb2, obj, map, weakMap, set, weakSet,
+        p, smb1, smb2, obj, map, weakMap, set, weakSet,
         mapMap0, mapMap, setSet0, setSet, bigmap
     ];
 

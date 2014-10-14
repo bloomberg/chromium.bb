@@ -74,6 +74,11 @@ InspectorTest.fixConsoleViewportDimensions = function(width, height)
 
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames, formatter)
 {
+    InspectorTest.addResults(InspectorTest.dumpConsoleMessagesIntoArray(printOriginatingCommand, dumpClassNames, formatter));
+}
+
+InspectorTest.dumpConsoleMessagesIntoArray = function(printOriginatingCommand, dumpClassNames, formatter)
+{
     formatter = formatter || InspectorTest.prepareConsoleMessageText;
     var result = [];
     InspectorTest.disableConsoleViewport();
@@ -94,21 +99,21 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             }
         }
 
-        if (InspectorTest.dumpConsoleTableMessage(uiMessage, false)) {
+        if (InspectorTest.dumpConsoleTableMessage(uiMessage, false, result)) {
             if (dumpClassNames)
-                InspectorTest.addResult(classNames.join(" > "));
+                result.push(classNames.join(" > "));
         } else {
             var messageText = formatter(element, message);
-            InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
+            result.push(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 
         if (printOriginatingCommand && uiMessage.consoleMessage().originatingMessage())
-            InspectorTest.addResult("Originating from: " + uiMessage.consoleMessage().originatingMessage().messageText);
+            result.push("Originating from: " + uiMessage.consoleMessage().originatingMessage().messageText);
     }
     return result;
 }
 
-InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate)
+InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, results)
 {
     if (forceInvalidate)
         WebInspector.ConsolePanel._view()._viewport.invalidate();
@@ -121,7 +126,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate)
     for (var i = 0; i < headers.length; i++)
         headerLine += headers[i].textContent + " | ";
 
-    InspectorTest.addResult("HEADER " + headerLine);
+    addResult("HEADER " + headerLine);
 
     var rows = table.querySelectorAll(".data-container tr");
 
@@ -133,8 +138,17 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate)
             rowLine += items[j].textContent + " | ";
 
         if (rowLine.trim())
-            InspectorTest.addResult("ROW " + rowLine);
+            addResult("ROW " + rowLine);
     }
+
+    function addResult(x)
+    {
+        if (results)
+            results.push(x);
+        else
+            InspectorTest.addResult(x);
+    }
+
     return true;
 }
 

@@ -1,0 +1,83 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    console.clear();
+    debugger;
+}
+
+function runPromises(source)
+{
+    Promise.reject(new Error(source + ".err1"))
+        .then()
+        .then()
+        .then(); // Last is unhandled.
+
+    var reject
+    var m0 = new Promise(function(res, rej) { reject = rej; });
+    var m1 = m0.then(function() {});
+    var m2 = m0.then(function() {});
+    var m3 = m0.then(function() {});
+    var m4 = 0;
+    m0.catch(function() {
+        m2.catch(function() {
+            m1.catch(function() {
+                m4 = m3.then(function() {}); // Unhandled.
+            });
+        });
+    });
+    reject(new Error(source + ".err2"));
+}
+
+function test()
+{
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.addConsoleViewSniffer(addMessage, true);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        InspectorTest.evaluateInPage("runPromises('inspector')", resumeExecution);
+    }
+
+    function resumeExecution()
+    {
+        InspectorTest.resumeExecution();
+    }
+
+    var count = 0;
+    function addMessage(uiMessage)
+    {
+        if (uiMessage.toString().indexOf("inspector.err") !== -1)
+            ++count;
+        if (count === 2)
+            InspectorTest.expandConsoleMessages(dump);
+    }
+
+    function dump()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests uncaught promise rejections fired during pause.
+</p>
+
+</body>
+</html>

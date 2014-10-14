@@ -18,7 +18,7 @@ function testFunction()
     var q = new Promise(function(res, rej) {
         reject = rej;
     });
-    q.then(function() {
+    q.catch(function() {
     });
 
     resolve(42);
