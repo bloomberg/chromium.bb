@@ -29,7 +29,6 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSFontFeatureValue.h"
@@ -2443,10 +2442,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         }
         case CSSPropertyWebkitAppearance:
             return cssValuePool().createValue(style->appearance());
-        case CSSPropertyWebkitAspectRatio:
-            if (!style->hasAspectRatio())
-                return cssValuePool().createIdentifierValue(CSSValueNone);
-            return CSSAspectRatioValue::create(style->aspectRatioNumerator(), style->aspectRatioDenominator());
         case CSSPropertyBackfaceVisibility:
         case CSSPropertyWebkitBackfaceVisibility:
             return cssValuePool().createIdentifierValue((style->backfaceVisibility() == BackfaceVisibilityHidden) ? CSSValueHidden : CSSValueVisible);

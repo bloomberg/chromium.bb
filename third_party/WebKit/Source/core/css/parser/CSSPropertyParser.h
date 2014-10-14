@@ -203,8 +203,6 @@ private:
     bool parseBorderImageOutset(RefPtrWillBeRawPtr<CSSPrimitiveValue>&);
     bool parseBorderRadius(CSSPropertyID, bool important);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parseAspectRatio();
-
     PassRefPtrWillBeRawPtr<CSSValue> parseReflect();
 
     bool parseFlex(CSSParserValueList* args, bool important);

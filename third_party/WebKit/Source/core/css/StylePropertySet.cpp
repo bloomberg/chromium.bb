@@ -392,7 +392,6 @@ bool StylePropertySet::hasFailedOrCanceledSubresources() const
 static const CSSPropertyID staticBlockProperties[] = {
     CSSPropertyOrphans,
     CSSPropertyOverflow, // This can be also be applied to replaced elements
-    CSSPropertyWebkitAspectRatio,
     CSSPropertyWebkitColumnCount,
     CSSPropertyWebkitColumnGap,
     CSSPropertyWebkitColumnRuleColor,

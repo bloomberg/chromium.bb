@@ -43,7 +43,6 @@
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontValue.h"
 #include "core/css/CSSGradientValue.h"
@@ -617,34 +616,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolverState& state,
         if (float number = primitiveValue->getFloatValue())
             state.setZoom(number);
     }
-}
-
-void StyleBuilderFunctions::applyInitialCSSPropertyWebkitAspectRatio(StyleResolverState& state)
-{
-    state.style()->setHasAspectRatio(RenderStyle::initialHasAspectRatio());
-    state.style()->setAspectRatioDenominator(RenderStyle::initialAspectRatioDenominator());
-    state.style()->setAspectRatioNumerator(RenderStyle::initialAspectRatioNumerator());
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyWebkitAspectRatio(StyleResolverState& state)
-{
-    if (!state.parentStyle()->hasAspectRatio())
-        return;
-    state.style()->setHasAspectRatio(true);
-    state.style()->setAspectRatioDenominator(state.parentStyle()->aspectRatioDenominator());
-    state.style()->setAspectRatioNumerator(state.parentStyle()->aspectRatioNumerator());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitAspectRatio(StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isAspectRatioValue()) {
-        state.style()->setHasAspectRatio(false);
-        return;
-    }
-    CSSAspectRatioValue* aspectRatioValue = toCSSAspectRatioValue(value);
-    state.style()->setHasAspectRatio(true);
-    state.style()->setAspectRatioDenominator(aspectRatioValue->denominatorValue());
-    state.style()->setAspectRatioNumerator(aspectRatioValue->numeratorValue());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitBorderImage(StyleResolverState& state, CSSValue* value)

@@ -92,9 +92,6 @@ public:
 
     float opacity; // Whether or not we're transparent.
 
-    float m_aspectRatioDenominator;
-    float m_aspectRatioNumerator;
-
     float m_perspective;
     LengthPoint m_perspectiveOrigin;
 
@@ -177,8 +174,6 @@ public:
     unsigned m_runningOpacityAnimationOnCompositor : 1;
     unsigned m_runningTransformAnimationOnCompositor : 1;
     unsigned m_runningFilterAnimationOnCompositor : 1;
-
-    unsigned m_hasAspectRatio : 1; // Whether or not an aspect ratio has been specified.
 
     unsigned m_effectiveBlendMode: 5; // EBlendMode
 

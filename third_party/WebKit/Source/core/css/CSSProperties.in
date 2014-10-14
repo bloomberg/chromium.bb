@@ -293,7 +293,6 @@ visibility animatable, inherited
 -webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-app-region custom_all
--webkit-aspect-ratio inherited, custom_all
 -webkit-backface-visibility use_handlers_for=CSSPropertyBackfaceVisibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all

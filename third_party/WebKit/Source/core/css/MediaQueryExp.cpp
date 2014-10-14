@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/css/MediaQueryExp.h"
 
-#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/html/parser/HTMLParserIdioms.h"

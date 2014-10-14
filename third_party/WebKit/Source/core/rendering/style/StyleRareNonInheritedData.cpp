@@ -34,8 +34,6 @@ namespace blink {
 
 StyleRareNonInheritedData::StyleRareNonInheritedData()
     : opacity(RenderStyle::initialOpacity())
-    , m_aspectRatioDenominator(RenderStyle::initialAspectRatioDenominator())
-    , m_aspectRatioNumerator(RenderStyle::initialAspectRatioNumerator())
     , m_perspective(RenderStyle::initialPerspective())
     , m_perspectiveOrigin(RenderStyle::initialPerspectiveOrigin())
     , lineClamp(RenderStyle::initialLineClamp())
@@ -80,7 +78,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_runningOpacityAnimationOnCompositor(false)
     , m_runningTransformAnimationOnCompositor(false)
     , m_runningFilterAnimationOnCompositor(false)
-    , m_hasAspectRatio(false)
     , m_effectiveBlendMode(RenderStyle::initialBlendMode())
     , m_touchAction(RenderStyle::initialTouchAction())
     , m_objectFit(RenderStyle::initialObjectFit())
@@ -100,8 +97,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
 StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInheritedData& o)
     : RefCounted<StyleRareNonInheritedData>()
     , opacity(o.opacity)
-    , m_aspectRatioDenominator(o.m_aspectRatioDenominator)
-    , m_aspectRatioNumerator(o.m_aspectRatioNumerator)
     , m_perspective(o.m_perspective)
     , m_perspectiveOrigin(o.m_perspectiveOrigin)
     , lineClamp(o.lineClamp)
@@ -162,7 +157,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_runningOpacityAnimationOnCompositor(o.m_runningOpacityAnimationOnCompositor)
     , m_runningTransformAnimationOnCompositor(o.m_runningTransformAnimationOnCompositor)
     , m_runningFilterAnimationOnCompositor(o.m_runningFilterAnimationOnCompositor)
-    , m_hasAspectRatio(o.m_hasAspectRatio)
     , m_effectiveBlendMode(o.m_effectiveBlendMode)
     , m_touchAction(o.m_touchAction)
     , m_objectFit(o.m_objectFit)
@@ -188,8 +182,6 @@ StyleRareNonInheritedData::~StyleRareNonInheritedData()
 bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) const
 {
     return opacity == o.opacity
-        && m_aspectRatioDenominator == o.m_aspectRatioDenominator
-        && m_aspectRatioNumerator == o.m_aspectRatioNumerator
         && m_perspective == o.m_perspective
         && m_perspectiveOrigin == o.m_perspectiveOrigin
         && lineClamp == o.lineClamp
@@ -249,7 +241,6 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_hasCurrentTransformAnimation == o.m_hasCurrentTransformAnimation
         && m_hasCurrentFilterAnimation == o.m_hasCurrentFilterAnimation
         && m_effectiveBlendMode == o.m_effectiveBlendMode
-        && m_hasAspectRatio == o.m_hasAspectRatio
         && m_touchAction == o.m_touchAction
         && m_objectFit == o.m_objectFit
         && m_isolation == o.m_isolation

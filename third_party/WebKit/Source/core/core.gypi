@@ -721,8 +721,6 @@
             'css/BasicShapeFunctions.cpp',
             'css/BinaryDataFontFaceSource.cpp',
             'css/BinaryDataFontFaceSource.h',
-            'css/CSSAspectRatioValue.cpp',
-            'css/CSSAspectRatioValue.h',
             'css/CSSBasicShapes.cpp',
             'css/CSSBorderImage.cpp',
             'css/CSSBorderImage.h',

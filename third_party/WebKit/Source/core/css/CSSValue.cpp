@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/css/CSSValue.h"
 
-#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCanvasValue.h"
@@ -154,8 +153,6 @@ bool CSSValue::equals(const CSSValue& other) const
 
     if (m_classType == other.m_classType) {
         switch (m_classType) {
-        case AspectRatioClass:
-            return compareCSSValues<CSSAspectRatioValue>(*this, other);
         case BorderImageSliceClass:
             return compareCSSValues<CSSBorderImageSliceValue>(*this, other);
         case CanvasClass:
@@ -232,8 +229,6 @@ String CSSValue::cssText() const
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
 
     switch (classType()) {
-    case AspectRatioClass:
-        return toCSSAspectRatioValue(this)->customCSSText();
     case BorderImageSliceClass:
         return toCSSBorderImageSliceValue(this)->customCSSText();
     case CanvasClass:
@@ -305,9 +300,6 @@ void CSSValue::destroy()
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
 
     switch (classType()) {
-    case AspectRatioClass:
-        delete toCSSAspectRatioValue(this);
-        return;
     case BorderImageSliceClass:
         delete toCSSBorderImageSliceValue(this);
         return;
@@ -406,9 +398,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
 
     switch (classType()) {
-    case AspectRatioClass:
-        toCSSAspectRatioValue(this)->~CSSAspectRatioValue();
-        return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
         return;
@@ -507,9 +496,6 @@ void CSSValue::trace(Visitor* visitor)
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
 
     switch (classType()) {
-    case AspectRatioClass:
-        toCSSAspectRatioValue(this)->traceAfterDispatch(visitor);
-        return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->traceAfterDispatch(visitor);
         return;

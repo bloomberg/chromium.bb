@@ -30,7 +30,6 @@
 // FIXME: Way too many!
 #include "core/CSSValueKeywords.h"
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSCanvasValue.h"
@@ -1009,9 +1008,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
     case CSSPropertyTabSize:
         validPrimitive = validUnit(value, FInteger | FNonNeg);
-        break;
-    case CSSPropertyWebkitAspectRatio:
-        parsedValue = parseAspectRatio();
         break;
     case CSSPropertyBorderRadius:
     case CSSPropertyWebkitBorderRadius:
@@ -6116,34 +6112,6 @@ bool CSSPropertyParser::parseBorderRadius(CSSPropertyID propId, bool important)
     addProperty(CSSPropertyBorderBottomRightRadius, createPrimitiveValuePair(radii[0][2].release(), radii[1][2].release()), important);
     addProperty(CSSPropertyBorderBottomLeftRadius, createPrimitiveValuePair(radii[0][3].release(), radii[1][3].release()), important);
     return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAspectRatio()
-{
-    unsigned num = m_valueList->size();
-    if (num == 1 && m_valueList->valueAt(0)->id == CSSValueNone) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
-
-    if (num != 3)
-        return nullptr;
-
-    CSSParserValue* lvalue = m_valueList->current();
-    CSSParserValue* op = m_valueList->next();
-    CSSParserValue* rvalue = m_valueList->next();
-    m_valueList->next();
-
-    if (!isForwardSlashOperator(op))
-        return nullptr;
-
-    if (!validUnit(lvalue, FNumber | FNonNeg) || !validUnit(rvalue, FNumber | FNonNeg))
-        return nullptr;
-
-    if (!lvalue->fValue || !rvalue->fValue)
-        return nullptr;
-
-    return CSSAspectRatioValue::create(narrowPrecisionToFloat(lvalue->fValue), narrowPrecisionToFloat(rvalue->fValue));
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValue)

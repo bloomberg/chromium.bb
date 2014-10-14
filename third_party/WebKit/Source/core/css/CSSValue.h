@@ -74,7 +74,6 @@ public:
 
     bool isBaseValueList() const { return m_classType == ValueListClass; }
 
-    bool isAspectRatioValue() const { return m_classType == AspectRatioClass; }
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
     bool isCanvasValue() const { return m_classType == CanvasClass; }
     bool isCursorImageValue() const { return m_classType == CursorImageClass; }
@@ -143,7 +142,6 @@ protected:
         StepsTimingFunctionClass,
 
         // Other class types.
-        AspectRatioClass,
         BorderImageSliceClass,
         FontFeatureClass,
         FontClass,

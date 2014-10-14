@@ -218,7 +218,6 @@ webkitAnimationPlayState
 webkitAnimationTimingFunction
 webkitAppRegion
 webkitAppearance
-webkitAspectRatio
 webkitBackfaceVisibility
 webkitBackgroundClip
 webkitBackgroundComposite

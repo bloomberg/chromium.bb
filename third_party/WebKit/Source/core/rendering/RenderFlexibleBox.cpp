@@ -604,7 +604,7 @@ LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox& 
 {
     child.clearOverrideSize();
 
-    if (child.style()->hasAspectRatio() || child.isImage() || child.isVideo() || child.isCanvas())
+    if (child.isImage() || child.isVideo() || child.isCanvas())
         UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
 
     Length flexBasis = flexBasisForChild(child);

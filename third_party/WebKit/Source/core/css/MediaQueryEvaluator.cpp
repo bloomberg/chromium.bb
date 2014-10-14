@@ -34,7 +34,6 @@
 #include "core/MediaFeatureNames.h"
 #include "core/MediaFeatures.h"
 #include "core/MediaTypeNames.h"
-#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"

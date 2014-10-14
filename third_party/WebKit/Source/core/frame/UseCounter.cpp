@@ -218,7 +218,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitAnimationPlayState: return 173;
     case CSSPropertyWebkitAnimationTimingFunction: return 174;
     case CSSPropertyWebkitAppearance: return 175;
-    case CSSPropertyWebkitAspectRatio: return 176;
+    // CSSPropertyWebkitAspectRatio was 176
     case CSSPropertyWebkitBackfaceVisibility: return 177;
     case CSSPropertyWebkitBackgroundClip: return 178;
     case CSSPropertyWebkitBackgroundComposite: return 179;

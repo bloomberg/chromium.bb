@@ -21,7 +21,6 @@ test(function() {
   assertParsedValue('grid-row-start', 'calc(1 / 2) test', null);
   assertParsedValue('font-weight', 'calc(100 + 200)', null);
   assertParsedValue('flex', 'calc(1 + 2) calc(3 + 4)', '3 7 0%');
-  assertParsedValue('-webkit-aspect-ratio', 'calc(1 + 2)/calc(3 + 4)', '3/7');
   assertParsedValue('-webkit-filter', 'saturate(calc(4 / 2))', 'saturate(2)');
   assertParsedValue('-webkit-filter', 'invert(calc(4 / 2))', null);
   assertParsedValue('-webkit-filter', 'invert(calc(2 / 4))', 'invert(0.5)');
