@@ -136,23 +136,12 @@ class EasyUnlockServiceTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceTest);
 };
 
-// Tests that EasyUnlock is on by default.
-IN_PROC_BROWSER_TEST_F(EasyUnlockServiceTest, DefaultOn) {
-  EXPECT_TRUE(service()->IsAllowed());
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceTest, NoFinchNoService) {
+  EXPECT_FALSE(service()->IsAllowed());
 #if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_TRUE(HasEasyUnlockApp());
-#endif
-}
-
-#if defined(GOOGLE_CHROME_BUILD)
-IN_PROC_BROWSER_TEST_F(EasyUnlockServiceTest, UnloadsOnSuspend) {
-  EXPECT_TRUE(HasEasyUnlockApp());
-  power_manager_client()->SendSuspendImminent();
   EXPECT_FALSE(HasEasyUnlockApp());
-  power_manager_client()->SendSuspendDone();
-  EXPECT_TRUE(HasEasyUnlockApp());
-}
 #endif
+}
 
 class EasyUnlockServiceNoBluetoothTest : public EasyUnlockServiceTest {
  public:
@@ -190,6 +179,23 @@ class EasyUnlockServiceFinchEnabledTest : public EasyUnlockServiceTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceFinchEnabledTest);
 };
+
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceFinchEnabledTest, Enabled) {
+  EXPECT_TRUE(service()->IsAllowed());
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_TRUE(HasEasyUnlockApp());
+#endif
+}
+
+#if defined(GOOGLE_CHROME_BUILD)
+IN_PROC_BROWSER_TEST_F(EasyUnlockServiceFinchEnabledTest, UnloadsOnSuspend) {
+  EXPECT_TRUE(HasEasyUnlockApp());
+  power_manager_client()->SendSuspendImminent();
+  EXPECT_FALSE(HasEasyUnlockApp());
+  power_manager_client()->SendSuspendDone();
+  EXPECT_TRUE(HasEasyUnlockApp());
+}
+#endif
 
 // Tests that policy can override finch to turn easy unlock off.
 IN_PROC_BROWSER_TEST_F(EasyUnlockServiceFinchEnabledTest, PolicyOveride) {

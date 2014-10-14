@@ -191,9 +191,8 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() {
 
   // Respect existing policy and skip finch test.
   if (!profile()->GetPrefs()->IsManagedPreference(prefs::kEasyUnlockAllowed)) {
-    // It is disabled when the trial exists and is in "Disable" group.
-    if (base::FieldTrialList::FindFullName("EasyUnlock") == "Disable")
-      return false;
+    // It is enabled when the trial exists and is in "Enable" group.
+    return base::FieldTrialList::FindFullName("EasyUnlock") == "Enable";
   }
 
   return true;
