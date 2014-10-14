@@ -121,8 +121,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
           AsWeakPtr(),
           old_context->embedded_worker_registry())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
-      next_handle_id_(old_context->next_handle_id_),
-      next_registration_handle_id_(old_context->next_registration_handle_id_),
+      next_handle_id_(0),
+      next_registration_handle_id_(0),
       observer_list_(old_context->observer_list_) {
 }
 
