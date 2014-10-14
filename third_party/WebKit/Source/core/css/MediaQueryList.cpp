@@ -103,8 +103,8 @@ bool MediaQueryList::mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<Me
     m_matchesDirty = true;
     if (!updateMatches())
         return false;
-    for (ListenerList::const_iterator it = m_listeners.begin(), end = m_listeners.end(); it != end; ++it) {
-        listenersToNotify->append(*it);
+    for (const auto& listener : m_listeners) {
+        listenersToNotify->append(listener);
     }
     return hasEventListeners(EventTypeNames::change);
 }

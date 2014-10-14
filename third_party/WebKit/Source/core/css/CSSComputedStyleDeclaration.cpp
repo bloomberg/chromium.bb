@@ -782,9 +782,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(con
 
     RefPtrWillBeRawPtr<CSSFilterValue> filterValue = nullptr;
 
-    Vector<RefPtr<FilterOperation> >::const_iterator end = style.filter().operations().end();
-    for (Vector<RefPtr<FilterOperation> >::const_iterator it = style.filter().operations().begin(); it != end; ++it) {
-        FilterOperation* filterOperation = it->get();
+    for (const auto& operation : style.filter().operations()) {
+        FilterOperation* filterOperation = operation.get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE:
             filterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
@@ -1367,9 +1366,9 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const RenderSt
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    for (CounterDirectiveMap::const_iterator it = map->begin(); it != map->end(); ++it) {
-        list->append(cssValuePool().createValue(it->key, CSSPrimitiveValue::CSS_STRING));
-        short number = propertyID == CSSPropertyCounterIncrement ? it->value.incrementValue() : it->value.resetValue();
+    for (const auto& item : *map) {
+        list->append(cssValuePool().createValue(item.key, CSSPrimitiveValue::CSS_STRING));
+        short number = propertyID == CSSPropertyCounterIncrement ? item.value.incrementValue() : item.value.resetValue();
         list->append(cssValuePool().createValue((double)number, CSSPrimitiveValue::CSS_NUMBER));
     }
     return list.release();

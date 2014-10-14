@@ -55,8 +55,8 @@ void FontLoader::loadPendingFonts()
 
     FontsToLoadVector fontsToBeginLoading;
     fontsToBeginLoading.swap(m_fontsToBeginLoading);
-    for (FontsToLoadVector::iterator it = fontsToBeginLoading.begin(); it != fontsToBeginLoading.end(); ++it) {
-        FontResource* fontResource = it->first.get();
+    for (const auto& item : fontsToBeginLoading) {
+        FontResource* fontResource = item.first.get();
         fontResource->beginLoadIfNeeded(m_resourceFetcher);
     }
 
@@ -88,8 +88,8 @@ void FontLoader::clearResourceFetcherAndFontSelector()
 
 void FontLoader::clearPendingFonts()
 {
-    for (FontsToLoadVector::iterator it = m_fontsToBeginLoading.begin(); it != m_fontsToBeginLoading.end(); ++it)
-        it->first->didUnscheduleLoad();
+    for (const auto& item : m_fontsToBeginLoading)
+        item.first->didUnscheduleLoad();
     m_fontsToBeginLoading.clear();
 }
 

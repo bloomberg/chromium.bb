@@ -331,10 +331,9 @@ void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
 
 void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& compactMap)
 {
-    PendingRuleMap::iterator end = pendingMap.end();
-    for (PendingRuleMap::iterator it = pendingMap.begin(); it != end; ++it) {
-        OwnPtrWillBeRawPtr<WillBeHeapLinkedStack<RuleData> > pendingRules = it->value.release();
-        CompactRuleMap::ValueType* compactRules = compactMap.add(it->key, nullptr).storedValue;
+    for (auto& item : pendingMap) {
+        OwnPtrWillBeRawPtr<WillBeHeapLinkedStack<RuleData> > pendingRules = item.value.release();
+        CompactRuleMap::ValueType* compactRules = compactMap.add(item.key, nullptr).storedValue;
 
         WillBeHeapTerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
         builder.grow(pendingRules->size());
@@ -416,8 +415,8 @@ void RuleSet::trace(Visitor* visitor)
 #ifndef NDEBUG
 void RuleSet::show()
 {
-    for (WillBeHeapVector<RuleData>::const_iterator it = m_allRules.begin(); it != m_allRules.end(); ++it)
-        it->selector().show();
+    for (const auto& rule: m_allRules)
+        rule.selector().show();
 }
 #endif
 

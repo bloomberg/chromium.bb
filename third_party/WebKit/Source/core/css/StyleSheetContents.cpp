@@ -429,8 +429,8 @@ void StyleSheetContents::notifyLoadedSheet(const CSSStyleSheetResource* sheet)
 void StyleSheetContents::startLoadingDynamicSheet()
 {
     StyleSheetContents* root = rootStyleSheet();
-    for (ClientsIterator it = root->m_loadingClients.begin(); it != root->m_loadingClients.end(); ++it)
-        (*it)->startLoadingDynamicSheet();
+    for (const auto& client : root->m_loadingClients)
+        client->startLoadingDynamicSheet();
     // Copy the completed clients to a vector for iteration.
     // startLoadingDynamicSheet will move the style sheet from the
     // completed state to the loading state which modifies the set of
@@ -615,8 +615,8 @@ RuleSet& StyleSheetContents::ensureRuleSet(const MediaQueryEvaluator& medium, Ad
 
 static void clearResolvers(WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >& clients)
 {
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator it = clients.begin(); it != clients.end(); ++it) {
-        if (Document* document = (*it)->ownerDocument())
+    for (const auto& sheet : clients) {
+        if (Document* document = sheet->ownerDocument())
             document->styleEngine()->clearResolver();
     }
 }
@@ -641,8 +641,8 @@ void StyleSheetContents::clearRuleSet()
 
 static void removeFontFaceRules(WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >& clients, const StyleRuleFontFace* fontFaceRule)
 {
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator it = clients.begin(); it != clients.end(); ++it) {
-        if (Node* ownerNode = (*it)->ownerNode())
+    for (const auto& sheet : clients) {
+        if (Node* ownerNode = sheet->ownerNode())
             ownerNode->document().styleEngine()->removeFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >(1, fontFaceRule));
     }
 }

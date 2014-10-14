@@ -467,10 +467,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     bool caseInsensitive = selector.attributeMatchType() == CSSSelector::CaseInsensitive;
 
     AttributeCollection attributes = element.attributesWithoutUpdate();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-        const Attribute& attributeItem = *it;
-
+    for (const auto& attributeItem: attributes) {
         if (!attributeItem.matches(selectorAttr))
             continue;
 

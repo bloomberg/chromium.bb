@@ -109,8 +109,8 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
 
 void FontFaceCache::clearCSSConnected()
 {
-    for (StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.begin(); it != m_styleRuleToFontFace.end(); ++it)
-        removeFontFace(it->value.get(), true);
+    for (const auto& item : m_styleRuleToFontFace)
+        removeFontFace(item.value.get(), true);
     m_styleRuleToFontFace.clear();
 }
 
@@ -212,8 +212,8 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
     FontTraits traits = fontDescription.traits();
     TraitsMap::AddResult faceResult = traitsResult.storedValue->value->add(traits.bitfield(), nullptr);
     if (!faceResult.storedValue->value) {
-        for (TraitsMap::const_iterator i = familyFontFaces->begin(); i != familyFontFaces->end(); ++i) {
-            CSSSegmentedFontFace* candidate = i->value.get();
+        for (const auto& item : *familyFontFaces) {
+            CSSSegmentedFontFace* candidate = item.value.get();
             FontTraits candidateTraits = candidate->traits();
             if (traits.style() == FontStyleNormal && candidateTraits.style() != FontStyleNormal)
                 continue;

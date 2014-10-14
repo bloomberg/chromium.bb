@@ -34,8 +34,8 @@ void RemoteFontFaceSource::pruneTable()
     if (m_fontDataTable.isEmpty())
         return;
 
-    for (FontDataTable::iterator it = m_fontDataTable.begin(); it != m_fontDataTable.end(); ++it) {
-        SimpleFontData* fontData = it->value.get();
+    for (const auto& item : m_fontDataTable) {
+        SimpleFontData* fontData = item.value.get();
         if (fontData && fontData->customFontData())
             fontData->customFontData()->clearFontFaceSource();
     }

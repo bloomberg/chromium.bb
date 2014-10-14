@@ -194,7 +194,6 @@ private:
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_loadingClients;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_completedClients;
-    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator ClientsIterator;
 
     OwnPtrWillBeMember<RuleSet> m_ruleSet;
 };

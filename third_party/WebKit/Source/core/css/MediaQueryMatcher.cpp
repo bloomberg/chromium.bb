@@ -122,10 +122,10 @@ void MediaQueryMatcher::mediaFeaturesChanged()
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
-    for (MediaQueryListSet::iterator it = m_mediaLists.begin(); it != m_mediaLists.end(); ++it) {
-        if ((*it)->mediaFeaturesChanged(&listenersToNotify)) {
-            RefPtrWillBeRawPtr<Event> event(MediaQueryListEvent::create(*it));
-            event->setTarget(*it);
+    for (const auto& list : m_mediaLists) {
+        if (list->mediaFeaturesChanged(&listenersToNotify)) {
+            RefPtrWillBeRawPtr<Event> event(MediaQueryListEvent::create(list));
+            event->setTarget(list);
             m_document->enqueueUniqueAnimationFrameEvent(event);
         }
     }
@@ -138,8 +138,8 @@ void MediaQueryMatcher::viewportChanged()
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
-    for (ViewportListenerSet::iterator it = m_viewportListeners.begin(); it != m_viewportListeners.end(); ++it)
-        listenersToNotify.append(*it);
+    for (const auto& listener : m_viewportListeners)
+        listenersToNotify.append(listener);
 
     m_document->enqueueMediaQueryChangeListeners(listenersToNotify);
 }

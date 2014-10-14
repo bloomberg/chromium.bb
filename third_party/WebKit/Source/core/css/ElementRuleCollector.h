@@ -141,8 +141,8 @@ private:
         if (!rules)
             return;
 
-        for (typename RuleDataListType::const_iterator it = rules->begin(), end = rules->end(); it != end; ++it)
-            collectRuleIfMatches(*it, cascadeScope, cascadeOrder, matchRequest, ruleRange);
+        for (const auto& rule : *rules)
+            collectRuleIfMatches(rule, cascadeScope, cascadeOrder, matchRequest, ruleRange);
     }
 
     bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::MatchResult*);

@@ -161,8 +161,8 @@ bool FontFaceSet::inActiveDocumentContext() const
 
 void FontFaceSet::addFontFacesToFontFaceCache(FontFaceCache* fontFaceCache, CSSFontSelector* fontSelector)
 {
-    for (WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
-        fontFaceCache->addFontFace(fontSelector, *it, false);
+    for (const auto& fontFace : m_nonCSSConnectedFaces)
+        fontFaceCache->addFontFace(fontSelector, fontFace, false);
 }
 
 const AtomicString& FontFaceSet::interfaceName() const
@@ -301,10 +301,10 @@ void FontFaceSet::clear()
         return;
     CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
     FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
-    for (WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it) {
-        fontFaceCache->removeFontFace(it->get(), false);
-        if ((*it)->loadStatus() == FontFace::Loading)
-            removeFromLoadingFonts(*it);
+    for (const auto& fontFace : m_nonCSSConnectedFaces) {
+        fontFaceCache->removeFontFace(fontFace.get(), false);
+        if (fontFace->loadStatus() == FontFace::Loading)
+            removeFromLoadingFonts(fontFace);
     }
     m_nonCSSConnectedFaces.clear();
     fontSelector->fontFaceInvalidated();
@@ -373,10 +373,10 @@ void FontFaceSet::forEachInternal(FontFaceSetForEachCallback* callback, const Sc
     const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
     WillBeHeapVector<RefPtrWillBeMember<FontFace> > fontFaces;
     fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
-    for (WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >::const_iterator it = cssConnectedFaces.begin(); it != cssConnectedFaces.end(); ++it)
-        fontFaces.append(*it);
-    for (WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> >::const_iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
-        fontFaces.append(*it);
+    for (const auto& fontFace : cssConnectedFaces)
+        fontFaces.append(fontFace);
+    for (const auto& fontFace : m_nonCSSConnectedFaces)
+        fontFaces.append(fontFace);
 
     for (size_t i = 0; i < fontFaces.size(); ++i) {
         FontFace* face = fontFaces[i].get();
