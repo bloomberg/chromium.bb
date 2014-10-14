@@ -388,6 +388,7 @@ class JobScheduler
 
   EventLogger* logger_;
   DriveServiceInterface* drive_service_;
+  base::SequencedTaskRunner* blocking_task_runner_;
   scoped_ptr<DriveUploaderInterface> uploader_;
 
   PrefService* pref_service_;

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -133,6 +135,43 @@ google_apis::CancelCallback RunResumeUploadFile(
                                     params.progress_callback);
 }
 
+// Collects information about sizes of files copied or moved from or to Drive
+// Otherwise does nothing. Temporary for crbug.com/229650.
+void CollectCopyHistogramSample(const std::string& histogram_name, int64 size) {
+  base::HistogramBase* const counter =
+      base::Histogram::FactoryGet(histogram_name,
+                                  1,
+                                  1024 * 1024 /* 1 GB */,
+                                  50,
+                                  base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(size / 1024);
+}
+
+// Callback for GetSizeAndCollectCopyHistogramSample().
+void OnGotSizeForCollectCopyHistogramSample(const std::string& histogram_name,
+                                            int64* size) {
+  if (*size != -1)
+    CollectCopyHistogramSample(histogram_name, *size);
+}
+
+// Collects information about sizes of files copied or moved from or to Drive
+// Otherwise does nothing. Temporary for crbug.com/229650.
+void GetSizeAndCollectCopyHistogramSample(
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::FilePath& local_file_path,
+    const std::string& histogram_name) {
+  int64* const size = new int64;
+  *size = -1;
+  blocking_task_runner->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::GetFileSize),
+                 local_file_path,
+                 base::Unretained(size)),
+      base::Bind(&OnGotSizeForCollectCopyHistogramSample,
+                 histogram_name,
+                 base::Owned(size)));
+}
+
 }  // namespace
 
 // Metadata jobs are cheap, so we run them concurrently. File jobs run serially.
@@ -158,16 +197,16 @@ struct JobScheduler::ResumeUploadParams {
   std::string content_type;
 };
 
-JobScheduler::JobScheduler(
-    PrefService* pref_service,
-    EventLogger* logger,
-    DriveServiceInterface* drive_service,
-    base::SequencedTaskRunner* blocking_task_runner)
+JobScheduler::JobScheduler(PrefService* pref_service,
+                           EventLogger* logger,
+                           DriveServiceInterface* drive_service,
+                           base::SequencedTaskRunner* blocking_task_runner)
     : throttle_count_(0),
       wait_until_(base::Time::Now()),
       disable_throttling_(false),
       logger_(logger),
       drive_service_(drive_service),
+      blocking_task_runner_(blocking_task_runner),
       uploader_(new DriveUploader(drive_service, blocking_task_runner)),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
@@ -574,6 +613,10 @@ JobID JobScheduler::DownloadFile(
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Temporary histogram for crbug.com/229650.
+  CollectCopyHistogramSample("Drive.DownloadFromDriveFileSize",
+                             expected_file_size);
+
   JobEntry* new_job = CreateNewJob(TYPE_DOWNLOAD_FILE);
   new_job->job_info.file_path = virtual_path;
   new_job->job_info.num_total_bytes = expected_file_size;
@@ -606,6 +649,10 @@ void JobScheduler::UploadNewFile(
     const ClientContext& context,
     const google_apis::FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Temporary histogram for crbug.com/229650.
+  GetSizeAndCollectCopyHistogramSample(
+      blocking_task_runner_, local_file_path, "Drive.UploadToDriveFileSize");
 
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_NEW_FILE);
   new_job->job_info.file_path = drive_file_path;
@@ -644,6 +691,10 @@ void JobScheduler::UploadExistingFile(
     const ClientContext& context,
     const google_apis::FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Temporary histogram for crbug.com/229650.
+  GetSizeAndCollectCopyHistogramSample(
+      blocking_task_runner_, local_file_path, "Drive.UploadToDriveFileSize");
 
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_EXISTING_FILE);
   new_job->job_info.file_path = drive_file_path;
@@ -717,6 +768,20 @@ void JobScheduler::QueueJob(JobID job_id) {
 
   const QueueType queue_type = GetJobQueueType(job_info.job_type);
   queue_[queue_type]->Push(job_id, job_entry->context.type);
+
+  // Temporary histogram for crbug.com/229650.
+  if (job_info.job_type == TYPE_DOWNLOAD_FILE ||
+      job_info.job_type == TYPE_UPLOAD_EXISTING_FILE ||
+      job_info.job_type == TYPE_UPLOAD_NEW_FILE) {
+    std::vector<JobID> jobs_with_the_same_priority;
+    queue_[queue_type]->GetQueuedJobs(job_entry->context.type,
+                                      &jobs_with_the_same_priority);
+    DCHECK(!jobs_with_the_same_priority.empty());
+
+    const size_t blocking_jobs_count = jobs_with_the_same_priority.size() - 1;
+    UMA_HISTOGRAM_COUNTS_10000("Drive.TransferBlockedOnJobs",
+                               blocking_jobs_count);
+  }
 
   const std::string retry_prefix = job_entry->retry_count > 0 ?
       base::StringPrintf(" (retry %d)", job_entry->retry_count) : "";

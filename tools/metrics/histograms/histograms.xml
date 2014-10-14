@@ -5871,7 +5871,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Drive.CacheDBOpenStatus" enum="DriveCacheDBOpenStatus">
   <obsolete>
-    Deperecated 8/2013.
+    Deprecated 8/2013.
   </obsolete>
   <owner>joshwoodward@google.com</owner>
   <summary>Status of drive cache metadata database open.</summary>
@@ -5882,6 +5882,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Time spent to load the list of files in a single directory from Google Drive
     server.
+  </summary>
+</histogram>
+
+<histogram name="Drive.DownloadFromDriveFileSize" units="KB">
+  <owner>mtomasz@chromium.org</owner>
+  <summary>
+    Sizes of files being downloaded from Drive. Temporary histogram for
+    gathering data for http://crbug.com/229650.
   </summary>
 </histogram>
 
@@ -6028,6 +6036,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     auto completion.  For instance, if the user types &quot;faq&quot;,
     incremental searches are performed for &quot;f&quot;, &quot;fa&quot;, and
     &quot;faq&quot; respectively.
+  </summary>
+</histogram>
+
+<histogram name="Drive.TransferBlockedOnJobs" units="jobs">
+  <owner>mtomasz@chromium.org</owner>
+  <summary>
+    Number of jobs which have to be completed before a newly added download or
+    download from or to Drive is requested. Temporary histogram for gathering
+    data for http://crbug.com/229650.
+  </summary>
+</histogram>
+
+<histogram name="Drive.UploadToDriveFileSize" units="KB">
+  <owner>mtomasz@chromium.org</owner>
+  <summary>
+    Sizes of files being uploaded to Drive. Temporary histogram for gathering
+    data for http://crbug.com/229650.
   </summary>
 </histogram>
 
