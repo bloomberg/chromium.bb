@@ -69,8 +69,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       observer_(NULL),
       can_use_log_router_(false),
       autofill_sync_state_(ALLOW_SYNC_CREDENTIALS),
-      sync_credential_was_filtered_(false),
-      weak_factory_(this) {
+      sync_credential_was_filtered_(false) {
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
   if (service)
@@ -195,11 +194,6 @@ void ChromePasswordManagerClient::PasswordAutofillWasBlocked(
       ManagePasswordsUIController::FromWebContents(web_contents());
   if (controller && IsTheHotNewBubbleUIEnabled())
     controller->OnBlacklistBlockedAutofill(best_matches);
-}
-
-void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) {
-  CommitFillPasswordForm(fill_data.get());
 }
 
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
@@ -386,11 +380,6 @@ void ChromePasswordManagerClient::NotifyRendererOfLoggingAvailability() {
   web_contents()->GetRenderViewHost()->Send(new AutofillMsg_SetLoggingState(
       web_contents()->GetRenderViewHost()->GetRoutingID(),
       can_use_log_router_));
-}
-
-void ChromePasswordManagerClient::CommitFillPasswordForm(
-    autofill::PasswordFormFillData* data) {
-  driver_.FillPasswordForm(*data);
 }
 
 bool ChromePasswordManagerClient::LastLoadWasTransactionalReauthPage() const {

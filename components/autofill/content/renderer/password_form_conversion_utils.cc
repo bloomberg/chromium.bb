@@ -240,7 +240,6 @@ void GetPasswordForm(const WebFormElement& form, PasswordForm* password_form) {
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
-  password_form->use_additional_authentication = false;
 }
 
 }  // namespace

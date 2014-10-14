@@ -7,7 +7,6 @@
 
 #include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 class PrefService;
@@ -74,11 +73,6 @@ class PasswordManagerClient {
   // order to unblacklist a site, for example. Default implementation is a noop.
   virtual void PasswordAutofillWasBlocked(
       const autofill::PasswordFormMap& best_matches) const {}
-
-  // Called to authenticate the autofill password data.  If authentication is
-  // successful, this should continue filling the form.
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) = 0;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() = 0;

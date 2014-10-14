@@ -30,9 +30,6 @@ bool StubPasswordManagerClient::PromptUserToSavePassword(
 void StubPasswordManagerClient::AutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> saved_manager) {}
 
-void StubPasswordManagerClient::AuthenticateAutofillAndFillForm(
-    scoped_ptr<autofill::PasswordFormFillData> fill_data) {}
-
 PrefService* StubPasswordManagerClient::GetPrefs() { return NULL; }
 
 PasswordStore* StubPasswordManagerClient::GetPasswordStore() { return NULL; }

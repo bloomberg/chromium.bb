@@ -26,8 +26,6 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       scoped_ptr<PasswordFormManager> form_to_save) override;
   virtual void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) override;
   virtual PrefService* GetPrefs() override;
   virtual PasswordStore* GetPasswordStore() override;
   virtual PasswordManagerDriver* GetDriver() override;

@@ -77,8 +77,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   virtual PasswordStore* GetPasswordStore() override { return NULL; }
   virtual PrefService* GetPrefs() override { return prefs_.get(); }
   virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) override {}
   virtual bool IsPasswordSyncEnabled() override { return is_sync_enabled_; }
 
   void set_is_password_sync_enabled(bool enabled) {

@@ -193,12 +193,6 @@ struct PasswordForm {
   // When parsing an HTML form, this is not used.
   int times_used;
 
-  // True if additional system level authentication should be used
-  // (if available) before using this password for autofill.
-  //
-  // Default to false.
-  bool use_additional_authentication;
-
   // Autofill representation of this form. Used to communicate with the
   // Autofill servers if necessary. Currently this is only used to help
   // determine forms where we can trigger password generation.

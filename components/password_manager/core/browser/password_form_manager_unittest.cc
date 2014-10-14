@@ -107,10 +107,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   virtual PrefService* GetPrefs() override { return &prefs_; }
   virtual PasswordStore* GetPasswordStore() override { return password_store_; }
   virtual PasswordManagerDriver* GetDriver() override { return &driver_; }
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) override {
-    driver_.FillPasswordForm(*fill_data.get());
-  }
 
   void SetFormToFilter(const autofill::PasswordForm& form) {
     form_to_filter_ = form;

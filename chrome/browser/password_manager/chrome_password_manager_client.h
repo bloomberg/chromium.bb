@@ -56,8 +56,6 @@ class ChromePasswordManagerClient
       const autofill::PasswordFormMap& best_matches) const override;
   virtual void PasswordAutofillWasBlocked(
       const autofill::PasswordFormMap& best_matches) const override;
-  virtual void AuthenticateAutofillAndFillForm(
-      scoped_ptr<autofill::PasswordFormFillData> fill_data) override;
   virtual PrefService* GetPrefs() override;
   virtual password_manager::PasswordStore* GetPasswordStore() override;
   virtual password_manager::PasswordManagerDriver* GetDriver() override;
@@ -112,11 +110,6 @@ class ChromePasswordManagerClient
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) override;
 
-  // Callback method to be triggered when authentication is successful for a
-  // given password authentication request.  If authentication is disabled or
-  // not supported, this will be triggered directly.
-  void CommitFillPasswordForm(autofill::PasswordFormFillData* fill_data);
-
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
   gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
@@ -170,9 +163,6 @@ class ChromePasswordManagerClient
   // If the sync credential was filtered during autofill. Used for statistics
   // reporting.
   bool sync_credential_was_filtered_;
-
-  // Allows authentication callbacks to be destroyed when this client is gone.
-  base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

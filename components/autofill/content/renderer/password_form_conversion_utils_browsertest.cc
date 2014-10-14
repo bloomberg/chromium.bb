@@ -165,7 +165,6 @@ TEST_F(PasswordFormConversionUtilsTest, BasicFormAttributes) {
   EXPECT_FALSE(password_form->preferred);
   EXPECT_FALSE(password_form->blacklisted_by_user);
   EXPECT_EQ(PasswordForm::TYPE_MANUAL, password_form->type);
-  EXPECT_FALSE(password_form->use_additional_authentication);
 }
 
 TEST_F(PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {

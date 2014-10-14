@@ -45,8 +45,6 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordForm)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(times_used)
   IPC_STRUCT_TRAITS_MEMBER(form_data)
-  // Excluding |use_additional_authentication| as it is only set and read in the
-  // browser process and the renderer need not know about it.
 IPC_STRUCT_TRAITS_END()
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
