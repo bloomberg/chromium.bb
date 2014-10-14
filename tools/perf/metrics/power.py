@@ -102,7 +102,9 @@ class PowerMetric(Metric):
         self._results.get('application_energy_consumption_mwh'))
     total_energy_consumption_mwh = self._results.get('energy_consumption_mwh')
 
-    if not application_energy_consumption_mwh and total_energy_consumption_mwh:
+    if (PowerMetric._quiescent_power_draw_mwh and
+        application_energy_consumption_mwh is None and
+        total_energy_consumption_mwh is not None):
       application_energy_consumption_mwh = max(
           total_energy_consumption_mwh - PowerMetric._quiescent_power_draw_mwh,
           0)
