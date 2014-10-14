@@ -326,6 +326,13 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
     return adoptRef(builder.build());
 }
 
+static inline FloatRect pixelSnappedSelectionRect(FloatRect rect)
+{
+    // Using roundf() rather than ceilf() for the right edge as a compromise to
+    // ensure correct caret positioning.
+    float roundedX = roundf(rect.x());
+    return FloatRect(roundedX, rect.y(), roundf(rect.maxX() - roundedX), rect.height());
+}
 
 FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
@@ -336,9 +343,8 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
     runInfo.to = to;
 
     if (codePath(runInfo) != ComplexPath)
-        return selectionRectForSimpleText(run, point, h, from, to, accountForGlyphBounds);
-
-    return selectionRectForComplexText(run, point, h, from, to);
+        return pixelSnappedSelectionRect(selectionRectForSimpleText(run, point, h, from, to, accountForGlyphBounds));
+    return pixelSnappedSelectionRect(selectionRectForComplexText(run, point, h, from, to));
 }
 
 int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyphs) const
@@ -1046,14 +1052,6 @@ float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFont
     return shaper.runWidthSoFar();
 }
 
-FloatRect Font::pixelSnappedSelectionRect(float fromX, float toX, float y, float height)
-{
-    // Using roundf() rather than ceilf() for the right edge as a compromise to
-    // ensure correct caret positioning.
-    float roundedX = roundf(fromX);
-    return FloatRect(roundedX, y, roundf(toX - roundedX), height);
-}
-
 FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
     SimpleShaper::GlyphBounds bounds;
@@ -1072,8 +1070,9 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
         toX = totalWidth - beforeWidth;
     }
 
-    return pixelSnappedSelectionRect(point.x() + fromX, point.x() + toX,
+    return FloatRect(point.x() + fromX,
         accountForGlyphBounds ? bounds.minGlyphBoundingBoxY : point.y(),
+        toX - fromX,
         accountForGlyphBounds ? bounds.maxGlyphBoundingBoxY - bounds.minGlyphBoundingBoxY : h);
 }
 

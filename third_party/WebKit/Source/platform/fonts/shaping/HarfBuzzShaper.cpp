@@ -1146,15 +1146,9 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
     if (!foundToX)
         toX = m_run.rtl() ? 0 : m_totalWidth;
 
-    if (fromX < toX) {
-        return Font::pixelSnappedSelectionRect(
-            point.x() + fromX, point.x() + toX,
-            point.y(), height);
-    }
-
-    return Font::pixelSnappedSelectionRect(
-        point.x() + toX, point.x() + fromX,
-        point.y(), height);
+    if (fromX < toX)
+        return FloatRect(point.x() + fromX, point.y(), toX - fromX, height);
+    return FloatRect(point.x() + toX, point.y(), fromX - toX, height);
 }
 
 } // namespace blink
