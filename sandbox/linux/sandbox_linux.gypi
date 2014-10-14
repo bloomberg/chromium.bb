@@ -120,6 +120,7 @@
       'sources': [
         'bpf_dsl/bpf_dsl.cc',
         'bpf_dsl/bpf_dsl.h',
+        'bpf_dsl/bpf_dsl_impl.h',
         'bpf_dsl/cons.h',
         'seccomp-bpf/basicblock.cc',
         'seccomp-bpf/basicblock.h',

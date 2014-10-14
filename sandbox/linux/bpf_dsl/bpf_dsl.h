@@ -282,9 +282,6 @@ class SANDBOX_EXPORT Caser {
 // Official API ends here.
 // =====================================================================
 
-// Definitions below are necessary here only for C++03 compatibility.
-// Once C++11 is available, they should be moved into bpf_dsl.cc via extern
-// templates.
 namespace internal {
 
 // Make argument-dependent lookup work.  This is necessary because although
@@ -304,37 +301,6 @@ SANDBOX_EXPORT BoolExpr
 
 // Returns the default mask for a system call argument of the specified size.
 SANDBOX_EXPORT uint64_t DefaultMask(size_t size);
-
-// Internal interface implemented by BoolExpr implementations.
-class SANDBOX_EXPORT BoolExprImpl : public base::RefCounted<BoolExprImpl> {
- public:
-  BoolExprImpl() {}
-  virtual ErrorCode Compile(SandboxBPF* sb,
-                            ErrorCode true_ec,
-                            ErrorCode false_ec) const = 0;
-
- protected:
-  virtual ~BoolExprImpl() {}
-
- private:
-  friend class base::RefCounted<BoolExprImpl>;
-  DISALLOW_COPY_AND_ASSIGN(BoolExprImpl);
-};
-
-// Internal interface implemented by ResultExpr implementations.
-class SANDBOX_EXPORT ResultExprImpl : public base::RefCounted<ResultExprImpl> {
- public:
-  ResultExprImpl() {}
-  virtual ErrorCode Compile(SandboxBPF* sb) const = 0;
-  virtual bool HasUnsafeTraps() const;
-
- protected:
-  virtual ~ResultExprImpl() {}
-
- private:
-  friend class base::RefCounted<ResultExprImpl>;
-  DISALLOW_COPY_AND_ASSIGN(ResultExprImpl);
-};
 
 }  // namespace internal
 
@@ -387,5 +353,10 @@ ResultExpr Caser<T>::Default(ResultExpr result) const {
 
 }  // namespace bpf_dsl
 }  // namespace sandbox
+
+extern template class SANDBOX_EXPORT
+    scoped_refptr<const sandbox::bpf_dsl::internal::BoolExprImpl>;
+extern template class SANDBOX_EXPORT
+    scoped_refptr<const sandbox::bpf_dsl::internal::ResultExprImpl>;
 
 #endif  // SANDBOX_LINUX_BPF_DSL_BPF_DSL_H_

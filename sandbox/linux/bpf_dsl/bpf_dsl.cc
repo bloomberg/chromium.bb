@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
@@ -404,3 +405,6 @@ ResultExpr SandboxBPFDSLPolicy::Trap(Trap::TrapFnc trap_func, const void* aux) {
 
 }  // namespace bpf_dsl
 }  // namespace sandbox
+
+template class scoped_refptr<const sandbox::bpf_dsl::internal::BoolExprImpl>;
+template class scoped_refptr<const sandbox::bpf_dsl::internal::ResultExprImpl>;
