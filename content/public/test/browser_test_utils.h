@@ -292,7 +292,6 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
  private:
   // Overridden RenderProcessHost::LifecycleObserver methods.
   virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::ProcessHandle handle,
                                    base::TerminationStatus status,
                                    int exit_code) override;
   virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;

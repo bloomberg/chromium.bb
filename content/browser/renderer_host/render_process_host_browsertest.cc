@@ -43,7 +43,6 @@ class RenderProcessHostTest : public ContentBrowserTest,
  protected:
   // RenderProcessHostObserver:
   virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::ProcessHandle handle,
                                    base::TerminationStatus status,
                                    int exit_code) override {
     ++process_exits_;
@@ -122,7 +121,6 @@ class ShellCloser : public RenderProcessHostObserver {
  protected:
   // RenderProcessHostObserver:
   virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::ProcessHandle handle,
                                    base::TerminationStatus status,
                                    int exit_code) override {
     logging_string_->append("ShellCloser::RenderProcessExited ");
@@ -147,7 +145,6 @@ class ObserverLogger : public RenderProcessHostObserver {
  protected:
   // RenderProcessHostObserver:
   virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::ProcessHandle handle,
                                    base::TerminationStatus status,
                                    int exit_code) override {
     logging_string_->append("ObserverLogger::RenderProcessExited ");

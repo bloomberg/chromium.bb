@@ -782,7 +782,6 @@ void RenderProcessHostWatcher::Wait() {
 
 void RenderProcessHostWatcher::RenderProcessExited(
     RenderProcessHost* host,
-    base::ProcessHandle handle,
     base::TerminationStatus status,
     int exit_code) {
   if (type_ == WATCH_FOR_PROCESS_EXIT)

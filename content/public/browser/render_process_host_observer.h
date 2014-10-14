@@ -23,7 +23,6 @@ class CONTENT_EXPORT RenderProcessHostObserver {
   //
   // Note that this is equivalent to WebContentsObserver::RenderProcessGone().
   virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::ProcessHandle handle,
                                    base::TerminationStatus status,
                                    int exit_code) {}
 

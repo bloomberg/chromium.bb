@@ -1924,7 +1924,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
       Details<RendererClosedDetails>(&details));
   FOR_EACH_OBSERVER(RenderProcessHostObserver,
                     observers_,
-                    RenderProcessExited(this, GetHandle(), status, exit_code));
+                    RenderProcessExited(this, status, exit_code));
   within_process_died_observer_ = false;
 
   gpu_message_filter_ = NULL;
