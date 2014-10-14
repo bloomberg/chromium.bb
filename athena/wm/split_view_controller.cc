@@ -36,6 +36,23 @@ const int kDragHandleHeight = 80;
 const int kDragHandleMargin = 1;
 const int kDividerWidth = kDragHandleWidth + 2 * kDragHandleMargin;
 
+// Max distance from the scroll end position to the middle of the screen where
+// we would go into the split view mode.
+const float kMaxDistanceFromMiddle = 120.0f;
+
+// The minimum x-velocity required for a fling to disengage split view mode
+// when targeted to the drag handle.
+const float kMinFlingVelocity = 800.0f;
+
+enum WindowToActivate {
+  // Do not activate either of |left_window_| or |right_window_|.
+  WINDOW_NONE,
+  // Activate |left_window_|.
+  WINDOW_LEFT,
+  // Activate |right_window_|.
+  WINDOW_RIGHT
+};
+
 // Always returns the same target.
 class StaticViewTargeterDelegate : public views::ViewTargeterDelegate {
  public:
@@ -496,6 +513,14 @@ int SplitViewController::GetDefaultDividerPosition() {
   return container_->GetBoundsInScreen().width() / 2;
 }
 
+float SplitViewController::GetMaxDistanceFromMiddleForTest() const {
+  return kMaxDistanceFromMiddle;
+}
+
+float SplitViewController::GetMinFlingVelocityForTest() const {
+  return kMinFlingVelocity;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BezelController::ScrollDelegate:
 
@@ -535,27 +560,34 @@ void SplitViewController::BezelScrollBegin(BezelController::Bezel bezel,
   UpdateLayout(false);
 }
 
-void SplitViewController::BezelScrollEnd() {
+void SplitViewController::BezelScrollEnd(float velocity) {
   if (state_ != SCROLLING)
     return;
 
-  // Max distance from the scroll end position to the middle of the screen where
-  // we would go into the split view mode.
-  const int kMaxDistanceFromMiddle = 120;
-  const int default_divider_position = GetDefaultDividerPosition();
-  if (std::abs(default_divider_position - divider_position_) <=
-      kMaxDistanceFromMiddle) {
-    divider_position_ = default_divider_position;
-    SetState(ACTIVE);
-  } else if (divider_position_ < default_divider_position) {
-    divider_position_ = 0;
-    SetState(INACTIVE);
-    wm::ActivateWindow(right_window_);
-  } else {
-    divider_position_ = container_->GetBoundsInScreen().width();
-    SetState(INACTIVE);
-    wm::ActivateWindow(left_window_);
+  int delta = GetDefaultDividerPosition() - divider_position_;
+  WindowToActivate window = WINDOW_NONE;
+  if (std::abs(velocity) > kMinFlingVelocity)
+    window = velocity > 0 ? WINDOW_LEFT : WINDOW_RIGHT;
+  else if (std::abs(delta) > kMaxDistanceFromMiddle)
+    window = delta > 0 ? WINDOW_RIGHT : WINDOW_LEFT;
+
+  switch (window) {
+    case WINDOW_NONE:
+      divider_position_ = GetDefaultDividerPosition();
+      SetState(ACTIVE);
+      break;
+    case WINDOW_LEFT:
+      divider_position_ = container_->GetBoundsInScreen().width();
+      SetState(INACTIVE);
+      wm::ActivateWindow(left_window_);
+      break;
+    case WINDOW_RIGHT:
+      divider_position_ = 0;
+      SetState(INACTIVE);
+      wm::ActivateWindow(right_window_);
+      break;
   }
+
   UpdateLayout(true);
 }
 
@@ -581,8 +613,8 @@ void SplitViewController::HandleScrollBegin(float delta) {
   UpdateLayout(false);
 }
 
-void SplitViewController::HandleScrollEnd() {
-  BezelScrollEnd();
+void SplitViewController::HandleScrollEnd(float velocity) {
+  BezelScrollEnd(velocity);
 }
 
 void SplitViewController::HandleScrollUpdate(float delta) {

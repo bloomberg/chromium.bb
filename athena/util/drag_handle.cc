@@ -113,7 +113,10 @@ void DragHandleView::OnGestureEvent(ui::GestureEvent* event) {
              event->type() == ui::ET_SCROLL_FLING_START) {
     if (!scroll_in_progress_)
       return;
-    delegate_->HandleScrollEnd();
+    float velocity = 0.0f;
+    if (event->type() == ui::ET_SCROLL_FLING_START)
+      velocity = event->details().velocity_x();
+    delegate_->HandleScrollEnd(velocity);
     SetColor(kDragHandleColorNormal);
     SetIsScrolling(false);
     event->SetHandled();

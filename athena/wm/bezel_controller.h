@@ -39,8 +39,8 @@ class BezelController : public ui::EventHandler {
     // position and the bezel. It will be zero or negative for the right bezel.
     virtual void BezelScrollBegin(Bezel bezel, float delta) = 0;
 
-    // End of the current bezel scroll
-    virtual void BezelScrollEnd() = 0;
+    // End of the current bezel scroll with velocity |velocity|.
+    virtual void BezelScrollEnd(float velocity) = 0;
 
     // Update of the scroll position for the currently active bezel scroll.
     // |delta| has the same meaning as in ScrollBegin().

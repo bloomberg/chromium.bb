@@ -96,7 +96,7 @@ void BezelController::SetState(BezelController::State state,
   } else if (old_state == BEZEL_SCROLLING_TWO_FINGERS) {
     // If BezelScrollEnd() hides |scroll_target_|, ET_GESTURE_END is dispatched
     // and we get a reentrant call to SetState().
-    left_right_delegate_->BezelScrollEnd();
+    left_right_delegate_->BezelScrollEnd(0.0f);
   }
 }
 

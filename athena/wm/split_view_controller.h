@@ -29,6 +29,7 @@ class Widget;
 }
 
 namespace athena {
+class SplitViewControllerTest;
 class WindowListProvider;
 
 // Responsible for entering split view mode, exiting from split view mode, and
@@ -74,6 +75,8 @@ class ATHENA_EXPORT SplitViewController
   aura::Window* right_window() { return right_window_; }
 
  private:
+  friend class SplitViewControllerTest;
+
   enum State {
     // Split View mode is not active. |left_window_| and |right_window| are
     // NULL.
@@ -107,16 +110,20 @@ class ATHENA_EXPORT SplitViewController
   // active and the divider is not being dragged.
   int GetDefaultDividerPosition();
 
+  // Access to constants in anonymous namespace for testing purposes.
+  float GetMaxDistanceFromMiddleForTest() const;
+  float GetMinFlingVelocityForTest() const;
+
   // BezelController::ScrollDelegate:
   virtual void BezelScrollBegin(BezelController::Bezel bezel,
                                 float delta) override;
-  virtual void BezelScrollEnd() override;
+  virtual void BezelScrollEnd(float velocity) override;
   virtual void BezelScrollUpdate(float delta) override;
   virtual bool BezelCanScroll() override;
 
   // DragHandleScrollDelegate:
   virtual void HandleScrollBegin(float delta) override;
-  virtual void HandleScrollEnd() override;
+  virtual void HandleScrollEnd(float velocity) override;
   virtual void HandleScrollUpdate(float delta) override;
 
   // WindowManagerObserver:

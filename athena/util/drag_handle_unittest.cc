@@ -15,6 +15,7 @@ class DragHandleDelegateTest : public DragHandleScrollDelegate {
  public:
   explicit DragHandleDelegateTest()
       : begin_delta_(0),
+        scroll_end_velocity_(0),
         got_scroll_end_(false),
         update_delta_(0) {}
 
@@ -22,11 +23,13 @@ class DragHandleDelegateTest : public DragHandleScrollDelegate {
 
   void Reset() {
     begin_delta_ = 0;
+    scroll_end_velocity_ = 0;
     got_scroll_end_ = false;
     update_delta_ = 0;
   }
 
   float begin_delta() { return begin_delta_; }
+  float scroll_end_velocity() { return scroll_end_velocity_; }
   bool got_scroll_end() { return got_scroll_end_; }
   float update_delta() { return update_delta_; }
 
@@ -36,7 +39,8 @@ class DragHandleDelegateTest : public DragHandleScrollDelegate {
     begin_delta_ = delta;
   }
 
-  virtual void HandleScrollEnd() override {
+  virtual void HandleScrollEnd(float velocity) override {
+    scroll_end_velocity_ = velocity;
     got_scroll_end_ = true;
   }
 
@@ -45,6 +49,7 @@ class DragHandleDelegateTest : public DragHandleScrollDelegate {
   }
 
   float begin_delta_;
+  float scroll_end_velocity_;
   bool got_scroll_end_;
   float update_delta_;
 
@@ -94,6 +99,7 @@ TEST_F(DragHandleTest, ScrollTest) {
   const float begin_x = 4.0;
   const float begin_delta = 10.0;
   const float update_delta = 15.0;
+  const float fling_velocity = 19.0;
 
   ui::GestureEvent scroll_begin_model =
       CreateGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, begin_x, begin_delta);
@@ -103,10 +109,10 @@ TEST_F(DragHandleTest, ScrollTest) {
                          update_delta - begin_delta);
   ui::GestureEvent scroll_end_model =
       CreateGestureEvent(ui::ET_GESTURE_SCROLL_END, begin_x + update_delta, 0);
-  ui::GestureEvent fling_start_model =
-      CreateGestureEvent(ui::ET_SCROLL_FLING_START, begin_x + update_delta, 0);
+  ui::GestureEvent fling_start_model = CreateGestureEvent(
+      ui::ET_SCROLL_FLING_START, begin_x + update_delta, fling_velocity);
 
-  // Normal scroll
+  // Scroll not ending with a fling.
   ui::GestureEvent e(scroll_begin_model);
   widget.OnGestureEvent(&e);
   EXPECT_EQ(begin_delta, delegate.begin_delta());
@@ -120,10 +126,11 @@ TEST_F(DragHandleTest, ScrollTest) {
   widget.OnGestureEvent(&e);
   EXPECT_EQ(update_delta, delegate.update_delta());
   EXPECT_TRUE(delegate.got_scroll_end());
+  EXPECT_EQ(0, delegate.scroll_end_velocity());
 
   delegate.Reset();
 
-  // Scroll ending with a fling
+  // Scroll ending with a fling.
   e = ui::GestureEvent(scroll_begin_model);
   widget.OnGestureEvent(&e);
   e = ui::GestureEvent(scroll_update_model);
@@ -131,6 +138,7 @@ TEST_F(DragHandleTest, ScrollTest) {
   e = ui::GestureEvent(fling_start_model);
   widget.OnGestureEvent(&e);
   EXPECT_TRUE(delegate.got_scroll_end());
+  EXPECT_EQ(fling_velocity, delegate.scroll_end_velocity());
 
   delegate.Reset();
 

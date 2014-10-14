@@ -19,8 +19,8 @@ class DragHandleScrollDelegate {
   // Beginning of a scroll gesture.
   virtual void HandleScrollBegin(float delta) = 0;
 
-  // End of the current scroll gesture.
-  virtual void HandleScrollEnd() = 0;
+  // End of the current scroll gesture with velocity |velocity|.
+  virtual void HandleScrollEnd(float velocity) = 0;
 
   // Update of the scroll position for the currently active scroll gesture.
   virtual void HandleScrollUpdate(float delta) = 0;
