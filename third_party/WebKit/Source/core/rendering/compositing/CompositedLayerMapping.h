@@ -284,7 +284,7 @@ private:
     void updateBackgroundColor();
     void updateContentsRect();
     void updateContentsOffsetInCompositingLayer(const IntPoint& snappedOffsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation);
-    void updateAfterWidgetResize();
+    void updateAfterPartResize();
     void updateCompositingReasons();
 
     static bool hasVisibleNonCompositingDescendant(RenderLayer* parent);

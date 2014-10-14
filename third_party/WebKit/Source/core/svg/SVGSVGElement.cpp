@@ -38,7 +38,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"

@@ -320,7 +320,7 @@ void CompositedLayerMapping::updateCompositedBounds()
     m_contentOffsetInCompositingLayerDirty = true;
 }
 
-void CompositedLayerMapping::updateAfterWidgetResize()
+void CompositedLayerMapping::updateAfterPartResize()
 {
     if (renderer()->isRenderPart()) {
         if (RenderLayerCompositor* innerCompositor = RenderLayerCompositor::frameContentsCompositor(toRenderPart(renderer()))) {
@@ -707,7 +707,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const RenderLayer* comp
     updateBackgroundColor();
     updateDrawsContent();
     updateContentsOpaque();
-    updateAfterWidgetResize();
+    updateAfterPartResize();
     updateRenderingContext();
     updateShouldFlattenTransform();
     updateChildrenTransform();
