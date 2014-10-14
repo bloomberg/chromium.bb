@@ -1827,4 +1827,19 @@ const char kCreateSecureMessageMethod[] = "CreateSecureMessage";
 const char kUnwrapSecureMessageMethod[] = "UnwrapSecureMessage";
 }  // namespace easy_unlock
 
+
+namespace apmanager {
+const char kServiceName[] = "org.chromium.apmanager";
+const char kManagerInterface[] = "org.chromium.apmanager.Manager";
+const char kManagerPath[] = "/manager";
+const char kServiceInterface[] = "org.chromium.apmanager.Service";
+const char kConfigInterface[] = "org.chromium.apmanager.Config";
+const char kClientInterface[] = "org.chromium.apmanager.Client";
+const char kDeviceInterface[] = "org.chromium.apmanager.Device";
+
+// Manager Methods.
+const char kCreateServiceMethod[] = "CreateService";
+const char kRemoveServiceMethod[] = "RemoveService";
+}  // namespace apmanager
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
