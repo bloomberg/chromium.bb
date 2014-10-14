@@ -32,42 +32,12 @@ Canvas log:
         }
     }
     10 : {
-        method : "drawRect"
-        params : {
-            paint : {
-                color : "#FF000000"
-                filterLevel : "Low"
-                flags : "AntiAlias"
-                hinting : "Normal"
-                strokeCap : "Butt"
-                strokeJoin : "Miter"
-                strokeMiter : 4
-                strokeWidth : 0
-                styleName : "Fill"
-                textAlign : "Left"
-                textEncoding : "UTF-8"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
-            }
-            rect : {
-                bottom : 10
-                left : 0
-                right : 10
-                top : 0
-            }
-        }
+        method : "restore"
     }
     11 : {
         method : "restore"
     }
     12 : {
-        method : "restore"
-    }
-    13 : {
-        method : "restore"
-    }
-    14 : {
         method : "restore"
     }
     2 : {
@@ -160,10 +130,19 @@ Canvas log:
         }
     }
     6 : {
-        method : "translate"
+        method : "setMatrix"
         params : {
-            dx : 0
-            dy : 71
+            matrix : [
+                1
+                0
+                0
+                0
+                1
+                71
+                0
+                0
+                1
+            ]
         }
     }
     7 : {
@@ -183,12 +162,12 @@ Canvas log:
         }
     }
     9 : {
-        method : "saveLayer"
+        method : "drawRect"
         params : {
             paint : {
                 color : "#7F000000"
-                filterLevel : "None"
-                flags : "none"
+                filterLevel : "Low"
+                flags : "AntiAlias"
                 hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
@@ -201,7 +180,12 @@ Canvas log:
                 textSize : 12
                 textSkewX : 0
             }
-            saveFlags : "kHasAlphaLayer_SaveFlag kFullColorLayer_SaveFlag kClipToLayer_SaveFlag "
+            rect : {
+                bottom : 10
+                left : 0
+                right : 10
+                top : 0
+            }
         }
     }
 }
