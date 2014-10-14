@@ -113,8 +113,9 @@ class BasicBPFTesterDelegate : public BPFTesterDelegate {
   BasicBPFTesterDelegate() {}
   virtual ~BasicBPFTesterDelegate() {}
 
-  virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() override {
-    return scoped_ptr<SandboxBPFPolicy>(new EnosysPtracePolicy());
+  virtual scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> GetSandboxBPFPolicy()
+      override {
+    return scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy>(new EnosysPtracePolicy());
   }
   virtual void RunTestFunction() override {
     errno = 0;

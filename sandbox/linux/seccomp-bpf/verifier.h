@@ -14,9 +14,11 @@
 struct sock_filter;
 
 namespace sandbox {
+namespace bpf_dsl {
+class SandboxBPFDSLPolicy;
+}
 struct arch_seccomp_data;
 class SandboxBPF;
-class SandboxBPFPolicy;
 
 class Verifier {
  public:
@@ -29,7 +31,7 @@ class Verifier {
   // error message that does not need to be free()'d.
   static bool VerifyBPF(SandboxBPF* sandbox,
                         const std::vector<struct sock_filter>& program,
-                        const SandboxBPFPolicy& policy,
+                        const bpf_dsl::SandboxBPFDSLPolicy& policy,
                         const char** err);
 
   // Evaluate a given BPF program for a particular set of system call

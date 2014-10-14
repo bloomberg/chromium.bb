@@ -19,7 +19,7 @@ namespace sandbox {
 // to not support seccomp-bpf in their kernels.
 // This is the preferred format for new BPF tests. |bpf_policy_class_name| is a
 // class name  (which will be default-constructed) that implements the
-// SandboxBPFPolicy interface.
+// SandboxBPFDSLPolicy interface.
 // The test function's body can simply follow. Test functions should use
 // the BPF_ASSERT macros defined below, not GTEST's macros. The use of
 // CHECK* macros is supported but less robust.
@@ -67,7 +67,7 @@ namespace sandbox {
 
 // This form of BPF_TEST is now discouraged (but still allowed) in favor of
 // BPF_TEST_D and BPF_TEST_C.
-// The |policy| parameter should be a SandboxBPFPolicy subclass.
+// The |policy| parameter should be a SandboxBPFDSLPolicy subclass.
 // BPF_TEST() takes a C++ data type as an fourth parameter. A variable
 // of this type will be allocated and a pointer to it will be
 // available within the test function as "BPF_AUX". The pointer will
@@ -104,8 +104,9 @@ class BPFTesterSimpleDelegate : public BPFTesterDelegate {
       : test_function_(test_function) {}
   virtual ~BPFTesterSimpleDelegate() {}
 
-  virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() override {
-    return scoped_ptr<SandboxBPFPolicy>(new PolicyClass());
+  virtual scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> GetSandboxBPFPolicy()
+      override {
+    return scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy>(new PolicyClass());
   }
   virtual void RunTestFunction() override {
     DCHECK(test_function_);

@@ -91,8 +91,9 @@ class ClockSystemTesterDelegate : public sandbox::BPFTesterDelegate {
       : is_running_on_chromeos_(base::SysInfo::IsRunningOnChromeOS()) {}
   virtual ~ClockSystemTesterDelegate() {}
 
-  virtual scoped_ptr<sandbox::SandboxBPFPolicy> GetSandboxBPFPolicy() override {
-    return scoped_ptr<sandbox::SandboxBPFPolicy>(
+  virtual scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>
+  GetSandboxBPFPolicy() override {
+    return scoped_ptr<sandbox::bpf_dsl::SandboxBPFDSLPolicy>(
         new RestrictClockIdPolicy());
   }
   virtual void RunTestFunction() override {

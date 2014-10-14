@@ -55,7 +55,7 @@ namespace content {
 #if defined(USE_SECCOMP_BPF)
 namespace {
 
-void StartSandboxWithPolicy(sandbox::SandboxBPFPolicy* policy);
+void StartSandboxWithPolicy(sandbox::bpf_dsl::SandboxBPFDSLPolicy* policy);
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -140,7 +140,7 @@ void RunSandboxSanityChecks(const std::string& process_type) {
 
 
 // This function takes ownership of |policy|.
-void StartSandboxWithPolicy(sandbox::SandboxBPFPolicy* policy) {
+void StartSandboxWithPolicy(sandbox::bpf_dsl::SandboxBPFDSLPolicy* policy) {
   // Starting the sandbox is a one-way operation. The kernel doesn't allow
   // us to unload a sandbox policy after it has been started. Nonetheless,
   // in order to make the use of the "Sandbox" object easier, we allow for

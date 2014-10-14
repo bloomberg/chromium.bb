@@ -134,8 +134,6 @@
         'seccomp-bpf/linux_seccomp.h',
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
-        'seccomp-bpf/sandbox_bpf_policy.cc',
-        'seccomp-bpf/sandbox_bpf_policy.h',
         'seccomp-bpf/syscall.cc',
         'seccomp-bpf/syscall.h',
         'seccomp-bpf/syscall_iterator.cc',

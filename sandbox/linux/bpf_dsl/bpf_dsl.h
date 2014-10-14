@@ -13,13 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/bpf_dsl/cons.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 class ErrorCode;
 class SandboxBPF;
+class Verifier;
 }
 
 // The sandbox::bpf_dsl namespace provides a domain-specific language
@@ -93,31 +93,35 @@ typedef scoped_refptr<const internal::ResultExprImpl> ResultExpr;
 // BoolExpr is an opaque reference to an immutable boolean expression tree.
 typedef scoped_refptr<const internal::BoolExprImpl> BoolExpr;
 
-// Helper class to make writing policies easier.
-class SANDBOX_EXPORT SandboxBPFDSLPolicy : public SandboxBPFPolicy {
+// Interface to implement to define a BPF sandbox policy.
+// TODO(mdempsky): "sandbox::bpf_dsl::SandboxBPFDSLPolicy" is
+// tediously repetitive; rename to just "Policy".
+class SANDBOX_EXPORT SandboxBPFDSLPolicy {
  public:
-  SandboxBPFDSLPolicy() : SandboxBPFPolicy() {}
+  SandboxBPFDSLPolicy() {}
   virtual ~SandboxBPFDSLPolicy() {}
 
   // User extension point for writing custom sandbox policies.
+  // The returned ResultExpr will control how the kernel responds to the
+  // specified system call number.
   virtual ResultExpr EvaluateSyscall(int sysno) const = 0;
 
   // Optional overload for specifying alternate behavior for invalid
   // system calls.  The default is to return ENOSYS.
   virtual ResultExpr InvalidSyscall() const;
 
-  // Override implementations from SandboxBPFPolicy.  Marked as final
-  // to prevent mixups with child classes accidentally overloading
-  // these instead of the above methods.
-  virtual ErrorCode EvaluateSyscall(SandboxBPF* sb,
-                                    int sysno) const override final;
-  virtual ErrorCode InvalidSyscall(SandboxBPF* sb) const override final;
-  virtual bool HasUnsafeTraps() const override final;
-
   // Helper method so policies can just write Trap(func, aux).
   static ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
 
  private:
+  friend SandboxBPF;
+  friend Verifier;
+
+  // Private methods used for compiling and verifying policies.
+  ErrorCode EvaluateSyscall(SandboxBPF* sb, int sysno) const;
+  ErrorCode InvalidSyscall(SandboxBPF* sb) const;
+  bool HasUnsafeTraps() const;
+
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFDSLPolicy);
 };
 

@@ -8,9 +8,9 @@
 
 #include <limits>
 
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
 namespace sandbox {
@@ -312,7 +312,7 @@ void Alu(State* state, const struct sock_filter& insn, const char** err) {
 
 bool Verifier::VerifyBPF(SandboxBPF* sandbox,
                          const std::vector<struct sock_filter>& program,
-                         const SandboxBPFPolicy& policy,
+                         const bpf_dsl::SandboxBPFDSLPolicy& policy,
                          const char** err) {
   *err = NULL;
   for (SyscallIterator iter(false); !iter.Done();) {

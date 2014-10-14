@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/tests/sandbox_test_runner.h"
 
 namespace sandbox {
@@ -24,7 +24,7 @@ class BPFTesterDelegate {
   // This will instanciate a policy suitable for the test we want to run. It is
   // guaranteed to only be called from the child process that will run the
   // test.
-  virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() = 0;
+  virtual scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> GetSandboxBPFPolicy() = 0;
   // This will be called from a child process with the BPF sandbox turned on.
   virtual void RunTestFunction() = 0;
 

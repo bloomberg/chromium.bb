@@ -36,7 +36,6 @@
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
@@ -222,8 +221,9 @@ bool SandboxBPF::IsValidSyscallNumber(int sysnum) {
   return SyscallIterator::IsValid(sysnum);
 }
 
-bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
-                                     scoped_ptr<SandboxBPFPolicy> policy) {
+bool SandboxBPF::RunFunctionInPolicy(
+    void (*code_in_sandbox)(),
+    scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> policy) {
   // Block all signals before forking a child process. This prevents an
   // attacker from manipulating our test by sending us an unexpected signal.
   sigset_t old_mask, new_mask;
@@ -342,11 +342,12 @@ bool SandboxBPF::RunFunctionInPolicy(void (*code_in_sandbox)(),
 }
 
 bool SandboxBPF::KernelSupportSeccompBPF() {
-  return RunFunctionInPolicy(ProbeProcess,
-                             scoped_ptr<SandboxBPFPolicy>(new ProbePolicy())) &&
+  return RunFunctionInPolicy(
+             ProbeProcess,
+             scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy>(new ProbePolicy())) &&
          RunFunctionInPolicy(
              TryVsyscallProcess,
-             scoped_ptr<SandboxBPFPolicy>(new AllowAllPolicy()));
+             scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy>(new AllowAllPolicy()));
 }
 
 // static
@@ -489,7 +490,7 @@ bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
   return true;
 }
 
-void SandboxBPF::PolicySanityChecks(SandboxBPFPolicy* policy) {
+void SandboxBPF::PolicySanityChecks(bpf_dsl::SandboxBPFDSLPolicy* policy) {
   if (!IsDenied(policy->InvalidSyscall(this))) {
     SANDBOX_DIE("Policies should deny invalid system calls.");
   }
@@ -497,7 +498,7 @@ void SandboxBPF::PolicySanityChecks(SandboxBPFPolicy* policy) {
 }
 
 // Don't take a scoped_ptr here, polymorphism make their use awkward.
-void SandboxBPF::SetSandboxPolicy(SandboxBPFPolicy* policy) {
+void SandboxBPF::SetSandboxPolicy(bpf_dsl::SandboxBPFDSLPolicy* policy) {
   DCHECK(!policy_);
   if (sandbox_has_started_ || !conds_) {
     SANDBOX_DIE("Cannot change policy after sandbox has started");

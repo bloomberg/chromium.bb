@@ -20,8 +20,10 @@
 struct sock_filter;
 
 namespace sandbox {
+namespace bpf_dsl {
+class SandboxBPFDSLPolicy;
+}
 class CodeGen;
-class SandboxBPFPolicy;
 class SandboxUnittestHelper;
 struct Instruction;
 
@@ -89,7 +91,7 @@ class SANDBOX_EXPORT SandboxBPF {
 
   // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
   // to the sandbox object.
-  void SetSandboxPolicy(SandboxBPFPolicy* policy);
+  void SetSandboxPolicy(bpf_dsl::SandboxBPFDSLPolicy* policy);
 
   // Error returns an ErrorCode to indicate the system call should fail with
   // the specified error number.
@@ -216,7 +218,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // policy. The caller has to make sure that "this" has not yet been
   // initialized with any other policies.
   bool RunFunctionInPolicy(void (*code_in_sandbox)(),
-                           scoped_ptr<SandboxBPFPolicy> policy);
+                           scoped_ptr<bpf_dsl::SandboxBPFDSLPolicy> policy);
 
   // Performs a couple of sanity checks to verify that the kernel supports the
   // features that we need for successful sandboxing.
@@ -225,7 +227,7 @@ class SANDBOX_EXPORT SandboxBPF {
   bool KernelSupportSeccompBPF();
 
   // Verify that the current policy passes some basic sanity checks.
-  void PolicySanityChecks(SandboxBPFPolicy* policy);
+  void PolicySanityChecks(bpf_dsl::SandboxBPFDSLPolicy* policy);
 
   // Assembles and installs a filter based on the policy that has previously
   // been configured with SetSandboxPolicy().
@@ -298,7 +300,7 @@ class SANDBOX_EXPORT SandboxBPF {
 
   bool quiet_;
   int proc_fd_;
-  scoped_ptr<const SandboxBPFPolicy> policy_;
+  scoped_ptr<const bpf_dsl::SandboxBPFDSLPolicy> policy_;
   Conds* conds_;
   bool sandbox_has_started_;
   bool has_unsafe_traps_;
