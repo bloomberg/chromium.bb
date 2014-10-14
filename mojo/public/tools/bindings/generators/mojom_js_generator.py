@@ -275,11 +275,20 @@ class Generator(generator.Generator):
     self.Write(self.GenerateHTMLModule(), "%s.html" % self.module.name)
 
   def GetImports(self):
-    # Since each import is assigned a variable in JS, they need to have unique
-    # names.
-    counter = 1
-    for each in self.module.imports:
-      each["unique_name"] = "import" + str(counter)
+    used_names = set()
+    for each_import in self.module.imports:
+      simple_name = each_import["module_name"].split(".")[0]
+
+      # Since each import is assigned a variable in JS, they need to have unique
+      # names.
+      unique_name = simple_name
+      counter = 0
+      while unique_name in used_names:
+        counter += 1
+        unique_name = simple_name + str(counter)
+
+      used_names.add(unique_name)
+      each_import["unique_name"] = unique_name
       counter += 1
     return self.module.imports
 
