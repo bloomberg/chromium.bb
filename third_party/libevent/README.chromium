@@ -18,3 +18,8 @@ static library using GYP.
 5) Apply r87338.
 6) The configs for android were copied from Linux's which were very close to
    android one with the exception of HAVE_FD_MASK and HAVE_STRLCPY.
+7) Add files to support building with the PNaCl toolchain. Added
+   libevent_nacl_nonsfi.gyp for build rule. nacl_nonsfi/config.h and
+   nacl_nonsfi/event-config.h are derived from linux/ counterparts.
+   nacl_nonsfi/random.c is also added to provide the random() function,
+   which is missing in the newlib-based PNaCl toolchain.
