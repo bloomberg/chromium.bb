@@ -21,7 +21,7 @@ class Page1(WebrtcCasesPage):
            'getusermedia-resolution/'),
       page_set=page_set)
 
-  def RunWebrtc(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.ClickElement('button[id="vga"]')
     action_runner.Wait(10)
 
@@ -36,7 +36,7 @@ class Page2(WebrtcCasesPage):
            'peerconnection/'),
       page_set=page_set)
 
-  def RunWebrtc(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.ClickElement('button[id="startButton"]')
     action_runner.Wait(2)
     action_runner.ClickElement('button[id="callButton"]')
@@ -53,7 +53,7 @@ class Page3(WebrtcCasesPage):
            'getusermedia-resolution/'),
       page_set=page_set)
 
-  def RunWebrtc(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.ClickElement('button[id="hd"]')
     action_runner.Wait(10)
 
