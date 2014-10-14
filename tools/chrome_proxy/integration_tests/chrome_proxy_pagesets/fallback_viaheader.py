@@ -13,11 +13,15 @@ class FallbackViaHeaderPage(page_module.Page):
 
 
 class FallbackViaHeaderPageSet(page_set_module.PageSet):
-
   """ Chrome proxy test sites """
 
   def __init__(self):
     super(FallbackViaHeaderPageSet, self).__init__()
 
-    self.AddPage(FallbackViaHeaderPage(
-        'http://chromeproxy-test.appspot.com/default', self))
+    urls_list = [
+        'http://chromeproxy-test.appspot.com/default?respStatus=200',
+        'http://chromeproxy-test.appspot.com/default?respStatus=413',
+    ]
+
+    for url in urls_list:
+      self.AddPage(FallbackViaHeaderPage(url, self))

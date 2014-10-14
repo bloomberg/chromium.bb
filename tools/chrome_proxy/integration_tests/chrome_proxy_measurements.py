@@ -220,7 +220,8 @@ class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
   """
 
   def __init__(self):
-    super(ChromeProxyHTTPFallbackViaHeader, self).__init__()
+    super(ChromeProxyHTTPFallbackViaHeader, self).__init__(
+        restart_after_each_page=True)
 
   def CustomizeBrowserOptions(self, options):
     super(ChromeProxyHTTPFallbackViaHeader,
