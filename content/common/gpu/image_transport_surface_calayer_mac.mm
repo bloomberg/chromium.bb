@@ -215,9 +215,13 @@ void CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser() {
 }
 
 void CALayerStorageProvider::WillWriteToBackbuffer() {
-  // The browser will always throttle itself so that there is no pending draw
-  // when this output surface is written to.
-  DCHECK(!has_pending_draw_);
+  // The browser should always throttle itself so that there are no pending
+  // draws when the output surface is written to, but in the event of things
+  // like context lost, or changing context, this will not be true. If there
+  // exists a pending draw, flush it immediately to maintain a consistent
+  // state.
+  if (has_pending_draw_)
+    DrawImmediatelyAndUnblockBrowser();
 }
 
 void CALayerStorageProvider::DiscardBackbuffer() {
