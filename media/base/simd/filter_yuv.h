@@ -17,13 +17,13 @@ MEDIA_EXPORT void FilterYUVRows_C(uint8* ybuf,
                                   const uint8* y0_ptr,
                                   const uint8* y1_ptr,
                                   int source_width,
-                                  int source_y_fraction);
+                                  uint8 source_y_fraction);
 
 MEDIA_EXPORT void FilterYUVRows_SSE2(uint8* ybuf,
                                      const uint8* y0_ptr,
                                      const uint8* y1_ptr,
                                      int source_width,
-                                     int source_y_fraction);
+                                     uint8 source_y_fraction);
 
 }  // namespace media
 

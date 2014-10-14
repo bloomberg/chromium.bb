@@ -7,9 +7,9 @@
 namespace media {
 
 void FilterYUVRows_C(uint8* ybuf, const uint8* y0_ptr, const uint8* y1_ptr,
-                     int source_width, int source_y_fraction) {
-  int y1_fraction = source_y_fraction;
-  int y0_fraction = 256 - y1_fraction;
+                     int source_width, uint8 source_y_fraction) {
+  uint8 y1_fraction = source_y_fraction;
+  uint16 y0_fraction = 256 - y1_fraction;
   uint8* end = ybuf + source_width;
   uint8* rounded_end = ybuf + (source_width & ~7);
 

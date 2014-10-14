@@ -40,7 +40,11 @@ extern "C" { void EmptyRegisterState_MMX(); }  // extern "C"
 
 namespace media {
 
-typedef void (*FilterYUVRowsProc)(uint8*, const uint8*, const uint8*, int, int);
+typedef void (*FilterYUVRowsProc)(uint8*,
+                                  const uint8*,
+                                  const uint8*,
+                                  int,
+                                  uint8);
 
 typedef void (*ConvertRGBToYUVProc)(const uint8*,
                                     uint8*,
@@ -331,7 +335,7 @@ void ScaleYUVToRGB32(const uint8* y_buf,
       v_ptr = v_buf + (source_y >> y_shift) * uv_pitch;
 
       // Vertical scaler uses 16.8 fixed point.
-      int source_y_fraction = (source_y_subpixel & kFractionMask) >> 8;
+      uint8 source_y_fraction = (source_y_subpixel & kFractionMask) >> 8;
       if (source_y_fraction != 0) {
         g_filter_yuv_rows_proc_(
             ybuf, y_ptr, y_ptr + y_pitch, source_width, source_y_fraction);
@@ -342,7 +346,7 @@ void ScaleYUVToRGB32(const uint8* y_buf,
       ybuf[source_width] = ybuf[source_width - 1];
 
       int uv_source_width = (source_width + 1) / 2;
-      int source_uv_fraction;
+      uint8 source_uv_fraction;
 
       // For formats with half-height UV planes, each even-numbered pixel row
       // should not interpolate, since the next row to interpolate from should
@@ -470,7 +474,7 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
   // 4096 bytes allows 3 buffers to fit in 12k, which fits in a 16K L1 cache,
   // and is bigger than most users will generally need.
   // The buffer is 16-byte aligned and padded with 16 extra bytes; some of the
-  // FilterYUVRowProcs have alignment requirements, and the SSE version can
+  // FilterYUVRowsProcs have alignment requirements, and the SSE version can
   // write up to 16 bytes past the end of the buffer.
   const int kFilterBufferSize = 4096;
   const bool kAvoidUsingOptimizedFilter = source_width > kFilterBufferSize;
@@ -519,7 +523,7 @@ void ScaleYUVToRGB32WithRect(const uint8* y_buf,
 
     if (!kAvoidUsingOptimizedFilter) {
       // Vertical scaler uses 16.8 fixed point.
-      int fraction = (source_top & kFractionMask) >> 8;
+      uint8 fraction = (source_top & kFractionMask) >> 8;
       g_filter_yuv_rows_proc_(
           y_temp + source_y_left, y0_ptr, y1_ptr, source_y_width, fraction);
       g_filter_yuv_rows_proc_(
