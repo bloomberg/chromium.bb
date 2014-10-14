@@ -1699,6 +1699,9 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
             container->setNeedsOverflowRecalcAfterStyleChange();
     }
 
+    if (diff.visualOverflowChanged() && !needsLayout() && isRenderBlock())
+        setNeedsOverflowRecalcAfterStyleChange();
+
     if (updatedDiff.needsPaintInvalidationLayer())
         toRenderLayerModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())

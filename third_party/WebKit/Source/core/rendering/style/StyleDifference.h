@@ -18,6 +18,7 @@ public:
         FilterChanged = 1 << 3,
         // The object needs to issue paint invalidations if it contains text or properties dependent on color (e.g., border or outline).
         TextOrColorChanged = 1 << 4,
+        VisualOverflowChanged = 1 << 5
     };
 
     StyleDifference()
@@ -77,6 +78,8 @@ public:
     bool textOrColorChanged() const { return m_propertySpecificDifferences & TextOrColorChanged; }
     void setTextOrColorChanged() { m_propertySpecificDifferences |= TextOrColorChanged; }
 
+    bool visualOverflowChanged() const { return m_propertySpecificDifferences & VisualOverflowChanged; }
+    void setVisualOverflowChanged() { m_propertySpecificDifferences |= VisualOverflowChanged; }
 private:
     enum PaintInvalidationType {
         NoPaintInvalidation = 0,
@@ -92,7 +95,7 @@ private:
     };
     unsigned m_layoutType : 2;
 
-    unsigned m_propertySpecificDifferences : 5;
+    unsigned m_propertySpecificDifferences : 6;
 };
 
 } // namespace blink
