@@ -475,7 +475,8 @@ cr.define('options', function() {
      * @protected
      */
     updateSignedInStatus: function(email, hasError) {
-      assertNotReached();
+      // TODO: Fix triggering the assert, crbug.com/423267
+      // assertNotReached();
     },
 
     /**
