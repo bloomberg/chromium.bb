@@ -254,6 +254,7 @@
         '--disable-gtk-doc-pdf',
       ],
       'asan_blacklist': 'blacklists/asan/libglib2.0-0.txt',
+      'msan_blacklist': 'blacklists/msan/libglib2.0-0.txt',
       'run_before_build': 'scripts/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
