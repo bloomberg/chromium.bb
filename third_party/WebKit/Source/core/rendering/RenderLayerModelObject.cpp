@@ -201,9 +201,10 @@ void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const Layout
     // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
     if (layer()->groupedMapping()) {
         LayoutRect paintInvalidationRect = r;
-        paintInvalidationRect.move(layer()->subpixelAccumulation());
-        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
+        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
+            // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
             squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), invalidationReason);
+        }
     } else {
         layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
     }
