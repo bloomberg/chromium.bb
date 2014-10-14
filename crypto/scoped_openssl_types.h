@@ -22,6 +22,7 @@ namespace crypto {
 // base::internal::RunnableAdapter<>, but that's far too heavy weight.
 template <typename Type, void (*Destroyer)(Type*)>
 struct OpenSSLDestroyer {
+  typedef void AllowSelfReset;
   void operator()(Type* ptr) const { Destroyer(ptr); }
 };
 

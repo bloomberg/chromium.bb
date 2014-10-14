@@ -73,7 +73,9 @@ class NET_EXPORT OpenSSLClientKeyStore {
    public:
     explicit KeyPair(EVP_PKEY* pub_key, EVP_PKEY* priv_key);
     KeyPair(const KeyPair& other);
-    void operator=(const KeyPair& other);
+    // Intentionally pass by value, in order to use the copy-and-swap idiom.
+    void operator=(KeyPair other);
+    void swap(KeyPair& other);
     ~KeyPair();
 
     crypto::ScopedEVP_PKEY public_key;

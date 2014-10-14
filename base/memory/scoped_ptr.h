@@ -184,6 +184,17 @@ template <typename T> struct IsNotRefCounted {
   };
 };
 
+template <typename T>
+struct ShouldAbortOnSelfReset {
+  template <typename U>
+  static NoType Test(const typename U::AllowSelfReset*);
+
+  template <typename U>
+  static YesType Test(...);
+
+  static const bool value = sizeof(Test<T>(0)) == sizeof(YesType);
+};
+
 // Minimal implementation of the core logic of scoped_ptr, suitable for
 // reuse in both scoped_ptr and its specializations.
 template <class T, class D>
@@ -222,9 +233,9 @@ class scoped_ptr_impl {
   }
 
   void reset(T* p) {
-    // This is a self-reset, which is no longer allowed: http://crbug.com/162971
-    if (p != nullptr && p == data_.ptr)
-      abort();
+    // This is a self-reset, which is no longer allowed for default deleters:
+    // https://crbug.com/162971
+    assert(!ShouldAbortOnSelfReset<D>::value || p == nullptr || p != data_.ptr);
 
     // Note that running data_.ptr = p can lead to undefined behavior if
     // get_deleter()(get()) deletes this. In order to prevent this, reset()

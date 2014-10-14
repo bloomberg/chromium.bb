@@ -16,6 +16,7 @@ namespace crypto {
 
 template <typename Type, void (*Destroyer)(Type*)>
 struct NSSDestroyer {
+  typedef void AllowSelfReset;
   void operator()(Type* ptr) const {
     Destroyer(ptr);
   }
@@ -23,6 +24,7 @@ struct NSSDestroyer {
 
 template <typename Type, void (*Destroyer)(Type*, PRBool), PRBool freeit>
 struct NSSDestroyer1 {
+  typedef void AllowSelfReset;
   void operator()(Type* ptr) const {
     Destroyer(ptr, freeit);
   }
