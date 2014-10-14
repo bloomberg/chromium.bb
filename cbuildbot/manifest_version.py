@@ -833,16 +833,24 @@ class BuildSpecsManager(object):
     """
     data = BuilderStatus(status, message, dashboard_url).AsPickledDict()
 
+    gs_version = None
     # This HTTP header tells Google Storage to return the PreconditionFailed
-    # error message if the file already exists.
-    gs_version = 0 if fail_if_exists else None
+    # error message if the file already exists. Unfortunately, with new versions
+    # of gsutil, PreconditionFailed is sometimes returned erroneously, so we've
+    # replaced this check with # an Exists check below instead.
+    # TODO(davidjames): Revert CL:223267 when Google Storage is fixed.
+    #if fail_if_exists:
+    #  gs_version = 0
 
     logging.info('Recording status %s for %s', status, self.build_names)
     for build_name in self.build_names:
       url = BuildSpecsManager._GetStatusUrl(build_name, version)
 
-      # Do the actual upload.
       ctx = gs.GSContext(dry_run=self.dry_run)
+      # Check if the file already exists.
+      if fail_if_exists and not self.dry_run and ctx.Exists(url):
+        raise GenerateBuildSpecException('Builder already inflight')
+      # Do the actual upload.
       ctx.Copy('-', url, input=data, version=gs_version)
 
   def UploadStatus(self, success, message=None, dashboard_url=None):
