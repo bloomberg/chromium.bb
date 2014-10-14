@@ -4,14 +4,11 @@
 
 package org.chromium.cronet_test_apk;
 
-import android.os.ConditionVariable;
-
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
-import org.chromium.net.HttpUrlRequestListener;
 
 import java.io.File;
 import java.util.HashMap;
@@ -93,37 +90,7 @@ public class CronetUrlTest extends CronetTestBase {
         assertTrue(!file.exists());
     }
 
-    class SimpleHttpUrlRequestListener implements HttpUrlRequestListener {
-        ConditionVariable mComplete = new ConditionVariable();
-        public String negotiatedProtocol;
-        public int httpStatusCode = 0;
-        public byte httpResponseData[];
-
-        public SimpleHttpUrlRequestListener() {
-        }
-
-        @Override
-        public void onResponseStarted(HttpUrlRequest request) {
-            negotiatedProtocol = request.getNegotiatedProtocol();
-            httpStatusCode = request.getHttpStatusCode();
-        }
-
-        @Override
-        public void onRequestComplete(HttpUrlRequest request) {
-            httpResponseData = request.getResponseAsBytes();
-            mComplete.open();
-        }
-
-        public void blockForComplete() {
-            mComplete.block();
-        }
-
-        public void resetComplete() {
-            mComplete.close();
-        }
-    }
-
-    class BadHttpUrlRequestListener extends SimpleHttpUrlRequestListener {
+    class BadHttpUrlRequestListener extends TestHttpUrlRequestListener {
         static final String THROW_TAG = "BadListener";
 
         public BadHttpUrlRequestListener() {
@@ -205,8 +172,7 @@ public class CronetUrlTest extends CronetTestBase {
         waitForActiveShellToBeDoneLoading();
 
         HashMap<String, String> headers = new HashMap<String, String>();
-        SimpleHttpUrlRequestListener listener =
-                new SimpleHttpUrlRequestListener();
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
 
         // Try several times as first request may not use QUIC.
         // TODO(mef): Remove loop after adding http server properties manager.
@@ -219,15 +185,15 @@ public class CronetUrlTest extends CronetTestBase {
                             listener);
             request.start();
             listener.blockForComplete();
-            assertEquals(200, listener.httpStatusCode);
-            if (listener.negotiatedProtocol.equals(quicNegotiatedProtocol))
+            assertEquals(200, listener.mHttpStatusCode);
+            if (listener.mNegotiatedProtocol.equals(quicNegotiatedProtocol)) {
                 break;
-
+            }
             Thread.sleep(1000);
             listener.resetComplete();
         }
 
-        assertEquals(quicNegotiatedProtocol, listener.negotiatedProtocol);
+        assertEquals(quicNegotiatedProtocol, listener.mNegotiatedProtocol);
     }
 
     @SmallTest
@@ -263,8 +229,7 @@ public class CronetUrlTest extends CronetTestBase {
         waitForActiveShellToBeDoneLoading();
 
         HashMap<String, String> headers = new HashMap<String, String>();
-        SimpleHttpUrlRequestListener listener =
-                new SimpleHttpUrlRequestListener();
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
 
         // Create request.
         HttpUrlRequest request = activity.mRequestFactory.createRequest(
@@ -272,9 +237,9 @@ public class CronetUrlTest extends CronetTestBase {
         request.setHttpMethod("HEAD");
         request.start();
         listener.blockForComplete();
-        assertEquals(200, listener.httpStatusCode);
+        assertEquals(200, listener.mHttpStatusCode);
         // HEAD requests do not get any response data and Content-Length must be
         // ignored.
-        assertEquals(0, listener.httpResponseData.length);
+        assertEquals(0, listener.mResponseAsBytes.length);
     }
 }
