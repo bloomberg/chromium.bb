@@ -37,7 +37,7 @@ const PaintCommandList& ViewDisplayList::paintCommandList()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
     updatePaintCommandList();
-    return m_paintList;
+    return m_newPaints;
 }
 
 void ViewDisplayList::add(WTF::PassOwnPtr<AtomicPaintChunk> atomicPaintChunk)

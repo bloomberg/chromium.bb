@@ -72,7 +72,7 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     // z-index. We paint after we painted the background/border, so that the scrollbars will
     // sit above the background/border.
     if (m_renderBlock.hasOverflowClip() && m_renderBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_renderBlock) && !paintInfo.paintRootBackgroundOnly()) {
-        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, m_renderBlock.visualOverflowRect());
+        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(adjustedPaintOffset, m_renderBlock.visualOverflowRect().size()));
         m_renderBlock.layer()->scrollableArea()->paintOverflowControls(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect, false /* paintingOverlayControls */);
     }
 }
@@ -144,14 +144,16 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
 {
     PaintPhase paintPhase = paintInfo.phase;
 
-    LayoutRect bounds;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        bounds = m_renderBlock.visualOverflowRect();
-
     // Adjust our painting position if we're inside a scrolled layer (e.g., an overflow:auto div).
     LayoutPoint scrolledOffset = paintOffset;
     if (m_renderBlock.hasOverflowClip())
         scrolledOffset.move(-m_renderBlock.scrolledContentOffset());
+
+    LayoutRect bounds;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        bounds = m_renderBlock.visualOverflowRect();
+        bounds.moveBy(scrolledOffset);
+    }
 
     // 1. paint background, borders etc
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderBlock.style()->visibility() == VISIBLE) {

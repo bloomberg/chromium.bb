@@ -2134,6 +2134,11 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         LayerPainter(*paintInfo.renderLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+
+#ifndef NDEBUG
+            context->fillRect(dirtyRect, Color(0xFF, 0, 0));
+#endif
+
             if (RenderView* view = paintInfo.renderLayer->renderer()->view()) {
                 const PaintCommandList& paintCommandList = view->viewDisplayList().paintCommandList();
                 for (PaintCommandList::const_iterator it = paintCommandList.begin(); it != paintCommandList.end(); ++it)
