@@ -32,7 +32,7 @@ class GamepadDevice {
     // should correspond to "down" or "right".
     private final float[] mAxisValues = new float[CanonicalAxisIndex.COUNT];
 
-    private final float[] mButtonsValues = new float[CanonicalButtonIndex.COUNT];;
+    private final float[] mButtonsValues = new float[CanonicalButtonIndex.COUNT];
 
     // When the user agent recognizes the attached inputDevice, it is recommended
     // that it be remapped to a canonical ordering when possible. Devices that are
@@ -76,37 +76,51 @@ class GamepadDevice {
     /**
      * @return Device Id of the gamepad device.
      */
-    public int getId() { return mDeviceId; }
+    public int getId() {
+        return mDeviceId;
+    }
 
     /**
      * @return Mapping status of the gamepad device.
      */
-    public boolean isStandardGamepad() { return mIsStandardGamepad; }
+    public boolean isStandardGamepad() {
+        return mIsStandardGamepad;
+    }
 
     /**
      * @return Device name of the gamepad device.
      */
-    public String getName() { return mDeviceName; }
+    public String getName() {
+        return mDeviceName;
+    }
 
     /**
      * @return Device index of the gamepad device.
      */
-    public int getIndex() { return mDeviceIndex; }
+    public int getIndex() {
+        return mDeviceIndex;
+    }
 
     /**
      * @return The timestamp when the gamepad device was last interacted.
      */
-    public long getTimestamp() { return mTimestamp; }
+    public long getTimestamp() {
+        return mTimestamp;
+    }
 
     /**
      * @return The axes state of the gamepad device.
      */
-    public float[] getAxes() { return mAxisValues; }
+    public float[] getAxes() {
+        return mAxisValues;
+    }
 
     /**
      * @return The buttons state of the gamepad device.
      */
-    public float[] getButtons() { return mButtonsValues; }
+    public float[] getButtons() {
+        return mButtonsValues;
+    }
 
     /**
      * Reset the axes and buttons data of the gamepad device everytime gamepad data access is

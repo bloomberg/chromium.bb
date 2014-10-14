@@ -9,9 +9,9 @@ package org.chromium.base.library_loader;
  * NativeLibraries to build, but doesn't include it in its jar file.
  */
 public class NativeLibraries {
-    public static boolean USE_LINKER = false;
-    public static boolean USE_LIBRARY_IN_ZIP_FILE = false;
-    public static boolean ENABLE_LINKER_TESTS = false;
+    public static boolean sUseLinker = false;
+    public static boolean sUseLibraryInZipFile = false;
+    public static boolean sEnableLinkerTests = false;
     static final String[] LIBRARIES = {};
-    static String VERSION_NUMBER = "";
+    static String sVersionNumber = "";
 }

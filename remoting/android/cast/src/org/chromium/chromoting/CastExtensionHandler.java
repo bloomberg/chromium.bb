@@ -300,7 +300,7 @@ public class CastExtensionHandler implements ClientExtension, ActivityLifecycleL
     }
 
     @Override
-    public void onActivitySaveInstanceState (Activity activity, Bundle outState) {}
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
 
     @Override
     public void onActivityStarted(Activity activity) {

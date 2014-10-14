@@ -49,7 +49,7 @@ public class ContentViewStatics {
      * Disables platform notifications of data state and proxy changes.
      * Notifications are enabled by default.
      */
-    public static void disablePlatformNotifications () {
+    public static void disablePlatformNotifications() {
         ProxyChangeListener.setEnabled(false);
     }
 

@@ -56,16 +56,24 @@ class MediaResourceGetter {
         // then we must return NaN. If it is unbounded, then positive infinity.
         // http://www.w3.org/html/wg/drafts/html/master/embedded-content-0.html
         @CalledByNative("MediaMetadata")
-        int getDurationInMilliseconds() { return mDurationInMilliseconds; }
+        int getDurationInMilliseconds() {
+            return mDurationInMilliseconds;
+        }
 
         @CalledByNative("MediaMetadata")
-        int getWidth() { return mWidth; }
+        int getWidth() {
+            return mWidth;
+        }
 
         @CalledByNative("MediaMetadata")
-        int getHeight() { return mHeight; }
+        int getHeight() {
+            return mHeight;
+        }
 
         @CalledByNative("MediaMetadata")
-        boolean isSuccess() { return mSuccess; }
+        boolean isSuccess() {
+            return mSuccess;
+        }
 
         @Override
         public String toString() {

@@ -58,7 +58,7 @@ public class MemConsumer extends Activity {
                 EditText editText = (EditText) child;
                 editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                     @Override
-                    public boolean onEditorAction (TextView v, int actionId, KeyEvent event) {
+                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                         if (v.getText().length() > 0) {
                             updateMemoryConsumption(Integer.parseInt(v.getText().toString()));
                         }

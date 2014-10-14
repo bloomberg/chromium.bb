@@ -225,7 +225,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testUncaughtJavaExceptionRaisesJavaScriptException() throws Throwable {
         injectObjectAndReload(new Object() {
-            public void method() { throw new RuntimeException("foo"); }
+            public void method() {
+                throw new RuntimeException("foo");
+            }
         }, "testObject");
         assertRaisesException("testObject.method()");
     }
@@ -265,13 +267,17 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReplaceInjectedObject() throws Throwable {
         injectObjectAndReload(new Object() {
-            public void method() { mTestController.setStringValue("object 1"); }
+            public void method() {
+                mTestController.setStringValue("object 1");
+            }
         }, "testObject");
         executeJavaScript("testObject.method()");
         assertEquals("object 1", mTestController.waitForStringValue());
 
         injectObjectAndReload(new Object() {
-            public void method() { mTestController.setStringValue("object 2"); }
+            public void method() {
+                mTestController.setStringValue("object 2");
+            }
         }, "testObject");
         executeJavaScript("testObject.method()");
         assertEquals("object 2", mTestController.waitForStringValue());
@@ -297,9 +303,17 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testCallOverloadedMethodWithDifferentNumberOfArguments() throws Throwable {
         injectObjectAndReload(new Object() {
-            public void method() { mTestController.setStringValue("0 args"); }
-            public void method(int x) { mTestController.setStringValue("1 arg"); }
-            public void method(int x, int y) { mTestController.setStringValue("2 args"); }
+            public void method() {
+                mTestController.setStringValue("0 args");
+            }
+
+            public void method(int x) {
+                mTestController.setStringValue("1 arg");
+            }
+
+            public void method(int x, int y) {
+                mTestController.setStringValue("2 args");
+            }
         }, "testObject");
         executeJavaScript("testObject.method()");
         assertEquals("0 args", mTestController.waitForStringValue());
@@ -344,7 +358,10 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testSameObjectInjectedMultipleTimes() throws Throwable {
         class TestObject {
             private int mNumMethodInvocations;
-            public void method() { mTestController.setIntValue(++mNumMethodInvocations); }
+
+            public void method() {
+                mTestController.setIntValue(++mNumMethodInvocations);
+            }
         }
         final TestObject testObject = new TestObject();
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
@@ -373,7 +390,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         injectObjectAndReload(new Object() {
             public Object getInnerObject() {
                 return new Object() {
-                    public void method(int x) { mTestController.setIntValue(x); }
+                    public void method(int x) {
+                        mTestController.setIntValue(x);
+                    }
                 };
             }
         }, "testObject");
@@ -386,7 +405,10 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testReturnedObjectInjectedElsewhere() throws Throwable {
         class InnerObject {
             private int mNumMethodInvocations;
-            public void method() { mTestController.setIntValue(++mNumMethodInvocations); }
+
+            public void method() {
+                mTestController.setIntValue(++mNumMethodInvocations);
+            }
         }
         final InnerObject innerObject = new InnerObject();
         final Object object = new Object() {
@@ -501,7 +523,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPublicInheritedMethod() throws Throwable {
         class Base {
-            public void method(int x) { mTestController.setIntValue(x); }
+            public void method(int x) {
+                mTestController.setIntValue(x);
+            }
         }
         class Derived extends Base {
         }
@@ -527,11 +551,15 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testOverriddenMethod() throws Throwable {
         class Base {
-            public void method() { mTestController.setStringValue("base"); }
+            public void method() {
+                mTestController.setStringValue("base");
+            }
         }
         class Derived extends Base {
             @Override
-            public void method() { mTestController.setStringValue("derived"); }
+            public void method() {
+                mTestController.setStringValue("derived");
+            }
         }
         injectObjectAndReload(new Derived(), "testObject");
         executeJavaScript("testObject.method()");
@@ -559,8 +587,13 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPublicMethod() throws Throwable {
         injectObjectAndReload(new Object() {
-            public Class<?> myGetClass() { return getClass(); }
-            public String method() { return "foo"; }
+            public Class<?> myGetClass() {
+                return getClass();
+            }
+
+            public String method() {
+                return "foo";
+            }
         }, "testObject");
         assertEquals("foo", executeJavaScriptAndGetStringResult(
                 "testObject.myGetClass().getMethod('method', null).invoke(testObject, null)" +
@@ -571,7 +604,10 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPublicField() throws Throwable {
         injectObjectAndReload(new Object() {
-            public Class<?> myGetClass() { return getClass(); }
+            public Class<?> myGetClass() {
+                return getClass();
+            }
+
             public String field = "foo";
         }, "testObject");
         assertEquals("foo", executeJavaScriptAndGetStringResult(
@@ -582,7 +618,10 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPrivateMethodRaisesException() throws Throwable {
         injectObjectAndReload(new Object() {
-            public Class<?> myGetClass() { return getClass(); }
+            public Class<?> myGetClass() {
+                return getClass();
+            }
+
             private void method() {};
         }, "testObject");
         assertRaisesException("testObject.myGetClass().getMethod('method', null)");
@@ -597,7 +636,10 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPrivateFieldRaisesException() throws Throwable {
         injectObjectAndReload(new Object() {
-            public Class<?> myGetClass() { return getClass(); }
+            public Class<?> myGetClass() {
+                return getClass();
+            }
+
             private int mField;
         }, "testObject");
         assertRaisesException("testObject.myGetClass().getField('field')");
@@ -611,7 +653,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAllowNonAnnotatedMethods() throws Throwable {
         injectObjectAndReload(new Object() {
-            public String allowed() { return "foo"; }
+            public String allowed() {
+                return "foo";
+            }
         }, "testObject", null);
 
         // Test calling a method of an explicitly inherited class (Base#allowed()).
@@ -626,9 +670,13 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testAllowOnlyAnnotatedMethods() throws Throwable {
         injectObjectAndReload(new Object() {
             @JavascriptInterface
-            public String allowed() { return "foo"; }
+            public String allowed() {
+                return "foo";
+            }
 
-            public String disallowed() { return "bar"; }
+            public String disallowed() {
+                return "bar";
+            }
         }, "testObject", JavascriptInterface.class);
 
         // getClass() is an Object method and does not have the @JavascriptInterface annotation and
@@ -653,14 +701,20 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testAnnotationRequirementRetainsPropertyAcrossObjects() throws Throwable {
         class Test {
             @JavascriptInterface
-            public String safe() { return "foo"; }
+            public String safe() {
+                return "foo";
+            }
 
-            public String unsafe() { return "bar"; }
+            public String unsafe() {
+                return "bar";
+            }
         }
 
         class TestReturner {
             @JavascriptInterface
-            public Test getTest() { return new Test(); }
+            public Test getTest() {
+                return new Test();
+            }
         }
 
         // First test with safe mode off.
@@ -723,10 +777,14 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testCustomAnnotationRestriction() throws Throwable {
         class Test {
             @TestAnnotation
-            public String checkTestAnnotationFoo() { return "bar"; }
+            public String checkTestAnnotationFoo() {
+                return "bar";
+            }
 
             @JavascriptInterface
-            public String checkJavascriptInterfaceFoo() { return "bar"; }
+            public String checkJavascriptInterfaceFoo() {
+                return "bar";
+            }
         }
 
         // Inject javascriptInterfaceObj and require the JavascriptInterface annotation.
@@ -758,10 +816,14 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAddJavascriptInterfaceIsSafeByDefault() throws Throwable {
         class Test {
-            public String blocked() { return "bar"; }
+            public String blocked() {
+                return "bar";
+            }
 
             @JavascriptInterface
-            public String allowed() { return "bar"; }
+            public String allowed() {
+                return "bar";
+            }
         }
 
         // Manually inject the Test object, making sure to use the
@@ -794,13 +856,19 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     public void testObjectsInspection() throws Throwable {
         class Test {
             @JavascriptInterface
-            public String m1() { return "foo"; }
+            public String m1() {
+                return "foo";
+            }
 
             @JavascriptInterface
-            public String m2() { return "bar"; }
+            public String m2() {
+                return "bar";
+            }
 
             @JavascriptInterface
-            public String m2(int x) { return "bar " + x; }
+            public String m2(int x) {
+                return "bar " + x;
+            }
         }
 
         final String jsObjectKeysTestTemplate = "Object.keys(%s).toString()";

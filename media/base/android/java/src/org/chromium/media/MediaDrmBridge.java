@@ -118,9 +118,17 @@ public class MediaDrmBridge {
             mMimeType = mimeType;
         }
 
-        private int sessionId() { return mSessionId; }
-        private byte[] initData() { return mInitData; }
-        private String mimeType() { return mMimeType; }
+        private int sessionId() {
+            return mSessionId;
+        }
+
+        private byte[] initData() {
+            return mInitData;
+        }
+
+        private String mimeType() {
+            return mMimeType;
+        }
     }
 
     private static UUID getUUIDFromBytes(byte[] data) {

@@ -125,7 +125,7 @@ public class HttpUrlRequestFactoryConfig {
             hint.put(UrlRequestContextConfig.QUIC_HINT_ALT_PORT, alternatePort);
             quicHints.put(hint);
         } catch (JSONException e) {
-            ;
+            // Intentionally do nothing.
         }
         return this;
     }
@@ -133,6 +133,7 @@ public class HttpUrlRequestFactoryConfig {
     /**
      * Get JSON string representation of the config.
      */
+    @Override
     public String toString() {
         return mConfig.toString();
     }
@@ -145,7 +146,7 @@ public class HttpUrlRequestFactoryConfig {
         try {
             mConfig.put(key, value);
         } catch (JSONException e) {
-            ;
+            // Intentionally do nothing.
         }
         return this;
     }
@@ -158,7 +159,7 @@ public class HttpUrlRequestFactoryConfig {
         try {
             mConfig.put(key, value);
         } catch (JSONException e) {
-            ;
+            // Intentionally do nothing.
         }
         return this;
     }
@@ -171,7 +172,7 @@ public class HttpUrlRequestFactoryConfig {
         try {
             mConfig.put(key, value);
         } catch (JSONException e) {
-            ;
+            // Intentionally do nothing.
         }
         return this;
     }

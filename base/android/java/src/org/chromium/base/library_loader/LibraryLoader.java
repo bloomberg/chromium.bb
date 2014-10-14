@@ -246,9 +246,9 @@ public class LibraryLoader {
         Log.i(TAG, String.format(
                 "Expected native library version number \"%s\"," +
                         "actual native library version number \"%s\"",
-                NativeLibraries.VERSION_NUMBER,
+                NativeLibraries.sVersionNumber,
                 nativeGetVersionNumber()));
-        if (!NativeLibraries.VERSION_NUMBER.equals(nativeGetVersionNumber())) {
+        if (!NativeLibraries.sVersionNumber.equals(nativeGetVersionNumber())) {
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
         }
     }

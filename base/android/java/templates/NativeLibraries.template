@@ -49,21 +49,21 @@ public class NativeLibraries {
 
     // Set to true to enable the use of the Chromium Linker.
 #if defined(ENABLE_CHROMIUM_LINKER)
-    public static boolean USE_LINKER = true;
+    public static boolean sUseLinker = true;
 #else
-    public static boolean USE_LINKER = false;
+    public static boolean sUseLinker = false;
 #endif
 
 #if defined(ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE)
-    public static boolean USE_LIBRARY_IN_ZIP_FILE = true;
+    public static boolean sUseLibraryInZipFile = true;
 #else
-    public static boolean USE_LIBRARY_IN_ZIP_FILE = false;
+    public static boolean sUseLibraryInZipFile = false;
 #endif
 
 #if defined(ENABLE_CHROMIUM_LINKER_TESTS)
-    public static boolean ENABLE_LINKER_TESTS = true;
+    public static boolean sEnableLinkerTests = true;
 #else
-    public static boolean ENABLE_LINKER_TESTS = false;
+    public static boolean sEnableLinkerTests = false;
 #endif
 
     // This is the list of native libraries to be loaded (in the correct order)
@@ -83,7 +83,7 @@ public class NativeLibraries {
     // This is the expected version of the 'main' native library, which is the one that
     // implements the initial set of base JNI functions including
     // base::android::nativeGetVersionName()
-    static String VERSION_NUMBER =
+    static String sVersionNumber =
 #if defined(NATIVE_LIBRARIES_VERSION_NUMBER)
       NATIVE_LIBRARIES_VERSION_NUMBER;
 #else

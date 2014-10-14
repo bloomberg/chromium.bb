@@ -82,10 +82,14 @@ class MediaCodecBridge {
         }
 
         @CalledByNative("DequeueInputResult")
-        private int status() { return mStatus; }
+        private int status() {
+            return mStatus;
+        }
 
         @CalledByNative("DequeueInputResult")
-        private int index() { return mIndex; }
+        private int index() {
+            return mIndex;
+        }
     }
 
     /**
@@ -104,13 +108,19 @@ class MediaCodecBridge {
         }
 
         @CalledByNative("CodecInfo")
-        private String codecType() { return mCodecType; }
+        private String codecType() {
+            return mCodecType;
+        }
 
         @CalledByNative("CodecInfo")
-        private String codecName() { return mCodecName; }
+        private String codecName() {
+            return mCodecName;
+        }
 
         @CalledByNative("CodecInfo")
-        private int direction() { return mDirection; }
+        private int direction() {
+            return mDirection;
+        }
     }
 
     private static class DequeueOutputResult {
@@ -132,22 +142,34 @@ class MediaCodecBridge {
         }
 
         @CalledByNative("DequeueOutputResult")
-        private int status() { return mStatus; }
+        private int status() {
+            return mStatus;
+        }
 
         @CalledByNative("DequeueOutputResult")
-        private int index() { return mIndex; }
+        private int index() {
+            return mIndex;
+        }
 
         @CalledByNative("DequeueOutputResult")
-        private int flags() { return mFlags; }
+        private int flags() {
+            return mFlags;
+        }
 
         @CalledByNative("DequeueOutputResult")
-        private int offset() { return mOffset; }
+        private int offset() {
+            return mOffset;
+        }
 
         @CalledByNative("DequeueOutputResult")
-        private long presentationTimeMicroseconds() { return mPresentationTimeMicroseconds; }
+        private long presentationTimeMicroseconds() {
+            return mPresentationTimeMicroseconds;
+        }
 
         @CalledByNative("DequeueOutputResult")
-        private int numBytes() { return mNumBytes; }
+        private int numBytes() {
+            return mNumBytes;
+        }
     }
 
     /**

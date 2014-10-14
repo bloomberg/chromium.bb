@@ -249,7 +249,7 @@ public class InputDialogContainer {
 
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
                 mContext.getText(R.string.date_picker_dialog_set),
-                (DialogInterface.OnClickListener)mDialog);
+                (DialogInterface.OnClickListener) mDialog);
 
         mDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
                 mContext.getText(android.R.string.cancel),

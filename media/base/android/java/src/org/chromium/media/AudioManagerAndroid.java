@@ -93,10 +93,14 @@ class AudioManagerAndroid {
         }
 
         @CalledByNative("AudioDeviceName")
-        private String id() { return String.valueOf(mId); }
+        private String id() {
+            return String.valueOf(mId);
+        }
 
         @CalledByNative("AudioDeviceName")
-        private String name() { return mName; }
+        private String name() {
+            return mName;
+        }
     }
 
     // List if device models which have been vetted for good quality platform

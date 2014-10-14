@@ -396,7 +396,7 @@ public class ApplicationStatus {
      */
     @CalledByNative
     private static void registerThreadSafeNativeApplicationStateListener() {
-        ThreadUtils.runOnUiThread(new Runnable () {
+        ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (sNativeApplicationStateListener != null) return;

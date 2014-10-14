@@ -162,13 +162,13 @@ class SampleForTests {
    */
 
   // String constants that look like comments don't confuse the generator:
-  private String arrgh = "*/*";
+  private String mArrgh = "*/*";
 
   //------------------------------------------------------------------------------------------------
   // Java fields which are accessed from C++ code only must be annotated with @AccessedByNative to
   // prevent them being eliminated when unreferenced code is stripped.
   @AccessedByNative
-  private int javaField;
+  private int mJavaField;
 
   //------------------------------------------------------------------------------------------------
   // The following methods demonstrate declaring methods to call into C++ from Java.

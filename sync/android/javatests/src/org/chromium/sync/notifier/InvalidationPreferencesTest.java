@@ -43,7 +43,7 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
          * the two valid strings are properly converted and that the invalid string is dropped.
          */
         HashSet<ModelType> expectedTypes = CollectionUtil.newHashSet(
-                ModelType.BOOKMARK,ModelType.SESSION);
+                ModelType.BOOKMARK, ModelType.SESSION);
         Set<ModelType> actualTypes = ModelType.syncTypesToModelTypes(
                 CollectionUtil.newHashSet("BOOKMARK", "SESSION", "0!!!INVALID"));
         assertEquals(expectedTypes, actualTypes);

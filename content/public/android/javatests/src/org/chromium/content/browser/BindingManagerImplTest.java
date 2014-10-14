@@ -85,16 +85,24 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         }
 
         @Override
-        public int getServiceNumber() { throw new UnsupportedOperationException(); }
+        public int getServiceNumber() {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
-        public boolean isInSandbox() { throw new UnsupportedOperationException(); }
+        public boolean isInSandbox() {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
-        public IChildProcessService getService() { throw new UnsupportedOperationException(); }
+        public IChildProcessService getService() {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
-        public void start(String[] commandLine) { throw new UnsupportedOperationException(); }
+        public void start(String[] commandLine) {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,

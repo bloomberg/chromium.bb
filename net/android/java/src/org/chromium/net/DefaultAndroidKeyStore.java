@@ -109,7 +109,7 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
                 signature = Signature.getInstance("NONEwithECDSA");
             }
         } catch (NoSuchAlgorithmException e) {
-            ;
+            // Intentionally do nothing.
         }
 
         if (signature == null) {

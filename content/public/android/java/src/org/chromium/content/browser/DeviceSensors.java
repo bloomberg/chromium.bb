@@ -271,7 +271,7 @@ class DeviceSensors implements SensorEventListener {
      * </ul>
      * <p>
      *
-     * @param R
+     * @param matrixR
      *        a 3x3 rotation matrix {@see SensorManager.getRotationMatrix}.
      *
      * @param values
@@ -280,7 +280,8 @@ class DeviceSensors implements SensorEventListener {
      * @return the array values passed as argument.
      */
     @VisibleForTesting
-    public static double[] computeDeviceOrientationFromRotationMatrix(float[] R, double[] values) {
+    public static double[] computeDeviceOrientationFromRotationMatrix(
+            float[] matrixR, double[] values) {
         /*
          * 3x3 (length=9) case:
          *   /  R[ 0]   R[ 1]   R[ 2]  \
@@ -288,39 +289,39 @@ class DeviceSensors implements SensorEventListener {
          *   \  R[ 6]   R[ 7]   R[ 8]  /
          *
          */
-        if (R.length != 9)
-            return values;
+        if (matrixR.length != 9) return values;
 
-        if (R[8] > 0) {  // cos(beta) > 0
-            values[0] = Math.atan2(-R[1], R[4]);
-            values[1] = Math.asin(R[7]);           // beta (-pi/2, pi/2)
-            values[2] = Math.atan2(-R[6], R[8]);   // gamma (-pi/2, pi/2)
-        } else if (R[8] < 0) {  // cos(beta) < 0
-            values[0] = Math.atan2(R[1], -R[4]);
-            values[1] = -Math.asin(R[7]);
+        if (matrixR[8] > 0) {  // cos(beta) > 0
+            values[0] = Math.atan2(-matrixR[1], matrixR[4]);
+            values[1] = Math.asin(matrixR[7]);                 // beta (-pi/2, pi/2)
+            values[2] = Math.atan2(-matrixR[6], matrixR[8]);   // gamma (-pi/2, pi/2)
+        } else if (matrixR[8] < 0) {  // cos(beta) < 0
+            values[0] = Math.atan2(matrixR[1], -matrixR[4]);
+            values[1] = -Math.asin(matrixR[7]);
             values[1] += (values[1] >= 0) ? -Math.PI : Math.PI; // beta [-pi,-pi/2) U (pi/2,pi)
-            values[2] = Math.atan2(R[6], -R[8]);   // gamma (-pi/2, pi/2)
+            values[2] = Math.atan2(matrixR[6], -matrixR[8]);    // gamma (-pi/2, pi/2)
         } else { // R[8] == 0
-            if (R[6] > 0) {  // cos(gamma) == 0, cos(beta) > 0
-                values[0] = Math.atan2(-R[1], R[4]);
-                values[1] = Math.asin(R[7]);       // beta [-pi/2, pi/2]
-                values[2] = -Math.PI / 2;          // gamma = -pi/2
-            } else if (R[6] < 0) { // cos(gamma) == 0, cos(beta) < 0
-                values[0] = Math.atan2(R[1], -R[4]);
-                values[1] = -Math.asin(R[7]);
+            if (matrixR[6] > 0) {  // cos(gamma) == 0, cos(beta) > 0
+                values[0] = Math.atan2(-matrixR[1], matrixR[4]);
+                values[1] = Math.asin(matrixR[7]);       // beta [-pi/2, pi/2]
+                values[2] = -Math.PI / 2;                // gamma = -pi/2
+            } else if (matrixR[6] < 0) { // cos(gamma) == 0, cos(beta) < 0
+                values[0] = Math.atan2(matrixR[1], -matrixR[4]);
+                values[1] = -Math.asin(matrixR[7]);
                 values[1] += (values[1] >= 0) ? -Math.PI : Math.PI; // beta [-pi,-pi/2) U (pi/2,pi)
-                values[2] = -Math.PI / 2;          // gamma = -pi/2
+                values[2] = -Math.PI / 2;                           // gamma = -pi/2
             } else { // R[6] == 0, cos(beta) == 0
                 // gimbal lock discontinuity
-                values[0] = Math.atan2(R[3], R[0]);
-                values[1] = (R[7] > 0) ? Math.PI / 2 : -Math.PI / 2;  // beta = +-pi/2
-                values[2] = 0;                                        // gamma = 0
+                values[0] = Math.atan2(matrixR[3], matrixR[0]);
+                values[1] = (matrixR[7] > 0) ? Math.PI / 2 : -Math.PI / 2;  // beta = +-pi/2
+                values[2] = 0;                                              // gamma = 0
             }
         }
 
         // alpha is in [-pi, pi], make sure it is in [0, 2*pi).
-        if (values[0] < 0)
+        if (values[0] < 0) {
             values[0] += 2 * Math.PI; // alpha [0, 2*pi)
+        }
 
         return values;
     }

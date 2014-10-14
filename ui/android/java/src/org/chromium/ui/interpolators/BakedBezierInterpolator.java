@@ -150,7 +150,7 @@ public class BakedBezierInterpolator implements Interpolator {
         }
 
         int position = Math.min(
-                (int)(input * (mValues.length - 1)),
+                (int) (input * (mValues.length - 1)),
                 mValues.length - 2);
 
         float quantized = position * mStepSize;

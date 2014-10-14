@@ -296,13 +296,19 @@ public class MediaPlayerBridge {
         }
 
         @CalledByNative("AllowedOperations")
-        private boolean canPause() { return mCanPause; }
+        private boolean canPause() {
+            return mCanPause;
+        }
 
         @CalledByNative("AllowedOperations")
-        private boolean canSeekForward() { return mCanSeekForward; }
+        private boolean canSeekForward() {
+            return mCanSeekForward;
+        }
 
         @CalledByNative("AllowedOperations")
-        private boolean canSeekBackward() { return mCanSeekBackward; }
+        private boolean canSeekBackward() {
+            return mCanSeekBackward;
+        }
     }
 
     /**

@@ -238,7 +238,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
                     }
                 }, startTimeMs + 30);
             }
-        };
+        }
     }
 
     private void processAnimation() {

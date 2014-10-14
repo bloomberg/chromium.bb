@@ -467,10 +467,14 @@ public class JniInterface {
     }
 
     /** Position of cursor hotspot within cursor image. Called on the graphics thread. */
-    public static Point getCursorHotspot() { return sCursorHotspot; }
+    public static Point getCursorHotspot() {
+        return sCursorHotspot;
+    }
 
     /** Returns the current cursor shape. Called on the graphics thread. */
-    public static Bitmap getCursorBitmap() { return sCursorBitmap; }
+    public static Bitmap getCursorBitmap() {
+        return sCursorBitmap;
+    }
 
     //
     // Third Party Authentication

@@ -224,7 +224,7 @@ public class Linker {
 
         if (!sInitialized) {
             sRelroSharingSupported = false;
-            if (NativeLibraries.USE_LINKER) {
+            if (NativeLibraries.sUseLinker) {
                 if (DEBUG) Log.i(TAG, "Loading lib" + TAG + ".so");
                 try {
                     System.loadLibrary(TAG);
@@ -279,7 +279,7 @@ public class Linker {
     /**
      * A public interface used to run runtime linker tests after loading
      * libraries. Should only be used to implement the linker unit tests,
-     * which is controlled by the value of NativeLibraries.ENABLE_LINKER_TESTS
+     * which is controlled by the value of NativeLibraries.sEnableLinkerTests
      * configured at build time.
      */
     public interface TestRunner {
@@ -303,7 +303,7 @@ public class Linker {
     public static void setTestRunnerClassName(String testRunnerClassName) {
         if (DEBUG) Log.i(TAG, "setTestRunnerByClassName(" + testRunnerClassName + ") called");
 
-        if (!NativeLibraries.ENABLE_LINKER_TESTS) {
+        if (!NativeLibraries.sEnableLinkerTests) {
             // Ignore this in production code to prevent malvolent runtime injection.
             return;
         }
@@ -335,7 +335,7 @@ public class Linker {
     public static void setMemoryDeviceConfig(int memoryDeviceConfig) {
         if (DEBUG) Log.i(TAG, "setMemoryDeviceConfig(" + memoryDeviceConfig + ") called");
         // Sanity check. This method should only be called during tests.
-        assert NativeLibraries.ENABLE_LINKER_TESTS;
+        assert NativeLibraries.sEnableLinkerTests;
         synchronized (Linker.class) {
             assert sMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT;
             assert memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW ||
@@ -358,8 +358,8 @@ public class Linker {
     public static boolean isUsed() {
         // Only GYP targets that are APKs and have the 'use_chromium_linker' variable
         // defined as 1 will use this linker. For all others (the default), the
-        // auto-generated NativeLibraries.USE_LINKER variable will be false.
-        if (!NativeLibraries.USE_LINKER)
+        // auto-generated NativeLibraries.sUseLinker variable will be false.
+        if (!NativeLibraries.sUseLinker)
             return false;
 
         synchronized (Linker.class) {
@@ -399,7 +399,7 @@ public class Linker {
      * the library directly from the zip file.
      */
     public static boolean isInZipFile() {
-        return NativeLibraries.USE_LIBRARY_IN_ZIP_FILE;
+        return NativeLibraries.sUseLibraryInZipFile;
     }
 
     /**
@@ -468,7 +468,7 @@ public class Linker {
                 }
             }
 
-            if (NativeLibraries.ENABLE_LINKER_TESTS && sTestRunnerClassName != null) {
+            if (NativeLibraries.sEnableLinkerTests && sTestRunnerClassName != null) {
                 // The TestRunner implementation must be instantiated _after_
                 // all libraries are loaded to ensure that its native methods
                 // are properly registered.
@@ -793,7 +793,7 @@ public class Linker {
             //    RENDERER_LIBRARY_ADDRESS: <library-name> <address>
             // Where <library-name> is the library name, and <address> is the hexadecimal load
             // address.
-            if (NativeLibraries.ENABLE_LINKER_TESTS) {
+            if (NativeLibraries.sEnableLinkerTests) {
                 Log.i(TAG, String.format(
                         Locale.US,
                         "%s_LIBRARY_ADDRESS: %s %x",
