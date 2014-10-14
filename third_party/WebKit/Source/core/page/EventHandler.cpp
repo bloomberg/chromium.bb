@@ -2239,7 +2239,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     // co-ordinates outside the target's bounds.
     IntPoint adjustedPoint = m_frame->view()->windowToContents(gestureEvent.position());
 
-    PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
+    PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         modifiers, PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
     dispatchMouseEvent(EventTypeNames::mousemove, currentHitTest.innerNode(), 0, fakeMouseMove, true);
@@ -2255,7 +2255,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     if (m_clickNode && m_clickNode->isTextNode())
         m_clickNode = NodeRenderingTraversal::parent(m_clickNode.get());
 
-    PlatformMouseEvent fakeMouseDown(adjustedPoint, gestureEvent.globalPosition(),
+    PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
@@ -2267,7 +2267,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
     if (currentHitTest.innerNode())
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
-    PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
+    PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseUp, false);

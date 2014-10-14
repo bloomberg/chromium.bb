@@ -10,17 +10,30 @@ body {
 #target {
   width: 50px;
   height: 50px;
+  margin: 5px 0px 0px 5px;
 }
 </style>
 <iframe frameborder=0 id="target" src="resources/event-delegator.html"></iframe>
 <div id=console></div>
 <script>
 var event;
-window.scrollTo(0, 3);
-var rect = target.getBoundingClientRect();
-var point = {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2 - 3
+var windowScrollOffset = {
+    x: 0,
+    y: 3
+};
+var frameScrollOffset = {
+    x: 2,
+    y: 7
+};
+window.scrollTo(windowScrollOffset.x, windowScrollOffset.y);
+var frameRect = target.getBoundingClientRect();
+var pointInFrame = {
+    x: frameRect.width / 2,
+    y: frameRect.height / 2
+};
+var pointInWindow = {
+    x: frameRect.left + pointInFrame.x,
+    y: frameRect.top + pointInFrame.y
 };
 
 var eventReceived = {};
@@ -29,10 +42,12 @@ function onEventInFrame(e) {
     debug("Received " + e.type + " in child frame");
     event = e;
     eventReceived[e.type] = true;
-    shouldBe("event.screenX", "point.x");
-    shouldBe("event.screenY", "point.y");
-    shouldBe("event.clientX", "50 / 2");
-    shouldBe("event.clientY", "50 / 2 + 7");
+    shouldBe("event.screenX", "pointInWindow.x");
+    shouldBe("event.screenY", "pointInWindow.y");
+    shouldBe("event.clientX", "pointInFrame.x");
+    shouldBe("event.clientY", "pointInFrame.y");
+    shouldBe("event.pageX", "pointInFrame.x + frameScrollOffset.x");
+    shouldBe("event.pageY", "pointInFrame.y + frameScrollOffset.y");
 }
 
 description("Verifies that a tap occuring in a scrolled iframe has the correct co-ordinates");
@@ -40,16 +55,16 @@ description("Verifies that a tap occuring in a scrolled iframe has the correct c
 if (window.eventSender) {
     jsTestIsAsync = true;
     target.onload = function() {
-        target.contentWindow.scrollTo(0, 7);
+        target.contentWindow.scrollTo(frameScrollOffset.x, frameScrollOffset.y);
 
-        debug("Sending GestureTapDown to " + point.x + "," + point.y);
-        eventSender.gestureTapDown(point.x, point.y);
+        debug("Sending GestureTapDown to " + pointInWindow.x + "," + pointInWindow.y);
+        eventSender.gestureTapDown(pointInWindow.x, pointInWindow.y);
 
         debug("Sending GestureShowPress");
-        eventSender.gestureShowPress(point.x, point.y);
+        eventSender.gestureShowPress(pointInWindow.x, pointInWindow.y);
 
         debug("Sending GestureTap");
-        eventSender.gestureTap(point.x, point.y);
+        eventSender.gestureTap(pointInWindow.x, pointInWindow.y);
 
         shouldBeTrue("eventReceived.mousemove");
         shouldBeTrue("eventReceived.mousedown");
