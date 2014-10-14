@@ -572,6 +572,36 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   EXPECT_FALSE(display_manager()->IsMirrored());
 }
 
+// Make sure crash does not happen if add and remove happens at the same time.
+// See: crbug.com/414394
+TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("100+0-500x500,0+501-400x400");
+
+  const int64 primary_id = DisplayController::GetPrimaryDisplayId();
+  const int64 secondary_id = ScreenUtil::GetSecondaryDisplay().id();
+
+  DisplayInfo primary_info = display_manager()->GetDisplayInfo(primary_id);
+  DisplayInfo secondary_info = display_manager()->GetDisplayInfo(secondary_id);
+
+  // An id which is different from primary and secondary.
+  const int64 third_id = primary_id + secondary_id;
+
+  DisplayInfo third_info =
+      CreateDisplayInfo(third_id, gfx::Rect(0, 0, 600, 600));
+
+  std::vector<DisplayInfo> display_info_list;
+  display_info_list.push_back(third_info);
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_EQ(third_id, DisplayController::GetPrimaryDisplayId());
+  EXPECT_EQ("600x600", GetDisplayForId(third_id).size().ToString());
+  EXPECT_EQ(secondary_id, ScreenUtil::GetSecondaryDisplay().id());
+}
+
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
