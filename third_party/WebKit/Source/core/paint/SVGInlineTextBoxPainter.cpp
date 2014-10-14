@@ -204,38 +204,6 @@ static inline RenderObject* findRenderObjectDefininingTextDecoration(InlineFlowB
     return renderer;
 }
 
-void SVGInlineTextBoxPainter::paintDecoration(GraphicsContext* context, TextDecoration decoration, const SVGTextFragment& fragment)
-{
-    if (m_svgInlineTextBox.renderer().style()->textDecorationsInEffect() == TextDecorationNone)
-        return;
-
-    // Find out which render style defined the text-decoration, as its fill/stroke properties have to be used for drawing instead of ours.
-    RenderObject* decorationRenderer = findRenderObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
-    RenderStyle* decorationStyle = decorationRenderer->style();
-    ASSERT(decorationStyle);
-
-    if (decorationStyle->visibility() == HIDDEN)
-        return;
-
-    const SVGRenderStyle& svgDecorationStyle = decorationStyle->svgStyle();
-
-    for (int i = 0; i < 3; i++) {
-        switch (svgDecorationStyle.paintOrderType(i)) {
-        case PT_FILL:
-            if (svgDecorationStyle.hasFill())
-                paintDecorationWithStyle(context, decoration, fragment, decorationRenderer, ApplyToFillMode);
-            break;
-        case PT_STROKE:
-            if (svgDecorationStyle.hasVisibleStroke())
-                paintDecorationWithStyle(context, decoration, fragment, decorationRenderer, ApplyToStrokeMode);
-            break;
-        case PT_MARKERS:
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
-    }
-}
 
 // Offset from the baseline for |decoration|. Positive offsets are above the baseline.
 static inline float baselineOffsetForDecoration(TextDecoration decoration, const FontMetrics& fontMetrics, float thickness)
@@ -260,11 +228,21 @@ static inline float thicknessForDecoration(TextDecoration, const Font& font)
     return font.fontDescription().computedSize() / 20.0f;
 }
 
-void SVGInlineTextBoxPainter::paintDecorationWithStyle(GraphicsContext* context, TextDecoration decoration,
-    const SVGTextFragment& fragment, RenderObject* decorationRenderer, RenderSVGResourceMode resourceMode)
+void SVGInlineTextBoxPainter::paintDecoration(GraphicsContext* context, TextDecoration decoration, const SVGTextFragment& fragment)
 {
+    if (m_svgInlineTextBox.renderer().style()->textDecorationsInEffect() == TextDecorationNone)
+        return;
+
+    if (fragment.width <= 0)
+        return;
+
+    // Find out which render style defined the text-decoration, as its fill/stroke properties have to be used for drawing instead of ours.
+    RenderObject* decorationRenderer = findRenderObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
     RenderStyle* decorationStyle = decorationRenderer->style();
     ASSERT(decorationStyle);
+
+    if (decorationStyle->visibility() == HIDDEN)
+        return;
 
     float scalingFactor = 1;
     Font scaledFont;
@@ -272,8 +250,7 @@ void SVGInlineTextBoxPainter::paintDecorationWithStyle(GraphicsContext* context,
     ASSERT(scalingFactor);
 
     float thickness = thicknessForDecoration(decoration, scaledFont);
-
-    if (fragment.width <= 0 && thickness <= 0)
+    if (thickness <= 0)
         return;
 
     float decorationOffset = baselineOffsetForDecoration(decoration, scaledFont.fontMetrics(), thickness);
@@ -282,10 +259,32 @@ void SVGInlineTextBoxPainter::paintDecorationWithStyle(GraphicsContext* context,
     Path path;
     path.addRect(FloatRect(decorationOrigin, FloatSize(fragment.width, thickness / scalingFactor)));
 
-    GraphicsContextStateSaver stateSaver(*context, false);
-    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, decorationStyle, *decorationRenderer, resourceMode))
-        return;
-    SVGRenderSupport::fillOrStrokePath(context, resourceMode, path);
+    const SVGRenderStyle& svgDecorationStyle = decorationStyle->svgStyle();
+
+    for (int i = 0; i < 3; i++) {
+        switch (svgDecorationStyle.paintOrderType(i)) {
+        case PT_FILL:
+            if (svgDecorationStyle.hasFill()) {
+                GraphicsContextStateSaver stateSaver(*context, false);
+                if (!SVGRenderSupport::updateGraphicsContext(stateSaver, decorationStyle, *decorationRenderer, ApplyToFillMode))
+                    break;
+                context->fillPath(path);
+            }
+            break;
+        case PT_STROKE:
+            if (svgDecorationStyle.hasVisibleStroke()) {
+                GraphicsContextStateSaver stateSaver(*context, false);
+                if (!SVGRenderSupport::updateGraphicsContext(stateSaver, decorationStyle, *decorationRenderer, ApplyToStrokeMode))
+                    break;
+                context->strokePath(path);
+            }
+            break;
+        case PT_MARKERS:
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    }
 }
 
 void SVGInlineTextBoxPainter::paintTextWithShadows(GraphicsContext* context, RenderStyle* style,
