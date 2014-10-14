@@ -1181,6 +1181,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // attached. Generates GL error if not.
   bool CheckBoundReadFramebufferColorAttachment(const char* func_name);
 
+  // Check that the currently bound read framebuffer's color image
+  // isn't the target texture of the glCopyTex{Sub}Image2D.
+  bool FormsTextureCopyingFeedbackLoop(TextureRef* texture, GLint level);
+
   // Check if a framebuffer meets our requirements.
   bool CheckFramebufferValid(
       Framebuffer* framebuffer,
@@ -3230,6 +3234,20 @@ bool GLES2DecoderImpl::CheckBoundReadFramebufferColorAttachment(
     return false;
   }
   return true;
+}
+
+bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
+    TextureRef* texture, GLint level) {
+  Framebuffer* framebuffer = features().chromium_framebuffer_multisample ?
+      framebuffer_state_.bound_read_framebuffer.get() :
+      framebuffer_state_.bound_draw_framebuffer.get();
+  if (!framebuffer)
+    return false;
+  const Framebuffer::Attachment* attachment = framebuffer->GetAttachment(
+      GL_COLOR_ATTACHMENT0);
+  if (!attachment)
+    return false;
+  return attachment->FormsFeedbackLoop(texture, level);
 }
 
 gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
@@ -8601,6 +8619,13 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
+  if (FormsTextureCopyingFeedbackLoop(texture_ref, level)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glCopyTexImage2D", "source and destination textures are the same");
+    return;
+  }
+
   if (!CheckBoundFramebuffersValid("glCopyTexImage2D")) {
     return;
   }
@@ -8716,6 +8741,13 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   }
 
   if (!CheckBoundReadFramebufferColorAttachment("glCopyTexSubImage2D")) {
+    return;
+  }
+
+  if (FormsTextureCopyingFeedbackLoop(texture_ref, level)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glCopyTexSubImage2D", "source and destination textures are the same");
     return;
   }
 

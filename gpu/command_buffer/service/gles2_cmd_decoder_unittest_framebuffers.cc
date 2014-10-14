@@ -2022,7 +2022,15 @@ void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
       .RetiresOnSaturation();
   CopyTexImage2D cmd;
   cmd.Init(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1, 1);
+  // Unbind fbo and bind again after CopyTexImage2D tp avoid feedback loops.
+  if (bound_fbo) {
+    DoBindFramebuffer(GL_FRAMEBUFFER, 0, 0);
+  }
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  if (bound_fbo) {
+    DoBindFramebuffer(
+        GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  }
   EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
 
   // Test deleting texture marks fbo as not complete.

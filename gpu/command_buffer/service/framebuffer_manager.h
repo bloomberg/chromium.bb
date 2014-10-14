@@ -52,6 +52,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
         TextureManager* texture_manager, std::string* signature) const = 0;
     virtual void OnWillRenderTo() const = 0;
     virtual void OnDidRenderTo() const = 0;
+    virtual bool FormsFeedbackLoop(TextureRef* texture, GLint level) const = 0;
 
    protected:
     friend class base::RefCounted<Attachment>;

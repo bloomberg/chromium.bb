@@ -126,6 +126,10 @@ class RenderbufferAttachment
 
   virtual void OnWillRenderTo() const override {}
   virtual void OnDidRenderTo() const override {}
+  virtual bool FormsFeedbackLoop(
+      TextureRef* /* texture */, GLint /*level */) const override {
+    return false;
+  }
 
  protected:
   virtual ~RenderbufferAttachment() { }
@@ -262,6 +266,11 @@ class TextureAttachment
 
   virtual void OnDidRenderTo() const override {
     texture_ref_->texture()->OnDidModifyPixels();
+  }
+
+  virtual bool FormsFeedbackLoop(
+      TextureRef* texture, GLint level) const override {
+    return texture == texture_ref_.get() && level == level_;
   }
 
  protected:
