@@ -7292,3 +7292,46 @@ TEST(HttpCache, RangeGET_MultipleRequests) {
 
   RemoveMockTransaction(&transaction);
 }
+
+// Makes sure that a request stops using the cache when the response headers
+// with "Cache-Control: no-store" arrives. That means that another request for
+// the same URL can be processed before the response body of the original
+// request arrives.
+TEST(HttpCache, NoStoreResponseShouldNotBlockFollowingRequests) {
+  MockHttpCache cache;
+  ScopedMockTransaction mock_transaction(kSimpleGET_Transaction);
+  mock_transaction.response_headers = "Cache-Control: no-store\n";
+  MockHttpRequest request(mock_transaction);
+
+  scoped_ptr<Context> first(new Context);
+  first->result = cache.CreateTransaction(&first->trans);
+  ASSERT_EQ(net::OK, first->result);
+  EXPECT_EQ(net::LOAD_STATE_IDLE, first->trans->GetLoadState());
+  first->result = first->trans->Start(
+      &request, first->callback.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_CACHE, first->trans->GetLoadState());
+
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(net::LOAD_STATE_IDLE, first->trans->GetLoadState());
+  ASSERT_TRUE(first->trans->GetResponseInfo());
+  EXPECT_TRUE(first->trans->GetResponseInfo()->headers->HasHeaderValue(
+      "Cache-Control", "no-store"));
+  // Here we have read the response header but not read the response body yet.
+
+  // Let us create the second (read) transaction.
+  scoped_ptr<Context> second(new Context);
+  second->result = cache.CreateTransaction(&second->trans);
+  ASSERT_EQ(net::OK, second->result);
+  EXPECT_EQ(net::LOAD_STATE_IDLE, second->trans->GetLoadState());
+  second->result = second->trans->Start(
+      &request, second->callback.callback(), net::BoundNetLog());
+
+  // Here the second transaction proceeds without reading the first body.
+  EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_CACHE, second->trans->GetLoadState());
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(net::LOAD_STATE_IDLE, second->trans->GetLoadState());
+  ASSERT_TRUE(second->trans->GetResponseInfo());
+  EXPECT_TRUE(second->trans->GetResponseInfo()->headers->HasHeaderValue(
+      "Cache-Control", "no-store"));
+  ReadAndVerifyTransaction(second->trans.get(), kSimpleGET_Transaction);
+}
