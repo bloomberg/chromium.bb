@@ -35,6 +35,11 @@
 
 namespace blink {
 
+ActiveAnimations::ActiveAnimations()
+    : m_animationStyleChange(false)
+{
+}
+
 ActiveAnimations::~ActiveAnimations()
 {
 #if !ENABLE(OILPAN)
@@ -83,6 +88,28 @@ void ActiveAnimations::trace(Visitor* visitor)
     visitor->trace(m_defaultStack);
     visitor->trace(m_players);
 #endif
+}
+
+const RenderStyle* ActiveAnimations::baseRenderStyle() const
+{
+#if !ENABLE(ASSERT)
+    if (isAnimationStyleChange())
+        return m_baseRenderStyle.get();
+#endif
+    return nullptr;
+}
+
+void ActiveAnimations::updateBaseRenderStyle(const RenderStyle* renderStyle)
+{
+    if (!isAnimationStyleChange()) {
+        m_baseRenderStyle = nullptr;
+        return;
+    }
+#if ENABLE(ASSERT)
+    if (m_baseRenderStyle && renderStyle)
+        ASSERT(*m_baseRenderStyle == *renderStyle);
+#endif
+    m_baseRenderStyle = RenderStyle::clone(renderStyle);
 }
 
 } // namespace blink

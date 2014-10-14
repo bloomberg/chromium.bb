@@ -589,7 +589,12 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
             return sharedStyle.release();
     }
 
-    if (state.parentStyle()) {
+    ActiveAnimations* activeAnimations = element->activeAnimations();
+    const RenderStyle* baseRenderStyle = activeAnimations ? activeAnimations->baseRenderStyle() : nullptr;
+
+    if (baseRenderStyle) {
+        state.setStyle(RenderStyle::clone(baseRenderStyle));
+    } else if (state.parentStyle()) {
         state.setStyle(RenderStyle::create());
         state.style()->inheritFrom(state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
     } else {
@@ -618,12 +623,13 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         state.style()->setInsideLink(linkState);
     }
 
-    bool needsCollection = false;
-    CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetsForElement(element, needsCollection);
-    if (needsCollection)
-        collectFeatures();
+    if (!baseRenderStyle) {
 
-    {
+        bool needsCollection = false;
+        CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetsForElement(element, needsCollection);
+        if (needsCollection)
+            collectFeatures();
+
         ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
 
         matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
@@ -632,12 +638,15 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         applyCallbackSelectors(state);
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
+
+        // Cache our original display.
+        state.style()->setOriginalDisplay(state.style()->display());
+
+        adjustRenderStyle(state, element);
+
+        if (activeAnimations)
+            activeAnimations->updateBaseRenderStyle(state.style());
     }
-
-    // Cache our original display.
-    state.style()->setOriginalDisplay(state.style()->display());
-
-    adjustRenderStyle(state, element);
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
@@ -772,7 +781,14 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 
     StyleResolverParentScope::ensureParentStackIsPushed();
 
-    if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
+    Element* pseudoElement = element.pseudoElement(pseudoStyleRequest.pseudoId);
+
+    ActiveAnimations* activeAnimations = pseudoElement ? pseudoElement->activeAnimations() : nullptr;
+    const RenderStyle* baseRenderStyle = activeAnimations ? activeAnimations->baseRenderStyle() : nullptr;
+
+    if (baseRenderStyle) {
+        state.setStyle(RenderStyle::clone(baseRenderStyle));
+    } else if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
         state.style()->inheritFrom(state.parentStyle());
     } else {
@@ -786,7 +802,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     // Since we don't use pseudo-elements in any of our quirk/print
     // user agent rules, don't waste time walking those rules.
 
-    {
+    if (!baseRenderStyle) {
         // Check UA, user and author rules.
         ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
         collector.setPseudoStyleRequest(pseudoStyleRequest);
@@ -801,19 +817,22 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         applyCallbackSelectors(state);
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
+
+        // Cache our original display.
+        state.style()->setOriginalDisplay(state.style()->display());
+
+        // FIXME: Passing 0 as the Element* introduces a lot of complexity
+        // in the adjustRenderStyle code.
+        adjustRenderStyle(state, 0);
+
+        if (activeAnimations)
+            activeAnimations->updateBaseRenderStyle(state.style());
     }
-
-    // Cache our original display.
-    state.style()->setOriginalDisplay(state.style()->display());
-
-    // FIXME: Passing 0 as the Element* introduces a lot of complexity
-    // in the adjustRenderStyle code.
-    adjustRenderStyle(state, 0);
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
     // before deciding which properties to transition.
-    if (applyAnimatedProperties(state, element.pseudoElement(pseudoStyleRequest.pseudoId)))
+    if (applyAnimatedProperties(state, pseudoElement))
         adjustRenderStyle(state, 0);
 
     didAccess();
