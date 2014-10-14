@@ -1348,7 +1348,7 @@ crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeo
 
 crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender.html [ NeedsManualRebaseline ]
 
-crbug.com/413249 http/tests/perf/large-inlined-script.html [ Failure Pass ]
+crbug.com/413249 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
 crbug.com/415039 [ Android ] http/tests/media/media-source/mediasource-play.html [ Crash ]
