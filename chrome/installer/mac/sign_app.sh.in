@@ -51,14 +51,24 @@ designated => \
 and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 "
 
-codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${browser_app}" --resource-rules "${browser_app_rules}" \
     -r="${requirement_string}"
 
+# Show the signature.
+codesign --display -r- -vvvvvv "${browser_app}"
+
 # Verify everything. Check the framework and helper apps to make sure that the
-# signatures are present and weren't altered by the signing process.
-codesign -v "${framework}"
-codesign -v "${helper_app}"
-codesign -v "${helper_eh_app}"
-codesign -v "${helper_np_app}"
-codesign -v "${browser_app}"
+# signatures are present and weren't altered by the signing process. Don't use
+# --deep on the framework because Keystone's signature is in a transitional
+# state (radar 18474911). Use --no-strict on the app because it uses custom
+# resource rules.
+codesign --verify -vvvvvv "${framework}"
+codesign --verify --deep -vvvvvv "${helper_app}"
+codesign --verify --deep -vvvvvv "${helper_eh_app}"
+codesign --verify --deep -vvvvvv "${helper_np_app}"
+codesign --verify --deep --no-strict -vvvvvv "${browser_app}"
+
+# Verify with spctl, which uses the same rules that Gatekeeper does for
+# validation.
+spctl --assess -vv "${browser_app}"

@@ -49,23 +49,26 @@ requirement_suffix="\
 and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 "
 
-codesign -s "${codesign_id}" --keychain "${codesign_keychain}" "${framework}" \
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
+    "${framework}" \
     -r="designated => identifier \"com.google.Chrome.framework\" \
 ${requirement_suffix}"
-codesign -s "${codesign_id}" --keychain "${codesign_keychain}" "${helper_app}" \
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
+    "${helper_app}" \
     -r="designated => identifier \"com.google.Chrome.helper\" \
 ${requirement_suffix}"
-codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${helper_eh_app}" \
     -r="designated => identifier \"com.google.Chrome.helper.EH\" \
 ${requirement_suffix}"
-codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${helper_np_app}" \
     -r="designated => identifier \"com.google.Chrome.helper.NP\" \
 ${requirement_suffix}"
 
-# Verify everything.
-codesign -v "${framework}"
-codesign -v "${helper_app}"
-codesign -v "${helper_eh_app}"
-codesign -v "${helper_np_app}"
+# Verify everything. Don't use --deep on the framework because Keystone's
+# signature is in a transitional state (radar 18474911).
+codesign --verify "${framework}"
+codesign --verify --deep "${helper_app}"
+codesign --verify --deep "${helper_eh_app}"
+codesign --verify --deep "${helper_np_app}"
