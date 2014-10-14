@@ -15,6 +15,7 @@ component("user_manager") {
 
   deps = [
     "//base",
+    "//components/session_manager/core",
     "//skia",
     "//ui/gfx",
     "//url",
