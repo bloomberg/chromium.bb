@@ -882,6 +882,9 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     UMA_HISTOGRAM_BOOLEAN(
         "InterProcessTimeTicks.IsSkewAdditive_RendererToBrowser",
         is_skew_additive);
+
+    frame_tree_node_->navigator()->LogBeforeUnloadTime(
+        renderer_before_unload_start_time, renderer_before_unload_end_time);
   }
   frame_tree_node_->render_manager()->OnBeforeUnloadACK(
       unload_ack_is_for_cross_site_transition_, proceed,

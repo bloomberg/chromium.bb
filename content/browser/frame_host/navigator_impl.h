@@ -81,9 +81,15 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                                 scoped_ptr<StreamHandle> body) override;
   virtual void LogResourceRequestTime(
       base::TimeTicks timestamp, const GURL& url) override;
+  virtual void LogBeforeUnloadTime(
+      const base::TimeTicks& renderer_before_unload_start_time,
+      const base::TimeTicks& renderer_before_unload_end_time) override;
   virtual void CancelNavigation(FrameTreeNode* frame_tree_node) override;
 
  private:
+  // Holds data used to track browser side navigation metrics.
+  struct NavigationMetricsData;
+
   friend class NavigatorTest;
   virtual ~NavigatorImpl();
 
@@ -108,6 +114,11 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          NavigationController::ReloadType reload_type,
                          base::TimeTicks navigation_start);
 
+  void RecordNavigationMetrics(
+      const LoadCommittedDetails& details,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      SiteInstance* site_instance);
+
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.
   // TODO(nasko): Move ownership of the NavigationController from
@@ -118,9 +129,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // events. Can be NULL in tests.
   NavigatorDelegate* delegate_;
 
-  // The start time and URL for latest navigation request, used for feeding a
-  // few histograms under the Navigation group.
-  Tuple2<base::TimeTicks, GURL> navigation_start_time_and_url;
+  scoped_ptr<NavigatorImpl::NavigationMetricsData> navigation_data_;
 
   // PlzNavigate: used to track the various ongoing NavigationRequests in the
   // different FrameTreeNodes, based on the frame_tree_node_id.

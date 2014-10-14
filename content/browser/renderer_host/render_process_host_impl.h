@@ -259,6 +259,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Activates Mojo for this process. Does nothing if Mojo is already activated.
   void EnsureMojoActivated();
 
+  // PlzNavigate
+  // Returns the time the first call to Init completed successfully (after a new
+  // renderer process was created); further calls to Init won't change this
+  // value.
+  // Note: Will disappear after PlzNavitate is completed.
+  const base::TimeTicks& init_time() const { return init_time_; }
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)
@@ -370,6 +377,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // True after Init() has been called. We can't just check channel_ because we
   // also reset that in the case of process termination.
   bool is_initialized_;
+
+  // PlzNavigate
+  // Stores the time at which the first call to Init happened.
+  base::TimeTicks init_time_;
 
   // Used to launch and terminate the process without blocking the UI thread.
   scoped_ptr<ChildProcessLauncher> child_process_launcher_;

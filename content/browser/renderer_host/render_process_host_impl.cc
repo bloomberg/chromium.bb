@@ -642,6 +642,7 @@ bool RenderProcessHostImpl::Init() {
   power_monitor_broadcaster_.Init();
 
   is_initialized_ = true;
+  init_time_ = base::TimeTicks::Now();
   return true;
 }
 

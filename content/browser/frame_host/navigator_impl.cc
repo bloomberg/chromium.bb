@@ -179,6 +179,23 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
 
 }  // namespace
 
+struct NavigatorImpl::NavigationMetricsData {
+  NavigationMetricsData(base::TimeTicks start_time,
+                        GURL url,
+                        NavigationEntryImpl::RestoreType restore_type)
+      : start_time_(start_time), url_(url) {
+    is_restoring_from_last_session_ =
+        (restore_type ==
+             NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY ||
+         restore_type == NavigationEntryImpl::RESTORE_LAST_SESSION_CRASHED);
+  }
+
+  base::TimeTicks start_time_;
+  GURL url_;
+  bool is_restoring_from_last_session_;
+  base::TimeTicks url_job_start_time_;
+  base::TimeDelta before_unload_delay_;
+};
 
 NavigatorImpl::NavigatorImpl(
     NavigationControllerImpl* navigation_controller,
@@ -361,7 +378,8 @@ bool NavigatorImpl::NavigateToEntry(
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation)) {
-    navigation_start_time_and_url = MakeTuple(navigation_start, entry.GetURL());
+    navigation_data_.reset(new NavigationMetricsData(
+        navigation_start, entry.GetURL(), entry.restore_type()));
     return RequestNavigation(render_frame_host->frame_tree_node(),
                              entry,
                              reload_type,
@@ -400,7 +418,8 @@ bool NavigatorImpl::NavigateToEntry(
       navigate_params.transferred_request_child_id ==
           dest_render_frame_host->GetProcess()->GetID();
   if (!is_transfer_to_same) {
-    navigation_start_time_and_url = MakeTuple(navigation_start, entry.GetURL());
+    navigation_data_.reset(new NavigationMetricsData(
+        navigation_start, entry.GetURL(), entry.restore_type()));
     dest_render_frame_host->Navigate(navigate_params);
   } else {
     // No need to navigate again.  Just resume the deferred request.
@@ -573,14 +592,7 @@ void NavigatorImpl::DidNavigate(
 
   // TODO(carlosk): Move this out when PlzNavigate implementation properly calls
   // the observer methods.
-  if (details.is_main_frame &&
-      navigation_start_time_and_url.a.ToInternalValue() != 0
-      && navigation_start_time_and_url.b == params.original_request_url) {
-    base::TimeDelta time_to_commit =
-        base::TimeTicks::Now() - navigation_start_time_and_url.a;
-    UMA_HISTOGRAM_TIMES("Navigation.TimeToCommit", time_to_commit);
-    navigation_start_time_and_url = MakeTuple(base::TimeTicks(), GURL());
-  }
+  RecordNavigationMetrics(details, params, site_instance);
 
   // Run post-commit tasks.
   if (delegate_) {
@@ -773,11 +785,23 @@ void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
 
 void NavigatorImpl::LogResourceRequestTime(
     base::TimeTicks timestamp, const GURL& url) {
-  if (navigation_start_time_and_url.a.ToInternalValue() != 0
-      && navigation_start_time_and_url.b == url) {
-    base::TimeDelta time_to_network =
-        timestamp - navigation_start_time_and_url.a;
-    UMA_HISTOGRAM_TIMES("Navigation.TimeToURLJobStart", time_to_network);
+  if (navigation_data_ && navigation_data_->url_ == url) {
+    navigation_data_->url_job_start_time_ = timestamp;
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToURLJobStart",
+        navigation_data_->url_job_start_time_ - navigation_data_->start_time_);
+  }
+}
+
+void NavigatorImpl::LogBeforeUnloadTime(
+    const base::TimeTicks& renderer_before_unload_start_time,
+    const base::TimeTicks& renderer_before_unload_end_time) {
+  // Only stores the beforeunload delay if we're tracking a browser initiated
+  // navigation and it happened later than the navigation request.
+  if (navigation_data_ &&
+      renderer_before_unload_start_time > navigation_data_->start_time_) {
+    navigation_data_->before_unload_delay_ =
+        renderer_before_unload_end_time - renderer_before_unload_start_time;
   }
 }
 
@@ -842,6 +866,57 @@ bool NavigatorImpl::RequestNavigation(
       MakeDefaultBeginNavigation(request_params, navigation_type),
       navigation_request_map_.get(frame_tree_node_id)->common_params());
   return true;
+}
+
+void NavigatorImpl::RecordNavigationMetrics(
+    const LoadCommittedDetails& details,
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    SiteInstance* site_instance) {
+  DCHECK(site_instance->HasProcess());
+  if (!details.is_main_frame || !navigation_data_ ||
+      navigation_data_->url_ != params.original_request_url) {
+    return;
+  }
+
+  base::TimeDelta time_to_commit =
+      base::TimeTicks::Now() - navigation_data_->start_time_;
+  UMA_HISTOGRAM_TIMES("Navigation.TimeToCommit", time_to_commit);
+
+  time_to_commit -= navigation_data_->before_unload_delay_;
+  base::TimeDelta time_to_network = navigation_data_->url_job_start_time_ -
+                                    navigation_data_->start_time_ -
+                                    navigation_data_->before_unload_delay_;
+  if (navigation_data_->is_restoring_from_last_session_) {
+    DCHECK(!navigation_data_->before_unload_delay_.InMicroseconds());
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToCommit_SessionRestored",
+        time_to_commit);
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToURLJobStart_SessionRestored",
+        time_to_network);
+    navigation_data_.reset();
+    return;
+  }
+  RenderProcessHostImpl* process_host =
+      static_cast<RenderProcessHostImpl*>(site_instance->GetProcess());
+  bool navigation_created_new_renderer_process =
+      process_host->init_time() > navigation_data_->start_time_;
+  if (navigation_created_new_renderer_process) {
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToCommit_NewRenderer_BeforeUnloadDiscounted",
+        time_to_commit);
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToURLJobStart_NewRenderer_BeforeUnloadDiscounted",
+        time_to_network);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToCommit_ExistingRenderer_BeforeUnloadDiscounted",
+        time_to_commit);
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.TimeToURLJobStart_ExistingRenderer_BeforeUnloadDiscounted",
+        time_to_network);
+  }
+  navigation_data_.reset();
 }
 
 }  // namespace content

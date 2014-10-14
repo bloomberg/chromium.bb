@@ -14000,7 +14000,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Navigation.TimeToCommit" units="milliseconds">
   <owner>carlosk@chromium.org</owner>
   <summary>
-    Time between the start of a navigation request in the browser and its
+    Time between the start of a browser-started navigation request in and its
     commit.
   </summary>
 </histogram>
@@ -14008,7 +14008,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Navigation.TimeToURLJobStart" units="milliseconds">
   <owner>carlosk@chromium.org</owner>
   <summary>
-    Time between the start of a navigation request in the browser and the
+    Time between the start of a browser-started navigation request and the
     reception of a corresponding ResourceRequest in the network stack.
   </summary>
 </histogram>
@@ -54825,6 +54825,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="OnStartTime" label="Measures the time taken for OnStart()."/>
   <suffix name="OnStopTime" label="Measures the time taken for OnStop()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NavigationCharacteristic">
+  <suffix name="ExistingRenderer_BeforeUnloadDiscounted"
+      label="Navigation reused an existing renderer process. Time spent in
+             beforeunload subtracted."/>
+  <suffix name="NewRenderer_BeforeUnloadDiscounted"
+      label="Navigation spawned a new renderer process. Time spent in
+             beforeunload subtracted."/>
+  <suffix name="SessionRestored"
+      label="Navigation caused by restoring a tab from a previous session
+             (whether from a crash or a continued session) either spawning or
+             reusing a renderer. Time spent in beforeunload subtracted."/>
+  <affected-histogram name="Navigation.TimeToCommit"/>
+  <affected-histogram name="Navigation.TimeToURLJobStart"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Net.QuicClientHelloRejectReasons.QuicIsSecureOrNot"

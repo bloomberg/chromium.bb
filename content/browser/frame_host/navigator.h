@@ -141,6 +141,12 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void LogResourceRequestTime(
     base::TimeTicks timestamp, const GURL& url) {};
 
+  // Called to record the time it took to execute the before unload hook for the
+  // current navigation.
+  virtual void LogBeforeUnloadTime(
+      const base::TimeTicks& renderer_before_unload_start_time,
+      const base::TimeTicks& renderer_before_unload_end_time) {}
+
  protected:
   friend class base::RefCounted<Navigator>;
   virtual ~Navigator() {}
