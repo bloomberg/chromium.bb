@@ -154,9 +154,8 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy()->Id());
 }
 
-// Disabled for flaky timeouts.  http://crbug.com/423094
 IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
-                       DISABLED_InSessionDetection) {
+                       InSessionDetection) {
   typedef NetworkPortalNotificationController Controller;
 
   TestObserver observer;

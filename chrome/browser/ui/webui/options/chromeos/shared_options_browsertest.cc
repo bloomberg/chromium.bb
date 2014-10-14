@@ -298,9 +298,7 @@ IN_PROC_BROWSER_TEST_F(SharedOptionsTest, PRE_ScreenLockPreferencePrimary) {
 // (The checkbox is unset if the current user's preference is false, but if any
 // other signed-in user has enabled this preference, the shared setting
 // indicator explains this.)
-// Disabled due to flaky timeouts.  https://crbug.com/423053
-IN_PROC_BROWSER_TEST_F(SharedOptionsTest,
-                       DISABLED_ScreenLockPreferencePrimary) {
+IN_PROC_BROWSER_TEST_F(SharedOptionsTest, ScreenLockPreferencePrimary) {
   LoginUser(kTestOwner);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
