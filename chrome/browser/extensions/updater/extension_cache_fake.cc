@@ -11,11 +11,9 @@
 namespace extensions {
 
 ExtensionCacheFake::ExtensionCacheFake() {
-  ExtensionCache::SetForTesting(this);
 }
 
 ExtensionCacheFake::~ExtensionCacheFake() {
-  ExtensionCache::SetForTesting(NULL);
 }
 
 void ExtensionCacheFake::Start(const base::Closure& callback) {

@@ -612,6 +612,10 @@ class PolicyTest : public InProcessBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
+    if (extension_service()->updater()) {
+      extension_service()->updater()->SetExtensionCacheForTesting(
+          test_extension_cache_.get());
+    }
   }
 
   // Makes URLRequestMockHTTPJobs serve data from content::DIR_TEST_DATA

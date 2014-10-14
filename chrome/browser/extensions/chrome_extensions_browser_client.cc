@@ -40,7 +40,10 @@
 #include "extensions/browser/url_request_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chromeos/chromeos_switches.h"
+#else
+#include "extensions/browser/updater/null_extension_cache.h"
 #endif
 
 namespace extensions {
@@ -242,6 +245,13 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 }
 
+scoped_ptr<extensions::RuntimeAPIDelegate>
+ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
+    content::BrowserContext* context) const {
+  return scoped_ptr<extensions::RuntimeAPIDelegate>(
+      new ChromeRuntimeAPIDelegate(context));
+}
+
 ComponentExtensionResourceManager*
 ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   if (!resource_manager_)
@@ -260,11 +270,15 @@ net::NetLog* ChromeExtensionsBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }
 
-scoped_ptr<extensions::RuntimeAPIDelegate>
-ChromeExtensionsBrowserClient::CreateRuntimeAPIDelegate(
-    content::BrowserContext* context) const {
-  return scoped_ptr<extensions::RuntimeAPIDelegate>(
-      new ChromeRuntimeAPIDelegate(context));
+ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
+  if (!extension_cache_.get()) {
+#if defined(OS_CHROMEOS)
+    extension_cache_.reset(new ExtensionCacheImpl());
+#else
+    extension_cache_.reset(new NullExtensionCache());
+#endif
+  }
+  return extension_cache_.get();
 }
 
 }  // namespace extensions
