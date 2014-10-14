@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/profiler/scoped_profile.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 
@@ -162,6 +163,11 @@ SocketInputStream::State SocketInputStream::GetState() const {
 
 void SocketInputStream::RefreshCompletionCallback(
     const base::Closure& callback, int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "418183 DoReadCallback => SocketInputStream::RefreshCompletionC..."));
+
   // If an error occurred before the completion callback could complete, ignore
   // the result.
   if (GetState() == CLOSED)
