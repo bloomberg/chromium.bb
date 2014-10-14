@@ -920,6 +920,8 @@ ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {
+  DCHECK(widget_helper_->IsRoutingIDProbablyValid(routing_id))
+      << "Found Routing ID conflicts: " << routing_id;
   listeners_.AddWithID(listener, routing_id);
 }
 
