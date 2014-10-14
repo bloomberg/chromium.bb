@@ -353,8 +353,8 @@ void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
   // cancelable (respect ACK disposition) or not.
   bool ignores_ack = WebInputEventTraits::IgnoresAckDisposition(input_event);
   if (WebInputEvent::isTouchEventType(input_event.type)) {
-    DCHECK(!ignores_ack ==
-           static_cast<const blink::WebTouchEvent&>(input_event).cancelable);
+    DCHECK_NE(static_cast<int>(ignores_ack),
+              static_cast<const blink::WebTouchEvent&>(input_event).cancelable);
   }
 
   // If we don't care about the ack disposition, send the ack immediately.
