@@ -91,6 +91,7 @@ public:
     FloatPoint location() const { return m_offset; }
 
     // Sets the size of the inner viewport when unscaled in CSS pixels.
+    // This will be clamped to the size of the outer viewport (the main frame).
     void setSize(const IntSize&);
     IntSize size() const { return m_size; }
 
@@ -125,14 +126,6 @@ public:
     // scroll extents of the viewport within the document.
     IntPoint clampDocumentOffsetAtScale(const IntPoint& offset, float scale);
 
-    // FIXME: This is kind of a hack. Ideally, we would just resize the
-    // viewports to account for top controls. However, FrameView includes much
-    // more than just scrolling so we can't simply resize it without incurring
-    // all sorts of side-effects. Until we can seperate out the scrollability
-    // aspect from FrameView, we use this method to let PinchViewport make the
-    // necessary adjustments so that we don't incorrectly clamp scroll offsets
-    // coming from the compositor. crbug.com/422328
-    void setTopControlsAdjustment(float);
 private:
     explicit PinchViewport(FrameHost&);
 
@@ -190,7 +183,6 @@ private:
     FloatPoint m_offset;
     float m_scale;
     IntSize m_size;
-    float m_topControlsAdjustment;
 };
 
 } // namespace blink
