@@ -219,6 +219,9 @@ Response PageHandler::SetGeolocationOverride(double* latitude,
     geoposition->longitude = *longitude;
     geoposition->accuracy = *accuracy;
     geoposition->timestamp = base::Time::Now();
+    if (!geoposition->Validate()) {
+      return Response::InternalError("Invalid geolocation");
+    }
   } else {
     geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   }
