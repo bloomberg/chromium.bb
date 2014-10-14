@@ -922,7 +922,7 @@ function deleteBookmarks(opt_target) {
     return;
 
   var filteredIds = getFilteredSelectedBookmarkIds(opt_target);
-  lastDeleted = {nodes: [], target: opt_target};
+  lastDeleted = {nodes: [], target: opt_target || document.activeElement};
 
   function performDelete() {
     // Only remove filtered ids.
