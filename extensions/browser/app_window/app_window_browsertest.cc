@@ -34,18 +34,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
   CloseAppWindow(app_window);
 }
 
-// This test is also disabled on Linux because frame: color is ignored on stable
-// and beta channels (so it can fail the same as the previous test).
-// TODO(benwells): Re-enable on Linux after frame: color is on stable.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_FrameInsetsForColoredFrame DISABLED_FrameInsetsForColoredFrame
-#else
-#define MAYBE_FrameInsetsForColoredFrame FrameInsetsForColoredFrame
-#endif
-
 // Verifies that the NativeAppWindows implement GetFrameInsets() correctly.
 // See http://crbug.com/346115
-IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForColoredFrame) {
+IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, FrameInsetsForColoredFrame) {
   AppWindow* app_window =
       CreateTestAppWindow("{ \"frame\": { \"color\": \"#ffffff\" } }");
   NativeAppWindow* native_window = app_window->GetBaseWindow();
