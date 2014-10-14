@@ -33,6 +33,7 @@
 #include "core/rendering/style/GridCoordinate.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/LengthFunctions.h"
+#include "wtf/VectorTraits.h"
 
 namespace blink {
 
@@ -172,6 +173,7 @@ private:
 
 struct RenderGrid::GridSizingData {
     WTF_MAKE_NONCOPYABLE(GridSizingData);
+    STACK_ALLOCATED();
 public:
     GridSizingData(size_t gridColumnCount, size_t gridRowCount)
         : columnTracks(gridColumnCount)
@@ -186,7 +188,7 @@ public:
     // Performance optimization: hold onto these Vectors until the end of Layout to avoid repeated malloc / free.
     Vector<LayoutUnit> distributeTrackVector;
     Vector<GridTrack*> filteredTracks;
-    Vector<GridItemWithSpan> itemsSortedByIncreasingSpan;
+    WillBeHeapVector<GridItemWithSpan> itemsSortedByIncreasingSpan;
 };
 
 RenderGrid::RenderGrid(Element* element)
@@ -668,6 +670,7 @@ LayoutUnit RenderGrid::maxContentForChild(RenderBox& child, GridTrackSizingDirec
 // std::pair<RenderBox*, size_t> does not work either because we still need the GridCoordinate so we'd have to add an
 // extra hash lookup for each item at the beginning of RenderGrid::resolveContentBasedTrackSizingFunctionsForItems().
 class GridItemWithSpan {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     GridItemWithSpan(RenderBox& gridItem, const GridCoordinate& coordinate, GridTrackSizingDirection direction)
         : m_gridItem(gridItem)
@@ -682,11 +685,32 @@ public:
 
     bool operator<(const GridItemWithSpan other) const { return m_span < other.m_span; }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_gridItem);
+    }
+
 private:
     RawPtrWillBeMember<RenderBox> m_gridItem;
     GridCoordinate m_coordinate;
     size_t m_span;
 };
+
+} // namespace blink
+
+namespace WTF  {
+
+template<>
+struct VectorTraits<blink::GridItemWithSpan> : SimpleClassVectorTraits<blink::GridItemWithSpan> {
+    // needsDestruction is by default defined in terms of IsPod<>, but as
+    // it doesn't handle embedded structs/enums (e.g., GridCoordinate),
+    // override it here.
+    static const bool needsDestruction = false;
+};
+
+} // namespace WTF
+
+namespace blink {
 
 void RenderGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
 {
