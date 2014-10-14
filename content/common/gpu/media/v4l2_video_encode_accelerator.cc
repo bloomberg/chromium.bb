@@ -282,6 +282,11 @@ void V4L2VideoEncodeAccelerator::Destroy() {
 
 std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
+  return GetSupportedProfilesStatic();
+}
+
+std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+V4L2VideoEncodeAccelerator::GetSupportedProfilesStatic() {
   std::vector<SupportedProfile> profiles;
   SupportedProfile profile;
 
