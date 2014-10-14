@@ -139,6 +139,7 @@
                 'type': 'none',
                 'dependencies': [
                     '<(DEPTH)/base/base.gyp:base_java',
+                    '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_pak',
                     '<(DEPTH)/net/net.gyp:net_java',
                     'webkit_unit_tests',
                 ],

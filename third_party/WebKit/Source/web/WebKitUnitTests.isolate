@@ -32,6 +32,9 @@
   'conditions': [
     ['OS=="android"', {
       'variables': {
+        'files' : [
+          '<(PRODUCT_DIR)/content_shell.pak',
+        ],
         'isolate_dependency_tracked': [
         ],
         'isolate_dependency_untracked': [
