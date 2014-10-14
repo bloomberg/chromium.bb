@@ -6,6 +6,7 @@
 
 import os
 import subprocess
+import xml.dom.minidom
 
 
 CHROMIUM_SRC = os.path.normpath(
@@ -34,11 +35,9 @@ def RunCheckstyle(input_api, output_api, style_file):
     check = subprocess.Popen(['java', '-cp',
                               CHECKSTYLE_ROOT,
                               'com.puppycrawl.tools.checkstyle.Main', '-c',
-                              style_file] + java_files,
+                              style_file, '-f', 'xml'] + java_files,
                              stdout=subprocess.PIPE, env=checkstyle_env)
     stdout, _ = check.communicate()
-    if check.returncode == 0:
-      return []
   except OSError as e:
     import errno
     if e.errno == errno.ENOENT:
@@ -46,24 +45,32 @@ def RunCheckstyle(input_api, output_api, style_file):
                        'build/install-build-deps-android.sh')
       return [output_api.PresubmitPromptWarning(install_error)]
 
-  # Remove non-error values from stdout
-  errors = stdout.splitlines()
-
-  if errors and errors[0] == 'Starting audit...':
-    del errors[0]
-  if errors and errors[-1] == 'Audit done.':
-    del errors[-1]
-
-  # Filter out warnings
-  errors = [x for x in errors if 'warning: ' not in x]
-  if not errors:
-    return []
+  result_errors = []
+  result_warnings = []
 
   local_path = input_api.PresubmitLocalPath()
-  output = []
-  for error in errors:
-    # Change the full file path to relative path in the output lines
-    full_path, end = error.split(':', 1)
-    rel_path = os.path.relpath(full_path, local_path)
-    output.append('  %s:%s' % (rel_path, end))
-  return [output_api.PresubmitPromptWarning('\n'.join(output))]
+  root = xml.dom.minidom.parseString(stdout)
+  for fileElement in root.getElementsByTagName('file'):
+    fileName = fileElement.attributes['name'].value
+    fileName = os.path.relpath(fileName, local_path)
+    errors = fileElement.getElementsByTagName('error')
+    for error in errors:
+      line = error.attributes['line'].value
+      column = ''
+      if error.hasAttribute('column'):
+        column = '%s:' % (error.attributes['column'].value)
+      message = error.attributes['message'].value
+      result = '  %s:%s:%s %s' % (fileName, line, column, message)
+
+      severity = error.attributes['severity'].value
+      if severity == 'error':
+        result_errors.append(result)
+      elif severity == 'warning':
+        result_warnings.append(result)
+
+  result = []
+  if result_warnings:
+    result.append(output_api.PresubmitPromptWarning('\n'.join(result_warnings)))
+  if result_errors:
+    result.append(output_api.PresubmitError('\n'.join(result_errors)))
+  return result
