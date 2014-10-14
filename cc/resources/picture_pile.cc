@@ -378,46 +378,56 @@ bool PicturePile::UpdateAndExpandInvalidation(
     }
   }
 
-  Region invalidation_expanded_to_full_tiles;
-  for (Region::Iterator i(*invalidation); i.has_rect(); i.next()) {
-    gfx::Rect invalid_rect = i.rect();
-
+  // Detect cases where the full pile is invalidated, in this situation we
+  // can just drop/invalidate everything.
+  if (invalidation->Contains(gfx::Rect(old_tiling_size)) ||
+      invalidation->Contains(gfx::Rect(tiling_size()))) {
+    for (auto& it : picture_map_)
+      updated = it.second.Invalidate(frame_number) || updated;
+  } else {
     // Expand invalidation that is outside tiles that intersect the interest
     // rect. These tiles are no longer valid and should be considerered fully
     // invalid, so we can know to not keep around raster tiles that intersect
     // with these recording tiles.
-    gfx::Rect invalid_rect_outside_interest_rect_tiles = invalid_rect;
-    // TODO(danakj): We should have a Rect-subtract-Rect-to-2-rects operator
-    // instead of using Rect::Subtract which gives you the bounding box of the
-    // subtraction.
-    invalid_rect_outside_interest_rect_tiles.Subtract(interest_rect_over_tiles);
-    invalidation_expanded_to_full_tiles.Union(tiling_.ExpandRectToTileBounds(
-        invalid_rect_outside_interest_rect_tiles));
+    Region invalidation_expanded_to_full_tiles;
 
-    // Split this inflated invalidation across tile boundaries and apply it
-    // to all tiles that it touches.
-    bool include_borders = true;
-    for (TilingData::Iterator iter(&tiling_, invalid_rect, include_borders);
-         iter;
-         ++iter) {
-      const PictureMapKey& key = iter.index();
+    for (Region::Iterator i(*invalidation); i.has_rect(); i.next()) {
+      gfx::Rect invalid_rect = i.rect();
 
-      PictureMap::iterator picture_it = picture_map_.find(key);
-      if (picture_it == picture_map_.end())
-        continue;
+      gfx::Rect invalid_rect_outside_interest_rect_tiles = invalid_rect;
+      // TODO(danakj): We should have a Rect-subtract-Rect-to-2-rects operator
+      // instead of using Rect::Subtract which gives you the bounding box of the
+      // subtraction.
+      invalid_rect_outside_interest_rect_tiles.Subtract(
+          interest_rect_over_tiles);
+      invalidation_expanded_to_full_tiles.Union(tiling_.ExpandRectToTileBounds(
+          invalid_rect_outside_interest_rect_tiles));
 
-      // Inform the grid cell that it has been invalidated in this frame.
-      updated = picture_it->second.Invalidate(frame_number) || updated;
-      // Invalidate drops the picture so the whole tile better be invalidated if
-      // it won't be re-recorded below.
-      DCHECK_IMPLIES(!tiling_.TileBounds(key.first, key.second)
-                          .Intersects(interest_rect_over_tiles),
-                     invalidation_expanded_to_full_tiles.Contains(
-                         tiling_.TileBounds(key.first, key.second)));
+      // Split this inflated invalidation across tile boundaries and apply it
+      // to all tiles that it touches.
+      bool include_borders = true;
+      for (TilingData::Iterator iter(&tiling_, invalid_rect, include_borders);
+           iter;
+           ++iter) {
+        const PictureMapKey& key = iter.index();
+
+        PictureMap::iterator picture_it = picture_map_.find(key);
+        if (picture_it == picture_map_.end())
+          continue;
+
+        // Inform the grid cell that it has been invalidated in this frame.
+        updated = picture_it->second.Invalidate(frame_number) || updated;
+        // Invalidate drops the picture so the whole tile better be invalidated
+        // if it won't be re-recorded below.
+        DCHECK_IMPLIES(!tiling_.TileBounds(key.first, key.second)
+                            .Intersects(interest_rect_over_tiles),
+                       invalidation_expanded_to_full_tiles.Contains(
+                           tiling_.TileBounds(key.first, key.second)));
+      }
     }
+    invalidation->Union(invalidation_expanded_to_full_tiles);
   }
 
-  invalidation->Union(invalidation_expanded_to_full_tiles);
   invalidation->Union(resize_invalidation);
 
   // Make a list of all invalid tiles; we will attempt to

@@ -193,6 +193,28 @@ TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   }
 }
 
+TEST_F(PicturePileTest, InvalidateOnFullLayer) {
+  UpdateWholePile();
+
+  // Everything was invalidated once so far.
+  for (auto& it : pile_->picture_map()) {
+    EXPECT_FLOAT_EQ(
+        1.0f / TestPicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED,
+        it.second.GetInvalidationFrequencyForTesting());
+  }
+
+  // Invalidate everything,
+  Region invalidation = tiling_rect();
+  UpdateAndExpandInvalidation(&invalidation, tiling_size(), tiling_rect());
+
+  // Everything was invalidated again.
+  for (auto& it : pile_->picture_map()) {
+    EXPECT_FLOAT_EQ(
+        2.0f / TestPicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED,
+        it.second.GetInvalidationFrequencyForTesting());
+  }
+}
+
 TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
   gfx::Size new_tiling_size =
       gfx::ToCeiledSize(gfx::ScaleSize(pile_->tiling_size(), 4.f));
@@ -362,6 +384,66 @@ TEST_F(PicturePileTest, NoInvalidationValidViewport) {
       &invalidation, tiling_size(), gfx::Rect(5, 5, 5, 5));
   EXPECT_TRUE(!pile_->recorded_viewport().IsEmpty());
   EXPECT_EQ(Region().ToString(), invalidation.ToString());
+}
+
+TEST_F(PicturePileTest, BigFullLayerInvalidation) {
+  gfx::Size huge_layer_size(100000000, 100000000);
+  gfx::Rect viewport(300000, 400000, 5000, 6000);
+
+  // Resize the pile.
+  Region invalidation;
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_size, viewport);
+
+  // Invalidating a huge layer should be fast.
+  base::TimeTicks start = base::TimeTicks::Now();
+  invalidation = gfx::Rect(huge_layer_size);
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_size, viewport);
+  base::TimeTicks end = base::TimeTicks::Now();
+  base::TimeDelta length = end - start;
+  // This is verrrry generous to avoid flake.
+  EXPECT_LT(length.InSeconds(), 5);
+}
+
+TEST_F(PicturePileTest, BigFullLayerInvalidationWithResizeGrow) {
+  gfx::Size huge_layer_size(100000000, 100000000);
+  gfx::Rect viewport(300000, 400000, 5000, 6000);
+
+  // Resize the pile.
+  Region invalidation;
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_size, viewport);
+
+  // Resize the pile even larger, while invalidating everything in the old size.
+  // Invalidating the whole thing should be fast.
+  base::TimeTicks start = base::TimeTicks::Now();
+  gfx::Size bigger_layer_size(huge_layer_size.width() * 2,
+                              huge_layer_size.height() * 2);
+  invalidation = gfx::Rect(huge_layer_size);
+  UpdateAndExpandInvalidation(&invalidation, bigger_layer_size, viewport);
+  base::TimeTicks end = base::TimeTicks::Now();
+  base::TimeDelta length = end - start;
+  // This is verrrry generous to avoid flake.
+  EXPECT_LT(length.InSeconds(), 5);
+}
+
+TEST_F(PicturePileTest, BigFullLayerInvalidationWithResizeShrink) {
+  gfx::Size huge_layer_size(100000000, 100000000);
+  gfx::Rect viewport(300000, 400000, 5000, 6000);
+
+  // Resize the pile.
+  Region invalidation;
+  UpdateAndExpandInvalidation(&invalidation, huge_layer_size, viewport);
+
+  // Resize the pile smaller, while invalidating everything in the new size.
+  // Invalidating the whole thing should be fast.
+  base::TimeTicks start = base::TimeTicks::Now();
+  gfx::Size smaller_layer_size(huge_layer_size.width() - 1000,
+                               huge_layer_size.height() - 1000);
+  invalidation = gfx::Rect(smaller_layer_size);
+  UpdateAndExpandInvalidation(&invalidation, smaller_layer_size, viewport);
+  base::TimeTicks end = base::TimeTicks::Now();
+  base::TimeDelta length = end - start;
+  // This is verrrry generous to avoid flake.
+  EXPECT_LT(length.InSeconds(), 5);
 }
 
 TEST_F(PicturePileTest, InvalidationOutsideRecordingRect) {
