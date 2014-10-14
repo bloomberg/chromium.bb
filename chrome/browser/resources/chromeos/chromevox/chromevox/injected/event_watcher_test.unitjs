@@ -537,7 +537,9 @@ TEST_F('CvoxEventWatcherUnitTest', 'AriaHiddenFeedback', function() {
  * Test that key down events don't cause excessive value and state announcements
  * when arrowing around radiobuttons.
  */
-TEST_F('CvoxEventWatcherUnitTest', 'RadioButtonAnnouncements', function() {
+TEST_F('CvoxEventWatcherUnitTest',
+       'DISABLED_RadioButtonAnnouncements',
+       function() {
   this.loadHtml(
     '<input id="radio1" type="radio" aria-label="green" tabindex=0>' +
     '<input id="radio2" type="radio" aria-label="blue" tabindex=0>');
