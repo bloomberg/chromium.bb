@@ -44,7 +44,8 @@ void FileVideoCaptureDeviceFactory::GetDeviceNames(
 #if defined(OS_WIN)
   device_names->push_back(VideoCaptureDevice::Name(
       base::SysWideToUTF8(command_line_file_path.value()),
-      kFileVideoCaptureDeviceName));
+      kFileVideoCaptureDeviceName,
+      VideoCaptureDevice::Name::DIRECT_SHOW));
 #elif defined(OS_MACOSX)
   device_names->push_back(VideoCaptureDevice::Name(
       command_line_file_path.value(),
