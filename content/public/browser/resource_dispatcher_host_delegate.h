@@ -30,9 +30,9 @@ class AppCacheService;
 class ResourceContext;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceThrottle;
-class StreamHandle;
 struct Referrer;
 struct ResourceResponse;
+struct StreamInfo;
 
 // Interface that the embedder provides to ResourceDispatcherHost to allow
 // observing and modifying requests.
@@ -100,7 +100,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Informs the delegate that a Stream was created. The Stream can be read from
   // the blob URL of the Stream, but can only be read once.
   virtual void OnStreamCreated(net::URLRequest* request,
-                               scoped_ptr<content::StreamHandle> stream);
+                               scoped_ptr<content::StreamInfo> stream);
 
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(net::URLRequest* request,

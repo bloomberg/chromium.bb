@@ -67,6 +67,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/browser/stream_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -737,12 +738,16 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
                                 origin));
 
   info->set_is_stream(true);
-  delegate_->OnStreamCreated(
-      request,
-      handler->stream()->CreateHandle(
-          request->url(),
-          mime_type,
-          response->head.headers));
+  scoped_ptr<StreamInfo> stream_info(new StreamInfo);
+  stream_info->handle = handler->stream()->CreateHandle();
+  stream_info->original_url = request->url();
+  stream_info->mime_type = mime_type;
+  // Make a copy of the response headers so it is safe to pass across threads;
+  // the old handler (AsyncResourceHandler) may modify it in parallel via the
+  // ResourceDispatcherHostDelegate.
+  stream_info->response_headers =
+      new net::HttpResponseHeaders(response->head.headers->raw_headers());
+  delegate_->OnStreamCreated(request, stream_info.Pass());
   return handler.PassAs<ResourceHandler>();
 }
 

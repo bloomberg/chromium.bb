@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/streams/stream.h"
-#include "net/http/http_response_headers.h"
 
 namespace content {
 
@@ -21,24 +20,10 @@ void RunCloseListeners(const std::vector<base::Closure>& close_listeners) {
 
 }  // namespace
 
-StreamHandleImpl::StreamHandleImpl(
-    const base::WeakPtr<Stream>& stream,
-    const GURL& original_url,
-    const std::string& mime_type,
-    scoped_refptr<net::HttpResponseHeaders> response_headers)
+StreamHandleImpl::StreamHandleImpl(const base::WeakPtr<Stream>& stream)
     : stream_(stream),
       url_(stream->url()),
-      original_url_(original_url),
-      mime_type_(mime_type),
-      response_headers_(NULL),
-      stream_message_loop_(base::MessageLoopProxy::current().get()) {
-  // Make a copy of the response headers so it is safe to pass this across
-  // threads.
-  if (response_headers.get()) {
-    response_headers_ =
-        new net::HttpResponseHeaders(response_headers->raw_headers());
-  }
-}
+      stream_message_loop_(base::MessageLoopProxy::current().get()) {}
 
 StreamHandleImpl::~StreamHandleImpl() {
   stream_message_loop_->PostTaskAndReply(FROM_HERE,
@@ -48,18 +33,6 @@ StreamHandleImpl::~StreamHandleImpl() {
 
 const GURL& StreamHandleImpl::GetURL() {
   return url_;
-}
-
-const GURL& StreamHandleImpl::GetOriginalURL() {
-  return original_url_;
-}
-
-const std::string& StreamHandleImpl::GetMimeType() {
-  return mime_type_;
-}
-
-scoped_refptr<net::HttpResponseHeaders> StreamHandleImpl::GetResponseHeaders() {
-  return response_headers_;
 }
 
 void StreamHandleImpl::AddCloseListener(const base::Closure& callback) {

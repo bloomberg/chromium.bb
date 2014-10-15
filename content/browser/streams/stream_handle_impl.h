@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace base {
@@ -21,25 +20,16 @@ class Stream;
 
 class StreamHandleImpl : public StreamHandle {
  public:
-  StreamHandleImpl(const base::WeakPtr<Stream>& stream,
-                   const GURL& original_url,
-                   const std::string& mime_type,
-                   scoped_refptr<net::HttpResponseHeaders> response_headers);
+  StreamHandleImpl(const base::WeakPtr<Stream>& stream);
   virtual ~StreamHandleImpl();
 
  private:
   // StreamHandle overrides
   virtual const GURL& GetURL() override;
-  virtual const GURL& GetOriginalURL() override;
-  virtual const std::string& GetMimeType() override;
-  virtual scoped_refptr<net::HttpResponseHeaders> GetResponseHeaders() override;
   virtual void AddCloseListener(const base::Closure& callback) override;
 
   base::WeakPtr<Stream> stream_;
   GURL url_;
-  GURL original_url_;
-  std::string mime_type_;
-  scoped_refptr<net::HttpResponseHeaders> response_headers_;
   base::MessageLoopProxy* stream_message_loop_;
   std::vector<base::Closure> close_listeners_;
 };

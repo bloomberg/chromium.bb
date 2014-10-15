@@ -16,6 +16,7 @@
 namespace content {
 class BrowserContext;
 class StreamHandle;
+struct StreamInfo;
 }
 
 namespace extensions {
@@ -37,7 +38,7 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // in a BrowserPlugin, specify a non-empty |view_id| of the plugin.
   void ExecuteMimeTypeHandler(const std::string& extension_id,
                               content::WebContents* web_contents,
-                              scoped_ptr<content::StreamHandle> stream,
+                              scoped_ptr<content::StreamInfo> stream,
                               const std::string& view_id,
                               int64 expected_content_size);
 

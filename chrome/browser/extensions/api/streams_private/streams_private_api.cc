@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/extensions/api/streams_private.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/browser/stream_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -60,14 +61,14 @@ StreamsPrivateAPI::~StreamsPrivateAPI() {
 void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     const std::string& extension_id,
     content::WebContents* web_contents,
-    scoped_ptr<content::StreamHandle> stream,
+    scoped_ptr<content::StreamInfo> stream,
     const std::string& view_id,
     int64 expected_content_size) {
   // Create the event's arguments value.
   streams_private::StreamInfo info;
-  info.mime_type = stream->GetMimeType();
-  info.original_url = stream->GetOriginalURL().spec();
-  info.stream_url = stream->GetURL().spec();
+  info.mime_type = stream->mime_type;
+  info.original_url = stream->original_url.spec();
+  info.stream_url = stream->handle->GetURL().spec();
   info.tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
   if (!view_id.empty()) {
@@ -79,7 +80,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     size = expected_content_size;
   info.expected_content_size = size;
 
-  CreateResponseHeadersDictionary(stream->GetResponseHeaders().get(),
+  CreateResponseHeadersDictionary(stream->response_headers.get(),
                                   &info.response_headers.additional_properties);
 
   scoped_ptr<Event> event(
@@ -89,8 +90,8 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 
-  GURL url = stream->GetURL();
-  streams_[extension_id][url] = make_linked_ptr(stream.release());
+  GURL url = stream->handle->GetURL();
+  streams_[extension_id][url] = make_linked_ptr(stream->handle.release());
 }
 
 void StreamsPrivateAPI::AbortStream(const std::string& extension_id,

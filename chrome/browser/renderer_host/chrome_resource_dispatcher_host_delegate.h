@@ -72,7 +72,7 @@ class ChromeResourceDispatcherHostDelegate
       std::string* payload) override;
   virtual void OnStreamCreated(
       net::URLRequest* request,
-      scoped_ptr<content::StreamHandle> stream) override;
+      scoped_ptr<content::StreamInfo> stream) override;
   virtual void OnResponseStarted(
       net::URLRequest* request,
       content::ResourceContext* resource_context,

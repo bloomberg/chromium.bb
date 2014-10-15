@@ -4,7 +4,7 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
-#include "content/public/browser/stream_handle.h"
+#include "content/public/browser/stream_info.h"
 
 namespace content {
 
@@ -64,7 +64,7 @@ bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 
 void ResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
-    scoped_ptr<content::StreamHandle> stream) {
+    scoped_ptr<content::StreamInfo> stream) {
 }
 
 void ResourceDispatcherHostDelegate::OnResponseStarted(

@@ -160,15 +160,9 @@ Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
   return STREAM_HAS_DATA;
 }
 
-scoped_ptr<StreamHandle> Stream::CreateHandle(
-    const GURL& original_url,
-    const std::string& mime_type,
-    scoped_refptr<net::HttpResponseHeaders> response_headers) {
+scoped_ptr<StreamHandle> Stream::CreateHandle() {
   CHECK(!stream_handle_);
-  stream_handle_ = new StreamHandleImpl(weak_ptr_factory_.GetWeakPtr(),
-                                        original_url,
-                                        mime_type,
-                                        response_headers);
+  stream_handle_ = new StreamHandleImpl(weak_ptr_factory_.GetWeakPtr());
   return scoped_ptr<StreamHandle>(stream_handle_).Pass();
 }
 

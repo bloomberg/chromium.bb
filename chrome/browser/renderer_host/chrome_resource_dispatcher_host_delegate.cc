@@ -43,7 +43,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/stream_handle.h"
+#include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
@@ -167,7 +167,7 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
 }
 
 #if defined(ENABLE_EXTENSIONS)
-void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
+void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
                                      int64 expected_content_size,
                                      int render_process_id,
                                      int render_view_id,
@@ -615,7 +615,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 
 void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
-    scoped_ptr<content::StreamHandle> stream) {
+    scoped_ptr<content::StreamInfo> stream) {
 #if defined(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   std::map<net::URLRequest*, StreamTargetInfo>::iterator ix =

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -14,6 +15,8 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/streams/stream.h"
+#include "content/browser/streams/stream_registry.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
@@ -24,53 +27,14 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/page_transition_types.h"
+#include "url/url_constants.h"
 
 namespace content {
 
-namespace {
-
-// Mocked out stream handle to commit the navigation with.
-class TestStreamHandle : public StreamHandle {
+class NavigatorTest : public RenderViewHostImplTestHarness {
  public:
-  TestStreamHandle() : url_("test:stream") {}
+  NavigatorTest() : stream_registry_(new StreamRegistry) {}
 
-  virtual const GURL& GetURL() override {
-    return url_;
-  }
-
-  virtual const GURL& GetOriginalURL() override {
-    NOTREACHED();
-    return original_url_;
-  }
-
-  virtual const std::string& GetMimeType() override {
-    NOTREACHED();
-    return mime_type_;
-  }
-
-  virtual scoped_refptr<net::HttpResponseHeaders>
-      GetResponseHeaders() override {
-    NOTREACHED();
-    return NULL;
-  }
-
-  virtual void AddCloseListener(const base::Closure& callback) override {
-    NOTREACHED();
-  }
-
- private:
-  GURL url_;
-  GURL original_url_;
-  std::string mime_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestStreamHandle);
-};
-
-}
-
-class NavigatorTest
-    : public RenderViewHostImplTestHarness {
- public:
   NavigationRequest* GetNavigationRequestForFrameTreeNode(
       FrameTreeNode* frame_tree_node) const {
     NavigatorImpl* navigator =
@@ -109,6 +73,16 @@ class NavigatorTest
     static_cast<NavigatorImpl*>(node->navigator())->RequestNavigation(
         node, *entry, reload_type, base::TimeTicks::Now());
   }
+
+  scoped_ptr<StreamHandle> MakeEmptyStream() {
+    GURL url(std::string(url::kBlobScheme) + "://" + base::GenerateGUID());
+    scoped_refptr<Stream> stream(new Stream(stream_registry_.get(), NULL, url));
+    stream->Finalize();
+    return stream->CreateHandle();
+  }
+
+ private:
+  scoped_ptr<StreamRegistry> stream_registry_;
 };
 
 // PlzNavigate: Test that a proper NavigationRequest is created by
@@ -172,8 +146,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationRequestNavigationNoLiveRenderer) {
 
   // Now commit the same url.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  node->navigator()->CommitNavigation(
-      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
   main_request = GetNavigationRequestForFrameTreeNode(node);
 
   // The main RFH should not have been changed, and the renderer should have
@@ -208,8 +181,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, arraysize(kNoContentHeaders)));
-  node->navigator()->CommitNavigation(
-      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
 
   // There should be no pending RenderFrameHost; the navigation was aborted.
   EXPECT_FALSE(GetNavigationRequestForFrameTreeNode(node));
@@ -228,8 +200,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, arraysize(kResetContentHeaders)));
-  node->navigator()->CommitNavigation(
-      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
 
   // There should be no pending RenderFrameHost; the navigation was aborted.
   EXPECT_FALSE(GetNavigationRequestForFrameTreeNode(node));
@@ -256,8 +227,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationCrossSiteNavigation) {
   ASSERT_TRUE(main_request);
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  node->navigator()->CommitNavigation(
-      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
   RenderFrameHostImpl* pending_rfh =
       node->render_manager()->pending_frame_host();
   ASSERT_TRUE(pending_rfh);
@@ -298,8 +268,7 @@ TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
 
   // Confirm that the commit corresonds to the new request.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  node->navigator()->CommitNavigation(
-      node, response.get(), scoped_ptr<StreamHandle>(new TestStreamHandle));
+  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
   RenderFrameHostImpl* pending_rfh =
       node->render_manager()->pending_frame_host();
   ASSERT_TRUE(pending_rfh);

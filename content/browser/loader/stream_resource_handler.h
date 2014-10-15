@@ -8,8 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_handler.h"
-#include "content/browser/streams/stream_write_observer.h"
-#include "url/gurl.h"
+#include "content/browser/loader/stream_writer.h"
 
 namespace net {
 class URLRequest;
@@ -20,8 +19,7 @@ namespace content {
 class StreamRegistry;
 
 // Redirect this resource to a stream.
-class StreamResourceHandler : public StreamWriteObserver,
-                              public ResourceHandler {
+class StreamResourceHandler : public ResourceHandler {
  public:
   // |origin| will be used to construct the URL for the Stream. See
   // WebCore::BlobURL and and WebCore::SecurityOrigin in Blink to understand
@@ -30,6 +28,8 @@ class StreamResourceHandler : public StreamWriteObserver,
                         StreamRegistry* registry,
                         const GURL& origin);
   virtual ~StreamResourceHandler();
+
+  virtual void SetController(ResourceController* controller) override;
 
   virtual bool OnUploadProgress(uint64 position, uint64 size) override;
 
@@ -59,14 +59,11 @@ class StreamResourceHandler : public StreamWriteObserver,
 
   virtual void OnDataDownloaded(int bytes_downloaded) override;
 
-  Stream* stream() { return stream_.get(); }
+  Stream* stream() { return writer_.stream(); }
 
  private:
-  virtual void OnSpaceAvailable(Stream* stream) override;
-  virtual void OnClose(Stream* stream) override;
+  StreamWriter writer_;
 
-  scoped_refptr<Stream> stream_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
   DISALLOW_COPY_AND_ASSIGN(StreamResourceHandler);
 };
 
