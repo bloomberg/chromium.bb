@@ -5,7 +5,6 @@
 
 """Sets environment variables needed to run a chromium unit test."""
 
-import collections
 import os
 import stat
 import subprocess
@@ -39,20 +38,31 @@ def should_enable_sandbox(cmd, sandbox_path):
   return False
 
 
-def enable_sandbox_if_required(cmd, env, verbose=False):
-  """Checks enables the sandbox if it is required, otherwise it disables it."""
+def get_sandbox_env(cmd, env, verbose=False):
+  """Checks enables the sandbox if it is required, otherwise it disables it.
+  Returns the environment flags to set."""
+  extra_env = {}
   chrome_sandbox_path = env.get(CHROME_SANDBOX_ENV, CHROME_SANDBOX_PATH)
 
   if should_enable_sandbox(cmd, chrome_sandbox_path):
     if verbose:
       print 'Enabling sandbox. Setting environment variable:'
       print '  %s="%s"' % (CHROME_SANDBOX_ENV, chrome_sandbox_path)
-    env[CHROME_SANDBOX_ENV] = chrome_sandbox_path
+    extra_env[CHROME_SANDBOX_ENV] = chrome_sandbox_path
   else:
     if verbose:
       print 'Disabling sandbox.  Setting environment variable:'
       print '  CHROME_DEVEL_SANDBOX=""'
-    env['CHROME_DEVEL_SANDBOX'] = ''
+    extra_env['CHROME_DEVEL_SANDBOX'] = ''
+
+  return extra_env
+
+
+def trim_cmd(cmd):
+  """Removes internal flags from cmd since they're just used to communicate from
+  the host machine to this script running on the swarm slaves."""
+  internal_flags = frozenset(['--asan=0', '--asan=1', '--lsan=0', '--lsan=1'])
+  return [i for i in cmd if i not in internal_flags]
 
 
 def fix_python_path(cmd):
@@ -65,6 +75,63 @@ def fix_python_path(cmd):
   return out
 
 
+def get_asan_env(cmd, lsan):
+  """Returns the envirnoment flags needed for ASan and LSan."""
+
+  extra_env = {}
+
+  # Instruct GTK to use malloc while running ASan or LSan tests.
+  # TODO(earthdok): enabling G_SLICE gives these leaks, locally and on swarming
+  #0 0x62c01b in __interceptor_malloc (/tmp/run_tha_testXukBDT/out/Release/browser_tests+0x62c01b)
+  #1 0x7fb64ab64a38 in g_malloc /build/buildd/glib2.0-2.32.4/./glib/gmem.c:159
+  #extra_env['G_SLICE'] = 'always-malloc'
+
+  extra_env['NSS_DISABLE_ARENA_FREE_LIST'] = '1'
+  extra_env['NSS_DISABLE_UNLOAD'] = '1'
+
+  # TODO(glider): remove the symbolizer path once
+  # https://code.google.com/p/address-sanitizer/issues/detail?id=134 is fixed.
+  symbolizer_path = os.path.abspath(os.path.join(ROOT_DIR, 'third_party',
+      'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer'))
+
+  asan_options = []
+  if lsan:
+    asan_options.append('detect_leaks=1')
+    if sys.platform == 'linux2':
+      # Use the debug version of libstdc++ under LSan. If we don't, there will
+      # be a lot of incomplete stack traces in the reports.
+      extra_env['LD_LIBRARY_PATH'] = '/usr/lib/x86_64-linux-gnu/debug:'
+
+    # LSan is not sandbox-compatible, so we can use online symbolization. In
+    # fact, it needs symbolization to be able to apply suppressions.
+    symbolization_options = ['symbolize=1',
+                             'external_symbolizer_path=%s' % symbolizer_path]
+
+    suppressions_file = os.path.join(ROOT_DIR, 'tools', 'lsan',
+        'suppressions.txt')
+    lsan_options = ['suppressions=%s' % suppressions_file,
+                    'print_suppressions=1']
+    extra_env['LSAN_OPTIONS'] = ' '.join(lsan_options)
+  else:
+    # ASan uses a script for offline symbolization.
+    # Important note: when running ASan with leak detection enabled, we must use
+    # the LSan symbolization options above.
+    symbolization_options = ['symbolize=0']
+
+  asan_options.extend(symbolization_options)
+
+  extra_env['ASAN_OPTIONS'] = ' '.join(asan_options)
+
+  if sys.platform == 'darwin':
+    isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
+    # This is needed because the test binary has @executable_path embedded in it
+    # it that the OS tries to resolve to the cache directory and not the mapped
+    #  directory.
+    extra_env['DYLD_LIBRARY_PATH'] = str(isolate_output_dir)
+
+  return extra_env
+
+
 def run_executable(cmd, env):
   """Runs an executable with:
     - environment variable CR_SOURCE_ROOT set to the root directory.
@@ -72,34 +139,38 @@ def run_executable(cmd, env):
     - environment variable CHROME_DEVEL_SANDBOX set if need
     - Reuses sys.executable automatically.
   """
-  env = collections.defaultdict(str, env)
+  extra_env = {}
   # Many tests assume a English interface...
-  env['LANG'] = 'en_US.UTF-8'
+  extra_env['LANG'] = 'en_US.UTF-8'
   # Used by base/base_paths_linux.cc as an override. Just make sure the default
   # logic is used.
   env.pop('CR_SOURCE_ROOT', None)
-  enable_sandbox_if_required(cmd, env)
+  extra_env.update(get_sandbox_env(cmd, env))
 
   # Copy logic from  tools/build/scripts/slave/runtest.py.
   asan = '--asan=1' in cmd
   lsan = '--lsan=1' in cmd
-  if lsan and sys.platform == 'linux2':
-    # Use the debug version of libstdc++ under LSan. If we don't, there will
-    # be a lot of incomplete stack traces in the reports.
-    env['LD_LIBRARY_PATH'] = '/usr/lib/x86_64-linux-gnu/debug:'
 
-  if asan and sys.platform == 'darwin':
-    isolate_output_dir = os.path.abspath(os.path.dirname(cmd[0]))
-    # This is needed because the test binary has @executable_path embedded in it
-    # that the OS tries to resolve to the cache directory and not the mapped
-    # directory.
-    env['DYLD_LIBRARY_PATH'] = str(isolate_output_dir)
+  if asan:
+    extra_env.update(get_asan_env(cmd, lsan))
+  if lsan:
+    cmd.append('--no-sandbox')
+
+  cmd = trim_cmd(cmd)
 
   # Ensure paths are correctly separated on windows.
   cmd[0] = cmd[0].replace('/', os.path.sep)
   cmd = fix_python_path(cmd)
+
+  print('Additional test environment:\n%s\n'
+        'Command: %s\n' % (
+        '\n'.join('    %s=%s' %
+            (k, v) for k, v in sorted(extra_env.iteritems())),
+        ' '.join(cmd)))
+  env.update(extra_env or {})
   try:
-    if asan:
+    # See above comment regarding offline symbolization.
+    if asan and not lsan:
       # Need to pipe to the symbolizer script.
       p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
                             stderr=sys.stdout)
