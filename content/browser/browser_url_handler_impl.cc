@@ -62,12 +62,8 @@ static bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
   // No action necessary if the URL is already view-source:
   if (url->SchemeIs(kViewSourceScheme))
     return false;
-
-  url::Replacements<char> repl;
-  repl.SetScheme(kViewSourceScheme,
-                 url::Component(0, strlen(kViewSourceScheme)));
-  repl.SetPath(url->spec().c_str(), url::Component(0, url->spec().size()));
-  *url = url->ReplaceComponents(repl);
+  // Recreate the url with the view-source scheme.
+  *url = GURL(kViewSourceScheme + std::string(":") + url->spec());
   return true;
 }
 
