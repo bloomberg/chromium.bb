@@ -25,7 +25,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-static const int kCurrentVersionNumber = 8;
+static const int kCurrentVersionNumber = 7;
 static const int kCompatibleVersionNumber = 1;
 
 Pickle SerializeVector(const std::vector<base::string16>& vec) {
@@ -224,13 +224,8 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       }
       meta_table_.SetVersionNumber(7);
       // Fall through.
-    case 7:
-      if (!db_.Execute(
-          "ALTER TABLE logins DROP COLUMN use_additional_auth")) {
-        return false;
-      }
-      meta_table_.SetVersionNumber(8);
-      // Fall through.
+      // TODO(gcasto): Remove use_additional_auth by copying table.
+      // https://www.sqlite.org/lang_altertable.html
     case kCurrentVersionNumber:
       // Already up to date
       return true;
