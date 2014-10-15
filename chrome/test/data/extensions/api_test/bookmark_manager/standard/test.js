@@ -210,7 +210,7 @@ var tests = [
 
       fooNode2 = result[result.length - 1];
 
-      assertEq(fooNode.title, fooNode2.title);
+      assertEq(fooNode.title + " (1)", fooNode2.title);
       assertEq(fooNode.url, fooNode2.url);
       assertEq(fooNode.parentId, fooNode2.parentId);
     }));
@@ -253,7 +253,7 @@ var tests = [
       assertEq(fooNode.title, last.title);
       assertEq(fooNode.url, last.url);
       assertEq(fooNode.parentId, last.parentId);
-      assertEq(last.title, last2.title);
+      assertEq(last.title + " (1)", last2.title);
       assertEq(last.url, last2.url);
       assertEq(last.parentId, last2.parentId);
 

@@ -314,6 +314,42 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   EXPECT_FALSE(CanPasteFromClipboard(model.get(), model->bookmark_bar_node()));
 }
 
+// Test for updating title such that url and title pair are unique among the
+// children of parent.
+TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
+  const base::string16 url_text = ASCIIToUTF16("http://www.google.com/");
+  const base::string16 title_text = ASCIIToUTF16("foobar");
+  const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+
+  const BookmarkNode* node =
+      model->AddURL(bookmark_bar_node, 0, title_text, GURL(url_text));
+
+  EXPECT_EQ(url_text,
+            ASCIIToUTF16(bookmark_bar_node->GetChild(0)->url().spec()));
+  EXPECT_EQ(title_text, bookmark_bar_node->GetChild(0)->GetTitle());
+
+  // Copy a node to the clipboard.
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(node);
+  CopyToClipboard(model.get(), nodes, false);
+
+  // Now we should be able to paste from the clipboard.
+  EXPECT_TRUE(CanPasteFromClipboard(model.get(), bookmark_bar_node));
+
+  PasteFromClipboard(model.get(), bookmark_bar_node, 1);
+  ASSERT_EQ(2, bookmark_bar_node->child_count());
+
+  // Url for added node should be same as url_text.
+  EXPECT_EQ(url_text,
+            ASCIIToUTF16(bookmark_bar_node->GetChild(1)->url().spec()));
+  // Title for added node should be numeric subscript suffix with copied node
+  // title.
+  EXPECT_EQ(ASCIIToUTF16("foobar (1)"),
+            bookmark_bar_node->GetChild(1)->GetTitle());
+}
+
 TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
   TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model(client.CreateModel());

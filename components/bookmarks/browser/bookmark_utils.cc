@@ -8,11 +8,14 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_client.h"
@@ -201,6 +204,36 @@ void CopyToClipboard(BookmarkModel* model,
   }
 }
 
+// Updates |title| such that |url| and |title| pair are unique among the
+// children of |parent|.
+void MakeTitleUnique(const BookmarkModel* model,
+                     const BookmarkNode* parent,
+                     const GURL& url,
+                     base::string16* title) {
+  base::hash_set<base::string16> titles;
+  for (int i = 0; i < parent->child_count(); i++) {
+    const BookmarkNode* node = parent->GetChild(i);
+    if (node->is_url() && (url == node->url()) &&
+        StartsWith(node->GetTitle(), *title, false)) {
+      titles.insert(node->GetTitle());
+    }
+  }
+
+  if (titles.find(*title) == titles.end())
+    return;
+
+  for (size_t i = 0; i < titles.size(); i++) {
+    const base::string16 new_title(*title +
+                                   base::ASCIIToUTF16(base::StringPrintf(
+                                       " (%lu)", (unsigned long)(i + 1))));
+    if (titles.find(new_title) == titles.end()) {
+      *title = new_title;
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
 void PasteFromClipboard(BookmarkModel* model,
                         const BookmarkNode* parent,
                         int index) {
@@ -219,6 +252,15 @@ void PasteFromClipboard(BookmarkModel* model,
   if (index == -1)
     index = parent->child_count();
   ScopedGroupBookmarkActions group_paste(model);
+
+  if (bookmark_data.elements.size() == 1 &&
+      model->IsBookmarked(bookmark_data.elements[0].url)) {
+    MakeTitleUnique(model,
+                    parent,
+                    bookmark_data.elements[0].url,
+                    &bookmark_data.elements[0].title);
+  }
+
   CloneBookmarkNode(model, bookmark_data.elements, parent, index, true);
 }
 
