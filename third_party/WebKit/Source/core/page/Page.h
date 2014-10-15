@@ -138,7 +138,7 @@ public:
     void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
     int subframeCount() const { checkSubframeCountConsistency(); return m_subframeCount; }
 
-    PageAnimator& animator() { return m_animator; }
+    PageAnimator& animator() { return *m_animator; }
     Chrome& chrome() const { return *m_chrome; }
     AutoscrollController& autoscrollController() const { return *m_autoscrollController; }
     DragCaretController& dragCaretController() const { return *m_dragCaretController; }
@@ -241,7 +241,7 @@ private:
     // SettingsDelegate overrides.
     virtual void settingsChanged(SettingsDelegate::ChangeType) override;
 
-    PageAnimator m_animator;
+    RefPtrWillBeMember<PageAnimator> m_animator;
     const OwnPtr<AutoscrollController> m_autoscrollController;
     const OwnPtr<Chrome> m_chrome;
     const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;

@@ -113,7 +113,7 @@ float deviceScaleFactor(LocalFrame* frame)
 
 Page::Page(PageClients& pageClients)
     : SettingsDelegate(Settings::create())
-    , m_animator(this)
+    , m_animator(PageAnimator::create(*this))
     , m_autoscrollController(AutoscrollController::create(*this))
     , m_chrome(Chrome::create(this, pageClients.chromeClient))
     , m_dragCaretController(DragCaretController::create())
@@ -610,6 +610,7 @@ PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
 void Page::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_animator);
     visitor->trace(m_dragCaretController);
     visitor->trace(m_dragController);
     visitor->trace(m_focusController);

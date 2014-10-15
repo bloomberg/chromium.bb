@@ -864,6 +864,7 @@ crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure 
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
+crbug.com/409503 fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ NeedsRebaseline ]
 
 crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
 crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]

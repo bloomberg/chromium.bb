@@ -16,7 +16,7 @@
 
 namespace blink {
 
-PageAnimator::PageAnimator(Page* page)
+PageAnimator::PageAnimator(Page& page)
     : m_page(page)
     , m_animationFramePending(false)
     , m_servicingAnimations(false)
@@ -24,8 +24,19 @@ PageAnimator::PageAnimator(Page* page)
 {
 }
 
+PassRefPtrWillBeRawPtr<PageAnimator> PageAnimator::create(Page& page)
+{
+    return adoptRefWillBeNoop(new PageAnimator(page));
+}
+
+void PageAnimator::trace(Visitor* visitor)
+{
+    visitor->trace(m_page);
+}
+
 void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
+    RefPtrWillBeRawPtr<PageAnimator> protector(this);
     m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 

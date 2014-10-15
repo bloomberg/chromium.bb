@@ -87,7 +87,7 @@ description("Tests that key bindings work as expected.");
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPickerWithMock(document.getElementById('date'), test1);
+openPicker(document.getElementById('date'), test1);
 
 var expectingDidHideEvent = false;
 
@@ -139,7 +139,7 @@ function test1AfterClosing() {
     shouldBeEqualToString('document.getElementById("date").value', '2012-03-08');
 
     debug('Reopen popup.');
-    openPickerWithMock(document.getElementById('date'), test2);
+    openPicker(document.getElementById('date'), test2);
 }
 
 function test2() {
