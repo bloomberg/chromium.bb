@@ -121,7 +121,14 @@ void BridgedNativeWidget::OnFullscreenTransitionComplete(
   // expects the change.
   target_fullscreen_state_ = actual_fullscreen_state;
   ToggleDesiredFullscreenState();
-  DCHECK_NE(target_fullscreen_state_, actual_fullscreen_state);
+
+  // Usually ToggleDesiredFullscreenState() sets |in_fullscreen_transition_| via
+  // OnFullscreenTransitionStart(). When it does not, it means Cocoa ignored the
+  // toggleFullScreen: request. This can occur when the fullscreen transition
+  // fails and Cocoa is *about* to send windowDidFailToEnterFullScreen:.
+  // Annoyingly, for this case, Cocoa first sends windowDidExitFullScreen:.
+  if (in_fullscreen_transition_)
+    DCHECK_NE(target_fullscreen_state_, actual_fullscreen_state);
 }
 
 void BridgedNativeWidget::ToggleDesiredFullscreenState() {
@@ -146,7 +153,6 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
                                  NSWindowCollectionBehaviorFullScreenPrimary];
   [window_ toggleFullScreen:nil];
   [window_ setCollectionBehavior:behavior];
-  DCHECK(in_fullscreen_transition_);
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {

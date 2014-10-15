@@ -25,12 +25,18 @@
 // NSWindowDelegate implementation.
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
-  // TODO(tapted): Handle these failure notifications, and simulate in a test.
-  NOTREACHED();
+  // Cocoa should already have sent an (unexpected) windowDidExitFullScreen:
+  // notification, and the attempt to get back into fullscreen should fail.
+  // Nothing to do except verify |parent_| is no longer trying to fullscreen.
+  DCHECK(!parent_->target_fullscreen_state());
 }
 
 - (void)windowDidFailToExitFullScreen:(NSWindow*)window {
-  NOTREACHED();
+  // Unlike entering fullscreen, windowDidFailToExitFullScreen: is sent *before*
+  // windowDidExitFullScreen:. Also, failing to exit fullscreen just dumps the
+  // window out of fullscreen without an animation; still sending the expected,
+  // windowDidExitFullScreen: notification. So, again, nothing to do here.
+  DCHECK(!parent_->target_fullscreen_state());
 }
 
 - (void)windowDidBecomeKey:(NSNotification*)notification {
