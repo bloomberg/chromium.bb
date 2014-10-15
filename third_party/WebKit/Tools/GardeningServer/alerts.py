@@ -112,7 +112,7 @@ class AlertsHandler(webapp2.RequestHandler):
 
 
 class AlertsHistory(webapp2.RequestHandler):
-    MAX_LIMIT_PER_PAGE = 50
+    MAX_LIMIT_PER_PAGE = 5
 
     def get(self):
         alerts_query = AlertsJSON.query().order(-AlertsJSON.date)
