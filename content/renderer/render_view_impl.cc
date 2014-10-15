@@ -1211,7 +1211,7 @@ void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
   else if (focused_pepper_plugin_ == instance)
     focused_pepper_plugin_ = NULL;
 
-  UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
+  UpdateTextInputType();
   UpdateSelectionBounds();
 }
 

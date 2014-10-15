@@ -11,8 +11,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
-struct ViewHostMsg_TextInputState_Params;
-
 namespace content {
 class CrossProcessFrameConnector;
 class RenderWidgetHost;
@@ -68,8 +66,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual void Blur() override;
   virtual void UpdateCursor(const WebCursor& cursor) override;
   virtual void SetIsLoading(bool is_loading) override;
-  virtual void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) override;
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    ui::TextInputMode input_mode,
+                                    bool can_compose_inline) override;
   virtual void ImeCancelComposition() override;
 #if defined(OS_MACOSX) || defined(USE_AURA)
   virtual void ImeCompositionRangeChanged(

@@ -150,8 +150,11 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   NOTREACHED();
 }
 
-void RenderWidgetHostViewChildFrame::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+void RenderWidgetHostViewChildFrame::TextInputTypeChanged(
+    ui::TextInputType type,
+    ui::TextInputMode input_mode,
+    bool can_compose_inline) {
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewChildFrame::RenderProcessGone(

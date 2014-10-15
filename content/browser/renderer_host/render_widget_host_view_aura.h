@@ -35,8 +35,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_delegate.h"
 
-struct ViewHostMsg_TextInputState_Params;
-
 namespace aura {
 class WindowTracker;
 namespace client {
@@ -135,6 +133,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
 
   // RenderWidgetHostView implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) override;
   virtual void InitAsChild(gfx::NativeView parent_view) override;
   virtual RenderWidgetHost* GetRenderWidgetHost() const override;
   virtual void SetSize(const gfx::Size& size) override;
@@ -167,8 +166,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void Blur() override;
   virtual void UpdateCursor(const WebCursor& cursor) override;
   virtual void SetIsLoading(bool is_loading) override;
-  virtual void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) override;
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    ui::TextInputMode input_mode,
+                                    bool can_compose_inline) override;
   virtual void ImeCancelComposition() override;
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -315,6 +315,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Overridden from aura::WindowTreeHostObserver:
   virtual void OnHostMoved(const aura::WindowTreeHost* host,
                            const gfx::Point& new_origin) override;
+
+  void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
 
 #if defined(OS_WIN)
   // Sets the cutout rects from constrained windows. These are rectangles that

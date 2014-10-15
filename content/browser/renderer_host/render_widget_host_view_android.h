@@ -125,8 +125,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual float GetTopControlsLayoutHeight() const override;
   virtual void UpdateCursor(const WebCursor& cursor) override;
   virtual void SetIsLoading(bool is_loading) override;
-  virtual void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) override;
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    ui::TextInputMode input_mode,
+                                    bool can_compose_inline) override;
   virtual void ImeCancelComposition() override;
   virtual void FocusedNodeChanged(bool is_editable_node) override;
   virtual void RenderProcessGone(base::TerminationStatus status,
@@ -215,6 +216,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
+  void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);
