@@ -20,11 +20,12 @@
 namespace content {
 
 void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
-  // Assume this is set by the content test launcher.
-  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeUIForMediaStream));
+  // We need fake devices in this test since we want to run on naked VMs. We
+  // assume these switches are set by default in content_browsertests.
   ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFakeDeviceForMediaStream));
+  ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeUIForMediaStream));
 
   // Always include loopback interface in network list, in case the test device
   // doesn't have other interfaces available.
@@ -33,7 +34,6 @@ void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void WebRtcContentBrowserTest::SetUp() {
-  // We need pixel output when we dig pixels out of video tags for verification.
   EnablePixelOutput();
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::InitializeForTesting();

@@ -152,11 +152,12 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   virtual ~MAYBE_WebRtcInternalsBrowserTest() {}
 
   virtual void SetUpOnMainThread() override {
-    // Assume this is set by the content test launcher.
-    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kUseFakeUIForMediaStream));
+    // We need fake devices in this test since we want to run on naked VMs. We
+    // assume these switches are set by default in content_browsertests.
     ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
+    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kUseFakeUIForMediaStream));
   }
 
  protected:
