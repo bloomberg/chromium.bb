@@ -33,6 +33,9 @@ class Connection {
   // Returns true iff the connection's status is CONNECTED.
   bool IsConnected() const;
 
+  // Returns true iff the connection is currently sending a message.
+  bool is_sending_message() const { return is_sending_message_; }
+
   // Sends a message to the remote device.
   // |OnSendCompleted()| will be called for all observers upon completion with
   // either success or failure.

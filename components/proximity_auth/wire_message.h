@@ -14,6 +14,7 @@ namespace proximity_auth {
 
 class WireMessage {
  public:
+  WireMessage(const std::string& permit_id, const std::string& payload);
   virtual ~WireMessage();
 
   // Returns the deserialized message from |serialized_message|, or NULL if the
@@ -29,10 +30,6 @@ class WireMessage {
 
   const std::string& permit_id() const { return permit_id_; }
   const std::string& payload() const { return payload_; }
-
- protected:
-  // Visible for tests.
-  WireMessage(const std::string& permit_id, const std::string& payload);
 
  private:
   // Identifier of the permit being used.

@@ -670,6 +670,7 @@
                 'proximity_auth/base64url_unittest.cc',
                 'proximity_auth/bluetooth_connection_unittest.cc',
                 'proximity_auth/bluetooth_connection_finder_unittest.cc',
+                'proximity_auth/client_unittest.cc',
                 'proximity_auth/connection_unittest.cc',
                 'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
                 'proximity_auth/proximity_auth_system_unittest.cc',
