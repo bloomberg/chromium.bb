@@ -29,6 +29,7 @@
 
 #include "SkMatrix44.h"
 #include "core/dom/Node.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderLayer.h"
@@ -180,18 +181,23 @@ static void addQuadToPath(const FloatQuad& quad, Path& path)
     path.closeSubpath();
 }
 
-void LinkHighlight::computeQuads(RenderObject& renderer, Vector<FloatQuad>& outQuads) const
+void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) const
 {
+    if (!node.renderer())
+        return;
+
+    RenderObject* renderer = node.renderer();
+
     // For inline elements, absoluteQuads will return a line box based on the line-height
     // and font metrics, which is technically incorrect as replaced elements like images
     // should use their intristic height and expand the linebox  as needed. To get an
     // appropriately sized highlight we descend into the children and have them add their
     // boxes.
-    if (renderer.isRenderInline()) {
-        for (RenderObject* child = renderer.slowFirstChild(); child; child = child->nextSibling())
+    if (renderer->isRenderInline()) {
+        for (Node* child = NodeRenderingTraversal::firstChild(&node); child; child = NodeRenderingTraversal::nextSibling(child))
             computeQuads(*child, outQuads);
     } else {
-        renderer.absoluteQuads(outQuads);
+        renderer->absoluteQuads(outQuads);
     }
 }
 
@@ -204,7 +210,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
 
     // Get quads for node in absolute coordinates.
     Vector<FloatQuad> quads;
-    computeQuads(*m_node->renderer(), quads);
+    computeQuads(*m_node, quads);
     ASSERT(quads.size());
 
     // Adjust for offset between target graphics layer and the node's renderer.

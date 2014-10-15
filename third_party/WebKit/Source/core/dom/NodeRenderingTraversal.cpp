@@ -163,7 +163,7 @@ Node* previous(const Node* node, const Node* stayWithin)
     return parent(node);
 }
 
-static Node* firstChild(const Node* node)
+Node* firstChild(const Node* node)
 {
     ComposedTreeWalker walker(node);
     walker.firstChild();

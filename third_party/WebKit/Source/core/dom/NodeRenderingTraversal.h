@@ -57,6 +57,7 @@ private:
 
 ContainerNode* parent(const Node*, ParentDetails* = 0);
 bool contains(const ContainerNode*, const Node*);
+Node* firstChild(const Node*);
 Node* nextSibling(const Node*);
 Node* previousSibling(const Node*);
 Node* previous(const Node*, const Node* stayWithin);
