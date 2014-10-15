@@ -52,7 +52,8 @@
       {
         "test": "net_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         }
       },
       "ppapi_unittests",
@@ -65,7 +66,8 @@
       {
         "test": "unit_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       },
       "url_unittests"
@@ -284,7 +286,8 @@
       {
         "test": "net_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         }
       },
       "ppapi_unittests",
@@ -296,7 +299,8 @@
       {
         "test": "unit_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         }
       },
       "ui_unittests",
