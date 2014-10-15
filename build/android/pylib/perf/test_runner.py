@@ -61,6 +61,7 @@ from pylib import constants
 from pylib import forwarder
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
+from pylib.device import device_errors
 
 
 def OutputJsonList(json_input, json_output):
@@ -252,9 +253,19 @@ class TestRunner(base_test_runner.BaseTestRunner):
     logging.info('%s : exit_code=%d in %d secs at %s',
                  test_name, exit_code, (end_time - start_time).seconds,
                  self.device_serial)
-    result_type = base_test_result.ResultType.FAIL
+
     if exit_code == 0:
       result_type = base_test_result.ResultType.PASS
+    else:
+      result_type = base_test_result.ResultType.FAIL
+      # Since perf tests use device affinity, give the device a chance to
+      # recover if it is offline after a failure. Otherwise, the master sharder
+      # will remove it from the pool and future tests on this device will fail.
+      try:
+        self.device.WaitUntilFullyBooted(timeout=120)
+      except device_errors.CommandTimeoutError as e:
+        logging.error('Device failed to return after %s: %s' % (test_name, e))
+
     actual_exit_code = exit_code
     if test_name in self._flaky_tests:
       # The exit_code is used at the second stage when printing the
