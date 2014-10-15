@@ -23,6 +23,9 @@ const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 #if defined(OS_WIN)
 // Disables the DirectWrite font rendering system on windows.
 const char kDisableDirectWrite[] = "disable-direct-write";
+
+// Enables DirectWrite font rendering for general UI elements.
+const char kEnableDirectWriteForUI[] = "enable-directwrite-for-ui";
 #endif
 
 }  // namespace switches
