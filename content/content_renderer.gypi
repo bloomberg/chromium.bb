@@ -314,6 +314,8 @@
       'renderer/mouse_lock_dispatcher.h',
       'renderer/net_info_helper.cc',
       'renderer/net_info_helper.h',
+      'renderer/notification_icon_loader.cc',
+      'renderer/notification_icon_loader.h',
       'renderer/notification_permission_dispatcher.cc',
       'renderer/notification_permission_dispatcher.h',
       'renderer/notification_provider.cc',

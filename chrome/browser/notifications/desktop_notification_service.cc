@@ -164,9 +164,14 @@ void DesktopNotificationService::ShowDesktopNotification(
 
   base::string16 display_source = DisplayNameForOriginInProcessId(
       origin, render_frame_host->GetProcess()->GetID());
-  Notification notification(origin, params.icon_url, params.title,
-      params.body, params.direction, display_source, params.replace_id,
-      proxy);
+
+  // TODO(peter): Icons for Web Notifications are currently always requested for
+  // 1x scale, whereas the displays on which they can be displayed can have a
+  // different pixel density. Be smarter about this when the API gets updated
+  // with a way for developers to specify images of different resolutions.
+  Notification notification(origin, params.title, params.body,
+      gfx::Image::CreateFrom1xBitmap(params.icon),
+      display_source, params.replace_id, proxy);
 
   // The webkit notification doesn't timeout.
   notification.set_never_timeout(true);

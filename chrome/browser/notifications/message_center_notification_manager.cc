@@ -379,15 +379,6 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
   // In case all downloads are synchronous, assume a pending download.
   AddPendingDownload();
 
-  // Notification primary icon.
-  StartDownloadWithImage(
-      notification,
-      &notification.icon(),
-      notification.icon_url(),
-      base::Bind(&message_center::MessageCenter::SetNotificationIcon,
-                 base::Unretained(message_center_),
-                 notification.id()));
-
   // Notification image.
   StartDownloadWithImage(
       notification,

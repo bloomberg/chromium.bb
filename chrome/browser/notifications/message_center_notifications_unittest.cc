@@ -101,10 +101,9 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
   const ::Notification GetANotification(const std::string& id) {
     return ::Notification(
         GURL("chrome-extension://adflkjsdflkdsfdsflkjdsflkdjfs"),
-        GURL(),
         base::string16(),
         base::string16(),
-        blink::WebTextDirectionDefault,
+        gfx::Image(),
         base::string16(),
         base::UTF8ToUTF16(id),
         new MockNotificationDelegate(id));

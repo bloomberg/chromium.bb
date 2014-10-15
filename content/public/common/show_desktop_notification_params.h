@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -19,8 +20,9 @@ struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
   // URL which is the origin that created this notification.
   GURL origin;
 
-  // Contents of the notification if is_html is false.
-  GURL icon_url;
+  // Image to be displayed as part of the notification.
+  SkBitmap icon;
+
   base::string16 title;
   base::string16 body;
 

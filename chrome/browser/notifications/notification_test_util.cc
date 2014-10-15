@@ -15,12 +15,12 @@ content::WebContents* MockNotificationDelegate::GetWebContents() const {
   return NULL;
 }
 
+// TODO(peter): |notification_| should be initialized with the correct origin.
 StubNotificationUIManager::StubNotificationUIManager(const GURL& welcome_origin)
     : notification_(GURL(),
-                    GURL(),
                     base::string16(),
                     base::string16(),
-                    blink::WebTextDirectionDefault,
+                    gfx::Image(),
                     base::string16(),
                     base::string16(),
                     new MockNotificationDelegate("stub")),

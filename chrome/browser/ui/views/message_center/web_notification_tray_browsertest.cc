@@ -66,16 +66,15 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                        const std::string& replace_id) {
     ::Notification notification(
         GURL("chrome-extension://abbccedd"),
-        GURL(),
         base::ASCIIToUTF16("Test Web Notification"),
         base::ASCIIToUTF16("Notification message body."),
-        blink::WebTextDirectionDefault,
+        gfx::Image(),
         base::string16(),
         base::ASCIIToUTF16(replace_id),
         new TestNotificationDelegate(delegate_id));
 
-    g_browser_process->notification_ui_manager()->Add(
-     notification, browser()->profile());
+    g_browser_process->notification_ui_manager()->Add(notification,
+                                                      browser()->profile());
   }
 
   std::string FindNotificationIdByDelegateId(const std::string& delegate_id) {
@@ -90,16 +89,15 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   void UpdateNotification(const std::string& replace_id,
                           const std::string& new_id) {
     ::Notification notification(GURL("chrome-extension://abbccedd"),
-                                GURL(""),
                                 base::ASCIIToUTF16("Updated Web Notification"),
                                 base::ASCIIToUTF16("Updated message body."),
-                                blink::WebTextDirectionDefault,
+                                gfx::Image(),
                                 base::string16(),
                                 base::ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(new_id));
 
-    g_browser_process->notification_ui_manager()->Add(
-     notification, browser()->profile());
+    g_browser_process->notification_ui_manager()->Add(notification,
+                                                      browser()->profile());
   }
 
   void RemoveNotification(const std::string& id) {

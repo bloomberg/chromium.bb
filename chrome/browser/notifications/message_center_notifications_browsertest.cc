@@ -107,10 +107,9 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
     }
 
     return Notification(GURL("chrome-test://testing/"),
-                        GURL(),
                         base::ASCIIToUTF16("title"),
                         base::ASCIIToUTF16("message"),
-                        blink::WebTextDirectionDefault,
+                        gfx::Image(),
                         base::UTF8ToUTF16("chrome-test://testing/"),
                         base::UTF8ToUTF16("REPLACE-ME"),
                         new_delegate);
