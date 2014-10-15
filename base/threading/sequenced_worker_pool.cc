@@ -903,11 +903,6 @@ SequencedWorkerPool::Inner::GetWorkStatus SequencedWorkerPool::Inner::GetWork(
     std::vector<Closure>* delete_these_outside_lock) {
   lock_.AssertAcquired();
 
-#if !defined(OS_NACL)
-  UMA_HISTOGRAM_COUNTS_100("SequencedWorkerPool.TaskCount",
-                           static_cast<int>(pending_tasks_.size()));
-#endif
-
   // Find the next task with a sequence token that's not currently in use.
   // If the token is in use, that means another thread is running something
   // in that sequence, and we can't run it without going out-of-order.
@@ -988,13 +983,6 @@ SequencedWorkerPool::Inner::GetWorkStatus SequencedWorkerPool::Inner::GetWork(
     break;
   }
 
-  // Track the number of tasks we had to skip over to see if we should be
-  // making this more efficient. If this number ever becomes large or is
-  // frequently "some", we should consider the optimization above.
-#if !defined(OS_NACL)
-  UMA_HISTOGRAM_COUNTS_100("SequencedWorkerPool.UnrunnableTaskCount",
-                           unrunnable_tasks);
-#endif
   return status;
 }
 
