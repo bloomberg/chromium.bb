@@ -2178,12 +2178,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="Text for the button that displays the licenses for the app.">
           Licenses
         </message>
-        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="Title of the first section in the dialog, which displays a high-level overview of the app (the app's description).">
-          Overview
-        </message>
-        <message name="IDS_APPLICATION_INFO_DETAILS_TITLE" desc="Title of the section in the dialog which displays the app's details (such as the version, size, etc).">
-          Details
-        </message>
         <message name="IDS_APPLICATION_INFO_SIZE_LABEL" desc="Text displayed before the app's size on disk in the details section of the dialog.">
           Size:
         </message>
@@ -2192,9 +2186,6 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL" desc="Text displayed in the app's version field to show that it is a built-in app (such as the Chrome Web Store, or the Files app).">
           Built-in
-        </message>
-        <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
-          Permissions
         </message>
         <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="Heading above the current retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
           Files
@@ -2222,12 +2213,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="In Title Case: Text for the button that displays the licenses for the app.">
           Licenses
         </message>
-        <message name="IDS_APPLICATION_INFO_DESCRIPTION_TITLE" desc="In Title Case: Title of the first section in the dialog, which displays a high-level overview of the app (the app's description).">
-          Overview
-        </message>
-        <message name="IDS_APPLICATION_INFO_DETAILS_TITLE" desc="In Title Case: Title of the section in the dialog which displays the app's details (such as the version, size, etc).">
-          Details
-        </message>
         <message name="IDS_APPLICATION_INFO_SIZE_LABEL" desc="In Title Case: Text displayed before the app's size on disk in the details section of the dialog.">
           Size:
         </message>
@@ -2236,9 +2221,6 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL" desc="In Title Case: Text displayed in the app's version field to show that it is a built-in app (such as the Chrome Web Store, or the Files app).">
           Built-In
-        </message>
-        <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
-          Permissions
         </message>
         <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
           Files
@@ -2262,8 +2244,17 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_APPLICATION_INFO_SIZE_SMALL_LABEL" desc="Text displayed instead of the app's size for apps that are less than 1 megabyte in size.">
         &lt; 1 MB
       </message>
-      <message name="IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the app has no permissions.">
+      <message name="IDS_APPLICATION_INFO_APP_PERMISSIONS_TITLE" desc="Text displayed above the current permissions for the app (the permissions that the user has granted the app upon installation).">
+        This app can:
+      </message>
+      <message name="IDS_APPLICATION_INFO_EXTENSION_PERMISSIONS_TITLE" desc="Text displayed above the current permissions for the extension (the permissions that the user has granted the extension upon installation).">
+        This extension can:
+      </message>
+      <message name="IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the app has no permissions.">
         This app requires no special permissions.
+      </message>
+      <message name="IDS_APPLICATION_INFO_EXTENSION_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the extension has no permissions.">
+        This extension requires no special permissions.
       </message>
 
       <!-- "Create application shortcuts" dialog -->

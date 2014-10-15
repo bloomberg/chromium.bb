@@ -10,11 +10,8 @@
 #include "apps/app_load_service.h"
 #include "apps/saved_files_service.h"
 #include "base/files/file_path.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "device/usb/usb_ids.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -121,13 +118,18 @@ void AppInfoPermissionsPanel::CreateActivePermissionsControl() {
   std::vector<base::string16> permission_strings =
       GetActivePermissionMessages();
   if (permission_strings.empty()) {
-    views::Label* no_permissions_text = new views::Label(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_NO_PERMISSIONS_TEXT));
+    views::Label* no_permissions_text =
+        new views::Label(l10n_util::GetStringUTF16(
+            app_->is_extension()
+                ? IDS_APPLICATION_INFO_EXTENSION_NO_PERMISSIONS_TEXT
+                : IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT));
     no_permissions_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     active_permissions_list_ = no_permissions_text;
   } else {
-    active_permissions_heading_ = CreateHeading(l10n_util::GetStringUTF16(
-        IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT));
+    active_permissions_heading_ = new views::Label(l10n_util::GetStringUTF16(
+        app_->is_extension() ? IDS_APPLICATION_INFO_EXTENSION_PERMISSIONS_TITLE
+                             : IDS_APPLICATION_INFO_APP_PERMISSIONS_TITLE));
+    active_permissions_heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     active_permissions_list_ =
         CreateBulletedListView(permission_strings, true, gfx::NO_ELIDE);
   }

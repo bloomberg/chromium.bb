@@ -39,9 +39,6 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   void CreateDetailsControl();
   void CreateLaunchOptionControl();
 
-  void LayoutDescriptionControl();
-  void LayoutDetailsControl();
-
   // Overridden from views::ComboboxListener:
   virtual void OnPerformAction(views::Combobox* combobox) override;
 
@@ -59,14 +56,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   bool CanSetLaunchType() const;
 
   // UI elements on the dialog.
-  views::Label* description_heading_;
-  views::Label* description_label_;
-
-  views::Label* details_heading_;
-  views::Label* size_title_;
   views::Label* size_value_;
-  views::Label* version_title_;
-  views::Label* version_value_;
 
   scoped_ptr<LaunchOptionsComboboxModel> launch_options_combobox_model_;
   views::Combobox* launch_options_combobox_;

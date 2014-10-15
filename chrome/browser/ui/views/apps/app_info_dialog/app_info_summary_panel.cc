@@ -127,20 +127,9 @@ base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) {
 AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
                                          const extensions::Extension* app)
     : AppInfoPanel(profile, app),
-      description_heading_(NULL),
-      description_label_(NULL),
-      details_heading_(NULL),
-      size_title_(NULL),
       size_value_(NULL),
-      version_title_(NULL),
-      version_value_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
-  // Create UI elements.
-  CreateDescriptionControl();
-  CreateDetailsControl();
-  CreateLaunchOptionControl();
-
   // Layout elements.
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical,
@@ -148,11 +137,10 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
                            0,
                            views::kUnrelatedControlVerticalSpacing));
 
-  LayoutDescriptionControl();
-  LayoutDetailsControl();
-
-  if (launch_options_combobox_)
-    AddChildView(launch_options_combobox_);
+  // Create UI elements.
+  CreateDescriptionControl();
+  CreateDetailsControl();
+  CreateLaunchOptionControl();
 }
 
 AppInfoSummaryPanel::~AppInfoSummaryPanel() {
@@ -170,26 +158,29 @@ void AppInfoSummaryPanel::CreateDescriptionControl() {
       text += base::ASCIIToUTF16(" ... ");
     }
 
-    description_heading_ = CreateHeading(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_DESCRIPTION_TITLE));
-    description_label_ = new views::Label(text);
-    description_label_->SetMultiLine(true);
-    description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    views::Label* description_label = new views::Label(text);
+    description_label->SetMultiLine(true);
+    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(description_label);
   }
 }
 
 void AppInfoSummaryPanel::CreateDetailsControl() {
+  views::View* details_stack =
+      CreateVerticalStack(views::kRelatedControlSmallVerticalSpacing);
+
   // The size doesn't make sense for component apps.
   if (app_->location() != extensions::Manifest::COMPONENT) {
-    size_title_ = new views::Label(
+    views::Label* size_title = new views::Label(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LABEL));
-    size_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    size_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     size_value_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LOADING_LABEL));
     size_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
     StartCalculatingAppSize();
+
+    details_stack->AddChildView(CreateKeyValueField(size_title, size_value_));
   }
 
   // The version doesn't make sense for bookmark apps.
@@ -200,19 +191,18 @@ void AppInfoSummaryPanel::CreateDetailsControl() {
       version_str = l10n_util::GetStringUTF16(
           IDS_APPLICATION_INFO_VERSION_BUILT_IN_LABEL);
 
-    version_title_ = new views::Label(
+    views::Label* version_title = new views::Label(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_VERSION_LABEL));
-    version_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    version_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    version_value_ = new views::Label(version_str);
-    version_value_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    views::Label* version_value = new views::Label(version_str);
+    version_value->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    details_stack->AddChildView(
+        CreateKeyValueField(version_title, version_value));
   }
 
-  // Only generate the heading if we have at least one field to display.
-  if (version_title_ || size_title_) {
-    details_heading_ = CreateHeading(
-        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_DETAILS_TITLE));
-  }
+  AddChildView(details_stack);
 }
 
 void AppInfoSummaryPanel::CreateLaunchOptionControl() {
@@ -224,38 +214,8 @@ void AppInfoSummaryPanel::CreateLaunchOptionControl() {
     launch_options_combobox_->set_listener(this);
     launch_options_combobox_->SetSelectedIndex(
         launch_options_combobox_model_->GetIndexForLaunchType(GetLaunchType()));
-  }
-}
 
-void AppInfoSummaryPanel::LayoutDescriptionControl() {
-  if (description_label_) {
-    DCHECK(description_heading_);
-    views::View* vertical_stack = CreateVerticalStack();
-    vertical_stack->AddChildView(description_heading_);
-    vertical_stack->AddChildView(description_label_);
-    AddChildView(vertical_stack);
-  }
-}
-
-void AppInfoSummaryPanel::LayoutDetailsControl() {
-  if (details_heading_) {
-    views::View* details_stack =
-        CreateVerticalStack(views::kRelatedControlSmallVerticalSpacing);
-
-    if (version_title_ && version_value_) {
-      details_stack->AddChildView(
-          CreateKeyValueField(version_title_, version_value_));
-    }
-
-    if (size_title_ && size_value_) {
-      details_stack->AddChildView(
-          CreateKeyValueField(size_title_, size_value_));
-    }
-
-    views::View* vertical_stack = CreateVerticalStack();
-    vertical_stack->AddChildView(details_heading_);
-    vertical_stack->AddChildView(details_stack);
-    AddChildView(vertical_stack);
+    AddChildView(launch_options_combobox_);
   }
 }
 
