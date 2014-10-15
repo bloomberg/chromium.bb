@@ -275,7 +275,7 @@ void GCMAccountMapperTest::Restart() {
   account_mapper_.reset(new GCMAccountMapper(&gcm_driver_));
   scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   clock_ = clock.get();
-  account_mapper_->SetClockForTesting(clock.PassAs<base::Clock>());
+  account_mapper_->SetClockForTesting(clock.Pass());
 }
 
 // Tests the initialization of account mappings (from the store) when empty.

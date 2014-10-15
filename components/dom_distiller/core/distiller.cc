@@ -40,7 +40,7 @@ DistillerFactoryImpl::~DistillerFactoryImpl() {}
 scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistiller() {
   scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
       *distiller_url_fetcher_factory_, dom_distiller_options_));
-  return distiller.PassAs<Distiller>();
+  return distiller.Pass();
 }
 
 DistillerImpl::DistilledPageData::DistilledPageData() {}

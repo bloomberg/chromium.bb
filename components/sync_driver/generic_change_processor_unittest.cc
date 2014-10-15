@@ -156,8 +156,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
     // Take a pointer and trust that GenericChangeProcessor does not prematurely
     // destroy it.
     mock_attachment_service_ = mock_attachment_service.get();
-    sync_factory_.reset(new MockSyncApiComponentFactory(
-        mock_attachment_service.PassAs<syncer::AttachmentService>()));
+    sync_factory_.reset(
+        new MockSyncApiComponentFactory(mock_attachment_service.Pass()));
     change_processor_.reset(
         new GenericChangeProcessor(type,
                                    &data_type_error_handler_,

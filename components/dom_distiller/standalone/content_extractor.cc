@@ -76,8 +76,8 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
   scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry> > db(
       new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(
           background_task_runner));
-  scoped_ptr<DomDistillerStore> dom_distiller_store(new DomDistillerStore(
-      db.PassAs<leveldb_proto::ProtoDatabase<ArticleEntry> >(), db_path));
+  scoped_ptr<DomDistillerStore> dom_distiller_store(
+      new DomDistillerStore(db.Pass(), db_path));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(context));
@@ -105,11 +105,10 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
   return scoped_ptr<DomDistillerService>(new DomDistillerService(
-      dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
+      dom_distiller_store.Pass(),
       distiller_factory.Pass(),
       distiller_page_factory.Pass(),
-      scoped_ptr<DistilledPagePrefs>(
-          new DistilledPagePrefs(pref_service))));
+      scoped_ptr<DistilledPagePrefs>(new DistilledPagePrefs(pref_service))));
 }
 
 void AddComponentsResources() {

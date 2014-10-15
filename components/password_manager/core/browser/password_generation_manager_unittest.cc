@@ -109,7 +109,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     scoped_ptr<TestingPrefServiceSimple> prefs(new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
-    client_.reset(new TestPasswordManagerClient(prefs.PassAs<PrefService>()));
+    client_.reset(new TestPasswordManagerClient(prefs.Pass()));
   }
 
   virtual void TearDown() override { client_.reset(); }

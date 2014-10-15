@@ -79,7 +79,7 @@ FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncApiComponentFactory* sync_factory) {
-  return processor_.PassAs<GenericChangeProcessor>();
+  return processor_.Pass();
 }
 
 }  // namespace sync_driver

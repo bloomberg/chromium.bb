@@ -43,7 +43,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
         if (converted)
           result->SetWithoutPathExpansion(entry.key(), converted.release());
       }
-      return result.PassAs<base::Value>();
+      return result.Pass();
     } else if (value.GetAsList(&list)) {
       scoped_ptr<base::ListValue> result(new base::ListValue());
       for (base::ListValue::const_iterator entry(list->begin());
@@ -129,7 +129,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
 
   LOG(WARNING) << "Failed to convert " << value.GetType()
                << " to " << schema.type();
-  return scoped_ptr<base::Value>();
+  return nullptr;
 }
 
 }  // namespace
@@ -315,7 +315,7 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
         if (converted)
           result->SetWithoutPathExpansion(entry->first, converted.release());
       }
-      return result.PassAs<base::Value>();
+      return result.Pass();
     }
     case base::Value::TYPE_LIST: {
       scoped_ptr<base::ListValue> result(new base::ListValue());
@@ -338,13 +338,13 @@ scoped_ptr<base::Value> RegistryDict::ConvertToJSON(
         }
         break;
       }
-      return result.PassAs<base::Value>();
+      return result.Pass();
     }
     default:
       LOG(WARNING) << "Can't convert registry key to schema type " << type;
   }
 
-  return scoped_ptr<base::Value>();
+  return nullptr;
 }
 
 }  // namespace policy

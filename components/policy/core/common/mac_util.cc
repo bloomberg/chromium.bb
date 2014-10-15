@@ -77,7 +77,7 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
   if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {
     scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
     CFDictionaryApplyFunction(dict, DictionaryEntryToValue, dict_value.get());
-    return dict_value.PassAs<base::Value>();
+    return dict_value.Pass();
   }
 
   if (CFArrayRef array = CFCast<CFArrayRef>(property)) {
@@ -86,10 +86,10 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
                          CFRangeMake(0, CFArrayGetCount(array)),
                          ArrayEntryToValue,
                          list_value.get());
-    return list_value.PassAs<base::Value>();
+    return list_value.Pass();
   }
 
-  return scoped_ptr<base::Value>();
+  return nullptr;
 }
 
 }  // namespace policy

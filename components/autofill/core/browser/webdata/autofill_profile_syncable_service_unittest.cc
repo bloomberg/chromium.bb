@@ -259,8 +259,9 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
 
     // Takes ownership of sync_processor_.
     autofill_syncable_service_.MergeDataAndStartSyncing(
-        syncer::AUTOFILL_PROFILE, data_list,
-        sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
+        syncer::AUTOFILL_PROFILE,
+        data_list,
+        sync_processor_.Pass(),
         scoped_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock()));
   }

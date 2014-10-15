@@ -438,8 +438,9 @@ TEST_F(DomDistillerStoreTest, TestSyncMergeWithSecondDomDistillerStore) {
 
   FakeSyncErrorFactory* other_error_factory = new FakeSyncErrorFactory();
   store_->MergeDataAndStartSyncing(
-      kDomDistillerModelType, SyncDataFromEntryMap(other_db_model),
-      owned_other_store.PassAs<SyncChangeProcessor>(),
+      kDomDistillerModelType,
+      SyncDataFromEntryMap(other_db_model),
+      owned_other_store.Pass(),
       make_scoped_ptr<SyncErrorFactory>(other_error_factory));
 
   EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), expected_model));

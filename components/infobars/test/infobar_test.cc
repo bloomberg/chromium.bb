@@ -28,6 +28,5 @@ const int infobars::InfoBar::kDefaultBarTargetHeight = 36;
 // ConfirmInfoBarDelegate::CreateInfoBar() return a non-NULL infobar.
 scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  return scoped_ptr<infobars::InfoBar>(new infobars::InfoBar(
-      delegate.PassAs<infobars::InfoBarDelegate>()));
+  return scoped_ptr<infobars::InfoBar>(new infobars::InfoBar(delegate.Pass()));
 }

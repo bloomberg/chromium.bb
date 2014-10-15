@@ -245,7 +245,7 @@ void TemplateURLServiceSyncTest::TearDown() {
 
 scoped_ptr<syncer::SyncChangeProcessor>
 TemplateURLServiceSyncTest::PassProcessor() {
-  return sync_processor_wrapper_.PassAs<syncer::SyncChangeProcessor>();
+  return sync_processor_wrapper_.Pass();
 }
 
 scoped_ptr<syncer::SyncErrorFactory> TemplateURLServiceSyncTest::
@@ -1286,9 +1286,10 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsBasic) {
   // has no data.
   scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> delegate_b(
       new syncer::SyncChangeProcessorWrapperForTest(model_b()));
-  model_a()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
+  model_a()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES,
       model_b()->GetAllSyncData(syncer::SEARCH_ENGINES),
-      delegate_b.PassAs<syncer::SyncChangeProcessor>(),
+      delegate_b.Pass(),
       CreateAndPassSyncErrorFactory());
 
   // They should be consistent.
@@ -1315,9 +1316,10 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsDupesAndConflicts) {
   // Merge A and B.
   scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> delegate_b(
       new syncer::SyncChangeProcessorWrapperForTest(model_b()));
-  model_a()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES,
+  model_a()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES,
       model_b()->GetAllSyncData(syncer::SEARCH_ENGINES),
-      delegate_b.PassAs<syncer::SyncChangeProcessor>(),
+      delegate_b.Pass(),
       CreateAndPassSyncErrorFactory());
 
   // They should be consistent.
