@@ -28,7 +28,7 @@ class PerfControl(object):
     self._have_mpdecision = self._device.FileExists('/system/bin/mpdecision')
 
   def SetHighPerfMode(self):
-    """Sets the highest possible performance mode for the device."""
+    """Sets the highest stable performance mode for the device."""
     if not self._device.old_interface.IsRootEnabled():
       message = 'Need root for performance mode. Results may be NOISY!!'
       logging.warning(message)
@@ -36,12 +36,23 @@ class PerfControl(object):
       # may be different/noisy (due to the lack of intended performance mode).
       atexit.register(logging.warning, message)
       return
+
+    product_model = self._device.old_interface.GetProductModel()
     # TODO(epenner): Enable on all devices (http://crbug.com/383566)
-    if 'Nexus 4' == self._device.old_interface.GetProductModel():
+    if 'Nexus 4' == product_model:
       self._ForceAllCpusOnline(True)
       if not self._AllCpusAreOnline():
         logging.warning('Failed to force CPUs online. Results may be NOISY!')
-    self._SetScalingGovernorInternal('performance')
+      self._SetScalingGovernorInternal('performance')
+    elif 'Nexus 5' == product_model:
+      self._ForceAllCpusOnline(True)
+      if not self._AllCpusAreOnline():
+        logging.warning('Failed to force CPUs online. Results may be NOISY!')
+      self._SetScalingGovernorInternal('performance')
+      self._SetScalingMaxFreq(1190400)
+      self._SetMaxGpuClock(200000000)
+    else:
+      self._SetScalingGovernorInternal('performance')
 
   def SetPerfProfilingMode(self):
     """Enables all cores for reliable perf profiling."""
@@ -56,11 +67,17 @@ class PerfControl(object):
     """Sets the performance mode for the device to its default mode."""
     if not self._device.old_interface.IsRootEnabled():
       return
-    product_model = self._device.GetProp('ro.product.model')
+    product_model = self._device.old_interface.GetProductModel()
+    if 'Nexus 5' == product_model:
+      if self._AllCpusAreOnline():
+        self._SetScalingMaxFreq(2265600)
+        self._SetMaxGpuClock(450000000)
+
     governor_mode = {
         'GT-I9300': 'pegasusq',
         'Galaxy Nexus': 'interactive',
         'Nexus 4': 'ondemand',
+        'Nexus 5': 'ondemand',
         'Nexus 7': 'interactive',
         'Nexus 10': 'interactive'
     }.get(product_model, 'ondemand')
@@ -75,6 +92,19 @@ class PerfControl(object):
         'done\n') % (cpu_cores, value)
     logging.info('Setting scaling governor mode: %s', value)
     self._device.RunShellCommand(script, as_root=True)
+
+  def _SetScalingMaxFreq(self, value):
+    cpu_cores = ' '.join([str(x) for x in range(self._num_cpu_cores)])
+    script = ('for CPU in %s; do\n'
+        '  FILE="/sys/devices/system/cpu/cpu$CPU/cpufreq/scaling_max_freq"\n'
+        '  test -e $FILE && echo %d > $FILE\n'
+        'done\n') % (cpu_cores, value)
+    self._device.RunShellCommand(script, as_root=True)
+
+  def _SetMaxGpuClock(self, value):
+    self._device.WriteFile('/sys/class/kgsl/kgsl-3d0/max_gpuclk',
+                           str(value),
+                           as_root=True)
 
   def _AllCpusAreOnline(self):
     for cpu in range(1, self._num_cpu_cores):
@@ -113,3 +143,4 @@ class PerfControl(object):
     for cpu in range(self._num_cpu_cores):
       online_path = PerfControl._CPU_ONLINE_FMT % cpu
       self._device.WriteFile(online_path, '1', as_root=True)
+
