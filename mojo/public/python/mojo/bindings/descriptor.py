@@ -416,8 +416,8 @@ class MapType(SerializableType):
       '__module__': __name__,
       'DESCRIPTOR': {
         'fields': [
-          SingleFieldGroup('keys', GenericArrayType(key_type), 0, 0),
-          SingleFieldGroup('values', GenericArrayType(value_type), 1, 1),
+          SingleFieldGroup('keys', MapType._GetArrayType(key_type), 0, 0),
+          SingleFieldGroup('values', MapType._GetArrayType(value_type), 1, 1),
         ],
       }
     }
@@ -451,6 +451,13 @@ class MapType(SerializableType):
             'keys and values do not have the same length.')
       return dict(zip(s.keys, s.values))
     return None
+
+  @staticmethod
+  def _GetArrayType(t):
+    if t == TYPE_BOOL:
+      return BooleanArrayType()
+    else:
+      return GenericArrayType(t)
 
 
 class NoneType(SerializableType):
