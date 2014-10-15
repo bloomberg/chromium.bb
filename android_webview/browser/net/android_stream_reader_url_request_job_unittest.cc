@@ -207,8 +207,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
 
   void SetUpTestJob(scoped_ptr<InputStreamReader> stream_reader) {
     SetUpTestJob(stream_reader.Pass(),
-                 make_scoped_ptr(new StreamReaderDelegate())
-                     .PassAs<AndroidStreamReaderURLRequestJob::Delegate>());
+                 make_scoped_ptr(new StreamReaderDelegate()));
   }
 
   void SetUpTestJob(scoped_ptr<InputStreamReader> stream_reader,
@@ -251,7 +250,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
         .WillOnce(Return(0));
   }
 
-  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
+  SetUpTestJob(stream_reader.Pass());
 
   req_->Start();
 
@@ -265,9 +264,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
 }
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
-  SetUpTestJob(scoped_ptr<InputStreamReader>(),
-               make_scoped_ptr(new NullStreamReaderDelegate())
-                   .PassAs<AndroidStreamReaderURLRequestJob::Delegate>());
+  SetUpTestJob(nullptr, make_scoped_ptr(new NullStreamReaderDelegate()));
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
@@ -283,9 +280,8 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
 }
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ModifyHeadersAndStatus) {
-  SetUpTestJob(scoped_ptr<InputStreamReader>(),
-               make_scoped_ptr(new HeaderAlteringStreamReaderDelegate())
-                   .PassAs<AndroidStreamReaderURLRequestJob::Delegate>());
+  SetUpTestJob(nullptr,
+               make_scoped_ptr(new HeaderAlteringStreamReaderDelegate()));
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
@@ -329,7 +325,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadPartOfStream) {
         .WillOnce(Return(0));
   }
 
-  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
+  SetUpTestJob(stream_reader.Pass());
 
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();
@@ -360,7 +356,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest,
         .WillOnce(Return(0));
   }
 
-  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
+  SetUpTestJob(stream_reader.Pass());
 
   SetRange(req_.get(), offset, bytes_available_reported);
   req_->Start();
@@ -385,7 +381,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, DeleteJobMidWaySeek) {
   ON_CALL(*stream_reader, ReadRawData(_, _))
       .WillByDefault(Return(0));
 
-  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
+  SetUpTestJob(stream_reader.Pass());
 
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();
@@ -410,7 +406,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, DeleteJobMidWayRead) {
       .WillOnce(DoAll(InvokeWithoutArgs(&loop, &base::RunLoop::Quit),
                       Return(bytes_available)));
 
-  SetUpTestJob(stream_reader.PassAs<InputStreamReader>());
+  SetUpTestJob(stream_reader.Pass());
 
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();

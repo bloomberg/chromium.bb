@@ -252,8 +252,7 @@ void HardwareRenderer::RequestNewOutputSurface(bool fallback) {
   scoped_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(context_provider));
   output_surface_ = output_surface_holder.get();
-  layer_tree_host_->SetOutputSurface(
-      output_surface_holder.PassAs<cc::OutputSurface>());
+  layer_tree_host_->SetOutputSurface(output_surface_holder.Pass());
 }
 
 void HardwareRenderer::UnusedResourcesAreAvailable() {

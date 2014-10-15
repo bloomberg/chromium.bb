@@ -81,8 +81,7 @@ net::URLRequestJob* AwWebResourceResponse::CreateJobFor(
       request,
       network_delegate,
       make_scoped_ptr(
-          new StreamReaderJobDelegateImpl(aw_web_resource_response.Pass()))
-          .PassAs<AndroidStreamReaderURLRequestJob::Delegate>());
+          new StreamReaderJobDelegateImpl(aw_web_resource_response.Pass())));
 }
 
 }  // namespace android_webview

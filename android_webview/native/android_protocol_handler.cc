@@ -233,9 +233,7 @@ net::URLRequestJob* AndroidRequestInterceptorBase::MaybeInterceptRequest(
       new AndroidStreamReaderURLRequestJobDelegateImpl());
 
   return new AndroidStreamReaderURLRequestJob(
-      request,
-      network_delegate,
-      reader_delegate.PassAs<AndroidStreamReaderURLRequestJob::Delegate>());
+      request, network_delegate, reader_delegate.Pass());
 }
 
 // AssetFileRequestInterceptor ------------------------------------------------
