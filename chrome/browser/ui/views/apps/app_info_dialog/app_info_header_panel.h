@@ -20,7 +20,6 @@ class Image;
 
 namespace views {
 class ImageView;
-class Label;
 class Link;
 class View;
 }
@@ -36,7 +35,6 @@ class AppInfoHeaderPanel : public AppInfoPanel,
 
  private:
   void CreateControls();
-  void LayoutControls();
 
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) override;
@@ -51,6 +49,11 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   void ShowAppInWebStore();
   bool CanShowAppInWebStore() const;
 
+  // Opens the app's homepage URL as specified in the manifest. Must only be
+  // called if CanShowAppHomePage() returns true.
+  void ShowAppHomePage();
+  bool CanShowAppHomePage() const;
+
   // Displays the licenses for the app. Must only be called if
   // CanDisplayLicenses() returns true.
   void DisplayLicenses();
@@ -62,8 +65,8 @@ class AppInfoHeaderPanel : public AppInfoPanel,
 
   // UI elements on the dialog. Elements are NULL if they are not displayed.
   views::ImageView* app_icon_;
-  views::Label* app_name_label_;
   views::Link* view_in_store_link_;
+  views::Link* homepage_link_;
   views::Link* licenses_link_;
 
   base::WeakPtrFactory<AppInfoHeaderPanel> weak_ptr_factory_;
