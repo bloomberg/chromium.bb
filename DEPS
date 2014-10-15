@@ -180,9 +180,6 @@ deps = {
   'src/native_client':
    Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
 
-  'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
-   Var('chromium_git') + '/native_client/src/native_client/tests/prebuilt.git' + '@' + '3e17365176c94624f46cace174f61834b7f3c35d',
-
   'src/third_party/sfntly/cpp/src':
     Var('chromium_git') + '/external/sfntly/cpp/src.git' + '@' +  Var('sfntly_revision'),
 
@@ -374,7 +371,6 @@ deps_os = {
 
     # Code that's not needed due to not building everything
     'src/build/util/support': None,
-    'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin': None,
     'src/chrome/test/data/perf/canvas_bench': None,
     'src/chrome/test/data/perf/frame_rate/content': None,
     'src/media/cdm/ppapi/api': None,
