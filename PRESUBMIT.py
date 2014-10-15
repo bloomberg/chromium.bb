@@ -1300,7 +1300,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
-  results.extend(_CheckJavaStyle(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1490,6 +1489,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
   results.extend(_CheckValidHostsInDEPS(input_api, output_api))
+  results.extend(_CheckJavaStyle(input_api, output_api))
   return results
 
 
