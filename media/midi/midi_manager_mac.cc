@@ -90,11 +90,54 @@ MidiManagerMac::MidiManagerMac()
       coremidi_output_(0),
       packet_list_(NULL),
       midi_packet_(NULL),
-      send_thread_("MidiSendThread") {
+      client_thread_("MidiClientThread"),
+      shutdown_(false) {
+}
+
+MidiManagerMac::~MidiManagerMac() {
+  // Wait for the termination of |client_thread_| before disposing MIDI ports.
+  shutdown_ = true;
+  client_thread_.Stop();
+
+  if (coremidi_input_)
+    MIDIPortDispose(coremidi_input_);
+  if (coremidi_output_)
+    MIDIPortDispose(coremidi_output_);
+  if (midi_client_)
+    MIDIClientDispose(midi_client_);
 }
 
 void MidiManagerMac::StartInitialization() {
+  // MIDIClient should be created on |client_thread_| to receive CoreMIDI event
+  // notifications.
+  RunOnClientThread(
+      base::Bind(&MidiManagerMac::InitializeCoreMIDI, base::Unretained(this)));
+}
+
+void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,
+                                          uint32 port_index,
+                                          const std::vector<uint8>& data,
+                                          double timestamp) {
+  RunOnClientThread(
+      base::Bind(&MidiManagerMac::SendMidiData,
+                 base::Unretained(this), client, port_index, data, timestamp));
+}
+
+void MidiManagerMac::RunOnClientThread(const base::Closure& closure) {
+  if (shutdown_)
+    return;
+
+  if (!client_thread_.IsRunning())
+    client_thread_.Start();
+
+  client_thread_.message_loop()->PostTask(FROM_HERE, closure);
+}
+
+void MidiManagerMac::InitializeCoreMIDI() {
+  DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
   // CoreMIDI registration.
+  // TODO(toyoshim): Set MIDINotifyProc to receive CoreMIDI event notifications.
   midi_client_ = 0;
   OSStatus result =
       MIDIClientCreate(CFSTR("Chrome"), NULL, NULL, &midi_client_);
@@ -156,34 +199,12 @@ void MidiManagerMac::StartInitialization() {
   CompleteInitialization(MIDI_OK);
 }
 
-void MidiManagerMac::DispatchSendMidiData(MidiManagerClient* client,
-                                          uint32 port_index,
-                                          const std::vector<uint8>& data,
-                                          double timestamp) {
-  if (!send_thread_.IsRunning())
-    send_thread_.Start();
-
-  // OK to use base::Unretained(this) since we join to thread in dtor().
-  send_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiManagerMac::SendMidiData, base::Unretained(this),
-                 client, port_index, data, timestamp));
-}
-
-MidiManagerMac::~MidiManagerMac() {
-  // Wait for the termination of |send_thread_| before disposing MIDI ports.
-  send_thread_.Stop();
-
-  if (coremidi_input_)
-    MIDIPortDispose(coremidi_input_);
-  if (coremidi_output_)
-    MIDIPortDispose(coremidi_output_);
-}
-
 // static
 void MidiManagerMac::ReadMidiDispatch(const MIDIPacketList* packet_list,
                                       void* read_proc_refcon,
                                       void* src_conn_refcon) {
+  // This method is called on a separate high-priority thread owned by CoreMIDI.
+
   MidiManagerMac* manager = static_cast<MidiManagerMac*>(read_proc_refcon);
 #if __LP64__
   MIDIEndpointRef source = reinterpret_cast<uintptr_t>(src_conn_refcon);
@@ -197,10 +218,15 @@ void MidiManagerMac::ReadMidiDispatch(const MIDIPacketList* packet_list,
 
 void MidiManagerMac::ReadMidi(MIDIEndpointRef source,
                               const MIDIPacketList* packet_list) {
+  // This method is called from ReadMidiDispatch() and runs on a separate
+  // high-priority thread owned by CoreMIDI.
+
   // Lookup the port index based on the source.
   SourceMap::iterator j = source_map_.find(source);
   if (j == source_map_.end())
     return;
+  // This is safe since MidiManagerMac does not remove any existing
+  // MIDIEndpointRef, and the order is saved.
   uint32 port_index = source_map_[source];
 
   // Go through each packet and process separately.
@@ -221,7 +247,7 @@ void MidiManagerMac::SendMidiData(MidiManagerClient* client,
                                   uint32 port_index,
                                   const std::vector<uint8>& data,
                                   double timestamp) {
-  DCHECK(send_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   // System Exclusive has already been filtered.
   MIDITimeStamp coremidi_timestamp = SecondsToMIDITimeStamp(timestamp);

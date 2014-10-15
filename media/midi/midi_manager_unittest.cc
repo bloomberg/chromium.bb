@@ -6,9 +6,11 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,12 +75,24 @@ class FakeMidiManagerClient : public MidiManagerClient {
   int client_id() const { return client_id_; }
   MidiResult result() const { return result_; }
 
+  void HandleContinuationMessage() {
+    // Stop posting a dummy message once CompleteStartSession() is invoked.
+    if (!wait_for_result_)
+      return;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&FakeMidiManagerClient::HandleContinuationMessage,
+                   base::Unretained(this)));
+  }
+
+
   MidiResult WaitForResult() {
     base::RunLoop run_loop;
+    // Post a dummy task not to stop the following event loop.
+    HandleContinuationMessage();
     // CompleteStartSession() is called inside the message loop on the same
     // thread. Protection for |wait_for_result_| is not needed.
-    while (wait_for_result_)
-      run_loop.RunUntilIdle();
+    run_loop.RunUntilIdle();
     return result();
   }
 

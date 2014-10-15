@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread.h"
 #include "media/midi/midi_manager.h"
@@ -31,6 +32,16 @@ class MEDIA_EXPORT MidiManagerMac : public MidiManager {
                                     double timestamp) override;
 
  private:
+  // Runs a closure on |client_thread_|. It starts the thread if it isn't
+  // running and the destructor isn't called.
+  // Caller can bind base::Unretained(this) to |closure| since we join
+  // |client_thread_| in the destructor.
+  void RunOnClientThread(const base::Closure& closure);
+
+  // Initializes CoreMIDI on |client_thread_| asynchronously. Called from
+  // StartInitialization().
+  void InitializeCoreMIDI();
+
   // CoreMIDI callback for MIDI data.
   // Each callback can contain multiple packets, each of which can contain
   // multiple MIDI messages.
@@ -64,8 +75,11 @@ class MEDIA_EXPORT MidiManagerMac : public MidiManager {
   // Keeps track of all destinations.
   std::vector<MIDIEndpointRef> destinations_;
 
-  // |send_thread_| is used to send MIDI data.
-  base::Thread send_thread_;
+  // |client_thread_| is used to handle platform dependent operations.
+  base::Thread client_thread_;
+
+  // Sets true on destructing object to avoid starting |client_thread_| again.
+  bool shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerMac);
 };
