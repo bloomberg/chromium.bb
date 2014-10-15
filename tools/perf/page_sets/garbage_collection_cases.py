@@ -23,7 +23,7 @@ class SpinningBallsPage(page_module.Page):
     action_runner.WaitForJavaScriptCondition(
         "document.readyState == 'complete'")
 
-  def RunSmoothness(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginInteraction(
         'RunSmoothAllActions', is_fast=True)
     action_runner.Wait(15)
