@@ -56,8 +56,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/paint/LayerPainter.h"
-#include "core/paint/ScrollbarPainter.h"
+#include "core/paint/FramePainter.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
@@ -97,7 +96,6 @@ namespace blink {
 using namespace HTMLNames;
 
 double FrameView::s_currentFrameTimeStamp = 0.0;
-bool FrameView::s_inPaintContents = false;
 
 // The maximum number of updateWidgets iterations that should be done before returning.
 static const unsigned maxUpdateWidgetsIterations = 2;
@@ -138,7 +136,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_scrollbarsAvoidingResizer(0)
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
-    , m_drawPanScrollIcon(false)
+    , m_shouldDrawPanScrollIcon(false)
     , m_clipsRepaints(true)
 {
     ASSERT(m_frame);
@@ -2364,31 +2362,6 @@ void FrameView::updateScrollCorner()
     updateScrollCornerInternal();
 }
 
-void FrameView::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
-{
-    if (m_scrollCorner) {
-        bool needsBackgorund = m_frame->isMainFrame();
-        if (needsBackgorund)
-            context->fillRect(cornerRect, baseBackgroundColor());
-        ScrollbarPainter::paintIntoRect(m_scrollCorner, context, cornerRect.location(), cornerRect);
-        return;
-    }
-
-    paintScrollCornerInternal(context, cornerRect);
-}
-
-void FrameView::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)
-{
-    bool needsBackgorund = bar->isCustomScrollbar() && m_frame->isMainFrame();
-    if (needsBackgorund) {
-        IntRect toFill = bar->frameRect();
-        toFill.intersect(rect);
-        context->fillRect(toFill, baseBackgroundColor());
-    }
-
-    paintScrollbarInternal(context, bar, rect);
-}
-
 Color FrameView::documentBackgroundColor() const
 {
     // <https://bugs.webkit.org/show_bug.cgi?id=59540> We blend the background color of
@@ -2461,99 +2434,6 @@ void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
     m_wasScrolledByUser = wasScrolledByUser;
 }
 
-void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
-{
-    Document* document = m_frame->document();
-
-#ifndef NDEBUG
-    bool fillWithRed;
-    if (document->printing())
-        fillWithRed = false; // Printing, don't fill with red (can't remember why).
-    else if (m_frame->owner())
-        fillWithRed = false; // Subframe, don't fill with red.
-    else if (isTransparent())
-        fillWithRed = false; // Transparent, don't fill with red.
-    else if (m_paintBehavior & PaintBehaviorSelectionOnly)
-        fillWithRed = false; // Selections are transparent, don't fill with red.
-    else if (m_nodeToDraw)
-        fillWithRed = false; // Element images are transparent, don't fill with red.
-    else
-        fillWithRed = true;
-
-    if (fillWithRed)
-        p->fillRect(rect, Color(0xFF, 0, 0));
-#endif
-
-    RenderView* renderView = this->renderView();
-    if (!renderView) {
-        WTF_LOG_ERROR("called FrameView::paint with nil renderer");
-        return;
-    }
-
-    RELEASE_ASSERT(!needsLayout());
-    ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
-
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Paint", "data", InspectorPaintEvent::data(renderView, rect, 0));
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::willPaint(renderView, 0);
-
-    bool isTopLevelPainter = !s_inPaintContents;
-    s_inPaintContents = true;
-
-    FontCachePurgePreventer fontCachePurgePreventer;
-
-    PaintBehavior oldPaintBehavior = m_paintBehavior;
-
-    if (FrameView* parentView = parentFrameView()) {
-        if (parentView->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
-            m_paintBehavior |= PaintBehaviorFlattenCompositingLayers;
-    }
-
-    if (m_paintBehavior == PaintBehaviorNormal)
-        document->markers().invalidateRenderedRectsForMarkersInRect(rect);
-
-    if (document->printing())
-        m_paintBehavior |= PaintBehaviorFlattenCompositingLayers;
-
-    ASSERT(!m_isPainting);
-    m_isPainting = true;
-
-    // m_nodeToDraw is used to draw only one element (and its descendants)
-    RenderObject* renderer = m_nodeToDraw ? m_nodeToDraw->renderer() : 0;
-    RenderLayer* rootLayer = renderView->layer();
-
-#if ENABLE(ASSERT)
-    renderView->assertSubtreeIsLaidOut();
-    RenderObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->renderer());
-#endif
-
-    LayerPainter layerPainter(*rootLayer);
-
-    layerPainter.paint(p, rect, m_paintBehavior, renderer);
-
-    if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(p, rect, m_paintBehavior, renderer);
-
-    m_isPainting = false;
-
-    m_paintBehavior = oldPaintBehavior;
-    m_lastPaintTime = currentTime();
-
-    // Regions may have changed as a result of the visibility/z-index of element changing.
-    if (document->annotatedRegionsDirty())
-        updateAnnotatedRegions();
-
-    if (isTopLevelPainter) {
-        // Everything that happens after paintContents completions is considered
-        // to be part of the next frame.
-        s_currentFrameTimeStamp = currentTime();
-        s_inPaintContents = false;
-    }
-
-    InspectorInstrumentation::didPaint(renderView, 0, p, rect);
-}
-
 void FrameView::setPaintBehavior(PaintBehavior behavior)
 {
     m_paintBehavior = behavior;
@@ -2572,19 +2452,6 @@ bool FrameView::isPainting() const
 void FrameView::setNodeToDraw(Node* node)
 {
     m_nodeToDraw = node;
-}
-
-void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
-{
-    if (m_frame->document()->printing())
-        return;
-
-    if (m_frame->isMainFrame()) {
-        if (m_frame->page()->chrome().client().paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
-            return;
-    }
-
-    paintOverhangAreasInternal(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect);
 }
 
 void FrameView::updateWidgetPositionsIfNeeded()
@@ -3640,7 +3507,7 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
     IntRect updateRect = clipRect;
     updateRect.intersect(rectToCopyOnScroll());
 
-    if (m_drawPanScrollIcon) {
+    if (m_shouldDrawPanScrollIcon) {
         // FIXME: the pan icon is broken when accelerated compositing is on, since it will draw under the compositing layers.
         // https://bugs.webkit.org/show_bug.cgi?id=47837
         int panIconDirtySquareSizeLength = 2 * (panIconSizeLength + std::max(abs(scrollDelta.width()), abs(scrollDelta.height()))); // We only want to repaint what's necessary
@@ -3931,31 +3798,9 @@ void FrameView::updateScrollCornerInternal()
 {
 }
 
-void FrameView::paintScrollCornerInternal(GraphicsContext* context, const IntRect& cornerRect)
-{
-    ScrollbarTheme::theme()->paintScrollCorner(context, cornerRect);
-}
-
-void FrameView::paintScrollbarInternal(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)
-{
-    bar->paint(context, rect);
-}
-
 void FrameView::invalidateScrollCornerRect(const IntRect& rect)
 {
     invalidateRect(rect);
-}
-
-void FrameView::paintScrollbars(GraphicsContext* context, const IntRect& rect)
-{
-    if (m_horizontalScrollbar && !layerForHorizontalScrollbar())
-        paintScrollbar(context, m_horizontalScrollbar.get(), rect);
-    if (m_verticalScrollbar && !layerForVerticalScrollbar())
-        paintScrollbar(context, m_verticalScrollbar.get(), rect);
-
-    if (layerForScrollCorner())
-        return;
-    paintScrollCorner(context, scrollCornerRect());
 }
 
 void FrameView::paintPanScrollIcon(GraphicsContext* context)
@@ -3969,40 +3814,12 @@ void FrameView::paintPanScrollIcon(GraphicsContext* context)
 
 void FrameView::paint(GraphicsContext* context, const IntRect& rect)
 {
-    notifyPageThatContentAreaWillPaint();
+    FramePainter(*this).paint(context, rect);
+}
 
-    IntRect documentDirtyRect = rect;
-    IntRect visibleAreaWithoutScrollbars(location(), visibleContentRect().size());
-    documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
-
-    if (!documentDirtyRect.isEmpty()) {
-        GraphicsContextStateSaver stateSaver(*context);
-
-        context->translate(x() - scrollX(), y() - scrollY());
-        context->clip(visibleContentRect());
-
-        documentDirtyRect.moveBy(-location() + scrollPosition());
-        paintContents(context, documentDirtyRect);
-    }
-
-    calculateAndPaintOverhangAreas(context, rect);
-
-    // Now paint the scrollbars.
-    if (!m_scrollbarsSuppressed && (m_horizontalScrollbar || m_verticalScrollbar)) {
-        GraphicsContextStateSaver stateSaver(*context);
-        IntRect scrollViewDirtyRect = rect;
-        IntRect visibleAreaWithScrollbars(location(), visibleContentRect(IncludeScrollbars).size());
-        scrollViewDirtyRect.intersect(visibleAreaWithScrollbars);
-        context->translate(x(), y());
-        scrollViewDirtyRect.moveBy(-location());
-        context->clip(IntRect(IntPoint(), visibleAreaWithScrollbars.size()));
-
-        paintScrollbars(context, scrollViewDirtyRect);
-    }
-
-    // Paint the panScroll Icon
-    if (m_drawPanScrollIcon)
-        paintPanScrollIcon(context);
+void FrameView::paintContents(GraphicsContext* context, const IntRect& damageRect)
+{
+    FramePainter(*this).paintContents(context, damageRect);
 }
 
 void FrameView::calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect)
@@ -4059,32 +3876,6 @@ void FrameView::updateOverhangAreas()
         window->invalidateContentsAndRootView(horizontalOverhangRect);
     if (!verticalOverhangRect.isEmpty())
         window->invalidateContentsAndRootView(verticalOverhangRect);
-}
-
-void FrameView::paintOverhangAreasInternal(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
-{
-    ScrollbarTheme::theme()->paintOverhangBackground(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
-    ScrollbarTheme::theme()->paintOverhangShadows(context, scrollOffset(), horizontalOverhangRect, verticalOverhangRect, dirtyRect);
-}
-
-void FrameView::calculateAndPaintOverhangAreas(GraphicsContext* context, const IntRect& dirtyRect)
-{
-    IntRect horizontalOverhangRect;
-    IntRect verticalOverhangRect;
-    calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
-
-    if (dirtyRect.intersects(horizontalOverhangRect) || dirtyRect.intersects(verticalOverhangRect))
-        paintOverhangAreas(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
-}
-
-void FrameView::calculateAndPaintOverhangBackground(GraphicsContext* context, const IntRect& dirtyRect)
-{
-    IntRect horizontalOverhangRect;
-    IntRect verticalOverhangRect;
-    calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
-
-    if (dirtyRect.intersects(horizontalOverhangRect) || dirtyRect.intersects(verticalOverhangRect))
-        ScrollbarTheme::theme()->paintOverhangBackground(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
 }
 
 bool FrameView::isPointInScrollbarCorner(const IntPoint& windowPoint)
@@ -4196,7 +3987,7 @@ void FrameView::addPanScrollIcon(const IntPoint& iconPosition)
     HostWindow* window = hostWindow();
     if (!window)
         return;
-    m_drawPanScrollIcon = true;
+    m_shouldDrawPanScrollIcon = true;
     m_panScrollIconPoint = IntPoint(iconPosition.x() - panIconSizeLength / 2 , iconPosition.y() - panIconSizeLength / 2);
     window->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
@@ -4206,7 +3997,7 @@ void FrameView::removePanScrollIcon()
     HostWindow* window = hostWindow();
     if (!window)
         return;
-    m_drawPanScrollIcon = false;
+    m_shouldDrawPanScrollIcon = false;
     window->invalidateContentsAndRootView(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 

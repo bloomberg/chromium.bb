@@ -1502,6 +1502,8 @@
             'paint/EllipsisBoxPainter.h',
             'paint/FileUploadControlPainter.cpp',
             'paint/FileUploadControlPainter.h',
+            'paint/FramePainter.cpp',
+            'paint/FramePainter.h',
             'paint/GridPainter.cpp',
             'paint/GridPainter.h',
             'paint/HTMLCanvasPainter.cpp',

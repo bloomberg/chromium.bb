@@ -204,20 +204,19 @@ public:
 
     void addPartToUpdate(RenderEmbeddedObject&);
 
-    void paintContents(GraphicsContext*, const IntRect& damageRect);
     void setPaintBehavior(PaintBehavior);
     PaintBehavior paintBehavior() const;
+    void setIsPainting(bool val) { m_isPainting = val; }
     bool isPainting() const;
+    void setLastPaintTime(double val) { m_lastPaintTime = val; }
     bool hasEverPainted() const { return m_lastPaintTime; }
     void setNodeToDraw(Node*);
-
-    void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
-    void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
-    void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&);
+    Node* nodeToDraw() { return m_nodeToDraw.get(); }
 
     Color documentBackgroundColor() const;
 
     static double currentFrameTimeStamp() { return s_currentFrameTimeStamp; }
+    void setCurrentFrameTimeStamp(double val) { s_currentFrameTimeStamp = val; }
 
     void updateLayoutAndStyleForPainting();
     void updateLayoutAndStyleIfNeededRecursive();
@@ -362,6 +361,7 @@ public:
     // can be used to obtain those scrollbars.
     virtual Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
     virtual Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
+    RenderScrollbarPart* scrollCorner() { return m_scrollCorner; }
 
     void positionScrollbarLayers();
 
@@ -455,6 +455,8 @@ public:
     void setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppress = false);
     bool scrollbarsSuppressed() const { return m_scrollbarsSuppressed; }
 
+    bool drawPanScrollIcon() { return m_shouldDrawPanScrollIcon; }
+
     IntPoint rootViewToContents(const IntPoint&) const;
     IntPoint contentsToRootView(const IntPoint&) const;
     IntRect rootViewToContents(const IntRect&) const;
@@ -511,7 +513,7 @@ public:
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
     virtual void paint(GraphicsContext*, const IntRect&) override;
-    void paintScrollbars(GraphicsContext*, const IntRect&);
+    void paintContents(GraphicsContext*, const IntRect& damageRect);
 
     // Widget overrides to ensure that our children's visibility status is kept up to date when we get shown and hidden.
     virtual void show() override;
@@ -527,20 +529,19 @@ public:
     bool isPointInScrollbarCorner(const IntPoint&);
     bool scrollbarCornerPresent() const;
     virtual IntRect scrollCornerRect() const override;
-    void paintScrollCornerInternal(GraphicsContext*, const IntRect& cornerRect);
-    void paintScrollbarInternal(GraphicsContext*, Scrollbar*, const IntRect&);
 
     virtual IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const override;
     virtual IntRect convertFromContainingViewToScrollbar(const Scrollbar*, const IntRect&) const override;
     virtual IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const override;
     virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
 
-    void calculateAndPaintOverhangAreas(GraphicsContext*, const IntRect& dirtyRect);
-    void calculateAndPaintOverhangBackground(GraphicsContext*, const IntRect& dirtyRect);
-
     virtual bool isFrameView() const override { return true; }
 
     virtual void trace(Visitor*) override;
+    void notifyPageThatContentAreaWillPaint() const;
+    FrameView* parentFrameView() const;
+
+    void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
 
 protected:
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -557,8 +558,6 @@ protected:
     void scrollToInternal(const DoublePoint& newPosition);
 
     void contentRectangleForPaintInvalidationInternal(const IntRect&);
-
-    void paintOverhangAreasInternal(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect);
 
     // These functions are used to create/destroy scrollbars.
     void setHasHorizontalScrollbar(bool);
@@ -650,8 +649,6 @@ private:
 
     void updateScrollableAreaSet();
 
-    void notifyPageThatContentAreaWillPaint() const;
-
     void scheduleUpdateWidgetsIfNecessary();
     void updateWidgetsTimerFired(Timer<FrameView>*);
     bool updateWidgets();
@@ -669,8 +666,6 @@ private:
     bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame);
 
     void updateScrollCorner();
-
-    FrameView* parentFrameView() const;
 
     AXObjectCache* axObjectCache() const;
     void removeFromAXObjectCache();
@@ -693,13 +688,11 @@ private:
 
     IntRect rectToCopyOnScroll() const;
 
-    void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();
 
     bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
-    static bool s_inPaintContents;
 
     LayoutSize m_size;
 
@@ -820,7 +813,7 @@ private:
     bool m_inUpdateScrollbars;
 
     IntPoint m_panScrollIconPoint;
-    bool m_drawPanScrollIcon;
+    bool m_shouldDrawPanScrollIcon;
 
     bool m_clipsRepaints;
 };
