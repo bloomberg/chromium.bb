@@ -390,6 +390,11 @@ void LayerImpl::SetScrollClipLayer(int scroll_clip_layer_id) {
   scroll_clip_layer_ = layer_tree_impl()->LayerById(scroll_clip_layer_id);
 }
 
+bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {
+  return (orientation == HORIZONTAL) ? user_scrollable_horizontal_
+                                     : user_scrollable_vertical_;
+}
+
 void LayerImpl::ApplySentScrollDeltasFromAbortedCommit() {
   // Pending tree never has sent scroll deltas
   DCHECK(layer_tree_impl()->IsActiveTree());

@@ -7,7 +7,9 @@
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -52,7 +54,7 @@ class ScrollbarAnimationControllerThinningTest
     scrollbar_layer_->SetScrollLayerAndClipLayerByIds(scroll_layer_ptr->id(),
                                                       clip_layer_->id());
     clip_layer_->SetBounds(gfx::Size(100, 100));
-    scroll_layer_ptr->SetBounds(gfx::Size(50, 50));
+    scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
 
     scrollbar_controller_ = ScrollbarAnimationControllerThinning::Create(
         scroll_layer_ptr,
@@ -77,6 +79,38 @@ TEST_F(ScrollbarAnimationControllerThinningTest, Idle) {
   scrollbar_controller_->Animate(base::TimeTicks());
   EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
+}
+
+// Check that scrollbar disappears when the layer becomes non-scrollable.
+TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
+  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  ASSERT_TRUE(scroll_layer);
+  EXPECT_SIZE_EQ(gfx::Size(200, 200), scroll_layer->bounds());
+
+  EXPECT_EQ(HORIZONTAL, scrollbar_layer_->orientation());
+
+  // Shrink along X axis, horizontal scrollbar should appear.
+  clip_layer_->SetBounds(gfx::Size(100, 200));
+  EXPECT_SIZE_EQ(gfx::Size(100, 200), clip_layer_->bounds());
+
+  scrollbar_controller_->DidScrollBegin();
+
+  scrollbar_controller_->DidScrollUpdate(false);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+
+  scrollbar_controller_->DidScrollEnd();
+
+  // Shrink along Y axis and expand along X, horizontal scrollbar
+  // should disappear.
+  clip_layer_->SetBounds(gfx::Size(200, 100));
+  EXPECT_SIZE_EQ(gfx::Size(200, 100), clip_layer_->bounds());
+
+  scrollbar_controller_->DidScrollBegin();
+
+  scrollbar_controller_->DidScrollUpdate(false);
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+
+  scrollbar_controller_->DidScrollEnd();
 }
 
 // Scroll content. Confirm the scrollbar gets dark and then becomes light

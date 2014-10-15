@@ -62,8 +62,9 @@ void ScrollbarAnimationControllerLinearFade::ApplyOpacityToScrollbars(
        it != scrollbars->end();
        ++it) {
     ScrollbarLayerImplBase* scrollbar = *it;
+
     if (scrollbar->is_overlay_scrollbar())
-      scrollbar->SetOpacity(opacity);
+      scrollbar->SetOpacity(scrollbar->can_scroll_orientation() ? opacity : 0);
   }
 }
 

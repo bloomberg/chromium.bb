@@ -122,6 +122,12 @@ bool ScrollbarLayerImplBase::SetMaximum(int maximum) {
   return true;
 }
 
+bool ScrollbarLayerImplBase::can_scroll_orientation() const {
+  if (!scroll_layer_)
+    return false;
+  return scroll_layer_->user_scrollable(orientation()) && (0 < maximum());
+}
+
 bool ScrollbarLayerImplBase::SetVerticalAdjust(float vertical_adjust) {
   if (vertical_adjust_ == vertical_adjust)
     return false;

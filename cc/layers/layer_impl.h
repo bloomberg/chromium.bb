@@ -19,6 +19,7 @@
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/scrollbar.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -418,6 +419,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     user_scrollable_vertical_ = scrollable;
   }
   bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
+
+  bool user_scrollable(ScrollbarOrientation orientation) const;
 
   void ApplySentScrollDeltasFromAbortedCommit();
   void ApplyScrollDeltasSinceBeginMainFrame();

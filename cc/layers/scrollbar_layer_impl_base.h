@@ -44,6 +44,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
     return is_left_side_vertical_scrollbar_;
   }
 
+  bool can_scroll_orientation() const;
+
   virtual void PushPropertiesTo(LayerImpl* layer) override;
   virtual ScrollbarLayerImplBase* ToScrollbarLayer() override;
   void PushScrollClipPropertiesTo(LayerImpl* layer);
