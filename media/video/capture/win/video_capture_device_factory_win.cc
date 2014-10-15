@@ -275,7 +275,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
     hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
     // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
     // macros here since they'll trigger incorrectly.
-    if (hr != S_OK) {
+    if (hr != S_OK || !media_type.get()) {
       DLOG(ERROR) << "GetStreamCaps failed: "
                   << logging::SystemErrorCodeToString(hr);
       return;
