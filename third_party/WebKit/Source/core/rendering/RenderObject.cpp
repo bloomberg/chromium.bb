@@ -2331,12 +2331,15 @@ void RenderObject::willBeDestroyed()
     if (hasCounterNodeMap())
         RenderCounter::destroyCounterNodes(*this);
 
-    // Remove the handler if node had touch-action set. Don't call when
-    // document is being destroyed as all handlers will have been cleared
-    // previously. Handlers are not added for text nodes so don't try removing
-    // for one too. Need to check if m_style is null in cases of partial construction.
-    if (!documentBeingDestroyed() && node() && !node()->isTextNode() && m_style && m_style->touchAction() != TouchActionAuto)
-        document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEvent);
+    // Remove the handler if node had touch-action set. Handlers are not added
+    // for text nodes so don't try removing for one too. Need to check if
+    // m_style is null in cases of partial construction. Any handler we added
+    // previously may have already been removed by the Document independently.
+    if (node() && !node()->isTextNode() && m_style && m_style->touchAction() != TouchActionAuto) {
+        EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
+        if (registry.eventHandlerTargets(EventHandlerRegistry::TouchEvent)->contains(node()))
+            registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEvent);
+    }
 
     setAncestorLineBoxDirty(false);
 
