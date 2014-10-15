@@ -390,8 +390,7 @@ windows-936-2000
 gb18030 { IANA* }      gb18030 { MIME* }  ibm-1392 windows-54936
 
 windows-950-2000
-    big5 { MIME* HTML* }
-    big5-hkscs
+    Big5 { MIME* HTML* }
     cn-big5
     csbig5
     x-x-big5
