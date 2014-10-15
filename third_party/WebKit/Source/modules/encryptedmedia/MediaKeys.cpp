@@ -47,16 +47,6 @@
 #include "wtf/ArrayBufferView.h"
 #include "wtf/RefPtr.h"
 
-#if ENABLE(ASSERT)
-namespace {
-
-// The list of possible values for |sessionType| passed to createSession().
-const char* kTemporary = "temporary";
-const char* kPersistent = "persistent";
-
-} // namespace
-#endif
-
 namespace blink {
 
 static bool isKeySystemSupportedWithContentType(const String& keySystem, const String& contentType)
@@ -243,7 +233,7 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String
     //    corresponding to the keySystem, throw a DOMException whose name is
     //    "NotSupportedError".
     // FIXME: Check whether sessionType is actually supported by the CDM.
-    ASSERT(sessionType == kTemporary || sessionType == kPersistent);
+    ASSERT(MediaKeySession::isValidSessionType(sessionType));
 
     // 2. Let session be a new MediaKeySession object, and initialize it as
     //    follows:

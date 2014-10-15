@@ -66,6 +66,7 @@ class MediaKeySession final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
     static MediaKeySession* create(ScriptState*, MediaKeys*, const String& sessionType);
+    static bool isValidSessionType(const String& sessionType);
     virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -75,6 +76,7 @@ public:
 
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBuffer* initData);
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBufferView* initData);
+    ScriptPromise load(ScriptState*, const String& sessionId);
 
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
@@ -99,6 +101,7 @@ public:
 private:
     class PendingAction;
     friend class NewSessionResult;
+    friend class LoadSessionResult;
 
     MediaKeySession(ScriptState*, MediaKeys*, const String& sessionType);
 
@@ -115,8 +118,11 @@ private:
     ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<ArrayBuffer> initData);
     ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);
 
-    // Called by NewSessionResult when the new sesison has been created.
+    // Called by NewSessionResult when the new session has been created.
     void finishGenerateRequest();
+
+    // Called by LoadSessionResult when the session has been loaded.
+    void finishLoad();
 
     String m_keySystem;
     RefPtrWillBeMember<MediaKeyError> m_error;

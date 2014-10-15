@@ -41,6 +41,7 @@
     // session initialization
     [CallWith=ScriptState] Promise generateRequest(DOMString initDataType, ArrayBuffer initData);
     [CallWith=ScriptState] Promise generateRequest(DOMString initDataType, ArrayBufferView initData);
+    [CallWith=ScriptState] Promise load(DOMString sessionId);
 
     // session operations
     [CallWith=ScriptState] Promise update(ArrayBuffer response);

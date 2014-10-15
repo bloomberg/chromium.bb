@@ -323,6 +323,101 @@
                 });
             }, 'Test MediaKeys generateRequest() exceptions.');
 
+            var kLoadExceptionsTestCases = [
+                // Too few parameters.
+                {
+                    exception: 'TypeError',
+                    func: function(mk1) { return mk1.createSession('temporary').load(); }
+                },
+                {
+                    exception: 'TypeError',
+                    func: function(mk2) { return mk2.createSession('persistent').load(); }
+                },
+                // Invalid parameters.
+                // 'temporary' sessions are never allowed, so always return
+                // 'InvalidAccessError'. For 'persistent' sessions, JS calls
+                // .toString() on the parameter if it is not already a string
+                // before passing it to code. So tests like mk6 or mk8 pass in
+                // "null" or "undefined" as the sessionId.
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk3) { return mk3.createSession('temporary').load(''); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk4) { return mk4.createSession('persistent').load(''); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk5) { return mk5.createSession('temporary').load(null); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk6) { return mk6.createSession('persistent').load(null); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk7) { return mk7.createSession('temporary').load(undefined); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk8) { return mk8.createSession('persistent').load(undefined); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk9) { return mk9.createSession('temporary').load(1); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk10) { return mk10.createSession('persistent').load(1); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk11) { return mk11.createSession('temporary').load(new Uint8Array(0)); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk12) { return mk12.createSession('persistent').load(new Uint8Array(0)); }
+                },
+                // Invalid session id.
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk13) { return mk13.createSession('temporary').load('!@#$%^&*()'); }
+                },
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk14) { return mk14.createSession('persistent').load('!@#$%^&*()'); }
+                },
+                // Valid session id (but not supported by ClearKey).
+                {
+                    exception: 'InvalidAccessError',
+                    func: function(mk15) { return mk15.createSession('temporary').load('1234'); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk16) { return mk16.createSession('persistent').load('1234'); }
+                }
+            ];
+
+            async_test(function(test)
+            {
+                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                    // FIXME: Remove "video/" from the calls to isTypeSupported() once it is updated.
+                    // http://crbug.com/405731.
+                    var initData = stringToUint8Array('init data');
+                    var sessionPromises = kLoadExceptionsTestCases.map(function(testCase) {
+                        return test_exception(testCase, mediaKeys);
+                    });
+
+                    assert_not_equals(sessionPromises.length, 0);
+                    return Promise.all(sessionPromises);
+                }).then(function(result) {
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'load() tests failed');
+                });
+            }, 'Test MediaKeys load() exceptions.');
+
             // All calls to |func| in this group are supposed to succeed.
             // However, the spec notes that some things are optional for
             // Clear Key. In particular, support for persistent sessions
