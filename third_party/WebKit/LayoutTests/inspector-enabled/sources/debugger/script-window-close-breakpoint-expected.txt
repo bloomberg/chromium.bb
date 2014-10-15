@@ -1,6 +1,0 @@
-CONSOLE MESSAGE: line 1: Starting test
-CONSOLE MESSAGE: line 1: Setting breakpoint
-CONSOLE MESSAGE: line 1: Calling window.close()
-CONSOLE MESSAGE: line 1: Paused in breakpoint
-CONSOLE MESSAGE: line 1: 0) doClose (script-window-close-breakpoint.html:10)
-FAIL: main window was destroyed

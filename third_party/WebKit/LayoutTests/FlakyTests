@@ -884,7 +884,6 @@ Bug(gardener) [ Release Mavericks ] ietestcenter/css3/valuesandunits/units-000.h
 Bug(gardener) [ Debug Lion ] inspector-enabled/sources/debugger/linkifier.html [ Crash Pass ]
 Bug(gardener) [ Debug Win7 ] inspector-enabled/sources/debugger/linkifier.html [ Pass Timeout ]
 Bug(gardener) [ Debug Win7 ] inspector-enabled/sources/debugger/script-formatter-console.html [ Pass Timeout ]
-Bug(gardener) [ Debug Win7 ] inspector-enabled/sources/debugger/script-window-close-breakpoint.html [ Pass Timeout ]
 webkit.org/b/90488 [ Debug Lion ] inspector-protocol/cpu-profiler/record-cpu-profile.html [ Crash Pass ]
 Bug(gardener) [ Release XP ] inspector-protocol/debugger/access-obsolete-frame.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Win7 ] inspector-protocol/dom/dom-setOuterHTML.html [ Crash Pass ]
