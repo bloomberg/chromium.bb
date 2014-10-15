@@ -24,7 +24,6 @@ from typ import test_case
 from typ import Host
 from typ import VERSION
 from typ.fakes import test_result_server_fake
-from typ.fakes.unittest_fakes import FakeTestLoader
 
 
 is_python3 = bool(sys.version_info.major == 3)
@@ -140,47 +139,6 @@ class ExpectedFailures(unittest.TestCase):
 SF_TEST_FILES = {'sf_test.py': SF_TEST_PY}
 
 
-ST_TEST_PY = """
-import unittest
-from typ import test_case as typ_test_case
-
-def setupProcess(child, context):
-    if context is None:
-        context = {'calls': 0}
-    child.host.print_('setupProcess(%d): %s' % (child.worker_num, context))
-    context['calls'] += 1
-    return context
-
-
-def teardownProcess(child, context):
-    child.host.print_('\\nteardownProcess(%d): %s' %
-                      (child.worker_num, context))
-
-
-class UnitTest(unittest.TestCase):
-    def test_one(self):
-        self.assertFalse(hasattr(self, 'host'))
-        self.assertFalse(hasattr(self, 'context'))
-
-    def test_two(self):
-        pass
-
-
-class TypTest(typ_test_case.TestCase):
-    def test_one(self):
-        self.assertNotEquals(self.child, None)
-        self.assertGreaterEqual(self.context['calls'], 1)
-        self.context['calls'] += 1
-
-    def test_two(self):
-        self.assertNotEquals(self.context, None)
-        self.assertGreaterEqual(self.context['calls'], 1)
-        self.context['calls'] += 1
-"""
-
-
-ST_TEST_FILES = {'st_test.py': ST_TEST_PY}
-
 LOAD_TEST_PY = """
 import unittest
 def load_tests(_, _2, _3):
@@ -211,7 +169,8 @@ path_to_main = os.path.join(
 
 
 class TestCli(test_case.MainTestCase):
-    prog = [sys.executable, '-B', path_to_main]
+    prog = [sys.executable, path_to_main]
+    files_to_ignore = ['*.pyc']
 
     def test_bad_arg(self):
         self.check(['--bad-arg'], ret=2, out='',
@@ -286,6 +245,29 @@ class TestCli(test_case.MainTestCase):
         _, out, _, _ = self.check([], files=FAIL_TEST_FILES, ret=1, err='')
         self.assertIn('fail_test.FailingTest.test_fail failed unexpectedly',
                       out)
+
+    def test_fail_then_pass(self):
+        files = {'fail_then_pass_test.py': d("""\
+            import unittest
+            count = 0
+            class FPTest(unittest.TestCase):
+                def test_count(self):
+                    global count
+                    count += 1
+                    if count == 1:
+                        self.fail()
+            """)}
+        _, out, _, files = self.check(['--retry-limit', '3',
+                                       '--write-full-results-to',
+                                       'full_results.json'],
+                                      files=files, ret=0, err='')
+        self.assertIn('Retrying failed tests (attempt #1 of 3)', out)
+        self.assertNotIn('Retrying failed tests (attempt #2 of 3)', out)
+        self.assertIn('1 test run, 0 failures.\n', out)
+        results = json.loads(files['full_results.json'])
+        self.assertEqual(results['tests'][
+            'fail_then_pass_test']['FPTest']['test_count']['actual'],
+            'FAIL PASS')
 
     def test_failures_are_not_elided(self):
         _, out, _, _ = self.check(['--terminal-width=20'],
@@ -461,22 +443,6 @@ class TestCli(test_case.MainTestCase):
                               if 'test_fail failed unexpectedly:' in l]),
                          3)
 
-    def test_setup_and_teardown_single_child(self):
-        self.check(['--jobs', '1',
-                    '--setup', 'st_test.setupProcess',
-                    '--teardown', 'st_test.teardownProcess'],
-                   files=ST_TEST_FILES, ret=0, err='',
-                   out=d("""\
-                         setupProcess(1): {'calls': 0}
-                         [1/4] st_test.TypTest.test_one passed
-                         [2/4] st_test.TypTest.test_two passed
-                         [3/4] st_test.UnitTest.test_one passed
-                         [4/4] st_test.UnitTest.test_two passed
-                         teardownProcess(1): {'calls': 3}
-
-                         4 tests run, 0 failures.
-                         """))
-
     def test_skip(self):
         self.check(['--skip', '*test_fail*'], files=FAIL_TEST_FILES, ret=1,
                    out='No tests to run.\n', err='')
@@ -538,6 +504,39 @@ class TestCli(test_case.MainTestCase):
                        '[9/9] sf_test.SkipSetup.test_notrun was skipped:\n'
                        '  setup failed\n'
                        '9 tests run, 4 failures.\n'), out)
+
+    def test_skip_and_all(self):
+        # --all should override --skip
+        self.check(['-l', '--skip', '*test_pass'],
+                   files=PASS_TEST_FILES, ret=1, err='',
+                   out='No tests to run.\n')
+        self.check(['-l', '--all', '--skip', '*test_pass'],
+                   files=PASS_TEST_FILES, ret=0, err='',
+                   out='pass_test.PassingTest.test_pass\n')
+
+    def test_skip_decorators_and_all(self):
+        _, out, _, _ = self.check(['--all', '-j', '1', '-v', '-v'],
+                                  files=SF_TEST_FILES, ret=1, err='')
+        self.assertIn('sf_test.SkipClass.test_method failed', out)
+        self.assertIn('sf_test.SkipMethods.test_reason failed', out)
+        self.assertIn('sf_test.SkipMethods.test_skip_if_true failed', out)
+        self.assertIn('sf_test.SkipMethods.test_skip_if_false failed', out)
+
+        # --all does not override explicit calls to skipTest(), only
+        # the decorators.
+        self.assertIn('sf_test.SkipSetup.test_notrun was skipped', out)
+
+    def test_subdir(self):
+        files = {
+            'foo/__init__.py': '',
+            'foo/bar/__init__.py': '',
+            'foo/bar/pass_test.py': PASS_TEST_PY
+        }
+        self.check(['foo/bar'], files=files, ret=0, err='',
+                   out=d("""\
+                         [1/1] foo.bar.pass_test.PassingTest.test_pass passed
+                         1 test run, 0 failures.
+                         """))
 
     def test_timing(self):
         self.check(['-t'], files=PASS_TEST_FILES, ret=0, err='',
@@ -658,60 +657,24 @@ class TestMain(TestCli):
         host.stdin = io.StringIO(stdin)
         if env:
             host.getenv = env.get
-        host.capture_output(divert=not self.child.debugger)
+        host.capture_output()
         orig_sys_path = sys.path[:]
-        loader = FakeTestLoader(host, orig_sys_path)
+        orig_sys_modules = list(sys.modules.keys())
 
         try:
-            ret = main(argv + ['-j', '1'], host, loader)
+            ret = main(argv + ['-j', '1'], host)
         finally:
             out, err = host.restore_output()
+            modules_to_unload = []
+            for k in sys.modules:
+                if k not in orig_sys_modules:
+                    modules_to_unload.append(k)
+            for k in modules_to_unload:
+                del sys.modules[k]
             sys.path = orig_sys_path
 
         return ret, out, err
 
-    # TODO: figure out how to make these tests pass w/ trapping output.
     def test_debugger(self):
-        pass
-
-    def test_coverage(self):
-        pass
-
-    def test_error(self):
-        pass
-
-    def test_output_for_failures(self):
-        pass
-
-    def test_verbose(self):
-        pass
-
-    # TODO: These tests need to execute the real tests (they can't use a
-    # FakeTestLoader and FakeTestCase) because we're testing
-    # the side effects the tests have on setup and teardown.
-    def test_import_failure_missing_file(self):
-        pass
-
-    def test_import_failure_missing_package(self):
-        pass
-
-    def test_import_failure_no_tests(self):
-        pass
-
-    def test_import_failure_syntax_error(self):
-        pass
-
-    def test_load_tests_failure(self):
-        pass
-
-    def test_load_tests_single_worker(self):
-        pass
-
-    def test_load_tests_multiple_workers(self):
-        pass
-
-    def test_setup_and_teardown_single_child(self):
-        pass
-
-    def test_skips_and_failures(self):
+        # TODO: this test seems to hang under coverage.
         pass

@@ -70,9 +70,9 @@ class _AddTestsError(Exception):
 
 class Runner(object):
 
-    def __init__(self, host=None, loader=None):
+    def __init__(self, host=None):
         self.host = host or Host()
-        self.loader = loader or unittest.loader.TestLoader()
+        self.loader = unittest.loader.TestLoader()
         self.printer = None
         self.stats = None
         self.cov = None
@@ -84,9 +84,9 @@ class Runner(object):
         parser = ArgumentParser(self.host)
         self.parse_args(parser, [])
 
-    def main(self, argv=None):
+    def main(self, argv=None, **defaults):
         parser = ArgumentParser(self.host)
-        self.parse_args(parser, argv)
+        self.parse_args(parser, argv, **defaults)
         if parser.exit_status is not None:
             return parser.exit_status
 
@@ -97,7 +97,13 @@ class Runner(object):
             self.print_("interrupted, exiting", stream=self.host.stderr)
             return 130
 
-    def parse_args(self, parser, argv):
+    def parse_args(self, parser, argv, **defaults):
+        for attrname in defaults:
+            if not hasattr(self.args, attrname):
+                parser.error("Unknown default argument name '%s'" % attrname,
+                             bailout=False)
+                return
+        parser.set_defaults(**defaults)
         self.args = parser.parse_args(args=argv)
         if parser.exit_status is not None:
             return
@@ -105,8 +111,8 @@ class Runner(object):
     def print_(self, msg='', end='\n', stream=None):
         self.host.print_(msg, end, stream=stream)
 
-    def run(self, test_set=None, classifier=None, context=None,
-            setup_fn=None, teardown_fn=None):
+    def run(self, test_set=None, classifier=None,
+            context=None, setup_fn=None, teardown_fn=None):
         ret = 0
         h = self.host
 
@@ -115,7 +121,7 @@ class Runner(object):
             return ret, None, None
 
         ret = self._set_up_runner()
-        if ret:  # pragma: untested
+        if ret:  # pragma: no cover
             return ret, None, None
 
         find_start = h.time()
@@ -168,16 +174,19 @@ class Runner(object):
 
         self.top_level_dir = args.top_level_dir
         if not self.top_level_dir:
-            if args.tests and h.exists(args.tests[0]):
+            if args.tests and h.isdir(args.tests[0]):
                 # TODO: figure out what to do if multiple files are
                 # specified and they don't all have the same correct
                 # top level dir.
-                top_dir = h.dirname(args.tests[0])
+                if h.exists(h.dirname(args.tests[0]), '__init__.py'):
+                    top_dir = h.dirname(args.tests[0])
+                else:
+                    top_dir = args.tests[0]
             else:
                 top_dir = h.getcwd()
             while h.exists(top_dir, '__init__.py'):
                 top_dir = h.dirname(top_dir)
-            self.top_level_dir = h.abspath(top_dir)
+            self.top_level_dir = h.realpath(top_dir)
 
         h.add_to_path(self.top_level_dir)
 
@@ -201,38 +210,41 @@ class Runner(object):
 
     def find_tests(self, args, classifier=None,
                    context=None, setup_fn=None, teardown_fn=None):
-        if not context and self.args.context:  # pragma: untested
-            context = json.loads(self.args.context)
-        if not setup_fn and self.args.setup:  # pragma: untested
-            setup_fn = _import_name(self.args.setup)
-        if not teardown_fn and self.args.teardown:  # pragma: untested
-            teardown_fn = _import_name(self.args.teardown)
-
         test_set = self._make_test_set(context=context,
                                        setup_fn=setup_fn,
                                        teardown_fn=teardown_fn)
 
-        names = self._name_list_from_args(args)
-        classifier = classifier or _default_classifier(args)
+        orig_skip = unittest.skip
+        orig_skip_if = unittest.skipIf
+        if args.all:
+            unittest.skip = lambda reason: lambda x: x
+            unittest.skipIf = lambda condition, reason: lambda x: x
 
-        for name in names:
-            try:
-                self._add_tests_to_set(test_set, args.suffixes,
-                                       self.top_level_dir, classifier, name)
-            except (AttributeError, ImportError, SyntaxError
-                    ) as e:  # pragma: untested
-                self.print_('Failed to load "%s": %s' % (name, e))
-                return 1, None
-            except _AddTestsError as e:  # pragma: untested
-                self.print_(str(e))
-                return 1, None
+        try:
+            names = self._name_list_from_args(args)
+            classifier = classifier or _default_classifier(args)
 
-        # TODO: Add support for discovering setupProcess/teardownProcess?
+            for name in names:
+                try:
+                    self._add_tests_to_set(test_set, args.suffixes,
+                                           self.top_level_dir, classifier,
+                                           name)
+                except (AttributeError, ImportError, SyntaxError) as e:
+                    self.print_('Failed to load "%s": %s' % (name, e))
+                    return 1, None
+                except _AddTestsError as e:
+                    self.print_(str(e))
+                    return 1, None
 
-        test_set.parallel_tests = _sort_inputs(test_set.parallel_tests)
-        test_set.isolated_tests = _sort_inputs(test_set.isolated_tests)
-        test_set.tests_to_skip = _sort_inputs(test_set.tests_to_skip)
-        return 0, test_set
+            # TODO: Add support for discovering setupProcess/teardownProcess?
+
+            test_set.parallel_tests = _sort_inputs(test_set.parallel_tests)
+            test_set.isolated_tests = _sort_inputs(test_set.isolated_tests)
+            test_set.tests_to_skip = _sort_inputs(test_set.tests_to_skip)
+            return 0, test_set
+        finally:
+            unittest.skip = orig_skip
+            unittest.skipIf = orig_skip_if
 
     def _name_list_from_args(self, args):
         if args.tests:
@@ -244,7 +256,7 @@ class Runner(object):
                 s = self.host.read_text_file(args.file_list)
             names = [line.strip() for line in s.splitlines()]
         else:
-            names = ['.']
+            names = [self.top_level_dir]
         return names
 
     def _add_tests_to_set(self, test_set, suffixes, top_level_dir, classifier,
@@ -399,14 +411,16 @@ class Runner(object):
 
     def _print_test_finished(self, stats, result):
         stats.add_time()
+
+        assert result.actual in [ResultType.Failure, ResultType.Skip,
+                                 ResultType.Pass]
         if result.actual == ResultType.Failure:
             result_str = ' failed'
         elif result.actual == ResultType.Skip:
             result_str = ' was skipped'
         elif result.actual == ResultType.Pass:
             result_str = ' passed'
-        else:  # pragma: untested
-            raise ValueError('Unimplemented result type %s' % result)
+
         if result.unexpected:
             result_str += ' unexpectedly'
         if self.args.timing:
@@ -420,16 +434,16 @@ class Runner(object):
             if out or err:
                 suffix += ':\n'
             self.update(stats.format() + result.name + suffix, elide=False)
-            for l in out.splitlines():  # pragma: untested
+            for l in out.splitlines():
                 self.print_('  %s' % l)
-            for l in err.splitlines():  # pragma: untested
+            for l in err.splitlines():
                 self.print_('  %s' % l)
         elif not self.args.quiet:
-            if self.args.verbose > 1 and (out or err):  # pragma: untested
+            if self.args.verbose > 1 and (out or err):
                 suffix += ':\n'
             self.update(stats.format() + result.name + suffix,
                         elide=(not self.args.verbose))
-            if self.args.verbose > 1:  # pragma: untested
+            if self.args.verbose > 1:
                 for l in out.splitlines():
                     self.print_('  %s' % l)
                 for l in err.splitlines():
@@ -552,7 +566,7 @@ def _matches(name, globs):
 def _default_classifier(args):
     def default_classifier(test_set, test):
         name = test.id()
-        if _matches(name, args.skip):
+        if not args.all and _matches(name, args.skip):
             test_set.tests_to_skip.append(TestInput(name,
                                                     'skipped by request'))
         elif _matches(name, args.isolate):
@@ -568,8 +582,7 @@ def _test_adder(test_set, classifier):
             for el in obj:
                 add_tests(el)
         elif (obj.id().startswith('unittest.loader.LoadTestsFailure') or
-              obj.id().startswith('unittest.loader.ModuleImportFailure')
-              ):  # pragma: untested
+              obj.id().startswith('unittest.loader.ModuleImportFailure')):
             # Access to protected member pylint: disable=W0212
             module_name = obj._testMethodName
             try:
@@ -592,6 +605,7 @@ class _Child(object):
     def __init__(self, parent, loader, test_set):
         self.host = None
         self.worker_num = None
+        self.all = parent.args.all
         self.debugger = parent.args.debugger
         self.coverage = parent.args.coverage and parent.args.jobs > 1
         self.coverage_source = parent.coverage_source
@@ -611,14 +625,14 @@ def _setup_process(host, worker_num, child):
     child.host = host
     child.worker_num = worker_num
 
-    if child.coverage:  # pragma: untested
+    if child.coverage:  # pragma: no cover
         import coverage
         child.cov = coverage.coverage(source=child.coverage_source,
                                       data_suffix=True)
         child.cov._warn_no_data = False
         child.cov.start()
 
-    if child.setup_fn:  # pragma: untested
+    if child.setup_fn:
         child.context_after_setup = child.setup_fn(child, child.context)
     else:
         child.context_after_setup = child.context
@@ -626,22 +640,16 @@ def _setup_process(host, worker_num, child):
 
 
 def _teardown_process(child):
-    if child.teardown_fn:  # pragma: untested
+    if child.teardown_fn:
         child.teardown_fn(child, child.context_after_setup)
     # TODO: Return a more structured result, including something from
     # the teardown function?
 
-    if child.cov:  # pragma: untested
+    if child.cov:  # pragma: no cover
         child.cov.stop()
         child.cov.save()
 
     return child.worker_num
-
-
-def _import_name(name):  # pragma: untested
-    module_name, function_name = name.rsplit('.', 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, function_name)
 
 
 def _run_one_test(child, test_input):
@@ -650,12 +658,6 @@ def _run_one_test(child, test_input):
     test_name = test_input.name
 
     start = h.time()
-    if child.dry_run:
-        return Result(test_name, ResultType.Pass, start, 0, child.worker_num,
-                      pid=pid)
-
-    if h.is_python3 and child.debugger:  # pragma: untested
-        h.set_debugging(True)
 
     # It is important to capture the output before loading the test
     # to ensure that
@@ -667,19 +669,27 @@ def _run_one_test(child, test_input):
     h.capture_output(divert=not child.passthrough)
 
     try:
-        suite = child.loader.loadTestsFromName(test_name)
-    except Exception as e:  # pragma: untested
-        suite = _load_via_load_tests(child, test_name)
-        if not suite:
-            # TODO: Figure out how to handle failures here.
-            err = 'failed to load %s: %s' % (test_name, str(e))
-            h.restore_output()
-            return Result(test_name, ResultType.Failure, start, 0,
-                          child.worker_num, unexpected=True, code=1,
-                          err=err, pid=pid)
+        orig_skip = unittest.skip
+        orig_skip_if = unittest.skipIf
+        if child.all:
+            unittest.skip = lambda reason: lambda x: x
+            unittest.skipIf = lambda condition, reason: lambda x: x
+        try:
+            suite = child.loader.loadTestsFromName(test_name)
+        except Exception:
+            suite = _load_via_load_tests(child, test_name)
+    finally:
+        unittest.skip = orig_skip
+        unittest.skipIf = orig_skip_if
 
     tests = list(suite)
-    assert len(tests) == 1
+    if len(tests) != 1:
+        err = 'failed to load %s' % test_name
+        h.restore_output()
+        return Result(test_name, ResultType.Failure, start, 0,
+                      child.worker_num, unexpected=True, code=1,
+                      err=err, pid=pid)
+
     test_case = tests[0]
     if isinstance(test_case, TypTestCase):
         test_case.child = child
@@ -689,14 +699,10 @@ def _run_one_test(child, test_input):
     out = ''
     err = ''
     try:
-        if child.debugger:  # pragma: untested
-            # Access to protected member pylint: disable=W0212
-            test_func = getattr(test_case, test_case._testMethodName)
-            fname = inspect.getsourcefile(test_func)
-            lineno = inspect.getsourcelines(test_func)[1] + 1
-            dbg = pdb.Pdb(stdout=h.stdout)
-            dbg.set_break(fname, lineno)
-            dbg.runcall(suite.run, test_result)
+        if child.dry_run:
+            pass
+        elif child.debugger:  # pragma: no cover
+            _run_under_debugger(h, test_case, suite, test_result)
         else:
             suite.run(test_result)
     finally:
@@ -705,6 +711,17 @@ def _run_one_test(child, test_input):
     took = h.time() - start
     return _result_from_test_result(test_result, test_name, start, took, out,
                                     err, child.worker_num, pid)
+
+
+def _run_under_debugger(host, test_case, suite,
+                        test_result):  # pragma: no cover
+    # Access to protected member pylint: disable=W0212
+    test_func = getattr(test_case, test_case._testMethodName)
+    fname = inspect.getsourcefile(test_func)
+    lineno = inspect.getsourcelines(test_func)[1] + 1
+    dbg = pdb.Pdb(stdout=host.stdout.stream)
+    dbg.set_break(fname, lineno)
+    dbg.runcall(suite.run, test_result)
 
 
 def _result_from_test_result(test_result, test_name, start, took, out, err,
@@ -716,25 +733,25 @@ def _result_from_test_result(test_result, test_name, start, took, out, err,
         code = 1
         unexpected = True
         err = err + test_result.failures[0][1]
-    elif test_result.errors:  # pragma: untested
+    elif test_result.errors:
         expected = [ResultType.Pass]
         actual = ResultType.Failure
         code = 1
         unexpected = True
         err = err + test_result.errors[0][1]
-    elif test_result.skipped:  # pragma: untested
+    elif test_result.skipped:
         expected = [ResultType.Skip]
         actual = ResultType.Skip
         err = err + test_result.skipped[0][1]
         code = 0
         unexpected = False
-    elif test_result.expectedFailures:  # pragma: untested
+    elif test_result.expectedFailures:
         expected = [ResultType.Failure]
         actual = ResultType.Failure
         code = 1
         err = err + test_result.expectedFailures[0][1]
         unexpected = False
-    elif test_result.unexpectedSuccesses:  # pragma: untested
+    elif test_result.unexpectedSuccesses:
         expected = [ResultType.Failure]
         actual = ResultType.Pass
         code = 0
@@ -749,12 +766,13 @@ def _result_from_test_result(test_result, test_name, start, took, out, err,
                   expected, unexpected, flaky, code, out, err, pid)
 
 
-def _load_via_load_tests(child, test_name):  # pragma: untested
+def _load_via_load_tests(child, test_name):
     # If we couldn't import a test directly, the test may be only loadable
     # via unittest's load_tests protocol. See if we can find a load_tests
     # entry point that will work for this test.
     loader = child.loader
     comps = test_name.split('.')
+    new_suite = unittest.TestSuite()
 
     while comps:
         name = '.'.join(comps)
@@ -766,24 +784,17 @@ def _load_via_load_tests(child, test_name):  # pragma: untested
             except ImportError:
                 pass
             if module:
-                try:
-                    suite = loader.loadTestsFromModule(module)
-                except Exception:
-                    # TODO: Figure out how to handle errors here
-                    pass
+                suite = loader.loadTestsFromModule(module)
             child.loaded_suites[name] = suite
         suite = child.loaded_suites[name]
         if suite:
             for test_case in suite:
-                if not isinstance(test_case, unittest.TestCase):
-                    pass  # pdb.set_trace()
+                assert isinstance(test_case, unittest.TestCase)
                 if test_case.id() == test_name:
-                    new_suite = unittest.TestSuite()
                     new_suite.addTest(test_case)
-                    return new_suite
+                    break
         comps.pop()
-    if not comps:
-        return None
+    return new_suite
 
 
 def _sort_inputs(inps):

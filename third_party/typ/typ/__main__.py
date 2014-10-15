@@ -19,6 +19,6 @@ from typ import main, spawn_main
 
 if __name__ == '__main__':
     if sys.platform == 'win32':  # pragma: win32
-        sys.exit(spawn_main())
+        sys.exit(spawn_main(sys.argv[1:], sys.stdout, sys.stderr))
     else:  # pragma: no win32
         sys.exit(main())

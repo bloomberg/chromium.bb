@@ -19,6 +19,14 @@ import pickle
 from typ.host import Host
 
 
+def make_pool(host, jobs, callback, context, pre_fn, post_fn):
+    _validate_args(context, pre_fn, post_fn)
+    if jobs > 1:
+        return _ProcessPool(host, jobs, callback, context, pre_fn, post_fn)
+    else:
+        return _AsyncPool(host, jobs, callback, context, pre_fn, post_fn)
+
+
 class _MessageType(object):
     Request = 'Request'
     Response = 'Response'
@@ -30,25 +38,23 @@ class _MessageType(object):
     values = [Request, Response, Close, Done, Error, Interrupt]
 
 
-def make_pool(host, jobs, callback, context, pre_fn, post_fn):
+def _validate_args(context, pre_fn, post_fn):
     try:
         _ = pickle.dumps(context)
-    except Exception as e:  # pragma: untested
+    except Exception as e:
         raise ValueError('context passed to make_pool is not picklable: %s'
                          % str(e))
     try:
         _ = pickle.dumps(pre_fn)
-    except pickle.PickleError:  # pragma: untested
+    except pickle.PickleError:
         raise ValueError('pre_fn passed to make_pool is not picklable')
     try:
         _ = pickle.dumps(post_fn)
-    except pickle.PickleError:  # pragma: untested
+    except pickle.PickleError:
         raise ValueError('post_fn passed to make_pool is not picklable')
-    cls = ProcessPool if jobs > 1 else AsyncPool
-    return cls(host, jobs, callback, context, pre_fn, post_fn)
 
 
-class ProcessPool(object):
+class _ProcessPool(object):
 
     def __init__(self, host, jobs, callback, context, pre_fn, post_fn):
         self.host = host
@@ -56,6 +62,7 @@ class ProcessPool(object):
         self.requests = multiprocessing.Queue()
         self.responses = multiprocessing.Queue()
         self.workers = []
+        self.discarded_responses = []
         self.closed = False
         self.erred = False
         for worker_num in range(1, jobs + 1):
@@ -70,11 +77,11 @@ class ProcessPool(object):
     def send(self, msg):
         self.requests.put((_MessageType.Request, msg))
 
-    def get(self, block=True, timeout=None):
-        msg_type, resp = self.responses.get(block, timeout)
-        if msg_type == _MessageType.Error:  # pragma: untested
+    def get(self):
+        msg_type, resp = self.responses.get()
+        if msg_type == _MessageType.Error:
             self._handle_error(resp)
-        elif msg_type == _MessageType.Interrupt:  # pragma: untested
+        elif msg_type == _MessageType.Interrupt:
             raise KeyboardInterrupt
         assert msg_type == _MessageType.Response
         return resp
@@ -82,43 +89,89 @@ class ProcessPool(object):
     def close(self):
         for _ in self.workers:
             self.requests.put((_MessageType.Close, None))
-        self.requests.close()
         self.closed = True
 
     def join(self):
+        # TODO: one would think that we could close self.requests in close(),
+        # above, and close self.responses below, but if we do, we get
+        # weird tracebacks in the daemon threads multiprocessing starts up.
+        # Instead, we have to hack the innards of multiprocessing. It
+        # seems likely that there's a bug somewhere, either in this module or
+        # in multiprocessing.
+        if self.host.is_python3:  # pragma: python3
+            multiprocessing.queues.is_exiting = lambda: True
+        else:  # pragma: python2
+            multiprocessing.util._exiting = True
+
         if not self.closed:
             # We must be aborting; terminate the workers rather than
             # shutting down cleanly.
-            self.requests.close()
             for w in self.workers:
                 w.terminate()
                 w.join()
-            self.responses.close()
             return []
 
         final_responses = []
+        error = None
+        interrupted = None
         for w in self.workers:
             while True:
-                msg_type, resp = self.responses.get(True)
-                if msg_type == _MessageType.Error:  # pragma: untested
-                    self._handle_error(resp)
-                elif msg_type == _MessageType.Interrupt:  # pragma: untested
-                    raise KeyboardInterrupt
-                elif msg_type == _MessageType.Done:
+                msg_type, resp = self.responses.get()
+                if msg_type == _MessageType.Error:
+                    error = resp
                     break
-                # TODO: log something about discarding messages?
-            final_responses.append(resp)
+                if msg_type == _MessageType.Interrupt:
+                    interrupted = True
+                    break
+                if msg_type == _MessageType.Done:
+                    final_responses.append(resp[1])
+                    break
+                self.discarded_responses.append(resp)
+
+        for w in self.workers:
             w.join()
-        self.responses.close()
+
+        # TODO: See comment above at the beginning of the function for
+        # why this is commented out.
+        # self.responses.close()
+
+        if error:
+            self._handle_error(error)
+        if interrupted:
+            raise KeyboardInterrupt
         return final_responses
 
-    def _handle_error(self, msg):  # pragma: untested
+    def _handle_error(self, msg):
         worker_num, ex_str = msg
         self.erred = True
         raise Exception("error from worker %d: %s" % (worker_num, ex_str))
 
 
-class AsyncPool(object):
+# 'Too many arguments' pylint: disable=R0913
+
+def _loop(requests, responses, host, worker_num,
+          callback, context, pre_fn, post_fn, should_loop=True):
+    host = host or Host()
+    try:
+        context_after_pre = pre_fn(host, worker_num, context)
+        keep_looping = True
+        while keep_looping:
+            message_type, args = requests.get(block=True)
+            if message_type == _MessageType.Close:
+                responses.put((_MessageType.Done,
+                               (worker_num, post_fn(context_after_pre))))
+                break
+            assert message_type == _MessageType.Request
+            resp = callback(context_after_pre, args)
+            responses.put((_MessageType.Response, resp))
+            keep_looping = should_loop
+    except KeyboardInterrupt as e:
+        responses.put((_MessageType.Interrupt, (worker_num, str(e))))
+    except Exception as e:
+        responses.put((_MessageType.Error, (worker_num, str(e))))
+
+
+class _AsyncPool(object):
 
     def __init__(self, host, jobs, callback, context, pre_fn, post_fn):
         self.host = host or Host()
@@ -134,8 +187,7 @@ class AsyncPool(object):
     def send(self, msg):
         self.msgs.append(msg)
 
-    def get(self, block=True, timeout=None):
-        # unused pylint: disable=W0613
+    def get(self):
         return self.callback(self.context_after_pre, self.msgs.pop(0))
 
     def close(self):
@@ -146,31 +198,3 @@ class AsyncPool(object):
         if not self.closed:
             self.close()
         return [self.final_context]
-
-
-def _loop(requests, responses, host, worker_num,
-          callback, context, pre_fn, post_fn):  # pragma: untested
-    # TODO: Figure out how to get coverage to work w/ subprocesses.
-    host = host or Host()
-    erred = False
-    try:
-        context_after_pre = pre_fn(host, worker_num, context)
-        while True:
-            message_type, args = requests.get(block=True)
-            if message_type == _MessageType.Close:
-                break
-            assert message_type == _MessageType.Request
-            resp = callback(context_after_pre, args)
-            responses.put((_MessageType.Response, resp))
-    except KeyboardInterrupt as e:
-        erred = True
-        responses.put((_MessageType.Interrupt, (worker_num, str(e))))
-    except Exception as e:
-        erred = True
-        responses.put((_MessageType.Error, (worker_num, str(e))))
-
-    try:
-        if not erred:
-            responses.put((_MessageType.Done, post_fn(context_after_pre)))
-    except Exception:
-        pass

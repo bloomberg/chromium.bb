@@ -46,8 +46,6 @@ Work remaining
 typ is still a work in progress, but it's getting close to being done.
 Things remaining for 1.0, roughly in priority order:
 
-- Add input validation on all of the public APIs.
-- Get test coverage for the remaining untested code.
 - Implement a non-python file format for testing command line interfaces
 - Write documentation
 
@@ -62,7 +60,6 @@ Possible future work
 - --debugger improvements:
 
   - make it skip the initial breakpoint?
-  - make it play nicely w/ TestCase.check()?
 
 - Support testing javascript, java, c++/gtest-style binaries?
 - Support for test sharding in addition to parallel execution (so that

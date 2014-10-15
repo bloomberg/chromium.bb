@@ -15,29 +15,27 @@
 import os
 import subprocess
 import sys
-import unittest
+
 
 # This ensures that absolute imports of typ modules will work when
 # running typ/cmdline.py as a script even if typ is not installed.
 # We need this entry in addition to the one in __main__.py to ensure
 # that typ/cmdline.py works when invoked via subprocess on windows in
 # _spawn_main().
-dir_above_typ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if dir_above_typ not in sys.path:  # pragma: untested
+path_to_file = os.path.realpath(__file__)
+dir_above_typ = os.path.dirname(os.path.dirname(path_to_file))
+if dir_above_typ not in sys.path:  # pragma: no cover
     sys.path.append(dir_above_typ)
 
-from typ.host import Host
 from typ.runner import Runner
 
 
-def main(argv=None, host=None, loader=None):
-    host = host or Host()
-    loader = loader or unittest.loader.TestLoader()
-    runner = Runner(host=host, loader=loader)
-    return runner.main(argv)
+def main(argv=None, host=None, **defaults):
+    runner = Runner(host=host)
+    return runner.main(argv, **defaults)
 
 
-def spawn_main():  # pragma: untested
+def spawn_main(argv, stdout, stderr):
     # This function is called from __main__.py when running 'python -m typ' on
     # windows.
     #
@@ -50,15 +48,9 @@ def spawn_main():  # pragma: untested
     # We don't want to always spawn a subprocess, because doing so is more
     # heavyweight than it needs to be on other platforms (and can make
     # debugging a bit more annoying).
-    proc = subprocess.Popen([sys.executable, __file__] + sys.argv[1:])
-    try:
-        proc.wait()
-    except KeyboardInterrupt:
-        # We may need a second wait in order to make sure the subprocess exits
-        # completely.
-        proc.wait()
-    return proc.returncode
+    return subprocess.call([sys.executable, path_to_file] + argv,
+                           stdout=stdout, stderr=stderr)
 
 
-if __name__ == '__main__':  # pragma: untested
+if __name__ == '__main__':  # pragma: no cover
     sys.exit(main())

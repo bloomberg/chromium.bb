@@ -14,7 +14,17 @@
 
 import copy
 import io
+import logging
 import sys
+
+from typ.host import _TeedStream
+
+
+is_python3 = bool(sys.version_info.major == 3)
+
+if is_python3:  # pragma: python3
+    # redefining built-in 'unicode' pylint: disable=W0622
+    unicode = str
 
 
 class FakeHost(object):
@@ -26,6 +36,7 @@ class FakeHost(object):
     is_python3 = bool(sys.version_info.major == 3)
 
     def __init__(self):
+        self.logger = logging.getLogger()
         self.stdin = io.StringIO()
         self.stdout = io.StringIO()
         self.stderr = io.StringIO()
@@ -41,17 +52,21 @@ class FakeHost(object):
         self.mtimes = {}
         self.cmds = []
         self.cwd = '/tmp'
+        self._orig_logging_handlers = []
 
-    def __getstate__(self):  # pragma: untested
+    def __getstate__(self):
         d = copy.copy(self.__dict__)
         del d['stderr']
         del d['stdout']
         del d['stdin']
+        del d['logger']
+        del d['_orig_logging_handlers']
         return d
 
-    def __setstate__(self, d):  # pragma: untested
+    def __setstate__(self, d):
         for k, v in d.items():
             setattr(self, k, v)
+        self.logger = logging.getLogger()
         self.stdin = io.StringIO()
         self.stdout = io.StringIO()
         self.stderr = io.StringIO()
@@ -76,7 +91,7 @@ class FakeHost(object):
 
     def chdir(self, *comps):
         path = self.join(*comps)
-        if not path.startswith('/'):  # pragma: untested
+        if not path.startswith('/'):
             path = self.join(self.cwd, path)
         self.cwd = path
 
@@ -108,7 +123,7 @@ class FakeHost(object):
     def getenv(self, key, default=None):
         return self.env.get(key, default)
 
-    def getpid(self):  # pragma: untested
+    def getpid(self):
         return 1
 
     def isdir(self, *comps):
@@ -122,7 +137,7 @@ class FakeHost(object):
     def join(self, *comps):
         p = ''
         for c in comps:
-            if c in ('', '.'):  # pragma: untested
+            if c in ('', '.'):
                 continue
             elif c.startswith('/'):
                 p = c
@@ -135,7 +150,7 @@ class FakeHost(object):
         p = p.replace('/./', '/')
 
         # Handle ../
-        while '/..' in p:  # pragma: untested
+        while '/..' in p:
             comps = p.split('/')
             idx = comps.index('..')
             comps = comps[:idx-1] + comps[idx+1:]
@@ -161,8 +176,6 @@ class FakeHost(object):
 
     def print_(self, msg='', end='\n', stream=None):
         stream = stream or self.stdout
-        if not self.is_python3 and isinstance(msg, str):  # pragma: untested
-            msg = unicode(msg)
         stream.write(msg + end)
         stream.flush()
 
@@ -174,6 +187,9 @@ class FakeHost(object):
 
     def _read(self, comps):
         return self.files[self.abspath(*comps)]
+
+    def realpath(self, *comps):
+        return self.abspath(*comps)
 
     def relpath(self, path, start):
         return path.replace(start + '/', '')
@@ -215,21 +231,19 @@ class FakeHost(object):
         self.files[full_path] = contents
         self.written_files[full_path] = contents
 
-    def fetch(self, url, data=None, headers=None):  # pragma: untested
-        resp = self.fetch_responses.get(url, FakeResponse('', url))
+    def fetch(self, url, data=None, headers=None):
+        resp = self.fetch_responses.get(url, FakeResponse(unicode(''), url))
         self.fetches.append((url, data, headers, resp))
         return resp
 
-    def _tap_output(self):  # pragma: untested
-        # TODO: assigning to sys.stdout/sys.stderr confuses the debugger
-        # with some sort of str/unicode problem.
+    def _tap_output(self):
         self.stdout = _TeedStream(self.stdout)
         self.stderr = _TeedStream(self.stderr)
         if True:
             sys.stdout = self.stdout
             sys.stderr = self.stderr
 
-    def _untap_output(self):  # pragma: untested
+    def _untap_output(self):
         assert isinstance(self.stdout, _TeedStream)
         self.stdout = self.stdout.stream
         self.stderr = self.stderr.stream
@@ -237,54 +251,23 @@ class FakeHost(object):
             sys.stdout = self.stdout
             sys.stderr = self.stderr
 
-    def capture_output(self, divert=True):  # pragma: untested
+    def capture_output(self, divert=True):
         self._tap_output()
-        self.stdout.capture(divert)
-        self.stderr.capture(divert)
+        self._orig_logging_handlers = self.logger.handlers
+        if self._orig_logging_handlers:
+            self.logger.handlers = [logging.StreamHandler(self.stderr)]
+        self.stdout.capture(divert=divert)
+        self.stderr.capture(divert=divert)
 
-    def restore_output(self):  # pragma: untested
+    def restore_output(self):
         assert isinstance(self.stdout, _TeedStream)
         out, err = (self.stdout.restore(), self.stderr.restore())
+        self.logger.handlers = self._orig_logging_handlers
         self._untap_output()
         return out, err
 
 
-class _TeedStream(io.StringIO):  # pragma: untested
-
-    def __init__(self, stream):
-        super(_TeedStream, self).__init__()
-        self.stream = stream
-        self.capturing = False
-        self.diverting = False
-
-    def write(self, msg, *args, **kwargs):
-        if self.capturing:
-            if sys.version_info.major == 2 and isinstance(msg, str):
-                msg = unicode(msg)
-            super(_TeedStream, self).write(msg, *args, **kwargs)
-        if not self.diverting:
-            self.stream.write(msg, *args, **kwargs)
-
-    def flush(self):
-        if self.capturing:
-            super(_TeedStream, self).flush()
-        if not self.diverting:
-            self.stream.flush()
-
-    def capture(self, divert=True):
-        self.truncate(0)
-        self.capturing = True
-        self.diverting = divert
-
-    def restore(self):
-        msg = self.getvalue()
-        self.truncate(0)
-        self.capturing = False
-        self.diverting = False
-        return msg
-
-
-class FakeResponse(io.StringIO):  # pragma: untested
+class FakeResponse(io.StringIO):
 
     def __init__(self, response, url, code=200):
         io.StringIO.__init__(self, response)

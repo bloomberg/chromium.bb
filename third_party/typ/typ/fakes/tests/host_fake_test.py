@@ -15,8 +15,13 @@
 import sys
 
 from typ.tests import host_test
-from typ.fakes.host_fake import FakeHost
+from typ.fakes.host_fake import FakeHost, FakeResponse
 
+is_python3 = bool(sys.version_info.major == 3)
+
+if is_python3:  # pragma: python3
+    # redefining built-in 'unicode' pylint: disable=W0622
+    unicode = str
 
 class TestFakeHost(host_test.TestHost):
 
@@ -38,6 +43,36 @@ class TestFakeHost(host_test.TestHost):
         self.assertEqual(err, '')
         self.assertEqual(h.cmds, [['echo', 'hello, world']])
 
+    def test_capture_output(self):
+        h = self.host()
+        self.host = lambda: h
+        super(TestFakeHost, self).test_capture_output()
+
+        # This tests that the super-method only tested the
+        # divert=True case, and things were diverted properly.
+        self.assertEqual(h.stdout.getvalue(), '')
+        self.assertEqual(h.stderr.getvalue(), '')
+
+        h.capture_output(divert=False)
+        h.print_('on stdout')
+        h.print_('on stderr', stream=h.stderr)
+        out, err = h.restore_output()
+        self.assertEqual(out, 'on stdout\n')
+        self.assertEqual(err, 'on stderr\n')
+        self.assertEqual(h.stdout.getvalue(), 'on stdout\n')
+        self.assertEqual(h.stderr.getvalue(), 'on stderr\n')
+
     def test_for_mp(self):
         h = self.host()
         self.assertNotEqual(h.for_mp(), None)
+
+    def test_fetch(self):
+        h = self.host()
+        url = 'http://localhost/test'
+        resp = FakeResponse(unicode('foo'), url)
+        h.fetch_responses[url] = resp
+        actual_resp = h.fetch(url)
+        self.assertEqual(actual_resp.geturl(), url)
+        self.assertEqual(actual_resp.getcode(), 200)
+        self.assertEqual(resp, actual_resp)
+        self.assertEqual(h.fetches, [(url, None, None, actual_resp)])

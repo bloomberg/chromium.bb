@@ -63,7 +63,7 @@ from typ.cmdline import main, spawn_main
 from typ.json_results import exit_code_from_full_results
 from typ.json_results import make_full_results, make_upload_request
 from typ.json_results import Result, ResultSet, ResultType
-from typ.runner import Runner, TestInput
+from typ.runner import Runner, TestInput, TestSet
 from typ.stats import Stats
 from typ.printer import Printer
 from typ.test_case import convert_newlines, TestCase, MainTestCase
@@ -83,6 +83,7 @@ __all__ = [
     'Stats',
     'TestCase',
     'TestInput',
+    'TestSet',
     'VERSION',
     'convert_newlines',
     'exit_code_from_full_results',

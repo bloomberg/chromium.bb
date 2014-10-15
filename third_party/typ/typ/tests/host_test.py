@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import pickle
 import sys
 import unittest
 
@@ -22,6 +24,35 @@ class TestHost(unittest.TestCase):
 
     def host(self):
         return Host()
+
+    def test_capture_output(self):
+        try:
+            logging.basicConfig()
+            h = self.host()
+            h.capture_output()
+            h.print_('on stdout')
+            h.print_('on stderr', stream=h.stderr)
+            logging.critical('critical log failure')
+            out, err = h.restore_output()
+            self.assertEqual(out, 'on stdout\n')
+            self.assertEqual(err, 'on stderr\ncritical log failure\n')
+        finally:
+            h.logger.handlers = []
+
+        # TODO: Add tests for divert=False or eliminate the flag?
+
+    def test_abspath_and_realpath(self):
+        h = self.host()
+        self.assertNotEqual(h.abspath(h.getcwd()), None)
+        self.assertNotEqual(h.realpath(h.getcwd()), None)
+
+    def test_chdir(self):
+        h = self.host()
+        orig_cwd = h.getcwd()
+        h.chdir('.')
+        self.assertEqual(orig_cwd, h.getcwd())
+        h.chdir('..')
+        self.assertNotEqual(orig_cwd, h.getcwd())
 
     def test_files(self):
         h = self.host()
@@ -76,9 +107,11 @@ class TestHost(unittest.TestCase):
         h = self.host()
         self.assertGreaterEqual(h.terminal_width(), 0)
 
-    def test_for_mp(self):
+    def test_for_mp_and_pickling(self):
         h = self.host()
-        self.assertEqual(h.for_mp(), None)
+        mp_host = h.for_mp()
+        s = pickle.dumps(mp_host)
+        pickle.loads(s)
 
     def test_cpu_count(self):
         h = self.host()
@@ -87,6 +120,10 @@ class TestHost(unittest.TestCase):
     def test_getenv(self):
         h = self.host()
         self.assertNotEqual(h.getenv('PATH', ''), None)
+
+    def test_getpid(self):
+        h = self.host()
+        self.assertNotEqual(h.getpid(), 0)
 
     def test_basename(self):
         h = self.host()

@@ -112,6 +112,8 @@ def main(argv=None):
 
     args.pragma = args.pragma or DEFAULT_PRAGMAS
 
+    if args.show:
+        args.show_missing = True
     for pragma in args.show:
         if pragma in args.pragma:
             args.pragma.remove(pragma)
@@ -123,12 +125,13 @@ def main(argv=None):
     cov.start()
     try:
         if remaining_args[0] == '-m':
-            run_python_module(remaining_args[1], remaining_args)
+            run_python_module(remaining_args[1], remaining_args[1:])
         else:
             run_python_file(remaining_args[0], remaining_args)
     except SystemExit as e:
         ret = e.code
     cov.stop()
+    cov.save()
     cov.report(show_missing=args.show_missing)
     return ret
 

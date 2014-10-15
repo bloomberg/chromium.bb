@@ -31,9 +31,6 @@ else:  # pragma: python3
     from urllib.request import urlopen, Request  # pylint: disable=F0401,E0611
 
 
-is_debugging = False
-
-
 class Host(object):
     python_interpreter = sys.executable
     is_python3 = bool(sys.version_info.major == 3)
@@ -51,14 +48,6 @@ class Host(object):
         self.stderr = sys.stderr
         self.stdin = sys.stdin
         self.env = os.environ
-
-    def set_debugging(self, flag):  # pragma: untested
-        # TODO: We currently use this to work around typ's brokenness
-        # when running -d under python3. We may or may not actually need
-        # this hook.
-        # pylint: disable=W0603
-        global is_debugging
-        is_debugging = flag
 
     def abspath(self, *comps):
         return os.path.abspath(self.join(*comps))
@@ -130,7 +119,7 @@ class Host(object):
     def maybe_mkdir(self, *comps):
         path = self.abspath(self.join(*comps))
         if not self.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
     def mkdtemp(self, **kwargs):
         return tempfile.mkdtemp(**kwargs)
@@ -153,6 +142,9 @@ class Host(object):
         path = self.join(*comps)
         with open(path, mode) as f:
             return f.read()
+
+    def realpath(self, *comps):
+        return os.path.realpath(os.path.join(*comps))
 
     def relpath(self, path, start):
         return os.path.relpath(path, start)
@@ -216,7 +208,7 @@ class Host(object):
                                      termios.TIOCGWINSZ, '\0' * 8)
                 _, columns, _, _ = struct.unpack('HHHH', packed)
                 return columns
-        except Exception:  # pragma: untested
+        except Exception:
             return 0
 
     def _tap_output(self):
@@ -230,12 +222,9 @@ class Host(object):
 
     def capture_output(self, divert=True):
         self._tap_output()
-
-        # TODO: Make log capture more robust.
         self._orig_logging_handlers = self.logger.handlers
-        if self._orig_logging_handlers:  # pragma: untested
+        if self._orig_logging_handlers:
             self.logger.handlers = [logging.StreamHandler(self.stderr)]
-
         self.stdout.capture(divert)
         self.stderr.capture(divert)
 
@@ -255,15 +244,16 @@ class _TeedStream(io.StringIO):
         self.capturing = False
         self.diverting = False
 
-    def write(self, msg, *args, **kwargs):  # pragma: untested
+    def write(self, msg, *args, **kwargs):
         if self.capturing:
-            if sys.version_info.major == 2 and isinstance(msg, str):
+            if (sys.version_info.major == 2 and
+                    isinstance(msg, str)):  # pragma: python2
                 msg = unicode(msg)
             super(_TeedStream, self).write(msg, *args, **kwargs)
         if not self.diverting:
             self.stream.write(msg, *args, **kwargs)
 
-    def flush(self):  # pragma: untested
+    def flush(self):
         if self.capturing:
             super(_TeedStream, self).flush()
         if not self.diverting:

@@ -127,8 +127,7 @@ def failed_test_names(results):
     for r in results.results:
         if r.actual == ResultType.Failure:
             names.add(r.name)
-        elif (r.actual == ResultType.Pass and
-              r.name in names):  # pragma: untested
+        elif (r.actual == ResultType.Pass and r.name in names):
             names.remove(r.name)
     return names
 

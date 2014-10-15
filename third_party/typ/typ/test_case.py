@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import fnmatch
 import shlex
 import unittest
 
@@ -29,6 +30,7 @@ class TestCase(unittest.TestCase):
 
 class MainTestCase(TestCase):
     prog = None
+    files_to_ignore = []
 
     def _write_files(self, host, files):
         for path, contents in list(files.items()):
@@ -40,6 +42,8 @@ class MainTestCase(TestCase):
     def _read_files(self, host, tmpdir):
         out_files = {}
         for f in host.files_under(tmpdir):
+            if any(fnmatch.fnmatch(f, pat) for pat in self.files_to_ignore):
+                continue
             key = f.replace(host.sep, '/')
             out_files[key] = host.read_text_file(tmpdir, f)
         return out_files
@@ -56,7 +60,6 @@ class MainTestCase(TestCase):
         # If we are ever called by unittest directly, and not through typ,
         # this will probably fail.
         assert(self.child)
-
         return self.child.host
 
     def call(self, host, argv, stdin, env):
@@ -85,14 +88,23 @@ class MainTestCase(TestCase):
                 env = host.env.copy()
                 env.update(aenv)
 
+            if self.child.debugger:  # pragma: no cover
+                host.print_('')
+                host.print_('cd %s' % tmpdir, stream=host.stdout.stream)
+                host.print_(' '.join(prog + argv), stream=host.stdout.stream)
+                host.print_('')
+                import pdb
+                dbg = pdb.Pdb(stdout=host.stdout.stream)
+                dbg.set_trace()
+
             result = self.call(host, prog + argv, stdin=stdin, env=env)
 
             actual_ret, actual_out, actual_err = result
             actual_files = self._read_files(host, tmpdir)
         finally:
+            host.chdir(orig_wd)
             if tmpdir:
                 host.rmtree(tmpdir)
-            host.chdir(orig_wd)
 
         if universal_newlines:
             actual_out = convert_newlines(actual_out)
