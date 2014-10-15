@@ -16,7 +16,7 @@ namespace {
 
 // MojoBootstrap for the server process. You should create the instance
 // using MojoBootstrap::Create().
-class IPC_MOJO_EXPORT MojoServerBootstrap : public MojoBootstrap {
+class MojoServerBootstrap : public MojoBootstrap {
  public:
   MojoServerBootstrap();
 
@@ -99,7 +99,7 @@ bool MojoServerBootstrap::OnMessageReceived(const Message&) {
 
 // MojoBootstrap for client processes. You should create the instance
 // using MojoBootstrap::Create().
-class IPC_MOJO_EXPORT MojoClientBootstrap : public MojoBootstrap {
+class MojoClientBootstrap : public MojoBootstrap {
  public:
   MojoClientBootstrap();
 
