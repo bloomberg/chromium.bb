@@ -19,13 +19,29 @@ namespace {
 // address space usage gets too high (e.g. 512 MBytes).
 const size_t kMachMemoryLimit = 512 * 1024 * 1024;
 
-struct SharedState {
-  SharedState()
-      : manager(kMachMemoryLimit, kMachMemoryLimit, TimeDelta::Max()) {}
+// internal::DiscardableMemoryManager has an explicit constructor that takes
+// a number of memory limit parameters. The LeakyLazyInstanceTraits doesn't
+// handle the case. Thus, we need our own class here.
+struct DiscardableMemoryManagerLazyInstanceTraits {
+  // Leaky as discardable memory clients can use this after the exit handler
+  // has been called.
+  static const bool kRegisterOnExit = false;
+#ifndef NDEBUG
+  static const bool kAllowedToAccessOnNonjoinableThread = true;
+#endif
 
-  internal::DiscardableMemoryManager manager;
+  static internal::DiscardableMemoryManager* New(void* instance) {
+    return new (instance) internal::DiscardableMemoryManager(
+        kMachMemoryLimit, kMachMemoryLimit, TimeDelta::Max());
+  }
+  static void Delete(internal::DiscardableMemoryManager* instance) {
+    instance->~DiscardableMemoryManager();
+  }
 };
-LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
+
+LazyInstance<internal::DiscardableMemoryManager,
+             DiscardableMemoryManagerLazyInstanceTraits>
+    g_manager = LAZY_INSTANCE_INITIALIZER;
 
 // The VM subsystem allows tagging of memory and 240-255 is reserved for
 // application use (see mach/vm_statistics.h). Pick 252 (after chromium's atomic
@@ -38,13 +54,13 @@ namespace internal {
 
 DiscardableMemoryMach::DiscardableMemoryMach(size_t bytes)
     : memory_(0, 0), bytes_(mach_vm_round_page(bytes)), is_locked_(false) {
-  g_shared_state.Pointer()->manager.Register(this, bytes);
+  g_manager.Pointer()->Register(this, bytes);
 }
 
 DiscardableMemoryMach::~DiscardableMemoryMach() {
   if (is_locked_)
     Unlock();
-  g_shared_state.Pointer()->manager.Unregister(this);
+  g_manager.Pointer()->Unregister(this);
 }
 
 // static
@@ -61,7 +77,7 @@ DiscardableMemoryLockStatus DiscardableMemoryMach::Lock() {
   DCHECK(!is_locked_);
 
   bool purged = false;
-  if (!g_shared_state.Pointer()->manager.AcquireLock(this, &purged))
+  if (!g_manager.Pointer()->AcquireLock(this, &purged))
     return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
   is_locked_ = true;
@@ -71,7 +87,7 @@ DiscardableMemoryLockStatus DiscardableMemoryMach::Lock() {
 
 void DiscardableMemoryMach::Unlock() {
   DCHECK(is_locked_);
-  g_shared_state.Pointer()->manager.ReleaseLock(this);
+  g_manager.Pointer()->ReleaseLock(this);
   is_locked_ = false;
 }
 
