@@ -41,27 +41,37 @@
 
 namespace blink {
 
-static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
+#if ENABLE(ASSERT)
+
+static bool supportsInvalidation(CSSSelector::Match match)
 {
-    if (selector.match() == CSSSelector::Tag) {
-        ASSERT(selector.tagQName().localName() == starAtom);
+    switch (match) {
+    case CSSSelector::Tag:
+    case CSSSelector::Id:
+    case CSSSelector::Class:
+    case CSSSelector::AttributeExact:
+    case CSSSelector::AttributeSet:
+    case CSSSelector::AttributeHyphen:
+    case CSSSelector::AttributeList:
+    case CSSSelector::AttributeContain:
+    case CSSSelector::AttributeBegin:
+    case CSSSelector::AttributeEnd:
         return true;
-    }
-    if (selector.match() == CSSSelector::PseudoElement) {
-        switch (selector.pseudoType()) {
-        case CSSSelector::PseudoBefore:
-        case CSSSelector::PseudoAfter:
-        case CSSSelector::PseudoBackdrop:
-        case CSSSelector::PseudoShadow:
-            return true;
-        default:
-            ASSERT(!selector.isCustomPseudoElement());
-            return false;
-        }
-    }
-    if (selector.match() != CSSSelector::PseudoClass)
+    case CSSSelector::Unknown:
+    case CSSSelector::PagePseudoClass:
+        // These should not appear in StyleRule selectors.
+        ASSERT_NOT_REACHED();
         return false;
-    switch (selector.pseudoType()) {
+    default:
+        // New match type added. Figure out if it needs a subtree invalidation or not.
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+}
+
+static bool supportsInvalidation(CSSSelector::PseudoType type)
+{
+    switch (type) {
     case CSSSelector::PseudoEmpty:
     case CSSSelector::PseudoFirstChild:
     case CSSSelector::PseudoFirstOfType:
@@ -75,6 +85,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoNthLastOfType:
     case CSSSelector::PseudoLink:
     case CSSSelector::PseudoVisited:
+    case CSSSelector::PseudoAny:
     case CSSSelector::PseudoAnyLink:
     case CSSSelector::PseudoHover:
     case CSSSelector::PseudoDrag:
@@ -92,15 +103,89 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoInvalid:
     case CSSSelector::PseudoIndeterminate:
     case CSSSelector::PseudoTarget:
+    case CSSSelector::PseudoBefore:
+    case CSSSelector::PseudoAfter:
+    case CSSSelector::PseudoBackdrop:
     case CSSSelector::PseudoLang:
+    case CSSSelector::PseudoNot:
     case CSSSelector::PseudoRoot:
     case CSSSelector::PseudoScope:
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoUnresolved:
+    case CSSSelector::PseudoHost:
+    case CSSSelector::PseudoShadow:
     case CSSSelector::PseudoListBox:
         return true;
+    case CSSSelector::PseudoNotParsed:
+    case CSSSelector::PseudoUnknown:
+    case CSSSelector::PseudoLeftPage:
+    case CSSSelector::PseudoRightPage:
+    case CSSSelector::PseudoFirstPage:
+        // These should not appear in StyleRule selectors.
+        ASSERT_NOT_REACHED();
+        return false;
     default:
+        // New pseudo type added. Figure out if it needs a subtree invalidation or not.
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+}
+
+#endif // ENABLE(ASSERT)
+
+static bool requiresSubtreeInvalidation(const CSSSelector& selector)
+{
+    if (!selector.matchesPseudoElement() && selector.match() != CSSSelector::PseudoClass) {
+        ASSERT(supportsInvalidation(selector.match()));
+        return false;
+    }
+
+    switch (selector.pseudoType()) {
+    case CSSSelector::PseudoFirstLine:
+    case CSSSelector::PseudoFirstLetter:
+    case CSSSelector::PseudoAutofill:
+    case CSSSelector::PseudoFullPageMedia:
+    case CSSSelector::PseudoResizer:
+    case CSSSelector::PseudoScrollbar:
+    case CSSSelector::PseudoScrollbarBack:
+    case CSSSelector::PseudoScrollbarButton:
+    case CSSSelector::PseudoScrollbarCorner:
+    case CSSSelector::PseudoScrollbarForward:
+    case CSSSelector::PseudoScrollbarThumb:
+    case CSSSelector::PseudoScrollbarTrack:
+    case CSSSelector::PseudoScrollbarTrackPiece:
+    case CSSSelector::PseudoWindowInactive:
+    case CSSSelector::PseudoCornerPresent:
+    case CSSSelector::PseudoDecrement:
+    case CSSSelector::PseudoIncrement:
+    case CSSSelector::PseudoHorizontal:
+    case CSSSelector::PseudoVertical:
+    case CSSSelector::PseudoStart:
+    case CSSSelector::PseudoEnd:
+    case CSSSelector::PseudoDoubleButton:
+    case CSSSelector::PseudoSingleButton:
+    case CSSSelector::PseudoNoButton:
+    case CSSSelector::PseudoSelection:
+    case CSSSelector::PseudoFullScreen:
+    case CSSSelector::PseudoFullScreenDocument:
+    case CSSSelector::PseudoFullScreenAncestor:
+    case CSSSelector::PseudoUserAgentCustomElement:
+    case CSSSelector::PseudoWebKitCustomElement:
+    case CSSSelector::PseudoCue:
+    case CSSSelector::PseudoFutureCue:
+    case CSSSelector::PseudoPastCue:
+    case CSSSelector::PseudoContent:
+    case CSSSelector::PseudoSpatialNavigationFocus:
+        // FIXME: Most pseudo classes/elements above can be supported and moved
+        // to assertSupportedPseudo(). Move on a case-by-case basis. If they
+        // require subtree invalidation, document why.
+    case CSSSelector::PseudoHostContext:
+        // :host-context matches a shadow host, yet the simple selectors inside
+        // :host-context matches an ancestor of the shadow host.
+        return true;
+    default:
+        ASSERT(supportsInvalidation(selector.pseudoType()));
         return false;
     }
 }
@@ -170,7 +255,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
                     foundIdent = true;
                 }
             }
-        } else if (!isSkippableComponentForInvalidation(*component)) {
+        } else if (requiresSubtreeInvalidation(*component)) {
             return foundCombinator ? UseLocalStyleChange : UseSubtreeStyleChange;
         }
         if (component->relation() != CSSSelector::SubSelector)
