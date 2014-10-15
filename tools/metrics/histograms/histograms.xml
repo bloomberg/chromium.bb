@@ -53343,6 +53343,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Starting video capture"/>
   <int value="1" label="Stopping video capture normally"/>
   <int value="2" label="Stopping video capture due to error"/>
+  <int value="3" label="Video capture device stopped. No frames produced."/>
+  <int value="4" label="Desktop/Tab capture stopped. No frames produced."/>
 </enum>
 
 <enum name="VideoCodec" type="int">

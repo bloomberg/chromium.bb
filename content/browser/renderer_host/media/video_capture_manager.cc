@@ -80,9 +80,11 @@ const int kMaxNumberOfBuffersForTabCapture = 5;
 // Elements in this enum should not be deleted or rearranged; the only
 // permitted operation is to add new elements before NUM_VIDEO_CAPTURE_EVENT.
 enum VideoCaptureEvent {
-  VIDEO_CAPTURE_EVENT_START_CAPTURE = 0,
-  VIDEO_CAPTURE_EVENT_STOP_CAPTURE_NORMAL = 1,
-  VIDEO_CAPTURE_EVENT_STOP_CAPTURE_DUE_TO_ERROR = 2,
+  VIDEO_CAPTURE_START_CAPTURE = 0,
+  VIDEO_CAPTURE_STOP_CAPTURE_OK = 1,
+  VIDEO_CAPTURE_STOP_CAPTURE_DUE_TO_ERROR = 2,
+  VIDEO_CAPTURE_STOP_CAPTURE_OK_NO_FRAMES_PRODUCED_BY_DEVICE = 3,
+  VIDEO_CAPTURE_STOP_CAPTURE_OK_NO_FRAMES_PRODUCED_BY_DESKTOP_OR_TAB = 4,
   NUM_VIDEO_CAPTURE_EVENT
 };
 
@@ -298,7 +300,7 @@ void VideoCaptureManager::StartCaptureForClient(
 
   DCHECK(entry->video_capture_controller);
 
-  LogVideoCaptureEvent(VIDEO_CAPTURE_EVENT_START_CAPTURE);
+  LogVideoCaptureEvent(VIDEO_CAPTURE_START_CAPTURE);
 
   // First client starts the device.
   if (entry->video_capture_controller->GetActiveClientCount() == 0) {
@@ -330,16 +332,23 @@ void VideoCaptureManager::StopCaptureForClient(
   DCHECK(controller);
   DCHECK(client_handler);
 
-  LogVideoCaptureEvent(aborted_due_to_error ?
-      VIDEO_CAPTURE_EVENT_STOP_CAPTURE_DUE_TO_ERROR :
-      VIDEO_CAPTURE_EVENT_STOP_CAPTURE_NORMAL);
-
   DeviceEntry* entry = GetDeviceEntryForController(controller);
   if (!entry) {
     NOTREACHED();
     return;
   }
-  if (aborted_due_to_error) {
+  if (!aborted_due_to_error) {
+    if (controller->has_received_frames()) {
+      LogVideoCaptureEvent(VIDEO_CAPTURE_STOP_CAPTURE_OK);
+    } else if (entry->stream_type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+      LogVideoCaptureEvent(
+          VIDEO_CAPTURE_STOP_CAPTURE_OK_NO_FRAMES_PRODUCED_BY_DEVICE);
+    } else {
+      LogVideoCaptureEvent(
+          VIDEO_CAPTURE_STOP_CAPTURE_OK_NO_FRAMES_PRODUCED_BY_DESKTOP_OR_TAB);
+    }
+  } else {
+    LogVideoCaptureEvent(VIDEO_CAPTURE_STOP_CAPTURE_DUE_TO_ERROR);
     SessionMap::iterator it;
     for (it = sessions_.begin(); it != sessions_.end(); ++it) {
       if (it->second.type == entry->stream_type &&

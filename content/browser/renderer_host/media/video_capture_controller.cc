@@ -189,7 +189,7 @@ class VideoCaptureController::VideoCaptureDeviceClient
 VideoCaptureController::VideoCaptureController(int max_buffers)
     : buffer_pool_(new VideoCaptureBufferPool(max_buffers)),
       state_(VIDEO_CAPTURE_STATE_STARTED),
-      frame_received_(false),
+      has_received_frames_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -578,7 +578,6 @@ VideoCaptureController::VideoCaptureDeviceClient::DoReserveOutputBuffer(
 VideoCaptureController::~VideoCaptureController() {
   STLDeleteContainerPointers(controller_clients_.begin(),
                              controller_clients_.end());
-  UMA_HISTOGRAM_BOOLEAN("Media.VideoCapture.FramesReceived", frame_received_);
 }
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
@@ -627,7 +626,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     }
   }
 
-  if (!frame_received_) {
+  if (!has_received_frames_) {
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Width",
                          buffer_format.frame_size.width());
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
@@ -640,7 +639,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.PixelFormat",
                               buffer_format.pixel_format,
                               media::PIXEL_FORMAT_MAX);
-    frame_received_ = true;
+    has_received_frames_ = true;
   }
 
   buffer_pool_->HoldForConsumers(buffer->id(), count);

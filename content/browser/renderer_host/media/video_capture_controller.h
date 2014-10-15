@@ -122,6 +122,8 @@ class CONTENT_EXPORT VideoCaptureController {
 
   const media::VideoCaptureFormat& GetVideoCaptureFormat() const;
 
+  bool has_received_frames() const { return has_received_frames_; }
+
  private:
   class VideoCaptureDeviceClient;
 
@@ -160,7 +162,7 @@ class CONTENT_EXPORT VideoCaptureController {
   VideoCaptureState state_;
 
   // True if the controller has received a video frame from the device.
-  bool frame_received_;
+  bool has_received_frames_;
 
   media::VideoCaptureFormat video_capture_format_;
 
