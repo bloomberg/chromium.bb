@@ -47,17 +47,19 @@ void ScreenOrientationProvider::LockOrientation(int request_id,
     if (!rvh) {
       dispatcher_->NotifyLockError(request_id,
                                    blink::WebLockOrientationErrorCanceled);
+      return;
     }
     RenderViewHostDelegate* rvhd = rvh->GetDelegate();
     if (!rvhd) {
       dispatcher_->NotifyLockError(request_id,
                                    blink::WebLockOrientationErrorCanceled);
+      return;
     }
     if (!rvhd->IsFullscreenForCurrentTab()) {
       dispatcher_->NotifyLockError(request_id,
           blink::WebLockOrientationErrorFullScreenRequired);
+      return;
     }
-    return;
   }
 
   if (lock_orientation == blink::WebScreenOrientationLockNatural) {
