@@ -35,6 +35,7 @@
     // session properties
     readonly attribute DOMString keySystem;
     readonly attribute DOMString sessionId;
+    readonly attribute unrestricted double expiration;
     [CallWith=ScriptState] readonly attribute Promise closed;
 
     // session initialization

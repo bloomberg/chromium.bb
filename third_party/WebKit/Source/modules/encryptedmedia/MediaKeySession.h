@@ -70,6 +70,7 @@ public:
 
     const String& keySystem() const { return m_keySystem; }
     String sessionId() const;
+    double expiration() const { return m_expiration; }
     ScriptPromise closed(ScriptState*);
 
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBuffer* initData);
@@ -127,6 +128,7 @@ private:
 
     // Session properties.
     String m_sessionType;
+    double m_expiration;
 
     // Session states.
     bool m_isUninitialized;

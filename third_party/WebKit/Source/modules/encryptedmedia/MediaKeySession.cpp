@@ -49,6 +49,8 @@
 #include "public/platform/WebURL.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
+#include <cmath>
+#include <limits>
 
 namespace {
 
@@ -236,6 +238,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_mediaKeys(mediaKeys)
     , m_sessionType(sessionType)
+    , m_expiration(std::numeric_limits<double>::quiet_NaN())
     , m_isUninitialized(true)
     , m_isCallable(false)
     , m_isClosed(false)
@@ -256,7 +259,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     ASSERT(sessionId().isEmpty());
 
     // 2.2 Let the expiration attribute be NaN.
-    // FIXME: Add expiration property.
+    ASSERT(std::isnan(m_expiration));
 
     // 2.3 Let the closed attribute be a new promise.
     ASSERT(!closed(scriptState).isUndefinedOrNull());
@@ -700,7 +703,7 @@ void MediaKeySession::error(WebContentDecryptionModuleException exception, unsig
 
 void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
 {
-    // FIXME: Implement expiration attribute.
+    m_expiration = updatedExpiryTimeInMS;
 }
 
 const AtomicString& MediaKeySession::interfaceName() const
