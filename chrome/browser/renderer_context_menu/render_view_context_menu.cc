@@ -544,6 +544,11 @@ void RenderViewContextMenu::InitMenu() {
     AppendPrintItem();
 
   if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
+    AppendRotationItems();
+  }
+
+  if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_ALL_EXTENSION)) {
     DCHECK(!content_type_->SupportsGroup(
                ContextMenuContentType::ITEM_GROUP_CURRENT_EXTENSION));
@@ -769,15 +774,12 @@ void RenderViewContextMenu::AppendPluginItems() {
   } else {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                     IDS_CONTENT_CONTEXT_SAVEPAGEAS);
-    menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
-  }
-
-  if (params_.media_flags & WebContextMenuData::MediaCanRotate) {
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
-                                    IDS_CONTENT_CONTEXT_ROTATECW);
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECCW,
-                                    IDS_CONTENT_CONTEXT_ROTATECCW);
+    // The "Print" menu item should always be included for plugins. If
+    // content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)
+    // is true the item will be added inside AppendPrintItem(). Otherwise we
+    // add "Print" here.
+    if (!content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT))
+      menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   }
 }
 
@@ -825,15 +827,20 @@ void RenderViewContextMenu::AppendCopyItem() {
 }
 
 void RenderViewContextMenu::AppendPrintItem() {
-  // AppendPluginItems() could have already added |IDC_PRINT| so we are
-  // skipping it here if |IDC_PRINT| is already present in the context menu.
-  if (menu_model_.GetIndexOfCommandId(IDC_PRINT) != -1)
-    return;
-
   if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
       (params_.media_type == WebContextMenuData::MediaTypeNone ||
        params_.media_flags & WebContextMenuData::MediaCanPrint)) {
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
+  }
+}
+
+void RenderViewContextMenu::AppendRotationItems() {
+  if (params_.media_flags & WebContextMenuData::MediaCanRotate) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
+                                    IDS_CONTENT_CONTEXT_ROTATECW);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECCW,
+                                    IDS_CONTENT_CONTEXT_ROTATECCW);
   }
 }
 

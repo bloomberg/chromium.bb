@@ -102,6 +102,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendFrameItems();
   void AppendCopyItem();
   void AppendPrintItem();
+  void AppendRotationItems();
   void AppendEditableItems();
   void AppendSearchProvider();
   void AppendAllExtensionItems();
