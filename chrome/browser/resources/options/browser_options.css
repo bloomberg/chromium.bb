@@ -473,9 +473,8 @@ footer {
   display: flex;
 }
 
-#version-button {
-  -webkit-margin-start: auto;
-  color: #999;
+#about-button {
+  margin-right: 30px;
 }
 
 /* An input that has no function except to take up the same amount of space as

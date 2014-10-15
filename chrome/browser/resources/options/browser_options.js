@@ -146,9 +146,9 @@ cr.define('options', function() {
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
 
-      if (loadTimeData.getBoolean('showVersion')) {
-        $('version-button').hidden = false;
-        $('version-button').addEventListener('click', function() {
+      if (loadTimeData.getBoolean('showAbout')) {
+        $('about-button').hidden = false;
+        $('about-button').addEventListener('click', function() {
           PageManager.showPageByName('help');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_About']);

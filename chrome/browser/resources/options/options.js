@@ -178,7 +178,7 @@ function load() {
   PageManager.registerOverlay(SyncSetupOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('customize-sync')]);
-  if (loadTimeData.getBoolean('showVersion')) {
+  if (loadTimeData.getBoolean('showAbout')) {
     PageManager.registerOverlay(help.HelpPage.getInstance(),
                                 BrowserOptions.getInstance());
     if (help.ChannelChangePage) {
