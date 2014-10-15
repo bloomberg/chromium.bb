@@ -44,6 +44,9 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // Input events propagate from parent to child.
     case FrameHostMsg_ForwardInputEvent::ID:
     case FrameHostMsg_InitializeChildFrame::ID:
+    // The browser should always have an accurate mirror of the renderer's
+    // notion of the current page id.
+    case FrameHostMsg_DidAssignPageId::ID:
       return true;
     default:
       break;
