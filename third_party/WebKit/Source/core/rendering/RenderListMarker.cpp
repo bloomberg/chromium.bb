@@ -1633,4 +1633,19 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
     return rect;
 }
 
+void RenderListMarker::listItemStyleDidChange()
+{
+    RefPtr<RenderStyle> newStyle = RenderStyle::create();
+    // The marker always inherits from the list item, regardless of where it might end
+    // up (e.g., in some deeply nested line box). See CSS3 spec.
+    newStyle->inheritFrom(m_listItem->style());
+    if (style()) {
+        // Reuse the current margins. Otherwise resetting the margins to initial values
+        // would trigger unnecessary layout.
+        newStyle->setMarginStart(style()->marginStart());
+        newStyle->setMarginEnd(style()->marginRight());
+    }
+    setStyle(newStyle.release());
+}
+
 } // namespace blink

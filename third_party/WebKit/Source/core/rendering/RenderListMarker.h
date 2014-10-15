@@ -55,6 +55,8 @@ public:
 
     static UChar listMarkerSuffix(EListStyleType, int value);
 
+    void listItemStyleDidChange();
+
 private:
     RenderListMarker(RenderListItem*);
 
