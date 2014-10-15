@@ -47,6 +47,10 @@ public:
     virtual ~HTMLFormElement();
     virtual void trace(Visitor*) override;
 
+    virtual bool matchesValidityPseudoClasses() const override final;
+    virtual bool isValidElement() override final;
+    void setNeedsValidityCheck();
+
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
     void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element> >&);
 

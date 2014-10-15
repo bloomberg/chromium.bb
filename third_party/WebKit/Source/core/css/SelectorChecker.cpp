@@ -838,10 +838,10 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         return element.isRequiredFormControl();
     case CSSSelector::PseudoValid:
         element.document().setContainsValidityStyleRules();
-        return element.willValidate() && element.isValidFormControlElement();
+        return element.matchesValidityPseudoClasses() && element.isValidElement();
     case CSSSelector::PseudoInvalid:
         element.document().setContainsValidityStyleRules();
-        return element.willValidate() && !element.isValidFormControlElement();
+        return element.matchesValidityPseudoClasses() && !element.isValidElement();
     case CSSSelector::PseudoChecked:
         {
             if (isHTMLInputElement(element)) {

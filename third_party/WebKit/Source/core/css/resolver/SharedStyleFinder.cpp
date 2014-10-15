@@ -84,7 +84,7 @@ bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const
         if (willValidate != element().willValidate())
             return false;
 
-        if (willValidate && (candidate.isValidFormControlElement() != element().isValidFormControlElement()))
+        if (willValidate && (candidate.isValidElement() != element().isValidElement()))
             return false;
 
         if (candidate.isInRange() != element().isInRange())
@@ -262,6 +262,11 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         if (parent->hasID() && m_features.hasSelectorForId(parent->idForStyleResolution()))
             return false;
         if (!parent->childrenSupportStyleSharing())
+            return false;
+    }
+
+    if (document().containsValidityStyleRules()) {
+        if (candidate.isValidElement() != element().isValidElement())
             return false;
     }
 

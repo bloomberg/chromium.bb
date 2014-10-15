@@ -85,6 +85,8 @@ public:
     virtual void setActivatedSubmit(bool) { }
 
     virtual bool willValidate() const override;
+    virtual bool matchesValidityPseudoClasses() const override;
+
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
     bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls = 0);
@@ -121,6 +123,8 @@ protected:
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void removedFrom(ContainerNode*) override;
+    virtual void willChangeForm() override;
+    virtual void didChangeForm() override;
     virtual void didMoveToNewDocument(Document& oldDocument) override;
 
     virtual bool supportsFocus() const override;
@@ -152,11 +156,14 @@ private:
     virtual short tabIndex() const override final;
 
     virtual bool isDefaultButtonForForm() const override final;
-    virtual bool isValidFormControlElement() override final;
+    virtual bool isValidElement() override final;
     void updateAncestorDisabledState() const;
 
     bool isValidationMessageVisible() const;
     ValidationMessageClient* validationMessageClient() const;
+
+    // Requests validity recalc for the form owner, if one exists.
+    void formOwnerSetNeedsValidityCheck();
 
     bool m_disabled : 1;
     bool m_isAutofilled : 1;
