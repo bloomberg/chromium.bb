@@ -7,7 +7,11 @@
     "app_list_unittests",
     {
       "test": "ash_unittests",
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"],
+      "chromium_configs": [
+        "chromium_chromeos",
+        "chromium_chromeos_clang",
+        "chromium_chromeos_ozone"
+      ],
       "swarming": {
         "can_use_on_swarming_builders": true
       }
@@ -38,7 +42,11 @@
     "chromedriver_unittests",
     {
       "test": "chromevox_tests",
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
+      "chromium_configs": [
+        "chromium_chromeos",
+        "chromium_chromeos_clang",
+        "chromium_chromeos_ozone"
+      ]
     },
     {
       "test": "chrome_elf_unittests",
@@ -200,12 +208,19 @@
     {
       "test": "chromeos_unittests",
       "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos", "chromium_chromeos_clang"]
+      "chromium_configs": [
+        "chromium_chromeos",
+        "chromium_chromeos_clang",
+        "chromium_chromeos_ozone"
+      ]
     },
     {
       "test": "athena_unittests",
       "platforms": ["linux"],
-      "chromium_configs": ["chromium_chromeos_athena"]
+      "chromium_configs": [
+        "chromium_chromeos_athena",
+        "chromium_chromeos_ozone"
+      ]
     },
     {
       "test": "display_unittests",
