@@ -38,10 +38,10 @@ bool ResourceBundleSourceMap::Contains(const std::string& name) {
 v8::Handle<v8::String> ResourceBundleSourceMap::ConvertString(
     v8::Isolate* isolate,
     const base::StringPiece& string) {
-  // v8 takes ownership of the StaticV8ExternalAsciiStringResource (see
+  // v8 takes ownership of the StaticV8ExternalOneByteStringResource (see
   // v8::String::NewExternal()).
   return v8::String::NewExternal(
-      isolate, new StaticV8ExternalAsciiStringResource(string));
+      isolate, new StaticV8ExternalOneByteStringResource(string));
 }
 
 }  // namespace extensions

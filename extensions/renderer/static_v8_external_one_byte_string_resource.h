@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ASCII_STRING_RESOURCE_H_
-#define EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ASCII_STRING_RESOURCE_H_
+#ifndef EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ONE_BYTE_STRING_RESOURCE_H_
+#define EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ONE_BYTE_STRING_RESOURCE_H_
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
@@ -14,11 +14,12 @@ namespace extensions {
 // A very simple implementation of v8::ExternalAsciiStringResource that just
 // wraps a buffer. The buffer must outlive the v8 runtime instance this resource
 // is used in.
-class StaticV8ExternalAsciiStringResource
-    : public v8::String::ExternalAsciiStringResource {
+class StaticV8ExternalOneByteStringResource
+    : public v8::String::ExternalOneByteStringResource {
  public:
-  explicit StaticV8ExternalAsciiStringResource(const base::StringPiece& buffer);
-  virtual ~StaticV8ExternalAsciiStringResource();
+  explicit StaticV8ExternalOneByteStringResource(
+      const base::StringPiece& buffer);
+  virtual ~StaticV8ExternalOneByteStringResource();
 
   virtual const char* data() const override;
   virtual size_t length() const override;
@@ -29,4 +30,4 @@ class StaticV8ExternalAsciiStringResource
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ASCII_STRING_RESOURCE_H_
+#endif  // EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ONE_BYTE_STRING_RESOURCE_H_

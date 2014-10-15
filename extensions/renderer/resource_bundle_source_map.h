@@ -12,7 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/strings/string_piece.h"
 #include "extensions/renderer/module_system.h"
-#include "extensions/renderer/static_v8_external_ascii_string_resource.h"
+#include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "v8/include/v8.h"
 
 namespace ui {
