@@ -153,9 +153,9 @@ scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
 
   scoped_ptr<GbmSurface> surface(new GbmSurface(delegate, device_, drm_));
   if (!surface->Initialize())
-    return scoped_ptr<SurfaceOzoneEGL>();
+    return nullptr;
 
-  return surface.PassAs<SurfaceOzoneEGL>();
+  return surface.Pass();
 }
 
 scoped_ptr<SurfaceOzoneEGL>

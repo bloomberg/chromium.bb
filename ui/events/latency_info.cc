@@ -130,7 +130,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData(
     coordinates->Append(coordinate_pair.release());
   }
   record_data->Set("coordinates", coordinates.release());
-  return LatencyInfoTracedValue::FromValue(record_data.PassAs<base::Value>());
+  return LatencyInfoTracedValue::FromValue(record_data.Pass());
 }
 
 }  // namespace

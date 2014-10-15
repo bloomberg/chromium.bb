@@ -463,7 +463,7 @@ scoped_ptr<RTreeBase::NodeBase> RTreeBase::Node::DivideChildren(
   for (size_t i = 0; i < sibling->children_.size(); ++i)
     sibling->children_[i]->set_parent(sibling.get());
 
-  return sibling.PassAs<NodeBase>();
+  return sibling.Pass();
 }
 
 RTreeBase::Node* RTreeBase::Node::LeastOverlapIncrease(

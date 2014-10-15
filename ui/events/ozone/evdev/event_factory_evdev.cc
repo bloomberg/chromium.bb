@@ -74,13 +74,8 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
     scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
         make_scoped_ptr(new GestureInterpreterLibevdevCros(
             params.modifiers, params.cursor, params.dispatch_callback));
-    scoped_ptr<EventReaderLibevdevCros> libevdev_reader =
-        make_scoped_ptr(new EventReaderLibevdevCros(
-            fd,
-            params.path,
-            params.id,
-            gesture_interp.PassAs<EventReaderLibevdevCros::Delegate>()));
-    return libevdev_reader.PassAs<EventConverterEvdev>();
+    return make_scoped_ptr(new EventReaderLibevdevCros(
+        fd, params.path, params.id, gesture_interp.Pass()));
   }
 #endif
 

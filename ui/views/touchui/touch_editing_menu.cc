@@ -154,7 +154,7 @@ Button* TouchEditingMenuView::CreateButton(const base::string16& title,
   int h_border = (kMenuButtonWidth - gfx::GetStringWidth(label, font_list)) / 2;
   button_border->set_insets(
       gfx::Insets(v_border, h_border, v_border, h_border));
-  button->SetBorder(button_border.PassAs<Border>());
+  button->SetBorder(button_border.Pass());
   button->SetFontList(font_list);
   button->set_tag(tag);
   return button;

@@ -279,14 +279,14 @@ TEST_F(RTreeNodeTest, CompareCenterDistanceFromParent) {
   // Add three children, one each with centers at (0, 0), (10, 10), (-9, -9),
   // around which a bounding box will be centered at (0, 0)
   scoped_ptr<RTreeRecord> center_zero(new RTreeRecord(Rect(-1, -1, 2, 2), 1));
-  parent->AddChild(center_zero.PassAs<RTreeNodeBase>());
+  parent->AddChild(center_zero.Pass());
 
   scoped_ptr<RTreeRecord> center_positive(new RTreeRecord(Rect(9, 9, 2, 2), 2));
-  parent->AddChild(center_positive.PassAs<RTreeNodeBase>());
+  parent->AddChild(center_positive.Pass());
 
   scoped_ptr<RTreeRecord> center_negative(
       new RTreeRecord(Rect(-10, -10, 2, 2), 3));
-  parent->AddChild(center_negative.PassAs<RTreeNodeBase>());
+  parent->AddChild(center_negative.Pass());
 
   ValidateNode(parent.get(), 1U, 5U);
   EXPECT_EQ(Rect(-10, -10, 21, 21), parent->rect());
@@ -511,7 +511,7 @@ TEST_F(RTreeNodeTest, DivideChildren) {
   for (int i = 1; i <= 10; ++i) {
     scoped_ptr<RTreeRecord> record(new RTreeRecord(Rect(0, 0, i, i), i));
     sorted_children.push_back(record.get());
-    test_node->AddChild(record.PassAs<RTreeNodeBase>());
+    test_node->AddChild(record.Pass());
     low_bounds.push_back(Rect(0, 0, i, i));
     high_bounds.push_back(Rect(0, 0, 10, 10));
   }
@@ -584,13 +584,13 @@ TEST_F(RTreeNodeTest, RemoveChildOrphans) {
             new RTreeRecord(Rect(0, 0, id, id), id));
         ++id;
         records.push_back(record.get());
-        level_0_child->AddChild(record.PassAs<RTreeNodeBase>());
+        level_0_child->AddChild(record.Pass());
       }
       level_0_children.push_back(level_0_child.get());
-      level_1_child->AddChild(level_0_child.PassAs<RTreeNodeBase>());
+      level_1_child->AddChild(level_0_child.Pass());
     }
     level_1_children.push_back(level_1_child.get());
-    root->AddChild(level_1_child.PassAs<RTreeNodeBase>());
+    root->AddChild(level_1_child.Pass());
   }
 
   // This should now be a valid tree structure.
@@ -659,8 +659,8 @@ TEST_F(RTreeNodeTest, LeastOverlapIncrease) {
     scoped_ptr<RTreeNode> node(new RTreeNode);
     scoped_ptr<RTreeRecord> record(
         new RTreeRecord(Rect(i * 2, 0, 1, 2), i + 1));
-    node->AddChild(record.PassAs<RTreeNodeBase>());
-    test_parent->AddChild(node.PassAs<RTreeNodeBase>());
+    node->AddChild(record.Pass());
+    test_parent->AddChild(node.Pass());
   }
 
   ValidateNode(test_parent.get(), 1U, 5U);
@@ -710,7 +710,7 @@ TEST_F(RTreeNodeTest, LeastOverlapIncrease) {
   scoped_ptr<RTreeNode> record_parent(new RTreeNode);
   record_parent->AddChild(
       scoped_ptr<RTreeNodeBase>(new RTreeRecord(Rect(4, 0, 2, 2), 9)));
-  test_parent->AddChild(record_parent.PassAs<RTreeNodeBase>());
+  test_parent->AddChild(record_parent.Pass());
   BuildExpandedRects(test_parent.get(), test_rect_inside, &expanded_rects);
   result = NodeLeastOverlapIncrease(
       test_parent.get(), test_rect_inside, expanded_rects);
@@ -728,19 +728,19 @@ TEST_F(RTreeNodeTest, LeastAreaEnlargement) {
   scoped_ptr<RTreeNode> node(new RTreeNode);
   node->AddChild(
       scoped_ptr<RTreeNodeBase>(new RTreeRecord(Rect(1, 0, 1, 1), 1)));
-  test_parent->AddChild(node.PassAs<RTreeNodeBase>());
+  test_parent->AddChild(node.Pass());
   node.reset(new RTreeNode);
   node->AddChild(
       scoped_ptr<RTreeNodeBase>(new RTreeRecord(Rect(0, 1, 1, 1), 2)));
-  test_parent->AddChild(node.PassAs<RTreeNodeBase>());
+  test_parent->AddChild(node.Pass());
   node.reset(new RTreeNode);
   node->AddChild(
       scoped_ptr<RTreeNodeBase>(new RTreeRecord(Rect(2, 1, 1, 1), 3)));
-  test_parent->AddChild(node.PassAs<RTreeNodeBase>());
+  test_parent->AddChild(node.Pass());
   node.reset(new RTreeNode);
   node->AddChild(
       scoped_ptr<RTreeNodeBase>(new RTreeRecord(Rect(1, 2, 1, 1), 4)));
-  test_parent->AddChild(node.PassAs<RTreeNodeBase>());
+  test_parent->AddChild(node.Pass());
 
   ValidateNode(test_parent.get(), 1U, 5U);
 
@@ -779,7 +779,7 @@ TEST_F(RTreeNodeTest, LeastAreaEnlargement) {
   node.reset(new RTreeNode);
   node->AddChild(
       scoped_ptr<RTreeNodeBase>(new RTreeRecord(Rect(0, 1, 3, 1), 7)));
-  test_parent->AddChild(node.PassAs<RTreeNodeBase>());
+  test_parent->AddChild(node.Pass());
 
   ValidateNode(test_parent.get(), 1U, 5U);
 

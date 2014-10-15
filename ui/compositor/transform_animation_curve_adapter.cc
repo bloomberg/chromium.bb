@@ -27,12 +27,8 @@ double TransformAnimationCurveAdapter::Duration() const {
 }
 
 scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::Clone() const {
-  scoped_ptr<TransformAnimationCurveAdapter> to_return(
-      new TransformAnimationCurveAdapter(tween_type_,
-                                         initial_value_,
-                                         target_value_,
-                                         duration_));
-  return to_return.PassAs<cc::AnimationCurve>();
+  return make_scoped_ptr(new TransformAnimationCurveAdapter(
+      tween_type_, initial_value_, target_value_, duration_));
 }
 
 gfx::Transform TransformAnimationCurveAdapter::GetValue(
@@ -95,11 +91,8 @@ double InverseTransformCurveAdapter::Duration() const {
 }
 
 scoped_ptr<cc::AnimationCurve> InverseTransformCurveAdapter::Clone() const {
-  scoped_ptr<InverseTransformCurveAdapter> to_return(
-      new InverseTransformCurveAdapter(base_curve_,
-                                       initial_value_,
-                                       duration_));
-  return to_return.PassAs<cc::AnimationCurve>();
+  return make_scoped_ptr(
+      new InverseTransformCurveAdapter(base_curve_, initial_value_, duration_));
 }
 
 gfx::Transform InverseTransformCurveAdapter::GetValue(

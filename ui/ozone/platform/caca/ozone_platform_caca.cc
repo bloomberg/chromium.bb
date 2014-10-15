@@ -39,8 +39,8 @@ class OzonePlatformCaca : public OzonePlatform {
     scoped_ptr<CacaWindow> caca_window(new CacaWindow(
         delegate, window_manager_.get(), event_source_.get(), bounds));
     if (!caca_window->Initialize())
-      return scoped_ptr<PlatformWindow>();
-    return caca_window.PassAs<PlatformWindow>();
+      return nullptr;
+    return caca_window.Pass();
   }
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {

@@ -153,7 +153,7 @@ scoped_ptr<MotionEvent> MotionEventGeneric::Clone() const {
 scoped_ptr<MotionEvent> MotionEventGeneric::Cancel() const {
   scoped_ptr<MotionEventGeneric> event(new MotionEventGeneric(*this));
   event->set_action(ACTION_CANCEL);
-  return event.PassAs<MotionEvent>();
+  return event.Pass();
 }
 
 void MotionEventGeneric::PushPointer(const PointerProperties& pointer) {

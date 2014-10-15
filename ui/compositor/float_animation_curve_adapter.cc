@@ -22,12 +22,8 @@ double FloatAnimationCurveAdapter::Duration() const {
 }
 
 scoped_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::Clone() const {
-  scoped_ptr<FloatAnimationCurveAdapter> to_return(
-      new FloatAnimationCurveAdapter(tween_type_,
-                                     initial_value_,
-                                     target_value_,
-                                     duration_));
-  return to_return.PassAs<cc::AnimationCurve>();
+  return make_scoped_ptr(new FloatAnimationCurveAdapter(
+      tween_type_, initial_value_, target_value_, duration_));
 }
 
 float FloatAnimationCurveAdapter::GetValue(double t) const {

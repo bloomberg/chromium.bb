@@ -444,7 +444,7 @@ void LabelButton::UpdateThemedBorder() {
   } else
 #endif
   {
-    SetBorder(label_button_border.PassAs<Border>());
+    SetBorder(label_button_border.Pass());
   }
 
   border_is_themed_border_ = true;

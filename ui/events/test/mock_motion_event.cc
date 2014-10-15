@@ -94,7 +94,7 @@ scoped_ptr<MotionEvent> MockMotionEvent::Clone() const {
 scoped_ptr<MotionEvent> MockMotionEvent::Cancel() const {
   scoped_ptr<MockMotionEvent> event(new MockMotionEvent(*this));
   event->set_action(MotionEvent::ACTION_CANCEL);
-  return event.PassAs<MotionEvent>();
+  return event.Pass();
 }
 
 void MockMotionEvent::PressPoint(float x, float y) {

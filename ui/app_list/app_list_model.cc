@@ -339,8 +339,7 @@ AppListFolderItem* AppListModel::FindOrCreateFolderItem(
       new AppListFolderItem(folder_id, AppListFolderItem::FOLDER_TYPE_NORMAL));
   new_folder->set_position(
       top_level_item_list_->CreatePositionBefore(syncer::StringOrdinal()));
-  AppListItem* new_folder_item =
-      AddItemToItemListAndNotify(new_folder.PassAs<AppListItem>());
+  AppListItem* new_folder_item = AddItemToItemListAndNotify(new_folder.Pass());
   return static_cast<AppListFolderItem*>(new_folder_item);
 }
 

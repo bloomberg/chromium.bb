@@ -162,7 +162,7 @@ scoped_ptr<MotionEvent> ResampleMotionEvent(const MotionEvent& event0,
   event->set_action_index(event0.GetActionIndex());
   event->set_button_state(event0.GetButtonState());
 
-  return event.PassAs<MotionEvent>();
+  return event.Pass();
 }
 
 // MotionEvent implementation for storing multiple events, with the most

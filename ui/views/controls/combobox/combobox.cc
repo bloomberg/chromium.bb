@@ -636,7 +636,7 @@ void Combobox::UpdateBorder() {
     border->SetInsets(5, 10, 5, 10);
   if (invalid_)
     border->SetColor(kWarningColor);
-  SetBorder(border.PassAs<Border>());
+  SetBorder(border.Pass());
 }
 
 void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {

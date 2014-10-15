@@ -253,7 +253,7 @@ void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
 
 void BubbleFrameView::SetBubbleBorder(scoped_ptr<BubbleBorder> border) {
   bubble_border_ = border.get();
-  SetBorder(border.PassAs<Border>());
+  SetBorder(border.Pass());
 
   // Update the background, which relies on the border.
   set_background(new views::BubbleBackground(bubble_border_));

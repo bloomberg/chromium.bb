@@ -104,7 +104,7 @@ class OzonePlatformGbm : public OzonePlatform {
                       event_factory_ozone_.get(),
                       window_manager_.get()));
     platform_window->Initialize();
-    return platform_window.PassAs<PlatformWindow>();
+    return platform_window.Pass();
   }
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
