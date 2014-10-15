@@ -1511,7 +1511,7 @@ cr.define('options', function() {
       if (managed)
         $('set-wallpaper').disabled = true;
       else
-        this.enableElementIfPossible_($('set-wallpaper'));
+        this.enableElementIfPossible_(getRequiredElement('set-wallpaper'));
 
       // Create a synthetic pref change event decorated as
       // CoreOptionsHandler::CreateValueForPref() does.
