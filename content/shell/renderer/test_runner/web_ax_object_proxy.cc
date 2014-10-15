@@ -58,6 +58,10 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Complementary");
     case blink::WebAXRoleContentInfo:
       return result.append("ContentInfo");
+    case blink::WebAXRoleDate:
+      return result.append("DateField");
+    case blink::WebAXRoleDateTime:
+      return result.append("DateTimeField");
     case blink::WebAXRoleDefinition:
       return result.append("Definition");
     case blink::WebAXRoleDescriptionListDetail:
@@ -236,6 +240,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("TextArea");
     case blink::WebAXRoleTextField:
       return result.append("TextField");
+    case blink::WebAXRoleTime:
+      return result.append("Time");
     case blink::WebAXRoleTimer:
       return result.append("Timer");
     case blink::WebAXRoleToggleButton:

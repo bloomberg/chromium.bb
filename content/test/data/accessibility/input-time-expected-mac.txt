@@ -1,4 +1,3 @@
-#<skip --chromium dependancy>
 AXWebArea AXRoleDescription='HTML content'
     AXGroup AXRoleDescription='group'
         AXUnknown AXRoleDescription='unknown'

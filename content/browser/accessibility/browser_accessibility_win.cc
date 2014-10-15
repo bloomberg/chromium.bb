@@ -3450,6 +3450,14 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
+    case ui::AX_ROLE_DATE:
+      ia_role_ = ROLE_SYSTEM_DROPLIST;
+      ia2_role_ = IA2_ROLE_DATE_EDITOR;
+      break;
+    case ui::AX_ROLE_DATE_TIME:
+      ia_role_ = ROLE_SYSTEM_DROPLIST;
+      ia2_role_ = IA2_ROLE_DATE_EDITOR;
+      break;
     case ui::AX_ROLE_DIV:
       role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
@@ -3768,6 +3776,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
+      break;
+    case ui::AX_ROLE_TIME:
+      ia_role_ = ROLE_SYSTEM_SPINBUTTON;
       break;
     case ui::AX_ROLE_TIMER:
       ia_role_ = ROLE_SYSTEM_CLOCK;

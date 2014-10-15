@@ -630,10 +630,35 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputColor) {
   RunTest(FILE_PATH_LITERAL("input-color.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputDate) {
+  RunTest(FILE_PATH_LITERAL("input-date.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputDateTime) {
+  RunTest(FILE_PATH_LITERAL("input-datetime.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityInputDateTimeLocal) {
+  RunTest(FILE_PATH_LITERAL("input-datetime-local.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputImageButtonInMenu) {
   RunTest(FILE_PATH_LITERAL("input-image-button-in-menu.html"));
 }
+
+// crbug.com/423675 - AX tree is different for Win7 and Win8.
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityInputMonth) {
+  RunTest(FILE_PATH_LITERAL("input-month.html"));
+}
+#else
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputMonth) {
+  RunTest(FILE_PATH_LITERAL("input-month.html"));
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRadio) {
   RunTest(FILE_PATH_LITERAL("input-radio.html"));
@@ -661,6 +686,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputTime) {
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputTypes) {
   RunTest(FILE_PATH_LITERAL("input-types.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputWeek) {
+  RunTest(FILE_PATH_LITERAL("input-week.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityIns) {

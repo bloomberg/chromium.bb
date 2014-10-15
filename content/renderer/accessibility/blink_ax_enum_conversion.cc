@@ -118,6 +118,10 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_COMPLEMENTARY;
     case blink::WebAXRoleContentInfo:
       return ui::AX_ROLE_CONTENT_INFO;
+    case blink::WebAXRoleDate:
+      return ui::AX_ROLE_DATE;
+    case blink::WebAXRoleDateTime:
+      return ui::AX_ROLE_DATE_TIME;
     case blink::WebAXRoleDefinition:
       return ui::AX_ROLE_DEFINITION;
     case blink::WebAXRoleDescriptionListDetail:
@@ -300,6 +304,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_TEXT_AREA;
     case blink::WebAXRoleTextField:
       return ui::AX_ROLE_TEXT_FIELD;
+    case blink::WebAXRoleTime:
+      return ui::AX_ROLE_TIME;
     case blink::WebAXRoleTimer:
       return ui::AX_ROLE_TIMER;
     case blink::WebAXRoleToggleButton:

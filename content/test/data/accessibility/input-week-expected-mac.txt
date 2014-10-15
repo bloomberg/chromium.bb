@@ -1,0 +1,13 @@
+AXWebArea
+    AXGroup
+        AXUnknown
+            AXGroup
+                AXGroup
+                    AXStaticText AXValue='Week '
+                    AXSlider AXValue='0'
+                    AXStaticText AXValue=', '
+                    AXSlider AXValue='0'
+            AXPopUpButton
+            AXSlider AXValue='0'
+                AXButton
+                AXButton
