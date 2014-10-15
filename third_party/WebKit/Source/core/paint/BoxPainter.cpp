@@ -458,7 +458,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
                 context->setColorFilter(ColorFilterLuminanceToAlpha);
             InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
             context->setImageInterpolationQuality(interpolationQuality);
-            context->drawTiledImage(image.get(), geometry.destRect(), geometry.relativePhase(), geometry.tileSize(),
+            context->drawTiledImage(image.get(), geometry.destRect(), geometry.phase(), geometry.tileSize(),
                 compositeOp, bgLayer.blendMode(), geometry.spaceSize());
             context->setImageInterpolationQuality(previousInterpolationQuality);
         }
@@ -771,7 +771,6 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
         geometry.useFixedAttachment(snappedPaintRect.location());
 
     geometry.clip(snappedPaintRect);
-    geometry.setDestOrigin(geometry.destRect().location());
 }
 
 InterpolationQuality BoxPainter::chooseInterpolationQuality(RenderBoxModelObject& obj, GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)

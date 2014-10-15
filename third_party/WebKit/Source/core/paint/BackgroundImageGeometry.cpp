@@ -31,11 +31,4 @@ void BackgroundImageGeometry::clip(const IntRect& clipRect)
     m_destRect.intersect(clipRect);
 }
 
-IntPoint BackgroundImageGeometry::relativePhase() const
-{
-    IntPoint phase = m_phase;
-    phase += m_destRect.location() - m_destOrigin;
-    return phase;
-}
-
 } // namespace blink
