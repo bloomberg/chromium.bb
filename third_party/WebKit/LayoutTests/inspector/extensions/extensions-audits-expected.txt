@@ -31,14 +31,18 @@ Progress: 75%
              __proto__
              : 
              Object
-             <
-              span
-              
-               id
-              ="
-               test-element
-              "
-             >
+                <
+                 span
+                 
+                  id
+                 ="
+                  test-element
+                 "
+                >
+                …
+                <
+                 /span
+                >
          extensions-audits.html:20
     [severity-info] Passed rule
      this rule always passes ok

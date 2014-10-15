@@ -13,14 +13,18 @@ RUNNING TEST: extension_testAudits
             __proto__
             : 
             Object
-            <
-             span
-             
-              id
-             ="
-              test-element
-             "
-            >
+               <
+                span
+                
+                 id
+                ="
+                 test-element
+                "
+               >
+               …
+               <
+                /span
+               >
            content script object
             whereAmI
             : 
@@ -28,14 +32,18 @@ RUNNING TEST: extension_testAudits
             __proto__
             : 
             Object
-            <
-             span
-             
-              id
-             ="
-              test-element
-             "
-            >
+               <
+                span
+                
+                 id
+                ="
+                 test-element
+                "
+               >
+               …
+               <
+                /span
+               >
 category.onAuditStarted fired
 All tests done.
 

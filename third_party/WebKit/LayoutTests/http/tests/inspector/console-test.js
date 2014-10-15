@@ -13,7 +13,7 @@ InspectorTest.evaluateInConsole = function(code, callback)
     event.initKeyboardEvent("keydown", true, true, null, "Enter", "");
     consoleView._prompt.proxyElement.dispatchEvent(event);
     InspectorTest.addConsoleViewSniffer(function(commandResult) {
-        callback(commandResult.toMessageElement().textContent);
+        callback(commandResult.toMessageElement().deepTextContent());
     });
 }
 
@@ -40,7 +40,7 @@ InspectorTest.evaluateInConsoleAndDump = function(code, callback)
 
 InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessage)
 {
-    var messageText = messageElement.textContent.replace(/\u200b/g, "");
+    var messageText = messageElement.deepTextContent().replace(/\u200b/g, "");
     // Replace scriptIds with generic scriptId string to avoid flakiness.
     messageText = messageText.replace(/VM\d+/g, "VM");
     // Strip out InjectedScript line numbers from stack traces to avoid rebaselining each time InjectedScriptSource is edited.

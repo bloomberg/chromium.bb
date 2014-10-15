@@ -14,7 +14,7 @@ InspectorTest.doAddAttribute = function(testName, dataNodeId, attributeText, nex
 
         function testContinuation()
         {
-            var editorElement = window.getSelection().anchorNode.parentElement;
+            var editorElement = WebInspector.panels.elements._treeOutlines[0]._shadowRoot.getSelection().anchorNode.parentElement;
             editorElement.textContent = attributeText;
             editorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
             InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", done);

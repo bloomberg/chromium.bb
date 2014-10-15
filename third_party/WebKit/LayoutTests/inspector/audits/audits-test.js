@@ -26,12 +26,14 @@ InspectorTest.launchAllAudits = function(shouldReload, callback)
 InspectorTest.collectTextContent = function(element, indent)
 {
     var nodeOutput = "";
-    var child = element.firstChild;
+    var child = element.shadowRoot || element.firstChild;
 
+    var nonTextTags = { "STYLE": 1, "SCRIPT": 1 };
     while (child) {
         if (child.nodeType === Node.TEXT_NODE) {
-            nodeOutput += child.nodeValue.replace("\u200B", "");
-        } else if (child.nodeType === Node.ELEMENT_NODE) {
+            if (!nonTextTags[child.parentElement.nodeName])
+                nodeOutput += child.nodeValue.replace("\u200B", "");
+        } else if (child.nodeType === Node.ELEMENT_NODE || child.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
             if (nodeOutput !== "") {
                 InspectorTest.addResult(indent + nodeOutput);
                 nodeOutput = "";
