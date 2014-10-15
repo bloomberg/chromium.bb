@@ -18,12 +18,12 @@ function test(magnitude, callback)
 }
 
 Magnitude.description("This tests time complexity of parsing HTML with large inlined script.");
-Magnitude.initialExponent = 15;
-Magnitude.numPoints = 4;
+Magnitude.initialExponent = 17;
+Magnitude.numPoints = 2;
 Magnitude.trim = 0;
 Magnitude.tolerance = 0.33;
-Magnitude.numTrials = 5;
-Magnitude.successThreshold = 0.2; // 1 out of 5
+Magnitude.numTrials = 4;
+Magnitude.successThreshold = 0.25; // 1 out of 4
 Magnitude.runAsync(setupFunction, test, Magnitude.LINEAR);
 </script>
 </head>
