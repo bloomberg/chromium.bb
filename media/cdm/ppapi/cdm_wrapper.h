@@ -42,8 +42,7 @@ class CdmWrapper {
 
   virtual ~CdmWrapper() {};
 
-  // TODO(jrummell): Remove return value when CDM4/5 are removed.
-  virtual bool SetServerCertificate(uint32_t promise_id,
+  virtual void SetServerCertificate(uint32_t promise_id,
                                     const uint8_t* server_certificate_data,
                                     uint32_t server_certificate_data_size) = 0;
   virtual void CreateSession(uint32_t promise_id,
@@ -60,15 +59,13 @@ class CdmWrapper {
                              uint32_t web_session_id_size,
                              const uint8_t* response,
                              uint32_t response_size) = 0;
-  // TODO(jrummell): Remove return value when CDM4/5 are removed.
-  virtual bool CloseSession(uint32_t promise_id,
+  virtual void CloseSession(uint32_t promise_id,
                             const char* web_session_id,
                             uint32_t web_session_id_size) = 0;
   virtual void RemoveSession(uint32_t promise_id,
                              const char* web_session_id,
                              uint32_t web_session_id_size) = 0;
-  // TODO(jrummell): Remove return value when CDM4/5 are removed.
-  virtual bool GetUsableKeyIds(uint32_t promise_id,
+  virtual void GetUsableKeyIds(uint32_t promise_id,
                                const char* web_session_id,
                                uint32_t web_session_id_size) = 0;
   virtual void TimerExpired(void* context) = 0;
@@ -91,53 +88,6 @@ class CdmWrapper {
   virtual void OnQueryOutputProtectionStatus(
       uint32_t link_mask,
       uint32_t output_protection_mask) = 0;
-
-  // Helper function for the cdm::Host_4 methods. Calls to CreateSession(),
-  // LoadSession(), UpdateSession(), and ReleaseSession() pass in promise ids,
-  // but the CDM interface needs session ids. For create and load, we need to
-  // create a new session_id to pass to the CDM. For update and release, we need
-  // to look up |web_session_id| and convert it into the existing |session_id|.
-  // Since the callbacks don't come through this interface, cdm_adapter needs to
-  // create the mapping (and delete it on release).
-  // TODO(jrummell): Remove these once Host_4 interface is removed.
-  virtual uint32_t LookupPromiseId(uint32_t session_id) = 0;
-  virtual void AssignWebSessionId(uint32_t session_id,
-                                  const char* web_session_id,
-                                  uint32_t web_session_id_size) = 0;
-  virtual std::string LookupWebSessionId(uint32_t session_id) = 0;
-  virtual void DropWebSessionId(std::string web_session_id) = 0;
-
-  // Helper functions for the cdm::Host_4 methods.
-  // CDMs using cdm::Host_6 will call OnSessionUsableKeys() as necessary when
-  // resolving LoadSession() and UpdateSession(). This needs to be simulated
-  // for the older CDMs. These must not be called for cdm::Host_6 and later.
-  // TODO(jrummell): Remove these once Host_4 interface is removed.
-
-  // Query whether a SessionUsableKeys event is necessary for the specified
-  // |promise_id|. Returns true if needed and |web_session_id| is updated,
-  // otherwise returns false.
-  virtual bool SessionUsableKeysEventNeeded(uint32_t promise_id,
-                                            std::string* web_session_id) = 0;
-
-  // Used to indicate that a SessionUsableKeys event is required for the
-  // specified |promise_id| and associated |web_session_id|.
-  virtual void SetSessionUsableKeysEventNeeded(
-      uint32_t promise_id,
-      const char* web_session_id,
-      uint32_t web_session_id_size) = 0;
-
-  // cdm::Host_6 introduces InputBuffer_2 (aka InputBuffer). cdm::Host_4
-  // methods still use InputBuffer_1, so this helper function
-  // converts InputBuffer_2 to InputBuffer_1.
-  // TODO(jrummell): Remove these once Host_4 interfaces is removed.
-  virtual void ConvertInputBuffer(const cdm::InputBuffer& v2,
-                                  cdm::InputBuffer_1* v1) = 0;
-
-  // Prior to CDM_6, |init_data_type| was a content type. This helper convererts
-  // an |init_data_type| to a content type.
-  // TODO(sandersd): Remove once Host_4 interface is removed.
-  virtual std::string ConvertInitDataTypeToContentType(
-      const std::string& init_data_type) const = 0;
 
  protected:
   CdmWrapper() {}
@@ -170,22 +120,12 @@ class CdmWrapperImpl : public CdmWrapper {
     cdm_->Destroy();
   }
 
-  // Returns true if |data| is prefixed with |header| and has data after the
-  // |header|.
-  bool HasHeader(const uint8* data,
-                 int data_length,
-                 const std::string& header) {
-    return static_cast<size_t>(data_length) > header.length() &&
-           std::equal(data, data + header.length(), header.begin());
-  }
-
-  virtual bool SetServerCertificate(
+  virtual void SetServerCertificate(
       uint32_t promise_id,
       const uint8_t* server_certificate_data,
       uint32_t server_certificate_data_size) override {
     cdm_->SetServerCertificate(
         promise_id, server_certificate_data, server_certificate_data_size);
-    return true;
   }
 
   virtual void CreateSession(uint32_t promise_id,
@@ -194,20 +134,6 @@ class CdmWrapperImpl : public CdmWrapper {
                              const uint8_t* init_data,
                              uint32_t init_data_size,
                              cdm::SessionType session_type) override {
-    // TODO(jrummell): Remove this code once |session_type| is passed through
-    // Pepper. When removing, add the header back in for CDM4.
-    PP_DCHECK(session_type == cdm::kTemporary);
-    const char kPersistentSessionHeader[] = "PERSISTENT|";
-    if (HasHeader(init_data, init_data_size, kPersistentSessionHeader)) {
-      cdm_->CreateSession(promise_id,
-                          init_data_type,
-                          init_data_type_size,
-                          init_data + strlen(kPersistentSessionHeader),
-                          init_data_size - strlen(kPersistentSessionHeader),
-                          cdm::kPersistent);
-      return;
-    }
-
     cdm_->CreateSession(promise_id,
                         init_data_type,
                         init_data_type_size,
@@ -234,11 +160,10 @@ class CdmWrapperImpl : public CdmWrapper {
                         response_size);
   }
 
-  virtual bool CloseSession(uint32_t promise_id,
+  virtual void CloseSession(uint32_t promise_id,
                             const char* web_session_id,
                             uint32_t web_session_id_size) override {
     cdm_->CloseSession(promise_id, web_session_id, web_session_id_size);
-    return true;
   }
 
   virtual void RemoveSession(uint32_t promise_id,
@@ -247,11 +172,10 @@ class CdmWrapperImpl : public CdmWrapper {
     cdm_->RemoveSession(promise_id, web_session_id, web_session_id_size);
   }
 
-  virtual bool GetUsableKeyIds(uint32_t promise_id,
+  virtual void GetUsableKeyIds(uint32_t promise_id,
                                const char* web_session_id,
                                uint32_t web_session_id_size) override {
     cdm_->GetUsableKeyIds(promise_id, web_session_id, web_session_id_size);
-    return true;
   }
 
   virtual void TimerExpired(void* context) override {
@@ -304,233 +228,15 @@ class CdmWrapperImpl : public CdmWrapper {
     cdm_->OnQueryOutputProtectionStatus(link_mask, output_protection_mask);
   }
 
-  uint32_t CreateSessionId() {
-    return next_session_id_++;
-  }
-
-  void RegisterPromise(uint32_t session_id, uint32_t promise_id) {
-    PP_DCHECK(promise_to_session_id_map_.find(session_id) ==
-              promise_to_session_id_map_.end());
-    promise_to_session_id_map_.insert(std::make_pair(session_id, promise_id));
-  }
-
-  virtual uint32_t LookupPromiseId(uint32_t session_id) {
-    std::map<uint32_t, uint32_t>::iterator it =
-        promise_to_session_id_map_.find(session_id);
-    if (it == promise_to_session_id_map_.end())
-      return 0;
-    uint32_t promise_id = it->second;
-    promise_to_session_id_map_.erase(it);
-    return promise_id;
-  }
-
-  virtual void AssignWebSessionId(uint32_t session_id,
-                                  const char* web_session_id,
-                                  uint32_t web_session_id_size) {
-    web_session_to_session_id_map_.insert(std::make_pair(
-        std::string(web_session_id, web_session_id_size), session_id));
-  }
-
-  uint32_t LookupSessionId(std::string web_session_id) {
-    return web_session_to_session_id_map_.find(web_session_id)->second;
-  }
-
-  virtual std::string LookupWebSessionId(uint32_t session_id) {
-    std::map<std::string, uint32_t>::iterator it;
-    for (it = web_session_to_session_id_map_.begin();
-         it != web_session_to_session_id_map_.end();
-         ++it) {
-      if (it->second == session_id)
-        return it->first;
-    }
-    PP_NOTREACHED();
-    return std::string();
-  }
-
-  virtual void DropWebSessionId(std::string web_session_id) {
-    web_session_to_session_id_map_.erase(web_session_id);
-  }
-
-  virtual bool SessionUsableKeysEventNeeded(uint32_t promise_id,
-                                            std::string* web_session_id) {
-    std::map<uint32_t, std::string>::iterator it =
-        promises_needing_usable_keys_event_.find(promise_id);
-    if (it == promises_needing_usable_keys_event_.end())
-      return false;
-    web_session_id->swap(it->second);
-    promises_needing_usable_keys_event_.erase(it);
-    return true;
-  }
-
-  virtual void SetSessionUsableKeysEventNeeded(uint32_t promise_id,
-                                               const char* web_session_id,
-                                               uint32_t web_session_id_size) {
-    promises_needing_usable_keys_event_.insert(std::make_pair(
-        promise_id, std::string(web_session_id, web_session_id_size)));
-  }
-
-  virtual void ConvertInputBuffer(const cdm::InputBuffer& v2,
-                                  cdm::InputBuffer_1* v1) {
-    v1->data = v2.data;
-    v1->data_size = v2.data_size;
-    v1->data_offset = 0;
-    v1->key_id = v2.key_id;
-    v1->key_id_size = v2.key_id_size;
-    v1->iv = v2.iv;
-    v1->iv_size = v2.iv_size;
-    v1->subsamples = v2.subsamples;
-    v1->num_subsamples = v2.num_subsamples;
-    v1->timestamp = v2.timestamp;
-  }
-
-  virtual std::string ConvertInitDataTypeToContentType(
-      const std::string& init_data_type) const {
-    if (init_data_type == "cenc")
-      return "video/mp4";
-    if (init_data_type == "webm")
-      return "video/webm";
-    return init_data_type;
-  }
-
  private:
-  CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm), next_session_id_(100) {
+  CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm) {
     PP_DCHECK(cdm_);
   }
 
   CdmInterface* cdm_;
 
-  std::map<uint32_t, uint32_t> promise_to_session_id_map_;
-  uint32_t next_session_id_;
-  std::map<std::string, uint32_t> web_session_to_session_id_map_;
-
-  std::map<uint32_t, std::string> promises_needing_usable_keys_event_;
-
   DISALLOW_COPY_AND_ASSIGN(CdmWrapperImpl);
 };
-
-// Overrides for the cdm::Host_4 methods. Calls to CreateSession(),
-// LoadSession(), UpdateSession(), and ReleaseSession() pass in promise ids,
-// but the CDM interface needs session ids. For create and load, we need to
-// create a new session_id to pass to the CDM. For update and release, we need
-// to look up |web_session_id| and convert it into the existing |session_id|.
-// Since the callbacks don't come through this interface, cdm_adapter needs to
-// create the mapping (and delete it on release). Finally, for create, we need
-// to translate |init_data_type| to a MIME type.
-// TODO(jrummell): Remove these once Host_4 interface is removed.
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::SetServerCertificate(
-    uint32_t promise_id,
-    const uint8_t* server_certificate_data,
-    uint32_t server_certificate_data_size) {
-  return false;
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CreateSession(
-    uint32_t promise_id,
-    const char* init_data_type,
-    uint32_t init_data_type_size,
-    const uint8_t* init_data,
-    uint32_t init_data_size,
-    cdm::SessionType session_type) {
-  uint32_t session_id = CreateSessionId();
-  RegisterPromise(session_id, promise_id);
-  std::string converted_init_data_type = ConvertInitDataTypeToContentType(
-      std::string(init_data_type, init_data_type_size));
-  cdm_->CreateSession(session_id,
-                      converted_init_data_type.data(),
-                      converted_init_data_type.length(),
-                      init_data,
-                      init_data_size);
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::LoadSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  uint32_t session_id = CreateSessionId();
-  RegisterPromise(session_id, promise_id);
-  // As CDM_4 doesn't support OnSessionUsableKeysChange(), make sure to generate
-  // one when the promise is resolved. This may be overly aggressive.
-  SetSessionUsableKeysEventNeeded(
-      promise_id, web_session_id, web_session_id_size);
-  cdm_->LoadSession(session_id, web_session_id, web_session_id_size);
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::UpdateSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size,
-    const uint8_t* response,
-    uint32_t response_size) {
-  std::string web_session_str(web_session_id, web_session_id_size);
-  uint32_t session_id = LookupSessionId(web_session_str);
-  RegisterPromise(session_id, promise_id);
-  // As CDM_4 doesn't support OnSessionUsableKeysChange(), make sure to generate
-  // one when the promise is resolved. This may be overly aggressive.
-  SetSessionUsableKeysEventNeeded(
-      promise_id, web_session_id, web_session_id_size);
-  cdm_->UpdateSession(session_id, response, response_size);
-}
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CloseSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  return false;
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::RemoveSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  std::string web_session_str(web_session_id, web_session_id_size);
-  uint32_t session_id = LookupSessionId(web_session_str);
-  RegisterPromise(session_id, promise_id);
-  cdm_->ReleaseSession(session_id);
-}
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::GetUsableKeyIds(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  return false;
-}
-
-template <>
-cdm::Status CdmWrapperImpl<cdm::ContentDecryptionModule_4>::Decrypt(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::DecryptedBlock* decrypted_buffer) {
-  cdm::InputBuffer_1 buffer;
-  ConvertInputBuffer(encrypted_buffer, &buffer);
-  return cdm_->Decrypt(buffer, decrypted_buffer);
-}
-
-template <>
-cdm::Status
-CdmWrapperImpl<cdm::ContentDecryptionModule_4>::DecryptAndDecodeFrame(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::VideoFrame* video_frame) {
-  cdm::InputBuffer_1 buffer;
-  ConvertInputBuffer(encrypted_buffer, &buffer);
-  return cdm_->DecryptAndDecodeFrame(buffer, video_frame);
-}
-
-template <>
-cdm::Status
-CdmWrapperImpl<cdm::ContentDecryptionModule_4>::DecryptAndDecodeSamples(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::AudioFrames* audio_frames) {
-  cdm::InputBuffer_1 buffer;
-  ConvertInputBuffer(encrypted_buffer, &buffer);
-  return cdm_->DecryptAndDecodeSamples(buffer, audio_frames);
-}
 
 CdmWrapper* CdmWrapper::Create(const char* key_system,
                                uint32_t key_system_size,
@@ -548,22 +254,17 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
       !IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion +
                                       1) &&
       IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion) &&
-      IsSupportedCdmInterfaceVersion(
-          cdm::ContentDecryptionModule_4::kVersion) &&
-      !IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule_4::kVersion -
+      !IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion -
                                       1));
 
   // Try to create the CDM using the latest CDM interface version.
   CdmWrapper* cdm_wrapper =
       CdmWrapperImpl<cdm::ContentDecryptionModule>::Create(
           key_system, key_system_size, get_cdm_host_func, user_data);
-  if (cdm_wrapper)
-    return cdm_wrapper;
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
-  // versions of the CDM interface.
-  cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_4>::Create(
-      key_system, key_system_size, get_cdm_host_func, user_data);
+  // versions of the CDM interface here.
+
   return cdm_wrapper;
 }
 

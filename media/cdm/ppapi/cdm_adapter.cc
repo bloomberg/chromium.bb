@@ -357,11 +357,8 @@ void CdmAdapter::SetServerCertificate(uint32_t promise_id,
     return;
   }
 
-  if (!cdm_->SetServerCertificate(
-          promise_id, server_certificate_ptr, server_certificate_size)) {
-    // CDM_4 and CDM_5 don't support this method, so reject the promise.
-    RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
-  }
+  cdm_->SetServerCertificate(
+      promise_id, server_certificate_ptr, server_certificate_size);
 }
 
 void CdmAdapter::CreateSession(uint32_t promise_id,
@@ -426,11 +423,8 @@ void CdmAdapter::UpdateSession(uint32_t promise_id,
 
 void CdmAdapter::CloseSession(uint32_t promise_id,
                               const std::string& web_session_id) {
-  if (!cdm_->CloseSession(
-          promise_id, web_session_id.data(), web_session_id.length())) {
-    // CDM_4 doesn't support this method, so reject the promise.
-    RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
-  }
+  cdm_->CloseSession(
+      promise_id, web_session_id.data(), web_session_id.length());
 }
 
 void CdmAdapter::RemoveSession(uint32_t promise_id,
@@ -441,11 +435,8 @@ void CdmAdapter::RemoveSession(uint32_t promise_id,
 
 void CdmAdapter::GetUsableKeyIds(uint32_t promise_id,
                                  const std::string& web_session_id) {
-  if (!cdm_->GetUsableKeyIds(
-          promise_id, web_session_id.data(), web_session_id.length())) {
-    // CDM_4 doesn't support this method, so reject the promise.
-    RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
-  }
+  cdm_->GetUsableKeyIds(
+      promise_id, web_session_id.data(), web_session_id.length());
 }
 
 // Note: In the following decryption/decoding related functions, errors are NOT
@@ -641,93 +632,6 @@ void CdmAdapter::TimerExpired(int32_t result, void* context) {
   PP_DCHECK(result == PP_OK);
   cdm_->TimerExpired(context);
 }
-
-// cdm::Host_4 methods
-
-double CdmAdapter::GetCurrentWallTimeInSeconds() {
-  return GetCurrentWallTime();
-}
-
-void CdmAdapter::OnSessionCreated(uint32_t session_id,
-                                  const char* web_session_id,
-                                  uint32_t web_session_id_length) {
-  uint32_t promise_id = cdm_->LookupPromiseId(session_id);
-  cdm_->AssignWebSessionId(session_id, web_session_id, web_session_id_length);
-  OnResolveNewSessionPromise(promise_id, web_session_id, web_session_id_length);
-}
-
-void CdmAdapter::OnSessionMessage(uint32_t session_id,
-                                  const char* message,
-                                  uint32_t message_length,
-                                  const char* destination_url,
-                                  uint32_t destination_url_length) {
-  std::string web_session_id = cdm_->LookupWebSessionId(session_id);
-  OnSessionMessage(web_session_id.data(),
-                   web_session_id.length(),
-                   message,
-                   message_length,
-                   destination_url,
-                   destination_url_length);
-}
-
-void CdmAdapter::OnSessionReady(uint32_t session_id) {
-  uint32_t promise_id = cdm_->LookupPromiseId(session_id);
-  if (promise_id) {
-    OnResolvePromise(promise_id);
-  } else {
-    std::string web_session_id = cdm_->LookupWebSessionId(session_id);
-    PostOnMain(callback_factory_.NewCallback(
-        &CdmAdapter::SendSessionReadyInternal, web_session_id));
-  }
-}
-
-void CdmAdapter::OnSessionClosed(uint32_t session_id) {
-  uint32_t promise_id = cdm_->LookupPromiseId(session_id);
-  std::string web_session_id = cdm_->LookupWebSessionId(session_id);
-  cdm_->DropWebSessionId(web_session_id);
-  if (promise_id) {
-    OnResolvePromise(promise_id);
-  } else {
-    OnSessionClosed(web_session_id.data(), web_session_id.length());
-  }
-}
-
-void CdmAdapter::OnSessionError(uint32_t session_id,
-                                cdm::MediaKeyError error_code,
-                                uint32_t system_code) {
-  uint32_t promise_id = cdm_->LookupPromiseId(session_id);
-
-  // Existing cdm::MediaKeyError don't map to DOM error names. Convert them
-  // into non-standard names so that the prefixed API can extract them.
-  // TODO(jrummell): Remove this conversion and the inverse when CDM4 is gone.
-  cdm::Error error;
-  switch (error_code) {
-    case cdm::kPrefixedClientError:
-      error = cdm::kClientError;
-      break;
-    case cdm::kPrefixedOutputError:
-      error = cdm::kOutputError;
-      break;
-    case cdm::kPrefixedUnknownError:
-    default:
-      error = cdm::kUnknownError;
-      break;
-  }
-
-  if (promise_id) {
-    RejectPromise(promise_id, error, system_code, std::string());
-  } else {
-    std::string web_session_id = cdm_->LookupWebSessionId(session_id);
-    OnSessionError(web_session_id.data(),
-                   web_session_id.length(),
-                   error,
-                   system_code,
-                   NULL,
-                   0);
-  }
-}
-
-// cdm::Host_6 methods
 
 cdm::Time CdmAdapter::GetCurrentWallTime() {
   return pp::Module::Get()->core()->GetTime();
@@ -1356,17 +1260,13 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
       // Current version is supported.
       IsSupportedCdmHostVersion(cdm::Host_6::kVersion) &&
       // Include all previous supported versions (if any) here.
-      // Host_5 is not supported.
-      IsSupportedCdmHostVersion(cdm::Host_4::kVersion) &&
       // One older than the oldest supported version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_4::kVersion - 1));
+      !IsSupportedCdmHostVersion(cdm::Host_6::kVersion - 1));
   PP_DCHECK(IsSupportedCdmHostVersion(host_interface_version));
 
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   CDM_DLOG() << "Create CDM Host with version " << host_interface_version;
   switch (host_interface_version) {
-    case cdm::Host_4::kVersion:
-      return static_cast<cdm::Host_4*>(cdm_adapter);
     case cdm::Host_6::kVersion:
       return static_cast<cdm::Host_6*>(cdm_adapter);
     default:

@@ -95,6 +95,11 @@ bool HasHeader(const uint8* data, int data_length, const std::string& header) {
          std::equal(data, data + header.size(), header.begin());
 }
 
+// Removes the first |length| items from |data|.
+void StripHeader(std::vector<uint8>& data, size_t length) {
+  data.erase(data.begin(), data.begin() + length);
+}
+
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
                                         const uint8* init_data,
                                         int init_data_length) {
@@ -103,12 +108,15 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
   const char kPrefixedApiLoadSessionHeader[] = "LOAD_SESSION|";
 
   SessionCreationType session_creation_type = TemporarySession;
+  std::vector<uint8> init_data_vector(init_data, init_data + init_data_length);
   if (HasHeader(init_data, init_data_length, kPrefixedApiLoadSessionHeader)) {
     session_creation_type = LoadSession;
+    StripHeader(init_data_vector, strlen(kPrefixedApiLoadSessionHeader));
   } else if (HasHeader(init_data,
                        init_data_length,
                        kPrefixedApiPersistentSessionHeader)) {
     session_creation_type = PersistentSession;
+    StripHeader(init_data_vector, strlen(kPrefixedApiPersistentSessionHeader));
   }
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
@@ -119,12 +127,13 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
           base::Bind(&ProxyDecryptor::OnSessionError,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::string())));  // No session id until created.
+  uint8* init_data_vector_data =
+      (init_data_vector.size() > 0) ? &init_data_vector[0] : nullptr;
 
   if (session_creation_type == LoadSession) {
     media_keys_->LoadSession(
-        std::string(reinterpret_cast<const char*>(
-                        init_data + strlen(kPrefixedApiLoadSessionHeader)),
-                    init_data_length - strlen(kPrefixedApiLoadSessionHeader)),
+        std::string(reinterpret_cast<const char*>(init_data_vector_data),
+                    init_data_vector.size()),
         promise.Pass());
     return true;
   }
@@ -134,8 +143,11 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
           ? media::MediaKeys::PERSISTENT_SESSION
           : media::MediaKeys::TEMPORARY_SESSION;
 
-  media_keys_->CreateSession(init_data_type, init_data, init_data_length,
-                             session_type, promise.Pass());
+  media_keys_->CreateSession(init_data_type,
+                             init_data_vector_data,
+                             init_data_vector.size(),
+                             session_type,
+                             promise.Pass());
   return true;
 }
 

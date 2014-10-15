@@ -37,7 +37,6 @@ void* GetCdmHost(int host_interface_version, void* user_data);
 // Content Decryption Module (CDM).
 class CdmAdapter : public pp::Instance,
                    public pp::ContentDecryptor_Private,
-                   public cdm::Host_4,
                    public cdm::Host_6 {
  public:
   CdmAdapter(PP_Instance instance, pp::Module* module);
@@ -88,27 +87,9 @@ class CdmAdapter : public pp::Instance,
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) override;
 
-  // cdm::Host_4 and cdm::Host_6 implementation.
+  // cdm::Host_6 implementation.
   virtual cdm::Buffer* Allocate(uint32_t capacity) override;
   virtual void SetTimer(int64_t delay_ms, void* context) override;
-
-  // cdm::Host_4 implementation.
-  virtual double GetCurrentWallTimeInSeconds() override;
-  virtual void OnSessionCreated(uint32_t session_id,
-                                const char* web_session_id,
-                                uint32_t web_session_id_length) override;
-  virtual void OnSessionMessage(uint32_t session_id,
-                                const char* message,
-                                uint32_t message_length,
-                                const char* destination_url,
-                                uint32_t destination_url_length) override;
-  virtual void OnSessionReady(uint32_t session_id) override;
-  virtual void OnSessionClosed(uint32_t session_id) override;
-  virtual void OnSessionError(uint32_t session_id,
-                              cdm::MediaKeyError error_code,
-                              uint32_t system_code) override;
-
-  // cdm::Host_6 implementation.
   virtual cdm::Time GetCurrentWallTime() override;
   virtual void OnResolveNewSessionPromise(
       uint32_t promise_id,
@@ -144,8 +125,6 @@ class CdmAdapter : public pp::Instance,
                               uint32_t system_code,
                               const char* error_message,
                               uint32_t error_message_length) override;
-
-  // cdm::Host_4 and cdm::Host_6 implementation.
   virtual void SendPlatformChallenge(const char* service_id,
                                      uint32_t service_id_length,
                                      const char* challenge,
