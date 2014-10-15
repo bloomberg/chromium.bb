@@ -25,14 +25,8 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_module.h"
 #include "net/grit/net_resources.h"
-#include "storage/browser/quota/quota_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
-
-#if defined(ENABLE_PLUGINS)
-#include "content/public/browser/plugin_service.h"
-#include "content/shell/browser/shell_plugin_service_filter.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "components/crash/browser/crash_dump_manager_android.h"
@@ -50,9 +44,6 @@
 namespace content {
 
 namespace {
-
-// Default quota for each origin is 5MB.
-const int kDefaultLayoutTestQuotaBytes = 5 * 1024 * 1024;
 
 GURL GetStartupURL() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -118,6 +109,20 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 #endif
 }
 
+void ShellBrowserMainParts::InitializeBrowserContexts() {
+  set_browser_context(new ShellBrowserContext(false, net_log_.get()));
+  set_off_the_record_browser_context(
+      new ShellBrowserContext(true, net_log_.get()));
+}
+
+void ShellBrowserMainParts::InitializeMessageLoopContext() {
+  Shell::CreateNewWindow(browser_context_.get(),
+                         GetStartupURL(),
+                         NULL,
+                         MSG_ROUTING_NONE,
+                         gfx::Size());
+}
+
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -128,48 +133,15 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
   }
 #endif
-  net_log_.reset(new ShellNetLog("content_shell"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    browser_context_.reset(new LayoutTestBrowserContext(false, net_log_.get()));
-    off_the_record_browser_context_.reset(
-        new LayoutTestBrowserContext(true, net_log_.get()));
-  } else {
-    browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
-    off_the_record_browser_context_.reset(
-        new ShellBrowserContext(true, net_log_.get()));
-  }
 
+  net_log_.reset(new ShellNetLog("content_shell"));
+  InitializeBrowserContexts();
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
   devtools_delegate_.reset(new ShellDevToolsDelegate(browser_context_.get()));
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    Shell::CreateNewWindow(browser_context_.get(),
-                           GetStartupURL(),
-                           NULL,
-                           MSG_ROUTING_NONE,
-                           gfx::Size());
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    storage::QuotaManager* quota_manager =
-        BrowserContext::GetDefaultStoragePartition(browser_context())
-            ->GetQuotaManager();
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&storage::QuotaManager::SetTemporaryGlobalOverrideQuota,
-                   quota_manager,
-                   kDefaultLayoutTestQuotaBytes *
-                       storage::QuotaManager::kPerHostTemporaryPortion,
-                   storage::QuotaCallback()));
-#if defined(ENABLE_PLUGINS)
-    PluginService* plugin_service = PluginService::GetInstance();
-    plugin_service_filter_.reset(new ShellPluginServiceFilter);
-    plugin_service->SetFilter(plugin_service_filter_.get());
-#endif
-  }
+  InitializeMessageLoopContext();
 
   if (parameters_.ui_task) {
     parameters_.ui_task->Run();

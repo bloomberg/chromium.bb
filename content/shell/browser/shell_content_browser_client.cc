@@ -17,6 +17,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/browser/ipc_echo_message_filter.h"
+#include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
 #include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -165,7 +166,10 @@ ShellContentBrowserClient::GetShellNotificationManager() {
 
 BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  shell_browser_main_parts_ = new ShellBrowserMainParts(parameters);
+  shell_browser_main_parts_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)
+          ? new LayoutTestBrowserMainParts(parameters)
+          : new ShellBrowserMainParts(parameters);
   return shell_browser_main_parts_;
 }
 

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+#include "content/shell/browser/shell_browser_context.h"
 
 #if defined(OS_ANDROID)
 namespace breakpad {
@@ -26,9 +27,7 @@ class NetLog;
 
 namespace content {
 
-class ShellBrowserContext;
 class ShellDevToolsDelegate;
-class ShellPluginServiceFilter;
 
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
@@ -54,6 +53,17 @@ class ShellBrowserMainParts : public BrowserMainParts {
 
   net::NetLog* net_log() { return net_log_.get(); }
 
+ protected:
+  virtual void InitializeBrowserContexts();
+  virtual void InitializeMessageLoopContext();
+
+  void set_browser_context(ShellBrowserContext* context) {
+    browser_context_.reset(context);
+  }
+  void set_off_the_record_browser_context(ShellBrowserContext* context) {
+    off_the_record_browser_context_.reset(context);
+  }
+
  private:
 #if defined(OS_ANDROID)
   scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
@@ -67,9 +77,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
   bool run_message_loop_;
 
   scoped_ptr<ShellDevToolsDelegate> devtools_delegate_;
-#if defined(ENABLE_PLUGINS)
-  scoped_ptr<ShellPluginServiceFilter> plugin_service_filter_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };
