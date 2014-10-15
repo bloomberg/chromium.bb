@@ -548,8 +548,11 @@ void KioskAppManager::UpdateAppData() {
   // Request external_cache_ to download new apps and update the existing
   // apps.
   scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
-  for (size_t i = 0; i < apps_.size(); ++i)
-    prefs->Set(apps_[i]->app_id(), new base::DictionaryValue);
+  for (size_t i = 0; i < apps_.size(); ++i) {
+    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    entry->SetBoolean(extensions::ExternalProviderImpl::kIsFromWebstore, true);
+    prefs->Set(apps_[i]->app_id(), entry.release());
+  }
   external_cache_->UpdateExtensionsList(prefs.Pass());
 
   RetryFailedAppDataFetch();
