@@ -9,6 +9,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-animated-pages/transitions/slide-from-right.html">
+<link rel="import" href="../lib/analytics.html">
 <link rel="import" href="../lib/ct-scheduled-updater.html">
 <link rel="import" href="../model/ct-commit-log.html">
 <link rel="import" href="../model/ct-failures.html">
@@ -101,6 +102,7 @@ found in the LICENSE file.
         this.commitLog = new CTCommitLog();
         this.failures = new CTFailures(this.commitLog);
         this._updater = new CTScheduledUpdater(this.update.bind(this), kUpdateFrequency);
+        this._analytics = new Analytics('UA-55762617-1');
       },
 
       ready: function() {
