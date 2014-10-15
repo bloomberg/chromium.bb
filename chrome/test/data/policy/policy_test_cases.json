@@ -1704,6 +1704,12 @@
     ]
   },
 
+  "SSLVersionMin": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SSLVersionMin": "tls1.2" },
+    "pref_mappings": []
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

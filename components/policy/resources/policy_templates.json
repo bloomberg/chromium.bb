@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 278
+#   For your editing convenience: highest ID currently used: 279
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6790,6 +6790,59 @@
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow Add Person from the user manager.
 
       If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the profile manager.''',
+    },
+    {
+      'name': 'SSLVersionMin',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'ssl3',
+          'tls1',
+          'tls1.1',
+          'tls1.2',
+        ],
+      },
+      'items': [
+        {
+          'name': 'SSLv3',
+          'value': 'ssl3',
+          'caption': 'SSL 3.0',
+        },
+        {
+          'name': 'TLSv1',
+          'value': 'tls1',
+          'caption': 'TLS 1.0',
+        },
+        {
+          'name': 'TLSv1.1',
+          'value': 'tls1.1',
+          'caption': 'TLS 1.1',
+        },
+        {
+          'name': 'TLSv1.2',
+          'value': 'tls1.2',
+          'caption': 'TLS 1.2',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:39-',
+        'chrome_os:39-',
+        'android:39-',
+        'ios:39-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'ssl3',
+      'id': 279,
+      'caption': '''Minimum SSL version enabled''',
+      'desc': '''If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which is SSLv3 in Chrome 39 but may be TLS 1.0 in Chrome 40.
+
+      Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions less than the specified version. An unrecognized value will be ignored.
+
+      Note that, despite the number, "sslv3" is an earier version than "tls1".''',
     },
   ],
   'messages': {

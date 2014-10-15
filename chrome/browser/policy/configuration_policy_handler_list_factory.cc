@@ -366,6 +366,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kForceEphemeralProfiles,
     prefs::kForceEphemeralProfiles,
     base::Value::TYPE_BOOLEAN },
+  { key::kSSLVersionMin,
+    prefs::kSSLVersionMin,
+    base::Value::TYPE_STRING },
 
 #if !defined(OS_MACOSX) && !defined(OS_IOS)
   { key::kFullscreenAllowed,
