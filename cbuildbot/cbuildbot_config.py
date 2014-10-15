@@ -2536,6 +2536,7 @@ _non_testable_brillo_release.add_config('kayle-release',
   manifest='kayle.xml',
   paygen=False,
   important=False,
+  signer_tests=False,
 )
 
 _non_testable_brillo_release.add_config('storm-release',
