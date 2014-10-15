@@ -46,9 +46,10 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(mean_frame_time), 1)
     self.assertGreater(mean_frame_time[0].GetRepresentativeNumber(), 0)
 
-    jank = results.FindAllPageSpecificValuesNamed('jank')
-    self.assertEquals(len(jank), 1)
-    self.assertGreater(jank[0].GetRepresentativeNumber(), 0)
+    frame_time_discrepancy = results.FindAllPageSpecificValuesNamed(
+        'frame_time_discrepancy')
+    self.assertEquals(len(frame_time_discrepancy), 1)
+    self.assertGreater(frame_time_discrepancy[0].GetRepresentativeNumber(), 0)
 
     percentage_smooth = results.FindAllPageSpecificValuesNamed(
         'percentage_smooth')
