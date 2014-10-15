@@ -30,26 +30,6 @@ namespace {
 // the apple touch icon for iPad.
 const int kTouchIconSize = 144;
 
-// Get the maximal icon size in pixels for a icon of type |icon_type| for the
-// current platform.
-int GetMaximalIconSize(favicon_base::IconType icon_type) {
-  switch (icon_type) {
-    case favicon_base::FAVICON:
-#if defined(OS_ANDROID)
-      return 192;
-#else
-      return gfx::ImageSkia::GetMaxSupportedScale() * gfx::kFaviconSize;
-#endif
-    case favicon_base::TOUCH_ICON:
-    case favicon_base::TOUCH_PRECOMPOSED_ICON:
-      return kTouchIconSize;
-    case favicon_base::INVALID_ICON:
-      return 0;
-  }
-  NOTREACHED();
-  return 0;
-}
-
 bool DoUrlAndIconMatch(const FaviconURL& favicon_url,
                        const GURL& url,
                        favicon_base::IconType icon_type) {
@@ -141,14 +121,12 @@ bool HasValidResult(
       bitmap_results.end();
 }
 
-// Returns the index of the entry with the largest area that is not larger than
-// |max_area|; -1 if there is no such match.
-int GetLargestSizeIndex(const std::vector<gfx::Size>& sizes, int max_area) {
+// Returns the index of the entry with the largest area.
+int GetLargestSizeIndex(const std::vector<gfx::Size>& sizes) {
   DCHECK(!sizes.empty());
-  int ret = -1;
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    int area = sizes[i].GetArea();
-    if ((ret == -1 || sizes[ret].GetArea() < area) && area <= max_area)
+  int ret = 0;
+  for (size_t i = 1; i < sizes.size(); ++i) {
+    if (sizes[ret].GetArea() < sizes[i].GetArea())
       ret = i;
   }
   return ret;
@@ -275,15 +253,20 @@ bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
     if (replace_best_favicon_candidate)
       largest = image.Size();
 
-    // exact match (stop downloading next icon) only if
+    // The size of the downloaded icon may not match the declared size. Stop
+    // downloading if:
     // - current candidate is only candidate.
     // - next candidate doesn't have sizes attributes, in this case, the rest
     //   candidates don't have sizes attribute either, stop downloading now,
     //   otherwise, all favicon without sizes attribute are downloaded.
-    // - next candidate has sizes attribute and it is not larger than largest.
+    // - next candidate has sizes attribute and it is not larger than largest,
+    // - current candidate is maximal one we want.
+    const int maximal_size = GetMaximalIconSize(icon_type);
     exact_match = image_urls_.size() == 1 ||
         image_urls_[1].icon_sizes.empty() ||
-        image_urls_[1].icon_sizes[0].GetArea() < largest.GetArea();
+        image_urls_[1].icon_sizes[0].GetArea() <= largest.GetArea() ||
+        (image.Size().width() == maximal_size &&
+         image.Size().height() == maximal_size);
   } else {
     exact_match = score == 1 || preferred_icon_size() == 0;
     replace_best_favicon_candidate =
@@ -410,21 +393,17 @@ void FaviconHandler::OnDidDownloadFavicon(
     gfx::ImageSkia image_skia;
     if (download_largest_icon_ && !bitmaps.empty()) {
       int index = -1;
-      int max_size = GetMaximalIconSize(i->second.icon_type);
       // Use the largest bitmap if FaviconURL doesn't have sizes attribute.
       if (current_candidate()->icon_sizes.empty()) {
-        index = GetLargestSizeIndex(original_bitmap_sizes, max_size * max_size);
+        index = GetLargestSizeIndex(original_bitmap_sizes);
       } else {
         index = GetIndexBySize(original_bitmap_sizes,
                                current_candidate()->icon_sizes[0]);
         // Find largest bitmap if there is no one exactly matched.
-        if (index == -1) {
-          index = GetLargestSizeIndex(original_bitmap_sizes,
-                                      max_size * max_size);
-        }
+        if (index == -1)
+          index = GetLargestSizeIndex(original_bitmap_sizes);
       }
-      if (index != -1)
-        image_skia = gfx::ImageSkia(gfx::ImageSkiaRep(bitmaps[index], 1));
+      image_skia = gfx::ImageSkia(gfx::ImageSkiaRep(bitmaps[index], 1));
     } else {
       image_skia = CreateFaviconImageSkia(bitmaps,
                                           original_bitmap_sizes,
@@ -533,6 +512,24 @@ bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {
 
 void FaviconHandler::NotifyFaviconUpdated(bool icon_url_changed) {
   driver_->NotifyFaviconUpdated(icon_url_changed);
+}
+
+int FaviconHandler::GetMaximalIconSize(favicon_base::IconType icon_type) {
+  switch (icon_type) {
+    case favicon_base::FAVICON:
+#if defined(OS_ANDROID)
+      return 192;
+#else
+      return gfx::ImageSkia::GetMaxSupportedScale() * gfx::kFaviconSize;
+#endif
+    case favicon_base::TOUCH_ICON:
+    case favicon_base::TOUCH_PRECOMPOSED_ICON:
+      return kTouchIconSize;
+    case favicon_base::INVALID_ICON:
+      return 0;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
@@ -668,21 +665,13 @@ int FaviconHandler::ScheduleDownload(const GURL& url,
 
 void FaviconHandler::SortAndPruneImageUrls() {
   for (std::vector<FaviconURL>::iterator i = image_urls_.begin();
-       i != image_urls_.end();) {
-    if (i->icon_sizes.empty()) {
-      ++i;
+       i != image_urls_.end(); ++i) {
+    if (i->icon_sizes.empty())
       continue;
-    }
-    int max_size = GetMaximalIconSize(i->icon_type);
-    int index = GetLargestSizeIndex(i->icon_sizes, max_size * max_size);
-    if (index == -1) {
-      i = image_urls_.erase(i);
-    } else {
-      gfx::Size largest = i->icon_sizes[index];
-      i->icon_sizes.clear();
-      i->icon_sizes.push_back(largest);
-      ++i;
-    }
+
+    gfx::Size largest = i->icon_sizes[GetLargestSizeIndex(i->icon_sizes)];
+    i->icon_sizes.clear();
+    i->icon_sizes.push_back(largest);
   }
   std::stable_sort(image_urls_.begin(), image_urls_.end(),
                    CompareIconSize);

@@ -188,6 +188,10 @@ class FaviconHandler {
     favicon_base::IconType icon_type;
   };
 
+  // Get the maximal icon size in pixels for a icon of type |icon_type| for the
+  // current platform.
+  static int GetMaximalIconSize(favicon_base::IconType icon_type);
+
   // See description above class for details.
   void OnFaviconDataForInitialURLFromFaviconService(const std::vector<
       favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results);

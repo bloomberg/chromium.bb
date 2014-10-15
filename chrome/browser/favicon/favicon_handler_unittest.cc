@@ -243,6 +243,10 @@ class TestFaviconDriver : public FaviconDriver {
 // internals.
 class TestFaviconHandler : public FaviconHandler {
  public:
+  static int GetMaximalIconSize(favicon_base::IconType icon_type) {
+    return FaviconHandler::GetMaximalIconSize(icon_type);
+  }
+
   TestFaviconHandler(const GURL& page_url,
                      FaviconClient* client,
                      TestFaviconDriver* driver,
@@ -1174,10 +1178,12 @@ TEST_F(FaviconHandlerTest, TestSortFavicon) {
     // Width of largest bitmap.
     int width;
   } results[] = {
-    // First is icon1
+    // First is icon1, though its size larger than maximal.
+    {0, 1024},
+    // Second is icon2
     // The 16x16 is largest.
     {1, 16},
-    // Second is iocn2 though it has same size as icon1.
+    // Third is icon3 though it has same size as icon2.
     // The 16x16 is largest.
     {2, 16},
     // The rest of bitmaps come in order, there is no sizes attribute.
@@ -1185,8 +1191,8 @@ TEST_F(FaviconHandlerTest, TestSortFavicon) {
     {4, -1},
   };
   const std::vector<FaviconURL>& icons = handler1.image_urls();
-  ASSERT_EQ(4u, icons.size());
-  for (size_t i = 0; i < 4; ++i) {
+  ASSERT_EQ(5u, icons.size());
+  for (size_t i = 0; i < icons.size(); ++i) {
     EXPECT_EQ(kSourceIconURLs[results[i].favicon_index].icon_url,
               icons[i].icon_url);
     if (results[i].width != -1)
@@ -1196,25 +1202,25 @@ TEST_F(FaviconHandlerTest, TestSortFavicon) {
 
 TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
   const GURL kPageURL("http://www.google.com");
-  std::vector<gfx::Size> too_large;
-  too_large.push_back(gfx::Size(1024, 1024));
-  too_large.push_back(gfx::Size(512, 512));
+  std::vector<gfx::Size> icon1;
+  icon1.push_back(gfx::Size(1024, 1024));
+  icon1.push_back(gfx::Size(512, 512));
 
-  std::vector<gfx::Size> one_icon;
-  one_icon.push_back(gfx::Size(15, 15));
-  one_icon.push_back(gfx::Size(512, 512));
+  std::vector<gfx::Size> icon2;
+  icon2.push_back(gfx::Size(15, 15));
+  icon2.push_back(gfx::Size(14, 14));
 
-  std::vector<gfx::Size> two_icons;
-  two_icons.push_back(gfx::Size(16, 16));
-  two_icons.push_back(gfx::Size(14, 14));
+  std::vector<gfx::Size> icon3;
+  icon3.push_back(gfx::Size(16, 16));
+  icon3.push_back(gfx::Size(512, 512));
 
   const FaviconURL kSourceIconURLs[] = {
       FaviconURL(
-          GURL("http://www.google.com/a"), favicon_base::FAVICON, too_large),
+          GURL("http://www.google.com/a"), favicon_base::FAVICON, icon1),
       FaviconURL(
-          GURL("http://www.google.com/b"), favicon_base::FAVICON, one_icon),
+          GURL("http://www.google.com/b"), favicon_base::FAVICON, icon2),
       FaviconURL(
-          GURL("http://www.google.com/c"), favicon_base::FAVICON, two_icons),
+          GURL("http://www.google.com/c"), favicon_base::FAVICON, icon3),
       FaviconURL(GURL("http://www.google.com/d"),
                  favicon_base::FAVICON,
                  std::vector<gfx::Size>()),
@@ -1240,19 +1246,15 @@ TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
     // Width of largest bitmap.
     int width;
   } results[] = {
-    // The 1024x1024 and 512x512 icons were dropped as it excceeds maximal size,
-    // image_urls_ is 4 elements.
-    // The 16x16 is largest.
-    {4, 2, 16},
-    // The 16x16 was dropped.
-    // The 15x15 is largest.
+    {5, 0, 1024},
+    {4, 2, 512},
     {3, 1, 15},
     // The rest of bitmaps come in order.
     {2, 3, -1},
     {1, 4, -1},
   };
 
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 5; ++i) {
     ASSERT_EQ(results[i].image_urls_size, handler1.image_urls().size());
     EXPECT_EQ(kSourceIconURLs[results[i].favicon_index].icon_url,
               handler1.current_candidate()->icon_url);
@@ -1335,6 +1337,67 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
   // Verify the largest bitmap has been saved into history.
   EXPECT_EQ(kSourceIconURLs[i].icon_url, handler1.history_handler()->icon_url_);
   EXPECT_EQ(kSourceIconURLs[i].icon_sizes[b],
+            handler1.history_handler()->size_);
+}
+
+TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
+  const GURL kPageURL("http://www.google.com");
+  const int kMaximalSize =
+    TestFaviconHandler::GetMaximalIconSize(favicon_base::FAVICON);
+
+  std::vector<gfx::Size> icon1;
+  icon1.push_back(gfx::Size(kMaximalSize + 1, kMaximalSize + 1));
+
+  std::vector<gfx::Size> icon2;
+  icon2.push_back(gfx::Size(kMaximalSize + 2, kMaximalSize + 2));
+
+  const FaviconURL kSourceIconURLs[] = {
+      FaviconURL(
+          GURL("http://www.google.com/b"), favicon_base::FAVICON, icon1),
+      FaviconURL(
+          GURL("http://www.google.com/c"), favicon_base::FAVICON, icon2)};
+
+  TestFaviconClient client;
+  TestFaviconDriver driver1;
+  TestFaviconHandler handler1(
+      kPageURL, &client, &driver1, FaviconHandler::FAVICON, true);
+  std::vector<FaviconURL> urls1(kSourceIconURLs,
+                                kSourceIconURLs + arraysize(kSourceIconURLs));
+  UpdateFaviconURL(&handler1, kPageURL, urls1);
+
+  ASSERT_EQ(2u, handler1.urls().size());
+
+  // Index of largest favicon in kSourceIconURLs.
+  size_t i = 1;
+  // The largest bitmap's index in Favicon .
+  int b = 0;
+
+  // Verify the icon_bitmaps_ was initialized correctly.
+  EXPECT_EQ(kSourceIconURLs[i].icon_url,
+            handler1.current_candidate()->icon_url);
+  EXPECT_EQ(kSourceIconURLs[i].icon_sizes[b],
+            handler1.current_candidate()->icon_sizes[0]);
+
+  // Simulate no favicon from history.
+  handler1.history_handler()->history_results_.clear();
+  handler1.history_handler()->InvokeCallback();
+
+  // Verify download request
+  ASSERT_TRUE(handler1.download_handler()->HasDownload());
+  EXPECT_EQ(kSourceIconURLs[i].icon_url,
+            handler1.download_handler()->GetImageUrl());
+
+  // Give the scaled download bitmap.
+  std::vector<int> sizes;
+  sizes.push_back(kMaximalSize);
+
+  handler1.download_handler()->SetImageSizes(sizes);
+  handler1.download_handler()->InvokeCallback();
+
+  // Verify the largest bitmap has been saved into history though it was
+  // scaled down to maximal size and smaller than icon1 now.
+  EXPECT_EQ(kSourceIconURLs[i].icon_url, handler1.history_handler()->icon_url_);
+  EXPECT_EQ(gfx::Size(kMaximalSize, kMaximalSize),
             handler1.history_handler()->size_);
 }
 
