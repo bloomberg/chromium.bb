@@ -64,7 +64,6 @@ void WebRuntimeFeatures::enableApplicationCache(bool enable)
     RuntimeEnabledFeatures::setApplicationCacheEnabled(enable);
 }
 
-
 void WebRuntimeFeatures::enableCompositedSelectionUpdate(bool enable)
 {
     RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(enable);
@@ -123,6 +122,11 @@ void WebRuntimeFeatures::enableFastMobileScrolling(bool enable)
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
+}
+
+void WebRuntimeFeatures::enableImageColorProfiles(bool enable)
+{
+    RuntimeEnabledFeatures::setImageColorProfilesEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableLocalStorage(bool enable)
