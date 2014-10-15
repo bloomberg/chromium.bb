@@ -10,17 +10,22 @@ enum NetAddressFamily {
   IPV6
 };
 
-// All members are expressed in network byte order, i.e., the most significant
-// byte is stored in the smallest address. For example, if we store 127.0.0.1 in
-// |addr|, 127 should be at index 0.
 struct NetAddressIPv4 {
+  // The port number. This is in the local machine's endianness.
   uint16 port;
+
+  // The address is expressed in network byte order, so the most significant
+  // byte ("127" in the address "127.0.0.1") will be at index 0.
   array<uint8, 4> addr;
 };
 
 // All members are expressed in network byte order.
 struct NetAddressIPv6 {
+  // The port number. This is in the local machine's endianness.
   uint16 port;
+
+  // The address is expressed in network byte order, so the most significant
+  // byte is at index 0.
   array<uint8, 16> addr;
 };
 

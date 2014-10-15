@@ -4,8 +4,6 @@
 
 #include "mojo/services/network/net_address_type_converters.h"
 
-#include "base/sys_byteorder.h"
-
 namespace mojo {
 
 // static
@@ -18,14 +16,12 @@ net::IPEndPoint TypeConverter<net::IPEndPoint, NetAddressPtr>::Convert(
     case NET_ADDRESS_FAMILY_IPV4:
       if (!obj->ipv4)
         break;
-      return net::IPEndPoint(
-          obj->ipv4->addr.storage(), base::NetToHost16(obj->ipv4->port));
+      return net::IPEndPoint(obj->ipv4->addr.storage(), obj->ipv4->port);
 
     case NET_ADDRESS_FAMILY_IPV6:
       if (!obj->ipv6)
         break;
-      return net::IPEndPoint(
-          obj->ipv6->addr.storage(), base::NetToHost16(obj->ipv6->port));
+      return net::IPEndPoint(obj->ipv6->addr.storage(), obj->ipv6->port);
 
     default:
       break;
@@ -43,15 +39,13 @@ NetAddressPtr TypeConverter<NetAddressPtr, net::IPEndPoint>::Convert(
     case net::ADDRESS_FAMILY_IPV4:
       net_address->family = NET_ADDRESS_FAMILY_IPV4;
       net_address->ipv4 = NetAddressIPv4::New();
-      net_address->ipv4->port =
-          base::HostToNet16(static_cast<uint16>(obj.port()));
+      net_address->ipv4->port = static_cast<uint16>(obj.port());
       net_address->ipv4->addr = Array<uint8_t>::From(obj.address());
       break;
     case NET_ADDRESS_FAMILY_IPV6:
       net_address->ipv6 = NetAddressIPv6::New();
       net_address->family = NET_ADDRESS_FAMILY_IPV6;
-      net_address->ipv6->port =
-          base::HostToNet16(static_cast<uint16>(obj.port()));
+      net_address->ipv6->port = static_cast<uint16>(obj.port());
       net_address->ipv6->addr = Array<uint8_t>::From(obj.address());
       break;
     default:
