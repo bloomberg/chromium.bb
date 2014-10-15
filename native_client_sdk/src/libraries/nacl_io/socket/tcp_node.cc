@@ -455,6 +455,7 @@ Error TcpNode::Bind(const struct sockaddr* addr, socklen_t len) {
     return PPErrorToErrno(err);
   }
 
+  local_addr_ = TCPInterface()->GetLocalAddress(socket_resource_);
   return 0;
 }
 

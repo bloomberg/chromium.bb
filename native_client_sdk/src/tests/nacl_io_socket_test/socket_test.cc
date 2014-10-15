@@ -679,6 +679,16 @@ TEST_F(SocketTestTCP, Listen) {
   ASSERT_EQ(0, ki_close(new_socket));
 }
 
+TEST_F(SocketTestTCP, BindAndGetSockName) {
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  // Bind
+  ASSERT_EQ(0, Bind(sock1_, LOCAL_HOST, 0));
+  EXPECT_EQ(0, ki_getsockname(sock1_, (struct sockaddr*)&addr, &addrlen));
+  EXPECT_NE(0, addr.sin_port);
+}
+
 TEST_F(SocketTestTCP, ListenNonBlocking) {
   int server_sock = sock1_;
 
