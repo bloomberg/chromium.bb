@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import base64
 import datetime
+import functools
 import json
 import os
 import shutil
@@ -91,8 +92,8 @@ class _PaygenPayload(object):
     self._drm = dryrun_lib.DryRunMgr(dry_run)
 
     self.generator_dir = os.path.join(work_dir, 'au-generator')
-    self.src_image_file = os.path.join(work_dir, 'src_image.bin')
-    self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
+    self.src_image_file = None
+    self.tgt_image_file = None
 
     self.payload_file = os.path.join(work_dir, 'delta.bin')
     self.delta_log_file = os.path.join(work_dir, 'delta.log')
@@ -251,7 +252,44 @@ class _PaygenPayload(object):
         finally:
           osutils.UmountDir(mp, lazy=False, cleanup=False)
 
-  def _PrepareImage(self, image, image_file):
+  @staticmethod
+  def _PrepareImageWork(payload, image, _uri, cache_file):
+    """Prepare an image as it's added to the cache
+
+    This function, after being wrapped in a partial function which supplies
+    the payload and image arguments, is passed to the download_cache as a
+    fetch function. It doesn't need the URI, so that parameter is ignored.
+
+    Args:
+      payload: The PaygenPayload object.
+      image: An object representing the image we're processing.
+      cache_file: The path to use for the prepared file.
+    """
+    # Figure out what we're downloading and how to handle it.
+    image_handling_by_type = {
+        'signed': None,
+        'test': payload.TEST_IMAGE_NAME,
+        'recovery': payload.RECOVERY_IMAGE_NAME,
+    }
+    extract_file = image_handling_by_type[image.get('image_type', 'signed')]
+
+    # Are we downloading an archive that contains the image?
+    if extract_file:
+      # Archive will be downloaded to a temporary location.
+      archive = payload.cache.GetFileObject(image.uri)
+
+      cros_build_lib.RunCommand(
+          ['tar', '-xf', archive.name, extract_file], cwd=payload.work_dir)
+
+      # Rename it into the desired image name.
+      shutil.move(os.path.join(payload.work_dir, extract_file), cache_file)
+    else:
+      # Download the image file or archive.
+      urilib.Copy(image.uri, cache_file)
+
+    payload._PatchKernel(cache_file) # pylint: disable=protected-access
+
+  def _PrepareImage(self, image):
     """Download an prepare an image for delta generation.
 
     Preparation includes downloading, extracting and copying/patch the kernel
@@ -259,39 +297,13 @@ class _PaygenPayload(object):
 
     Args:
       image: an object representing the image we're processing
-      image_file: file into which the prepared image should be copied.
     """
+    logging.info('Preparing image from %s', image.uri)
 
-    logging.info('Preparing image from %s as %s', image.uri, image_file)
-
-    # Figure out what we're downloading and how to handle it.
-    image_handling_by_type = {
-        'signed': None,
-        'test': self.TEST_IMAGE_NAME,
-        'recovery': self.RECOVERY_IMAGE_NAME,
-    }
-    extract_file = image_handling_by_type[image.get('image_type', 'signed')]
-
-    # Are we downloading an archive that contains the image?
-    if extract_file:
-      # Archive will be downloaded to a temporary location.
-      with tempfile.NamedTemporaryFile(
-          prefix='image-archive-', suffix='.tar.xz',
-          dir=self.work_dir) as temp_file:
-
-        # Download the image file or archive.
-        self.cache.GetFileCopy(image.uri, temp_file.name)
-
-        cros_build_lib.RunCommand(
-            ['tar', '-xJf', temp_file.name, extract_file], cwd=self.work_dir)
-
-        # Rename it into the desired image name.
-        shutil.move(os.path.join(self.work_dir, extract_file), image_file)
-    else:
-      # Download the image file or archive.
-      self.cache.GetFileCopy(image.uri, image_file)
-
-    self._PatchKernel(image_file)
+    prepped_uri = 'prepped://%s/%s' % (image.get('image_type', 'signed'),
+                                       image.uri)
+    fetch_func = functools.partial(self._PrepareImageWork, self, image)
+    return self.cache.GetFileObject(prepped_uri, fetch_func=fetch_func)
 
   def _GenerateUnsignedPayload(self):
     """Generate the unsigned delta into self.payload_file."""
@@ -579,11 +591,11 @@ class _PaygenPayload(object):
     self._PrepareGenerator()
 
     # Fetch and prepare the tgt image.
-    self._PrepareImage(self.payload.tgt_image, self.tgt_image_file)
+    self.tgt_image_file = self._PrepareImage(self.payload.tgt_image).name
 
     # Fetch and prepare the src image.
     if self.payload.src_image:
-      self._PrepareImage(self.payload.src_image, self.src_image_file)
+      self.src_image_file = self._PrepareImage(self.payload.src_image).name
 
     # Generate the unsigned payload.
     self._GenerateUnsignedPayload()
