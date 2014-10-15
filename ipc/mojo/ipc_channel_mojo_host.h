@@ -39,9 +39,9 @@ class IPC_MOJO_EXPORT ChannelMojoHost {
     void operator()(ChannelDelegate* ptr) const;
   };
 
-  base::WeakPtrFactory<ChannelMojoHost> weak_factory_;
   const scoped_refptr<base::TaskRunner> io_task_runner_;
   scoped_ptr<ChannelDelegate, DelegateDeleter> channel_delegate_;
+  base::WeakPtrFactory<ChannelMojoHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMojoHost);
 };

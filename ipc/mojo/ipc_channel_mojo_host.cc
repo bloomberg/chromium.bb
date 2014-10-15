@@ -31,8 +31,8 @@ class ChannelMojoHost::ChannelDelegate : public ChannelMojo::Delegate {
 
  private:
   scoped_refptr<base::TaskRunner> io_task_runner_;
-  base::WeakPtrFactory<ChannelDelegate> weak_factory_;
   base::WeakPtr<ChannelMojo> channel_;
+  base::WeakPtrFactory<ChannelDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelDelegate);
 };
@@ -84,9 +84,9 @@ void ChannelMojoHost::ChannelDelegate::DeleteThisSoon() {
 //
 
 ChannelMojoHost::ChannelMojoHost(scoped_refptr<base::TaskRunner> io_task_runner)
-    : weak_factory_(this),
-      io_task_runner_(io_task_runner),
-      channel_delegate_(new ChannelDelegate(io_task_runner)) {
+    : io_task_runner_(io_task_runner),
+      channel_delegate_(new ChannelDelegate(io_task_runner)),
+      weak_factory_(this) {
 }
 
 ChannelMojoHost::~ChannelMojoHost() {
