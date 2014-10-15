@@ -422,11 +422,12 @@ camera.views.Camera = function(context, router) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  // Synchronize bounds of the video now, when window is resized or if the
-  // video dimensions are loaded.
+  // If dimensions of the video are first known or changed, then synchronize
+  // the window bounds.
   this.video_.addEventListener('loadedmetadata',
       this.synchronizeBounds_.bind(this));
-  this.synchronizeBounds_();
+  this.video_.addEventListener('resize',
+      this.synchronizeBounds_.bind(this));
 
   // Sets dimensions of the input canvas for the effects' preview on the ribbon.
   // Keep in sync with CSS.
@@ -1480,9 +1481,6 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
 
   this.video_.width = this.video_.videoWidth;
   this.video_.height = this.video_.videoHeight;
-
-  // Add 1 pixel to avoid artifacts.
-  var zoom = (width + 1) / this.video_.videoWidth;
 }
 
 /**
