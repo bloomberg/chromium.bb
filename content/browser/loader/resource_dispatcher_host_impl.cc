@@ -1009,10 +1009,13 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   GlobalRequestID new_request_id(child_id, request_id);
 
   // Clear out data that depends on |info| before updating it.
+  // We always need to move the memory stats to the new process.  In contrast,
+  // stats.num_requests is only tracked for some requests (those that require
+  // file descriptors for their shared memory buffer).
   IncrementOutstandingRequestsMemory(-1, *info);
-  OustandingRequestsStats empty_stats = { 0, 0 };
-  OustandingRequestsStats old_stats = GetOutstandingRequestsStats(*info);
-  UpdateOutstandingRequestsStats(*info, empty_stats);
+  bool should_update_count = info->counted_as_in_flight_request();
+  if (should_update_count)
+    IncrementOutstandingRequestsCount(-1, info);
   pending_loaders_.erase(old_request_id);
 
   // ResourceHandlers should always get state related to the request from the
@@ -1025,8 +1028,9 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
   pending_loaders_[new_request_id] = loader;
-  UpdateOutstandingRequestsStats(*info, old_stats);
   IncrementOutstandingRequestsMemory(1, *info);
+  if (should_update_count)
+    IncrementOutstandingRequestsCount(1, info);
   if (old_routing_id != new_routing_id) {
     if (blocked_loaders_map_.find(old_routing_id) !=
             blocked_loaders_map_.end()) {
@@ -1734,23 +1738,28 @@ ResourceDispatcherHostImpl::IncrementOutstandingRequestsMemory(
 ResourceDispatcherHostImpl::OustandingRequestsStats
 ResourceDispatcherHostImpl::IncrementOutstandingRequestsCount(
     int count,
-    const ResourceRequestInfoImpl& info) {
+    ResourceRequestInfoImpl* info) {
   DCHECK_EQ(1, abs(count));
   num_in_flight_requests_ += count;
 
-  OustandingRequestsStats stats = GetOutstandingRequestsStats(info);
+  // Keep track of whether this request is counting toward the number of
+  // in-flight requests for this process, in case we need to transfer it to
+  // another process. This should be a toggle.
+  DCHECK_NE(info->counted_as_in_flight_request(), count > 0);
+  info->set_counted_as_in_flight_request(count > 0);
+
+  OustandingRequestsStats stats = GetOutstandingRequestsStats(*info);
   stats.num_requests += count;
   DCHECK_GE(stats.num_requests, 0);
-  UpdateOutstandingRequestsStats(info, stats);
+  UpdateOutstandingRequestsStats(*info, stats);
 
   return stats;
 }
 
 bool ResourceDispatcherHostImpl::HasSufficientResourcesForRequest(
-    const net::URLRequest* request_) {
-  const ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  OustandingRequestsStats stats = IncrementOutstandingRequestsCount(1, *info);
+    net::URLRequest* request) {
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
+  OustandingRequestsStats stats = IncrementOutstandingRequestsCount(1, info);
 
   if (stats.num_requests > max_num_in_flight_requests_per_process_)
     return false;
@@ -1761,10 +1770,9 @@ bool ResourceDispatcherHostImpl::HasSufficientResourcesForRequest(
 }
 
 void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
-    const net::URLRequest* request_) {
-  const ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  IncrementOutstandingRequestsCount(-1, *info);
+    net::URLRequest* request) {
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
+  IncrementOutstandingRequestsCount(-1, info);
 }
 
 void ResourceDispatcherHostImpl::StartNavigationRequest(

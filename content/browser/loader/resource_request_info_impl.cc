@@ -127,6 +127,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       has_user_gesture_(has_user_gesture),
       enable_load_timing_(enable_load_timing),
       was_ignored_by_handler_(false),
+      counted_as_in_flight_request_(false),
       resource_type_(resource_type),
       transition_type_(transition_type),
       memory_cost_(0),

@@ -249,12 +249,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // sending it to the renderer. Returns true if there are enough file
   // descriptors available for the shared memory buffer. If false is returned,
   // the request should cancel.
-  bool HasSufficientResourcesForRequest(const net::URLRequest* request_);
+  bool HasSufficientResourcesForRequest(net::URLRequest* request);
 
   // Called by a ResourceHandler after it has finished its request and is done
   // using its shared memory buffer. Frees up that file descriptor to be used
   // elsewhere.
-  void FinishedWithResourcesForRequest(const net::URLRequest* request_);
+  void FinishedWithResourcesForRequest(net::URLRequest* request);
 
   // PlzNavigate
   // Called by NavigationRequest to start a navigation request in the node
@@ -343,12 +343,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int count,
       const ResourceRequestInfoImpl& info);
 
-  // Called every time an in flight request is issued or finished. |count|
-  // indicates whether the request is issuing or finishing. |count| must be 1
-  // or -1.
+  // Called when an in flight request allocates or releases a shared memory
+  // buffer. |count| indicates whether the request is issuing or finishing.
+  // |count| must be 1 or -1.
   OustandingRequestsStats IncrementOutstandingRequestsCount(
       int count,
-      const ResourceRequestInfoImpl& info);
+      ResourceRequestInfoImpl* info);
 
   // Estimate how much heap space |request| will consume to run.
   static int CalculateApproximateMemoryCost(net::URLRequest* request);

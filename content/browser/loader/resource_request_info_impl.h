@@ -148,6 +148,16 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     was_ignored_by_handler_ = value;
   }
 
+  // Whether this request has been counted towards the number of in flight
+  // requests, which is only true for requests that require a file descriptor
+  // for their shared memory buffer.
+  bool counted_as_in_flight_request() const {
+    return counted_as_in_flight_request_;
+  }
+  void set_counted_as_in_flight_request(bool was_counted) {
+    counted_as_in_flight_request_ = was_counted;
+  }
+
   // The approximate in-memory size (bytes) that we credited this request
   // as consuming in |outstanding_requests_memory_cost_map_|.
   int memory_cost() const { return memory_cost_; }
@@ -180,6 +190,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool has_user_gesture_;
   bool enable_load_timing_;
   bool was_ignored_by_handler_;
+  bool counted_as_in_flight_request_;
   ResourceType resource_type_;
   ui::PageTransition transition_type_;
   int memory_cost_;

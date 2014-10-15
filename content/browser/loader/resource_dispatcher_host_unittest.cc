@@ -2286,6 +2286,88 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
   CheckSuccessfulRequest(msgs[1], kResponseBody);
 }
 
+// Test transferring two navigations with text/html, to ensure the resource
+// accounting works.
+TEST_F(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
+  // This test expects the cross site request to be leaked, so it can transfer
+  // the request directly.
+  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
+
+  EXPECT_EQ(0, host_.pending_requests());
+
+  int render_view_id = 0;
+  int request_id = 1;
+
+  // Configure initial request.
+  const std::string kResponseBody = "hello world";
+  SetResponse("HTTP/1.1 200 OK\n"
+              "Content-Type: text/html\n\n",
+              kResponseBody);
+
+  HandleScheme("http");
+
+  // Temporarily replace ContentBrowserClient with one that will trigger the
+  // transfer navigation code paths.
+  TransfersAllNavigationsContentBrowserClient new_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  // Make the first request.
+  MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
+                                  GURL("http://example.com/blah"),
+                                  RESOURCE_TYPE_MAIN_FRAME);
+
+  // Make a second request from the same process.
+  int second_request_id = 2;
+  MakeTestRequestWithResourceType(filter_.get(), render_view_id,
+                                  second_request_id,
+                                  GURL("http://example.com/foo"),
+                                  RESOURCE_TYPE_MAIN_FRAME);
+
+  // Flush all the pending requests to get the response through the
+  // BufferedResourceHandler.
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+
+  // Restore, now that we've set up a transfer.
+  SetBrowserClientForTesting(old_client);
+
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
+
+  // Transfer the first request.
+  int new_render_view_id = 1;
+  int new_request_id = 5;
+  ResourceHostMsg_Request request =
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
+                            GURL("http://example.com/blah"));
+  request.transferred_request_child_id = filter_->child_id();
+  request.transferred_request_request_id = request_id;
+
+  ResourceHostMsg_RequestResource transfer_request_msg(
+      new_render_view_id, new_request_id, request);
+  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Transfer the second request.
+  int new_second_request_id = 6;
+  ResourceHostMsg_Request second_request =
+      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
+                            GURL("http://example.com/foo"));
+  request.transferred_request_child_id = filter_->child_id();
+  request.transferred_request_request_id = second_request_id;
+
+  ResourceHostMsg_RequestResource second_transfer_request_msg(
+      new_render_view_id, new_second_request_id, second_request);
+  host_.OnMessageReceived(second_transfer_request_msg, second_filter.get());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Check generated messages.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(2U, msgs.size());
+  CheckSuccessfulRequest(msgs[0], kResponseBody);
+}
+
 // Test transferred navigations with text/plain, which causes
 // BufferedResourceHandler to buffer the response to sniff the content
 // before the transfer occurs.
