@@ -21,7 +21,9 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {
+
 class NetLogLogger;
+
 }  // namespace net
 
 namespace cronet {
@@ -32,11 +34,11 @@ typedef base::Callback<void(void)> RunAfterContextInitTask;
 // Implementation of the Chromium NetLog observer interface.
 class NetLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
-  explicit NetLogObserver() {}
+  virtual NetLogObserver() {}
 
   virtual ~NetLogObserver() {}
 
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetLogObserver);
@@ -73,8 +75,8 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   const std::string& GetUserAgent(const GURL& url) const;
 
   // net::URLRequestContextGetter implementation:
-  virtual net::URLRequestContext* GetURLRequestContext() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
   void StartNetLogToFile(const std::string& file_name);

@@ -4,6 +4,8 @@
 
 #include "components/cronet/android/url_request_context_adapter.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
@@ -31,22 +33,22 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
 
  private:
   // net::NetworkDelegate implementation.
-  virtual int OnBeforeURLRequest(net::URLRequest* request,
-                                 const net::CompletionCallback& callback,
-                                 GURL* new_url) override {
+  int OnBeforeURLRequest(net::URLRequest* request,
+                         const net::CompletionCallback& callback,
+                         GURL* new_url) override {
     return net::OK;
   }
 
-  virtual int OnBeforeSendHeaders(net::URLRequest* request,
-                                  const net::CompletionCallback& callback,
-                                  net::HttpRequestHeaders* headers) override {
+  int OnBeforeSendHeaders(net::URLRequest* request,
+                          const net::CompletionCallback& callback,
+                          net::HttpRequestHeaders* headers) override {
     return net::OK;
   }
 
-  virtual void OnSendHeaders(net::URLRequest* request,
-                             const net::HttpRequestHeaders& headers) override {}
+  void OnSendHeaders(net::URLRequest* request,
+                     const net::HttpRequestHeaders& headers) override {}
 
-  virtual int OnHeadersReceived(
+  int OnHeadersReceived(
       net::URLRequest* request,
       const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
@@ -55,22 +57,22 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
     return net::OK;
   }
 
-  virtual void OnBeforeRedirect(net::URLRequest* request,
-                                const GURL& new_location) override {}
+  void OnBeforeRedirect(net::URLRequest* request,
+                        const GURL& new_location) override {}
 
-  virtual void OnResponseStarted(net::URLRequest* request) override {}
+  void OnResponseStarted(net::URLRequest* request) override {}
 
-  virtual void OnRawBytesRead(const net::URLRequest& request,
-                              int bytes_read) override {}
+  void OnRawBytesRead(const net::URLRequest& request,
+                      int bytes_read) override {}
 
-  virtual void OnCompleted(net::URLRequest* request, bool started) override {}
+  void OnCompleted(net::URLRequest* request, bool started) override {}
 
-  virtual void OnURLRequestDestroyed(net::URLRequest* request) override {}
+  void OnURLRequestDestroyed(net::URLRequest* request) override {}
 
-  virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) override {}
+  void OnPACScriptError(int line_number,
+                        const base::string16& error) override {}
 
-  virtual NetworkDelegate::AuthRequiredResponse OnAuthRequired(
+  NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
@@ -78,28 +80,28 @@ class BasicNetworkDelegate : public net::NetworkDelegate {
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
   }
 
-  virtual bool OnCanGetCookies(const net::URLRequest& request,
-                               const net::CookieList& cookie_list) override {
+  bool OnCanGetCookies(const net::URLRequest& request,
+                       const net::CookieList& cookie_list) override {
     return false;
   }
 
-  virtual bool OnCanSetCookie(const net::URLRequest& request,
-                              const std::string& cookie_line,
-                              net::CookieOptions* options) override {
+  bool OnCanSetCookie(const net::URLRequest& request,
+                      const std::string& cookie_line,
+                      net::CookieOptions* options) override {
     return false;
   }
 
-  virtual bool OnCanAccessFile(const net::URLRequest& request,
-                               const base::FilePath& path) const override {
+  bool OnCanAccessFile(const net::URLRequest& request,
+                       const base::FilePath& path) const override {
     return false;
   }
 
-  virtual bool OnCanThrottleRequest(
+  bool OnCanThrottleRequest(
       const net::URLRequest& request) const override {
     return false;
   }
 
-  virtual int OnBeforeSocketStreamConnect(
+  int OnBeforeSocketStreamConnect(
       net::SocketStream* stream,
       const net::CompletionCallback& callback) override {
     return net::OK;
