@@ -38,6 +38,11 @@ namespace {
 const char kUnpackedExtensionsBlacklistedError[] =
     "Loading of unpacked extensions is disabled by the administrator.";
 
+const char kImportMinVersionNewer[] =
+    "'import' version requested is newer than what is installed.";
+const char kImportMissing[] = "'import' extension is not installed.";
+const char kImportNotSharedModule[] = "'import' is not a shared module.";
+
 // Manages an ExtensionInstallPrompt for a particular extension.
 class SimpleExtensionLoadPrompt : public ExtensionInstallPrompt::Delegate {
  public:
@@ -191,6 +196,42 @@ void UnpackedInstaller::ShowInstallPrompt() {
 }
 
 void UnpackedInstaller::StartInstallChecks() {
+  // TODO(crbug.com/421128): Enable these checks all the time.  The reason
+  // they are disabled for extensions loaded from the command-line is that
+  // installing unpacked extensions is asynchronous, but there can be
+  // dependencies between the extensions loaded by the command line.
+  if (extension()->manifest()->location() != Manifest::COMMAND_LINE) {
+    ExtensionService* service = service_weak_.get();
+    if (!service || service->browser_terminating())
+      return;
+
+    // TODO(crbug.com/420147): Move this code to a utility class to avoid
+    // duplication of SharedModuleService::CheckImports code.
+    if (SharedModuleInfo::ImportsModules(extension())) {
+      const std::vector<SharedModuleInfo::ImportInfo>& imports =
+          SharedModuleInfo::GetImports(extension());
+      std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
+      for (i = imports.begin(); i != imports.end(); ++i) {
+        Version version_required(i->minimum_version);
+        const Extension* imported_module =
+            service->GetExtensionById(i->extension_id, true);
+        if (!imported_module) {
+          ReportExtensionLoadError(kImportMissing);
+          return;
+        } else if (imported_module &&
+                   !SharedModuleInfo::IsSharedModule(imported_module)) {
+          ReportExtensionLoadError(kImportNotSharedModule);
+          return;
+        } else if (imported_module && (version_required.IsValid() &&
+                                       imported_module->version()->CompareTo(
+                                           version_required) < 0)) {
+          ReportExtensionLoadError(kImportMinVersionNewer);
+          return;
+        }
+      }
+    }
+  }
+
   install_checker_.Start(
       ExtensionInstallChecker::CHECK_REQUIREMENTS |
           ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY,
