@@ -76,6 +76,7 @@ test("mojo_view_manager_unittests") {
     "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
+    "//mojo/services/public/cpp/native_viewport:args",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/cpp/view_manager/lib:run_unittests",
     "//mojo/services/public/interfaces/view_manager",

@@ -171,6 +171,7 @@
         'mojo_geometry_lib',
         'mojo_gles2_service',
         'mojo_input_events_lib',
+        'mojo_native_viewport_service_args',
         'mojo_surfaces_lib',
         'services/public/mojo_services_public.gyp:mojo_geometry_bindings',
         'services/public/mojo_services_public.gyp:mojo_gpu_bindings',
@@ -490,6 +491,18 @@
         'services/test_service/test_request_tracker_impl.h',
       ],
     },
+    {
+      # GN version: //mojo/services/public/cpp/native_viewport:args
+      'target_name': 'mojo_native_viewport_service_args',
+      'type': 'static_library',
+      'sources': [
+        'services/public/cpp/native_viewport/lib/args.cc',
+        'services/public/cpp/native_viewport/args.h',
+      ],
+      'include_dirs': [
+        '..'
+      ],
+    },
   ],
   'conditions': [
     ['use_aura==1', {
@@ -571,6 +584,7 @@
             'mojo_base.gyp:mojo_application_chromium',
             'mojo_geometry_lib',
             'mojo_input_events_lib',
+            'mojo_native_viewport_service_args',
             'mojo_shell_test_support',
             'mojo_view_manager_run_unittests',
             'services/public/mojo_services_public.gyp:mojo_geometry_bindings',

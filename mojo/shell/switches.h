@@ -19,6 +19,7 @@ extern const char kEnableExternalApplications[];
 extern const char kEnableMultiprocess[];
 extern const char kOrigin[];
 extern const char kSpy[];
+
 }  // namespace switches
 
 #endif  // MOJO_SHELL_SWITCHES_H_

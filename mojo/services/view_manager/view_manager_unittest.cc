@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
+#include "mojo/services/public/cpp/native_viewport/args.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
@@ -505,6 +506,11 @@ class ViewManagerTest : public testing::Test {
   virtual void SetUp() override {
     ASSERT_TRUE(ViewManagerProxy::IsInInitialState());
     test_helper_.Init();
+    std::vector<std::string> native_viewport_args;
+    native_viewport_args.push_back(kUseTestConfig);
+    test_helper_.application_manager()->SetArgsForURL(
+        native_viewport_args, GURL("mojo:mojo_native_viewport_service"));
+    printf("Setting args\n");
 
 #if defined(OS_WIN)
     // As we unload the wndproc of window classes we need to be sure to
