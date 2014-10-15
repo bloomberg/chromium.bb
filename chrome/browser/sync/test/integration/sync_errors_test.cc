@@ -76,17 +76,6 @@ class SyncErrorTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SyncErrorTest);
 };
 
-// TODO(pvalenzuela): Remove this class when all tests here are converted to
-// use FakeServer.
-class LegacySyncErrorTest : public SyncTest {
- public:
-  LegacySyncErrorTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
-  virtual ~LegacySyncErrorTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LegacySyncErrorTest);
-};
-
 // Helper class that waits until the sync engine has hit an actionable error.
 class ActionableErrorChecker : public SingleClientStatusChangeChecker {
  public:
@@ -159,51 +148,57 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   ASSERT_EQ(status.sync_protocol_error.error_description, description);
 }
 
-// Disabled, http://crbug.com/351160 .
-IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, DISABLED_ErrorWhileSettingUp) {
+// TODO(sync): Fix failing test on Chrome OS: http://crbug.com/351160
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_ErrorWhileSettingUpAutoStart) {
   ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetSyncService(0)->auto_start_enabled());
 
-  syncer::SyncProtocolError protocol_error;
-  protocol_error.error_type = syncer::TRANSIENT_ERROR;
-  protocol_error.error_description = "Not My Fault";
-  protocol_error.url = "www.google.com";
-
-  if (GetSyncService(0)->auto_start_enabled()) {
-    // In auto start enabled platforms like chrome os we should be
-    // able to set up even if the first sync while setting up fails.
-    // Trigger error on every 2 out of 3 requests.
-    TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_TWO_THIRDS);
-    // Now setup sync and it should succeed.
-    ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  } else {
-    // In Non auto start enabled environments if the setup sync fails then
-    // the setup would fail. So setup sync normally.
-    ASSERT_TRUE(SetupSync()) << "Setup sync failed";
-    ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
-
-    // Trigger error on every 2 out of 3 requests.
-    TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_TWO_THIRDS);
-
-    // Now enable a datatype, whose first 2 syncs would fail, but we should
-    // recover and setup succesfully on the third attempt.
-    ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::AUTOFILL));
-  }
+  // In auto start enabled platforms like chrome os we should be
+  // able to set up even if the first sync while setting up fails.
+  EXPECT_TRUE(GetFakeServer()->TriggerError(
+      sync_pb::SyncEnums::TRANSIENT_ERROR));
+  EXPECT_TRUE(GetFakeServer()->EnableAlternatingTriggeredErrors());
+  // Now setup sync and it should succeed.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 }
 
-IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
-    DISABLED_BirthdayErrorUsingActionableErrorTest) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_ErrorWhileSettingUp DISABLED_ErrorWhileSettingUp
+#else
+#define MAYBE_ErrorWhileSettingUp ErrorWhileSettingUp
+#endif
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_FALSE(GetSyncService(0)->auto_start_enabled());
+
+  // In Non auto start enabled environments if the setup sync fails then
+  // the setup would fail. So setup sync normally.
+  ASSERT_TRUE(SetupSync()) << "Setup sync failed";
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
+
+  EXPECT_TRUE(GetFakeServer()->TriggerError(
+      sync_pb::SyncEnums::TRANSIENT_ERROR));
+  EXPECT_TRUE(GetFakeServer()->EnableAlternatingTriggeredErrors());
+
+  // Now enable a datatype, whose first 2 syncs would fail, but we should
+  // recover and setup succesfully on the third attempt.
+  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::AUTOFILL));
+}
+
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  syncer::SyncProtocolError protocol_error;
-  protocol_error.error_type = syncer::NOT_MY_BIRTHDAY;
-  protocol_error.action = syncer::DISABLE_SYNC_ON_CLIENT;
-  protocol_error.error_description = "Not My Fault";
-  protocol_error.url = "www.google.com";
-  TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_ALWAYS);
+  std::string description = "Not My Fault";
+  std::string url = "www.google.com";
+  EXPECT_TRUE(GetFakeServer()->TriggerActionableError(
+      sync_pb::SyncEnums::NOT_MY_BIRTHDAY,
+      description,
+      url,
+      sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT));
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
@@ -211,11 +206,10 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
   ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
   ProfileSyncService::Status status;
   GetSyncService((0))->QueryDetailedSyncStatus(&status);
-  ASSERT_EQ(status.sync_protocol_error.error_type, protocol_error.error_type);
-  ASSERT_EQ(status.sync_protocol_error.action, protocol_error.action);
-  ASSERT_EQ(status.sync_protocol_error.url, protocol_error.url);
-  ASSERT_EQ(status.sync_protocol_error.error_description,
-      protocol_error.error_description);
+  ASSERT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
+  ASSERT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
+  ASSERT_EQ(status.sync_protocol_error.url, url);
+  ASSERT_EQ(status.sync_protocol_error.error_description, description);
 }
 
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, DisableDatatypeWhileRunning) {

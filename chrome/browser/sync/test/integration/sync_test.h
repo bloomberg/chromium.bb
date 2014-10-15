@@ -94,21 +94,6 @@ class SyncTest : public InProcessBrowserTest {
                             // LOCAL_PYTHON_SERVER.
   };
 
-  // NOTE: IMPORTANT the enum here should match with
-  // the enum defined on the chromiumsync.py test server impl.
-  enum SyncErrorFrequency {
-    // Uninitialized state.
-    ERROR_FREQUENCY_NONE,
-
-    // Server sends the error on all requests.
-    ERROR_FREQUENCY_ALWAYS,
-
-    // Server sends the error on two thirds of the request.
-    // Note this is not random. The server would send the
-    // error on the first 2 requests of every 3 requests.
-    ERROR_FREQUENCY_TWO_THIRDS
-  };
-
   // A SyncTest must be associated with a particular test type.
   explicit SyncTest(TestType test_type);
 
@@ -224,12 +209,6 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers an XMPP auth error on the server.  Note the server will
   // stay in this state until shut down.
   void TriggerXmppAuthError();
-
-  // Triggers a sync error on the server.
-  //   error: The error the server is expected to return.
-  //   frequency: Frequency with which the error is returned.
-  void TriggerSyncError(const syncer::SyncProtocolError& error,
-                        SyncErrorFrequency frequency);
 
   // Triggers the creation the Synced Bookmarks folder on the server.
   void TriggerCreateSyncedBookmarks();

@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   // Let server to return rollback command on next sync request.
-  GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK);
+  ASSERT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK));
 
   // Make another change to trigger downloading of rollback command.
   Remove(0, tier1_b, 0);
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   // Let server to return rollback command on next sync request.
-  GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK);
+  ASSERT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK));
 
   // Make another change to trigger downloading of rollback command.
   Remove(0, GetOtherNode(0), 0);
@@ -334,7 +334,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   // Let server to return birthday error on next sync request.
-  GetFakeServer()->TriggerError(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
+  ASSERT_TRUE(GetFakeServer()->TriggerError(
+      sync_pb::SyncEnums::NOT_MY_BIRTHDAY));
 
   // Make another change to trigger downloading of rollback command.
   Remove(0, GetOtherNode(0), 0);
@@ -379,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
       true);
 
   // Let server to return rollback command on next sync request.
-  GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK);
+  ASSERT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK));
 
   // Make another change to trigger downloading of rollback command.
   Remove(0, GetOtherNode(0), 0);
@@ -422,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   // Let server to return rollback command on next sync request.
-  GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK);
+  ASSERT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::USER_ROLLBACK));
 
   // Make another change to trigger downloading of rollback command.
   Remove(0, sub_folder, 0);

@@ -150,6 +150,8 @@ FakeServer::FakeServer() : version_(0),
                            store_birthday_(kDefaultStoreBirthday),
                            authenticated_(true),
                            error_type_(sync_pb::SyncEnums::SUCCESS),
+                           alternate_triggered_errors_(false),
+                           request_counter_(0),
                            network_enabled_(true) {
   keystore_keys_.push_back(kDefaultKeystoreKey);
   CHECK(CreateDefaultPermanentItems());
@@ -223,6 +225,7 @@ void FakeServer::HandleCommand(const string& request,
     callback.Run(net::ERR_FAILED, net::ERR_FAILED, string());
     return;
   }
+  request_counter_++;
 
   if (!authenticated_) {
     callback.Run(0, net::HTTP_UNAUTHORIZED, string());
@@ -238,9 +241,10 @@ void FakeServer::HandleCommand(const string& request,
   if (message.has_store_birthday() &&
       message.store_birthday() != store_birthday_) {
     response_proto.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
-  } else if (error_type_ != sync_pb::SyncEnums::SUCCESS) {
+  } else if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
+             ShouldSendTriggeredError()) {
     response_proto.set_error_code(error_type_);
-  } else if (triggered_actionable_error_.get()) {
+  } else if (triggered_actionable_error_.get() && ShouldSendTriggeredError()) {
     sync_pb::ClientToServerResponse_Error* error =
         response_proto.mutable_error();
     error->CopyFrom(*(triggered_actionable_error_.get()));
@@ -511,10 +515,14 @@ void FakeServer::SetUnauthenticated() {
   authenticated_ = false;
 }
 
-void FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
-  CHECK(!triggered_actionable_error_.get())
-      << "Only one type of error can be triggered at any given time.";
+bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
+  if (triggered_actionable_error_.get()) {
+    DVLOG(1) << "Only one type of error can be triggered at any given time.";
+    return false;
+  }
+
   error_type_ = error_type;
+  return true;
 }
 
 bool FakeServer::TriggerActionableError(
@@ -535,6 +543,28 @@ bool FakeServer::TriggerActionableError(
   error->set_action(action);
   triggered_actionable_error_.reset(error);
   return true;
+}
+
+bool FakeServer::EnableAlternatingTriggeredErrors() {
+  if (error_type_ == sync_pb::SyncEnums::SUCCESS &&
+      !triggered_actionable_error_.get()) {
+    DVLOG(1) << "No triggered error set. Alternating can't be enabled.";
+    return false;
+  }
+
+  alternate_triggered_errors_ = true;
+  // Reset the counter so that the the first request yields a triggered error.
+  request_counter_ = 0;
+  return true;
+}
+
+bool FakeServer::ShouldSendTriggeredError() const {
+  if (!alternate_triggered_errors_)
+    return true;
+
+  // Check that the counter is odd so that we trigger an error on the first
+  // request after alternating is enabled.
+  return request_counter_ % 2 != 0;
 }
 
 void FakeServer::AddObserver(Observer* observer) {

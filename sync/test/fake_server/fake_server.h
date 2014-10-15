@@ -72,19 +72,27 @@ class FakeServer {
 
   // Force the server to return |error_type| in the error_code field of
   // ClientToServerResponse on all subsequent sync requests. This method should
-  // not be called if TriggerActionableError has previously been called.
-  // TODO(pvalenzuela): Return a bool here to indicate whether the call
-  // succeeded.
-  void TriggerError(const sync_pb::SyncEnums::ErrorType& error_type);
+  // not be called if TriggerActionableError has previously been called. Returns
+  // true if error triggering was successfully configured.
+  bool TriggerError(const sync_pb::SyncEnums::ErrorType& error_type);
 
   // Force the server to return the given data as part of the error field of
   // ClientToServerResponse on all subsequent sync requests. This method should
-  // not be called if TriggerError has previously been called.
+  // not be called if TriggerError has previously been called. Returns true if
+  // error triggering was successfully configured.
   bool TriggerActionableError(
     const sync_pb::SyncEnums::ErrorType& error_type,
     const std::string& description,
     const std::string& url,
     const sync_pb::SyncEnums::Action& action);
+
+  // Instructs the server to send triggered errors on every other request
+  // (starting with the first one after this call). This feature can be used to
+  // test the resiliency of the client when communicating with a problematic
+  // server or flaky network connection. This method should only be called
+  // after a call to TriggerError or TriggerActionableError. Returns true if
+  // triggered error alternating was successful.
+  bool EnableAlternatingTriggeredErrors();
 
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
@@ -147,6 +155,9 @@ class FakeServer {
   // |id|. A tombstone is not created for the entity itself.
   bool DeleteChildren(const std::string& id);
 
+  // Returns whether a triggered error should be sent for the request.
+  bool ShouldSendTriggeredError() const;
+
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.
   int64 version_;
@@ -172,6 +183,16 @@ class FakeServer {
   // Used as the error field of ClientToServerResponse when its pointer is not
   // NULL.
   scoped_ptr<sync_pb::ClientToServerResponse_Error> triggered_actionable_error_;
+
+  // These values are used in tandem to return a triggered error (either
+  // |error_type_| or |triggered_actionable_error_|) on every other request.
+  // |alternate_triggered_errors_| is set if this feature is enabled and
+  // |request_counter_| is used to send triggered errors on odd-numbered
+  // requests. Note that |request_counter_| can be reset and is not necessarily
+  // indicative of the total number of requests handled during the object's
+  // lifetime.
+  bool alternate_triggered_errors_;
+  int request_counter_;
 
   // FakeServer's observers.
   ObserverList<Observer, true> observers_;
