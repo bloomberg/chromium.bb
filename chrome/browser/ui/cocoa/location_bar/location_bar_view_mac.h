@@ -271,11 +271,11 @@ class LocationBarViewMac : public LocationBar,
 
   Browser* browser_;
 
-  // Used to change the visibility of the star decoration.
-  BooleanPrefMember edit_bookmarks_enabled_;
-
   // Used to schedule a task for the first run info bubble.
   base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;
+
+  // Used to change the visibility of the star decoration.
+  BooleanPrefMember edit_bookmarks_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);
 };
