@@ -313,8 +313,6 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
   "jdfhpkjeckflbbleddjlpimecpbjdeep",  // see crbug.com/142514
   "iabmpiboiopbgfabjmgeedhcmjenhbla",  // see crbug.com/165080
   "B7CF8A292249681AF81771650BA4CEEAF19A4560",  // see crbug.com/165080
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A",  // see crbug.com/234789
   "7525AF4F66763A70A883C4700529F647B470E4D2",  // see crbug.com/238084
   "0B549507088E1564D672F7942EB87CA4DAD73972",  // see crbug.com/238084
   "864288364E239573E777D3E0E36864E590E95C74"   // see crbug.com/238084
