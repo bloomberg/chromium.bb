@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -89,6 +90,11 @@ int PartialData::Core::GetAvailableRange(disk_cache::Entry* entry, int64 offset,
 }
 
 void PartialData::Core::OnIOComplete(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 PartialData::Core::OnIOComplete"));
+
   if (owner_)
     owner_->GetAvailableRangeCompleted(result, start_);
   delete this;

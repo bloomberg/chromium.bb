@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/cache_type.h"
@@ -139,6 +140,10 @@ void CacheCreator::DoCallback(int result) {
 // If the initialization of the cache fails, and |force| is true, we will
 // discard the whole cache and create a new one.
 void CacheCreator::OnIOComplete(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 CacheCreator::OnIOComplete"));
+
   if (result == net::OK || !force_ || retry_)
     return DoCallback(result);
 
