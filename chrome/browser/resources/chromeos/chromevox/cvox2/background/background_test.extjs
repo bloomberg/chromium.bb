@@ -8,7 +8,7 @@ GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
 GEN_INCLUDE(['../../testing/mock_tts.js']);
 
 /**
- * Test fixture for cvox2.Background.
+ * Test fixture for Background.
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
@@ -32,8 +32,7 @@ SYNC_TEST_F('BackgroundTest', 'ClassicNamespaces', function() {
 
 /** Tests that ChromeVox next is in this context. */
 SYNC_TEST_F('BackgroundTest', 'NextNamespaces', function() {
-  assertEquals('object', typeof(cvox2));
-  assertEquals('function', typeof(cvox2.Background));
+  assertEquals('function', typeof(Background));
 });
 
 /** Tests that ChromeVox reads the desktop tree. */
@@ -67,7 +66,7 @@ TEST_F('BackgroundTest', 'InitialFeedback', function() {
   */},
   function() {
     cvox.ChromeVox.tts.expectSpeech('start', function() {
-      cvox2.global.backgroundObj.onGotCommand('nextLine');
+      global.backgroundObj.onGotCommand('nextLine');
     });
     cvox.ChromeVox.tts.expectSpeech('end', testDone);
   }.bind(this));

@@ -1223,7 +1223,18 @@ chrome.automation.AutomationNode = function() {};
 
 
 /**
- * @type {!Object}
+ * @type {chrome.automation.RoleType}
+ */
+chrome.automation.AutomationNode.prototype.role;
+
+
+/**
+ * @type {{
+ *     name: string,
+ *     value: string,
+ *     wordStarts: Array.<number>,
+ *     wordEnds: Array.<number>
+ * }}
  */
 chrome.automation.AutomationNode.prototype.attributes;
 
@@ -1256,6 +1267,18 @@ chrome.automation.AutomationNode.prototype.previousSibling = function() {};
  * @return {chrome.automation.AutomationNode}
  */
 chrome.automation.AutomationNode.prototype.parent = function() {};
+
+
+/**
+ * @return {!Array.<chrome.automation.AutomationNode>}
+ */
+chrome.automation.AutomationNode.prototype.children = function() {};
+
+
+/**
+ * @type {{top: number, left: number, height: number, width: number}}
+ */
+chrome.automation.AutomationNode.prototype.location;
 
 
 /**

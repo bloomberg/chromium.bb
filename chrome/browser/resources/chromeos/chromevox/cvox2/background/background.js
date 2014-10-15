@@ -7,27 +7,28 @@
  * background page.
  */
 
-goog.provide('cvox2.Background');
-goog.provide('cvox2.global');
+goog.provide('Background');
+goog.provide('global');
 
+goog.require('AutomationPredicate');
+goog.require('AutomationUtil');
+goog.require('cursors.Cursor');
 goog.require('cvox.TabsApiHandler');
-goog.require('cvox2.AutomationPredicates');
-goog.require('cvox2.AutomationUtil');
-goog.require('cvox2.Dir');
 
 goog.scope(function() {
+var Dir = AutomationUtil.Dir;
 var EventType = chrome.automation.EventType;
 var AutomationNode = chrome.automation.AutomationNode;
 
 /** Classic Chrome accessibility API. */
-cvox2.global.accessibility =
+global.accessibility =
     chrome.accessibilityPrivate || chrome.experimental.accessibility;
 
 /**
  * ChromeVox2 background page.
  * @constructor
  */
-cvox2.Background = function() {
+Background = function() {
   /**
    * A list of site substring patterns to use with ChromeVox next. Keep these
    * strings relatively specific.
@@ -58,7 +59,7 @@ cvox2.Background = function() {
   this.active_ = false;
 
   // Only needed with unmerged ChromeVox classic loaded before.
-  cvox2.global.accessibility.setAccessibilityEnabled(false);
+  global.accessibility.setAccessibilityEnabled(false);
 
   // Manually bind all functions to |this|.
   for (var func in this) {
@@ -86,7 +87,7 @@ cvox2.Background = function() {
   chrome.commands.onCommand.addListener(this.onGotCommand);
 };
 
-cvox2.Background.prototype = {
+Background.prototype = {
   /**
    * Handles chrome.tabs.onUpdated.
    * @param {number} tabId
@@ -134,63 +135,63 @@ cvox2.Background.prototype = {
     var previous = this.current_;
     var current = this.current_;
 
-    var dir = cvox2.Dir.FORWARD;
+    var dir = Dir.FORWARD;
     var pred = null;
     switch (command) {
       case 'nextHeading':
-        dir = cvox2.Dir.FORWARD;
-        pred = cvox2.AutomationPredicates.heading;
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.heading;
         break;
       case 'previousHeading':
-        dir = cvox2.Dir.BACKWARD;
-        pred = cvox2.AutomationPredicates.heading;
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.heading;
         break;
       case 'nextLine':
-        dir = cvox2.Dir.FORWARD;
-        pred = cvox2.AutomationPredicates.inlineTextBox;
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.inlineTextBox;
         break;
       case 'previousLine':
-        dir = cvox2.Dir.BACKWARD;
-        pred = cvox2.AutomationPredicates.inlineTextBox;
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.inlineTextBox;
         break;
       case 'nextLink':
-        dir = cvox2.Dir.FORWARD;
-        pred = cvox2.AutomationPredicates.link;
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.link;
         break;
       case 'previousLink':
-        dir = cvox2.Dir.BACKWARD;
-        pred = cvox2.AutomationPredicates.link;
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.link;
         break;
       case 'nextElement':
         current = current.role == chrome.automation.RoleType.inlineTextBox ?
             current.parent() : current;
-        current = cvox2.AutomationUtil.findNextNode(current,
-            cvox2.Dir.FORWARD,
-            cvox2.AutomationPredicates.inlineTextBox);
+        current = AutomationUtil.findNextNode(current,
+            Dir.FORWARD,
+            AutomationPredicate.inlineTextBox);
         current = current ? current.parent() : current;
         break;
       case 'previousElement':
         current = current.role == chrome.automation.RoleType.inlineTextBox ?
             current.parent() : current;
-        current = cvox2.AutomationUtil.findNextNode(current,
-            cvox2.Dir.BACKWARD,
-            cvox2.AutomationPredicates.inlineTextBox);
+        current = AutomationUtil.findNextNode(current,
+            Dir.BACKWARD,
+            AutomationPredicate.inlineTextBox);
         current = current ? current.parent() : current;
         break;
       case 'goToBeginning':
-        current = cvox2.AutomationUtil.findNodePost(current.root,
-            cvox2.Dir.FORWARD,
-            cvox2.AutomationPredicates.inlineTextBox);
+        current = AutomationUtil.findNodePost(current.root,
+            Dir.FORWARD,
+            AutomationPredicate.inlineTextBox);
         break;
       case 'goToEnd':
-        current = cvox2.AutomationUtil.findNodePost(current.root,
-            cvox2.Dir.BACKWARD,
-            cvox2.AutomationPredicates.inlineTextBox);
+        current = AutomationUtil.findNodePost(current.root,
+            Dir.BACKWARD,
+            AutomationPredicate.inlineTextBox);
         break;
     }
 
     if (pred)
-      current = cvox2.AutomationUtil.findNextNode(current, dir, pred);
+      current = AutomationUtil.findNextNode(current, dir, pred);
 
     if (current) {
       current.focus();
@@ -232,9 +233,9 @@ cvox2.Background.prototype = {
     if (this.current_)
       return;
 
-    this.current_ = cvox2.AutomationUtil.findNodePost(evt.target,
-        cvox2.Dir.FORWARD,
-        cvox2.AutomationPredicates.inlineTextBox);
+    this.current_ = AutomationUtil.findNodePost(evt.target,
+        Dir.FORWARD,
+        AutomationPredicate.inlineTextBox);
     this.onFocus({target: this.current_});
   },
 
@@ -296,7 +297,7 @@ cvox2.Background.prototype = {
   }
 };
 
-/** @type {cvox2.Background} */
-cvox2.global.backgroundObj = new cvox2.Background();
+/** @type {Background} */
+global.backgroundObj = new Background();
 
 });  // goog.scope

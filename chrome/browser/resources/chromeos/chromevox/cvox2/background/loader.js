@@ -6,4 +6,4 @@
  * @fileoverview Loader for the background page.
  */
 
-goog.require('cvox2.Background');
+goog.require('Background');

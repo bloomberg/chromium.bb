@@ -1,0 +1,144 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
+
+/**
+ * Test fixture for cvox2.cursors.
+ * @constructor
+ * @extends {ChromeVoxNextE2ETest}
+ */
+function CursorsTest() {}
+
+CursorsTest.prototype = {
+  __proto__: ChromeVoxNextE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    // Various aliases.
+    window.BACKWARD = AutomationUtil.Dir.BACKWARD;
+    window.FORWARD = AutomationUtil.Dir.FORWARD;
+    window.CHARACTER = cursors.Unit.CHARACTER;
+    window.WORD = cursors.Unit.WORD;
+    window.LINE = cursors.Unit.LINE;
+    window.BOUND = cursors.Movement.BOUND;
+    window.DIRECTIONAL = cursors.Movement.DIRECTIONAL;
+  },
+
+  /**
+   * Performs a series of operations on a cursor and asserts the result.
+   * @param {cursors.Cursor} cursor The starting cursor.
+   * @param {!Array.<Array.<
+   *     cursors.Unit|
+   *     cursors.Movement|
+   *     automationUtil.Dir|
+   *     Object>>}
+   *     moves An array of arrays. Each inner array contains 4 items: unit,
+   *     movement, direction, and assertions object. See example below.
+   */
+  moveAndAssert: function(cursor, moves) {
+    var move = null;
+    while (move = moves.shift()) {
+      cursor.move(move[0], move[1], move[2]);
+      var expected = move[3];
+      if (expected.index)
+        assertEquals(expected.index, cursor.index);
+      if (expected.value)
+        assertEquals(expected.value, cursor.node.attributes.value);
+    }
+  }
+};
+
+/** Tests basic text movement. */
+TEST_F('CursorsTest', 'BasicMovement', function() {
+  this.runWithDocument(function() {/*!
+    <p>start <span>same line</span>
+    <p>end
+  */},
+  function() {
+    chrome.automation.getTree(function(root) {
+      // This occurs as a result of a load complete.
+      var leftmost = AutomationUtil.findNodePost(root,
+          FORWARD,
+          AutomationPredicate.leaf);
+      assertEquals('start ', leftmost.attributes.value);
+
+      // Construct a cursor and make all possible movements.
+      var cursor = new cursors.Cursor(leftmost, 0);
+
+      this.moveAndAssert(cursor, [
+          // Line (BOUND).
+          [LINE, BOUND, FORWARD, {value: 'same line'}],
+          [LINE, BOUND, FORWARD, {value: 'same line'}],
+          [LINE, BOUND, BACKWARD, {value: 'start '}],
+          [LINE, BOUND, BACKWARD, {value: 'start '}],
+
+          // Line (DIRECTIONAL).
+          [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
+          [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
+          [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
+          [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
+          [LINE, BOUND, FORWARD, {value: 'same line'}],
+          [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
+
+          // Character.
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 1}],
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 2}],
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 2}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 1}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0}],
+
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 8, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 8, value: 'same line'}],
+                    
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 7, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 6, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 3, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 2, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'start '}],
+
+          // Word (BOUND).
+          [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
+          [WORD, BOUND, BACKWARD, {index: 0, value: 'start '}],
+          [WORD, BOUND, FORWARD, {index: 5, value: 'start '}],
+          [WORD, BOUND, FORWARD, {index: 5, value: 'start '}],
+
+          // Word (DIRECTIONAL).
+          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
+          [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
+
+          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
+          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'end'}],
+
+          [WORD, DIRECTIONAL, BACKWARD, {index: 5, value: 'same line'}],
+          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
+
+          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
+          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
+
+          // Characters and words.
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
+
+          [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'same line'}],
+          [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'same line'}],
+          [WORD, DIRECTIONAL, FORWARD, {index: 5, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, FORWARD, {index: 6, value: 'same line'}],
+          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 5, value: 'start '}],
+          [CHARACTER, DIRECTIONAL, BACKWARD, {index: 4, value: 'start '}],
+          [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
+]);
+
+      testDone();
+    }.bind(this));
+  }.bind(this));
+});
