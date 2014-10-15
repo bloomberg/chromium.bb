@@ -106,7 +106,7 @@ Parser::~Parser() {
 scoped_ptr<ParseNode> Parser::Parse(const std::vector<Token>& tokens,
                                     Err* err) {
   Parser p(tokens, err);
-  return p.ParseFile().PassAs<ParseNode>();
+  return p.ParseFile();
 }
 
 // static
@@ -225,7 +225,7 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
 }
 
 scoped_ptr<ParseNode> Parser::Literal(Token token) {
-  return scoped_ptr<ParseNode>(new LiteralNode(token)).Pass();
+  return make_scoped_ptr(new LiteralNode(token));
 }
 
 scoped_ptr<ParseNode> Parser::Name(Token token) {
@@ -235,7 +235,7 @@ scoped_ptr<ParseNode> Parser::Name(Token token) {
 scoped_ptr<ParseNode> Parser::BlockComment(Token token) {
   scoped_ptr<BlockCommentNode> comment(new BlockCommentNode());
   comment->set_comment(token);
-  return comment.PassAs<ParseNode>();
+  return comment.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::Group(Token token) {
@@ -253,7 +253,7 @@ scoped_ptr<ParseNode> Parser::Not(Token token) {
   scoped_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
   unary_op->set_op(token);
   unary_op->set_operand(expr.Pass());
-  return unary_op.PassAs<ParseNode>();
+  return unary_op.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::List(Token node) {
@@ -277,7 +277,7 @@ scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
   binary_op->set_op(token);
   binary_op->set_left(left.Pass());
   binary_op->set_right(right.Pass());
-  return binary_op.PassAs<ParseNode>();
+  return binary_op.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
@@ -316,7 +316,7 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
   func_call->set_args(list.Pass());
   if (block)
     func_call->set_block(block.Pass());
-  return func_call.PassAs<ParseNode>();
+  return func_call.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
@@ -330,7 +330,7 @@ scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
   assign->set_op(token);
   assign->set_left(left.Pass());
   assign->set_right(value.Pass());
-  return assign.PassAs<ParseNode>();
+  return assign.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
@@ -349,7 +349,7 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
   scoped_ptr<AccessorNode> accessor(new AccessorNode);
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_index(value.Pass());
-  return accessor.PassAs<ParseNode>();
+  return accessor.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::DotOperator(scoped_ptr<ParseNode> left,
@@ -373,7 +373,7 @@ scoped_ptr<ParseNode> Parser::DotOperator(scoped_ptr<ParseNode> left,
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_member(scoped_ptr<IdentifierNode>(
       static_cast<IdentifierNode*>(right.release())));
-  return accessor.PassAs<ParseNode>();
+  return accessor.Pass();
 }
 
 // Does not Consume the start or end token.
@@ -442,12 +442,12 @@ scoped_ptr<ParseNode> Parser::ParseFile() {
   // ignorant of them.
   AssignComments(file.get());
 
-  return file.PassAs<ParseNode>();
+  return file.Pass();
 }
 
 scoped_ptr<ParseNode> Parser::ParseStatement() {
   if (LookAhead(Token::LEFT_BRACE)) {
-    return ParseBlock().PassAs<ParseNode>();
+    return ParseBlock();
   } else if (LookAhead(Token::IF)) {
     return ParseCondition();
   } else if (LookAhead(Token::BLOCK_COMMENT)) {
@@ -503,7 +503,7 @@ scoped_ptr<ParseNode> Parser::ParseCondition() {
     condition->set_if_false(ParseStatement().Pass());
   if (has_error())
     return scoped_ptr<ParseNode>();
-  return condition.PassAs<ParseNode>();
+  return condition.Pass();
 }
 
 void Parser::TraverseOrder(const ParseNode* root,

@@ -47,7 +47,7 @@ TEST(Functions, Defined) {
   undef_accessor->set_member(scoped_ptr<IdentifierNode>(
       new IdentifierNode(undefined_token)));
   ListNode args_list_accessor_defined;
-  args_list_accessor_defined.append_item(undef_accessor.PassAs<ParseNode>());
+  args_list_accessor_defined.append_item(undef_accessor.Pass());
   result = functions::RunDefined(setup.scope(), &function_call,
                                  &args_list_accessor_defined, &err);
   ASSERT_EQ(Value::BOOLEAN, result.type());

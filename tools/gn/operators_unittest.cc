@@ -59,21 +59,21 @@ TEST(Operators, SourcesAppend) {
   // Append an integer.
   const char integer_value[] = "5";
   Token integer(Location(), Token::INTEGER, integer_value);
-  node.set_right(ListWithLiteral(integer).PassAs<ParseNode>());
+  node.set_right(ListWithLiteral(integer));
   node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
   // Append a string that doesn't match the pattern, it should get appended.
   const char string_1_value[] = "\"good\"";
   Token string_1(Location(), Token::STRING, string_1_value);
-  node.set_right(ListWithLiteral(string_1).PassAs<ParseNode>());
+  node.set_right(ListWithLiteral(string_1));
   node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
   // Append a string that does match the pattern, it should be a no-op.
   const char string_2_value[] = "\"foo-rm\"";
   Token string_2(Location(), Token::STRING, string_2_value);
-  node.set_right(ListWithLiteral(string_2).PassAs<ParseNode>());
+  node.set_right(ListWithLiteral(string_2));
   node.Execute(setup.scope(), &err);
   EXPECT_FALSE(err.has_error());
 
@@ -118,8 +118,8 @@ TEST(Operators, ListAppend) {
   scoped_ptr<ListNode> outer_list(new ListNode);
   const char twelve_str[] = "12";
   Token twelve(Location(), Token::INTEGER, twelve_str);
-  outer_list->append_item(ListWithLiteral(twelve).PassAs<ParseNode>());
-  node.set_right(outer_list.PassAs<ParseNode>());
+  outer_list->append_item(ListWithLiteral(twelve));
+  node.set_right(outer_list.Pass());
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);
