@@ -32,7 +32,6 @@
 #include "bindings/core/v8/V8InspectorFrontendHost.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8MouseEvent.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/dom/Document.h"
@@ -147,17 +146,12 @@ void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::Funct
     if (!populateContextMenuItems(v8::Local<v8::Array>::Cast(array), menu, info.GetIsolate()))
         return;
 
-    LocalDOMWindow* window = nullptr;
-    if (info.Length() >= 4) {
-        window = toDOMWindow(info[3], info.GetIsolate());
-    } else {
-        v8::Isolate* isolate = info.GetIsolate();
-        v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
-        if (windowWrapper.IsEmpty())
-            return;
-        window = V8Window::toImpl(windowWrapper);
-    }
-    if (!window || !window->document() || !window->document()->page())
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
+    if (windowWrapper.IsEmpty())
+        return;
+    LocalDOMWindow* window = V8Window::toImpl(windowWrapper);
+    if (!window->document() || !window->document()->page())
         return;
 
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toImpl(info.Holder());
