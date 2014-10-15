@@ -6,6 +6,7 @@
 
 #include "content/browser/loader/resource_scheduler.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "content/common/resource_messages.h"
 #include "content/browser/loader/resource_message_delegate.h"
@@ -723,6 +724,14 @@ ResourceScheduler::ResourceScheduler()
       coalesced_clients_(0),
       coalescing_timer_(new base::Timer(true /* retain_user_task */,
                                         true /* is_repeating */)) {
+  std::string throttling_trial_group =
+      base::FieldTrialList::FindFullName("RequestThrottlingAndCoalescing");
+  if (throttling_trial_group == "Throttle") {
+    should_throttle_ = true;
+  } else if (throttling_trial_group == "Coalesce") {
+    should_coalesce_ = true;
+    should_throttle_ = true;
+  }
 }
 
 ResourceScheduler::~ResourceScheduler() {
