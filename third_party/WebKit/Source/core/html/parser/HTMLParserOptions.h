@@ -34,7 +34,6 @@ class HTMLParserOptions {
 public:
     bool scriptEnabled;
     bool pluginsEnabled;
-    bool useThreading;
 
     explicit HTMLParserOptions(Document* = 0);
 };

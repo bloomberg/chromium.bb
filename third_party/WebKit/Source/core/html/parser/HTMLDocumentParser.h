@@ -168,7 +168,7 @@ private:
     void attemptToRunDeferredScriptsAndEnd();
     void end();
 
-    bool shouldUseThreading() const { return m_options.useThreading && !m_isPinnedToMainThread; }
+    bool shouldUseThreading() const { return !m_isPinnedToMainThread; }
 
     bool isParsingFragment() const;
     bool isScheduledForResume() const;

@@ -2113,7 +2113,6 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
             if (m_parser->tokenizer()) {
                 // We must set the tokenizer's state to
                 // DataState explicitly if the tokenizer didn't have a chance to.
-                ASSERT(m_parser->tokenizer()->state() == HTMLTokenizer::DataState || m_options.useThreading);
                 m_parser->tokenizer()->setState(HTMLTokenizer::DataState);
             }
             return;
