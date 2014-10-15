@@ -28,6 +28,7 @@ namespace {
 const char kTargetExtension[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kTargetExtension2[] = "bcdefghijklmnopabcdefghijklmnopa";
 const char kTargetExtension3[] = "cdefghijklmnopabcdefghijklmnopab";
+const char kTargetExtension4[] = "defghijklmnopabcdefghijklmnopabc";
 const char kOtherExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kExampleUpdateUrl[] = "http://example.com/update_url";
 
@@ -43,6 +44,9 @@ const char kExampleDictPreference[] =
     "  \"cdefghijklmnopabcdefghijklmnopab\": {"  // kTargetExtension3
     "    \"installation_mode\": \"normal_installed\","
     "    \"update_url\": \"http://example.com/update_url\","
+    "  },"
+    "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
+    "    \"installation_mode\": \"blocked\","
     "  },"
     "  \"*\": {"
     "    \"installation_mode\": \"blocked\","
@@ -493,6 +497,43 @@ TEST_F(ExtensionManagementServiceTest, NewInstallForcelist) {
   EXPECT_EQ(ReadById(kTargetExtension)->update_url, kExampleUpdateUrl);
   EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
             ExtensionManagement::INSTALLATION_ALLOWED);
+}
+
+// Tests the behavior of IsInstallationExplicitlyAllowed().
+TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
+  SetExampleDictPref();
+
+  // Constant name indicates the installation_mode of extensions in example
+  // preference.
+  const char* allowed = kTargetExtension;
+  const char* forced  = kTargetExtension2;
+  const char* recommended = kTargetExtension3;
+  const char* blocked = kTargetExtension4;
+  const char* not_specified = kOtherExtension;
+
+  // BlacklistedByDefault() is true in example preference.
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(forced));
+  EXPECT_TRUE(
+      extension_management_->IsInstallationExplicitlyAllowed(recommended));
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyAllowed(blocked));
+  EXPECT_FALSE(
+      extension_management_->IsInstallationExplicitlyAllowed(not_specified));
+
+  {
+    // Set BlacklistedByDefault() to false.
+    PrefUpdater pref(pref_service_.get());
+    pref.SetBlacklistedByDefault(false);
+  }
+
+  // The result should remain the same.
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(forced));
+  EXPECT_TRUE(
+      extension_management_->IsInstallationExplicitlyAllowed(recommended));
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyAllowed(blocked));
+  EXPECT_FALSE(
+      extension_management_->IsInstallationExplicitlyAllowed(not_specified));
 }
 
 // Tests the flag value indicating that extensions are blacklisted by default.

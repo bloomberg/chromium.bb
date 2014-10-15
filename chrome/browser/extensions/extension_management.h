@@ -87,8 +87,9 @@ class ExtensionManagement : public KeyedService {
   // Like GetForceInstallList(), but returns recommended install list instead.
   scoped_ptr<base::DictionaryValue> GetRecommendedInstallList() const;
 
-  // Returns if an extension with id |id| is allowed to install or not.
-  bool IsInstallationAllowed(const ExtensionId& id) const;
+  // Returns if an extension with id |id| is explicitly allowed by enterprise
+  // policy or not.
+  bool IsInstallationExplicitlyAllowed(const ExtensionId& id) const;
 
   // Returns true if an extension download should be allowed to proceed.
   bool IsOffstoreInstallAllowed(const GURL& url,

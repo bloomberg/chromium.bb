@@ -324,7 +324,7 @@ void InstallVerifier::RemoveMany(const ExtensionIdSet& ids) {
 
 bool InstallVerifier::AllowedByEnterprisePolicy(const std::string& id) const {
   return ExtensionManagementFactory::GetForBrowserContext(context_)
-      ->IsInstallationAllowed(id);
+      ->IsInstallationExplicitlyAllowed(id);
 }
 
 std::string InstallVerifier::GetDebugPolicyProviderName() const {

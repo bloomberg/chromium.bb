@@ -104,8 +104,17 @@ ExtensionManagement::GetRecommendedInstallList() const {
   return install_list.Pass();
 }
 
-bool ExtensionManagement::IsInstallationAllowed(const ExtensionId& id) const {
-  return ReadById(id)->installation_mode != INSTALLATION_BLOCKED;
+bool ExtensionManagement::IsInstallationExplicitlyAllowed(
+    const ExtensionId& id) const {
+  SettingsIdMap::const_iterator it = settings_by_id_.find(id);
+  // No settings explicitly specified for |id|.
+  if (it == settings_by_id_.end())
+    return false;
+  // Checks if the extension is on the automatically installed list or
+  // install white-list.
+  InstallationMode mode = it->second->installation_mode;
+  return mode == INSTALLATION_FORCED || mode == INSTALLATION_RECOMMENDED ||
+         mode == INSTALLATION_ALLOWED;
 }
 
 bool ExtensionManagement::IsOffstoreInstallAllowed(
