@@ -34,7 +34,7 @@ function runOnOpenPopup1AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
     shouldBeEqualToString('iframe.contentDocument.getElementById("test1").value', '2012-W01');
 
-    openPickerWithMock(iframe.contentDocument.getElementById('test2'), runOnOpenPopup2);
+    openPicker(iframe.contentDocument.getElementById('test2'), runOnOpenPopup2);
 }
 
 function runOnOpenPopup2() {
@@ -66,6 +66,6 @@ function runOnIFrameLoad()
     waitUntilClosing(finishJSTest);
 }
 </script>
-<iframe id=iframe onload="openPickerWithMock(event.target.contentDocument.getElementById('test1'), runOnOpenPopup1);" srcdoc="<input type=week id=test1 list=suggestions><input type=week id=test2 value=2002-W02 list=suggestions><datalist id=suggestions><option>2012-W01</option></datalist>"></iframe>
+<iframe id=iframe onload="openPicker(event.target.contentDocument.getElementById('test1'), runOnOpenPopup1);" srcdoc="<input type=week id=test1 list=suggestions><input type=week id=test2 value=2002-W02 list=suggestions><datalist id=suggestions><option>2012-W01</option></datalist>"></iframe>
 </body>
 </html>

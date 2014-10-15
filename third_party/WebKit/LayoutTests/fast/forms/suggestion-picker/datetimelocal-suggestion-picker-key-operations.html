@@ -82,7 +82,7 @@
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPickerWithMock(document.getElementById('datetime-local'), test1);
+openPicker(document.getElementById('datetime-local'), test1);
 shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
 function test1() {
@@ -135,7 +135,7 @@ function test1AfterClosing() {
     shouldBeEqualToString('document.getElementById("datetime-local").value', '2012-11-22T02:07');
 
     debug('Reopen popup.');
-    openPickerWithMock(document.getElementById('datetime-local'));
+    openPicker(document.getElementById('datetime-local'));
     popupWindow.addEventListener('resize', test2, false);
 }
 

@@ -28,7 +28,7 @@ debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
 window.onload = function() {
-    openPickerWithMock(document.getElementById('datetime-local'), test);
+    openPicker(document.getElementById('datetime-local'), test);
 };
 
 function test() {

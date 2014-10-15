@@ -27,7 +27,7 @@ shouldBeNull('document.getElementById("mock-page-popup")');
 var timeElement = document.getElementById('time');
 
 window.onload = function() {
-    openPickerWithMock(timeElement, test1);
+    openPicker(timeElement, test1);
 };
 
 function test1() {
@@ -43,7 +43,7 @@ function test1() {
 
 function test1AfterClosing() {
     timeElement.step = 60;
-    openPickerWithMock(timeElement, test2);
+    openPicker(timeElement, test2);
 }
 
 function test2() {
@@ -61,7 +61,7 @@ function test2() {
 
 function test2AfterClosing() {
     timeElement.step = 1;
-    openPickerWithMock(timeElement, test3);
+    openPicker(timeElement, test3);
 }
 
 function test3() {
@@ -80,7 +80,7 @@ function test3() {
 
 function test3AfterClosing() {
     timeElement.step = 0.001;
-    openPickerWithMock(timeElement, test4);
+    openPicker(timeElement, test4);
 }
 
 function test4() {

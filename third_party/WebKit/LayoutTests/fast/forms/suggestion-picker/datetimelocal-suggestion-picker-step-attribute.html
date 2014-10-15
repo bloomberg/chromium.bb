@@ -27,7 +27,7 @@ shouldBeNull('document.getElementById("mock-page-popup")');
 var datetimeLocalElement = document.getElementById('datetime-local');
 
 window.onload = function() {
-    openPickerWithMock(datetimeLocalElement, test1);
+    openPicker(datetimeLocalElement, test1);
 };
 
 function test1() {
@@ -44,7 +44,7 @@ function test1() {
 
 function test1AfterClosing() {
     datetimeLocalElement.step = 60;
-    openPickerWithMock(datetimeLocalElement, test2);
+    openPicker(datetimeLocalElement, test2);
 }
 
 function test2() {
@@ -63,7 +63,7 @@ function test2() {
 
 function test2AfterClosing() {
     datetimeLocalElement.step = 1;
-    openPickerWithMock(datetimeLocalElement, test3);
+    openPicker(datetimeLocalElement, test3);
 }
 
 function test3() {
@@ -83,7 +83,7 @@ function test3() {
 
 function test3AfterClosing() {
     datetimeLocalElement.step = 0.001;
-    openPickerWithMock(datetimeLocalElement, test4);
+    openPicker(datetimeLocalElement, test4);
 }
 
 function test4() {

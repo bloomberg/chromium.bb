@@ -83,7 +83,7 @@
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
-openPickerWithMock(document.getElementById('time'), test1);
+openPicker(document.getElementById('time'), test1);
 shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
 function test1() {
@@ -136,7 +136,7 @@ function test1AfterClosing() {
     shouldBeEqualToString('document.getElementById("time").value', '02:07');
 
     debug('Reopen popup.');
-    openPickerWithMock(document.getElementById('time'));
+    openPicker(document.getElementById('time'));
     popupWindow.addEventListener("resize", test2, false);
 }
 
