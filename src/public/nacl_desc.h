@@ -18,6 +18,9 @@ struct NaClDesc;
  * Create a NaClDesc for a NaClHandle which has reliable identity information.
  * That identity can be used for future validation caching.
  *
+ * If the file_path string is empty, this returns a NaClDesc that is not marked
+ * as validation-cacheable.
+ *
  * On success, returns a new read-only NaClDesc that uses the passed handle,
  * setting file path information internally.
  * On failure, returns NULL.

@@ -320,6 +320,13 @@ struct NaClDesc *NaClDescCreateWithFilePathMetadata(NaClHandle handle,
   if (desc == NULL)
     return NULL;
 
+  /*
+   * If there is no file path metadata, just return the created NaClDesc
+   * without adding rich file info.
+   */
+  if (file_path_length == 0)
+    return desc;
+
   /* Mark the desc as OK for mmapping. */
   NaClDescMarkSafeForMmap(desc);
 
