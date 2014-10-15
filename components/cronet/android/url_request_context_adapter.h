@@ -34,7 +34,7 @@ typedef base::Callback<void(void)> RunAfterContextInitTask;
 // Implementation of the Chromium NetLog observer interface.
 class NetLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
-  virtual NetLogObserver() {}
+  NetLogObserver() {}
 
   virtual ~NetLogObserver() {}
 
