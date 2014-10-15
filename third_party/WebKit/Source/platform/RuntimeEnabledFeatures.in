@@ -112,6 +112,7 @@ ScrollTopLeftInterop status=experimental
 // window.showModalDialog is deprecated and slated for removal. crbug.com/345831
 ShowModalDialog status=deprecated
 ServiceWorker status=experimental
+ServiceWorkerCache status=experimental
 // FIXME: When ServiceWorker is status=stable add a webexposed test to
 // verify that addEventListener('fetch', ... is *not* fired when
 // onfetch is not enabled.

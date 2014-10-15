@@ -6,7 +6,7 @@
 [
     GarbageCollected,
     Exposed=ServiceWorker,
-    RuntimeEnabled=ServiceWorkerOnFetch,
+    RuntimeEnabled=ServiceWorkerCache,
 ] interface CacheStorage {
   [CallWith=ScriptState] Promise get(ScalarValueString cacheName);
   [CallWith=ScriptState] Promise has(ScalarValueString cacheName);

@@ -37,7 +37,7 @@
 
   readonly attribute ServiceWorkerClients clients;
   [CallWith=ExecutionContext, Unforgeable] readonly attribute ScalarValueString scope;
-  [CallWith=ExecutionContext, Unforgeable, RuntimeEnabled=ServiceWorkerOnFetch] readonly attribute CacheStorage caches;
+  [CallWith=ExecutionContext, Unforgeable, RuntimeEnabled=ServiceWorkerCache] readonly attribute CacheStorage caches;
 
   [CallWith=ScriptState] Promise fetch(DOMString request, optional Dictionary requestInitDict);
   [CallWith=ScriptState] Promise fetch(Request request, optional Dictionary requestInitDict);
