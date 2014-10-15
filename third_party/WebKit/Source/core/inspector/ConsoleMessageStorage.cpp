@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
