@@ -133,8 +133,9 @@ int WebSocketDeflateStream::Deflate(ScopedVector<WebSocketFrame>* frames) {
       current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
     } else {
       if (frame->data.get() &&
-          !deflater_.AddBytes(frame->data->data(),
-                              frame->header.payload_length)) {
+          !deflater_.AddBytes(
+              frame->data->data(),
+              static_cast<size_t>(frame->header.payload_length))) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "deflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -312,8 +313,9 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
     } else {
       DCHECK_EQ(reading_state_, READING_COMPRESSED_MESSAGE);
       if (frame->data.get() &&
-          !inflater_.AddBytes(frame->data->data(),
-                              frame->header.payload_length)) {
+          !inflater_.AddBytes(
+              frame->data->data(),
+              static_cast<size_t>(frame->header.payload_length))) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "inflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;

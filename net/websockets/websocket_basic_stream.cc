@@ -47,22 +47,22 @@ typedef ScopedVector<WebSocketFrame>::const_iterator WebSocketFrameIterator;
 // masked bit of the frames on.
 int CalculateSerializedSizeAndTurnOnMaskBit(
     ScopedVector<WebSocketFrame>* frames) {
-  const int kMaximumTotalSize = std::numeric_limits<int>::max();
+  const uint64 kMaximumTotalSize = std::numeric_limits<int>::max();
 
-  int total_size = 0;
+  uint64 total_size = 0;
   for (WebSocketFrameIterator it = frames->begin(); it != frames->end(); ++it) {
     WebSocketFrame* frame = *it;
     // Force the masked bit on.
     frame->header.masked = true;
     // We enforce flow control so the renderer should never be able to force us
     // to cache anywhere near 2GB of frames.
-    int frame_size = frame->header.payload_length +
-                     GetWebSocketFrameHeaderSize(frame->header);
-    CHECK_GE(kMaximumTotalSize - total_size, frame_size)
+    uint64 frame_size = frame->header.payload_length +
+        GetWebSocketFrameHeaderSize(frame->header);
+    CHECK_LE(frame_size, kMaximumTotalSize - total_size)
         << "Aborting to prevent overflow";
     total_size += frame_size;
   }
-  return total_size;
+  return static_cast<int>(total_size);
 }
 
 }  // namespace
@@ -157,9 +157,9 @@ int WebSocketBasicStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
     dest += result;
     remaining_size -= result;
 
-    const int frame_size = frame->header.payload_length;
+    CHECK_LE(frame->header.payload_length, static_cast<uint64>(remaining_size));
+    const int frame_size = static_cast<int>(frame->header.payload_length);
     if (frame_size > 0) {
-      CHECK_GE(remaining_size, frame_size);
       const char* const frame_data = frame->data->data();
       std::copy(frame_data, frame_data + frame_size, dest);
       MaskWebSocketFramePayload(mask, 0, dest, frame_size);

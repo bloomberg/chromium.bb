@@ -138,7 +138,7 @@ class WebSocketChannel::SendBuffer {
   // The total size of the payload data in |frames_|. This will be used to
   // measure the throughput of the link.
   // TODO(ricea): Measure the throughput of the link.
-  size_t total_bytes_;
+  uint64 total_bytes_;
 };
 
 void WebSocketChannel::SendBuffer::AddFrame(scoped_ptr<WebSocketFrame> frame) {
@@ -266,8 +266,8 @@ WebSocketChannel::PendingReceivedFrame::PendingReceivedFrame(
     bool final,
     WebSocketFrameHeader::OpCode opcode,
     const scoped_refptr<IOBuffer>& data,
-    size_t offset,
-    size_t size)
+    uint64 offset,
+    uint64 size)
     : final_(final),
       opcode_(opcode),
       data_(data),
@@ -281,7 +281,7 @@ void WebSocketChannel::PendingReceivedFrame::ResetOpcode() {
   opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
 }
 
-void WebSocketChannel::PendingReceivedFrame::DidConsume(size_t bytes) {
+void WebSocketChannel::PendingReceivedFrame::DidConsume(uint64 bytes) {
   DCHECK_LE(offset_, size_);
   DCHECK_LE(bytes, size_ - offset_);
   offset_ += bytes;
@@ -419,13 +419,13 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
   DCHECK_GE(quota, 0);
   DCHECK_LE(quota, INT_MAX);
   if (!pending_received_frames_.empty()) {
-    DCHECK_EQ(0, current_receive_quota_);
+    DCHECK_EQ(0u, current_receive_quota_);
   }
   while (!pending_received_frames_.empty() && quota > 0) {
     PendingReceivedFrame& front = pending_received_frames_.front();
-    const size_t data_size = front.size() - front.offset();
-    const size_t bytes_to_send =
-        std::min(base::checked_cast<size_t>(quota), data_size);
+    const uint64 data_size = front.size() - front.offset();
+    const uint64 bytes_to_send =
+        std::min(base::checked_cast<uint64>(quota), data_size);
     const bool final = front.final() && data_size == bytes_to_send;
     const char* data =
         front.data().get() ? front.data()->data() + front.offset() : NULL;
@@ -442,9 +442,7 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
       front.ResetOpcode();
       return;
     }
-    const int64 signed_bytes_to_send = base::checked_cast<int64>(bytes_to_send);
-    DCHECK_GE(quota, signed_bytes_to_send);
-    quota -= signed_bytes_to_send;
+    quota -= bytes_to_send;
 
     pending_received_frames_.pop();
   }
@@ -453,7 +451,7 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
   const bool start_read =
       current_receive_quota_ == 0 && quota > 0 &&
       (state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
-  current_receive_quota_ += base::checked_cast<int>(quota);
+  current_receive_quota_ += quota;
   if (start_read)
     ignore_result(ReadFrames());
   // |this| may have been deleted.
@@ -790,7 +788,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
     const WebSocketFrameHeader::OpCode opcode,
     bool final,
     const scoped_refptr<IOBuffer>& data_buffer,
-    size_t size) {
+    uint64 size) {
   DCHECK_NE(RECV_CLOSED, state_)
       << "HandleFrame() does not support being called re-entrantly from within "
          "SendClose()";
@@ -878,7 +876,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     WebSocketFrameHeader::OpCode opcode,
     bool final,
     const scoped_refptr<IOBuffer>& data_buffer,
-    size_t size) {
+    uint64 size) {
   if (state_ != CONNECTED) {
     DVLOG(3) << "Ignored data packet received in state " << state_;
     return CHANNEL_ALIVE;
@@ -911,7 +909,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     // This call is not redundant when size == 0 because it tells us what
     // the current state is.
     StreamingUtf8Validator::State state = incoming_utf8_validator_.AddBytes(
-        size ? data_buffer->data() : NULL, size);
+        size ? data_buffer->data() : NULL, static_cast<size_t>(size));
     if (state == StreamingUtf8Validator::INVALID ||
         (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
       return FailChannel("Could not decode a text frame as UTF-8.",
@@ -925,8 +923,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     return CHANNEL_ALIVE;
 
   initial_frame_forwarded_ = !final;
-  if (size > base::checked_cast<size_t>(current_receive_quota_) ||
-      !pending_received_frames_.empty()) {
+  if (size > current_receive_quota_ || !pending_received_frames_.empty()) {
     const bool no_quota = (current_receive_quota_ == 0);
     DCHECK(no_quota || pending_received_frames_.empty());
     DVLOG(3) << "Queueing frame to renderer due to quota. quota="
@@ -946,7 +943,6 @@ ChannelState WebSocketChannel::HandleDataFrame(
   const char* const data_end = data_begin + size;
   const std::vector<char> data(data_begin, data_end);
   current_receive_quota_ -= size;
-  DCHECK_GE(current_receive_quota_, 0);
 
   // Sends the received frame to the renderer process.
   return event_interface_->OnDataFrame(final, opcode_to_send, data);
@@ -956,7 +952,7 @@ ChannelState WebSocketChannel::SendFrameFromIOBuffer(
     bool fin,
     WebSocketFrameHeader::OpCode op_code,
     const scoped_refptr<IOBuffer>& buffer,
-    size_t size) {
+    uint64 size) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
 
@@ -1009,7 +1005,7 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK_LE(reason.size(), kMaximumCloseReasonLength);
   scoped_refptr<IOBuffer> body;
-  size_t size = 0;
+  uint64 size = 0;
   if (code == kWebSocketErrorNoStatusReceived) {
     // Special case: translate kWebSocketErrorNoStatusReceived into a Close
     // frame with no payload.
@@ -1039,7 +1035,7 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
 }
 
 bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
-                                  size_t size,
+                                  uint64 size,
                                   uint16* code,
                                   std::string* reason,
                                   std::string* message) {

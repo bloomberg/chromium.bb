@@ -130,8 +130,8 @@ class NET_EXPORT WebSocketChannel {
     PendingReceivedFrame(bool final,
                          WebSocketFrameHeader::OpCode opcode,
                          const scoped_refptr<IOBuffer>& data,
-                         size_t offset,
-                         size_t size);
+                         uint64 offset,
+                         uint64 size);
     ~PendingReceivedFrame();
 
     bool final() const { return final_; }
@@ -139,10 +139,10 @@ class NET_EXPORT WebSocketChannel {
     // ResetOpcode() to Continuation.
     void ResetOpcode();
     const scoped_refptr<IOBuffer>& data() const { return data_; }
-    size_t offset() const { return offset_; }
-    size_t size() const { return size_; }
+    uint64 offset() const { return offset_; }
+    uint64 size() const { return size_; }
     // Increase |offset_| by |bytes|.
-    void DidConsume(size_t bytes);
+    void DidConsume(uint64 bytes);
 
     // This object needs to be copyable and assignable, since it will be placed
     // in a std::queue. The compiler-generated copy constructor and assignment
@@ -154,9 +154,9 @@ class NET_EXPORT WebSocketChannel {
     scoped_refptr<IOBuffer> data_;
     // Where to start reading from data_. Everything prior to offset_ has
     // already been sent to the browser.
-    size_t offset_;
+    uint64 offset_;
     // The size of data_.
-    size_t size_;
+    uint64 size_;
   };
 
   // Methods which return a value of type ChannelState may delete |this|. If the
@@ -259,7 +259,7 @@ class NET_EXPORT WebSocketChannel {
       const WebSocketFrameHeader::OpCode opcode,
       bool final,
       const scoped_refptr<IOBuffer>& data_buffer,
-      size_t size) WARN_UNUSED_RESULT;
+      uint64 size) WARN_UNUSED_RESULT;
 
   // Forward a received data frame to the renderer, if connected. If
   // |expecting_continuation| is not equal to |expecting_to_read_continuation_|,
@@ -267,7 +267,7 @@ class NET_EXPORT WebSocketChannel {
   ChannelState HandleDataFrame(WebSocketFrameHeader::OpCode opcode,
                                bool final,
                                const scoped_refptr<IOBuffer>& data_buffer,
-                               size_t size) WARN_UNUSED_RESULT;
+                               uint64 size) WARN_UNUSED_RESULT;
 
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled
@@ -277,7 +277,7 @@ class NET_EXPORT WebSocketChannel {
   ChannelState SendFrameFromIOBuffer(bool fin,
                                      WebSocketFrameHeader::OpCode op_code,
                                      const scoped_refptr<IOBuffer>& buffer,
-                                     size_t size) WARN_UNUSED_RESULT;
+                                     uint64 size) WARN_UNUSED_RESULT;
 
   // Performs the "Fail the WebSocket Connection" operation as defined in
   // RFC6455. A NotifyFailure message is sent to the renderer with |message|.
@@ -306,7 +306,7 @@ class NET_EXPORT WebSocketChannel {
   // then false is returned and |message| is set to an appropriate console
   // message.
   bool ParseClose(const scoped_refptr<IOBuffer>& buffer,
-                  size_t size,
+                  uint64 size,
                   uint16* code,
                   std::string* reason,
                   std::string* message);
@@ -368,7 +368,7 @@ class NET_EXPORT WebSocketChannel {
   int current_send_quota_;
   // The remaining amount of quota that the renderer will allow us to send on
   // this logical channel (quota units).
-  int current_receive_quota_;
+  uint64 current_receive_quota_;
 
   // Timer for the closing handshake.
   base::OneShotTimer<WebSocketChannel> timer_;
