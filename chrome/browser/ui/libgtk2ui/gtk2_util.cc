@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
@@ -35,7 +36,11 @@ void CommonInitFromCommandLine(const CommandLine& command_line,
   argv[argc] = NULL;
   char **argv_pointer = argv.get();
 
-  init_func(&argc, &argv_pointer);
+  {
+    // http://crbug.com/423873
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    init_func(&argc, &argv_pointer);
+  }
   for (size_t i = 0; i < args.size(); ++i) {
     free(argv[i]);
   }
