@@ -4461,7 +4461,7 @@ static void typeCheckingInterfaceTestInterfaceAttributeAttributeSetter(v8::Local
         return;
     }
     TestObject* impl = V8TestObject::toImpl(holder);
-    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setTypeCheckingInterfaceTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 

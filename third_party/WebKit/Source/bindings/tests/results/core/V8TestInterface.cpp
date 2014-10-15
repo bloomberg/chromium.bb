@@ -70,7 +70,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    TestInterfaceImplementation* cppValue = V8TestInterface::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -430,7 +430,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    Node* cppValue = V8Node::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setImplementsNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -495,7 +495,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    Node* cppValue = V8Node::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setImplementsRuntimeEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -530,7 +530,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    Node* cppValue = V8Node::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setImplementsPerContextEnabledNodeAttribute(WTF::getPtr(cppValue));
 }
 

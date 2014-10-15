@@ -58,7 +58,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    TestInterface5Implementation* cppValue = V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    TestInterface5Implementation* cppValue = V8TestInterface5::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
     impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
