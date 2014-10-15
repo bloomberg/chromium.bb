@@ -131,9 +131,13 @@ void RenderRubyRun::addChild(RenderObject* child, RenderObject* beforeChild)
     } else {
         // child is not a text -> insert it into the base
         // (append it instead if beforeChild is the ruby text)
+        RenderRubyBase* base = rubyBaseSafe();
+        if (beforeChild == base)
+            beforeChild = base->firstChild();
         if (beforeChild && beforeChild->isRubyText())
             beforeChild = 0;
-        rubyBaseSafe()->addChild(child, beforeChild);
+        ASSERT(!beforeChild || beforeChild->isDescendantOf(base));
+        base->addChild(child, beforeChild);
     }
 }
 
