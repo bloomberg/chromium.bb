@@ -194,17 +194,17 @@ public class ContentViewClient {
      */
     public static boolean shouldPropagateKey(int keyCode) {
         if (keyCode == KeyEvent.KEYCODE_MENU ||
-            keyCode == KeyEvent.KEYCODE_HOME ||
-            keyCode == KeyEvent.KEYCODE_BACK ||
-            keyCode == KeyEvent.KEYCODE_CALL ||
-            keyCode == KeyEvent.KEYCODE_ENDCALL ||
-            keyCode == KeyEvent.KEYCODE_POWER ||
-            keyCode == KeyEvent.KEYCODE_HEADSETHOOK ||
-            keyCode == KeyEvent.KEYCODE_CAMERA ||
-            keyCode == KeyEvent.KEYCODE_FOCUS ||
-            keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
-            keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
-            keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                keyCode == KeyEvent.KEYCODE_HOME ||
+                keyCode == KeyEvent.KEYCODE_BACK ||
+                keyCode == KeyEvent.KEYCODE_CALL ||
+                keyCode == KeyEvent.KEYCODE_ENDCALL ||
+                keyCode == KeyEvent.KEYCODE_POWER ||
+                keyCode == KeyEvent.KEYCODE_HEADSETHOOK ||
+                keyCode == KeyEvent.KEYCODE_CAMERA ||
+                keyCode == KeyEvent.KEYCODE_FOCUS ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             return false;
         }
         return true;

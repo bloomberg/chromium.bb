@@ -37,7 +37,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
 
     private boolean checkOrientationForLock(int orientations) {
         if (mNaturalOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-           switch (orientations) {
+            switch (orientations) {
                 case ScreenOrientationValues.PORTRAIT_PRIMARY:
                     return mObserver.mOrientation == 0;
                 case ScreenOrientationValues.PORTRAIT_SECONDARY:
@@ -58,7 +58,7 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                     return !mObserver.mHasChanged;
             }
         } else { // mNaturalOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-           switch (orientations) {
+            switch (orientations) {
                 case ScreenOrientationValues.PORTRAIT_PRIMARY:
                     return mObserver.mOrientation == -90;
                 case ScreenOrientationValues.PORTRAIT_SECONDARY:

@@ -76,7 +76,7 @@ import org.chromium.content_public.browser.WebContents;
 
     @Override
     public void onHide() {
-         nativeOnHide(mNativeWebContentsAndroid);
+        nativeOnHide(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -157,12 +157,12 @@ import org.chromium.content_public.browser.WebContents;
 
     @Override
     public void resumeResponseDeferredAtStart() {
-         nativeResumeResponseDeferredAtStart(mNativeWebContentsAndroid);
+        nativeResumeResponseDeferredAtStart(mNativeWebContentsAndroid);
     }
 
     @Override
     public void setHasPendingNavigationTransitionForTesting() {
-         nativeSetHasPendingNavigationTransitionForTesting(mNativeWebContentsAndroid);
+        nativeSetHasPendingNavigationTransitionForTesting(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -218,7 +218,7 @@ import org.chromium.content_public.browser.WebContents;
 
     @Override
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
-         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
+        nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }
 
     @CalledByNative

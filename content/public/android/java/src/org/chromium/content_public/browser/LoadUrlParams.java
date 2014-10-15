@@ -83,7 +83,7 @@ public class LoadUrlParams {
      * @param isBase64Encoded True if the data is encoded in Base 64 format.
      */
     public static LoadUrlParams createLoadDataParams(
-        String data, String mimeType, boolean isBase64Encoded) {
+            String data, String mimeType, boolean isBase64Encoded) {
         return createLoadDataParams(data, mimeType, isBase64Encoded, null);
     }
 

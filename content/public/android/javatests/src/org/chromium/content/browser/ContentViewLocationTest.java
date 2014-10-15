@@ -100,8 +100,8 @@ public class ContentViewLocationTest extends ContentShellTestBase {
 
     @Override
     protected void tearDown() throws Exception {
-         mMockLocationProvider.stopUpdates();
-         super.tearDown();
+        mMockLocationProvider.stopUpdates();
+        super.tearDown();
     }
 
     @MediumTest

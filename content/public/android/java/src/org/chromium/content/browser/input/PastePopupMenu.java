@@ -159,8 +159,8 @@ public class PastePopupMenu implements OnClickListener {
     private void updateContent() {
         if (mPasteView == null) {
             final int layout = mPasteViewLayout;
-            LayoutInflater inflater = (LayoutInflater) mContext.
-                getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(
+                    Context.LAYOUT_INFLATER_SERVICE);
             if (inflater != null) {
                 mPasteView = inflater.inflate(layout, null);
             }

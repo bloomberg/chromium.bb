@@ -113,7 +113,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         if (enableJBVSync) {
             Context context = getInstrumentation().getContext();
             float refreshRate = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
-                .getDefaultDisplay().getRefreshRate();
+                    .getDefaultDisplay().getRefreshRate();
             if (refreshRate < 30.0f) {
                 // Reported refresh rate is most likely incorrect.
                 // Estimated vsync period is expected to be lower than (1000000 / 30) microseconds

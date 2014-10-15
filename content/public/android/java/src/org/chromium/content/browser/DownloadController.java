@@ -134,18 +134,18 @@ public class DownloadController {
             int percentCompleted, long timeRemainingInMs) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
-            .setUrl(url)
-            .setMimeType(mimeType)
-            .setFileName(filename)
-            .setFilePath(path)
-            .setContentLength(contentLength)
-            .setIsSuccessful(successful)
-            .setDescription(filename)
-            .setDownloadId(downloadId)
-            .setHasDownloadId(true)
-            .setPercentCompleted(percentCompleted)
-            .setTimeRemainingInMillis(timeRemainingInMs)
-            .build();
+                    .setUrl(url)
+                    .setMimeType(mimeType)
+                    .setFileName(filename)
+                    .setFilePath(path)
+                    .setContentLength(contentLength)
+                    .setIsSuccessful(successful)
+                    .setDescription(filename)
+                    .setDownloadId(downloadId)
+                    .setHasDownloadId(true)
+                    .setPercentCompleted(percentCompleted)
+                    .setTimeRemainingInMillis(timeRemainingInMs)
+                    .build();
             sDownloadNotificationService.onDownloadUpdated(downloadInfo);
         }
     }

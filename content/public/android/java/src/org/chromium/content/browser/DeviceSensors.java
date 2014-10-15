@@ -345,11 +345,11 @@ class DeviceSensors implements SensorEventListener {
 
         SensorManager sensorManager = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<SensorManager>() {
-            @Override
-            public SensorManager call() {
-                return (SensorManager) mAppContext.getSystemService(Context.SENSOR_SERVICE);
-            }
-        });
+                    @Override
+                    public SensorManager call() {
+                        return (SensorManager) mAppContext.getSystemService(Context.SENSOR_SERVICE);
+                    }
+                });
 
         if (sensorManager != null) {
             mSensorManagerProxy = new SensorManagerProxyImpl(sensorManager);

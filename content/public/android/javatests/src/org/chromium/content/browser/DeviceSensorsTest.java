@@ -81,8 +81,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
                 mDeviceSensors.mActiveSensors.containsAll(
                         DeviceSensors.DEVICE_ORIENTATION_SENSORS));
 
-        Set<Integer> union = new HashSet<Integer>(
-            DeviceSensors.DEVICE_ORIENTATION_SENSORS);
+        Set<Integer> union = new HashSet<Integer>(DeviceSensors.DEVICE_ORIENTATION_SENSORS);
         union.addAll(DeviceSensors.DEVICE_MOTION_SENSORS);
 
         assertEquals(union.size(), mDeviceSensors.mActiveSensors.size());

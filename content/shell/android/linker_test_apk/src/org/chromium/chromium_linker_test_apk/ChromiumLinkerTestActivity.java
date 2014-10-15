@@ -107,16 +107,16 @@ public class ChromiumLinkerTestActivity extends Activity {
         try {
             BrowserStartupController.get(this).startBrowserProcessesAsync(
                     new BrowserStartupController.StartupCallback() {
-                @Override
-                public void onSuccess(boolean alreadyStarted) {
-                    finishInitialization(savedInstanceState);
-                }
+                        @Override
+                        public void onSuccess(boolean alreadyStarted) {
+                            finishInitialization(savedInstanceState);
+                        }
 
-                @Override
-                public void onFailure() {
-                    initializationFailed();
-                }
-            });
+                        @Override
+                        public void onFailure() {
+                            initializationFailed();
+                        }
+                    });
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             finish();

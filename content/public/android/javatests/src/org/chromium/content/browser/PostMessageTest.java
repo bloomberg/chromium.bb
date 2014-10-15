@@ -14,13 +14,13 @@ import org.chromium.base.test.util.Feature;
 public class PostMessageTest extends ContentViewTestBase {
 
     private static final String URL1 =
-        "<!DOCTYPE html><html><body>" +
-            "<script type=\"text/javascript\">" +
-                "onmessage = function (e) {" +
-                    "messageObject.setMessageParams(e.data, e.origin);" +
-                "}" +
-            "</script>" +
-        "</body></html>";
+            "<!DOCTYPE html><html><body>" +
+            "    <script type=\"text/javascript\">" +
+            "        onmessage = function (e) {" +
+            "            messageObject.setMessageParams(e.data, e.origin);" +
+            "       }" +
+            "   </script>" +
+            "</body></html>";
 
     private static final String MESSAGE = "Foo";
     private static final String SOURCE_ORIGIN = "android_webview";

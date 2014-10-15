@@ -305,7 +305,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             if (fileInfos[i].mFd == -1) {
                 // If someone provided an invalid FD, they are doing something wrong.
                 Log.e(TAG, "Invalid FD (id=" + fileInfos[i].mId + ") for process connection, "
-                      + "aborting connection.");
+                        + "aborting connection.");
                 return;
             }
             String idName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_ID_SUFFIX;
@@ -317,9 +317,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 try {
                     parcelFiles[i] = ParcelFileDescriptor.fromFd(fileInfos[i].mFd);
                 } catch (IOException e) {
-                    Log.e(TAG,
-                          "Invalid FD provided for process connection, aborting connection.",
-                          e);
+                    Log.e(TAG, "Invalid FD provided for process connection, aborting connection.",
+                            e);
                     return;
                 }
 

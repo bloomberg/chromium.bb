@@ -167,7 +167,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         @Override
         public void updateSelection(View view, int selStart, int selEnd,
                 int candidatesStart, int candidatesEnd) {
-          mUpdates.add(new ImeState("", selStart, selEnd, candidatesStart, candidatesEnd));
+            mUpdates.add(new ImeState("", selStart, selEnd, candidatesStart, candidatesEnd));
         }
 
         public int getUpdateSelectionCallCount() {

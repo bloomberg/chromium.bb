@@ -20,12 +20,13 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     private class TestController extends Controller {
         private String mStringValue;
 
-    @SuppressWarnings("unused")  // Called via reflection
-    public synchronized void setStringValue(String x) {
+        @SuppressWarnings("unused") // Called via reflection
+        public synchronized void setStringValue(String x) {
             mStringValue = x;
             notifyResultIsReady();
         }
-       public synchronized String waitForStringValue() {
+
+        public synchronized String waitForStringValue() {
             waitForResult();
             return mStringValue;
         }

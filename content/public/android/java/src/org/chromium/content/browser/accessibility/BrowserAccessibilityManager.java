@@ -196,22 +196,18 @@ public class BrowserAccessibilityManager {
                 return true;
 
             case AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT: {
-                if (arguments == null)
-                    return false;
+                if (arguments == null) return false;
                 String elementType = arguments.getString(
-                    AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
-                if (elementType == null)
-                    return false;
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
+                if (elementType == null) return false;
                 elementType = elementType.toUpperCase(Locale.US);
                 return jumpToElementType(elementType, true);
             }
             case AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT: {
-                if (arguments == null)
-                    return false;
+                if (arguments == null) return false;
                 String elementType = arguments.getString(
-                    AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
-                if (elementType == null)
-                    return false;
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
+                if (elementType == null) return false;
                 elementType = elementType.toUpperCase(Locale.US);
                 return jumpToElementType(elementType, false);
             }
@@ -261,8 +257,7 @@ public class BrowserAccessibilityManager {
      * web coordinates to screen coordinates.
      */
     public void notifyFrameInfoInitialized() {
-        if (mNotifyFrameInfoInitializedCalled)
-            return;
+        if (mNotifyFrameInfoInitializedCalled) return;
 
         mNotifyFrameInfoInitializedCalled = true;
 
@@ -279,16 +274,14 @@ public class BrowserAccessibilityManager {
 
     private boolean jumpToElementType(String elementType, boolean forwards) {
         int id = nativeFindElementType(mNativeObj, mAccessibilityFocusId, elementType, forwards);
-        if (id == 0)
-            return false;
+        if (id == 0) return false;
 
         moveAccessibilityFocusToId(id);
         return true;
     }
 
     private boolean moveAccessibilityFocusToId(int newAccessibilityFocusId) {
-        if (newAccessibilityFocusId == mAccessibilityFocusId)
-            return false;
+        if (newAccessibilityFocusId == mAccessibilityFocusId) return false;
 
         mAccessibilityFocusId = newAccessibilityFocusId;
         mAccessibilityFocusRect = null;
@@ -735,10 +728,10 @@ public class BrowserAccessibilityManager {
     private native boolean nativeIsNodeValid(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native void nativeHitTest(long nativeBrowserAccessibilityManagerAndroid, int x, int y);
     private native boolean nativePopulateAccessibilityNodeInfo(
-        long nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
+            long nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
     private native boolean nativePopulateAccessibilityEvent(
-        long nativeBrowserAccessibilityManagerAndroid, AccessibilityEvent event, int id,
-        int eventType);
+            long nativeBrowserAccessibilityManagerAndroid, AccessibilityEvent event, int id,
+            int eventType);
     private native void nativeClick(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native void nativeFocus(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native void nativeBlur(long nativeBrowserAccessibilityManagerAndroid);

@@ -33,15 +33,17 @@ public class SurfaceWrapper implements Parcelable {
         mSurface.writeToParcel(out, 0);
     }
 
-    public static final Parcelable.Creator<SurfaceWrapper> CREATOR
-            = new Parcelable.Creator<SurfaceWrapper>() {
-        public SurfaceWrapper createFromParcel(Parcel in) {
-            Surface surface = Surface.CREATOR.createFromParcel(in);
-            return new SurfaceWrapper(surface);
-        }
+    public static final Parcelable.Creator<SurfaceWrapper> CREATOR =
+            new Parcelable.Creator<SurfaceWrapper>() {
+                @Override
+                public SurfaceWrapper createFromParcel(Parcel in) {
+                    Surface surface = Surface.CREATOR.createFromParcel(in);
+                    return new SurfaceWrapper(surface);
+                }
 
-        public SurfaceWrapper[] newArray(int size) {
-            return new SurfaceWrapper[size];
-        }
-    };
+                @Override
+                public SurfaceWrapper[] newArray(int size) {
+                    return new SurfaceWrapper[size];
+                }
+            };
 }

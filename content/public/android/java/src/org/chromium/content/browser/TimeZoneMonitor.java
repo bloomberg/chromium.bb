@@ -25,12 +25,12 @@ class TimeZoneMonitor {
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-           if (!intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED)) {
-               Log.e(TAG, "unexpected intent");
-               return;
-           }
+            if (!intent.getAction().equals(Intent.ACTION_TIMEZONE_CHANGED)) {
+                Log.e(TAG, "unexpected intent");
+                return;
+            }
 
-           nativeTimeZoneChangedFromJava(mNativePtr);
+            nativeTimeZoneChangedFromJava(mNativePtr);
         }
     };
 

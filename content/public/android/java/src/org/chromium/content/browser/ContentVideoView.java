@@ -128,17 +128,17 @@ public class ContentVideoView extends FrameLayout
                 // If we have never switched orientation, record the orientation
                 // time.
                 if (mPlaybackStartTime == mOrientationChangedTime) {
-                   if (isOrientationPortrait() != mInitialOrientation) {
-                       mOrientationChangedTime = System.currentTimeMillis();
-                   }
+                    if (isOrientationPortrait() != mInitialOrientation) {
+                        mOrientationChangedTime = System.currentTimeMillis();
+                    }
                 } else {
-                   // if user quickly switched the orientation back and force, don't
-                   // count it in UMA.
-                   if (!mPossibleAccidentalChange &&
-                           isOrientationPortrait() == mInitialOrientation &&
-                           System.currentTimeMillis() - mOrientationChangedTime < 5000) {
-                       mPossibleAccidentalChange = true;
-                   }
+                    // if user quickly switched the orientation back and force, don't
+                    // count it in UMA.
+                    if (!mPossibleAccidentalChange &&
+                            isOrientationPortrait() == mInitialOrientation &&
+                            System.currentTimeMillis() - mOrientationChangedTime < 5000) {
+                        mPossibleAccidentalChange = true;
+                    }
                 }
             }
             setMeasuredDimension(width, height);
@@ -261,13 +261,12 @@ public class ContentVideoView extends FrameLayout
                     .setMessage(message)
                     .setPositiveButton(mErrorButton,
                             new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            /* Inform that the video is over.
-                             */
-                            onCompletion();
-                        }
-                    })
+                                @Override
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    // Inform that the video is over.
+                                    onCompletion();
+                                }
+                            })
                     .setCancelable(false)
                     .show();
             } catch (RuntimeException e) {

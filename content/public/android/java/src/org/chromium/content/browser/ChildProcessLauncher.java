@@ -161,16 +161,16 @@ public class ChildProcessLauncher {
     private static ChildProcessConnection allocateConnection(Context context,
             boolean inSandbox, ChromiumLinkerParams chromiumLinkerParams) {
         ChildProcessConnection.DeathCallback deathCallback =
-            new ChildProcessConnection.DeathCallback() {
-                @Override
-                public void onChildProcessDied(ChildProcessConnection connection) {
-                    if (connection.getPid() != 0) {
-                        stop(connection.getPid());
-                    } else {
-                        freeConnection(connection);
+                new ChildProcessConnection.DeathCallback() {
+                    @Override
+                    public void onChildProcessDied(ChildProcessConnection connection) {
+                        if (connection.getPid() != 0) {
+                            stop(connection.getPid());
+                        } else {
+                            freeConnection(connection);
+                        }
                     }
-                }
-            };
+                };
         sConnectionAllocated = true;
         return getConnectionAllocator(inSandbox).allocate(context, deathCallback,
                 chromiumLinkerParams);
@@ -266,8 +266,7 @@ public class ChildProcessLauncher {
     private static void unregisterSurfaceTextureSurface(int surfaceTextureId, int clientId) {
         Pair<Integer, Integer> key = new Pair<Integer, Integer>(surfaceTextureId, clientId);
         Surface surface = sSurfaceTextureSurfaceMap.remove(key);
-        if (surface == null)
-          return;
+        if (surface == null) return;
 
         assert surface.isValid();
         surface.release();
@@ -291,8 +290,8 @@ public class ChildProcessLauncher {
 
         Surface surface = sSurfaceTextureSurfaceMap.get(key);
         if (surface == null) {
-          Log.e(TAG, "Invalid Id for surface texture.");
-          return null;
+            Log.e(TAG, "Invalid Id for surface texture.");
+            return null;
         }
         assert surface.isValid();
         return new SurfaceWrapper(surface);
@@ -554,7 +553,7 @@ public class ChildProcessLauncher {
         };
     }
 
-     static void logPidWarning(int pid, String message) {
+    static void logPidWarning(int pid, String message) {
         // This class is effectively a no-op in single process mode, so don't log warnings there.
         if (pid > 0 && !nativeIsSingleProcess()) {
             Log.w(TAG, message + ", pid=" + pid);

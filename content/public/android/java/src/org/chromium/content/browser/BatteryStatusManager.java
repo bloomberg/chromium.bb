@@ -83,41 +83,41 @@ class BatteryStatusManager {
 
     @VisibleForTesting
     void onReceive(Intent intent) {
-       if (!intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
-           Log.e(TAG, "Unexpected intent.");
-           return;
-       }
+        if (!intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
+            Log.e(TAG, "Unexpected intent.");
+            return;
+        }
 
-       boolean present = ignoreBatteryPresentState() ?
-               true : intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false);
-       int pluggedStatus = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        boolean present = ignoreBatteryPresentState() ?
+                true : intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false);
+        int pluggedStatus = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 
-       if (!present || pluggedStatus == -1) {
-           // No battery or no plugged status: return default values.
-           gotBatteryStatus(true, 0, Double.POSITIVE_INFINITY, 1);
-           return;
-       }
+        if (!present || pluggedStatus == -1) {
+            // No battery or no plugged status: return default values.
+            gotBatteryStatus(true, 0, Double.POSITIVE_INFINITY, 1);
+            return;
+        }
 
-       boolean charging = pluggedStatus != 0;
-       int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-       boolean batteryFull = status == BatteryManager.BATTERY_STATUS_FULL;
+        boolean charging = pluggedStatus != 0;
+        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        boolean batteryFull = status == BatteryManager.BATTERY_STATUS_FULL;
 
-       int current = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-       int max = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-       double level = (double) current / (double) max;
-       if (level < 0 || level > 1) {
-           // Sanity check, assume default value in this case.
-           level = 1.0;
-       }
+        int current = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int max = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        double level = (double) current / (double) max;
+        if (level < 0 || level > 1) {
+            // Sanity check, assume default value in this case.
+            level = 1.0;
+        }
 
-       // Currently Android does not provide charging/discharging time, as a work-around
-       // we could compute it manually based on level delta.
-       // TODO(timvolodine): add proper projection for chargingTime, dischargingTime
-       // (see crbug.com/401553).
-       double chargingTime = (charging & batteryFull) ? 0 : Double.POSITIVE_INFINITY;
-       double dischargingTime = Double.POSITIVE_INFINITY;
+        // Currently Android does not provide charging/discharging time, as a work-around
+        // we could compute it manually based on level delta.
+        // TODO(timvolodine): add proper projection for chargingTime, dischargingTime
+        // (see crbug.com/401553).
+        double chargingTime = (charging & batteryFull) ? 0 : Double.POSITIVE_INFINITY;
+        double dischargingTime = Double.POSITIVE_INFINITY;
 
-       gotBatteryStatus(charging, chargingTime, dischargingTime, level);
+        gotBatteryStatus(charging, chargingTime, dischargingTime, level);
     }
 
     /**

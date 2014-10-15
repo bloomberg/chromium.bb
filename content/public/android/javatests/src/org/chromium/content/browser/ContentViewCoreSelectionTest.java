@@ -226,7 +226,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
                 (ClipboardManager) getActivity().getSystemService(
                         Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("test", "Text to copy");
-                clipboardManager.setPrimaryClip(clip);
+        clipboardManager.setPrimaryClip(clip);
     }
 
     private void assertWaitForPastePopupStatus(final boolean show) throws InterruptedException {

@@ -503,8 +503,7 @@ public class ImeAdapter {
         if (mNativeImeAdapterAndroid == 0) return false;
 
         int action = event.getAction();
-        if (action != KeyEvent.ACTION_DOWN &&
-            action != KeyEvent.ACTION_UP) {
+        if (action != KeyEvent.ACTION_DOWN && action != KeyEvent.ACTION_UP) {
             // action == KeyEvent.ACTION_MULTIPLE
             // TODO(bulach): confirm the actual behavior. Apparently:
             // If event.getKeyCode() == KEYCODE_UNKNOWN, we can send a

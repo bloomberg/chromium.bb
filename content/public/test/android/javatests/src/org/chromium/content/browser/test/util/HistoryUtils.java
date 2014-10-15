@@ -34,11 +34,11 @@ public class HistoryUtils {
             final WebContents webContents) throws Throwable {
         return InstrumentationUtils.runOnMainSyncAndGetResult(
                 instrumentation, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return webContents.getNavigationController().canGoBack();
-            }
-        });
+                    @Override
+                    public Boolean call() {
+                        return webContents.getNavigationController().canGoBack();
+                    }
+                });
     }
 
     /**
@@ -55,11 +55,11 @@ public class HistoryUtils {
             final WebContents webContents, final int offset) throws Throwable {
         return InstrumentationUtils.runOnMainSyncAndGetResult(
                 instrumentation, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return webContents.getNavigationController().canGoToOffset(offset);
-            }
-        });
+                    @Override
+                    public Boolean call() throws Exception {
+                        return webContents.getNavigationController().canGoToOffset(offset);
+                    }
+                });
     }
 
     /**
@@ -74,11 +74,11 @@ public class HistoryUtils {
             final WebContents webContents) throws Throwable {
         return InstrumentationUtils.runOnMainSyncAndGetResult(
                 instrumentation, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return webContents.getNavigationController().canGoForward();
-            }
-        });
+                    @Override
+                    public Boolean call() {
+                        return webContents.getNavigationController().canGoForward();
+                    }
+                });
     }
 
     /**
@@ -110,11 +110,11 @@ public class HistoryUtils {
             final WebContents webContents) throws Throwable {
         return InstrumentationUtils.runOnMainSyncAndGetResult(
                 instrumentation, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return webContents.getUrl();
-            }
-        });
+                    @Override
+                    public String call() throws Exception {
+                        return webContents.getUrl();
+                    }
+                });
     }
 
     /**

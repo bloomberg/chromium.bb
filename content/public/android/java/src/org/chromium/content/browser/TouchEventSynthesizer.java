@@ -96,9 +96,9 @@ public class TouchEventSynthesizer {
             case ACTION_END: {
                 if (pointerCount > 1) {
                     MotionEvent event = MotionEvent.obtain(
-                        mDownTimeInMs, timeInMs, MotionEvent.ACTION_POINTER_UP,
-                        pointerCount, mPointerProperties, mPointerCoords,
-                        0, 0, 1, 1, 0, 0, 0, 0);
+                            mDownTimeInMs, timeInMs, MotionEvent.ACTION_POINTER_UP,
+                            pointerCount, mPointerProperties, mPointerCoords,
+                            0, 0, 1, 1, 0, 0, 0, 0);
                     mContentViewCore.onTouchEvent(event);
                     event.recycle();
                 }

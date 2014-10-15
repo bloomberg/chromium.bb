@@ -59,12 +59,12 @@ public class SelectPopupDropdown implements SelectPopup {
                 renderCoordinates.fromLocalCssToPix(bounds.bottom)) - anchorY;
         mDropdownPopupWindow.setAnchorRect(anchorX, anchorY, anchorWidth, anchorHeight);
         mDropdownPopupWindow.setOnDismissListener(
-            new PopupWindow.OnDismissListener() {
-                @Override
-                public void onDismiss() {
-                    notifySelection(null);
-                }
-            });
+                new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        notifySelection(null);
+                    }
+                });
     }
 
     private void notifySelection(int[] indicies) {

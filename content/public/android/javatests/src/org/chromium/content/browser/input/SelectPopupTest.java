@@ -43,7 +43,7 @@ public class SelectPopupTest extends ContentShellTestBase {
     private class PopupShowingCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-           return getContentViewCore().getSelectPopupForTest() != null;
+            return getContentViewCore().getSelectPopupForTest() != null;
         }
     }
 

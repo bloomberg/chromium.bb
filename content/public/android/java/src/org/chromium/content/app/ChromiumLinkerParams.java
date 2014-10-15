@@ -23,13 +23,13 @@ public class ChromiumLinkerParams {
     public final String mTestRunnerClassName;
 
     private static final String EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS =
-        "org.chromium.content.common.linker_params.base_load_address";
+            "org.chromium.content.common.linker_params.base_load_address";
 
     private static final String EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO =
-        "org.chromium.content.common.linker_params.wait_for_shared_relro";
+            "org.chromium.content.common.linker_params.wait_for_shared_relro";
 
     private static final String EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME =
-        "org.chromium.content.common.linker_params.test_runner_class_name";
+            "org.chromium.content.common.linker_params.test_runner_class_name";
 
     public ChromiumLinkerParams(long baseLoadAddress,
                         boolean waitForSharedRelro,
@@ -64,6 +64,7 @@ public class ChromiumLinkerParams {
     }
 
     // For debugging traces only.
+    @Override
     public String toString() {
         return String.format(
                 "LinkerParams(baseLoadAddress:0x%x, waitForSharedRelro:%s, " +

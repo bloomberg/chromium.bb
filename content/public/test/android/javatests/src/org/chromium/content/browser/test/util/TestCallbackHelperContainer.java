@@ -113,12 +113,12 @@ public class TestCallbackHelperContainer {
          */
         public void evaluateJavaScript(WebContents webContents, String code) {
             JavaScriptCallback callback =
-                new JavaScriptCallback() {
+                    new JavaScriptCallback() {
                     @Override
-                    public void handleJavaScriptResult(String jsonResult) {
-                        notifyCalled(jsonResult);
-                    }
-                };
+                        public void handleJavaScriptResult(String jsonResult) {
+                            notifyCalled(jsonResult);
+                        }
+                    };
             webContents.evaluateJavaScript(code, callback);
             mJsonResult = null;
         }

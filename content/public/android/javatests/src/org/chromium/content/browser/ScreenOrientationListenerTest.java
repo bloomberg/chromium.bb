@@ -48,7 +48,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
                 if (expectedOrientation == currentOrientation)
                     return true;
                 else if (ALLOW_0_FOR_180 && expectedOrientation == 180
-                    && currentOrientation == 0)
+                        && currentOrientation == 0)
                     return true;
                 return false;
             default:

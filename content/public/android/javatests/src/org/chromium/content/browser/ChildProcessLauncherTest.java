@@ -61,19 +61,19 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Verify that the connection gets cleaned-up.
         assertTrue("Crashed connection wasn't released from the allocator.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncher.allocatedConnectionsCountForTesting() == 0;
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return ChildProcessLauncher.allocatedConnectionsCountForTesting() == 0;
+                    }
+                }));
 
         assertTrue("Crashed connection wasn't released from ChildProcessLauncher.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncher.connectedServicesCountForTesting() == 0;
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return ChildProcessLauncher.connectedServicesCountForTesting() == 0;
+                    }
+                }));
     }
 
     /**
@@ -95,19 +95,19 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Verify that the connection completes the setup.
         assertTrue("The connection wasn't registered in ChildProcessLauncher after setup.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncher.connectedServicesCountForTesting() == 1;
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return ChildProcessLauncher.connectedServicesCountForTesting() == 1;
+                    }
+                }));
 
         assertTrue("The connection failed to get a pid in setup.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return connection.getPid() != 0;
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return connection.getPid() != 0;
+                    }
+                }));
 
         // Crash the service.
         assertTrue(connection.crashServiceForTesting());
@@ -115,19 +115,19 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Verify that the connection gets cleaned-up.
         assertTrue("Crashed connection wasn't released from the allocator.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncher.allocatedConnectionsCountForTesting() == 0;
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return ChildProcessLauncher.allocatedConnectionsCountForTesting() == 0;
+                    }
+                }));
 
         assertTrue("Crashed connection wasn't released from ChildProcessLauncher.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ChildProcessLauncher.connectedServicesCountForTesting() == 0;
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return ChildProcessLauncher.connectedServicesCountForTesting() == 0;
+                    }
+                }));
 
         // Verify that the connection pid remains set after termination.
         assertTrue(connection.getPid() != 0);
@@ -142,11 +142,11 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Wait for the service to connect.
         assertTrue("The connection wasn't established.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return connection.isConnected();
-            }
-        }));
+                    @Override
+                    public boolean isSatisfied() {
+                        return connection.isConnected();
+                    }
+                }));
         return connection;
     }
 

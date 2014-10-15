@@ -483,7 +483,7 @@ public class ContentViewCore
                         scaledWidth = mContainerViewAtCreation.getWidth() - startMargin;
                     }
                     FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                        scaledWidth, Math.round(height * scale));
+                            scaledWidth, Math.round(height * scale));
                     ApiCompatibilityUtils.setMarginStart(lp, startMargin);
                     lp.topMargin = topMargin;
                     view.setLayoutParams(lp);
@@ -1192,7 +1192,7 @@ public class ContentViewCore
             String sourceOrigin, String targetOrigin) {
         if (mNativeContentViewCore == 0) return;
         nativePostMessageToFrame(mNativeContentViewCore, frameName, message, sourceOrigin,
-            targetOrigin);
+                targetOrigin);
     }
 
     /**
@@ -2214,8 +2214,8 @@ public class ContentViewCore
         if (!mHasInsertion || !canPaste()) return false;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
         getPastePopup().showAt(
-            (int) mRenderCoordinates.fromDipToPix(xDip),
-            (int) (mRenderCoordinates.fromDipToPix(yDip) + contentOffsetYPix));
+                (int) mRenderCoordinates.fromDipToPix(xDip),
+                (int) (mRenderCoordinates.fromDipToPix(yDip) + contentOffsetYPix));
         return true;
     }
 
@@ -2621,9 +2621,9 @@ public class ContentViewCore
                     }
                 };
                 contentResolver.registerContentObserver(
-                    Settings.Secure.getUriFor(accessibilityScriptInjection),
-                    false,
-                    contentObserver);
+                        Settings.Secure.getUriFor(accessibilityScriptInjection),
+                        false,
+                        contentObserver);
                 mAccessibilityScriptInjectionObserver = contentObserver;
             }
 

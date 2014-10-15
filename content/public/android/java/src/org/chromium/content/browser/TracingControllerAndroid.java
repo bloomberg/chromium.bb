@@ -151,8 +151,7 @@ public class TracingControllerAndroid {
 
         String filePath = generateTracingFilePath();
         if (filePath == null) {
-          logAndToastError(
-              mContext.getString(R.string.profiler_no_storage_toast));
+            logAndToastError(mContext.getString(R.string.profiler_no_storage_toast));
         }
         return startTracing(filePath, showToasts, categories, traceOptions);
     }

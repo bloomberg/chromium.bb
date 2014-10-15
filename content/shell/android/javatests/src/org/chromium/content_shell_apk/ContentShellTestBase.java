@@ -68,7 +68,7 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (url != null) intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
-              ContentShellActivity.class));
+                ContentShellActivity.class));
         if (commandLineArgs != null) {
             intent.putExtra(ContentShellActivity.COMMAND_LINE_ARGS_KEY, commandLineArgs);
         }

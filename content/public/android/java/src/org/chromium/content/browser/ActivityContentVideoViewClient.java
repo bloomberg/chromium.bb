@@ -28,10 +28,10 @@ public class ActivityContentVideoViewClient implements ContentVideoViewClient {
     public void enterFullscreenVideo(View view) {
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.addView(view, 0,
-            new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    Gravity.CENTER));
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        Gravity.CENTER));
         setSystemUiVisibility(decor, true);
         mView = view;
     }
