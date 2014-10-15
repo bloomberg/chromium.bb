@@ -279,7 +279,10 @@
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
-      "sandbox_linux_unittests",
+      {
+        "test": "sandbox_linux_unittests",
+        "args": ["--test-launcher-print-test-stdio=always"]
+      },
       "sql_unittests",
       "ui_unittests",
       {

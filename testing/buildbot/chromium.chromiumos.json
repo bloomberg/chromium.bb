@@ -57,7 +57,10 @@
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
-      "sandbox_linux_unittests",
+      {
+        "test": "sandbox_linux_unittests",
+        "args": ["--test-launcher-print-test-stdio=always"]
+      },
       "ui_unittests",
       "views_unittests",
       "wm_unittests",
@@ -124,7 +127,10 @@
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
-      "sandbox_linux_unittests",
+      {
+        "test": "sandbox_linux_unittests",
+        "args": ["--test-launcher-print-test-stdio=always"]
+      },
       "sql_unittests",
       "sync_unit_tests",
       "ui_unittests",
@@ -170,7 +176,10 @@
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
-      "sandbox_linux_unittests",
+      {
+        "test": "sandbox_linux_unittests",
+        "args": ["--test-launcher-print-test-stdio=always"]
+      },
       "ui_unittests",
       "views_unittests",
       "wm_unittests",
