@@ -56,7 +56,16 @@ void MojoServerBootstrap::SendClientPipe() {
 #endif
       client_process_,
       true);
-  CHECK(client_pipe != IPC::InvalidPlatformFileForTransit());
+  if (client_pipe == IPC::InvalidPlatformFileForTransit()) {
+#if !defined(OS_WIN)
+    // GetFileHandleForProcess() only fails on Windows.
+    NOTREACHED();
+#endif
+    DLOG(WARNING) << "Failed to translate file handle for client process.";
+    Fail();
+    return;
+  }
+
   scoped_ptr<Message> message(new Message());
   ParamTraits<PlatformFileForTransit>::Write(message.get(), client_pipe);
   Send(message.release());
@@ -178,13 +187,18 @@ bool MojoBootstrap::Connect() {
 }
 
 void MojoBootstrap::OnBadMessageReceived(const Message& message) {
-  delegate_->OnBootstrapError();
+  Fail();
 }
 
 void MojoBootstrap::OnChannelError() {
-  if (state_ == STATE_READY)
+  if (state_ == STATE_READY || state_ == STATE_ERROR)
     return;
   DLOG(WARNING) << "Detected error on Mojo bootstrap channel.";
+  Fail();
+}
+
+void MojoBootstrap::Fail() {
+  set_state(STATE_ERROR);
   delegate()->OnBootstrapError();
 }
 

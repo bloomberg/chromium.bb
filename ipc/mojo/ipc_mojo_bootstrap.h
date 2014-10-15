@@ -55,10 +55,11 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
  protected:
-  enum State { STATE_INITIALIZED, STATE_WAITING_ACK, STATE_READY };
+  enum State { STATE_INITIALIZED, STATE_WAITING_ACK, STATE_READY, STATE_ERROR };
 
   Delegate* delegate() const { return delegate_; }
   bool Send(Message* message);
+  void Fail();
 
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }

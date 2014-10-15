@@ -259,6 +259,64 @@ TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
   DestroyChannel();
 }
 
+#if defined(OS_WIN)
+class IPCChannelMojoDeadHandleTest : public IPCTestBase {
+ protected:
+  virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle,
+      base::TaskRunner* runner) override {
+    host_.reset(new IPC::ChannelMojoHost(task_runner()));
+    return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
+                                                 handle);
+  }
+
+  virtual bool DidStartClient() override {
+    IPCTestBase::DidStartClient();
+    base::ProcessHandle client = client_process();
+    // Forces GetFileHandleForProcess() fail. It happens occasionally
+    // in production, so we should exercise it somehow.
+    ::CloseHandle(client);
+    host_->OnClientLaunched(client);
+    return true;
+  }
+
+ private:
+  scoped_ptr<IPC::ChannelMojoHost> host_;
+};
+
+TEST_F(IPCChannelMojoDeadHandleTest, InvalidClientHandle) {
+  // Any client type is fine as it is going to be killed anyway.
+  Init("IPCChannelMojoTestDoNothingClient");
+
+  // Set up IPC channel and start client.
+  ListenerExpectingErrors listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+
+  ASSERT_TRUE(StartClient());
+  base::MessageLoop::current()->Run();
+
+  this->channel()->Close();
+
+  // WaitForClientShutdown() fails as client_hanadle() is already
+  // closed.
+  EXPECT_FALSE(WaitForClientShutdown());
+  EXPECT_TRUE(listener.has_error());
+
+  DestroyChannel();
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestDoNothingClient) {
+  ListenerThatQuits listener;
+  ChannelClient client(&listener, "IPCChannelMojoTestDoNothingClient");
+  client.Connect();
+
+  // Quits without running the message loop as this client won't
+  // receive any messages from the server.
+
+  return 0;
+}
+#endif
 
 #if defined(OS_POSIX)
 class ListenerThatExpectsFile : public IPC::Listener {
