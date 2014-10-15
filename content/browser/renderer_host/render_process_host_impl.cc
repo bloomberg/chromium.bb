@@ -20,6 +20,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/files/file.h"
 #include "base/lazy_instance.h"
@@ -918,11 +919,33 @@ ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
   return mojo_application_host_->service_registry();
 }
 
+namespace {
+struct DebugInfoToCapture {
+ public:
+  DebugInfoToCapture(int32 rid, int pid)
+      : routing_id(rid), process_id(pid) {
+    signature[0] = 'I';
+    signature[1] = 'N';
+    signature[2] = 'F';
+    signature[3] = 'O';
+  }
+
+  char signature[4];
+  int32 routing_id;
+  int process_id;
+};
+}
+
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {
-  DCHECK(widget_helper_->IsRoutingIDProbablyValid(routing_id))
-      << "Found Routing ID conflicts: " << routing_id;
+  DebugInfoToCapture info(routing_id, GetID());
+  base::debug::Alias(&info);
+  CHECK(widget_helper_->IsRoutingIDProbablyValid(routing_id))
+      << "Found Invalid Routing ID: " << routing_id;
+  CHECK(!listeners_.Lookup(routing_id))
+      << "Found Routing ID conflicts: " << routing_id
+      << " with Child PID: " << GetID();
   listeners_.AddWithID(listener, routing_id);
 }
 
