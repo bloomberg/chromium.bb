@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_REQUEST_QUEUE_H_
-#define CHROME_BROWSER_EXTENSIONS_UPDATER_REQUEST_QUEUE_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_REQUEST_QUEUE_H_
+#define EXTENSIONS_BROWSER_UPDATER_REQUEST_QUEUE_H_
 
 #include <deque>
 #include <utility>
@@ -33,7 +33,7 @@ namespace extensions {
 //   - call reset_active_request() to indicate that the active request has
 //     been dealt with.
 //   - call StartNextRequest to schedule the next pending request (if any).
-template<typename T>
+template <typename T>
 class RequestQueue {
  public:
   class iterator;
@@ -88,8 +88,7 @@ class RequestQueue {
   };
 
   // Compares the release time of two pending requests.
-  static bool CompareRequests(const Request& a,
-                              const Request& b);
+  static bool CompareRequests(const Request& a, const Request& b);
 
   // Pushes a request with a given backoff entry onto the queue.
   void PushImpl(scoped_ptr<T> request,
@@ -116,7 +115,7 @@ class RequestQueue {
 
 // Iterator class that wraps a std::deque<> iterator, only giving access to the
 // actual request part of each item.
-template<typename T>
+template <typename T>
 class RequestQueue<T>::iterator {
  public:
   iterator() {}
@@ -127,21 +126,17 @@ class RequestQueue<T>::iterator {
     ++it_;
     return *this;
   }
-  bool operator!=(const iterator& b) const {
-    return it_ != b.it_;
-  }
+  bool operator!=(const iterator& b) const { return it_ != b.it_; }
 
  private:
   friend class RequestQueue<T>;
   typedef std::deque<typename RequestQueue<T>::Request> Container;
 
-  explicit iterator(const typename Container::iterator& it)
-      : it_(it) {}
+  explicit iterator(const typename Container::iterator& it) : it_(it) {}
 
   typename Container::iterator it_;
 };
 
-
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_UPDATER_REQUEST_QUEUE_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_REQUEST_QUEUE_H_

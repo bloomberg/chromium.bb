@@ -431,6 +431,8 @@ source_set("browser") {
       "updater/manifest_fetch_data.h",
       "updater/null_extension_cache.cc",
       "updater/null_extension_cache.h",
+      "updater/request_queue.h",
+      "updater/request_queue_impl.h",
       "updater/safe_manifest_parser.cc",
       "updater/safe_manifest_parser.h",
       "url_request_util.cc",

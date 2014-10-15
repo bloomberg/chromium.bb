@@ -721,6 +721,8 @@
         'browser/updater/manifest_fetch_data.h',
         'browser/updater/null_extension_cache.cc',
         'browser/updater/null_extension_cache.h',
+        'browser/updater/request_queue.h',
+        'browser/updater/request_queue_impl.h',
         'browser/updater/safe_manifest_parser.cc',
         'browser/updater/safe_manifest_parser.h',
         'browser/url_request_util.cc',
