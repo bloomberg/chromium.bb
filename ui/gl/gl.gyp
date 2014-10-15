@@ -197,6 +197,12 @@
             'gl_implementation_osmesa.h',
           ],
         }],
+        ['OS=="linux"', {
+          'sources': [
+            'gl_image_linux_dma_buffer.cc',
+            'gl_image_linux_dma_buffer.h',
+          ],
+        }],
         ['use_x11 == 1', {
           'sources': [
             'gl_context_glx.cc',
