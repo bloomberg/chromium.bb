@@ -43,6 +43,19 @@
       ],
     },
     {
+      # GN version: //components/cryptauth/proto
+      'target_name': 'cryptauth_proto',
+      'type': 'static_library',
+      'sources': [
+        'proximity_auth/cryptauth/proto/cryptauth_api.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'proximity_auth/cryptauth/proto',
+        'proto_out_dir': 'components/proximity_auth/cryptauth/proto',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
       'target_name': 'cryptauth',
       'type': 'static_library',
       'include_dirs': [

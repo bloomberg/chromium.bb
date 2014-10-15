@@ -1,0 +1,209 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Definitions for CryptAuth API calls.
+// Generated from server definitions. Do not edit.
+syntax = "proto2";
+
+package cryptauth;
+
+option optimize_for = LITE_RUNTIME;
+
+// Device information provided to external clients that need to sync device
+// state.
+message ExternalDeviceInfo {
+  // A cryptographic public key associated with the device.
+  optional bytes public_key = 1;
+
+  // A user friendly (human readable) name for this device.
+  optional string friendly_device_name = 2;
+
+  // If available, the device's bluetooth MAC address
+  optional string bluetooth_address = 3;
+
+  // Whether or not this device can be used as an unlock key
+  optional bool unlock_key = 4;
+
+  // Whether or not this device can be unlocked
+  optional bool unlockable = 5;
+}
+
+// Request for a list of devices that could be used as Unlock Keys, optionally
+// requesting a callback over bluetooth (for proximity detection).
+message FindEligibleUnlockDevicesRequest {
+  // A bluetooth MAC address to be contacted if a device that may be eligible
+  // for unlock is nearby. If set, a message will be pushed to all eligible
+  // unlock devices requesting that they contact the specified MAC address. If
+  // this field is left unset, no callback will be made, and no message will be
+  // pushed to the user's devices.
+  optional string callback_bluetooth_address = 2;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#findEligibleUnlockDevicesRequest"</code>.
+  optional string kind = 3;
+}
+
+// Response containing a list of devices that could be made Unlock Keys
+message FindEligibleUnlockDevicesResponse {
+  // Devices that could be made Unlock Keys (even if they aren't enabled yet)
+  repeated ExternalDeviceInfo eligible_devices = 1;
+
+  // Devices that cannot be made unlock keys, and reasons for this. This list
+  // will not contain any non-gms core devices, even though these are also not
+  // eligible to be unlock keys.
+  repeated IneligibleDevice ineligible_devices = 2;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#findEligibleUnlockDevicesResponse"</code>.
+  optional string kind = 3;
+}
+
+// Request to complete a device enrollment.
+message FinishEnrollmentRequest {
+  // The enrollment session identifer from the <code>setup</code> response.
+  optional bytes enrollment_session_id = 2;
+
+  // An encrypted payload containing enrollment information for the device.
+  optional bytes enrollment_message = 3;
+
+  // A Diffie-Hellman public key for the device, to complete the key exchange.
+  optional bytes device_ephemeral_key = 4;
+}
+
+// Response indicating whether a device enrollment completed successfully.
+message FinishEnrollmentResponse {
+  // Status should be OK if the request was successful.
+  optional string status = 1;
+
+  // A detailed error message if there was a failure.
+  optional string error_message = 2;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#finishEnrollmentResponse"</code>.
+  optional string kind = 5;
+}
+
+// Used to request devices that have a specific feature.
+message GetDevicesForFeatureRequest {
+  // Requests those devices that support the specified DeviceFeature
+  optional string device_feature = 2;
+}
+
+// Devices that have a certain feature, as returned by the GetDevicesForFeature
+// RPC.
+message GetDevicesForFeatureResponse {
+  // A (possibly empty) list of devices supporting the requested feature.
+  repeated ExternalDeviceInfo result_sets = 1;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#getDevicesForFeatureResponse"</code>.
+  optional string kind = 2;
+}
+
+// Request for a listing of a user's own devices
+message GetMyDevicesRequest {
+  // Return only devices that can act as EasyUnlock keys.
+  optional bool approved_for_unlock_required = 2;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#getMyDevicesRequest"</code>.
+  optional string kind = 3;
+}
+
+// Response containing a listing of the users device's
+message GetMyDevicesResponse {
+  // A listing of all sync-able devices
+  repeated ExternalDeviceInfo devices = 1;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#getMyDevicesResponse"</code>.
+  optional string kind = 2;
+}
+
+// A device that the server thinks is not eligible to be an unlock key, and the
+// reason for this.
+message IneligibleDevice {
+  // The device that is not eligible to be an unlock key.
+  optional ExternalDeviceInfo device = 1;
+
+  // The reasons why the server thinks it is not an unlock key. NOTE: for now,
+  // this list of reasons will contain exactly one element. It is a repeated
+  // field because, in principle, there can be more than one reason that makes a
+  // device not eligible to be an unlock key, and we want to be able to add
+  // multiple reasons in the future.
+  repeated string reasons = 2;
+}
+
+// Requests to send a "tickle" requesting to sync all of a user's devices now
+message SendDeviceSyncTickleRequest {
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#sendDeviceSyncTickleRequest"</code>.
+  optional string kind = 2;
+}
+
+// Contains information needed to begin a device enrollment.
+message SetupEnrollmentInfo {
+  // Type of protocol this setup information was requested for
+  optional string type = 1;
+
+  // A session identifier to be used for this enrollment session.
+  optional bytes enrollment_session_id = 2;
+
+  // A Diffie-Hellman public key used to perform a key exchange during
+  // enrollment.
+  optional bytes server_ephemeral_key = 3;
+}
+
+// Requests information needed to begin a device enrollment.
+message SetupEnrollmentRequest {
+  // Deprecated. See <code>application_id</code>
+  optional string origin = 2;
+
+  // Type(s) of protocol supported by this enrolling device (e.g. "gcmV1")
+  repeated string types = 3;
+
+  // Indicates whether a legacy crypto suite must be used with this device.
+  optional bool use_legacy_crypto = 4;
+
+  // A URL describing which application facets this enrollment can be used (see
+  // http://go/appid).
+  optional string application_id = 5;
+}
+
+// Contains information needed to begin a device enrollment.
+message SetupEnrollmentResponse {
+  // Should return OK if the request was well formed.
+  optional string status = 1;
+
+  // Information for each of the requested protocol <code>type</code>s.
+  repeated SetupEnrollmentInfo infos = 2;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#setupEnrollmentResponse"</code>.
+  optional string kind = 3;
+}
+
+// Used to enable or disable EasyUnlock features on a specified device, and also
+// causes other devices to sync the new EasyUnlock state.
+message ToggleEasyUnlockRequest {
+  // If true, Easy Unlock will be enabled for the device with public key equal
+  // to public_key. Otherwise, it will be disabled for that device.
+  optional bool enable = 1;
+
+  // Encoded public key of the device to enable/disable (here you must use the
+  // same exact encoding that was sent during device enrollment).
+  optional bytes public_key = 2;
+
+  // If true, EasyUnlock enabled state will be set to the value of "enable" for
+  // all of a user's devices. This is the same as calling the toggle RPC for
+  // every device. However, this removes the need for calling GetMyDevices, so
+  // it reduces network overhead. If this field is set "public_key" must not be
+  // set.  NOTE: the case enable=true is not yet supported, so this option can
+  // only disable EasyUnlock for all devices.
+  optional bool apply_to_all = 3;
+
+  // Identifies what kind of resource this is. Value: the fixed string
+  // <code>"cryptauth#toggleEasyUnlockRequest"</code>.
+  optional string kind = 4;
+}
