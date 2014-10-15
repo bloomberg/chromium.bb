@@ -1,0 +1,19 @@
+CONSOLE ERROR: Unhandled promise rejection
+CONSOLE ERROR: Unhandled promise rejection
+Tests that pause on promise rejection works.
+
+=== Pausing only on uncaught exceptions ===
+Set timer for test function.
+Call stack:
+    0) testFunction (debugger-pause-on-promise-rejection.html:35)
+Paused on promise rejection: 'Error: uncaught'.
+
+=== Pausing on all exceptions ===
+Set timer for test function.
+Call stack:
+    0) testFunction (debugger-pause-on-promise-rejection.html:34)
+Paused on promise rejection: 'Error: caught'.
+Call stack:
+    0) testFunction (debugger-pause-on-promise-rejection.html:35)
+Paused on promise rejection: 'Error: uncaught'.
+

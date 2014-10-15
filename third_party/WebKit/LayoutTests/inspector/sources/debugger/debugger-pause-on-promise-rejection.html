@@ -1,0 +1,92 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function createPromise()
+{
+    var result = {};
+    var p = new Promise(function(resolve, reject) {
+        result.resolve = resolve;
+        result.reject = reject;
+    });
+    result.promise = p;
+    return result;
+}
+
+function testFunction()
+{
+    var resolved = createPromise();
+    var caught = createPromise();
+    var uncaught = createPromise();
+
+    caught.promise
+        .then(function c1() {})
+        .then(function c2() {})
+        .catch(function c3() {});
+    uncaught.promise
+        .then(function f1() {})
+        .then(function f2() {})
+        .then(function f3() {}); // Last is uncaught.
+
+    resolved.resolve(42); // Should not pause.
+    caught.reject(new Error("caught"));
+    uncaught.reject(new Error("uncaught"));
+}
+
+var test = function()
+{
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function waitUntilPausedNTimes(count, callback)
+    {
+        function inner()
+        {
+            if (count--)
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(inner);
+            else
+                callback();
+        }
+        inner();
+    }
+
+    function step1()
+    {
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        InspectorTest.showScriptSource("debugger-pause-on-promise-rejection.html", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("=== Pausing only on uncaught exceptions ===");
+        InspectorTest.runTestFunction();
+        waitUntilPausedNTimes(1, step3);
+    }
+
+    function step3()
+    {
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.addResult("\n=== Pausing on all exceptions ===");
+        InspectorTest.runTestFunction();
+        waitUntilPausedNTimes(2, step4);
+    }
+
+    function step4()
+    {
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that pause on promise rejection works.
+</p>
+
+</body>
+</html>

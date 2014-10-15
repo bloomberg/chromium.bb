@@ -6,5 +6,6 @@ Script execution paused.
 Call stack:
     0) throwAnException (debugger-pause-on-exception.html:9)
     1) handleClick (debugger-pause-on-exception.html:14)
+Paused on exception: 'ReferenceError: unknown_var is not defined'.
 Script execution resumed.
 

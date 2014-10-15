@@ -214,7 +214,7 @@ protected:
 
     virtual void enable();
     virtual void disable();
-    virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) override final;
+    virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) override final;
     virtual void didContinue() override final;
     void reset();
     void pageDidCommitLoad();

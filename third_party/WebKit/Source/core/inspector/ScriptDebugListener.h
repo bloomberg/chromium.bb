@@ -77,7 +77,7 @@ public:
     virtual ~ScriptDebugListener() { }
 
     virtual void didParseSource(const String& scriptId, const Script&, CompileResult) = 0;
-    virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
+    virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) = 0;
     virtual void didContinue() = 0;
     virtual bool v8AsyncTaskEventsEnabled() const = 0;
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) = 0;

@@ -28,12 +28,12 @@ var test = function()
     {
         InspectorTest.addResult("Script source was shown.");
         InspectorTest.evaluateInPage("setTimeout(handleClick, 0)");
-        InspectorTest.waitUntilPaused(step3);
+        InspectorTest.waitUntilPausedAndDumpStackAndResume(step3);
     }
 
-    function step3(callFrames)
+    function step3()
     {
-        InspectorTest.captureStackTrace(callFrames);
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.completeDebuggerTest();
     }
 }

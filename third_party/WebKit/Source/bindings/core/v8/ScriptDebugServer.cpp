@@ -432,7 +432,7 @@ void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::
     thisPtr->handleProgramBreak(pausedScriptState, v8::Handle<v8::Object>::Cast(info[0]), exception, hitBreakpoints);
 }
 
-void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers)
+void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers, bool isPromiseRejection)
 {
     // Don't allow nested breaks.
     if (m_runningNestedMessageLoop)
@@ -454,7 +454,7 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::H
 
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
-    ScriptDebugListener::SkipPauseRequest result = listener->didPause(pausedScriptState, currentCallFrames(), ScriptValue(pausedScriptState, exception), breakpointIds);
+    ScriptDebugListener::SkipPauseRequest result = listener->didPause(pausedScriptState, currentCallFrames(), ScriptValue(pausedScriptState, exception), breakpointIds, isPromiseRejection);
     if (result == ScriptDebugListener::NoSkip) {
         m_runningNestedMessageLoop = true;
         runMessageLoopOnPause(pausedScriptState->context());
@@ -516,7 +516,9 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
         } else if (event == v8::Exception) {
             v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
             v8::Handle<v8::Value> exception = callInternalGetterFunction(eventData, "exception", m_isolate);
-            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>());
+            v8::Handle<v8::Value> promise = callInternalGetterFunction(eventData, "promise", m_isolate);
+            bool isPromiseRejection = !promise.IsEmpty() && promise->IsObject();
+            handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), exception, v8::Handle<v8::Array>(), isPromiseRejection);
         } else if (event == v8::Break) {
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> hitBreakpoints = callDebuggerMethod("getBreakpointNumbers", 1, argv);
