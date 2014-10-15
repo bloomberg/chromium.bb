@@ -133,7 +133,7 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
       MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
   scoped_ptr<MockMediaStreamUI> ui(new MockMediaStreamUI());
   EXPECT_CALL(*ui, OnStarted(_)).WillOnce(Return(0));
-  callback.Run(devices, MEDIA_DEVICE_OK, ui.PassAs<MediaStreamUI>());
+  callback.Run(devices, MEDIA_DEVICE_OK, ui.Pass());
 
   MediaStreamDevices response;
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
@@ -192,7 +192,7 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   scoped_ptr<MockMediaStreamUI> ui(new MockMediaStreamUI());
   EXPECT_CALL(*ui, OnStarted(_))
       .WillOnce(testing::DoAll(SaveArg<0>(&stop_callback), Return(0)));
-  callback.Run(devices, MEDIA_DEVICE_OK, ui.PassAs<MediaStreamUI>());
+  callback.Run(devices, MEDIA_DEVICE_OK, ui.Pass());
 
   MediaStreamDevices response;
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
@@ -237,8 +237,7 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
   scoped_ptr<MockMediaStreamUI> ui(new MockMediaStreamUI());
   EXPECT_CALL(*ui, OnStarted(_)).WillOnce(Return(kWindowId));
 
-  callback.Run(
-      MediaStreamDevices(), MEDIA_DEVICE_OK, ui.PassAs<MediaStreamUI>());
+  callback.Run(MediaStreamDevices(), MEDIA_DEVICE_OK, ui.Pass());
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _));
 
   MockStopStreamHandler handler;

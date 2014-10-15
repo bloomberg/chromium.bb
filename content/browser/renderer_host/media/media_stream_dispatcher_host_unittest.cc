@@ -858,7 +858,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
   EXPECT_CALL(*stream_ui, OnStarted(_, _))
       .WillOnce(SaveArg<0>(&close_callback));
-  media_stream_manager_->UseFakeUI(stream_ui.PassAs<FakeMediaStreamUIProxy>());
+  media_stream_manager_->UseFakeUI(stream_ui.Pass());
 
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
 

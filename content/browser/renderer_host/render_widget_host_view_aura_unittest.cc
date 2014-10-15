@@ -1859,8 +1859,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   EXPECT_EQ(0, callback_count_);
   EXPECT_FALSE(view_->last_copy_request_);
 
-  view_->BeginFrameSubscription(
-      frame_subscriber.PassAs<RenderWidgetHostViewFrameSubscriber>());
+  view_->BeginFrameSubscription(frame_subscriber.Pass());
   view_->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, view_rect.size(), gfx::Rect(view_rect)));
 

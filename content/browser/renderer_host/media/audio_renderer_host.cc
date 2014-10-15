@@ -361,15 +361,14 @@ void AudioRendererHost::OnCreateStream(
   if (media_observer)
     media_observer->OnCreatingAudioStream(render_process_id_, render_frame_id);
 
-  scoped_ptr<AudioEntry> entry(new AudioEntry(
-      this,
-      stream_id,
-      render_view_id,
-      render_frame_id,
-      params,
-      output_device_id,
-      shared_memory.Pass(),
-      reader.PassAs<media::AudioOutputController::SyncReader>()));
+  scoped_ptr<AudioEntry> entry(new AudioEntry(this,
+                                              stream_id,
+                                              render_view_id,
+                                              render_frame_id,
+                                              params,
+                                              output_device_id,
+                                              shared_memory.Pass(),
+                                              reader.Pass()));
   if (mirroring_manager_) {
     mirroring_manager_->AddDiverter(
         render_process_id_, entry->render_frame_id(), entry->controller());

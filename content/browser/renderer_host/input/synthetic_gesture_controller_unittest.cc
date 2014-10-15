@@ -433,7 +433,7 @@ TEST_F(SyntheticGestureControllerTest, SingleGesture) {
   bool finished = false;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 3));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished);
@@ -447,7 +447,7 @@ TEST_F(SyntheticGestureControllerTest, GestureFailed) {
   bool finished = false;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 0));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished);
@@ -466,7 +466,7 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
       new MockSyntheticGesture(&finished_2, 4));
 
   // Queue first gesture and wait for it to finish
-  QueueSyntheticGesture(gesture_1.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture_1.Pass());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished_1);
@@ -474,7 +474,7 @@ TEST_F(SyntheticGestureControllerTest, SuccessiveGestures) {
   EXPECT_EQ(0, num_failure_);
 
   // Queue second gesture.
-  QueueSyntheticGesture(gesture_2.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture_2.Pass());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished_2);
@@ -492,8 +492,8 @@ TEST_F(SyntheticGestureControllerTest, TwoGesturesInFlight) {
   scoped_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
-  QueueSyntheticGesture(gesture_1.PassAs<SyntheticGesture>());
-  QueueSyntheticGesture(gesture_2.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture_1.Pass());
+  QueueSyntheticGesture(gesture_2.Pass());
   FlushInputUntilComplete();
 
   EXPECT_TRUE(finished_1);
@@ -512,8 +512,8 @@ TEST_F(SyntheticGestureControllerTest, GestureCompletedOnDidFlushInput) {
   scoped_ptr<MockSyntheticGesture> gesture_2(
       new MockSyntheticGesture(&finished_2, 4));
 
-  QueueSyntheticGesture(gesture_1.PassAs<SyntheticGesture>());
-  QueueSyntheticGesture(gesture_2.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture_1.Pass());
+  QueueSyntheticGesture(gesture_2.Pass());
 
   while (target_->flush_requested()) {
     target_->ClearFlushRequest();
@@ -563,7 +563,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchVertical) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -584,7 +584,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchHorizontal) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -625,7 +625,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchDiagonal) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -652,7 +652,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchLongStop) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -680,7 +680,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchFling) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -702,7 +702,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureTouchZeroDistance) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -722,7 +722,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseVertical) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -742,7 +742,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseHorizontal) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -762,7 +762,7 @@ TEST_F(SyntheticGestureControllerTest, SingleScrollGestureMouseDiagonal) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -783,7 +783,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureMouse) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -805,7 +805,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureMouseHorizontal) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -851,7 +851,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureTouch) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -875,7 +875,7 @@ TEST_F(SyntheticGestureControllerTest, MultiScrollGestureTouchVertical) {
 
   scoped_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockScrollGestureTarget* scroll_target =
@@ -900,7 +900,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   params.anchor.SetPoint(54, 89);
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockSyntheticPinchTouchTarget* pinch_target =
@@ -921,7 +921,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
   params.anchor.SetPoint(-12, 93);
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockSyntheticPinchTouchTarget* pinch_target =
@@ -941,7 +941,7 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchNoScaling) {
   params.scale_factor = 1.0f;
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockSyntheticPinchTouchTarget* pinch_target =
@@ -962,7 +962,7 @@ TEST_F(SyntheticGestureControllerTest, TapGestureTouch) {
   params.position.SetPoint(87, -124);
 
   scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockSyntheticTapTouchTarget* tap_target =
@@ -985,7 +985,7 @@ TEST_F(SyntheticGestureControllerTest, TapGestureMouse) {
   params.position.SetPoint(98, 123);
 
   scoped_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
-  QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
   MockSyntheticTapMouseTarget* tap_target =
