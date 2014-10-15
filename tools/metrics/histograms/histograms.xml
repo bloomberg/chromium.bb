@@ -48693,11 +48693,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="DEPRECATED: Icon shown"/>
   <int value="3" label="DEPRECATED: Bubble shown"/>
   <int value="4" label="Generation available"/>
-  <int value="5" label="Generation popup shown"/>
+  <int value="5" label="DEPRECATED: Generation popup shown"/>
   <int value="6" label="Generated password accepted"/>
-  <int value="7" label="Editing popup shown"/>
+  <int value="7" label="DEPRECATED: Editing popup shown"/>
   <int value="8" label="Generated password edited"/>
   <int value="9" label="Generated password deleted"/>
+  <int value="10" label="Generated popup shown (limit once per page)"/>
+  <int value="11" label="Editing popup shown (limit once per page)"/>
 </enum>
 
 <enum name="PasswordGenerationSubmissionEvent" type="int">

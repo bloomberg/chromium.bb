@@ -102,6 +102,8 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       render_view_(render_view),
       password_is_generated_(false),
       password_edited_(false),
+      generation_popup_shown_(false),
+      editing_popup_shown_(false),
       enabled_(password_generation::IsPasswordGenerationEnabled()) {
   DVLOG(2) << "Password Generation is " << (enabled_ ? "Enabled" : "Disabled");
 }
@@ -128,6 +130,18 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(
           password_generation::PASSWORD_EDITED);
     }
     password_edited_ = false;
+
+    if (generation_popup_shown_) {
+      password_generation::LogPasswordGenerationEvent(
+          password_generation::GENERATION_POPUP_SHOWN);
+    }
+    generation_popup_shown_ = false;
+
+    if (editing_popup_shown_) {
+      password_generation::LogPasswordGenerationEvent(
+          password_generation::EDITING_POPUP_SHOWN);
+    }
+    editing_popup_shown_ = false;
   }
 }
 
@@ -352,8 +366,7 @@ void PasswordGenerationAgent::ShowGenerationPopup() {
       generation_element_.maxLength(),
       *possible_account_creation_form_));
 
-  password_generation::LogPasswordGenerationEvent(
-      password_generation::GENERATION_POPUP_SHOWN);
+  generation_popup_shown_ = true;
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
@@ -366,8 +379,7 @@ void PasswordGenerationAgent::ShowEditingPopup() {
       bounding_box_scaled,
       *possible_account_creation_form_));
 
-  password_generation::LogPasswordGenerationEvent(
-      password_generation::EDITING_POPUP_SHOWN);
+  editing_popup_shown_ = true;
 }
 
 void PasswordGenerationAgent::HidePopup() {

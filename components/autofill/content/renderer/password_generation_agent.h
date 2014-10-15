@@ -107,6 +107,16 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   // stats.
   bool password_edited_;
 
+  // True if the generation popup was shown during this navigation. Used to
+  // track UMA stats per page visit rather than per display, since the former
+  // is more interesting.
+  bool generation_popup_shown_;
+
+  // True if the editing popup was shown during this navigation. Used to track
+  // UMA stats per page rather than per display, since the former is more
+  // interesting.
+  bool editing_popup_shown_;
+
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;
 

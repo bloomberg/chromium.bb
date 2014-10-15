@@ -29,19 +29,34 @@ enum PasswordGenerationEvent {
 
   // Password generation popup is shown after user focuses the appropriate
   // password field.
-  GENERATION_POPUP_SHOWN,
+  // DEPRECATED: These reports were triggered when the popup could have shown
+  // not when it did show so they paint an unreliable picture. Newer stats
+  // are only incremented per page, which is more useful to judge the
+  // effectiveness of the UI.
+  DEPRECATED_GENERATION_POPUP_SHOWN,
 
   // Generated password was accepted by the user.
   PASSWORD_ACCEPTED,
 
   // User focused the password field containing the generated password.
-  EDITING_POPUP_SHOWN,
+  // DEPRECATED: These reports were triggered when the popup could have shown
+  // not when it did show so they paint an unreliable picture. Newer stats
+  // are only incremented per page, which is more useful to judge the
+  // effectiveness of the UI.
+  DEPRECATED_EDITING_POPUP_SHOWN,
 
   // Password was changed after generation.
   PASSWORD_EDITED,
 
   // Generated password was deleted by the user
   PASSWORD_DELETED,
+
+  // Password generation popup is shown after user focuses the appropriate
+  // password field.
+  GENERATION_POPUP_SHOWN,
+
+  // User focused the password field containing the generated password.
+  EDITING_POPUP_SHOWN,
 
   // Number of enum entries, used for UMA histogram reporting macros.
   EVENT_ENUM_COUNT

@@ -6,11 +6,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -256,6 +258,8 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
 }
 
 TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
+  base::HistogramTester histogram_tester;
+
   LoadHTML(kAccountCreationFormHTML);
   SetNotBlacklistedMessage(kAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
@@ -328,6 +332,15 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
   EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
             password_generation_->messages()[0]->type());
   password_generation_->clear_messages();
+
+  // Loading a different page triggers UMA stat upload. Verify that only one
+  // display event is sent even though
+  LoadHTML(kSigninFormHTML);
+
+  histogram_tester.ExpectBucketCount(
+      "PasswordGeneration.Event",
+      autofill::password_generation::GENERATION_POPUP_SHOWN,
+      1);
 }
 
 }  // namespace autofill
