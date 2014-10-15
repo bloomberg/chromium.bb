@@ -114,6 +114,7 @@ void DatabaseThread::cleanupDatabaseThread()
         for (HeapHashSet<Member<Database> >::iterator it = openSetCopy.begin(); it != end; ++it)
             (*it)->close();
     }
+    m_openDatabaseSet.clear();
 
     m_thread->postTask(new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThreadCompleted, this)));
 }
@@ -130,7 +131,9 @@ void DatabaseThread::recordDatabaseOpen(Database* database)
     ASSERT(isDatabaseThread());
     ASSERT(database);
     ASSERT(!m_openDatabaseSet.contains(database));
-    m_openDatabaseSet.add(database);
+    MutexLocker lock(m_terminationRequestedMutex);
+    if (!m_terminationRequested)
+        m_openDatabaseSet.add(database);
 }
 
 void DatabaseThread::recordDatabaseClosed(Database* database)
