@@ -191,6 +191,15 @@ class ExtensionsBrowserClient {
   // Gets the single ExtensionCache instance shared across the browser process.
   virtual ExtensionCache* GetExtensionCache() = 0;
 
+  // Indicates whether extension update checks should be allowed.
+  virtual bool IsBackgroundUpdateAllowed() = 0;
+
+  // Indicates whether an extension update which specifies its minimum browser
+  // version as |min_version| can be installed by the client. Not all extensions
+  // embedders share the same versioning model, so interpretation of the string
+  // is left up to the embedder.
+  virtual bool IsMinBrowserVersionSupported(const std::string& min_version) = 0;
+
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
 

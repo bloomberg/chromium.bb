@@ -281,4 +281,21 @@ ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
   return extension_cache_.get();
 }
 
+bool ChromeExtensionsBrowserClient::IsBackgroundUpdateAllowed() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking);
+}
+
+bool ChromeExtensionsBrowserClient::IsMinBrowserVersionSupported(
+    const std::string& min_version) {
+  chrome::VersionInfo version_info;
+  base::Version browser_version = base::Version(version_info.Version());
+  Version browser_min_version(min_version);
+  if (browser_version.IsValid() && browser_min_version.IsValid() &&
+      browser_min_version.CompareTo(browser_version) > 0) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace extensions

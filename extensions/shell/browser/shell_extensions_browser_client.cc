@@ -226,4 +226,13 @@ ExtensionCache* ShellExtensionsBrowserClient::GetExtensionCache() {
   return extension_cache_.get();
 }
 
+bool ShellExtensionsBrowserClient::IsBackgroundUpdateAllowed() {
+  return true;
+}
+
+bool ShellExtensionsBrowserClient::IsMinBrowserVersionSupported(
+    const std::string& min_version) {
+  return true;
+}
+
 }  // namespace extensions

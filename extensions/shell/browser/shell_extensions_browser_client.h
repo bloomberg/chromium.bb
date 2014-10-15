@@ -79,6 +79,9 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       scoped_ptr<base::ListValue> args) override;
   virtual net::NetLog* GetNetLog() override;
   virtual ExtensionCache* GetExtensionCache() override;
+  virtual bool IsBackgroundUpdateAllowed() override;
+  virtual bool IsMinBrowserVersionSupported(
+      const std::string& min_version) override;
 
  private:
   // The single BrowserContext for app_shell. Not owned.

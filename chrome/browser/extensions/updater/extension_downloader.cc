@@ -20,12 +20,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/browser/updater/extension_cache.h"
 #include "extensions/browser/updater/request_queue_impl.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
@@ -432,12 +431,10 @@ void ExtensionDownloader::StartUpdateCheck(
     scoped_ptr<ManifestFetchData> fetch_data) {
   const std::set<std::string>& id_set(fetch_data->extension_ids());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking)) {
+  if (!ExtensionsBrowserClient::Get()->IsBackgroundUpdateAllowed()) {
     NotifyExtensionsDownloadFailed(id_set,
                                    fetch_data->request_ids(),
                                    ExtensionDownloaderDelegate::DISABLED);
-    return;
   }
 
   RequestQueue<ManifestFetchData>::iterator i;
@@ -629,10 +626,6 @@ void ExtensionDownloader::DetermineUpdates(
     const ManifestFetchData& fetch_data,
     const UpdateManifest::Results& possible_updates,
     std::vector<int>* result) {
-  // This will only be valid if one of possible_updates specifies
-  // browser_min_version.
-  Version browser_version;
-
   for (size_t i = 0; i < possible_updates.list.size(); i++) {
     const UpdateManifest::Result* update = &possible_updates.list[i];
     const std::string& id = update->extension_id;
@@ -674,22 +667,15 @@ void ExtensionDownloader::DetermineUpdates(
     }
 
     // If the update specifies a browser minimum version, do we qualify?
-    if (update->browser_min_version.length() > 0) {
-      // First determine the browser version if we haven't already.
-      if (!browser_version.IsValid()) {
-        chrome::VersionInfo version_info;
-        browser_version = Version(version_info.Version());
-      }
-      Version browser_min_version(update->browser_min_version);
-      if (browser_version.IsValid() && browser_min_version.IsValid() &&
-          browser_min_version.CompareTo(browser_version) > 0) {
-        // TODO(asargent) - We may want this to show up in the extensions UI
-        // eventually. (http://crbug.com/12547).
-        LOG(WARNING) << "Updated version of extension " << id
-                     << " available, but requires chrome version "
-                     << update->browser_min_version;
-        continue;
-      }
+    if (update->browser_min_version.length() > 0 &&
+        !ExtensionsBrowserClient::Get()->IsMinBrowserVersionSupported(
+            update->browser_min_version)) {
+      // TODO(asargent) - We may want this to show up in the extensions UI
+      // eventually. (http://crbug.com/12547).
+      LOG(WARNING) << "Updated version of extension " << id
+                   << " available, but requires chrome version "
+                   << update->browser_min_version;
+      continue;
     }
     VLOG(2) << "will try to update " << id;
     result->push_back(i);
