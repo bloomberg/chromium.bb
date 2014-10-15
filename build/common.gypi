@@ -4500,6 +4500,16 @@
                   # TODO(eugenis): find a way to reenable this.
                   '-mllvm -asan-globals=0',
                 ],
+                'conditions': [
+                  ['target_arch=="arm"', {
+                    'ldflags': [
+                      # TODO(hans): The ASan runtime is no longer automatically
+                      # added to the link line when using -nostdlib. Can we
+                      # stop adding -nostdlib? (crbug.com/423429)
+                      '<!(cd <(DEPTH) && pwd -P)/<(make_clang_dir)/lib/clang/3.6.0/lib/linux/libclang_rt.asan-arm-android.so',
+                    ],
+                  }],
+                ],
               }],
               ['android_webview_build==0', {
                 'defines': [

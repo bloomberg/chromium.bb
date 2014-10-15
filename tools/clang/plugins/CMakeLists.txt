@@ -4,6 +4,8 @@ add_llvm_loadable_module(libFindBadConstructs
                          FindBadConstructsConsumer.cpp
                         )
 
+add_dependencies(libFindBadConstructs clang)
+
 cr_install(TARGETS libFindBadConstructs LIBRARY DESTINATION lib)
 
 cr_add_test(plugins_test

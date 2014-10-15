@@ -8,6 +8,8 @@ add_llvm_loadable_module("lib${LIBRARYNAME}"
                          RecordInfo.cpp
                         )
 
+add_dependencies("lib${LIBRARYNAME}" clang)
+
 cr_install(TARGETS "lib${LIBRARYNAME}" LIBRARY DESTINATION lib)
 
 cr_add_test(blink_gc_plugin_test
