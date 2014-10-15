@@ -23,6 +23,10 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "google_apis/google_api_keys.h"
+#endif
+
 namespace data_reduction_proxy {
 
 // The empty version for the authentication protocol. Currently used by
@@ -213,10 +217,18 @@ std::string DataReductionProxyAuthRequestHandler::GetDefaultKey() const {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string key =
     command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
+// Android and iOS get the default key from a preprocessor constant. All other
+// platforms get the key from google_apis
+#if defined(OS_ANDROID) || defined(OS_IOS)
 #if defined(SPDY_PROXY_AUTH_VALUE)
   if (key.empty())
     key = SPDY_PROXY_AUTH_VALUE;
 #endif
+#else
+  if (key.empty()) {
+    key = google_apis::GetSpdyProxyAuthValue();
+  }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
   return key;
 }
 

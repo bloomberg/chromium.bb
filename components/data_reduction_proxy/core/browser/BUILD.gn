@@ -36,6 +36,11 @@ static_library("browser") {
     "//crypto",
     "//net",
   ]
+  if (!is_android && !is_ios) {
+    deps += [ 
+      "//google_apis",
+    ]
+  }
 }
 
 static_library("test_support") {

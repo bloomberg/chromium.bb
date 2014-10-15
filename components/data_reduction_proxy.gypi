@@ -9,6 +9,13 @@
       # GN version: //components/data_reduction_proxy/core/browser
       'target_name': 'data_reduction_proxy_core_browser',
       'type': 'static_library',
+      'conditions': [
+        ['OS != "android" and OS != "ios"', {
+          'dependencies' : [
+            '../google_apis/google_apis.gyp:google_apis',
+          ]
+        }],
+      ],
       'dependencies': [
         'data_reduction_proxy_version_header',
         '../base/base.gyp:base',

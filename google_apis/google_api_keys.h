@@ -90,6 +90,9 @@ std::string GetOAuth2ClientID(OAuth2Client client);
 // in, e.g. URL-escaped if you use it in a URL.
 std::string GetOAuth2ClientSecret(OAuth2Client client);
 
+// Returns the auth token for the data reduction proxy.
+std::string GetSpdyProxyAuthValue();
+
 // Returns if the API key using in the current build is the one for official
 // Google Chrome.
 bool IsGoogleChromeAPIKeyUsed();
