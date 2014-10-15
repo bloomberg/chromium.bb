@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
@@ -22,21 +23,30 @@
 namespace history {
 
 InMemoryHistoryBackend::InMemoryHistoryBackend()
-    : profile_(NULL) {
+    : profile_(nullptr), history_service_(nullptr) {
 }
 
-InMemoryHistoryBackend::~InMemoryHistoryBackend() {}
+InMemoryHistoryBackend::~InMemoryHistoryBackend() {
+  if (history_service_)
+    history_service_->RemoveObserver(this);
+}
 
 bool InMemoryHistoryBackend::Init(const base::FilePath& history_filename) {
   db_.reset(new InMemoryDatabase);
   return db_->InitFromDisk(history_filename);
 }
 
-void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
+void InMemoryHistoryBackend::AttachToHistoryService(
+    Profile* profile,
+    HistoryService* history_service) {
   if (!db_) {
     NOTREACHED();
     return;
   }
+
+  DCHECK(history_service);
+  history_service_ = history_service;
+  history_service_->AddObserver(this);
 
   profile_ = profile;
 
@@ -49,7 +59,6 @@ void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
   // Register for the notifications we care about.
   // We only want notifications for the associated profile.
   content::Source<Profile> source(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, source);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   registrar_.Add(
@@ -65,14 +74,19 @@ void InMemoryHistoryBackend::DeleteAllSearchTermsForKeyword(
   db_->DeleteAllSearchTermsForKeyword(keyword_id);
 }
 
+void InMemoryHistoryBackend::OnURLVisited(HistoryService* history_service,
+                                          ui::PageTransition transition,
+                                          const URLRow& row,
+                                          const RedirectList& redirects,
+                                          base::Time visit_time) {
+  OnURLVisitedOrModified(row);
+}
+
 void InMemoryHistoryBackend::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_HISTORY_URL_VISITED:
-      OnURLVisitedOrModified(content::Details<URLVisitedDetails>(details)->row);
-      break;
     case chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED:
       OnKeywordSearchTermUpdated(
           *content::Details<KeywordSearchUpdatedDetails>(details).ptr());

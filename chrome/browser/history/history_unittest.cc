@@ -98,6 +98,10 @@ class BackendDelegate : public HistoryBackend::Delegate {
       scoped_ptr<InMemoryHistoryBackend> backend) override;
   virtual void NotifyAddVisit(const BriefVisitInfo& info) override {}
   virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {}
+  virtual void NotifyURLVisited(ui::PageTransition transition,
+                                const URLRow& row,
+                                const RedirectList& redirects,
+                                base::Time visit_time) override {}
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override;

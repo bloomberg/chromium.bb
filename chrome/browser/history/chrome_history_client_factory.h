@@ -19,6 +19,11 @@ class ChromeHistoryClientFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ChromeHistoryClient* GetForProfile(Profile* profile);
 
+  // TODO(sdefresne): remove this once ChromeHistoryClient is no longer an
+  // HistoryServiceObserver and can follow the regular shutdown even during
+  // tests.
+  static ChromeHistoryClient* GetForProfileWithoutCreating(Profile* profile);
+
   static ChromeHistoryClientFactory* GetInstance();
 
  private:

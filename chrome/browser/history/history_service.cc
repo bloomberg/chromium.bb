@@ -173,6 +173,19 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
             &HistoryService::NotifyFaviconChanged, history_service_, urls));
   }
 
+  virtual void NotifyURLVisited(ui::PageTransition transition,
+                                const history::URLRow& row,
+                                const history::RedirectList& redirects,
+                                base::Time visit_time) OVERRIDE {
+    service_task_runner_->PostTask(FROM_HERE,
+                                   base::Bind(&HistoryService::NotifyURLVisited,
+                                              history_service_,
+                                              transition,
+                                              row,
+                                              redirects,
+                                              visit_time));
+  }
+
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<history::HistoryDetails> details) override {
@@ -982,7 +995,7 @@ bool HistoryService::Init(const base::FilePath& history_dir, bool no_db) {
     std::string languages =
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
     in_memory_url_index_.reset(new history::InMemoryURLIndex(
-        profile_, history_dir_, languages, history_client_));
+        profile_, this, history_dir_, languages, history_client_));
     in_memory_url_index_->Init();
   }
 
@@ -1105,7 +1118,7 @@ void HistoryService::SetInMemoryBackend(
   in_memory_backend_.reset(mem_backend.release());
 
   // The database requires additional initialization once we own it.
-  in_memory_backend_->AttachToHistoryService(profile_);
+  in_memory_backend_->AttachToHistoryService(profile_, this);
 }
 
 void HistoryService::NotifyProfileError(sql::InitStatus init_status) {
@@ -1234,6 +1247,16 @@ void HistoryService::NotifyAddVisit(const history::BriefVisitInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(
       history::HistoryServiceObserver, observers_, OnAddVisit(this, info));
+}
+
+void HistoryService::NotifyURLVisited(ui::PageTransition transition,
+                                      const history::URLRow& row,
+                                      const history::RedirectList& redirects,
+                                      base::Time visit_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(history::HistoryServiceObserver,
+                    observers_,
+                    OnURLVisited(this, transition, row, redirects, visit_time));
 }
 
 scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>

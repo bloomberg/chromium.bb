@@ -25,10 +25,12 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class HistoryService;
 class Profile;
 
 namespace base {
@@ -45,7 +47,8 @@ class URLRow;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
 
-class InMemoryHistoryBackend : public content::NotificationObserver {
+class InMemoryHistoryBackend : public HistoryServiceObserver,
+                               public content::NotificationObserver {
  public:
   InMemoryHistoryBackend();
   virtual ~InMemoryHistoryBackend();
@@ -57,7 +60,8 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   // Does initialization work when this object is attached to the history
   // system on the main thread. The argument is the profile with which the
   // attached history service is under.
-  void AttachToHistoryService(Profile* profile);
+  void AttachToHistoryService(Profile* profile,
+                              HistoryService* history_service);
 
   // Deletes all search terms for the specified keyword.
   void DeleteAllSearchTermsForKeyword(KeywordID keyword_id);
@@ -68,6 +72,13 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   InMemoryDatabase* db() const {
     return db_.get();
   }
+
+  // HistoryServiceObserver:
+  virtual void OnURLVisited(HistoryService* history_service,
+                            ui::PageTransition transition,
+                            const URLRow& row,
+                            const RedirectList& redirects,
+                            base::Time visit_time) OVERRIDE;
 
   // Notification callback.
   virtual void Observe(int type,
@@ -96,6 +107,7 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   // The profile that this object is attached. May be NULL before
   // initialization.
   Profile* profile_;
+  HistoryService* history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryHistoryBackend);
 };

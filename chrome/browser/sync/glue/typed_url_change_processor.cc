@@ -58,6 +58,8 @@ TypedUrlChangeProcessor::TypedUrlChangeProcessor(
 
 TypedUrlChangeProcessor::~TypedUrlChangeProcessor() {
   DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(history_backend_);
+  history_backend_->RemoveObserver(this);
 }
 
 void TypedUrlChangeProcessor::Observe(
@@ -77,10 +79,27 @@ void TypedUrlChangeProcessor::Observe(
   } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
     HandleURLsDeleted(
         content::Details<history::URLsDeletedDetails>(details).ptr());
-  } else {
-    DCHECK_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED, type);
-    HandleURLsVisited(
-        content::Details<history::URLVisitedDetails>(details).ptr());
+  }
+  UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
+                           model_associator_->GetErrorPercentage());
+}
+
+void TypedUrlChangeProcessor::OnURLVisited(
+    history::HistoryBackend* history_backend,
+    ui::PageTransition transition,
+    const history::URLRow& row,
+    const history::RedirectList& redirects,
+    base::Time visit_time) {
+  DCHECK(backend_loop_ == base::MessageLoop::current());
+
+  base::AutoLock al(disconnect_lock_);
+  if (disconnected_)
+    return;
+
+  DVLOG(1) << "Observed typed_url change.";
+  if (ShouldSyncVisit(row.typed_count(), transition)) {
+    syncer::WriteTransaction trans(FROM_HERE, share_handle());
+    CreateOrUpdateSyncNode(row, &trans);
   }
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
                            model_associator_->GetErrorPercentage());
@@ -195,21 +214,8 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
   }
 }
 
-void TypedUrlChangeProcessor::HandleURLsVisited(
-    history::URLVisitedDetails* details) {
-  if (!ShouldSyncVisit(details))
-    return;
-
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
-  CreateOrUpdateSyncNode(details->row, &trans);
-}
-
-bool TypedUrlChangeProcessor::ShouldSyncVisit(
-    history::URLVisitedDetails* details) {
-  int typed_count = details->row.typed_count();
-  ui::PageTransition transition =
-      ui::PageTransitionStripQualifier(details->transition);
-
+bool TypedUrlChangeProcessor::ShouldSyncVisit(int typed_count,
+                                              ui::PageTransition transition) {
   // Just use an ad-hoc criteria to determine whether to ignore this
   // notification. For most users, the distribution of visits is roughly a bell
   // curve with a long tail - there are lots of URLs with < 5 visits so we want
@@ -217,7 +223,7 @@ bool TypedUrlChangeProcessor::ShouldSyncVisit(
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  return (transition == ui::PAGE_TRANSITION_TYPED &&
+  return (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
           typed_count > 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
@@ -335,6 +341,7 @@ void TypedUrlChangeProcessor::StartImpl() {
 
 void TypedUrlChangeProcessor::StartObserving() {
   DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(history_backend_);
   DCHECK(profile_);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
@@ -342,13 +349,12 @@ void TypedUrlChangeProcessor::StartObserving() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       content::Source<Profile>(profile_));
-  notification_registrar_.Add(
-      this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-      content::Source<Profile>(profile_));
+  history_backend_->AddObserver(this);
 }
 
 void TypedUrlChangeProcessor::StopObserving() {
   DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK(history_backend_);
   DCHECK(profile_);
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
@@ -356,9 +362,7 @@ void TypedUrlChangeProcessor::StopObserving() {
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       content::Source<Profile>(profile_));
-  notification_registrar_.Remove(
-      this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-      content::Source<Profile>(profile_));
+  history_backend_->RemoveObserver(this);
 }
 
 }  // namespace browser_sync

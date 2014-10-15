@@ -72,10 +72,16 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  scoped_ptr<HistoryService> history_service(new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile), profile));
+  ChromeHistoryClient* history_client =
+      ChromeHistoryClientFactory::GetForProfile(profile);
+  scoped_ptr<HistoryService> history_service(
+      new HistoryService(history_client, profile));
   if (!history_service->Init(profile->GetPath()))
     return NULL;
+  // TODO(sdefresne): once NOTIFICATION_HISTORY_URL* notifications are no
+  // longer used, remove this reference to the HistoryService from the
+  // ChromeHistoryClient, http://crbug.com/42178
+  history_client->SetHistoryService(history_service.get());
   ChromeBookmarkClientFactory::GetForProfile(profile)
       ->SetHistoryService(history_service.get());
   return history_service.release();

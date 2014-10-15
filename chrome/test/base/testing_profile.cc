@@ -470,8 +470,12 @@ void TestingProfile::CreateFaviconService() {
 
 static KeyedService* BuildHistoryService(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new HistoryService(ChromeHistoryClientFactory::GetForProfile(profile),
-                            profile);
+  ChromeHistoryClient* history_client =
+      ChromeHistoryClientFactory::GetForProfile(profile);
+  HistoryService* history_service = new HistoryService(history_client, profile);
+  if (history_client)
+    history_client->SetHistoryService(history_service);
+  return history_service;
 }
 
 bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
@@ -495,6 +499,13 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
 }
 
 void TestingProfile::DestroyHistoryService() {
+  // TODO(sdefresne): remove this once ChromeHistoryClient is no longer an
+  // HistoryServiceObserver, http://crbug.com/373326
+  ChromeHistoryClient* history_client =
+      ChromeHistoryClientFactory::GetForProfileWithoutCreating(this);
+  if (history_client)
+    history_client->Shutdown();
+
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
   if (!history_service)

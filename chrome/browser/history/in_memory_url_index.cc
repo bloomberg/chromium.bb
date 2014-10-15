@@ -89,10 +89,12 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 // InMemoryURLIndex ------------------------------------------------------------
 
 InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
+                                   HistoryService* history_service,
                                    const base::FilePath& history_dir,
                                    const std::string& languages,
                                    HistoryClient* history_client)
     : profile_(profile),
+      history_service_(history_service),
       history_client_(history_client),
       history_dir_(history_dir),
       languages_(languages),
@@ -106,16 +108,18 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
   if (profile) {
     // TODO(mrossetti): Register for language change notifications.
     content::Source<Profile> source(profile);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                    source);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   }
+  if (history_service_)
+    history_service_->AddObserver(this);
 }
 
 // Called only by unit tests.
 InMemoryURLIndex::InMemoryURLIndex()
     : profile_(NULL),
+      history_service_(nullptr),
       history_client_(NULL),
       private_data_(new URLIndexPrivateData),
       restore_cache_observer_(NULL),
@@ -137,6 +141,8 @@ void InMemoryURLIndex::Init() {
 }
 
 void InMemoryURLIndex::ShutDown() {
+  if (history_service_)
+    history_service_->RemoveObserver(this);
   registrar_.RemoveAll();
   cache_reader_tracker_.TryCancelAll();
   shutdown_ = true;
@@ -183,9 +189,6 @@ void InMemoryURLIndex::Observe(int notification_type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (notification_type) {
-    case chrome::NOTIFICATION_HISTORY_URL_VISITED:
-      OnURLVisited(content::Details<URLVisitedDetails>(details).ptr());
-      break;
     case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
       OnURLsModified(
           content::Details<history::URLsModifiedDetails>(details).ptr());
@@ -206,12 +209,14 @@ void InMemoryURLIndex::Observe(int notification_type,
   }
 }
 
-void InMemoryURLIndex::OnURLVisited(const URLVisitedDetails* details) {
-  HistoryService* service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           Profile::EXPLICIT_ACCESS);
-  needs_to_be_cached_ |= private_data_->UpdateURL(service,
-                                                  details->row,
+void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
+                                    ui::PageTransition transition,
+                                    const URLRow& row,
+                                    const RedirectList& redirects,
+                                    base::Time visit_time) {
+  DCHECK(history_service_ == history_service);
+  needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
+                                                  row,
                                                   languages_,
                                                   scheme_whitelist_,
                                                   &private_data_tracker_);

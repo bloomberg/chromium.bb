@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -59,6 +60,11 @@ const gfx::Size kTinySize = gfx::Size(kTinyEdgeSize, kTinyEdgeSize);
 const gfx::Size kSmallSize = gfx::Size(kSmallEdgeSize, kSmallEdgeSize);
 const gfx::Size kLargeSize = gfx::Size(kLargeEdgeSize, kLargeEdgeSize);
 
+typedef base::Callback<void(const history::URLRow*,
+                            const history::URLRow*,
+                            const history::URLRow*)>
+    SimulateNotificationCallback;
+
 // Comparison functions as to make it easier to check results of
 // GetFaviconBitmaps() and GetIconMappingsForPageURL().
 bool IconMappingLessThan(const history::IconMapping& a,
@@ -75,6 +81,25 @@ class HistoryClientMock : public history::HistoryClientFakeBookmarks {
  public:
   MOCK_METHOD0(BlockUntilBookmarksLoaded, void());
 };
+
+void SimulateNotificationURLVisited(history::HistoryServiceObserver* observer,
+                                    const history::URLRow* row1,
+                                    const history::URLRow* row2,
+                                    const history::URLRow* row3) {
+  history::URLRows rows;
+  rows.push_back(*row1);
+  if (row2)
+    rows.push_back(*row2);
+  if (row3)
+    rows.push_back(*row3);
+
+  base::Time visit_time;
+  history::RedirectList redirects;
+  for (const auto& row : rows) {
+    observer->OnURLVisited(
+        nullptr, ui::PAGE_TRANSITION_LINK, row, redirects, visit_time);
+  }
+}
 
 }  // namespace
 
@@ -94,6 +119,10 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
       scoped_ptr<InMemoryHistoryBackend> backend) override;
   virtual void NotifyAddVisit(const BriefVisitInfo& info) override {}
   virtual void NotifyFaviconChanged(const std::set<GURL>& urls) override;
+  virtual void NotifyURLVisited(ui::PageTransition transition,
+                                const URLRow& row,
+                                const RedirectList& redirects,
+                                base::Time visit_time) override;
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override;
@@ -211,6 +240,19 @@ void HistoryBackendTestDelegate::SetInMemoryBackend(
 void HistoryBackendTestDelegate::NotifyFaviconChanged(
     const std::set<GURL>& changed_favicons) {
   test_->NotifyFaviconChanged(changed_favicons);
+}
+
+void HistoryBackendTestDelegate::NotifyURLVisited(ui::PageTransition transition,
+                                                  const URLRow& row,
+                                                  const RedirectList& redirects,
+                                                  base::Time visit_time) {
+  scoped_ptr<URLVisitedDetails> details(new URLVisitedDetails());
+  details->transition = transition;
+  details->row = row;
+  details->redirects = redirects;
+  details->visit_time = visit_time;
+  test_->BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URL_VISITED,
+                                details.Pass());
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(
@@ -380,7 +422,8 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
   InMemoryHistoryBackendTest() {}
   virtual ~InMemoryHistoryBackendTest() {}
 
- protected:
+  // Public so that the method can be bound in test fixture using
+  // base::Bind(&InMemoryHistoryBackendTest::SimulateNotification, ...).
   void SimulateNotification(int type,
                             const URLRow* row1,
                             const URLRow* row2 = NULL,
@@ -409,6 +452,7 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
     }
   }
 
+ protected:
   size_t GetNumberOfMatchingSearchTerms(const int keyword_id,
                                         const base::string16& prefix) {
     std::vector<KeywordSearchTermVisit> matching_terms;
@@ -451,7 +495,8 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
                                       const base::string16& term1,
                                       const base::string16& term2);
 
-  void TestAddingAndChangingURLRows(int notification_type);
+  void TestAddingAndChangingURLRows(
+      const SimulateNotificationCallback& callback);
 
   static const KeywordID kTestKeywordId;
   static const char kTestSearchTerm1[];
@@ -3013,7 +3058,7 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
 // Common implementation for the two tests below, given that the only difference
 // between them is the type of the notification sent out.
 void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
-    int notification_type) {
+    const SimulateNotificationCallback& callback) {
   const char kTestTypedURLAlternativeTitle[] = "Google Search Again";
   const char kTestNonTypedURLAlternativeTitle[] = "Google News Again";
 
@@ -3021,7 +3066,7 @@ void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
   // never before seen by the cache) have been modified.
   URLRow row1(CreateTestTypedURL());
   URLRow row2(CreateTestNonTypedURL());
-  SimulateNotification(notification_type, &row1, &row2);
+  callback.Run(&row1, &row2, nullptr);
 
   // The in-memory database should only pick up the typed URL, and should ignore
   // the non-typed one. The typed URL should retain the ID that was present in
@@ -3034,7 +3079,7 @@ void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
   // Try changing attributes (other than typed_count) for existing URLRows.
   row1.set_title(base::UTF8ToUTF16(kTestTypedURLAlternativeTitle));
   row2.set_title(base::UTF8ToUTF16(kTestNonTypedURLAlternativeTitle));
-  SimulateNotification(notification_type, &row1, &row2);
+  callback.Run(&row1, &row2, nullptr);
 
   // URLRows that are cached by the in-memory database should be updated.
   EXPECT_NE(0, mem_backend_->db()->GetRowForURL(row1.url(), &cached_row1));
@@ -3046,7 +3091,7 @@ void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
   // previously non-typed URLRow.
   row1.set_typed_count(0);
   row2.set_typed_count(2);
-  SimulateNotification(notification_type, &row1, &row2);
+  callback.Run(&row1, &row2, nullptr);
 
   // The in-memory database should stop caching the first URLRow, and start
   // caching the second URLRow.
@@ -3058,11 +3103,15 @@ void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsModified) {
-  TestAddingAndChangingURLRows(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED);
+  TestAddingAndChangingURLRows(
+      base::Bind(&InMemoryHistoryBackendTest::SimulateNotification,
+                 base::Unretained(this),
+                 chrome::NOTIFICATION_HISTORY_URLS_MODIFIED));
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsVisisted) {
-  TestAddingAndChangingURLRows(chrome::NOTIFICATION_HISTORY_URL_VISITED);
+  TestAddingAndChangingURLRows(base::Bind(
+      &SimulateNotificationURLVisited, base::Unretained(mem_backend_.get())));
 }
 
 TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedPiecewise) {

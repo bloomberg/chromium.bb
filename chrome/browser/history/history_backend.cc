@@ -38,6 +38,7 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon_base/select_favicon_frames.h"
+#include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
@@ -806,21 +807,33 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     if (typed_url_syncable_service_.get())
       typed_url_syncable_service_->OnUrlVisited(transition, &url_info);
 
-    scoped_ptr<URLVisitedDetails> details(new URLVisitedDetails);
-    details->transition = transition;
-    details->row = url_info;
-    details->visit_time = time;
+    RedirectList redirects;
     // TODO(meelapshah) Disabled due to potential PageCycler regression.
     // Re-enable this.
-    // QueryRedirectsTo(url, &details->redirects);
-    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                           details.PassAs<HistoryDetails>());
+    // QueryRedirectsTo(url, &redirects);
+    NotifyAddVisit(transition, url_info, redirects, time);
+
+    // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
+    // an HistoryBackendObserver and register it so that we can remove this
+    // method.
+    if (delegate_)
+      delegate_->NotifyURLVisited(transition, url_info, redirects, time);
   } else {
     VLOG(0) << "Failed to build visit insert statement:  "
             << "url_id = " << url_id;
   }
 
   return std::make_pair(url_id, visit_id);
+}
+
+void HistoryBackend::NotifyAddVisit(ui::PageTransition transition,
+                                    const URLRow& row,
+                                    const RedirectList& redirects,
+                                    base::Time visit_time) {
+  FOR_EACH_OBSERVER(
+      HistoryBackendObserver,
+      observers_,
+      OnURLVisited(this, transition, row, redirects, visit_time));
 }
 
 void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
@@ -1139,6 +1152,16 @@ void HistoryBackend::DeleteMatchingURLsForKeyword(KeywordID keyword_id,
     }
     DeleteURLs(items_to_delete);
   }
+}
+
+// Observers -------------------------------------------------------------------
+
+void HistoryBackend::AddObserver(HistoryBackendObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void HistoryBackend::RemoveObserver(HistoryBackendObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // Downloads -------------------------------------------------------------------

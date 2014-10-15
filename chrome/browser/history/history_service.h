@@ -589,10 +589,21 @@ class HistoryService : public content::NotificationObserver,
   // available or the URL does not exist.
   bool GetRowForURL(const GURL& url, history::URLRow* url_row);
 
-  // Observers -----------------------------------------------------------------
+  // Observers ----------------------------------------------------------------
 
   // Notify all Observers registered that the VisitDatabase was changed.
   void NotifyAddVisit(const history::BriefVisitInfo& info);
+
+  // Notify all HistoryServiceObservers registered that user is visiting a URL.
+  // The |row| ID will be set to the value that is currently in effect in the
+  // main history database. |redirects| is the list of redirects leading up to
+  // the URL. If we have a redirect chain A -> B -> C and user is visiting C,
+  // then |redirects[0]=B| and |redirects[1]=A|. If there are no redirects,
+  // |redirects| is an empty vector.
+  void NotifyURLVisited(ui::PageTransition transition,
+                        const history::URLRow& row,
+                        const history::RedirectList& redirects,
+                        base::Time visit_time);
 
   // Favicon -------------------------------------------------------------------
 

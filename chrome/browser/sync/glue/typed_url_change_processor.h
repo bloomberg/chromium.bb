@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
+#include "components/history/core/browser/history_backend_observer.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -43,7 +44,8 @@ class DataTypeErrorHandler;
 // applying them to the sync API 'syncable' model, and vice versa. All
 // operations and use of this class are from the UI thread.
 class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
-                                public content::NotificationObserver {
+                                public content::NotificationObserver,
+                                public history::HistoryBackendObserver {
  public:
   TypedUrlChangeProcessor(Profile* profile,
                           TypedUrlModelAssociator* model_associator,
@@ -56,6 +58,13 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
+
+  // history::HistoryBackendObserver:
+  virtual void OnURLVisited(history::HistoryBackend* history_backend,
+                            ui::PageTransition transition,
+                            const history::URLRow& row,
+                            const history::RedirectList& redirects,
+                            base::Time visit_time) override;
 
   // sync API model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
@@ -80,13 +89,12 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
 
   void HandleURLsModified(history::URLsModifiedDetails* details);
   void HandleURLsDeleted(history::URLsDeletedDetails* details);
-  void HandleURLsVisited(history::URLVisitedDetails* details);
 
   // Returns true if the caller should sync as a result of the passed visit
   // notification. We use this to throttle the number of sync changes we send
   // to the server so we don't hit the server for every
   // single typed URL visit.
-  bool ShouldSyncVisit(history::URLVisitedDetails* details);
+  bool ShouldSyncVisit(int typed_count, ui::PageTransition transition);
 
   // Utility routine that either updates an existing sync node or creates a
   // new one for the passed |typed_url| if one does not already exist. Returns

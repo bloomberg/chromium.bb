@@ -287,9 +287,11 @@ void InMemoryURLIndexTest::SetUp() {
     transaction.Commit();
   }
 
-  url_index_.reset(new InMemoryURLIndex(
-      &profile_, base::FilePath(), "en,ja,hi,zh",
-      history_service_->history_client()));
+  url_index_.reset(new InMemoryURLIndex(&profile_,
+                                        history_service_,
+                                        base::FilePath(),
+                                        "en,ja,hi,zh",
+                                        history_service_->history_client()));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
 }
@@ -446,9 +448,11 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
-  url_index_.reset(new InMemoryURLIndex(
-      &profile_, base::FilePath(), "en,ja,hi,zh",
-      history_service_->history_client()));
+  url_index_.reset(new InMemoryURLIndex(&profile_,
+                                        history_service_,
+                                        base::FilePath(),
+                                        "en,ja,hi,zh",
+                                        history_service_->history_client()));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
   URLIndexPrivateData& private_data(*GetPrivateData());
@@ -1200,7 +1204,7 @@ void InMemoryURLIndexCacheTest::SetUp() {
   HistoryClient history_client;
   base::FilePath path(temp_dir_.path());
   url_index_.reset(new InMemoryURLIndex(
-      NULL, path, "en,ja,hi,zh", &history_client));
+      NULL, nullptr, path, "en,ja,hi,zh", &history_client));
 }
 
 void InMemoryURLIndexCacheTest::set_history_dir(

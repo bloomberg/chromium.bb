@@ -19,6 +19,13 @@ ChromeHistoryClient* ChromeHistoryClientFactory::GetForProfile(
 }
 
 // static
+ChromeHistoryClient* ChromeHistoryClientFactory::GetForProfileWithoutCreating(
+    Profile* profile) {
+  return static_cast<ChromeHistoryClient*>(
+      GetInstance()->GetServiceForBrowserContext(profile, false));
+}
+
+// static
 ChromeHistoryClientFactory* ChromeHistoryClientFactory::GetInstance() {
   return Singleton<ChromeHistoryClientFactory>::get();
 }

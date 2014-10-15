@@ -981,6 +981,7 @@ TEST_F(TemplateURLServiceWithoutFallbackTest, ChangeGoogleBaseValue) {
 // KEYWORD visits.
 TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   test_util()->VerifyLoad();
+  test_util()->profile()->CreateBookmarkModel(false);
   ASSERT_TRUE(test_util()->profile()->CreateHistoryService(true, false));
 
   // Create a keyword.

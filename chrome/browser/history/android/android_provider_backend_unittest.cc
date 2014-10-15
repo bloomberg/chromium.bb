@@ -76,6 +76,10 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {
     favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
   }
+  virtual void NotifyURLVisited(ui::PageTransition,
+                                const history::URLRow& row,
+                                const history::RedirectList& redirects,
+                                base::Time visit_time) OVERRIDE {}
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override {
