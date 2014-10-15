@@ -85,11 +85,22 @@ public class ApiCompatibilityUtils {
     }
 
     /**
-     * @see android.view.View#setTextDirection(int)
+     * @see android.view.View#setTextAlignment(int)
      */
     public static void setTextAlignment(View view, int textAlignment) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             view.setTextAlignment(textAlignment);
+        } else {
+            // Do nothing. RTL text isn't supported before JB MR1.
+        }
+    }
+
+    /**
+     * @see android.view.View#setTextDirection(int)
+     */
+    public static void setTextDirection(View view, int textDirection) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.setTextDirection(textDirection);
         } else {
             // Do nothing. RTL text isn't supported before JB MR1.
         }
