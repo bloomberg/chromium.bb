@@ -106,6 +106,18 @@ void PrepareFileOnIOThread(
 
 }  // namespace
 
+bool IsNonNativeFileSystemType(storage::FileSystemType type) {
+  switch (type) {
+    case storage::kFileSystemTypeNativeLocal:
+    case storage::kFileSystemTypeRestrictedNativeLocal:
+      return false;
+    default:
+      // The path indeed corresponds to a mount point not associated with a
+      // native local path.
+      return true;
+  }
+}
+
 bool IsUnderNonNativeLocalPath(Profile* profile,
                         const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -122,15 +134,7 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
   if (!filesystem_url.is_valid())
     return false;
 
-  switch (filesystem_url.type()) {
-    case storage::kFileSystemTypeNativeLocal:
-    case storage::kFileSystemTypeRestrictedNativeLocal:
-      return false;
-    default:
-      // The path indeed corresponds to a mount point not associated with a
-      // native local path.
-      return true;
-  }
+  return IsNonNativeFileSystemType(filesystem_url.type());
 }
 
 void GetNonNativeLocalPathMimeType(

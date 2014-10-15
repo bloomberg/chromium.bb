@@ -144,6 +144,7 @@
       'browser/chromeos/external_metrics_unittest.cc',
       'browser/chromeos/file_manager/file_tasks_unittest.cc',
       'browser/chromeos/file_manager/file_watcher_unittest.cc',
+      'browser/chromeos/file_manager/fileapi_util_unittest.cc',
       'browser/chromeos/file_manager/path_util_unittest.cc',
       'browser/chromeos/file_manager/url_util_unittest.cc',
       'browser/chromeos/file_manager/volume_manager_unittest.cc',

@@ -18,11 +18,16 @@
 class Profile;
 
 namespace content {
+struct FileChooserFileInfo;
 class RenderViewHost;
 }
 
 namespace storage {
 class FileSystemContext;
+}
+
+namespace ui {
+struct SelectedFileInfo;
 }
 
 namespace file_manager {
@@ -52,6 +57,8 @@ struct EntryDefinition {
 
 typedef std::vector<FileDefinition> FileDefinitionList;
 typedef std::vector<EntryDefinition> EntryDefinitionList;
+typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
+typedef std::vector<content::FileChooserFileInfo> FileChooserFileInfoList;
 
 // The callback used by ConvertFileDefinitionToEntryDefinition. Returns the
 // result of the conversion.
@@ -62,6 +69,12 @@ typedef base::Callback<void(const EntryDefinition& entry_definition)>
 // the result of the conversion as a list.
 typedef base::Callback<void(scoped_ptr<
     EntryDefinitionList> entry_definition_list)> EntryDefinitionListCallback;
+
+// The callback used by
+// ConvertFileSelectedInfoListToFileChooserFileInfoList. Returns the result of
+// the conversion as a list.
+typedef base::Callback<void(scoped_ptr<FileChooserFileInfoList>)>
+    FileChooserFileInfoListCallback;
 
 // Returns a file system context associated with the given profile and the
 // extension ID.
@@ -125,11 +138,25 @@ void ConvertFileDefinitionListToEntryDefinitionList(
     const FileDefinitionList& file_definition_list,
     const EntryDefinitionListCallback& callback);
 
+// Converts SelectedFileInfoList into FileChooserFileInfoList.
+void ConvertSelectedFileInfoListToFileChooserFileInfoList(
+    storage::FileSystemContext* context,
+    const GURL& origin,
+    const SelectedFileInfoList& selected_info_list,
+    const FileChooserFileInfoListCallback& callback);
+
 // Checks if a directory exists at |url|.
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const GURL& url,
     const storage::FileSystemOperationRunner::StatusCallback& callback);
+
+// Obtains isolated file system URL from |virtual_path| pointing a file in the
+// external file system.
+storage::FileSystemURL CreateIsolatedURLFromVirtualPath(
+    const storage::FileSystemContext& context,
+    const GURL& origin,
+    const base::FilePath& virtual_path);
 
 }  // namespace util
 }  // namespace file_manager

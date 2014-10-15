@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "storage/common/fileapi/file_system_types.h"
 
 class Profile;
 
@@ -26,6 +27,9 @@ class FileSystemURL;
 
 namespace file_manager {
 namespace util {
+
+// Obtains whether |type| is non-native file system or not.
+bool IsNonNativeFileSystemType(storage::FileSystemType type);
 
 // Checks whether the given |path| points to a non-local filesystem that
 // requires special handling.

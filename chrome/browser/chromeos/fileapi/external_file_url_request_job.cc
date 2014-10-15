@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,39 +39,6 @@ namespace {
 
 const char kMimeTypeForRFC822[] = "message/rfc822";
 const char kMimeTypeForMHTML[] = "multipart/related";
-
-storage::FileSystemURL CreateIsolatedURLFromVirtualPath(
-    const storage::FileSystemContext& context,
-    const base::FilePath& virtual_path) {
-  std::string file_system_id;
-  storage::FileSystemType file_system_type = storage::kFileSystemTypeUnknown;
-  base::FilePath path;
-  {
-    std::string cracked_id;
-    storage::FileSystemMountOption option;
-    if (!storage::ExternalMountPoints::GetSystemInstance()->CrackVirtualPath(
-            virtual_path,
-            &file_system_id,
-            &file_system_type,
-            &cracked_id,
-            &path,
-            &option)) {
-      return storage::FileSystemURL();
-    }
-  }
-  if (!IsExternalFileURLType(file_system_type))
-    return storage::FileSystemURL();
-  std::string register_name;
-  const std::string isolated_file_system_id =
-      storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          file_system_type, file_system_id, path, &register_name);
-  storage::FileSystemURL file_system_url = context.CreateCrackedFileSystemURL(
-      GURL(),
-      storage::kFileSystemTypeIsolated,
-      base::FilePath(isolated_file_system_id).Append(register_name));
-  DCHECK(file_system_url.is_valid());
-  return file_system_url;
-}
 
 // Helper for obtaining FileSystemContext, FileSystemURL, and mime type on the
 // UI thread.
@@ -114,7 +82,8 @@ class URLHelper {
     const base::FilePath virtual_path = ExternalFileURLToVirtualPath(url_);
 
     // Obtain the file system URL.
-    file_system_url_ = CreateIsolatedURLFromVirtualPath(*context, virtual_path);
+    file_system_url_ = file_manager::util::CreateIsolatedURLFromVirtualPath(
+        *context, /* empty origin */ GURL(), virtual_path);
 
     // Check if the obtained path providing external file URL or not.
     if (!file_system_url_.is_valid()) {
@@ -125,8 +94,13 @@ class URLHelper {
     isolated_file_system_scope_.reset(
         new ExternalFileURLRequestJob::IsolatedFileSystemScope(
             file_system_url_.filesystem_id()));
-    file_system_context_ = context;
 
+    if (!IsExternalFileURLType(file_system_url_.type())) {
+      ReplyResult(net::ERR_FAILED);
+      return;
+    }
+
+    file_system_context_ = context;
     extensions::app_file_handler_util::GetMimeTypeForLocalPath(
         profile,
         file_system_url_.path(),
