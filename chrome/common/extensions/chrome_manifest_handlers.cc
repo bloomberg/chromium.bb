@@ -30,9 +30,9 @@
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
+#include "extensions/common/manifest_url_handlers.h"
 
 namespace extensions {
 

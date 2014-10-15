@@ -135,6 +135,8 @@ source_set("common") {
     "manifest_handlers/web_accessible_resources_info.h",
     "manifest_handlers/webview_info.cc",
     "manifest_handlers/webview_info.h",
+    "manifest_url_handlers.cc",
+    "manifest_url_handlers.h",
     "message_bundle.cc",
     "message_bundle.h",
     "one_shot_event.cc",

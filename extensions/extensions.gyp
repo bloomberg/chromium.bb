@@ -170,6 +170,8 @@
         'common/manifest_handlers/web_accessible_resources_info.h',
         'common/manifest_handlers/webview_info.cc',
         'common/manifest_handlers/webview_info.h',
+        'common/manifest_url_handlers.cc',
+        'common/manifest_url_handlers.h',
         'common/message_bundle.cc',
         'common/message_bundle.h',
         'common/one_shot_event.cc',

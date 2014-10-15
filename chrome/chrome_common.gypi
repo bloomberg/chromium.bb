@@ -208,8 +208,6 @@
       'common/extensions/manifest_handlers/theme_handler.h',
       'common/extensions/manifest_handlers/ui_overrides_handler.cc',
       'common/extensions/manifest_handlers/ui_overrides_handler.h',
-      'common/extensions/manifest_url_handler.cc',
-      'common/extensions/manifest_url_handler.h',
     ],
     'chrome_common_full_safe_browsing_sources': [
       'common/safe_browsing/download_protection_util.cc',
