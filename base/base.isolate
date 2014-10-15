@@ -23,12 +23,18 @@
         ],
       },
     }],
+    ['OS=="linux" and asan==1', {
+      'variables': {
+        'files': [
+          '../third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6',
+        ],
+      },
+    }],
     ['asan==1', {
       'variables': {
         'files': [
           '../tools/valgrind/asan/',
           '../third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer',
-          '../third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6',
         ],
       },
     }],
