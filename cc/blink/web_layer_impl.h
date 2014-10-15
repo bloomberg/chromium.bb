@@ -57,8 +57,6 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
 
   // WebLayer implementation.
   virtual int id() const;
-  // TODO(danakj): Remove WebFloatRect version.
-  virtual void invalidateRect(const blink::WebFloatRect&);
   virtual void invalidateRect(const blink::WebRect&);
   virtual void invalidate();
   virtual void addChild(blink::WebLayer* child);

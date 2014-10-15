@@ -77,10 +77,6 @@ int WebLayerImpl::id() const {
   return layer_->id();
 }
 
-void WebLayerImpl::invalidateRect(const blink::WebFloatRect& rect) {
-  layer_->SetNeedsDisplayRect(gfx::ToEnclosingRect(rect));
-}
-
 void WebLayerImpl::invalidateRect(const blink::WebRect& rect) {
   layer_->SetNeedsDisplayRect(rect);
 }
