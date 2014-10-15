@@ -81,9 +81,9 @@ bool RawDataPresenter::Succeeded() {
 
 scoped_ptr<base::Value> RawDataPresenter::Result() {
   if (!success_)
-    return scoped_ptr<base::Value>();
+    return nullptr;
 
-  return list_.PassAs<base::Value>();
+  return list_.Pass();
 }
 
 void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
@@ -136,9 +136,9 @@ bool ParsedDataPresenter::Succeeded() {
 
 scoped_ptr<base::Value> ParsedDataPresenter::Result() {
   if (!success_)
-    return scoped_ptr<base::Value>();
+    return nullptr;
 
-  return dictionary_.PassAs<base::Value>();
+  return dictionary_.Pass();
 }
 
 // static

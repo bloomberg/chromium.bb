@@ -155,7 +155,7 @@ scoped_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
   core_api::extensions_manifest_types::Bluetooth bluetooth;
   bluetooth.uuids.reset(new std::vector<std::string>(uuids_.begin(),
                                                      uuids_.end()));
-  return bluetooth.ToValue().PassAs<base::Value>();
+  return bluetooth.ToValue().Pass();
 }
 
 ManifestPermission* BluetoothManifestPermission::Diff(

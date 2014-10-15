@@ -42,7 +42,7 @@ scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
   if (!service_type_.empty())
     result->SetString("serviceType", service_type_);
 
-  return result.PassAs<base::Value>();
+  return result.Pass();
 }
 
 bool EventFilteringInfo::IsEmpty() const {

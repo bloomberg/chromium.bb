@@ -33,7 +33,7 @@ scoped_ptr<base::Value> RulesToValue(
   scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < rules.size(); ++i)
     list->Append(rules[i]->ToValue().release());
-  return list.PassAs<base::Value>();
+  return list.Pass();
 }
 
 std::vector<linked_ptr<extensions::RulesRegistry::Rule> > RulesFromValue(

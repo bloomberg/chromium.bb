@@ -27,8 +27,7 @@ class ShellAudioControllerTest : public testing::Test {
 
     audio_client_ = new chromeos::CrasAudioClientStubImpl();
     audio_client_->SetAudioNodesForTesting(AudioNodeList());
-    dbus_setter->SetCrasAudioClient(
-        make_scoped_ptr(audio_client_).PassAs<chromeos::CrasAudioClient>());
+    dbus_setter->SetCrasAudioClient(make_scoped_ptr(audio_client_));
 
     chromeos::CrasAudioHandler::Initialize(
         new ShellAudioController::PrefHandler());

@@ -31,8 +31,7 @@ class ShellDesktopControllerTest : public aura::test::AuraTestBase {
     scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     power_manager_client_ = new chromeos::FakePowerManagerClient();
-    dbus_setter->SetPowerManagerClient(make_scoped_ptr(power_manager_client_).
-        PassAs<chromeos::PowerManagerClient>());
+    dbus_setter->SetPowerManagerClient(make_scoped_ptr(power_manager_client_));
 #endif
     aura::test::AuraTestBase::SetUp();
     controller_.reset(new ShellDesktopController());

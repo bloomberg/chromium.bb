@@ -53,8 +53,8 @@ void TlsConnectDone(scoped_ptr<net::SSLClientSocket> ssl_socket,
   // Wrap the StreamSocket in a TLSSocket, which matches the extension socket
   // API. Set the handle of the socket to the new value, so that it can be
   // used for read/write/close/etc.
-  scoped_ptr<extensions::TLSSocket> wrapper(new extensions::TLSSocket(
-      ssl_socket.PassAs<net::StreamSocket>(), extension_id));
+  scoped_ptr<extensions::TLSSocket> wrapper(
+      new extensions::TLSSocket(ssl_socket.Pass(), extension_id));
 
   // Caller will end up deleting the prior TCPSocket, once it calls
   // SetSocket(..,wrapper).

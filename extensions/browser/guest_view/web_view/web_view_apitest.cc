@@ -69,7 +69,7 @@ static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 class WebContentsHiddenObserver : public content::WebContentsObserver {
@@ -108,7 +108,7 @@ scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 // Handles |request| by serving an empty response.

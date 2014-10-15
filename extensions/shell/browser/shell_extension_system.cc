@@ -188,8 +188,7 @@ ContentVerifier* ShellExtensionSystem::content_verifier() {
 
 scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
-  scoped_ptr<ExtensionSet> empty(new ExtensionSet());
-  return empty.PassAs<ExtensionSet>();
+  return make_scoped_ptr(new ExtensionSet());
 }
 
 DeclarativeUserScriptMaster*
