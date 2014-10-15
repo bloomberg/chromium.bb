@@ -136,10 +136,14 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 // WebContents visible and hidden respectively.
 TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   // Create a top level widget and a webview as its content.
-  views::Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  views::Widget* parent = CreateTopLevelFramelessPlatformWidget();
+  parent->SetBounds(gfx::Rect(0, 10, 100, 100));
+
+  views::Widget* widget = CreateChildNativeWidgetWithParent(parent);
   widget->SetBounds(gfx::Rect(0, 10, 100, 100));
   views::WebView* webview = new views::WebView(browser_context());
   widget->SetContentsView(webview);
+  parent->Show();
   widget->Show();
 
   // Case 1: Create a new WebContents and set it in the webview via
@@ -179,7 +183,48 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   EXPECT_EQ(observer2.shown_count(), 1);
   EXPECT_EQ(observer2.hidden_count(), 0);
 
+  // Case 3: Test that attaching to a hidden webview does not show the web
+  // contents.
+  webview->SetVisible(false);
+  EXPECT_EQ(1, observer2.hidden_count());  // Now hidden.
+
+  EXPECT_EQ(1, observer1.shown_count());
+  webview->SetWebContents(web_contents1.get());
+  EXPECT_EQ(1, observer1.shown_count());
+
+  // Nothing else should change.
+  EXPECT_EQ(1, observer1.hidden_count());
+  EXPECT_EQ(1, observer2.shown_count());
+  EXPECT_EQ(1, observer2.hidden_count());
+
+  // Case 4: Test that making the webview visible when a window has an invisible
+  // parent does not make the web contents visible.
+  parent->Hide();
+  webview->SetVisible(true);
+  // TODO(tapted): The following line is wrong, the shown_count() should still
+  // be 1, until the parent window is made visible on the line after.
+  EXPECT_EQ(2, observer1.shown_count());
+  parent->Show();
+  EXPECT_EQ(2, observer1.shown_count());
+  parent->Hide();
+  EXPECT_EQ(2, observer1.hidden_count());
+
+  // Case 5: Test that moving from a hidden parent to a visible parent makes the
+  // web contents visible.
+  views::Widget* parent2 = CreateTopLevelFramelessPlatformWidget();
+  parent2->SetBounds(gfx::Rect(0, 10, 100, 100));
+  parent2->Show();
+
+  EXPECT_EQ(2, observer1.shown_count());
+  // Note: that reparenting the windows directly, after the windows have been
+  // created, e.g., views::Widget::ReparentNativeView(widget, parent2), is not a
+  // supported use case. Instead, move the WebView over.
+  parent2->SetContentsView(webview);
+  EXPECT_EQ(3, observer1.shown_count());
+
   widget->Close();
+  parent->Close();
+  parent2->Close();
   RunPendingMessages();
 }
 

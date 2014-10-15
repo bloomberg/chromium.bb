@@ -57,7 +57,6 @@ source_set("test_support") {
     "//ipc:test_support",
     "//skia",
     "//testing/gtest",
-    "//ui/aura",
     "//ui/base",
     "//ui/events",
     "//ui/gfx",
