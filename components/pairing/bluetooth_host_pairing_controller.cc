@@ -326,7 +326,7 @@ void BluetoothHostPairingController::OnPairDevicesMessage(
 void BluetoothHostPairingController::OnCompleteSetupMessage(
     const pairing_api::CompleteSetup& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (current_stage_ != STAGE_PAIRING_DONE) {
+  if (current_stage_ != STAGE_ENROLLMENT_SUCCESS) {
     AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT, kErrorInvalidProtocol);
     return;
   }
@@ -404,10 +404,10 @@ void BluetoothHostPairingController::OnEnrollmentStatusChanged(
 
   enrollment_status_ = enrollment_status;
   if (enrollment_status == ENROLLMENT_STATUS_SUCCESS) {
-      ChangeStage(STAGE_PAIRING_DONE);
+    ChangeStage(STAGE_ENROLLMENT_SUCCESS);
   } else if (enrollment_status == ENROLLMENT_STATUS_FAILURE) {
-      AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT,
-                     kErrorEnrollmentFailed);
+    AbortWithError(PAIRING_ERROR_PAIRING_OR_ENROLLMENT,
+                   kErrorEnrollmentFailed);
   }
   SendHostStatus();
 }

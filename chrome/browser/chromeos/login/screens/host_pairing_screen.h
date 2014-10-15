@@ -19,7 +19,7 @@ class HostPairingScreen :
   public HostPairingScreenActor::Delegate {
  public:
   HostPairingScreen(ScreenObserver* observer, HostPairingScreenActor* actor,
-                    pairing_chromeos::HostPairingController* controller);
+                    pairing_chromeos::HostPairingController* remora_controller);
   virtual ~HostPairingScreen();
 
  private:
@@ -52,7 +52,7 @@ class HostPairingScreen :
   HostPairingScreenActor* actor_;
 
   // Controller performing pairing. Owned by the wizard controller.
-  pairing_chromeos::HostPairingController* controller_;
+  pairing_chromeos::HostPairingController* remora_controller_;
 
   // Current stage of pairing process.
   Stage current_stage_;

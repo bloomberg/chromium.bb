@@ -16,19 +16,19 @@ using namespace pairing_chromeos;
 HostPairingScreen::HostPairingScreen(
     ScreenObserver* observer,
     HostPairingScreenActor* actor,
-    pairing_chromeos::HostPairingController* controller)
+    pairing_chromeos::HostPairingController* remora_controller)
     : WizardScreen(observer),
       actor_(actor),
-      controller_(controller),
+      remora_controller_(remora_controller),
       current_stage_(HostPairingController::STAGE_NONE) {
   actor_->SetDelegate(this);
-  controller_->AddObserver(this);
+  remora_controller_->AddObserver(this);
 }
 
 HostPairingScreen::~HostPairingScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
-  controller_->RemoveObserver(this);
+  remora_controller_->RemoveObserver(this);
 }
 
 void HostPairingScreen::CommitContextChanges() {
@@ -46,7 +46,7 @@ void HostPairingScreen::PrepareToShow() {
 void HostPairingScreen::Show() {
   if (actor_)
     actor_->Show();
-  PairingStageChanged(controller_->GetCurrentStage());
+  PairingStageChanged(remora_controller_->GetCurrentStage());
 }
 
 void HostPairingScreen::Hide() {
@@ -69,15 +69,11 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
     case HostPairingController::STAGE_WAITING_FOR_CODE_CONFIRMATION: {
       desired_page = kPageCodeConfirmation;
       context_.SetString(kContextKeyConfirmationCode,
-                         controller_->GetConfirmationCode());
-      break;
-    }
-    case HostPairingController::STAGE_PAIRING_DONE: {
-      desired_page = kPagePairingDone;
+                         remora_controller_->GetConfirmationCode());
       break;
     }
     case HostPairingController::STAGE_UPDATING: {
-      controller_->RemoveObserver(this);
+      remora_controller_->RemoveObserver(this);
       get_screen_observer()->OnExit(WizardController::HOST_PAIRING_FINISHED);
       break;
     }
@@ -85,7 +81,8 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
   }
   current_stage_ = new_stage;
-  context_.SetString(kContextKeyDeviceName, controller_->GetDeviceName());
+  context_.SetString(kContextKeyDeviceName,
+                     remora_controller_->GetDeviceName());
   context_.SetString(kContextKeyPage, desired_page);
   CommitContextChanges();
 }

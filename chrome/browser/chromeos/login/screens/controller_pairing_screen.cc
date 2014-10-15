@@ -17,20 +17,20 @@ namespace chromeos {
 ControllerPairingScreen::ControllerPairingScreen(
     ScreenObserver* observer,
     ControllerPairingScreenActor* actor,
-    ControllerPairingController* controller)
+    ControllerPairingController* shark_controller)
     : WizardScreen(observer),
       actor_(actor),
-      controller_(controller),
+      shark_controller_(shark_controller),
       current_stage_(ControllerPairingController::STAGE_NONE),
       device_preselected_(false) {
   actor_->SetDelegate(this);
-  controller_->AddObserver(this);
+  shark_controller_->AddObserver(this);
 }
 
 ControllerPairingScreen::~ControllerPairingScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
-  controller_->RemoveObserver(this);
+  shark_controller_->RemoveObserver(this);
 }
 
 void ControllerPairingScreen::CommitContextChanges() {
@@ -56,7 +56,7 @@ void ControllerPairingScreen::PrepareToShow() {
 void ControllerPairingScreen::Show() {
   if (actor_)
     actor_->Show();
-  controller_->StartPairing();
+  shark_controller_->StartPairing();
 }
 
 void ControllerPairingScreen::Hide() {
@@ -95,7 +95,7 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
     case ControllerPairingController::STAGE_WAITING_FOR_CODE_CONFIRMATION: {
       desired_page = kPageCodeConfirmation;
       context_.SetString(kContextKeyConfirmationCode,
-                         controller_->GetConfirmationCode());
+                         shark_controller_->GetConfirmationCode());
       break;
     }
     case ControllerPairingController::STAGE_HOST_UPDATE_IN_PROGRESS: {
@@ -107,7 +107,7 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
     }
     case ControllerPairingController::STAGE_WAITING_FOR_CREDENTIALS: {
-      controller_->RemoveObserver(this);
+      shark_controller_->RemoveObserver(this);
       get_screen_observer()->OnExit(
           WizardController::CONTROLLER_PAIRING_FINISHED);
       desired_page = kPageEnrollmentIntroduction;
@@ -128,7 +128,7 @@ void ControllerPairingScreen::DiscoveredDevicesListChanged() {
   if (!ExpectStageIs(ControllerPairingController::STAGE_DEVICES_DISCOVERY))
     return;
   ControllerPairingController::DeviceIdList devices =
-      controller_->GetDiscoveredDevices();
+      shark_controller_->GetDiscoveredDevices();
   std::sort(devices.begin(), devices.end());
   context_.SetStringList(kContextKeyDevices, devices);
   context_.SetString(
@@ -168,13 +168,13 @@ void ControllerPairingScreen::OnUserActed(const std::string& action) {
     if (selectedDevice.empty())
       LOG(ERROR) << "Device was not selected.";
     else
-      controller_->ChooseDeviceForPairing(selectedDevice);
+      shark_controller_->ChooseDeviceForPairing(selectedDevice);
   } else if (action == kActionRepeatDiscovery) {
-    controller_->RepeatDiscovery();
+    shark_controller_->RepeatDiscovery();
   } else if (action == kActionAcceptCode) {
-    controller_->SetConfirmationCodeIsCorrect(true);
+    shark_controller_->SetConfirmationCodeIsCorrect(true);
   } else if (action == kActionRejectCode) {
-    controller_->SetConfirmationCodeIsCorrect(false);
+    shark_controller_->SetConfirmationCodeIsCorrect(false);
   } else if (action == kActionProceedToAuthentication) {
     context_.SetString(kContextKeyPage, kPageAuthentication);
     disable_controls = false;
@@ -184,7 +184,7 @@ void ControllerPairingScreen::OnUserActed(const std::string& action) {
     const std::string domain(gaia::ExtractDomainName(account_id));
     context_.SetString(kContextKeyEnrollmentDomain, domain);
   } else if (action == kActionStartSession) {
-    controller_->StartSession();
+    shark_controller_->StartSession();
   }
   context_.SetBoolean(kContextKeyControlsDisabled, disable_controls);
   CommitContextChanges();
