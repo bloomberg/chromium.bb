@@ -288,6 +288,21 @@ class DeviceUtilsEnableRootTest(DeviceUtilsOldImplTest):
         self.device.EnableRoot()
 
 
+class DeviceUtilsIsUserBuildTest(DeviceUtilsOldImplTest):
+
+  def testIsUserBuild_yes(self):
+    with self.assertCalls(
+        'adb -s 0123456789abcdef shell getprop ro.build.type',
+        'user\r\n'):
+      self.assertTrue(self.device.IsUserBuild())
+
+  def testIsUserBuild_no(self):
+    with self.assertCalls(
+        'adb -s 0123456789abcdef shell getprop ro.build.type',
+        'userdebug\r\n'):
+      self.assertFalse(self.device.IsUserBuild())
+
+
 class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsOldImplTest):
 
   def testGetExternalStoragePath_succeeds(self):
@@ -896,12 +911,12 @@ class DeviceUtilsPushChangedFilesIndividuallyTest(DeviceUtilsNewImplTest):
         '/test/host/path/file2', '/test/device/path/file2')
 
 
+@mock.patch('pylib.device.commands.install_commands.Installed', new=None)
+@mock.patch('pylib.device.commands.install_commands.InstallCommands', new=None)
 class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
 
   def setUp(self):
     super(DeviceUtilsPushChangedFilesZippedTest, self).setUp()
-    self.original_install_commands = self.device._InstallCommands
-    self.device._InstallCommands = mock.Mock()
 
   def testPushChangedFilesZipped_empty(self):
     test_files = []

@@ -436,6 +436,7 @@
           },
           'dependencies': [
             '<(DEPTH)/build/android/setup.gyp:get_build_device_configurations',
+            '<(DEPTH)/build/android/pylib/device/commands/commands.gyp:chromium_commands',
           ],
           'actions': [
             {

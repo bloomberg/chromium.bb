@@ -25,6 +25,7 @@
       'toolsets': ['target'],
       'dependencies': [
         '../../../base/base.gyp:base',
+        '../../../build/android/pylib/device/commands/commands.gyp:chromium_commands',
         '../common/common.gyp:android_tools_common',
       ],
       'include_dirs': [

@@ -8,6 +8,7 @@ Eventually, this will be based on adb_wrapper.
 """
 # pylint: disable=W0613
 
+import logging
 import multiprocessing
 import os
 import pipes
@@ -83,7 +84,7 @@ class DeviceUtils(object):
       self.old_interface = pylib.android_commands.AndroidCommands()
     else:
       raise ValueError('Unsupported type passed for argument "device"')
-    self._commands_installed = False
+    self._commands_installed = None
     self._default_timeout = default_timeout
     self._default_retries = default_retries
     assert(hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR))
@@ -143,6 +144,24 @@ class DeviceUtils(object):
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
           'Could not enable root.', device=str(self))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def IsUserBuild(self, timeout=None, retries=None):
+    """Checks whether or not the device is running a user build.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      True if the device is running a user build, False otherwise (i.e. if
+        it's running a userdebug build).
+
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    return self._GetPropImpl('ro.build.type') == 'user'
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetExternalStoragePath(self, timeout=None, retries=None):
@@ -528,9 +547,12 @@ class DeviceUtils(object):
         len(host_device_tuples), dir_file_count, dir_size, False)
     zip_duration = self._ApproximateDuration(1, 1, size, True)
 
-    if dir_push_duration < push_duration and dir_push_duration < zip_duration:
+    self._InstallCommands()
+
+    if dir_push_duration < push_duration and (
+        dir_push_duration < zip_duration or not self._commands_installed):
       self._PushChangedFilesIndividually(host_device_tuples)
-    elif push_duration < zip_duration:
+    elif push_duration < zip_duration or not self._commands_installed:
       self._PushChangedFilesIndividually(files)
     else:
       self._PushChangedFilesZipped(files)
@@ -571,6 +593,16 @@ class DeviceUtils(object):
             or device_tuple_dict[device_abs_path] != host_hash):
           to_push.append((host_abs_path, device_abs_path))
       return to_push
+
+  def _InstallCommands(self):
+    if self._commands_installed is None:
+      try:
+        if not install_commands.Installed(self):
+          install_commands.InstallCommands(self)
+        self._commands_installed = True
+      except Exception as e:
+        logging.warning('unzip not available: %s' % str(e))
+        self._commands_installed = False
 
   @staticmethod
   def _ApproximateDuration(adb_calls, file_count, byte_count, is_zipping):
@@ -613,8 +645,6 @@ class DeviceUtils(object):
     if not files:
       return
 
-    self._InstallCommands()
-
     with tempfile.NamedTemporaryFile(suffix='.zip') as zip_file:
       zip_proc = multiprocessing.Process(
           target=DeviceUtils._CreateDeviceZip,
@@ -634,11 +664,6 @@ class DeviceUtils(object):
           zip_proc.terminate()
         if self._IsOnlineImpl():
           self._RunShellCommandImpl(['rm', zip_on_device])
-
-  def _InstallCommands(self):
-    if not self._commands_installed and not install_commands.Installed(self):
-      install_commands.InstallCommands(self)
-      self._commands_installed = True
 
   @staticmethod
   def _CreateDeviceZip(zip_path, host_device_tuples):
@@ -831,6 +856,9 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
     """
+    return self._GetPropImpl(property_name)
+
+  def _GetPropImpl(self, property_name):
     return self.old_interface.system_properties[property_name]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
