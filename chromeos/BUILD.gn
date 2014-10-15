@@ -14,9 +14,9 @@ gypi_values = exec_script(
 
 component("chromeos") {
   configs += [
-    "//build/config/linux:dbus",
     "//net/third_party/nss/ssl:ssl_config",
   ]
+  public_deps = [ "//dbus" ]
   deps = [
     "//base",
     "//base:prefs",
@@ -25,7 +25,6 @@ component("chromeos") {
     "//components/policy/proto",
     "//components/onc",
     "//crypto",
-    "//dbus",
     "//google_apis",
     "//net/third_party/nss/ssl:libssl",
     "//third_party/icu",
