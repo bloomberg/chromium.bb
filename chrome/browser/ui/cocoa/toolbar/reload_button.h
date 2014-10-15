@@ -7,16 +7,20 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/image_button_cell.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
+#import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
+#import "chrome/browser/ui/cocoa/menu_button.h"
 
 // ToolbarButton subclass which defers certain state changes when the mouse
 // is hovering over it.
 
-@interface ReloadButton : ToolbarButton<ImageButton> {
+class CommandUpdater;
+
+@interface ReloadButton : MenuButton<ImageButton> {
  @private
   // Timer used when setting reload mode while the mouse is hovered.
   NSTimer* pendingReloadTimer_;
+  base::scoped_nsobject<NSMenu> menu_;
+  CommandUpdater* commandUpdater_; // weak, set by toolbar controller.
 }
 
 // Update the tag, and the image and tooltip to match.  If |anInt|
@@ -31,6 +35,11 @@
 // button, or until |pendingReloadTimer_| fires.  This prevents an
 // inadvertent click _just_ as the state changes.
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
+
+// Changes whether reload button shows menu.
+- (void)setMenuEnabled:(BOOL)enabled;
+
+- (void)setCommandUpdater:(CommandUpdater*)commandUpdater;
 
 @end
 
