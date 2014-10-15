@@ -125,9 +125,8 @@ cr.define('options', function() {
     decorate: function() {
       Grid.prototype.decorate.call(this);
       this.dataModel = new ArrayDataModel([]);
-      this.itemConstructor =
-          /** @type {function(new:cr.ui.ListItem, Object)} */(
-              UserImagesGridItem);
+      this.itemConstructor = /** @type {function(new:cr.ui.ListItem, *)} */(
+          UserImagesGridItem);
       this.selectionModel = new ListSingleSelectionModel();
       this.inProgramSelection_ = false;
       this.addEventListener('dblclick', this.handleDblClick_.bind(this));
