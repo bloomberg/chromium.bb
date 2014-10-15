@@ -54881,12 +54881,14 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaVideoCaptureManagerTime" separator=".">
-  <suffix name="OnEnumerateDevicesTime"
-      label="Measures the time taken for OnEnumerateDevices()."/>
-  <suffix name="OnOpenTime" label="Measures the time taken for OnOpen()."/>
-  <suffix name="OnCloseTime" label="Measures the time taken for OnClose()."/>
-  <suffix name="OnStartTime" label="Measures the time taken for OnStart()."/>
-  <suffix name="OnStopTime" label="Measures the time taken for OnStop()."/>
+  <suffix name="StartDeviceTime"
+      label="Measures the time taken for DoStartDeviceOnDeviceThread()."/>
+  <suffix name="StopDeviceTime"
+      label="Measures the time taken for DoStopDeviceOnDeviceThread()."/>
+  <suffix name="GetAvailableDevicesInfoOnDeviceThreadTime"
+      label="Measures the time taken to enumerate devices and their
+             capabilities, between EnumerateDevices() and
+             OnDevicesInfoEnumerated()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
 </histogram_suffixes>
 
