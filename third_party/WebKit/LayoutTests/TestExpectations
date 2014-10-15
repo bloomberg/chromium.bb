@@ -933,10 +933,6 @@ crbug.com/366185 inspector/split-view.html [ Slow Crash ]
 
 crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
-crbug.com/409503 fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ NeedsRebaseline ]
-crbug.com/409503 fast/forms/suggestion-picker/datetimelocal-suggestion-picker-key-operations.html [ NeedsRebaseline ]
-crbug.com/409503 fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ NeedsRebaseline ]
-crbug.com/409503 fast/forms/suggestion-picker/time-suggestion-picker-key-operations.html [ NeedsRebaseline ]
 
 # Old multicol tests that currently have no baseline in the virtual test suite
 # for the new multicol implementation.
