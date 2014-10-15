@@ -84,10 +84,15 @@ enum ThreadAffinity {
     MainThreadOnly,
 };
 
+// FIXME: These forward declarations violate dependency rules. Remove them.
+// Ideally we want to provide a USED_IN_MAIN_THREAD_ONLY(T) macro, which
+// indicates that classes in T's hierarchy are used only by the main thread.
 class Node;
-class CSSValue;
+class NodeList;
 
-template<typename T, bool derivesNode = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, Node>::value> struct DefaultThreadingTrait;
+template<typename T,
+    bool mainThreadOnly = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, Node>::value
+        || WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, NodeList>::value> struct DefaultThreadingTrait;
 
 template<typename T>
 struct DefaultThreadingTrait<T, false> {
