@@ -1433,10 +1433,15 @@ void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
 }
 
 void SigninScreenHandler::HandleGetTouchViewState() {
+#if defined(USE_ATHENA)
+  // Login UI should treat athena builds as if it's TouchView mode.
+  CallJS("login.AccountPickerScreen.setTouchViewState", true);
+#else
   if (max_mode_delegate_) {
     CallJS("login.AccountPickerScreen.setTouchViewState",
            max_mode_delegate_->IsMaximizeModeEnabled());
   }
+#endif
 }
 
 void SigninScreenHandler::HandleSwitchToEmbeddedSignin() {
