@@ -200,3 +200,15 @@ message ListKeysReply {
   }
   repeated string labels = 1;
 }
+
+message GetLoginStatusRequest {
+}
+
+message GetLoginStatusReply {
+  extend BaseReply {
+    optional GetLoginStatusReply reply = 1005;
+  }
+  optional bool owner_user_exists=1;
+  optional bool boot_lockbox_finalized=2;
+}
+
