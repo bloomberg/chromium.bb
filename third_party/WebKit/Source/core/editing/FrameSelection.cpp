@@ -1715,7 +1715,16 @@ String FrameSelection::selectedTextForClipboard() const
     return selectedText();
 }
 
-FloatRect FrameSelection::bounds() const
+LayoutRect FrameSelection::bounds() const
+{
+    FrameView* view = m_frame->view();
+    if (!view)
+        return LayoutRect();
+
+    return intersection(unclippedBounds(), view->visibleContentRect());
+}
+
+LayoutRect FrameSelection::unclippedBounds() const
 {
     m_frame->document()->updateRenderTreeIfNeeded();
 
@@ -1723,10 +1732,9 @@ FloatRect FrameSelection::bounds() const
     RenderView* renderView = m_frame->contentRenderer();
 
     if (!view || !renderView)
-        return FloatRect();
+        return LayoutRect();
 
-    LayoutRect selectionRect = renderView->selectionBounds();
-    return selectionRect;
+    return renderView->selectionBounds();
 }
 
 static inline HTMLFormElement* associatedFormElement(HTMLElement& element)
@@ -1787,7 +1795,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         rect = absoluteCaretBounds();
         break;
     case RangeSelection:
-        rect = revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(bounds());
+        rect = revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(unclippedBounds());
         break;
     }
 

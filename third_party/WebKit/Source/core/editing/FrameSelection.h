@@ -201,7 +201,9 @@ public:
     String selectedText() const;
     String selectedTextForClipboard() const;
 
-    FloatRect bounds() const;
+    // The bounds are clipped to the viewport as this is what callers expect.
+    LayoutRect bounds() const;
+    LayoutRect unclippedBounds() const;
 
     HTMLFormElement* currentForm() const;
 
