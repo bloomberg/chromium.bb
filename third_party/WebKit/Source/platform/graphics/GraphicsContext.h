@@ -82,20 +82,8 @@ public:
 
     ~GraphicsContext();
 
-    // Returns the canvas used for painting. Must not be called if painting is disabled.
-    // Accessing the backing canvas this way flushes all queued save ops,
-    // so it should be avoided. Use the corresponding draw/matrix/clip methods instead.
-    SkCanvas* canvas()
-    {
-        // Flush any pending saves.
-        realizeCanvasSave();
-
-        return m_canvas;
-    }
-    const SkCanvas* canvas() const
-    {
-        return m_canvas;
-    }
+    SkCanvas* canvas() { return m_canvas; }
+    const SkCanvas* canvas() const { return m_canvas; }
 
     void resetCanvas(SkCanvas*);
 
@@ -104,8 +92,9 @@ public:
     // ---------- State management methods -----------------
     void save();
     void restore();
-    unsigned saveCount() { return m_canvasStateStack.size(); }
+
 #if ENABLE(ASSERT)
+    unsigned saveCount() const;
     void disableDestructionChecks() { m_disableDestructionChecks = true; }
 #endif
 
@@ -478,17 +467,6 @@ private:
         }
     }
 
-    // Apply deferred canvas state saves
-    void realizeCanvasSave()
-    {
-        if (!m_pendingCanvasSave || contextDisabled())
-            return;
-
-        ASSERT(m_canvas); // m_pendingCanvasSave should never be true when no canvas.
-        m_canvas->save();
-        m_pendingCanvasSave = false;
-    }
-
     void didDrawTextInRect(const SkRect& textRect);
 
     void fillRectWithRoundedHole(const IntRect&, const RoundedRect& roundedHoleRect, const Color&);
@@ -506,13 +484,6 @@ private:
     unsigned m_paintStateIndex;
     // Raw pointer to the current state.
     GraphicsContextState* m_paintState;
-
-    // Currently pending save flags for Skia Canvas state.
-    // Canvas state includes the canavs, it's matrix and clips. Think of it as _where_
-    // the draw operations will happen.
-    struct CanvasSaveState;
-    Vector<CanvasSaveState> m_canvasStateStack;
-    bool m_pendingCanvasSave;
 
     AnnotationModeFlags m_annotationMode;
 

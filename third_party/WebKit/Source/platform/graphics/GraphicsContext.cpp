@@ -61,14 +61,6 @@
 
 namespace blink {
 
-struct GraphicsContext::CanvasSaveState {
-    CanvasSaveState(bool pendingSave, int count)
-        : m_pendingSave(pendingSave), m_restoreCount(count) { }
-
-    bool m_pendingSave;
-    int m_restoreCount;
-};
-
 struct GraphicsContext::RecordingState {
     RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix, bool currentShouldSmoothFonts,
         PassRefPtr<DisplayList> displayList, RegionTrackingMode trackingMode)
@@ -93,7 +85,6 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
     : m_canvas(canvas)
     , m_paintStateStack()
     , m_paintStateIndex(0)
-    , m_pendingCanvasSave(false)
     , m_annotationMode(0)
 #if ENABLE(ASSERT)
     , m_annotationCount(0)
@@ -125,7 +116,7 @@ GraphicsContext::~GraphicsContext()
         ASSERT(!m_annotationCount);
         ASSERT(!m_layerCount);
         ASSERT(m_recordingStateStack.isEmpty());
-        ASSERT(m_canvasStateStack.isEmpty());
+        ASSERT(!saveCount());
     }
 #endif
 }
@@ -152,10 +143,8 @@ void GraphicsContext::save()
 
     m_paintState->incrementSaveCount();
 
-    if (m_canvas) {
-        m_canvasStateStack.append(CanvasSaveState(m_pendingCanvasSave, m_canvas->getSaveCount()));
-        m_pendingCanvasSave = true;
-    }
+    ASSERT(m_canvas);
+    m_canvas->save();
 }
 
 void GraphicsContext::restore()
@@ -175,14 +164,23 @@ void GraphicsContext::restore()
         m_paintState = m_paintStateStack[m_paintStateIndex].get();
     }
 
-    if (m_canvas) {
-        ASSERT(m_canvasStateStack.size() > 0);
-        CanvasSaveState savedState = m_canvasStateStack.last();
-        m_canvasStateStack.removeLast();
-        m_pendingCanvasSave = savedState.m_pendingSave;
-        m_canvas->restoreToCount(savedState.m_restoreCount);
-    }
+    ASSERT(m_canvas);
+    m_canvas->restore();
 }
+
+#if ENABLE(ASSERT)
+unsigned GraphicsContext::saveCount() const
+{
+    // Each m_paintStateStack entry implies an additional save op
+    // (on top of its own saveCount), except for the first frame.
+    unsigned count = m_paintStateIndex;
+    ASSERT(m_paintStateStack.size() > m_paintStateIndex);
+    for (unsigned i = 0; i <= m_paintStateIndex; ++i)
+        count += m_paintStateStack[i]->saveCount();
+
+    return count;
+}
+#endif
 
 void GraphicsContext::saveLayer(const SkRect* bounds, const SkPaint* paint)
 {
@@ -190,8 +188,6 @@ void GraphicsContext::saveLayer(const SkRect* bounds, const SkPaint* paint)
         return;
 
     ASSERT(m_canvas);
-
-    realizeCanvasSave();
 
     m_canvas->saveLayer(bounds, paint);
     if (regionTrackingEnabled())
@@ -427,7 +423,6 @@ void GraphicsContext::setMatrix(const SkMatrix& matrix)
         return;
 
     ASSERT(m_canvas);
-    realizeCanvasSave();
 
     m_canvas->setMatrix(matrix);
 }
@@ -441,7 +436,6 @@ void GraphicsContext::concat(const SkMatrix& matrix)
         return;
 
     ASSERT(m_canvas);
-    realizeCanvasSave();
 
     m_canvas->concat(matrix);
 }
@@ -556,8 +550,6 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
         if (performClip)
             clipRect(displayList->clip());
     }
-
-    realizeCanvasSave();
 
     const FloatPoint& location = displayList->bounds().location();
     if (location.x() || location.y()) {
@@ -1583,8 +1575,6 @@ void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion
     if (contextDisabled())
         return;
 
-    realizeCanvasSave();
-
     m_canvas->clipRect(rect, op, aa == AntiAliased);
 }
 
@@ -1593,8 +1583,6 @@ void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion
     ASSERT(m_canvas);
     if (contextDisabled())
         return;
-
-    realizeCanvasSave();
 
     m_canvas->clipPath(path, op, aa == AntiAliased);
 }
@@ -1605,8 +1593,6 @@ void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegi
     if (contextDisabled())
         return;
 
-    realizeCanvasSave();
-
     m_canvas->clipRRect(rect, op, aa == AntiAliased);
 }
 
@@ -1616,7 +1602,6 @@ void GraphicsContext::beginCull(const FloatRect& rect)
     if (contextDisabled())
         return;
 
-    realizeCanvasSave();
     m_canvas->pushCull(rect);
 }
 
@@ -1626,8 +1611,6 @@ void GraphicsContext::endCull()
     if (contextDisabled())
         return;
 
-    realizeCanvasSave();
-
     m_canvas->popCull();
 }
 
@@ -1636,8 +1619,6 @@ void GraphicsContext::rotate(float angleInRadians)
     ASSERT(m_canvas);
     if (contextDisabled())
         return;
-
-    realizeCanvasSave();
 
     m_canvas->rotate(WebCoreFloatToSkScalar(angleInRadians * (180.0f / 3.14159265f)));
 }
@@ -1651,8 +1632,6 @@ void GraphicsContext::translate(float x, float y)
     if (!x && !y)
         return;
 
-    realizeCanvasSave();
-
     m_canvas->translate(WebCoreFloatToSkScalar(x), WebCoreFloatToSkScalar(y));
 }
 
@@ -1664,8 +1643,6 @@ void GraphicsContext::scale(float x, float y)
 
     if (x == 1.0f && y == 1.0f)
         return;
-
-    realizeCanvasSave();
 
     m_canvas->scale(WebCoreFloatToSkScalar(x), WebCoreFloatToSkScalar(y));
 }
