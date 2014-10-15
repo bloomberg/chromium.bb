@@ -61,7 +61,11 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::WebContentSecurityPolicyType security_policy_type,
     bool pause_on_start,
     int route_id)
-    : route_id_(route_id), name_(name), runing_(false), url_(url) {
+    : route_id_(route_id),
+      name_(name),
+      runing_(false),
+      url_(url),
+      app_cache_host_(nullptr) {
   RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::create(this);
   if (pause_on_start) {
