@@ -352,6 +352,7 @@ function DevicesView() {
   this.resultDiv_ = $('other-devices');
   this.searchText_ = '';
   this.rowHeights_ = [NB_ENTRIES_FIRST_ROW_COLUMN];
+  this.focusGrids_ = [];
   this.updateSignInState(loadTimeData.getBoolean('isUserSignedIn'));
   recordUmaEvent_(HISTOGRAM_EVENT.INITIALIZED);
 }
@@ -474,6 +475,22 @@ DevicesView.prototype.displayResults_ = function() {
 
   this.resultDiv_.appendChild(
       createElementWithClassName('div', 'other-devices-bottom'));
+
+  this.focusGrids_.forEach(function(grid) { grid.destroy(); });
+  this.focusGrids_.length = 0;
+
+  var singleColumn = function(e) { return [e]; };
+
+  var devices = this.resultDiv_.querySelectorAll('.device-contents');
+  for (var i = 0; i < devices.length; ++i) {
+    var rows = devices[i].querySelectorAll('.device-tab-entry, button');
+    if (!rows.length)
+      continue;
+
+    var grid = new cr.ui.FocusGrid(devices[i]);
+    grid.setGrid(Array.prototype.map.call(rows, singleColumn));
+    this.focusGrids_.push(grid);
+  }
 };
 
 /**
