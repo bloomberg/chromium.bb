@@ -43,6 +43,7 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 #include "wtf/Vector.h"
 
 using namespace WTF;
@@ -356,15 +357,15 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
 const EventListenerVector& EventTarget::getEventListeners(const AtomicString& eventType)
 {
-    DEFINE_STATIC_LOCAL(EventListenerVector, emptyVector, ());
+    AtomicallyInitializedStatic(EventListenerVector*, emptyVector = new EventListenerVector);
 
     EventTargetData* d = eventTargetData();
     if (!d)
-        return emptyVector;
+        return *emptyVector;
 
     EventListenerVector* listenerVector = d->eventListenerMap.find(eventType);
     if (!listenerVector)
-        return emptyVector;
+        return *emptyVector;
 
     return *listenerVector;
 }
