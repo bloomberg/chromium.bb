@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/auto_keep_alive.h"
 #include "chrome/grit/chromium_strings.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
@@ -148,10 +150,16 @@ void UserManagerView::Init(Profile* guest_profile, const GURL& url) {
           guest_profile->GetPath()),
       views::HWNDForWidget(GetWidget()));
 #endif
-  GetWidget()->Show();
 
   web_view_->LoadInitialURL(url);
+  content::RenderWidgetHostView* rwhv =
+      web_view_->GetWebContents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetBackgroundColor(profiles::kUserManagerBackgroundColor);
+
   web_view_->RequestFocus();
+
+  GetWidget()->Show();
 }
 
 bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {

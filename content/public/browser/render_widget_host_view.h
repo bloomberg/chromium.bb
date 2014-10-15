@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
@@ -104,9 +105,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Returns the currently selected text.
   virtual base::string16 GetSelectedText() const = 0;
 
-  // Subclasses should override this method to do what is appropriate to set
-  // the background to be transparent or opaque.
-  virtual void SetBackgroundOpaque(bool opaque) = 0;
+  // Subclasses should override this method to set the background color. |color|
+  // could be transparent or opaque.
+  virtual void SetBackgroundColor(SkColor color) = 0;
+  // Convenience method to fill the background layer with the default color by
+  // calling |SetBackgroundColor|.
+  virtual void SetBackgroundColorToDefault() = 0;
   virtual bool GetBackgroundOpaque() = 0;
 
   // Return value indicates whether the mouse is locked successfully or not.
