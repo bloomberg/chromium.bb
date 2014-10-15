@@ -35,26 +35,26 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
       scoped_ptr<internal::DiscardableMemoryMach> memory(
           new internal::DiscardableMemoryMach(size));
       if (!memory->Initialize())
-        return scoped_ptr<DiscardableMemory>();
+        return nullptr;
 
-      return memory.PassAs<DiscardableMemory>();
+      return memory.Pass();
     }
     case DISCARDABLE_MEMORY_TYPE_EMULATED: {
       scoped_ptr<internal::DiscardableMemoryEmulated> memory(
           new internal::DiscardableMemoryEmulated(size));
       if (!memory->Initialize())
-        return scoped_ptr<DiscardableMemory>();
+        return nullptr;
 
-      return memory.PassAs<DiscardableMemory>();
+      return memory.Pass();
     }
     case DISCARDABLE_MEMORY_TYPE_NONE:
     case DISCARDABLE_MEMORY_TYPE_ASHMEM:
       NOTREACHED();
-      return scoped_ptr<DiscardableMemory>();
+      return nullptr;
   }
 
   NOTREACHED();
-  return scoped_ptr<DiscardableMemory>();
+  return nullptr;
 }
 
 // static

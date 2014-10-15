@@ -524,7 +524,7 @@ scoped_ptr<Value> SystemMemoryInfoKB::ToValue() const {
   res->SetInteger("gem_size", gem_size);
 #endif
 
-  return res.PassAs<Value>();
+  return res.Pass();
 }
 
 // exposed for testing
@@ -731,7 +731,7 @@ scoped_ptr<Value> SystemDiskInfo::ToValue() const {
   res->SetDouble("io_time", static_cast<double>(io_time));
   res->SetDouble("weighted_io_time", static_cast<double>(weighted_io_time));
 
-  return res.PassAs<Value>();
+  return res.Pass();
 }
 
 bool IsValidDiskName(const std::string& candidate) {
@@ -856,7 +856,7 @@ scoped_ptr<Value> SwapInfo::ToValue() const {
   else
     res->SetDouble("compression_ratio", 0);
 
-  return res.PassAs<Value>();
+  return res.Pass();
 }
 
 void GetSwapInfo(SwapInfo* swap_info) {

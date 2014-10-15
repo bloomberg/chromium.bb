@@ -388,7 +388,7 @@ TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file,
                         message_loop_.message_loop_proxy().get(),
-                        intercepting_pref_filter.PassAs<PrefFilter>());
+                        intercepting_pref_filter.Pass());
 
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE,
             pref_store->ReadPrefs());
@@ -435,7 +435,7 @@ TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(input_file,
                         message_loop_.message_loop_proxy().get(),
-                        intercepting_pref_filter.PassAs<PrefFilter>());
+                        intercepting_pref_filter.Pass());
 
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);

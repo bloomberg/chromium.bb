@@ -222,7 +222,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
       TraceBufferChunk* chunk = chunks_[chunk_index];
       cloned_buffer->chunks_.push_back(chunk ? chunk->Clone().release() : NULL);
     }
-    return cloned_buffer.PassAs<TraceBuffer>();
+    return cloned_buffer.Pass();
   }
 
  private:

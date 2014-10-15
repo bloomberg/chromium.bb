@@ -40,7 +40,7 @@ scoped_ptr<Value> SystemMetrics::ToValue() const {
   res->Set("swapinfo", swap_info_.ToValue().release());
 #endif
 
-  return res.PassAs<Value>();
+  return res.Pass();
 }
 
 double ProcessMetrics::GetPlatformIndependentCPUUsage() {

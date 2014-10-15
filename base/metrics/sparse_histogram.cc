@@ -57,7 +57,7 @@ scoped_ptr<HistogramSamples> SparseHistogram::SnapshotSamples() const {
 
   base::AutoLock auto_lock(lock_);
   snapshot->Add(samples_);
-  return snapshot.PassAs<HistogramSamples>();
+  return snapshot.Pass();
 }
 
 void SparseHistogram::AddSamples(const HistogramSamples& samples) {

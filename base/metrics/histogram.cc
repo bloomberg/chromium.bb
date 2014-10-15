@@ -268,7 +268,7 @@ void Histogram::Add(int value) {
 }
 
 scoped_ptr<HistogramSamples> Histogram::SnapshotSamples() const {
-  return SnapshotSampleVector().PassAs<HistogramSamples>();
+  return SnapshotSampleVector().Pass();
 }
 
 void Histogram::AddSamples(const HistogramSamples& samples) {
@@ -369,7 +369,7 @@ HistogramBase* Histogram::DeserializeInfoImpl(PickleIterator* iter) {
 scoped_ptr<SampleVector> Histogram::SnapshotSampleVector() const {
   scoped_ptr<SampleVector> samples(new SampleVector(bucket_ranges()));
   samples->Add(*samples_);
-  return samples.Pass();
+  return samples;
 }
 
 void Histogram::WriteAsciiImpl(bool graph_it,
