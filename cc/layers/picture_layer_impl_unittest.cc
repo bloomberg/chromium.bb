@@ -1092,7 +1092,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), low_res_factor);
   EXPECT_BOTH_EQ(num_tilings(), 2u);
 
-  // Page scale animation, new high res, but not new low res because animating.
+  // Page scale animation, new high res, but no low res. We still have
+  // a tiling at the previous scale, it's just not marked as low res.
   contents_scale = 2.f;
   page_scale = 2.f;
   maximum_animation_scale = 2.f;
@@ -1103,7 +1104,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
                                maximum_animation_scale,
                                animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
-  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), low_res_factor);
+  EXPECT_FALSE(active_layer_->LowResTiling());
+  EXPECT_FALSE(pending_layer_->LowResTiling());
   EXPECT_BOTH_EQ(num_tilings(), 3u);
 
   // Stop animating, new low res gets created for final page scale.

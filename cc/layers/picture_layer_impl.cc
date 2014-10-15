@@ -901,15 +901,12 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   PictureLayerTiling* high_res = nullptr;
   PictureLayerTiling* low_res = nullptr;
 
-  PictureLayerTiling* previous_low_res = nullptr;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
     if (tiling->contents_scale() == raster_contents_scale_)
       high_res = tiling;
     if (tiling->contents_scale() == low_res_raster_contents_scale_)
       low_res = tiling;
-    if (tiling->resolution() == LOW_RESOLUTION)
-      previous_low_res = tiling;
 
     // Reset all tilings to non-ideal until the end of this function.
     tiling->set_resolution(NON_IDEAL_RESOLUTION);
@@ -931,8 +928,6 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
     low_res = AddTiling(low_res_raster_contents_scale_);
 
   // Set low-res if we have one.
-  if (!low_res)
-    low_res = previous_low_res;
   if (low_res && low_res != high_res)
     low_res->set_resolution(LOW_RESOLUTION);
 
