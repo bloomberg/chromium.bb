@@ -108,6 +108,9 @@ class CaptureScreenshotTest : public RendererOverridesHandlerTest {
 // Does not link on Android
 #if defined(OS_ANDROID)
 #define MAYBE_CaptureScreenshot DISABLED_CaptureScreenshot
+#elif defined(MEMORY_SANITIZER)
+// Also fails under MSAN. http://crbug.com/423583
+#define MAYBE_CaptureScreenshot DISABLED_CaptureScreenshot
 #else
 #define MAYBE_CaptureScreenshot CaptureScreenshot
 #endif
