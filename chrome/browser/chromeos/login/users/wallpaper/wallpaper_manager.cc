@@ -1439,6 +1439,13 @@ void WallpaperManager::LoadWallpaper(const std::string& user_id,
                                      const WallpaperInfo& info,
                                      bool update_wallpaper,
                                      MovableOnDestroyCallbackHolder on_finish) {
+#if defined(USE_ATHENA)
+  // For Athena builds ignore all wallpaper load requests for now since they
+  // might result in crash (there's no ash::Shell instance).
+  // http://crbug.com/408734
+  return;
+#endif
+
   base::FilePath wallpaper_dir;
   base::FilePath wallpaper_path;
 
