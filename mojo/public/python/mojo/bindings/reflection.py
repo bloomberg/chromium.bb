@@ -116,6 +116,9 @@ class MojoStructType(type):
       return result
     dictionary['Deserialize'] = classmethod(Deserialize)
 
+    dictionary['__eq__'] = _StructEq(fields)
+    dictionary['__ne__'] = _StructNe
+
     return type.__new__(mcs, name, bases, dictionary)
 
   # Prevent adding new attributes, or mutating constants.
@@ -161,3 +164,16 @@ def _BuildProperty(field):
     self._fields[field.name] = field.field_type.Convert(value)
 
   return property(Get, Set)
+
+def _StructEq(fields):
+  def _Eq(self, other):
+    if type(self) is not type(other):
+      return False
+    for field in fields:
+      if getattr(self, field.name) != getattr(other, field.name):
+        return False
+    return True
+  return _Eq
+
+def _StructNe(self, other):
+  return not self.__eq__(other)

@@ -67,7 +67,7 @@ class StructBindingsTest(unittest.TestCase):
 
     defaults_test1 = sample_service_mojom.DefaultsTest()
     defaults_test2 = sample_service_mojom.DefaultsTest()
-    self.assertNotEquals(defaults_test1.a22, defaults_test2.a22)
+    self.assertIsNot(defaults_test1.a22, defaults_test2.a22)
 
   def testImmutableAttributeSet(self):
     foo_instance = sample_service_mojom.Foo()

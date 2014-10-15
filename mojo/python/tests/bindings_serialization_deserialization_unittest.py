@@ -5,8 +5,6 @@
 import math
 import unittest
 
-import mojo.bindings.reflection as reflection
-
 # pylint: disable=E0611,F0401
 import mojo.system
 
@@ -19,52 +17,6 @@ import sample_service_mojom
 
 def _NewHandle():
   return mojo.system.MessagePipe().handle0
-
-
-def _TestEquality(x, y):
-  if x == y:
-    return True
-
-  if type(x) != type(y):
-    print '\n%r != %r. Element are not of the same type.' % (x, y)
-    return False
-
-  if isinstance(x, float) and math.isnan(x) and math.isnan(y):
-    return True
-
-  if isinstance(x, dict):
-    if len(x) != len(y):
-      print '\n%r != %r. Dictionaries are not of the same size.' % (x, y)
-      return False
-    for xk, xv in x.iteritems():
-      if xk not in y:
-        print '\n%r != %r. Key %r is not in %r.' % (x, y, xk, y)
-        return False
-      if not _TestEquality(xv, y[xk]):
-        return False
-    return True
-
-  if hasattr(x, '__len__'):
-    if len(x) != len(y):
-      print '\n%r != %r. Iterables are not of the same size.' % (x, y)
-      return False
-    for (x1, y1) in zip(x, y):
-      if not _TestEquality(x1, y1):
-        return False
-    return True
-
-  if (hasattr(x, '__metaclass__') and
-      x.__metaclass__ == reflection.MojoStructType):
-    properties = [p for p in dir(x) if not p.startswith('_')]
-    for p in properties:
-      p1 = getattr(x, p)
-      p2 = getattr(y, p)
-      if not hasattr(p1, '__call__') and not _TestEquality(p1, p2):
-        print '\n%r != %r. Not equal for property %r.' % (x, y, p)
-        return False
-    return True
-
-  return False
 
 
 def _NewBar():
@@ -108,10 +60,6 @@ def _NewFoo():
 
 class SerializationDeserializationTest(unittest.TestCase):
 
-  def testTestEquality(self):
-    self.assertFalse(_TestEquality(1, 2))
-    self.assertTrue(_TestEquality({1: 2, 2: 1}, {2: 1, 1: 2}))
-
   def testFooSerialization(self):
     (data, _) = _NewFoo().Serialize()
     self.assertTrue(len(data))
@@ -126,7 +74,7 @@ class SerializationDeserializationTest(unittest.TestCase):
     foo1 = _NewFoo()
     (data, handles) = foo1.Serialize()
     foo2 = sample_service_mojom.Foo.Deserialize(data, handles)
-    self.assertTrue(_TestEquality(foo1, foo2))
+    self.assertEquals(foo1, foo2)
 
   def testDefaultsTestSerializationDeserialization(self):
     v1 = sample_service_mojom.DefaultsTest()
@@ -137,7 +85,12 @@ class SerializationDeserializationTest(unittest.TestCase):
     v1.a22.size = sample_import2_mojom.Size()
     (data, handles) = v1.Serialize()
     v2 = sample_service_mojom.DefaultsTest.Deserialize(data, handles)
-    self.assertTrue(_TestEquality(v1, v2))
+    # NaN needs to be a special case.
+    self.assertNotEquals(v1, v2)
+    self.assertTrue(math.isnan(v2.a28))
+    self.assertTrue(math.isnan(v2.a31))
+    v1.a28 = v2.a28 = v1.a31 = v2.a31 = 0
+    self.assertEquals(v1, v2)
 
   def testFooDeserializationError(self):
     with self.assertRaises(Exception):
