@@ -44,7 +44,7 @@ SVGCursorElement::~SVGCursorElement()
 {
     // The below teardown is all handled by weak pointer processing in oilpan.
 #if !ENABLE(OILPAN)
-    for (auto& client : m_clients)
+    for (const auto& client : m_clients)
         client->cursorElementRemoved();
 #endif
 }
@@ -98,7 +98,7 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::InvalidationGuard invalidationGuard(this);
 
     // Any change of a cursor specific attribute triggers this recalc.
-    for (auto& client : m_clients)
+    for (const auto& client : m_clients)
         client->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
 }
 
