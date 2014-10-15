@@ -51,6 +51,8 @@ class CC_EXPORT PicturePile : public PicturePileBase {
     is_suitable_for_gpu_rasterization_ = false;
   }
 
+  void SetPixelRecordDistanceForTesting(int d) { pixel_record_distance_ = d; }
+
  protected:
   virtual ~PicturePile();
 
@@ -60,6 +62,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   void DetermineIfSolidColor();
 
   bool is_suitable_for_gpu_rasterization_;
+  int pixel_record_distance_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
 };

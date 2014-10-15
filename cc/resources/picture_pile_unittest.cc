@@ -99,6 +99,82 @@ class PicturePileTest : public PicturePileTestBase, public testing::Test {
   virtual void SetUp() override { InitializeData(); }
 };
 
+TEST_F(PicturePileTest, InvalidationOnTileBorderOutsideInterestRect) {
+  // Don't expand the interest rect past what we invalidate.
+  pile_->SetPixelRecordDistanceForTesting(0);
+
+  gfx::Size tile_size(100, 100);
+  pile_->tiling().SetMaxTextureSize(tile_size);
+
+  gfx::Size pile_size(400, 400);
+  SetTilingSize(pile_size);
+
+  // We have multiple tiles.
+  EXPECT_GT(pile_->tiling().num_tiles_x(), 2);
+  EXPECT_GT(pile_->tiling().num_tiles_y(), 2);
+
+  // Record everything.
+  Region invalidation(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation, tiling_size(), tiling_rect());
+
+  // +----------+-----------------+-----------+
+  // |          |     VVVV     1,0|           |
+  // |          |     VVVV        |           |
+  // |          |     VVVV        |           |
+  // |       ...|.................|...        |
+  // |       ...|.................|...        |
+  // +----------+-----------------+-----------+
+  // |       ...|                 |...        |
+  // |       ...|                 |...        |
+  // |       ...|                 |...        |
+  // |       ...|                 |...        |
+  // |       ...|              1,1|...        |
+  // +----------+-----------------+-----------+
+  // |       ...|.................|...        |
+  // |       ...|.................|...        |
+  // +----------+-----------------+-----------+
+  //
+  // .. = border pixels for tile 1,1
+  // VV = interest rect (what we will record)
+  //
+  // The first invalidation is inside VV, so it does not touch border pixels of
+  // tile 1,1.
+  //
+  // The second invalidation goes below VV into the .. border pixels of 1,1.
+
+  // This is the VV interest rect which will be entirely inside 1,0 and not
+  // touch the border of 1,1.
+  gfx::Rect interest_rect(
+      pile_->tiling().TilePositionX(1) + pile_->tiling().border_texels(),
+      0,
+      10,
+      pile_->tiling().TileSizeY(0) - pile_->tiling().border_texels());
+
+  // Invalidate tile 1,0 only. This is a rect that avoids the borders of any
+  // other tiles.
+  gfx::Rect invalidate_tile = interest_rect;
+  // This should cause the tile 1,0 to be invalidated and re-recorded. The
+  // invalidation did not need to be expanded.
+  invalidation = invalidate_tile;
+  UpdateAndExpandInvalidation(&invalidation, tiling_size(), interest_rect);
+  EXPECT_EQ(invalidate_tile, invalidation);
+
+  // Invalidate tile 1,0 and 1,1 by invalidating something that only touches the
+  // border of 1,1 (and is inside the tile bounds of 1,0). This is a 10px wide
+  // strip from the top of the tiling onto the border pixels of tile 1,1 that
+  // avoids border pixels of any other tiles.
+  gfx::Rect invalidate_border = interest_rect;
+  invalidate_border.Inset(0, 0, 0, -1);
+  // This should cause the tile 1,0 and 1,1 to be invalidated. The 1,1 tile will
+  // not be re-recorded since it does not touch the interest rect, so the
+  // invalidation should be expanded to cover all of 1,1.
+  invalidation = invalidate_border;
+  UpdateAndExpandInvalidation(&invalidation, tiling_size(), interest_rect);
+  Region expected_invalidation = invalidate_border;
+  expected_invalidation.Union(pile_->tiling().TileBounds(1, 1));
+  EXPECT_EQ(expected_invalidation.ToString(), invalidation.ToString());
+}
+
 TEST_F(PicturePileTest, SmallInvalidateInflated) {
   // Invalidate something inside a tile.
   Region invalidate_rect(gfx::Rect(50, 50, 1, 1));

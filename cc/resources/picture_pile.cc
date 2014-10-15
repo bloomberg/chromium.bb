@@ -149,7 +149,9 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 
 namespace cc {
 
-PicturePile::PicturePile() : is_suitable_for_gpu_rasterization_(true) {
+PicturePile::PicturePile()
+    : is_suitable_for_gpu_rasterization_(true),
+      pixel_record_distance_(kPixelDistanceToRecord) {
 }
 
 PicturePile::~PicturePile() {
@@ -180,11 +182,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
   }
 
   gfx::Rect interest_rect = visible_layer_rect;
-  interest_rect.Inset(
-      -kPixelDistanceToRecord,
-      -kPixelDistanceToRecord,
-      -kPixelDistanceToRecord,
-      -kPixelDistanceToRecord);
+  interest_rect.Inset(-pixel_record_distance_, -pixel_record_distance_);
   recorded_viewport_ = interest_rect;
   recorded_viewport_.Intersect(gfx::Rect(tiling_size()));
 
@@ -385,23 +383,31 @@ bool PicturePile::UpdateAndExpandInvalidation(
     for (auto& it : picture_map_)
       updated = it.second.Invalidate(frame_number) || updated;
   } else {
-    // Expand invalidation that is outside tiles that intersect the interest
-    // rect. These tiles are no longer valid and should be considerered fully
-    // invalid, so we can know to not keep around raster tiles that intersect
-    // with these recording tiles.
+    // Expand invalidation that is on tiles that aren't in the interest rect and
+    // will not be re-recorded below. These tiles are no longer valid and should
+    // be considerered fully invalid, so we can know to not keep around raster
+    // tiles that intersect with these recording tiles.
     Region invalidation_expanded_to_full_tiles;
 
     for (Region::Iterator i(*invalidation); i.has_rect(); i.next()) {
       gfx::Rect invalid_rect = i.rect();
 
-      gfx::Rect invalid_rect_outside_interest_rect_tiles = invalid_rect;
+      // This rect covers the bounds (excluding borders) of all tiles whose
+      // bounds (including borders) touch the |interest_rect|. This matches
+      // the iteration of the |invalid_rect| below which includes borders when
+      // calling Invalidate() on pictures.
+      gfx::Rect invalid_rect_outside_interest_rect_tiles =
+          tiling_.ExpandRectToTileBounds(invalid_rect);
+      // We subtract the |interest_rect_over_tiles| which represents the bounds
+      // of tiles that will be re-recorded below. This matches the iteration of
+      // |interest_rect| below which includes borders.
       // TODO(danakj): We should have a Rect-subtract-Rect-to-2-rects operator
       // instead of using Rect::Subtract which gives you the bounding box of the
       // subtraction.
       invalid_rect_outside_interest_rect_tiles.Subtract(
           interest_rect_over_tiles);
-      invalidation_expanded_to_full_tiles.Union(tiling_.ExpandRectToTileBounds(
-          invalid_rect_outside_interest_rect_tiles));
+      invalidation_expanded_to_full_tiles.Union(
+          invalid_rect_outside_interest_rect_tiles);
 
       // Split this inflated invalidation across tile boundaries and apply it
       // to all tiles that it touches.
