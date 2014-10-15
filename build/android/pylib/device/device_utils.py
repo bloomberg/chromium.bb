@@ -879,6 +879,22 @@ class DeviceUtils(object):
     self.old_interface.system_properties[property_name] = value
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetABI(self, timeout=None, retries=None):
+    """Gets the device main ABI.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      The device's main ABI name.
+
+    Raises:
+      CommandTimeoutError on timeout.
+    """
+    return self.GetProp('ro.product.cpu.abi')
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetPids(self, process_name, timeout=None, retries=None):
     """Returns the PIDs of processes with the given name.
 
@@ -999,4 +1015,3 @@ class DeviceUtils(object):
     return parallelizer_type([
         d if isinstance(d, DeviceUtils) else DeviceUtils(d)
         for d in devices])
-

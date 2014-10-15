@@ -165,7 +165,7 @@ class PerfProfilerController(controllers.BaseController):
                                                     required_libs,
                                                     use_symlinks=False)
     perfhost_path = support_binaries.FindPath(
-        android_profiling_helper.GetPerfhostName(), 'linux')
+        android_profiling_helper.GetPerfhostName(), 'x86_64', 'linux')
 
     ui.PrintMessage('\nNote: to view the profile in perf, run:')
     ui.PrintMessage('  ' + self._GetInteractivePerfCommand(perfhost_path,
