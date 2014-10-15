@@ -83,6 +83,14 @@ template <bool Premultiplied> inline bool importPictureRGBX(const unsigned char*
     return rgbPictureImport(pixels, Premultiplied, &WebPPictureImportRGBX, &WebPPictureImportRGB, picture);
 }
 
+static bool platformPremultipliedImportPicture(const unsigned char* pixels, WebPPicture* picture)
+{
+    if (SK_B32_SHIFT) // Android
+        return importPictureRGBX<true>(pixels, picture);
+
+    return importPictureBGRX<true>(pixels, picture);
+}
+
 static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool premultiplied, int quality, Vector<unsigned char>* output)
 {
     WebPConfig config;
@@ -100,7 +108,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool pr
         return false;
     picture.height = imageSize.height();
 
-    if (premultiplied && !importPictureBGRX<true>(pixels, &picture))
+    if (premultiplied && !platformPremultipliedImportPicture(pixels, &picture))
         return false;
     if (!premultiplied && !importPictureRGBX<false>(pixels, &picture))
         return false;
