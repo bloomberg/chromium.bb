@@ -343,8 +343,7 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
                       test_data_.sync_point2_,
                       false))
       .Times(1);
-  test_layer->SetTextureMailbox(TextureMailbox(),
-                                scoped_ptr<SingleReleaseCallback>());
+  test_layer->SetTextureMailbox(TextureMailbox(), nullptr);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
@@ -360,8 +359,7 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
               Release2(test_data_.shared_memory_.get(),
                        0, false))
       .Times(1);
-  test_layer->SetTextureMailbox(TextureMailbox(),
-                                scoped_ptr<SingleReleaseCallback>());
+  test_layer->SetTextureMailbox(TextureMailbox(), nullptr);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
@@ -773,8 +771,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         EXPECT_EQ(3, callback_count_);
         // Case #4: release mailbox that was committed but never drawn. The
         // old mailbox should be released during the next commit.
-        layer_->SetTextureMailbox(TextureMailbox(),
-                                  scoped_ptr<SingleReleaseCallback>());
+        layer_->SetTextureMailbox(TextureMailbox(), nullptr);
         break;
       case 4:
         if (layer_tree_host()->settings().impl_side_painting) {
@@ -813,8 +810,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
       case 8:
         EXPECT_EQ(4, callback_count_);
         // Resetting the mailbox will call the callback now.
-        layer_->SetTextureMailbox(TextureMailbox(),
-                                  scoped_ptr<SingleReleaseCallback>());
+        layer_->SetTextureMailbox(TextureMailbox(), nullptr);
         EXPECT_EQ(5, callback_count_);
         EndTest();
         break;
@@ -975,8 +971,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetTextureMailbox(TextureMailbox(),
-                                  scoped_ptr<SingleReleaseCallbackImpl>());
+    impl_layer->SetTextureMailbox(TextureMailbox(), nullptr);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
@@ -1003,8 +998,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetTextureMailbox(TextureMailbox(),
-                                  scoped_ptr<SingleReleaseCallbackImpl>());
+    impl_layer->SetTextureMailbox(TextureMailbox(), nullptr);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
 
@@ -1072,8 +1066,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestImplLayerCallbacks) {
   // Test resetting the mailbox.
   EXPECT_CALL(test_data_.mock_callback_,
               ReleaseImpl(test_data_.mailbox_name1_, _, false, _)).Times(1);
-  pending_layer->SetTextureMailbox(TextureMailbox(),
-                                   scoped_ptr<SingleReleaseCallbackImpl>());
+  pending_layer->SetTextureMailbox(TextureMailbox(), nullptr);
   pending_layer->PushPropertiesTo(active_layer.get());
   active_layer->DidBecomeActive();
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
@@ -1103,8 +1096,7 @@ TEST_F(TextureLayerImplWithMailboxTest,
   EXPECT_TRUE(impl_layer->WillDraw(
       DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));
   impl_layer->DidDraw(host_impl_.active_tree()->resource_provider());
-  impl_layer->SetTextureMailbox(TextureMailbox(),
-                                scoped_ptr<SingleReleaseCallbackImpl>());
+  impl_layer->SetTextureMailbox(TextureMailbox(), nullptr);
 }
 
 TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {

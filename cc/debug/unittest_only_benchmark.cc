@@ -33,7 +33,7 @@ UnittestOnlyBenchmark::~UnittestOnlyBenchmark() {
 }
 
 void UnittestOnlyBenchmark::DidUpdateLayers(LayerTreeHost* host) {
-  NotifyDone(scoped_ptr<base::Value>());
+  NotifyDone(nullptr);
 }
 
 bool UnittestOnlyBenchmark::ProcessMessage(scoped_ptr<base::Value> value) {

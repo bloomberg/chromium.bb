@@ -260,7 +260,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
          ++tile_it) {
       Tile* tile = *tile_it;
       ManagedTileState::DrawInfo& draw_info = tile->draw_info();
-      draw_info.SetResourceForTesting(scoped_ptr<ScopedResource>());
+      draw_info.SetResourceForTesting(nullptr);
     }
 
     perf_test::PrintResult(

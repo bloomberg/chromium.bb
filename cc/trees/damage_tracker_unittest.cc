@@ -1105,7 +1105,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
   // CASE 3: removing the reflection should cause the entire region including
   //         reflection to damage the target surface.
   ClearDamageForAllSurfaces(root.get());
-  grand_child1->SetReplicaLayer(scoped_ptr<LayerImpl>());
+  grand_child1->SetReplicaLayer(nullptr);
   EmulateDrawingOneFrame(root.get());
   ASSERT_EQ(old_content_rect.width(),
             child1->render_surface()->content_rect().width());
@@ -1202,7 +1202,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Then test mask removal.
   ClearDamageForAllSurfaces(root.get());
-  child->SetMaskLayer(scoped_ptr<LayerImpl>());
+  child->SetMaskLayer(nullptr);
   ASSERT_TRUE(child->LayerPropertyChanged());
   EmulateDrawingOneFrame(root.get());
 
@@ -1270,7 +1270,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
   //         target surface.
   //
   ClearDamageForAllSurfaces(root.get());
-  grand_child1_replica->SetMaskLayer(scoped_ptr<LayerImpl>());
+  grand_child1_replica->SetMaskLayer(nullptr);
   EmulateDrawingOneFrame(root.get());
 
   grand_child_damage_rect =

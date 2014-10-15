@@ -202,8 +202,7 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   double start_time =
       (gfx::FrameTime::Now() - base::TimeTicks()).InMillisecondsF();
   top_controls_animation_->AddKeyframe(
-      FloatKeyframe::Create(start_time, client_->ControlsTopOffset(),
-                            scoped_ptr<TimingFunction>()));
+      FloatKeyframe::Create(start_time, client_->ControlsTopOffset(), nullptr));
   float max_ending_offset =
       (direction == SHOWING_CONTROLS ? 1 : -1) * top_controls_height_;
   top_controls_animation_->AddKeyframe(

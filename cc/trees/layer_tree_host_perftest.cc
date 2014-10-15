@@ -305,8 +305,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
   }
 
   void CleanUpAndEndTestOnMainThread() {
-    tab_contents_->SetTextureMailbox(TextureMailbox(),
-                                     scoped_ptr<SingleReleaseCallback>());
+    tab_contents_->SetTextureMailbox(TextureMailbox(), nullptr);
     EndTest();
   }
 

@@ -51,7 +51,7 @@ void TextureLayer::ClearClient() {
 }
 
 void TextureLayer::ClearTexture() {
-  SetTextureMailbox(TextureMailbox(), scoped_ptr<SingleReleaseCallback>());
+  SetTextureMailbox(TextureMailbox(), nullptr);
 }
 
 scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {

@@ -510,11 +510,9 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
 
   // Create simple Transform animation.
   TransformOperations operations;
-  curve->AddKeyframe(
-      TransformKeyframe::Create(0, operations, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(TransformKeyframe::Create(0, operations, nullptr));
   operations.AppendTranslate(delta_x, delta_y, 0);
-  curve->AddKeyframe(
-      TransformKeyframe::Create(1, operations, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(TransformKeyframe::Create(1, operations, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve.Pass(), 1, 0, Animation::Transform));
@@ -561,12 +559,10 @@ TEST(LayerAnimationControllerTest, FilterTransition) {
 
   FilterOperations start_filters;
   start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
-  curve->AddKeyframe(
-      FilterKeyframe::Create(0, start_filters, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(0, start_filters, nullptr));
   FilterOperations end_filters;
   end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
-  curve->AddKeyframe(
-      FilterKeyframe::Create(1, end_filters, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(1, end_filters, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve.Pass(), 1, 0, Animation::Filter));
@@ -610,12 +606,10 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   // Create simple Filter animation.
   FilterOperations start_filters;
   start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
-  curve->AddKeyframe(
-      FilterKeyframe::Create(0, start_filters, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(0, start_filters, nullptr));
   FilterOperations end_filters;
   end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
-  curve->AddKeyframe(
-      FilterKeyframe::Create(1, end_filters, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(1, end_filters, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve.Pass(), 1, 0, Animation::Filter));
@@ -1477,11 +1471,9 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations1;
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(0.0, operations1, nullptr));
   operations1.AppendTranslate(10.0, 15.0, 0.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(1.0, operations1, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));
@@ -1491,11 +1483,9 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations2;
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(0.0, operations2, nullptr));
   operations2.AppendScale(2.0, 3.0, 4.0);
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(1.0, operations2, nullptr));
 
   animation = Animation::Create(curve2.Pass(), 2, 2, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
@@ -1527,11 +1517,9 @@ TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   TransformOperations operations3;
   gfx::Transform transform3;
   transform3.Scale3d(1.0, 2.0, 3.0);
-  curve3->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations3, scoped_ptr<TimingFunction>()));
+  curve3->AddKeyframe(TransformKeyframe::Create(0.0, operations3, nullptr));
   operations3.AppendMatrix(transform3);
-  curve3->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations3, scoped_ptr<TimingFunction>()));
+  curve3->AddKeyframe(TransformKeyframe::Create(1.0, operations3, nullptr));
   animation = Animation::Create(curve3.Pass(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
   EXPECT_FALSE(controller_impl->TransformAnimationBoundsForBox(box, &bounds));
@@ -1799,11 +1787,9 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations1;
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(0.0, operations1, nullptr));
   operations1.AppendTranslate(10.0, 15.0, 0.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(1.0, operations1, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve1.Pass(), 2, 2, Animation::Transform));
@@ -1816,11 +1802,9 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations2;
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(0.0, operations2, nullptr));
   operations2.AppendScale(2.0, 3.0, 4.0);
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(1.0, operations2, nullptr));
 
   animation = Animation::Create(curve2.Pass(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
@@ -1853,11 +1837,9 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations1;
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(0.0, operations1, nullptr));
   operations1.AppendTranslate(10.0, 15.0, 0.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(1.0, operations1, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve1.Pass(), 2, 2, Animation::Transform));
@@ -1870,11 +1852,9 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations2;
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(0.0, operations2, nullptr));
   operations2.AppendScale(2.0, 3.0, 4.0);
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(1.0, operations2, nullptr));
 
   animation = Animation::Create(curve2.Pass(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
@@ -1902,11 +1882,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations1;
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(0.0, operations1, nullptr));
   operations1.AppendScale(2.0, 3.0, 4.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(1.0, operations1, nullptr));
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));
@@ -1919,11 +1897,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations2;
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(0.0, operations2, nullptr));
   operations2.AppendScale(6.0, 5.0, 4.0);
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations2, scoped_ptr<TimingFunction>()));
+  curve2->AddKeyframe(TransformKeyframe::Create(1.0, operations2, nullptr));
 
   animation = Animation::Create(curve2.Pass(), 2, 2, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
@@ -1935,11 +1911,9 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       KeyframedTransformAnimationCurve::Create());
 
   TransformOperations operations3;
-  curve3->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations3, scoped_ptr<TimingFunction>()));
+  curve3->AddKeyframe(TransformKeyframe::Create(0.0, operations3, nullptr));
   operations3.AppendPerspective(6.0);
-  curve3->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations3, scoped_ptr<TimingFunction>()));
+  curve3->AddKeyframe(TransformKeyframe::Create(1.0, operations3, nullptr));
 
   animation = Animation::Create(curve3.Pass(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
@@ -1965,12 +1939,10 @@ TEST(LayerAnimationControllerTest, MaximumTargetScaleWithDirection) {
       KeyframedTransformAnimationCurve::Create());
   TransformOperations operations1;
   operations1.AppendScale(1.0, 2.0, 3.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      0.0, operations1, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(0.0, operations1, nullptr));
   TransformOperations operations2;
   operations2.AppendScale(4.0, 5.0, 6.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      1.0, operations2, scoped_ptr<TimingFunction>()));
+  curve1->AddKeyframe(TransformKeyframe::Create(1.0, operations2, nullptr));
 
   scoped_ptr<Animation> animation_owned(
       Animation::Create(curve1.Pass(), 1, 1, Animation::Transform));

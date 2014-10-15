@@ -170,9 +170,8 @@ def CheckScopedPtr(input_api, output_api,
           ('%s:%d uses explicit scoped_ptr constructor. ' +
            'Use make_scoped_ptr() instead.') % (f.LocalPath(), line_number)))
       # Disallow:
-      # return scoped_ptr<T>();
-      # bar = scoped_ptr<T>();
-      if re.search(r'(=|\breturn)\s*scoped_ptr<.*?>\(\)', line):
+      # scoped_ptr<T>()
+      if re.search(r'\bscoped_ptr<.*?>\(\)', line):
         errors.append(output_api.PresubmitError(
           '%s:%d uses scoped_ptr<T>(). Use nullptr instead.' %
           (f.LocalPath(), line_number)))

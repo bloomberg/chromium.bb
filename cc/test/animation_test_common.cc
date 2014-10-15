@@ -36,8 +36,7 @@ int AddOpacityTransition(Target* target,
     func = EaseTimingFunction::Create();
   if (duration > 0.0)
     curve->AddKeyframe(FloatKeyframe::Create(0.0, start_opacity, func.Pass()));
-  curve->AddKeyframe(FloatKeyframe::Create(
-      duration, end_opacity, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FloatKeyframe::Create(duration, end_opacity, nullptr));
 
   int id = AnimationIdProvider::NextAnimationId();
 
@@ -61,12 +60,11 @@ int AddAnimatedTransform(Target* target,
       curve(KeyframedTransformAnimationCurve::Create());
 
   if (duration > 0.0) {
-    curve->AddKeyframe(TransformKeyframe::Create(
-        0.0, start_operations, scoped_ptr<TimingFunction>()));
+    curve->AddKeyframe(
+        TransformKeyframe::Create(0.0, start_operations, nullptr));
   }
 
-  curve->AddKeyframe(TransformKeyframe::Create(
-      duration, operations, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(TransformKeyframe::Create(duration, operations, nullptr));
 
   int id = AnimationIdProvider::NextAnimationId();
 
@@ -108,14 +106,12 @@ int AddAnimatedFilter(Target* target,
     FilterOperations start_filters;
     start_filters.Append(
         FilterOperation::CreateBrightnessFilter(start_brightness));
-    curve->AddKeyframe(FilterKeyframe::Create(
-        0.0, start_filters, scoped_ptr<TimingFunction>()));
+    curve->AddKeyframe(FilterKeyframe::Create(0.0, start_filters, nullptr));
   }
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBrightnessFilter(end_brightness));
-  curve->AddKeyframe(
-      FilterKeyframe::Create(duration, filters, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(duration, filters, nullptr));
 
   int id = AnimationIdProvider::NextAnimationId();
 

@@ -327,7 +327,7 @@ class LayerTreeHostImplTest : public testing::Test,
     on_can_draw_state_changed_called_ = false;
 
     // Toggle the root layer to make sure it toggles can_draw
-    host_impl_->active_tree()->SetRootLayer(scoped_ptr<LayerImpl>());
+    host_impl_->active_tree()->SetRootLayer(nullptr);
     EXPECT_FALSE(host_impl_->CanDraw());
     EXPECT_TRUE(on_can_draw_state_changed_called_);
     on_can_draw_state_changed_called_ = false;
@@ -6749,7 +6749,7 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
   scoped_ptr<LayerImpl> container =
       LayerImpl::Create(host_impl_->active_tree(), container_id);
 
-  scoped_ptr<std::set<LayerImpl*> > scroll_children(new std::set<LayerImpl*>());
+  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child.get());
   invisible_scroll->SetScrollChildren(scroll_children.release());
 
