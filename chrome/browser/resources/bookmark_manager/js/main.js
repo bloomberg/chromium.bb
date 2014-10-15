@@ -16,7 +16,7 @@
 /**
  * An array containing the BookmarkTreeNodes that were deleted in the last
  * deletion action. This is used for implementing undo.
- * @type {?{nodes: Array.<BookmarkTreeNode>, target: (EventTarget|undefined)}}
+ * @type {?{nodes: Array.<Array.<BookmarkTreeNode>>, target: EventTarget}}
  */
 var lastDeleted;
 
