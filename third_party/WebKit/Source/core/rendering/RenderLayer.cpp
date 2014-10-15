@@ -415,6 +415,39 @@ static bool checkContainingBlockChainForPagination(RenderLayerModelObject* rende
     return true;
 }
 
+// Convert a bounding box from flow thread coordinates, relative to |layer|, to visual coordinates, relative to |ancestorLayer|.
+static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const RenderLayer* layer, const RenderLayer* ancestorLayer, LayoutRect& rect)
+{
+    RenderLayer* paginationLayer = layer->enclosingPaginationLayer();
+    ASSERT(paginationLayer);
+    RenderFlowThread* flowThread = toRenderFlowThread(paginationLayer->renderer());
+
+    // First make the flow thread rectangle relative to the flow thread, not to |layer|.
+    LayoutPoint offsetWithinPaginationLayer;
+    layer->convertToLayerCoords(paginationLayer, offsetWithinPaginationLayer);
+    rect.moveBy(offsetWithinPaginationLayer);
+
+    // Then make the rectangle visual, relative to the fragmentation context. Split our box up into
+    // the actual fragment boxes that render in the columns/pages and unite those together to get
+    // our true bounding box.
+    rect = flowThread->fragmentsBoundingBox(rect);
+
+    // Finally, make the visual rectangle relative to |ancestorLayer|.
+    // FIXME: Handle nested fragmentation contexts (crbug.com/423076). For now just give up if there
+    // are different pagination layers involved.
+    if (!ancestorLayer->enclosingPaginationLayer() || ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
+        // The easy case. The ancestor layer is not within the pagination layer.
+        paginationLayer->convertToLayerCoords(ancestorLayer, rect);
+        return;
+    }
+    // The ancestor layer is also inside the pagination layer, so we need to subtract the visual
+    // distance from the ancestor layer to the pagination layer.
+    LayoutPoint offsetFromPaginationLayerToAncestor;
+    ancestorLayer->convertToLayerCoords(paginationLayer, offsetFromPaginationLayerToAncestor);
+    offsetFromPaginationLayerToAncestor = flowThread->flowThreadPointToVisualPoint(offsetFromPaginationLayerToAncestor);
+    rect.moveBy(-offsetFromPaginationLayerToAncestor);
+}
+
 bool RenderLayer::useRegionBasedColumns() const
 {
     return renderer()->document().regionBasedColumnsEnabled();
@@ -2242,16 +2275,7 @@ LayoutRect RenderLayer::fragmentsBoundingBox(const RenderLayer* ancestorLayer) c
         return physicalBoundingBox(ancestorLayer);
 
     LayoutRect result = flippedLogicalBoundingBox();
-
-    // Split our box up into the actual fragment boxes that render in the columns/pages and unite those together to
-    // get our true bounding box.
-    LayoutPoint offsetWithinPaginationLayer;
-    convertToLayerCoords(enclosingPaginationLayer(), offsetWithinPaginationLayer);
-    result.moveBy(offsetWithinPaginationLayer);
-
-    RenderFlowThread* enclosingFlowThread = toRenderFlowThread(enclosingPaginationLayer()->renderer());
-    result = enclosingFlowThread->fragmentsBoundingBox(result);
-    enclosingPaginationLayer()->convertToLayerCoords(ancestorLayer, result);
+    convertFromFlowThreadToVisualBoundingBoxInAncestor(this, ancestorLayer, result);
     return result;
 }
 
@@ -2314,42 +2338,36 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
     if (useRegionBasedColumns() && renderer()->isRenderFlowThread())
         return LayoutRect();
 
-    const bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform());
+    LayoutRect result = clipper().localClipRect();
+    if (result == PaintInfo::infiniteRect()) {
+        LayoutPoint origin;
+        result = physicalBoundingBox(ancestorLayer, &origin);
 
-    LayoutRect localClipRect = clipper().localClipRect();
-    if (localClipRect != PaintInfo::infiniteRect()) {
-        if (shouldIncludeTransform)
-            localClipRect = transform()->mapRect(localClipRect);
+        const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-        LayoutPoint delta;
-        convertToLayerCoords(ancestorLayer, delta);
-        localClipRect.moveBy(delta);
-        return localClipRect;
+        // Reflections are implemented with RenderLayers that hang off of the reflected layer. However,
+        // the reflection layer subtree does not include the subtree of the parent RenderLayer, so
+        // a recursive computation of stacking children yields no results. This breaks cases when there are stacking
+        // children of the parent, that need to be included in reflected composited bounds.
+        // Fix this by including composited bounds of stacking children of the reflected RenderLayer.
+        if (hasCompositedLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
+            expandRectForReflectionAndStackingChildren(parent(), options, result);
+        else
+            expandRectForReflectionAndStackingChildren(this, options, result);
+
+        // FIXME: We can optimize the size of the composited layers, by not enlarging
+        // filtered areas with the outsets if we know that the filter is going to render in hardware.
+        // https://bugs.webkit.org/show_bug.cgi?id=81239
+        m_renderer->style()->filterOutsets().expandRect(result);
     }
 
-    LayoutPoint origin;
-    LayoutRect result = physicalBoundingBox(ancestorLayer, &origin);
-
-    const_cast<RenderLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
-
-    // Reflections are implemented with RenderLayers that hang off of the reflected layer. However,
-    // the reflection layer subtree does not include the subtree of the parent RenderLayer, so
-    // a recursive computation of stacking children yields no results. This breaks cases when there are stacking
-    // children of the parent, that need to be included in reflected composited bounds.
-    // Fix this by including composited bounds of stacking children of the reflected RenderLayer.
-    if (hasCompositedLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
-        expandRectForReflectionAndStackingChildren(parent(), options, result);
-    else
-        expandRectForReflectionAndStackingChildren(this, options, result);
-
-    // FIXME: We can optimize the size of the composited layers, by not enlarging
-    // filtered areas with the outsets if we know that the filter is going to render in hardware.
-    // https://bugs.webkit.org/show_bug.cgi?id=81239
-    m_renderer->style()->filterOutsets().expandRect(result);
-
-    if (shouldIncludeTransform)
+    if (paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform()))
         result = transform()->mapRect(result);
 
+    if (enclosingPaginationLayer()) {
+        convertFromFlowThreadToVisualBoundingBoxInAncestor(this, ancestorLayer, result);
+        return result;
+    }
     LayoutPoint delta;
     convertToLayerCoords(ancestorLayer, delta);
     result.moveBy(delta);
