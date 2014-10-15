@@ -437,9 +437,11 @@ void PepperUDPSocketMessageFilter::SendRecvFromResult(
     int32_t result,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  resource_host()->host()->SendUnsolicitedReply(
-      resource_host()->pp_resource(),
-      PpapiPluginMsg_UDPSocket_PushRecvResult(result, data, addr));
+  if (resource_host()) {
+    resource_host()->host()->SendUnsolicitedReply(
+        resource_host()->pp_resource(),
+        PpapiPluginMsg_UDPSocket_PushRecvResult(result, data, addr));
+  }
 }
 
 void PepperUDPSocketMessageFilter::SendSendToReply(
