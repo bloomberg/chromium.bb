@@ -22,7 +22,7 @@
     <color name="tab_back">#d9d9d9</color>
     <color name="tab_back_incognito">#4d5872</color>
     <color name="accessibility_tab_switcher_list_item">#252525</color>
-    <color name="accessibility_close_undo_text">#33b5e5</color>
+    <color name="accessibility_close_undo_text">#3adaff</color>
 
     <!--  App banner colors -->
     <color name="app_banner_install_button_fg">#ffffff</color>
