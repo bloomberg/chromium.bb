@@ -14,7 +14,6 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
@@ -31,8 +30,7 @@ class RasterBufferImpl : public RasterBuffer {
         raster_resource_(resource_pool->AcquireResource(resource->size())),
         lock_(new ResourceProvider::ScopedWriteLockGpuMemoryBuffer(
             resource_provider_,
-            raster_resource_->id())),
-        buffer_(NULL) {}
+            raster_resource_->id())) {}
 
   virtual ~RasterBufferImpl() {
     // First unlock raster resource.
@@ -47,26 +45,22 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
-    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_->gpu_memory_buffer();
-    if (!gpu_memory_buffer)
-      return skia::AdoptRef(SkCreateNullCanvas());
-
-    buffer_ = gpu_memory_buffer->Map();
-    RasterWorkerPool::AcquireBitmapForBuffer(&bitmap_,
-                                             buffer_,
-                                             resource_->format(),
-                                             resource_->size(),
-                                             gpu_memory_buffer->GetStride());
-    return skia::AdoptRef(new SkCanvas(bitmap_));
-  }
-  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
+  virtual void Playback(const PicturePileImpl* picture_pile,
+                        const gfx::Rect& rect,
+                        float scale,
+                        RenderingStatsInstrumentation* stats) override {
     gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_->gpu_memory_buffer();
     if (!gpu_memory_buffer)
       return;
 
-    RasterWorkerPool::ReleaseBitmapForBuffer(
-        &bitmap_, buffer_, resource_->format());
+    RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
+                                       resource_->format(),
+                                       resource_->size(),
+                                       gpu_memory_buffer->GetStride(),
+                                       picture_pile,
+                                       rect,
+                                       scale,
+                                       stats);
     gpu_memory_buffer->Unmap();
   }
 
@@ -76,8 +70,6 @@ class RasterBufferImpl : public RasterBuffer {
   const Resource* resource_;
   scoped_ptr<ScopedResource> raster_resource_;
   scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> lock_;
-  void* buffer_;
-  SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };

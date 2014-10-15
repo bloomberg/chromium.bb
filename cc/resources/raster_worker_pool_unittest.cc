@@ -22,6 +22,7 @@
 #include "cc/resources/zero_copy_raster_worker_pool.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -51,14 +52,15 @@ class TestRasterTaskImpl : public RasterTask {
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
                      ImageDecodeTask::Vector* dependencies)
-      : RasterTask(resource, dependencies), reply_(reply) {}
+      : RasterTask(resource, dependencies),
+        reply_(reply),
+        picture_pile_(FakePicturePileImpl::CreateEmptyPile(gfx::Size(1, 1),
+                                                           gfx::Size(1, 1))) {}
 
   // Overridden from Task:
   virtual void RunOnWorkerThread() override {
-    skia::RefPtr<SkCanvas> canvas = raster_buffer_->AcquireSkCanvas();
-    DCHECK(canvas);
-    canvas->drawColor(SK_ColorWHITE);
-    raster_buffer_->ReleaseSkCanvas(canvas);
+    raster_buffer_->Playback(
+        picture_pile_.get(), gfx::Rect(0, 0, 1, 1), 1.0, NULL);
   }
 
   // Overridden from RasterizerTask:
@@ -78,6 +80,7 @@ class TestRasterTaskImpl : public RasterTask {
  private:
   const Reply reply_;
   scoped_ptr<RasterBuffer> raster_buffer_;
+  scoped_refptr<PicturePileImpl> picture_pile_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRasterTaskImpl);
 };

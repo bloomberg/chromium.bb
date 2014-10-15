@@ -6,6 +6,7 @@
 #define CC_RESOURCES_RASTER_WORKER_POOL_H_
 
 #include "cc/resources/rasterizer.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -13,6 +14,8 @@ class SequencedTaskRunner;
 }
 
 namespace cc {
+class PicturePileImpl;
+class RenderingStatsInstrumentation;
 
 class CC_EXPORT RasterWorkerPool {
  public:
@@ -61,16 +64,16 @@ class CC_EXPORT RasterWorkerPool {
       const ImageDecodeTask::Vector& decode_tasks,
       unsigned priority);
 
-  // Utility functions that transparently create a temporary bitmap and copy
-  // pixels to buffer when necessary.
-  static void AcquireBitmapForBuffer(SkBitmap* bitmap,
-                                     void* buffer,
-                                     ResourceFormat format,
-                                     const gfx::Size& size,
-                                     int stride);
-  static void ReleaseBitmapForBuffer(SkBitmap* bitmap,
-                                     void* buffer,
-                                     ResourceFormat format);
+  // Utility function that will create a temporary bitmap and copy pixels to
+  // |memory| when necessary.
+  static void PlaybackToMemory(void* memory,
+                               ResourceFormat format,
+                               const gfx::Size& size,
+                               int stride,
+                               const PicturePileImpl* picture_pile,
+                               const gfx::Rect& rect,
+                               float scale,
+                               RenderingStatsInstrumentation* stats);
 
   // Type-checking downcast routine.
   virtual Rasterizer* AsRasterizer() = 0;

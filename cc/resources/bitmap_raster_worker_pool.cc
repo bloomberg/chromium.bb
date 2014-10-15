@@ -10,6 +10,7 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/traced_value.h"
+#include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
 
@@ -23,10 +24,12 @@ class RasterBufferImpl : public RasterBuffer {
       : lock_(resource_provider, resource->id()) {}
 
   // Overridden from RasterBuffer:
-  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
-    return skia::SharePtr(lock_.sk_canvas());
+  virtual void Playback(const PicturePileImpl* picture_pile,
+                        const gfx::Rect& rect,
+                        float scale,
+                        RenderingStatsInstrumentation* stats) override {
+    picture_pile->RasterToBitmap(lock_.sk_canvas(), rect, scale, stats);
   }
-  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {}
 
  private:
   ResourceProvider::ScopedWriteLockSoftware lock_;

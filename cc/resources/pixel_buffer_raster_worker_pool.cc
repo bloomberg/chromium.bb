@@ -14,7 +14,6 @@
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace cc {
 namespace {
@@ -25,10 +24,10 @@ class RasterBufferImpl : public RasterBuffer {
                    const Resource* resource)
       : resource_provider_(resource_provider),
         resource_(resource),
-        buffer_(NULL),
+        memory_(NULL),
         stride_(0) {
     resource_provider_->AcquirePixelBuffer(resource_->id());
-    buffer_ = resource_provider_->MapPixelBuffer(resource_->id(), &stride_);
+    memory_ = resource_provider_->MapPixelBuffer(resource_->id(), &stride_);
   }
 
   virtual ~RasterBufferImpl() {
@@ -36,28 +35,28 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
-    if (!buffer_)
-      return skia::AdoptRef(SkCreateNullCanvas());
-
-    RasterWorkerPool::AcquireBitmapForBuffer(
-        &bitmap_, buffer_, resource_->format(), resource_->size(), stride_);
-    return skia::AdoptRef(new SkCanvas(bitmap_));
-  }
-  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
-    if (!buffer_)
+  virtual void Playback(const PicturePileImpl* picture_pile,
+                        const gfx::Rect& rect,
+                        float scale,
+                        RenderingStatsInstrumentation* stats) override {
+    if (!memory_)
       return;
 
-    RasterWorkerPool::ReleaseBitmapForBuffer(
-        &bitmap_, buffer_, resource_->format());
+    RasterWorkerPool::PlaybackToMemory(memory_,
+                                       resource_->format(),
+                                       resource_->size(),
+                                       stride_,
+                                       picture_pile,
+                                       rect,
+                                       scale,
+                                       stats);
   }
 
  private:
   ResourceProvider* resource_provider_;
   const Resource* resource_;
-  uint8_t* buffer_;
+  uint8_t* memory_;
   int stride_;
-  SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };

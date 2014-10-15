@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/simple_thread.h"
 #include "cc/base/scoped_ptr_deque.h"
+#include "cc/resources/picture_pile_impl.h"
 
 namespace cc {
 namespace {
@@ -195,14 +196,18 @@ void RasterWorkerPool::InsertNodesForRasterTask(
 }
 
 // static
-void RasterWorkerPool::AcquireBitmapForBuffer(SkBitmap* bitmap,
-                                              void* buffer,
-                                              ResourceFormat buffer_format,
-                                              const gfx::Size& size,
-                                              int stride) {
-  switch (buffer_format) {
+void RasterWorkerPool::PlaybackToMemory(void* memory,
+                                        ResourceFormat format,
+                                        const gfx::Size& size,
+                                        int stride,
+                                        const PicturePileImpl* picture_pile,
+                                        const gfx::Rect& rect,
+                                        float scale,
+                                        RenderingStatsInstrumentation* stats) {
+  SkBitmap bitmap;
+  switch (format) {
     case RGBA_4444:
-      bitmap->allocN32Pixels(size.width(), size.height());
+      bitmap.allocN32Pixels(size.width(), size.height());
       break;
     case RGBA_8888:
     case BGRA_8888: {
@@ -210,7 +215,7 @@ void RasterWorkerPool::AcquireBitmapForBuffer(SkBitmap* bitmap,
           SkImageInfo::MakeN32Premul(size.width(), size.height());
       if (!stride)
         stride = info.minRowBytes();
-      bitmap->installPixels(info, buffer, stride);
+      bitmap.installPixels(info, memory, stride);
       break;
     }
     case ALPHA_8:
@@ -220,25 +225,22 @@ void RasterWorkerPool::AcquireBitmapForBuffer(SkBitmap* bitmap,
       NOTREACHED();
       break;
   }
-}
 
-// static
-void RasterWorkerPool::ReleaseBitmapForBuffer(SkBitmap* bitmap,
-                                              void* buffer,
-                                              ResourceFormat buffer_format) {
-  SkColorType buffer_color_type = ResourceFormatToSkColorType(buffer_format);
-  if (buffer_color_type != bitmap->colorType()) {
-    SkImageInfo dst_info = bitmap->info();
+  SkCanvas canvas(bitmap);
+  picture_pile->RasterToBitmap(&canvas, rect, scale, stats);
+
+  SkColorType buffer_color_type = ResourceFormatToSkColorType(format);
+  if (buffer_color_type != bitmap.colorType()) {
+    SkImageInfo dst_info = bitmap.info();
     dst_info.fColorType = buffer_color_type;
     // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
     // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
     // is fixed.
     const size_t dst_row_bytes = SkAlign4(dst_info.minRowBytes());
     DCHECK_EQ(0u, dst_row_bytes % 4);
-    bool success = bitmap->readPixels(dst_info, buffer, dst_row_bytes, 0, 0);
+    bool success = bitmap.readPixels(dst_info, memory, dst_row_bytes, 0, 0);
     DCHECK_EQ(true, success);
   }
-  bitmap->reset();
 }
 
 }  // namespace cc

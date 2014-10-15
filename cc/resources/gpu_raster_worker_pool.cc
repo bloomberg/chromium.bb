@@ -8,6 +8,7 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/output/context_provider.h"
+#include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"
@@ -17,7 +18,6 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace cc {
 namespace {
@@ -32,27 +32,24 @@ class RasterBufferImpl : public RasterBuffer {
         multi_picture_draw_(multi_picture_draw) {}
 
   // Overridden from RasterBuffer:
-  virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() override {
-    if (!lock_.sk_surface())
-      return skia::AdoptRef(SkCreateNullCanvas());
-
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(recorder_.beginRecording(
-        resource_->size().width(), resource_->size().height()));
-
-    // Balanced with restore() call in ReleaseSkCanvas. save()/restore() calls
-    // are needed to ensure that canvas returns to its previous state after use.
-    canvas->save();
-    return canvas;
-  }
-  virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) override {
+  virtual void Playback(const PicturePileImpl* picture_pile,
+                        const gfx::Rect& rect,
+                        float scale,
+                        RenderingStatsInstrumentation* stats) override {
     if (!lock_.sk_surface())
       return;
 
-    // Balanced with save() call in AcquireSkCanvas.
+    SkPictureRecorder recorder;
+    gfx::Size size = resource_->size();
+    skia::RefPtr<SkCanvas> canvas =
+        skia::SharePtr(recorder.beginRecording(size.width(), size.height()));
+
+    canvas->save();
+    picture_pile->RasterToBitmap(canvas.get(), rect, scale, stats);
     canvas->restore();
 
     // Add the canvas and recorded picture to |multi_picture_draw_|.
-    skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder_.endRecording());
+    skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
     multi_picture_draw_->add(lock_.sk_surface()->getCanvas(), picture.get());
   }
 
@@ -60,7 +57,6 @@ class RasterBufferImpl : public RasterBuffer {
   ResourceProvider::ScopedWriteLockGr lock_;
   const Resource* resource_;
   SkMultiPictureDraw* multi_picture_draw_;
-  SkPictureRecorder recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };

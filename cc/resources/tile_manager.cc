@@ -20,8 +20,6 @@
 #include "cc/resources/raster_buffer.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/tile.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -114,9 +112,6 @@ class RasterTaskImpl : public RasterTask {
     devtools_instrumentation::ScopedLayerTask layer_task(
         devtools_instrumentation::kRasterTask, layer_id_);
 
-    skia::RefPtr<SkCanvas> canvas = raster_buffer_->AcquireSkCanvas();
-    DCHECK(canvas);
-
     base::TimeDelta prev_rasterize_time =
         rendering_stats_->impl_thread_rendering_stats().rasterize_time;
 
@@ -127,8 +122,9 @@ class RasterTaskImpl : public RasterTask {
     RenderingStatsInstrumentation* stats =
         tile_resolution_ == HIGH_RESOLUTION ? rendering_stats_ : NULL;
     DCHECK(picture_pile);
-    picture_pile->RasterToBitmap(
-        canvas.get(), content_rect_, contents_scale_, stats);
+
+    raster_buffer_->Playback(
+        picture_pile_.get(), content_rect_, contents_scale_, stats);
 
     if (rendering_stats_->record_rendering_stats()) {
       base::TimeDelta current_rasterize_time =
@@ -140,8 +136,6 @@ class RasterTaskImpl : public RasterTask {
           100000,
           100);
     }
-
-    raster_buffer_->ReleaseSkCanvas(canvas);
   }
 
   PicturePileImpl::Analysis analysis_;
