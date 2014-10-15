@@ -41,6 +41,7 @@
  *            name: string,
  *            offlineEnabled: boolean,
  *            optionsOpenInTab: boolean,
+ *            optionsPageHref: string,
  *            optionsUrl: string,
  *            order: number,
  *            packagedApp: boolean,
