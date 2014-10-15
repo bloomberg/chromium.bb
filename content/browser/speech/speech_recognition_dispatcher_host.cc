@@ -88,6 +88,12 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
   int embedder_render_view_id = MSG_ROUTING_NONE;
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(render_process_id_, params.render_view_id);
+  if (!render_view_host) {
+    // RVH can be null if the tab was closed while continuous mode speech
+    // recognition was running. This seems to happen on mac.
+    LOG(WARNING) << "SRDH::OnStartRequest, RenderViewHost does not exist";
+    return;
+  }
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(render_view_host));
   BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
