@@ -69,14 +69,14 @@ function runTests()
     var result = '';
     runTest(results, function() {
         var table = document.getElementById('results-table');
-        assertTrue(table.rows.length == 4);
-        assertTrue(table.rows[0].cells.length == 5);
-        assertTrue(table.rows[1].cells[1].innerHTML == 'foo-1.html');
-        assertTrue(table.rows[3].cells[1].innerHTML == 'virtual/foo-3.html');
-        assertTrue(table.rows[1].cells[2].className == 'test-pass');
-        assertTrue(table.rows[1].cells[3].className == 'test-fail');
-        assertTrue(table.rows[1].cells[4].className == 'test-skip');
-        var row = table.rows[1];
+        assertTrue(table.rows.length == 5);
+        assertTrue(table.rows[2].cells.length == 5);
+        assertTrue(table.rows[2].cells[1].innerHTML == 'foo-1.html');
+        assertTrue(table.rows[4].cells[1].innerHTML == 'virtual/foo-3.html');
+        assertTrue(table.rows[2].cells[2].className == 'test-pass');
+        assertTrue(table.rows[2].cells[3].className == 'test-fail');
+        assertTrue(table.rows[2].cells[4].className == 'test-skip');
+        var row = table.rows[2];
         var dummyhref = document.createElement("a");
         dummyhref.href = 'dir1/results.html';
         assertTrue(row.cells[2].getElementsByTagName('a')[0] == dummyhref.href);
