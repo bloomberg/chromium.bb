@@ -68,25 +68,6 @@ public:
     }
     ~HTMLParserScheduler();
 
-    // Inline as this is called after every token in the parser.
-    void checkForYieldBeforeToken(PumpSession& session)
-    {
-        if (session.processedTokens > parserChunkSize || session.didSeeScript) {
-            // currentTime() can be expensive.  By delaying, we avoided calling
-            // currentTime() when constructing non-yielding PumpSessions.
-            if (!session.startTime)
-                session.startTime = currentTime();
-
-            session.processedTokens = 0;
-            session.didSeeScript = false;
-
-            double elapsedTime = currentTime() - session.startTime;
-            if (elapsedTime > parserTimeLimit)
-                session.needsYield = true;
-        }
-        ++session.processedTokens;
-    }
-
     void scheduleForResume();
     bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_continueNextChunkTimer.isActive(); }
 

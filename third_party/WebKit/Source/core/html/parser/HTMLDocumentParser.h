@@ -150,13 +150,9 @@ private:
 
     Document* contextForParsingSession();
 
-    enum SynchronousMode {
-        AllowYield,
-        ForceSynchronous,
-    };
-    bool canTakeNextToken(SynchronousMode, PumpSession&);
-    void pumpTokenizer(SynchronousMode);
-    void pumpTokenizerIfPossible(SynchronousMode);
+    bool canTakeNextToken(PumpSession&);
+    void pumpTokenizer();
+    void pumpTokenizerIfPossible();
     void constructTreeFromHTMLToken(HTMLToken&);
     void constructTreeFromCompactHTMLToken(const CompactHTMLToken&);
 

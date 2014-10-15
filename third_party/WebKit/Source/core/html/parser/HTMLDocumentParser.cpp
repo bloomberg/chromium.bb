@@ -219,11 +219,10 @@ void HTMLDocumentParser::prepareToStopParsing()
     // but we need to ensure it isn't deleted yet.
     RefPtrWillBeRawPtr<HTMLDocumentParser> protect(this);
 
-    // NOTE: This pump should only ever emit buffered character tokens,
-    // so ForceSynchronous vs. AllowYield should be meaningless.
+    // NOTE: This pump should only ever emit buffered character tokens.
     if (m_tokenizer) {
         ASSERT(!m_haveBackgroundParser);
-        pumpTokenizerIfPossible(ForceSynchronous);
+        pumpTokenizerIfPossible();
     }
 
     if (isStopped())
@@ -253,10 +252,8 @@ bool HTMLDocumentParser::processingData() const
     return isScheduledForResume() || inPumpSession() || m_haveBackgroundParser;
 }
 
-void HTMLDocumentParser::pumpTokenizerIfPossible(SynchronousMode mode)
+void HTMLDocumentParser::pumpTokenizerIfPossible()
 {
-    ASSERT(mode == ForceSynchronous);
-
     if (isStopped())
         return;
     if (isWaitingForScripts())
@@ -267,7 +264,7 @@ void HTMLDocumentParser::pumpTokenizerIfPossible(SynchronousMode mode)
         return;
     }
 
-    pumpTokenizer(mode);
+    pumpTokenizer();
 }
 
 bool HTMLDocumentParser::isScheduledForResume() const
@@ -298,17 +295,12 @@ void HTMLDocumentParser::runScriptsForPausedTreeBuilder()
         m_scriptRunner->execute(scriptElement.release(), scriptStartPosition);
 }
 
-bool HTMLDocumentParser::canTakeNextToken(SynchronousMode mode, PumpSession& session)
+bool HTMLDocumentParser::canTakeNextToken(PumpSession& session)
 {
     if (isStopped())
         return false;
 
-    ASSERT(!m_haveBackgroundParser || mode == ForceSynchronous);
-
     if (isWaitingForScripts()) {
-        if (mode == AllowYield)
-            session.didSeeScript = true;
-
         // If we don't run the script, we cannot allow the next token to be taken.
         if (session.needsYield)
             return false;
@@ -330,9 +322,6 @@ bool HTMLDocumentParser::canTakeNextToken(SynchronousMode mode, PumpSession& ses
     if (!isParsingFragment()
         && document()->frame() && document()->frame()->navigationScheduler().locationChangePending())
         return false;
-
-    if (mode == AllowYield)
-        m_parserScheduler->checkForYieldBeforeToken(session);
 
     return true;
 }
@@ -573,7 +562,7 @@ static PassRefPtr<MediaValues> createMediaValues(Document* document)
     return mediaValues;
 }
 
-void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
+void HTMLDocumentParser::pumpTokenizer()
 {
     ASSERT(!isStopped());
     ASSERT(!isScheduledForResume());
@@ -583,7 +572,6 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
 #endif
     ASSERT(m_tokenizer);
     ASSERT(m_token);
-    ASSERT(mode == ForceSynchronous);
 
     PumpSession session(m_pumpSessionNestingLevel, contextForParsingSession());
 
@@ -599,7 +587,7 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
 
     m_xssAuditor.init(document(), &m_xssAuditorDelegate);
 
-    while (canTakeNextToken(mode, session) && !session.needsYield) {
+    while (canTakeNextToken(session) && !session.needsYield) {
         if (!isParsingFragment())
             m_sourceTracker.start(m_input.current(), m_tokenizer.get(), token());
 
@@ -630,8 +618,7 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
 
     // There should only be PendingText left since the tree-builder always flushes
     // the task queue before returning. In case that ever changes, crash.
-    if (mode == ForceSynchronous)
-        m_treeBuilder->flush(FlushAlways);
+    m_treeBuilder->flush(FlushAlways);
     RELEASE_ASSERT(!isStopped());
 
     if (session.needsYield)
@@ -713,7 +700,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
     SegmentedString excludedLineNumberSource(source);
     excludedLineNumberSource.setExcludeLineNumbers();
     m_input.insertAtCurrentInsertionPoint(excludedLineNumberSource);
-    pumpTokenizerIfPossible(ForceSynchronous);
+    pumpTokenizerIfPossible();
 
     if (isWaitingForScripts()) {
         // Check the document.write() output with a separate preload scanner as
@@ -809,7 +796,7 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     // FIXME: This is gross, and we should separate the concept of synchronous parsing
     // from insert() so that only document.write() uses insert.
     ASSERT(m_isPinnedToMainThread);
-    pumpTokenizerIfPossible(ForceSynchronous);
+    pumpTokenizerIfPossible();
 
     endIfDelayed();
 }
@@ -963,7 +950,7 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
     }
 
     m_insertionPreloadScanner.clear();
-    pumpTokenizerIfPossible(ForceSynchronous);
+    pumpTokenizerIfPossible();
     endIfDelayed();
 }
 
