@@ -41,8 +41,6 @@
         'geometry/quad_f.h',
         'geometry/rect.cc',
         'geometry/rect.h',
-        'geometry/rect_base.h',
-        'geometry/rect_base_impl.h',
         'geometry/rect_conversions.cc',
         'geometry/rect_conversions.h',
         'geometry/rect_f.cc',
