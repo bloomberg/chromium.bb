@@ -287,6 +287,8 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       ManifestURL::SpecifiedHomepageURL(extension));
   extension_data->SetBoolean("optionsOpenInTab",
                              OptionsPageInfo::ShouldOpenInTab(extension));
+  extension_data->SetString("optionsPageHref",
+                            OptionsPageInfo::GetOptionsPage(extension).spec());
 
   // Add dependent extensions.
   base::ListValue* dependents_list = new base::ListValue;

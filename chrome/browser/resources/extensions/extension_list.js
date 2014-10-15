@@ -279,6 +279,10 @@ cr.define('options', function() {
         var options, optionsClickListener;
         if (extension.optionsOpenInTab) {
           options = node.querySelector('.options-link');
+          // Set an href to get the correct mouse-over appearance (link,
+          // footer) - but the actual link opening is done through chrome.send
+          // with a preventDefault().
+          options.setAttribute('href', extension.optionsPageHref);
           optionsClickListener = function() {
             chrome.send('extensionSettingsOptions', [extension.id]);
           };
