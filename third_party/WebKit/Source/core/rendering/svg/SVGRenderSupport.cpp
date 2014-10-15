@@ -39,6 +39,7 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
@@ -393,6 +394,50 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineDash(dashArray, svgStyle.strokeDashOffset()->value(lengthContext));
 }
 
+static bool shouldTransformOnTextPainting(RenderObject& renderer, AffineTransform& resourceTransform)
+{
+    // This method should only be called for RenderObjects that deal with text rendering. Cmp. RenderObject.h's is*() methods.
+    ASSERT(renderer.isSVGText() || renderer.isSVGTextPath() || renderer.isSVGInline());
+
+    // In text drawing, the scaling part of the graphics context CTM is removed, compare SVGInlineTextBox::paintTextWithShadows.
+    // So, we use that scaling factor here, too, and then push it down to pattern or gradient space
+    // in order to keep the pattern or gradient correctly scaled.
+    float scalingFactor = SVGRenderingContext::calculateScreenFontSizeScalingFactor(&renderer);
+    if (scalingFactor == 1)
+        return false;
+    resourceTransform.scale(scalingFactor);
+    return true;
+}
+
+static AffineTransform transformOnNonScalingStroke(RenderObject& renderer, const AffineTransform& resourceTransform)
+{
+    ASSERT(renderer.isSVGShape());
+    SVGGraphicsElement* element = toSVGGraphicsElement(renderer.node());
+    AffineTransform transform = element->getScreenCTM(SVGGraphicsElement::DisallowStyleUpdate);
+    transform *= resourceTransform;
+    return transform;
+}
+
+static AffineTransform computeResourceSpaceTransform(RenderObject& renderer, const SVGRenderStyle& svgStyle, RenderSVGResourceModeFlags resourceModeFlags)
+{
+    AffineTransform computedSpaceTransform;
+    if (resourceModeFlags & ApplyToTextMode) {
+        // Depending on the font scaling factor, we may need to apply an
+        // additional transform (scale-factor) to the paintserver, since text
+        // painting removes the scale factor from the context. (See
+        // SVGInlineTextBoxPainter::paintTextWithShadows.)
+        AffineTransform additionalTextTransformation;
+        if (shouldTransformOnTextPainting(renderer, additionalTextTransformation))
+            computedSpaceTransform = additionalTextTransformation;
+    }
+    if (resourceModeFlags & ApplyToStrokeMode) {
+        // Non-scaling stroke needs to reset the transform back to the host transform.
+        if (renderer.isSVGShape() && svgStyle.vectorEffect() == VE_NON_SCALING_STROKE)
+            computedSpaceTransform = transformOnNonScalingStroke(renderer, computedSpaceTransform);
+    }
+    return computedSpaceTransform;
+}
+
 bool SVGRenderSupport::updateGraphicsContext(GraphicsContextStateSaver& stateSaver, RenderStyle* style, RenderObject& renderer, unsigned resourceModeFlags)
 {
     ASSERT(style);
@@ -409,12 +454,16 @@ bool SVGRenderSupport::updateGraphicsContext(GraphicsContextStateSaver& stateSav
         return true;
     }
 
-    SVGPaintServer paintServer = SVGPaintServer::requestForRenderer(renderer, style, resourceModeFlags);
+    SVGPaintServer paintServer = SVGPaintServer::requestForRenderer(renderer, style, resourceMode);
     if (!paintServer.isValid())
         return false;
-    paintServer.apply(*context, resourceMode, &stateSaver);
 
     const SVGRenderStyle& svgStyle = style->svgStyle();
+
+    if (paintServer.isTransformDependent())
+        paintServer.prependTransform(computeResourceSpaceTransform(renderer, svgStyle, resourceModeFlags));
+
+    paintServer.apply(*context, resourceMode, &stateSaver);
 
     if (resourceMode == ApplyToFillMode) {
         context->setAlphaAsFloat(svgStyle.fillOpacity());

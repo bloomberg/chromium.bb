@@ -110,10 +110,9 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const 
     return m_patternMap.set(object, patternData.release()).storedValue->value.get();
 }
 
-SVGPaintServer RenderSVGResourcePattern::preparePaintServer(RenderObject* object, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
+SVGPaintServer RenderSVGResourcePattern::preparePaintServer(RenderObject* object)
 {
     ASSERT(object);
-    ASSERT(style);
 
     clearInvalidationMask();
 
@@ -139,10 +138,7 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(RenderObject* object
     if (!patternData)
         return SVGPaintServer::invalid();
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
-
-    AffineTransform computedPatternSpaceTransform = computeResourceSpaceTransform(object, patternData->transform, svgStyle, resourceMode);
-    patternData->pattern->setPatternSpaceTransform(computedPatternSpaceTransform);
+    patternData->pattern->setPatternSpaceTransform(patternData->transform);
 
     return SVGPaintServer(patternData->pattern);
 }

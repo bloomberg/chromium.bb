@@ -57,12 +57,15 @@ public:
     explicit SVGPaintServer(PassRefPtr<Gradient>);
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
-    static SVGPaintServer requestForRenderer(RenderObject&, RenderStyle*, RenderSVGResourceModeFlags);
+    static SVGPaintServer requestForRenderer(RenderObject&, RenderStyle*, RenderSVGResourceMode);
 
     void apply(GraphicsContext&, RenderSVGResourceMode, GraphicsContextStateSaver* = 0);
 
     static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }
     bool isValid() const { return m_color != Color::transparent; }
+
+    bool isTransformDependent() const { return m_gradient || m_pattern; }
+    void prependTransform(const AffineTransform&);
 
 private:
     RefPtr<Gradient> m_gradient;
@@ -75,7 +78,7 @@ public:
     RenderSVGResource() { }
     virtual ~RenderSVGResource() { }
 
-    virtual SVGPaintServer preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags);
+    virtual SVGPaintServer preparePaintServer(RenderObject*);
 
     virtual RenderSVGResourceType resourceType() const = 0;
 

@@ -45,10 +45,9 @@ void RenderSVGResourceGradient::removeClientFromCache(RenderObject* client, bool
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-SVGPaintServer RenderSVGResourceGradient::preparePaintServer(RenderObject* object, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
+SVGPaintServer RenderSVGResourceGradient::preparePaintServer(RenderObject* object)
 {
     ASSERT(object);
-    ASSERT(style);
 
     clearInvalidationMask();
 
@@ -97,10 +96,7 @@ SVGPaintServer RenderSVGResourceGradient::preparePaintServer(RenderObject* objec
     if (!gradientData->gradient)
         return SVGPaintServer::invalid();
 
-    const SVGRenderStyle& svgStyle = style->svgStyle();
-
-    AffineTransform computedGradientSpaceTransform = computeResourceSpaceTransform(object, gradientData->userspaceTransform, svgStyle, resourceMode);
-    gradientData->gradient->setGradientSpaceTransform(computedGradientSpaceTransform);
+    gradientData->gradient->setGradientSpaceTransform(gradientData->userspaceTransform);
 
     return SVGPaintServer(gradientData->gradient);
 }

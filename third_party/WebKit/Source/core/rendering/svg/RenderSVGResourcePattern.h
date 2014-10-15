@@ -51,7 +51,7 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
-    virtual SVGPaintServer preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags) override;
+    virtual SVGPaintServer preparePaintServer(RenderObject*) override;
 
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;

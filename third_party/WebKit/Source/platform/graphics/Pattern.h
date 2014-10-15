@@ -58,6 +58,7 @@ public:
     SkShader* shader();
 
     void setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation);
+    const AffineTransform& patternSpaceTransform() const { return m_patternSpaceTransformation; }
 
     bool isRepeatX() { return m_repeatMode & RepeatModeX; }
     bool isRepeatY() { return m_repeatMode & RepeatModeY; }

@@ -32,11 +32,9 @@ RenderSVGResourceSolidColor::~RenderSVGResourceSolidColor()
 {
 }
 
-SVGPaintServer RenderSVGResourceSolidColor::preparePaintServer(RenderObject* object, RenderStyle* style, RenderSVGResourceModeFlags resourceMode)
+SVGPaintServer RenderSVGResourceSolidColor::preparePaintServer(RenderObject* object)
 {
     ASSERT_UNUSED(object, object);
-    ASSERT_UNUSED(style, style);
-    ASSERT_UNUSED(resourceMode, resourceMode);
 
     return SVGPaintServer(m_color);
 }

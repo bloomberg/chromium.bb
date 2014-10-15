@@ -75,10 +75,18 @@ void SVGPaintServer::apply(GraphicsContext& context, RenderSVGResourceMode resou
     }
 }
 
-SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, RenderStyle* style, RenderSVGResourceModeFlags resourceModeFlags)
+void SVGPaintServer::prependTransform(const AffineTransform& transform)
+{
+    ASSERT(m_gradient || m_pattern);
+    if (m_pattern)
+        m_pattern->setPatternSpaceTransform(transform * m_pattern->patternSpaceTransform());
+    else
+        m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
+}
+
+SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, RenderStyle* style, RenderSVGResourceMode resourceMode)
 {
     ASSERT(style);
-    RenderSVGResourceMode resourceMode = static_cast<RenderSVGResourceMode>(resourceModeFlags & (ApplyToFillMode | ApplyToStrokeMode));
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
     bool hasFallback = false;
@@ -86,7 +94,7 @@ SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, Render
     if (!paintingResource)
         return invalid();
 
-    SVGPaintServer paintServer = paintingResource->preparePaintServer(&renderer, style, resourceModeFlags);
+    SVGPaintServer paintServer = paintingResource->preparePaintServer(&renderer);
     if (paintServer.isValid())
         return paintServer;
     if (hasFallback)
@@ -94,7 +102,7 @@ SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, Render
     return invalid();
 }
 
-SVGPaintServer RenderSVGResource::preparePaintServer(RenderObject*, RenderStyle*, RenderSVGResourceModeFlags)
+SVGPaintServer RenderSVGResource::preparePaintServer(RenderObject*)
 {
     ASSERT_NOT_REACHED();
     return SVGPaintServer::invalid();
