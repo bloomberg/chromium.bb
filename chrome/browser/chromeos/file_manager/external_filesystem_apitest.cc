@@ -29,6 +29,7 @@
 #include "google_apis/drive/test_util.h"
 #include "google_apis/drive/time_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
 
 // Tests for access to external file systems (as defined in
 // storage/common/fileapi/file_system_types.h) from extensions with
@@ -73,6 +74,45 @@ const char kTestFileContent[] = "This is some test content.";
 // sensitive test cases.
 const char kSecondProfileAccount[] = "profile2@test.com";
 const char kSecondProfileHash[] = "fileBrowserApiTestProfile2";
+
+class FakeSelectFileDialog : public ui::SelectFileDialog {
+ public:
+  FakeSelectFileDialog(ui::SelectFileDialog::Listener* listener,
+                       ui::SelectFilePolicy* policy)
+      : ui::SelectFileDialog(listener, policy) {}
+
+  virtual void SelectFileImpl(
+      Type type,
+      const base::string16& title,
+      const base::FilePath& default_path,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension,
+      gfx::NativeWindow owning_window,
+      void* params) override {
+    listener_->FileSelected(
+        base::FilePath("/special/drive-user/root/test_dir"), 0, NULL);
+  }
+
+  virtual bool IsRunning(gfx::NativeWindow owning_window) const override {
+    return false;
+  }
+
+  virtual void ListenerDestroyed() override {}
+
+  virtual bool HasMultipleFileTypeChoicesImpl() override { return false; }
+
+ private:
+  virtual ~FakeSelectFileDialog() {}
+};
+
+class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
+ private:
+  virtual ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
+                                       ui::SelectFilePolicy* policy) override {
+    return new FakeSelectFileDialog(listener, policy);
+  }
+};
 
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
@@ -480,6 +520,12 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   }
 
+  // FileSystemExtensionApiTestBase override.
+  virtual void TearDown() override {
+    FileSystemExtensionApiTestBase::TearDown();
+    ui::SelectFileDialog::SetFactory(NULL);
+  }
+
  protected:
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
@@ -491,8 +537,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     EXPECT_TRUE(InitializeDriveService(fake_drive_service_, &resource_ids));
 
     return new drive::DriveIntegrationService(
-        profile, NULL,
-        fake_drive_service_, "drive", test_cache_root_.path(), NULL);
+        profile, NULL, fake_drive_service_, "", test_cache_root_.path(), NULL);
   }
 
   base::ScopedTempDir test_cache_root_;
@@ -771,6 +816,15 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
       FILE_PATH_LITERAL("manifest.json"),
       "file_browser/app_file_handler",
       FLAGS_USE_FILE_HANDLER)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, RetainEntry) {
+  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory());
+  EXPECT_TRUE(RunFileSystemExtensionApiTest("file_browser/retain_entry",
+                                            FILE_PATH_LITERAL("manifest.json"),
+                                            "",
+                                            FLAGS_NONE))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,

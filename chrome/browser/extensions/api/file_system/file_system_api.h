@@ -182,16 +182,12 @@ class FileSystemRetainEntryFunction : public ChromeAsyncExtensionFunction {
 
  private:
   // Retains the file entry referenced by |entry_id| in apps::SavedFilesService.
-  // |entry_id| must refer to an entry in an isolated file system.
-  void RetainFileEntry(const std::string& entry_id);
-
-  void SetIsDirectoryOnFileThread();
-
-  // Whether the file being retained is a directory.
-  bool is_directory_;
-
-  // The path to the file to retain.
-  base::FilePath path_;
+  // |entry_id| must refer to an entry in an isolated file system.  |path| is a
+  // path of the entry.  |file_info| is base::File::Info of the entry if it can
+  // be obtained.
+  void RetainFileEntry(const std::string& entry_id,
+                       const base::FilePath& path,
+                       scoped_ptr<base::File::Info> file_info);
 };
 
 class FileSystemIsRestorableFunction : public ChromeSyncExtensionFunction {
