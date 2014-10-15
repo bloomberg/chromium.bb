@@ -247,8 +247,8 @@ def SetUpArch():
   llc_flags_map = {
       'ARM': ['-float-abi=hard', '-mattr=+neon'],
       # Once PNaCl's build of compiler-rt (libgcc.a) defines __aeabi_*
-      # functions, we can drop the following ad-hoc option.
-      'ARM_NONSFI': ['-arm-enable-aeabi-functions=0'],
+      # functions, we can drop '-arm-enable-aeabi-functions=0' option.
+      'ARM_NONSFI': ['-float-abi=hard', '-arm-enable-aeabi-functions=0'],
       # To translate x86-32 binary, we set -malign-double option so that the
       # backend's datalayout matches the datalayout for "le32" used by the
       # frontend. The le32 datalayout uses 8-byte alignment for the types i64

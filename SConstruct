@@ -683,6 +683,7 @@ nacl_glibc_skiplist.update(['%s_irt' % test for test in nacl_glibc_skiplist])
 # TODO(mseaborn): Eventually we should run all of small_tests instead of
 # this whitelist.
 nonsfi_test_whitelist = set([
+    'run_arm_float_abi_test',
     'run_clock_get_test',
     'run_dup_test',
     'run_exception_test',

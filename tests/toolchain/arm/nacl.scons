@@ -26,6 +26,10 @@ node = env.CommandTestFileDumpCheck('arm_float_abi_test.out',
                                     arm_float_abi_obj,
                                     env.File('arm_float_abi_test.c'),
                                     '-d')
+# Hard-float ABI is used on TOOLCHAIN_FEATURE_VERSION >= 9 for Non-SFI target.
+is_arm_float_abi_test_broken = (env.Bit('nonsfi_nacl')
+                                and env['TOOLCHAIN_FEATURE_VERSION'] < 9)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'nonpexe_tests', 'toolchain_tests'],
-                       'run_arm_float_abi_test')
+                       'run_arm_float_abi_test',
+                       is_broken=is_arm_float_abi_test_broken)
