@@ -40,7 +40,6 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fCompileShader = glCompileShader;
   functions->fCompressedTexImage2D = glCompressedTexImage2D;
   functions->fCopyTexSubImage2D = glCopyTexSubImage2D;
-  functions->fCopyTextureCHROMIUM = glCopyTextureCHROMIUM;
   functions->fCreateProgram = glCreateProgram;
   functions->fCreateShader = glCreateShader;
   functions->fCullFace = glCullFace;
