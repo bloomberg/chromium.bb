@@ -144,6 +144,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestMaximize) {
   ASSERT_TRUE(RunAppWindowAPITest("testMaximize")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestMinimize) {
+  ASSERT_TRUE(RunAppWindowAPITest("testMinimize")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestore) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestore")) << message_;
 }
