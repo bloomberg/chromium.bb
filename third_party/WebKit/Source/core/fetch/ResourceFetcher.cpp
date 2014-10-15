@@ -791,7 +791,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         // FIXME: isControlledByServiceWorker() always returns false on main
         // resource request, but main resource is always removed from the cache
         // as the above comment (http://crbug.com/388375).
-        if (frame() && m_documentLoader && frame()->loader().client()->isControlledByServiceWorker(*m_documentLoader)) {
+        if (isControlledByServiceWorker()) {
             ASSERT(policy == Load || policy == Reload);
             memoryCache()->remove(resource.get());
         }
@@ -955,7 +955,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // FIXME: Currently caching for a resource to be handled by Service Worker
     // is disabled (http://crbug.com/388375).
-    if (frame() && m_documentLoader && frame()->loader().client()->isControlledByServiceWorker(*m_documentLoader))
+    if (isControlledByServiceWorker())
         return Reload;
 
     // We already have a preload going for this URL.
