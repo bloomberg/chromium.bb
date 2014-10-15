@@ -71,7 +71,6 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
 #endif
 
     if (m_owner) {
-        page()->incrementSubframeCount();
         if (m_owner->isLocal())
             toHTMLFrameOwnerElement(m_owner)->setContentFrame(*this);
     } else {
@@ -100,6 +99,21 @@ void Frame::trace(Visitor* visitor)
     visitor->trace(m_host);
     visitor->trace(m_owner);
     visitor->trace(m_domWindow);
+}
+
+void Frame::detach()
+{
+    // client() should never be null because that means we somehow re-entered
+    // the frame detach code... but it is sometimes.
+    // FIXME: Understand why this is happening so we can document this insanity.
+    // http://crbug.com/371084 is a probable explanation.
+    if (!client())
+        return;
+    // After this, we must no longer talk to the client since this clears
+    // its owning reference back to our owning LocalFrame.
+    m_client->detached();
+    m_client = nullptr;
+    m_host = nullptr;
 }
 
 void Frame::detachChildren()
@@ -206,8 +220,6 @@ void Frame::disconnectOwnerElement()
     if (m_owner) {
         if (m_owner->isLocal())
             toHTMLFrameOwnerElement(m_owner)->clearContentFrame();
-        if (page())
-            page()->decrementSubframeCount();
     }
     m_owner = nullptr;
 }

@@ -86,7 +86,6 @@ namespace blink {
         void removeDestructionObserver(FrameDestructionObserver*);
 
         void willDetachFrameHost();
-        void detachFromFrameHost();
 
         virtual void disconnectOwnerElement() override;
 

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "public/web/WebFrame.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "platform/UserGestureIndicator.h"
@@ -122,6 +123,7 @@ void WebFrame::appendChild(WebFrame* child)
     }
 
     toCoreFrame(this)->tree().invalidateScopedChildCount();
+    toCoreFrame(this)->host()->incrementSubframeCount();
 }
 
 void WebFrame::removeChild(WebFrame* child)
@@ -141,6 +143,7 @@ void WebFrame::removeChild(WebFrame* child)
     child->m_previousSibling = child->m_nextSibling = 0;
 
     toCoreFrame(this)->tree().invalidateScopedChildCount();
+    toCoreFrame(this)->host()->decrementSubframeCount();
 }
 
 WebFrame* WebFrame::parent() const

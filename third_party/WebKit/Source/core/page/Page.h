@@ -134,10 +134,6 @@ public:
     bool openedByDOM() const;
     void setOpenedByDOM();
 
-    void incrementSubframeCount() { ++m_subframeCount; }
-    void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
-    int subframeCount() const { checkSubframeCountConsistency(); return m_subframeCount; }
-
     PageAnimator& animator() { return *m_animator; }
     Chrome& chrome() const { return *m_chrome; }
     AutoscrollController& autoscrollController() const { return *m_autoscrollController; }
@@ -185,12 +181,6 @@ public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);
     StorageClient& storageClient() const { return *m_storageClient; }
 
-    // Don't allow more than a certain number of frames in a page.
-    // This seems like a reasonable upper bound, and otherwise mutually
-    // recursive frameset pages can quickly bring the program to its knees
-    // with exponential growth in the number of frames.
-    static const int maxNumberOfFrames = 1000;
-
     PageVisibilityState visibilityState() const;
     void setVisibilityState(PageVisibilityState, bool);
 
@@ -227,12 +217,6 @@ protected:
 
 private:
     void initGroup();
-
-#if ENABLE(ASSERT)
-    void checkSubframeCountConsistency() const;
-#else
-    void checkSubframeCountConsistency() const { }
-#endif
 
     void setTimerAlignmentInterval(double);
 
@@ -277,7 +261,6 @@ private:
 
     UseCounter m_useCounter;
 
-    int m_subframeCount;
     bool m_openedByDOM;
 
     bool m_tabKeyCyclesThroughElements;

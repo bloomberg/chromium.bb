@@ -40,7 +40,7 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockB
 void RemoteFrame::detach()
 {
     detachChildren();
-    m_host = nullptr;
+    Frame::detach();
 }
 
 void RemoteFrame::trace(Visitor* visitor)

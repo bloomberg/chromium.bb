@@ -32,7 +32,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/heap/Handle.h"
 
@@ -77,6 +77,6 @@ void NodeRareData::finalizeGarbageCollectedObject()
 }
 
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
-COMPILE_ASSERT(Page::maxNumberOfFrames < (1 << NodeRareData::ConnectedFrameCountBits), Frame_limit_should_fit_in_rare_data_count);
+static_assert(FrameHost::maxNumberOfFrames < (1 << NodeRareData::ConnectedFrameCountBits), "Frame limit should fit in rare data count");
 
 } // namespace blink
