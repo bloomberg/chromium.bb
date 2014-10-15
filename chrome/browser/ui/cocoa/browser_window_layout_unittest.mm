@@ -21,7 +21,7 @@ class BrowserWindowLayoutTest : public testing::Test {
     [layout setFullscreenButtonFrame:NSMakeRect(575, 596, 16, 17)];
     [layout setShouldShowAvatar:YES];
     [layout setShouldUseNewAvatar:YES];
-    [layout setAvatarSize:NSMakeSize(63, 27)];
+    [layout setAvatarSize:NSMakeSize(63, 28)];
     [layout setAvatarLineWidth:1];
     [layout setHasToolbar:YES];
     [layout setToolbarHeight:32];
@@ -45,7 +45,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViews) {
 
   EXPECT_TRUE(
       NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(502, 590, 63, 27),
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(502, 589, 63, 28),
                            output.tabStripLayout.avatarFrame));
   EXPECT_EQ(70, output.tabStripLayout.leftIndent);
   EXPECT_EQ(98, output.tabStripLayout.rightIndent);
@@ -73,7 +73,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
 
   EXPECT_TRUE(
       NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 590, 63, 27),
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 589, 63, 28),
                            output.tabStripLayout.avatarFrame));
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
@@ -103,7 +103,7 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
 
   EXPECT_TRUE(
       NSEqualRects(NSMakeRect(0, 575, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 580, 63, 27),
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 579, 63, 28),
                            output.tabStripLayout.avatarFrame));
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
@@ -200,4 +200,14 @@ TEST_F(BrowserWindowLayoutTest, TestInfobarLayoutWithoutToolbarOrLocationBar) {
   chrome::LayoutOutput output = [layout computeLayout];
 
   EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 528, 600, 72), output.infoBarFrame));
+}
+
+// Tests that the avatar button is not aligned on the half pixel.
+TEST_F(BrowserWindowLayoutTest, TestAvatarButtonPixelAlignment) {
+  [layout setAvatarSize:NSMakeSize(28, 28)];
+
+  chrome::LayoutOutput output = [layout computeLayout];
+
+  EXPECT_TRUE(NSEqualRects(NSMakeRect(537, 589, 28, 28),
+                           output.tabStripLayout.avatarFrame));
 }

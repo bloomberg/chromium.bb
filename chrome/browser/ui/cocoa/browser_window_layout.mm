@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 
+#include <math.h>
 #include <string.h>
 
 #include "base/logging.h"
@@ -11,6 +12,7 @@
 
 namespace chrome {
 
+// The height of the tab strip.
 const CGFloat kTabStripHeight = 37;
 
 }  // namespace chrome
@@ -110,7 +112,7 @@ const CGFloat kLocationBarRightOffset = 35;
   parameters_.avatarSize = avatarSize;
 }
 
-- (void)setAvatarLineWidth:(BOOL)avatarLineWidth {
+- (void)setAvatarLineWidth:(CGFloat)avatarLineWidth {
   parameters_.avatarLineWidth = avatarLineWidth;
 }
 
@@ -210,8 +212,10 @@ const CGFloat kLocationBarRightOffset = 35;
       if (!NSIsEmptyRect(parameters_.fullscreenButtonFrame))
         badgeXOffset = -kLocationBarRightOffset;
 
-      // Center the button vertically on the tabstrip.
-      badgeYOffset = (chrome::kTabStripHeight - buttonHeight) / 2;
+      // Center the button, but make sure that it's pixel aligned on non-retina
+      // displays. Use trunc() instead of round() to mimic the behavior of
+      // autoresizesSubviews.
+      badgeYOffset = trunc((chrome::kTabStripHeight - buttonHeight) / 2);
     } else {
       // Actually place the badge *above* |maxY|, by +2 to miss the divider.
       badgeYOffset = 2 * parameters_.avatarLineWidth;

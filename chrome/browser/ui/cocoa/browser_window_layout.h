@@ -151,7 +151,7 @@ struct LayoutOutput {
 - (void)setShouldShowAvatar:(BOOL)shouldShowAvatar;
 - (void)setShouldUseNewAvatar:(BOOL)shouldUseNewAvatar;
 - (void)setAvatarSize:(NSSize)avatarSize;
-- (void)setAvatarLineWidth:(BOOL)avatarLineWidth;
+- (void)setAvatarLineWidth:(CGFloat)avatarLineWidth;
 
 - (void)setHasToolbar:(BOOL)hasToolbar;
 - (void)setHasLocationBar:(BOOL)hasLocationBar;
