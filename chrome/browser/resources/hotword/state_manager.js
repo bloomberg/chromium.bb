@@ -115,7 +115,7 @@ cr.define('hotword', function() {
      * @return {boolean} True if hotwording is enabled.
      */
     isEnabled: function() {
-      assert(this.hotwordStatus_);
+      assert(this.hotwordStatus_, 'No hotwording status (isEnabled)');
       return this.hotwordStatus_.enabled;
     },
 
@@ -123,7 +123,7 @@ cr.define('hotword', function() {
      * @return {boolean} True if always-on hotwording is enabled.
      */
     isAlwaysOnEnabled: function() {
-      assert(this.hotwordStatus_);
+      assert(this.hotwordStatus_, 'No hotword status (isAlwaysOnEnabled)');
       return this.hotwordStatus_.enabled &&
           this.hotwordStatus_.alwaysOnEnabled;
     },

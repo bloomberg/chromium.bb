@@ -120,7 +120,8 @@ var CommandFromPage = {
  */
 var SessionSource = {
   LAUNCHER: 'launcher',
-  NTP: 'ntp'
+  NTP: 'ntp',
+  ALWAYS: 'always'
 };
 
 /**
