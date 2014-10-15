@@ -50,7 +50,6 @@ public:
     }
 
     const String& hrefString() const { return m_href->currentValue()->value(); }
-    bool parseAttribute(const QualifiedName&, const AtomicString& value, SVGParsingError&);
 
     // JS API
     SVGAnimatedString* href() const { return m_href.get(); }

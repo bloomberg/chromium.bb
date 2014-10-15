@@ -44,9 +44,8 @@ SVGCursorElement::~SVGCursorElement()
 {
     // The below teardown is all handled by weak pointer processing in oilpan.
 #if !ENABLE(OILPAN)
-    HashSet<RawPtr<SVGElement> >::iterator end = m_clients.end();
-    for (HashSet<RawPtr<SVGElement> >::iterator it = m_clients.begin(); it != end; ++it)
-        (*it)->cursorElementRemoved();
+    for (auto& client : m_clients)
+        client->cursorElementRemoved();
 #endif
 }
 
@@ -64,21 +63,7 @@ bool SVGCursorElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
-    } else if (name == SVGNames::xAttr) {
-        m_x->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::yAttr) {
-        m_y->setBaseValueAsString(value, parseError);
-    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
-    } else if (SVGTests::parseAttribute(name, value)) {
-    } else {
-        ASSERT_NOT_REACHED();
-    }
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGCursorElement::addClient(SVGElement* element)
@@ -113,11 +98,8 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::InvalidationGuard invalidationGuard(this);
 
     // Any change of a cursor specific attribute triggers this recalc.
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = m_clients.begin();
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = m_clients.end();
-
-    for (; it != end; ++it)
-        (*it)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
+    for (auto& client : m_clients)
+        client->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
 }
 
 void SVGCursorElement::trace(Visitor* visitor)

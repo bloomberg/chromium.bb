@@ -50,7 +50,6 @@ private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
     virtual ~SVGScriptElement();
 
-    bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
     virtual void didNotifySubtreeInsertionsToDocument() override;

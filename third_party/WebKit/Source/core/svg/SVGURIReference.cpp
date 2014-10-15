@@ -105,13 +105,4 @@ void SVGURIReference::addSupportedAttributes(HashSet<QualifiedName>& supportedAt
     supportedAttributes.add(XLinkNames::hrefAttr);
 }
 
-bool SVGURIReference::parseAttribute(const QualifiedName& name, const AtomicString& value, SVGParsingError& parseError)
-{
-    if (name.matches(XLinkNames::hrefAttr)) {
-        m_href->setBaseValueAsString(value, parseError);
-        return true;
-    }
-    return false;
-}
-
 }

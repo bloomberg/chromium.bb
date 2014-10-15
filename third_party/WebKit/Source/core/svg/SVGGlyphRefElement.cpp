@@ -55,7 +55,6 @@ void SVGGlyphRefElement::parseAttributeInternal(const QualifiedName& name, const
     const CharType* end = ptr + value.length();
 
     // FIXME: We need some error handling here.
-    SVGParsingError parseError = NoError;
     if (name == SVGNames::xAttr) {
         parseNumber(ptr, end, m_x);
     } else if (name == SVGNames::yAttr) {
@@ -64,11 +63,9 @@ void SVGGlyphRefElement::parseAttributeInternal(const QualifiedName& name, const
         parseNumber(ptr, end, m_dx);
     } else if (name == SVGNames::dyAttr) {
         parseNumber(ptr, end, m_dy);
-    } else if (SVGURIReference::parseAttribute(name, value, parseError)) {
     } else {
-        SVGElement::parseAttribute(name, value);
+        parseAttributeNew(name, value);
     }
-    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGGlyphRefElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
