@@ -33,7 +33,7 @@ const int kMiniTabWidth = 64;
 const int kMiniTabWidth = 56;
 #endif
 
-#if defined(USE_AURA)
+#if defined(TOOLKIT_VIEWS)
 // Whether to show a Link Disambiguation Popup Bubble if the browser detects an
 // ambiguous touch event.
 extern const bool kShowLinkDisambiguationPopup;

@@ -18,6 +18,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/defaults.h"
 #include "ui/views/controls/textfield/textfield.h"
 #endif
 
@@ -60,6 +61,14 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 
 #if defined(TOOLKIT_VIEWS)
   prefs->caret_blink_interval = views::Textfield::GetCaretBlinkMs() / 1000.0;
+  if (browser_defaults::kShowLinkDisambiguationPopup) {
+    prefs->tap_multiple_targets_strategy =
+        content::TapMultipleTargetsStrategy::
+            TAP_MULTIPLE_TARGETS_STRATEGY_POPUP;
+  } else {
+    prefs->tap_multiple_targets_strategy =
+        content::TapMultipleTargetsStrategy::TAP_MULTIPLE_TARGETS_STRATEGY_NONE;
+  }
 #endif
 
 #if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)

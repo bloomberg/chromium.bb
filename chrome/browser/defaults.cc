@@ -16,7 +16,7 @@ const bool kCanToggleSystemTitleBar = true;
 
 const int kOmniboxFontPixelSize = 16;
 
-#if defined(USE_AURA)
+#if defined(TOOLKIT_VIEWS)
 #if defined(OS_WIN)
 const bool kShowLinkDisambiguationPopup = true;
 #else
