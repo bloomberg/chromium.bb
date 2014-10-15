@@ -53,6 +53,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=415694)
     self.Fail('conformance/glsl/misc/ternary-operators-in-initializers.html',
         ['win'], bug=415694)
+    # This test still causes itself and any tests afterwards to time out
+    # in Win Debug bots.
+    self.Skip('conformance/textures/texture-copying-feedback-loops.html',
+        ['Win'], bug=421695)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
