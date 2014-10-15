@@ -104,6 +104,15 @@ struct RemovePointer<T*> {
   typedef T type;
 };
 
+template <template <typename...> class Template, typename T>
+struct IsSpecializationOf : FalseType {};
+
+template <template <typename...> class Template, typename... Args>
+struct IsSpecializationOf<Template, Template<Args...>> : TrueType {};
+
+template <class A, class B>
+struct LogicalOr : IntegralConstant<bool, A::value || B::value> {};
+
 }  // namespace internal
 }  // namespace mojo
 

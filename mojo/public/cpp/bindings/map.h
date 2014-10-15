@@ -117,6 +117,24 @@ class Map {
     return result.Pass();
   }
 
+  bool Equals(const Map& other) const {
+    if (is_null() != other.is_null())
+      return false;
+    if (size() != other.size())
+      return false;
+    auto i = begin();
+    auto j = other.begin();
+    while (i != end()) {
+      if (i.GetKey() != j.GetKey())
+        return false;
+      if (!internal::ValueTraits<Value>::Equals(i.GetValue(), j.GetValue()))
+        return false;
+      ++i;
+      ++j;
+    }
+    return true;
+  }
+
   class ConstMapIterator {
    public:
     ConstMapIterator(

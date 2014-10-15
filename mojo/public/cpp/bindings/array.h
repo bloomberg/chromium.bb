@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -105,6 +106,18 @@ class Array {
     result.is_null_ = is_null_;
     Traits::Clone(vec_, &result.vec_);
     return result.Pass();
+  }
+
+  bool Equals(const Array& other) const {
+    if (is_null() != other.is_null())
+      return false;
+    if (size() != other.size())
+      return false;
+    for (size_t i = 0; i < size(); ++i) {
+      if (!internal::ValueTraits<T>::Equals(at(i), other.at(i)))
+        return false;
+    }
+    return true;
   }
 
  private:

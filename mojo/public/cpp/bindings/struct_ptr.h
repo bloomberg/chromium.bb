@@ -71,6 +71,12 @@ class StructPtr {
   // that it contains Mojo handles).
   StructPtr Clone() const { return is_null() ? StructPtr() : ptr_->Clone(); }
 
+  bool Equals(const StructPtr& other) const {
+    if (is_null() || other.is_null())
+      return is_null() && other.is_null();
+    return ptr_->Equals(*other.ptr_);
+  }
+
  private:
   typedef Struct* StructPtr::*Testable;
 
@@ -138,6 +144,11 @@ class InlinedStructPtr {
 
   InlinedStructPtr Clone() const {
     return is_null() ? InlinedStructPtr() : value_.Clone();
+  }
+  bool Equals(const InlinedStructPtr& other) const {
+    if (is_null() || other.is_null())
+      return is_null() && other.is_null();
+    return value_.Equals(other.value_);
   }
 
  private:
