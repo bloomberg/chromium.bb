@@ -31,12 +31,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         bug=421709)
     self.Fail('conformance/renderbuffers/feedback-loop.html',
         bug=421695)
-    # This one might be causing itself and all tests afterwards to timeout
-    # on Windows Debug.
-    self.Skip('conformance/textures/texture-copying-feedback-loops.html',
-        bug=421695)
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas.html',
-        bug=420357)
 
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
@@ -47,10 +41,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=391957)
     self.Fail('conformance/glsl/bugs/conditional-discard-in-loop.html',
         ['win'], bug=402195)
-    self.Fail('conformance/attribs/gl-bindAttribLocation-matrix.html',
-        ['win'], bug=415688)
-    self.Fail('conformance/attribs/gl-bindAttribLocation-aliasing.html',
-        ['win'], bug=415688)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas.html',
+        ['win'], bug=420357)
     self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgb565.html',
         ['win'], bug=420357)
     self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-webgl-canvas-rgba4444.html',
