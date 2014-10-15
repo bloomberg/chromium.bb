@@ -289,7 +289,9 @@ class ThreadPool(object):
       # Enqueueing None causes the worker to stop.
       self.tasks.put(None)
     for t in self._workers:
-      t.join()
+      # 'join' without timeout blocks signal handlers, spin with timeout.
+      while t.is_alive():
+        t.join(30)
     logging.debug(
       'Thread pool \'%s\' closed: spawned %d threads total',
       self._prefix, len(self._workers))
@@ -759,10 +761,17 @@ class TaskChannel(object):
       TaskChannel.Timeout: waiting longer than |timeout|.
       Whatever exception task raises.
     """
-    try:
-      item_type, value = self._queue.get(timeout=timeout)
-    except Queue.Empty:
-      raise TaskChannel.Timeout()
+    # Do not ever use timeout == None, in that case signal handlers are not
+    # being called (at least on Python 2.7, http://bugs.python.org/issue8844).
+    while True:
+      try:
+        item_type, value = self._queue.get(
+            timeout=timeout if timeout is not None else 30.0)
+        break
+      except Queue.Empty:
+        if timeout is None:
+          continue
+        raise TaskChannel.Timeout()
     if item_type == self._ITEM_RESULT:
       return value
     if item_type == self._ITEM_EXCEPTION:

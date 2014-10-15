@@ -66,7 +66,8 @@ class OptionParserWithLogging(optparse.OptionParser):
 
     logging_console = logging.StreamHandler()
     logging_console.setFormatter(logging.Formatter(
-        '%(levelname)5s %(module)15s(%(lineno)3d): %(message)s'))
+        '%(levelname)5s %(relativeCreated)6d %(module)15s(%(lineno)3d): '
+        '%(message)s'))
     logging_console.setLevel(level)
     logging.getLogger().setLevel(level)
     logging.getLogger().addHandler(logging_console)
