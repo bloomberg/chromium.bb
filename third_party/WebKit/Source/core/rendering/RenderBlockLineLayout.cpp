@@ -1166,11 +1166,16 @@ static LayoutUnit getBorderPaddingMargin(RenderBoxModelObject* child, bool endOf
 static inline void stripTrailingSpace(float& inlineMax, float& inlineMin, RenderObject* trailingSpaceChild)
 {
     if (trailingSpaceChild && trailingSpaceChild->isText()) {
+        bool useComplexCodePath = !toRenderText(trailingSpaceChild)->
+            canUseSimpleFontCodePath();
         // Collapse away the trailing space at the end of a block.
         RenderText* t = toRenderText(trailingSpaceChild);
         const UChar space = ' ';
         const Font& font = t->style()->font(); // FIXME: This ignores first-line.
-        float spaceWidth = font.width(constructTextRun(t, font, &space, 1, t->style(), LTR));
+        TextRun run = constructTextRun(t, font, &space, 1, t->style(), LTR);
+        if (useComplexCodePath)
+            run.setUseComplexCodePath(true);
+        float spaceWidth = font.width(run);
         inlineMax -= spaceWidth + font.fontDescription().wordSpacing();
         if (inlineMin > inlineMax)
             inlineMin = inlineMax;
