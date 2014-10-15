@@ -368,7 +368,7 @@ AutomationRootNodeImpl.prototype = {
     } else {
       logging.WARNING('Got ' + eventParams.eventType +
                       ' event on unknown node: ' + eventParams.targetID +
-                      '; this: ' + this.toString());
+                      '; this: ' + this.id);
     }
     return true;
   },
