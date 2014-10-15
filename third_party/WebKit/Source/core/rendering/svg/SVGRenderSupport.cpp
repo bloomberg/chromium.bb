@@ -43,7 +43,6 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -425,14 +424,6 @@ bool SVGRenderSupport::updateGraphicsContext(GraphicsContextStateSaver& stateSav
         applyStrokeStyleToContext(context, style, &renderer);
     }
     return true;
-}
-
-void SVGRenderSupport::fillOrStrokePath(GraphicsContext* context, unsigned short resourceMode, const Path& path)
-{
-    if (resourceMode & ApplyToFillMode)
-        context->fillPath(path);
-    if (resourceMode & ApplyToStrokeMode)
-        context->strokePath(path);
 }
 
 bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)

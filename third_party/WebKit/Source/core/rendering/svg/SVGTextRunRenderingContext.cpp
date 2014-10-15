@@ -24,9 +24,6 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/RenderSVGResourceSolidColor.h"
-#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGFontData.h"
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -105,8 +102,6 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
     glyphOrigin.setX(svgFontData->horizontalOriginX() * scale);
     glyphOrigin.setY(svgFontData->horizontalOriginY() * scale);
 
-    unsigned short resourceMode = context->textDrawingMode() == TextModeStroke ? ApplyToStrokeMode : ApplyToFillMode;
-
     FloatPoint currentPoint = point;
     for (int i = 0; i < numGlyphs; ++i) {
         Glyph glyph = glyphBuffer.glyphAt(from + i);
@@ -141,7 +136,10 @@ void SVGTextRunRenderingContext::drawSVGGlyphs(GraphicsContext* context, const T
         Path glyphPath = svgGlyph.pathData;
         glyphPath.transform(glyphPathTransform);
 
-        SVGRenderSupport::fillOrStrokePath(context, resourceMode, glyphPath);
+        if (context->textDrawingMode() == TextModeStroke)
+            context->strokePath(glyphPath);
+        else
+            context->fillPath(glyphPath);
 
         if (isVerticalText)
             currentPoint.move(0, advance);

@@ -90,9 +90,6 @@ public:
     // Previous state will be saved (if needed) using |stateSaver|.
     static bool updateGraphicsContext(GraphicsContextStateSaver&, RenderStyle*, RenderObject&, unsigned resourceModeFlags);
 
-    // Fill and/or stroke the provided |path|.
-    static void fillOrStrokePath(GraphicsContext*, unsigned short resourceMode, const Path&);
-
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(RenderObject*);
 
