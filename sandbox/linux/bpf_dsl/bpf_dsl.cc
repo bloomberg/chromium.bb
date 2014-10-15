@@ -326,10 +326,10 @@ BoolExpr operator||(const BoolExpr& lhs, const BoolExpr& rhs) {
 }
 
 Elser If(const BoolExpr& cond, const ResultExpr& then_result) {
-  return Elser(Cons<Elser::Clause>::List()).ElseIf(cond, then_result);
+  return Elser(nullptr).ElseIf(cond, then_result);
 }
 
-Elser::Elser(Cons<Clause>::List clause_list) : clause_list_(clause_list) {
+Elser::Elser(cons::List<Clause> clause_list) : clause_list_(clause_list) {
 }
 
 Elser::Elser(const Elser& elser) : clause_list_(elser.clause_list_) {
@@ -339,8 +339,7 @@ Elser::~Elser() {
 }
 
 Elser Elser::ElseIf(const BoolExpr& cond, const ResultExpr& then_result) const {
-  return Elser(
-      Cons<Clause>::Make(std::make_pair(cond, then_result), clause_list_));
+  return Elser(Cons(std::make_pair(cond, then_result), clause_list_));
 }
 
 ResultExpr Elser::Else(const ResultExpr& else_result) const {
@@ -367,8 +366,7 @@ ResultExpr Elser::Else(const ResultExpr& else_result) const {
   // and end up with an appropriately chained tree.
 
   ResultExpr expr = else_result;
-  for (Cons<Clause>::List it = clause_list_; it.get(); it = it->tail()) {
-    Clause clause = it->head();
+  for (const Clause& clause : clause_list_) {
     expr = ResultExpr(
         new const IfThenResultExprImpl(clause.first, clause.second, expr));
   }

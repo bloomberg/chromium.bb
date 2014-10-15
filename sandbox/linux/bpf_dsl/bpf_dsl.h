@@ -232,9 +232,9 @@ class SANDBOX_EXPORT Elser {
  private:
   typedef std::pair<BoolExpr, ResultExpr> Clause;
 
-  explicit Elser(Cons<Clause>::List clause_list);
+  explicit Elser(cons::List<Clause> clause_list);
 
-  Cons<Clause>::List clause_list_;
+  cons::List<Clause> clause_list_;
 
   friend Elser If(const BoolExpr&, const ResultExpr&);
   template <typename T>
@@ -338,7 +338,7 @@ BoolExpr Arg<T>::EqualTo(T val) const {
 
 template <typename T>
 SANDBOX_EXPORT Caser<T> Switch(const Arg<T>& arg) {
-  return Caser<T>(arg, Elser(Cons<Elser::Clause>::List()));
+  return Caser<T>(arg, Elser(nullptr));
 }
 
 template <typename T>

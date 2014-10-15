@@ -11,21 +11,20 @@
 namespace sandbox {
 namespace {
 
-std::string Join(Cons<char>::List char_list) {
+std::string Join(cons::List<char> char_list) {
   std::string res;
-  for (Cons<char>::List it = char_list; it.get(); it = it->tail()) {
-    res.push_back(it->head());
+  for (const char& ch : char_list) {
+    res.push_back(ch);
   }
   return res;
 }
 
 TEST(ConsListTest, Basic) {
-  Cons<char>::List ba =
-      Cons<char>::Make('b', Cons<char>::Make('a', Cons<char>::List()));
+  cons::List<char> ba = Cons('b', Cons('a', cons::List<char>()));
   EXPECT_EQ("ba", Join(ba));
 
-  Cons<char>::List cba = Cons<char>::Make('c', ba);
-  Cons<char>::List dba = Cons<char>::Make('d', ba);
+  cons::List<char> cba = Cons('c', ba);
+  cons::List<char> dba = Cons('d', ba);
   EXPECT_EQ("cba", Join(cba));
   EXPECT_EQ("dba", Join(dba));
 }
