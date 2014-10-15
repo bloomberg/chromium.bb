@@ -293,6 +293,15 @@ public class Tab implements NavigationClient {
         }
 
         @Override
+        public void didCommitProvisionalLoadForFrame(long frameId, boolean isMainFrame, String url,
+                int transitionType) {
+            for (TabObserver observer : mObservers) {
+                observer.onDidCommitProvisionalLoadForFrame(
+                        Tab.this, frameId, isMainFrame, url, transitionType);
+            }
+        }
+
+        @Override
         public void didChangeThemeColor(int color) {
             for (TabObserver observer : mObservers) {
                 observer.onDidChangeThemeColor(color);

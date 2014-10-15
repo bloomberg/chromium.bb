@@ -149,6 +149,20 @@ public interface TabObserver {
             boolean isErrorPage, boolean isIframeSrcdoc);
 
     /**
+     * Notifies that the provisional load was successfully committed. The RenderViewHost is now
+     * the current RenderViewHost of the WebContents.
+     *
+     * @param tab            The notifying {@link Tab}.
+     * @param frameId        A positive, non-zero integer identifying the navigating frame.
+     * @param isMainFrame    Whether the load is happening for the main frame.
+     * @param url            The committed URL being navigated to.
+     * @param transitionType The transition type as defined in
+     *                       {@link org.chromium.ui.base.PageTransitionTypes} for the load.
+     */
+    public void onDidCommitProvisionalLoadForFrame(
+            Tab tab, long frameId, boolean isMainFrame, String url, int transitionType);
+
+    /**
      * Called when the theme color is changed
      * @param color the new color in ARGB format.
      */
