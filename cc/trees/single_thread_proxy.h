@@ -7,6 +7,7 @@
 
 #include <limits>
 
+#include "base/cancelable_callback.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
 #include "cc/output/begin_frame_args.h"
@@ -130,6 +131,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   bool ShouldComposite() const;
   void UpdateBackgroundAnimateTicking();
+  void ScheduleRequestNewOutputSurface();
 
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;
@@ -152,6 +154,13 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool defer_commits_;
   bool commit_was_deferred_;
   bool commit_requested_;
+
+  // True if a request to the LayerTreeHostClient to create an output surface
+  // is still outstanding.
+  bool output_surface_creation_requested_;
+
+  // This is the callback for the scheduled RequestNewOutputSurface.
+  base::CancelableClosure output_surface_creation_callback_;
 
   base::WeakPtrFactory<SingleThreadProxy> weak_factory_;
 

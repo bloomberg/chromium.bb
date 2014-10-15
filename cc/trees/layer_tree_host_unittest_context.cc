@@ -382,6 +382,80 @@ class LayerTreeHostClientNotReadyDoesNotCreateOutputSurface
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostClientNotReadyDoesNotCreateOutputSurface);
 
+class MultipleCompositeDoesNotCreateOutputSurface
+    : public LayerTreeHostContextTest {
+ public:
+  MultipleCompositeDoesNotCreateOutputSurface()
+      : LayerTreeHostContextTest(), request_count_(0) {}
+
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->single_thread_proxy_scheduler = false;
+  }
+
+  virtual void RequestNewOutputSurface(bool fallback) override {
+    EXPECT_GE(1, ++request_count_);
+    EndTest();
+  }
+
+  virtual void BeginTest() override {
+    layer_tree_host()->Composite(base::TimeTicks());
+    layer_tree_host()->Composite(base::TimeTicks());
+  }
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(
+      bool fallback) override {
+    EXPECT_TRUE(false);
+    return nullptr;
+  }
+
+  virtual void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
+
+  virtual void AfterTest() override {}
+
+  int request_count_;
+};
+
+SINGLE_THREAD_TEST_F(MultipleCompositeDoesNotCreateOutputSurface);
+
+class FailedCreateDoesNotCreateExtraOutputSurface
+    : public LayerTreeHostContextTest {
+ public:
+  FailedCreateDoesNotCreateExtraOutputSurface()
+      : LayerTreeHostContextTest(), request_count_(0) {}
+
+  virtual void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->single_thread_proxy_scheduler = false;
+  }
+
+  virtual void RequestNewOutputSurface(bool fallback) override {
+    if (request_count_ == 0) {
+      ExpectCreateToFail();
+      layer_tree_host()->SetOutputSurface(nullptr);
+    }
+    EXPECT_GE(2, ++request_count_);
+    EndTest();
+  }
+
+  virtual void BeginTest() override {
+    layer_tree_host()->Composite(base::TimeTicks());
+    layer_tree_host()->Composite(base::TimeTicks());
+  }
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(
+      bool fallback) override {
+    EXPECT_TRUE(false);
+    return nullptr;
+  }
+
+  virtual void DidInitializeOutputSurface() override { EXPECT_TRUE(false); }
+
+  virtual void AfterTest() override {}
+
+  int request_count_;
+};
+
+SINGLE_THREAD_TEST_F(FailedCreateDoesNotCreateExtraOutputSurface);
+
 class LayerTreeHostContextTestLostContextSucceedsWithContent
     : public LayerTreeHostContextTestLostContextSucceeds {
  public:

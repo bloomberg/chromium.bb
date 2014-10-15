@@ -729,7 +729,7 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
 
   SetLayerTreeHostClientReady();
   if (output_surface_lost_) {
-    RequestNewOutputSurface();
+    proxy->RequestNewOutputSurface();
     // RequestNewOutputSurface could have synchronously created an output
     // surface, so check again before returning.
     if (output_surface_lost_)

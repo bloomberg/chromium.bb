@@ -41,6 +41,7 @@ SingleThreadProxy::SingleThreadProxy(
       defer_commits_(false),
       commit_was_deferred_(false),
       commit_requested_(false),
+      output_surface_creation_requested_(false),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(Proxy::IsMainThread());
@@ -104,6 +105,10 @@ void SingleThreadProxy::SetVisible(bool visible) {
 void SingleThreadProxy::RequestNewOutputSurface() {
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());
+  output_surface_creation_callback_.Cancel();
+  if (output_surface_creation_requested_)
+    return;
+  output_surface_creation_requested_ = true;
   layer_tree_host_->RequestNewOutputSurface();
 }
 
@@ -111,6 +116,7 @@ void SingleThreadProxy::SetOutputSurface(
     scoped_ptr<OutputSurface> output_surface) {
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());
+  output_surface_creation_requested_ = false;
   renderer_capabilities_for_main_thread_ = RendererCapabilities();
 
   bool success = !!output_surface;
@@ -128,10 +134,7 @@ void SingleThreadProxy::SetOutputSurface(
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
   } else if (Proxy::MainThreadTaskRunner()) {
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SingleThreadProxy::RequestNewOutputSurface,
-                   weak_factory_.GetWeakPtr()));
+    ScheduleRequestNewOutputSurface();
   }
 }
 
@@ -525,6 +528,17 @@ void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
       !ShouldComposite() && layer_tree_host_impl_->active_tree()->root_layer());
 }
 
+void SingleThreadProxy::ScheduleRequestNewOutputSurface() {
+  if (output_surface_creation_callback_.IsCancelled() &&
+      !output_surface_creation_requested_) {
+    output_surface_creation_callback_.Reset(
+        base::Bind(&SingleThreadProxy::RequestNewOutputSurface,
+                   weak_factory_.GetWeakPtr()));
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE, output_surface_creation_callback_.callback());
+  }
+}
+
 DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
                                           LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
@@ -733,10 +747,7 @@ void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
   // from the ThreadProxy behavior.  However, sometimes there is no
   // task runner.
   if (Proxy::MainThreadTaskRunner()) {
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SingleThreadProxy::RequestNewOutputSurface,
-                   weak_factory_.GetWeakPtr()));
+    ScheduleRequestNewOutputSurface();
   } else {
     RequestNewOutputSurface();
   }
