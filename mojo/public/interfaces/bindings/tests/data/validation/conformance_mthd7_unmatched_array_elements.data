@@ -26,6 +26,7 @@
 
 [anchr]param1_ptr
 [dist4]array_param     // num_bytes
-[u4]5                  // num_elements
-0 1 2 3 4
+[u4]2                  // num_elements
+[u8]0                  // A null pointer, which is okay.
+[u8]0                  // A null pointer, which is okay.
 [anchr]array_param

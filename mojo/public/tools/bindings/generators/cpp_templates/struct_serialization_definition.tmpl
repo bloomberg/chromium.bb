@@ -15,7 +15,7 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
         internal::{{struct.name}}_Data::New(buf);
 {%- for pf in struct.packed.packed_fields %}
 {%-   if pf.field.kind|is_object_kind %}
-{%-     if pf.field.kind|is_any_array_kind %}
+{%-     if pf.field.kind|is_array_kind %}
     mojo::SerializeArray_<{{pf.field.kind|get_array_validate_params|indent(26)}}>(
         mojo::internal::Forward(input->{{pf.field.name}}), buf, &result->{{pf.field.name}}.ptr);
 {%-     elif pf.field.kind|is_map_kind %}

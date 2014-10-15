@@ -68,7 +68,7 @@ def GetNameForKind(kind, internal = False):
   return "::".join(parts)
 
 def GetCppType(kind):
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::internal::Map_Data<%s, %s>*" % (
@@ -93,7 +93,7 @@ def GetCppArrayArgWrapperType(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "mojo::Array<%s> " % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s> " % (GetCppArrayArgWrapperType(kind.key_kind),
@@ -121,7 +121,7 @@ def GetCppResultWrapperType(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
@@ -149,7 +149,7 @@ def GetCppWrapperType(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
@@ -175,7 +175,7 @@ def GetCppWrapperType(kind):
 def GetCppConstWrapperType(kind):
   if mojom.IsStructKind(kind):
     return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
     return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
@@ -206,7 +206,7 @@ def GetCppFieldType(kind):
   if mojom.IsStructKind(kind):
     return ("mojo::internal::StructPointer<%s_Data>" %
         GetNameForKind(kind, internal=True))
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if mojom.IsMapKind(kind):
     return ("mojo::internal::StructPointer<mojo::internal::Map_Data<%s, %s>>" %
@@ -269,7 +269,7 @@ def ShouldInlineStruct(struct):
   return True
 
 def GetArrayValidateParams(kind):
-  if (not mojom.IsAnyArrayKind(kind) and not mojom.IsMapKind(kind) and
+  if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and
       not mojom.IsStringKind(kind)):
     return "mojo::internal::NoValidateParams"
 
@@ -282,7 +282,7 @@ def GetArrayValidateParams(kind):
     element_is_nullable = mojom.IsNullableKind(kind.value_kind)
     element_validate_params = GetArrayValidateParams(kind.value_kind)
   else:
-    expected_num_elements = generator.ExpectedArraySize(kind)
+    expected_num_elements = generator.ExpectedArraySize(kind) or 0
     element_is_nullable = mojom.IsNullableKind(kind.kind)
     element_validate_params = GetArrayValidateParams(kind.kind)
 
@@ -312,7 +312,6 @@ class Generator(generator.Generator):
     "cpp_type": GetCppType,
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
-    "expected_array_size": generator.ExpectedArraySize,
     "expression_to_text": ExpressionToText,
     "get_array_validate_params": GetArrayValidateParams,
     "get_map_validate_params": GetMapValidateParams,
@@ -320,7 +319,7 @@ class Generator(generator.Generator):
     "get_pad": pack.GetPad,
     "has_callbacks": mojom.HasCallbacks,
     "should_inline": ShouldInlineStruct,
-    "is_any_array_kind": mojom.IsAnyArrayKind,
+    "is_array_kind": mojom.IsArrayKind,
     "is_cloneable_kind": mojom.IsCloneableKind,
     "is_enum_kind": mojom.IsEnumKind,
     "is_move_only_kind": mojom.IsMoveOnlyKind,

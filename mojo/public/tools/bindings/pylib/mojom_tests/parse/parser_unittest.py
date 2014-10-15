@@ -617,6 +617,7 @@ class ParserTest(unittest.TestCase):
           array<int32> normal_array;
           array<int32, 1> fixed_size_array_one_entry;
           array<int32, 10> fixed_size_array_ten_entries;
+          array<array<array<int32, 1>>, 2> nested_arrays;
         };
         """
     expected = ast.Mojom(
@@ -630,7 +631,9 @@ class ParserTest(unittest.TestCase):
                  ast.StructField('fixed_size_array_one_entry', None, 'int32[1]',
                                  None),
                  ast.StructField('fixed_size_array_ten_entries', None,
-                                 'int32[10]', None)]))])
+                                 'int32[10]', None),
+                 ast.StructField('nested_arrays', None,
+                                 'int32[1][][2]', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
   def testValidNestedArray(self):

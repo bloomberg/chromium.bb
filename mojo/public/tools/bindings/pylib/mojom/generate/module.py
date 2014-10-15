@@ -206,22 +206,16 @@ class Struct(ReferenceKind):
 
 class Array(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
-
-  def __init__(self, kind=None):
-    if kind is not None:
-      ReferenceKind.__init__(self, 'a:' + kind.spec)
-    else:
-      ReferenceKind.__init__(self)
-    self.kind = kind
-
-
-class FixedArray(ReferenceKind):
-  ReferenceKind.AddSharedProperty('kind')
   ReferenceKind.AddSharedProperty('length')
 
-  def __init__(self, length=-1, kind=None):
+  def __init__(self, kind=None, length=None):
     if kind is not None:
-      ReferenceKind.__init__(self, 'a%d:%s' % (length, kind.spec))
+      if length is not None:
+        spec = 'a%d:%s' % (length, kind.spec)
+      else:
+        spec = 'a:%s' % kind.spec
+
+      ReferenceKind.__init__(self, spec)
     else:
       ReferenceKind.__init__(self)
     self.kind = kind
@@ -246,7 +240,7 @@ class Map(ReferenceKind):
         raise Exception("Structs can not be keys in maps.")
       if IsAnyHandleKind(key_kind):
         raise Exception("Handles can not be keys in maps.")
-      if IsAnyArrayKind(key_kind):
+      if IsArrayKind(key_kind):
         raise Exception("Arrays can not be keys in maps.")
     else:
       ReferenceKind.__init__(self)
@@ -348,7 +342,8 @@ class Module(object):
     self.interfaces = []
 
   def AddInterface(self, name):
-    self.interfaces.append(Interface(name, module=self))
+    interface = Interface(name, module=self)
+    self.interfaces.append(interface)
     return interface
 
   def AddStruct(self, name):
@@ -398,10 +393,6 @@ def IsArrayKind(kind):
   return isinstance(kind, Array)
 
 
-def IsFixedArrayKind(kind):
-  return isinstance(kind, FixedArray)
-
-
 def IsInterfaceKind(kind):
   return isinstance(kind, Interface)
 
@@ -422,16 +413,12 @@ def IsNullableKind(kind):
   return IsReferenceKind(kind) and kind.is_nullable
 
 
-def IsAnyArrayKind(kind):
-  return IsArrayKind(kind) or IsFixedArrayKind(kind)
-
-
 def IsMapKind(kind):
   return isinstance(kind, Map)
 
 
 def IsObjectKind(kind):
-  return (IsStructKind(kind) or IsAnyArrayKind(kind) or IsStringKind(kind) or
+  return (IsStructKind(kind) or IsArrayKind(kind) or IsStringKind(kind) or
           IsMapKind(kind))
 
 
@@ -461,7 +448,7 @@ def IsCloneableKind(kind):
     visited_kinds.add(kind)
     if IsAnyHandleKind(kind):
       return True
-    if IsAnyArrayKind(kind):
+    if IsArrayKind(kind):
       return ContainsHandles(kind.kind, visited_kinds)
     if IsStructKind(kind):
       for field in kind.fields:

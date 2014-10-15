@@ -28,7 +28,7 @@
     ReportValidationError(mojo::internal::VALIDATION_ERROR_ILLEGAL_POINTER);
     return false;
   }
-{%-       if kind|is_any_array_kind or kind|is_string_kind %}
+{%-       if kind|is_array_kind or kind|is_string_kind %}
   if (!{{wrapper_type}}::Data_::Validate<
           {{kind|get_array_validate_params|indent(10)}}>(
               mojo::internal::DecodePointerRaw(&object->{{name}}.offset),

@@ -95,7 +95,7 @@ def TestNullableTypes():
            mojom.DCPIPE.MakeNullableKind(),
            mojom.Array().MakeNullableKind(),
            mojom.DPPIPE.MakeNullableKind(),
-           mojom.FixedArray(5).MakeNullableKind(),
+           mojom.Array(length=5).MakeNullableKind(),
            mojom.MSGPIPE.MakeNullableKind(),
            mojom.Interface('test_inteface').MakeNullableKind(),
            mojom.SHAREDBUFFER.MakeNullableKind(),

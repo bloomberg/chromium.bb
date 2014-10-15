@@ -52,7 +52,7 @@ params->{{param.name}}
 {#--- Sets #}
 {%   for param in parameters %}
 {%-     if param.kind|is_object_kind %}
-{%-       if param.kind|is_any_array_kind %}
+{%-       if param.kind|is_array_kind %}
   mojo::SerializeArray_<{{param.kind|get_array_validate_params|indent(24)}}>(
       mojo::internal::Forward(in_{{param.name}}), builder.buffer(), &params->{{param.name}}.ptr);
 {%-       elif param.kind|is_map_kind %}

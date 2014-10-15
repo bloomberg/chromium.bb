@@ -39,7 +39,7 @@ interface ConformanceTestInterface {
   Method4(StructC param0, array<uint8> param1);
   Method5(StructE param0, handle<data_pipe_producer> param1);
   Method6(array<array<uint8>> param0);
-  Method7(StructF param0, array<uint8, 5> param1);
+  Method7(StructF param0, array<array<uint8, 3>?, 2> param1);
   Method8(array<array<string>?> param0);
   Method9(array<array<handle?>>? param0);
 };

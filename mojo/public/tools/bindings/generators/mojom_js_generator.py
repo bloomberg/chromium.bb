@@ -52,7 +52,7 @@ def JavaScriptDefaultValue(field):
     return _kind_to_javascript_default_value[field.kind]
   if mojom.IsStructKind(field.kind):
     return "null"
-  if mojom.IsAnyArrayKind(field.kind):
+  if mojom.IsArrayKind(field.kind):
     return "null"
   if mojom.IsInterfaceKind(field.kind) or \
      mojom.IsInterfaceRequestKind(field.kind):
@@ -105,7 +105,7 @@ def CodecType(kind):
     pointer_type = "NullablePointerTo" if mojom.IsNullableKind(kind) \
         else "PointerTo"
     return "new codec.%s(%s)" % (pointer_type, JavaScriptType(kind))
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     array_type = "NullableArrayOf" if mojom.IsNullableKind(kind) else "ArrayOf"
     element_type = "codec.PackedBool" if mojom.IsBoolKind(kind.kind) \
         else CodecType(kind.kind)
@@ -122,9 +122,9 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeStruct(%s)" % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "decodeStructPointer(%s)" % JavaScriptType(kind)
-  if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
+  if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "decodeArrayPointer(codec.PackedBool)"
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "decodeArrayPointer(%s)" % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
@@ -137,9 +137,9 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeStruct(%s, " % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "encodeStructPointer(%s, " % JavaScriptType(kind)
-  if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
+  if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "encodeArrayPointer(codec.PackedBool, ";
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return "encodeArrayPointer(%s, " % CodecType(kind.kind)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
@@ -155,16 +155,29 @@ def JavaScriptNullableParam(packed_field):
   return "true" if mojom.IsNullableKind(packed_field.field.kind) else "false"
 
 
+def GetArrayExpectedDimensionSizes(kind):
+  expected_dimension_sizes = []
+  while mojom.IsArrayKind(kind):
+    expected_dimension_sizes.append(generator.ExpectedArraySize(kind) or 0)
+    kind = kind.kind
+  # Strings are serialized as variable-length arrays.
+  if (mojom.IsStringKind(kind)):
+    expected_dimension_sizes.append(0)
+  return expected_dimension_sizes
+
+
 def JavaScriptValidateArrayParams(packed_field):
   nullable = JavaScriptNullableParam(packed_field)
   field_offset = JavaScriptFieldOffset(packed_field)
   element_kind = packed_field.field.kind.kind
   element_size = pack.PackedField.GetSizeForKind(element_kind)
-  element_count = generator.ExpectedArraySize(packed_field.field.kind)
+  expected_dimension_sizes = GetArrayExpectedDimensionSizes(
+      packed_field.field.kind)
   element_type = "codec.PackedBool" if mojom.IsBoolKind(element_kind) \
       else CodecType(element_kind)
-  return "%s, %s, %s, %s, %s" % \
-      (field_offset, element_size, element_count, element_type, nullable)
+  return "%s, %s, %s, %s, %s, 0" % \
+      (field_offset, element_size, element_type, nullable,
+       expected_dimension_sizes)
 
 
 def JavaScriptValidateStructParams(packed_field):
@@ -216,7 +229,7 @@ def ExpressionToText(value):
 
 
 def IsArrayPointerField(field):
-  return mojom.IsAnyArrayKind(field.kind)
+  return mojom.IsArrayKind(field.kind)
 
 def IsStringPointerField(field):
   return mojom.IsStringKind(field.kind)

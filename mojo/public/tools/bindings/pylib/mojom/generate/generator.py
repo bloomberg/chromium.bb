@@ -36,9 +36,9 @@ def GetDataHeader(exported, struct):
   return struct
 
 def ExpectedArraySize(kind):
-  if mojom.IsFixedArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return kind.length
-  return 0
+  return None
 
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]

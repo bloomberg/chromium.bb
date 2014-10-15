@@ -8,7 +8,6 @@
 [u4]2                  // num_fields
 [dist8]param0_ptr      // param0
 [dist8]param1_ptr      // param1
-[u8]0                  // unknown
 [anchr]method7_params
 
 [anchr]param0_ptr
@@ -20,20 +19,20 @@
 [anchr]array_ptr
 [dist4]array_member    // num_bytes
 [u4]3                  // num_elements
-0 1 2
+0 1 3
 [anchr]array_member
 
-[u4]0 [u1]0            // Padding to make the next array aligned properly.
+[u4]0 [u1]0            // Padding for alignment of next array.
 
 [anchr]param1_ptr
 [dist4]array_param     // num_bytes
 [u4]2                  // num_elements
-[u8]0                  // A null pointer, which is okay.
 [dist8]array_element_ptr
+[u8]0                  // A null pointer, which is okay.
 [anchr]array_param
 
 [anchr]array_element_ptr
 [dist4]array_element   // num_bytes
-[u4]3                  // num_elements
-0 1 2
+[u4]4                  // num_elements: Too many elements.
+0 1 2 3
 [anchr]array_element

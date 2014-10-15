@@ -151,7 +151,7 @@ def GetArrayNullabilityFlags(kind):
     nullability information about both the array itself, as well as the array
     element type there.
     """
-    assert mojom.IsAnyArrayKind(kind)
+    assert mojom.IsArrayKind(kind)
     ARRAY_NULLABLE   = \
         'org.chromium.mojo.bindings.BindingsHelper.ARRAY_NULLABLE'
     ELEMENT_NULLABLE = \
@@ -176,15 +176,15 @@ def AppendEncodeDecodeParams(initial_params, context, kind, bit):
   if (kind == mojom.BOOL):
     params.append(str(bit))
   if mojom.IsReferenceKind(kind):
-    if mojom.IsAnyArrayKind(kind):
+    if mojom.IsArrayKind(kind):
       params.append(GetArrayNullabilityFlags(kind))
     else:
       params.append(GetJavaTrueFalse(mojom.IsNullableKind(kind)))
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     params.append(GetArrayExpectedLength(kind))
   if mojom.IsInterfaceKind(kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
-  if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
+  if mojom.IsArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
   return params
 
@@ -192,7 +192,7 @@ def AppendEncodeDecodeParams(initial_params, context, kind, bit):
 @contextfilter
 def DecodeMethod(context, kind, offset, bit):
   def _DecodeMethodName(kind):
-    if mojom.IsAnyArrayKind(kind):
+    if mojom.IsArrayKind(kind):
       return _DecodeMethodName(kind.kind) + 's'
     if mojom.IsEnumKind(kind):
       return _DecodeMethodName(mojom.INT32)
@@ -253,7 +253,7 @@ def GetJavaType(context, kind, boxed=False):
     return 'java.util.Map<%s, %s>' % (
         GetBoxedJavaType(context, kind.key_kind),
         GetBoxedJavaType(context, kind.value_kind))
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     return '%s[]' % GetJavaType(context, kind.kind)
   if mojom.IsEnumKind(kind):
     return 'int'
@@ -277,7 +277,7 @@ def ConstantValue(context, constant):
 
 @contextfilter
 def NewArray(context, kind, size):
-  if mojom.IsAnyArrayKind(kind.kind):
+  if mojom.IsArrayKind(kind.kind):
     return NewArray(context, kind.kind, size) + '[]'
   return 'new %s[%s]' % (GetJavaType(context, kind.kind), size)
 
@@ -327,18 +327,18 @@ def GetArrayKind(kind, size = None):
   if size is None:
     return mojom.Array(kind)
   else:
-    array = mojom.FixedArray(0, kind)
+    array = mojom.Array(kind, 0)
     array.java_map_size = size
     return array
 
 def GetArrayExpectedLength(kind):
-  if mojom.IsFixedArrayKind(kind):
+  if mojom.IsArrayKind(kind) and kind.length is not None:
     return getattr(kind, 'java_map_size', str(kind.length))
   else:
     return 'org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH'
 
 def IsPointerArrayKind(kind):
-  if not mojom.IsAnyArrayKind(kind):
+  if not mojom.IsArrayKind(kind):
     return False
   sub_kind = kind.kind
   return mojom.IsObjectKind(sub_kind)
@@ -403,7 +403,6 @@ class Generator(generator.Generator):
     'encode_method': EncodeMethod,
     'has_method_with_response': HasMethodWithResponse,
     'has_method_without_response': HasMethodWithoutResponse,
-    'is_fixed_array_kind': mojom.IsFixedArrayKind,
     'is_handle': mojom.IsNonInterfaceHandleKind,
     'is_map_kind': mojom.IsMapKind,
     'is_nullable_kind': mojom.IsNullableKind,

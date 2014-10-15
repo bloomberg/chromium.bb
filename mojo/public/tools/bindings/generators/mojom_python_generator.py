@@ -128,7 +128,7 @@ def GetStructClass(kind):
   return '.'.join(name)
 
 def GetFieldType(kind, field=None):
-  if mojom.IsAnyArrayKind(kind):
+  if mojom.IsArrayKind(kind):
     arguments = []
     if kind.kind in _kind_to_typecode_for_native_array:
       arguments.append('%r' %_kind_to_typecode_for_native_array[kind.kind])
@@ -136,7 +136,7 @@ def GetFieldType(kind, field=None):
       arguments.append(GetFieldType(kind.kind))
     if mojom.IsNullableKind(kind):
       arguments.append('nullable=True')
-    if mojom.IsFixedArrayKind(kind):
+    if kind.length is not None:
       arguments.append('length=%d' % kind.length)
     array_type = 'GenericArrayType'
     if kind.kind == mojom.BOOL:

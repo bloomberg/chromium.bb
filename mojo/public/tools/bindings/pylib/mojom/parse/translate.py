@@ -5,8 +5,6 @@
 """Translates parse tree to Mojom IR."""
 
 
-import re
-
 from . import ast
 
 
@@ -15,8 +13,6 @@ def _MapTreeForType(func, tree, type_to_map):
   if not tree:
     return []
   return [func(subtree) for subtree in tree if isinstance(subtree, type_to_map)]
-
-_FIXED_ARRAY_REGEXP = re.compile(r'\[[0-9]+\]')
 
 def _MapKind(kind):
   map_to_kind = {'bool': 'b',
@@ -49,16 +45,9 @@ def _MapKind(kind):
     lbracket = kind.rfind('{')
     value = kind[0:lbracket]
     return 'm[' + _MapKind(kind[lbracket+1:-1]) + '][' + _MapKind(value) + ']'
-  if kind.endswith('[]'):
-    typename = kind[0:-2]
-    if _FIXED_ARRAY_REGEXP.search(typename):
-      raise Exception('Arrays of fixed sized arrays not supported')
-    return 'a:' + _MapKind(typename)
   if kind.endswith(']'):
     lbracket = kind.rfind('[')
     typename = kind[0:lbracket]
-    if typename.find('[') != -1:
-      raise Exception('Fixed sized arrays of arrays not supported')
     return 'a' + kind[lbracket+1:-1] + ':' + _MapKind(typename)
   if kind.endswith('&'):
     return 'r:' + _MapKind(kind[0:-1])

@@ -121,6 +121,10 @@ def KindFromData(kinds, data, scope):
     kind = KindFromData(kinds, data[1:], scope).MakeNullableKind()
   elif data.startswith('a:'):
     kind = mojom.Array(KindFromData(kinds, data[2:], scope))
+  elif data.startswith('a'):
+    colon = data.find(':')
+    length = int(data[1:colon])
+    kind = mojom.Array(KindFromData(kinds, data[colon+1:], scope), length)
   elif data.startswith('r:'):
     kind = mojom.InterfaceRequest(KindFromData(kinds, data[2:], scope))
   elif data.startswith('m['):
@@ -129,10 +133,6 @@ def KindFromData(kinds, data, scope):
     second_kind = data[data.rfind('[')+1:data.rfind(']')]
     kind = mojom.Map(KindFromData(kinds, first_kind, scope),
                      KindFromData(kinds, second_kind, scope))
-  elif data.startswith('a'):
-    colon = data.find(':')
-    length = int(data[1:colon])
-    kind = mojom.FixedArray(length, KindFromData(kinds, data[colon+1:], scope))
   else:
     kind = mojom.Kind(data)
 
