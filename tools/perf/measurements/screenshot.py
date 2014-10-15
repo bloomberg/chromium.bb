@@ -11,7 +11,7 @@ from telemetry.value import scalar
 class Screenshot(page_test.PageTest):
   def __init__(self):
     super(Screenshot, self).__init__(
-        action_name_to_run = 'RunPrepareForScreenshot',
+        action_name_to_run = 'RunPageInteractions',
         is_action_name_to_run_optional=True)
 
   @classmethod
