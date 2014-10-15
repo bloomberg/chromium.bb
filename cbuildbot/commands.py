@@ -1102,16 +1102,13 @@ def MarkChromeAsStable(buildroot,
 
     # Sanity check: We should always be able to merge the version of
     # Chrome we just unmasked.
-    result = cros_build_lib.RunCommand(
-        ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
-        enter_chroot=True, error_code_ok=True, combine_stdout_stderr=True,
-        capture_output=True)
-    if result.returncode:
-      cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.Warning('\n%s' % result.output)
-      cros_build_lib.Warning('Cannot emerge-%s =%s\nIs Chrome pinned to an '
-                             'older version?' % (board, chrome_atom))
-      return None
+    try:
+      cros_build_lib.RunCommand(
+          ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
+          enter_chroot=True, combine_stdout_stderr=True, capture_output=True)
+    finally:
+      cros_build_lib.Error('Cannot emerge-%s =%s\nIs Chrome pinned to an '
+                           'older version?' % (board, chrome_atom))
 
   return chrome_atom
 
