@@ -165,7 +165,7 @@ void ScreenLocker::Init() {
   imm->SetState(saved_ime_state_->Clone());
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-  extended_authenticator_ = new ExtendedAuthenticator(this);
+  extended_authenticator_ = ExtendedAuthenticator::Create(this);
   delegate_.reset(new WebUIScreenLocker(this));
   delegate_->LockScreen();
 
@@ -285,13 +285,12 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     }
   }
 
-  // TODO(antrim) : migrate to new authenticator for all types of users.
-  // http://crbug.com/351268
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Authenticator::AuthenticateToUnlock,
-                 authenticator_.get(),
-                 user_context));
+      base::Bind(&ExtendedAuthenticator::AuthenticateToCheck,
+                 extended_authenticator_.get(),
+                 user_context,
+                 base::Closure()));
 }
 
 const user_manager::User* ScreenLocker::FindUnlockUser(

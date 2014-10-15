@@ -37,7 +37,7 @@ void ManagerPasswordService::Init(
       base::Bind(&ManagerPasswordService::OnSharedSettingsChange,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  authenticator_ = new ExtendedAuthenticator(this);
+  authenticator_ = ExtendedAuthenticator::Create(this);
 
   SupervisedUserManager* supervised_user_manager =
       ChromeUserManager::Get()->GetSupervisedUserManager();

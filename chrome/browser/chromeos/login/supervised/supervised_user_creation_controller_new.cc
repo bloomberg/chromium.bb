@@ -203,7 +203,7 @@ void SupervisedUserCreationControllerNew::StartCreationImpl() {
       base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
       &SupervisedUserCreationControllerNew::CreationTimedOut);
-  authenticator_ = new ExtendedAuthenticator(this);
+  authenticator_ = ExtendedAuthenticator::Create(this);
   UserContext user_context;
   user_context.SetKey(Key(creation_context_->master_key));
   authenticator_->TransformKeyIfNeeded(

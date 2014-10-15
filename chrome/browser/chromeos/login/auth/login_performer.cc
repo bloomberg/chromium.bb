@@ -242,7 +242,7 @@ void LoginPerformer::LoginAsSupervisedUser(
     if (extended_authenticator_.get()) {
       extended_authenticator_->SetConsumer(NULL);
     }
-    extended_authenticator_ = new ExtendedAuthenticator(this);
+    extended_authenticator_ = ExtendedAuthenticator::Create(this);
     // TODO(antrim) : Replace empty callback with explicit method.
     // http://crbug.com/351268
     BrowserThread::PostTask(

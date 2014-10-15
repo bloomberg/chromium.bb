@@ -135,7 +135,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
                                 kCryptohomeSupervisedUserKeyLabel,
                                 kCryptohomeSupervisedUserKeyPrivileges);
 
-  authenticator_ = new ExtendedAuthenticator(this);
+  authenticator_ = ExtendedAuthenticator::Create(this);
   SupervisedUserAuthentication::Schema current_schema =
       auth->GetPasswordSchema(user_id());
 

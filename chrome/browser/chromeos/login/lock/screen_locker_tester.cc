@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+#include "chromeos/login/auth/fake_extended_authenticator.h"
 #include "chromeos/login/auth/mock_authenticator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -205,6 +206,8 @@ void ScreenLockerTester::InjectMockAuthenticator(
   DCHECK(ScreenLocker::screen_locker_);
   ScreenLocker::screen_locker_->SetAuthenticator(
       new MockAuthenticator(ScreenLocker::screen_locker_, user_context));
+  ScreenLocker::screen_locker_->extended_authenticator_ =
+      new FakeExtendedAuthenticator(ScreenLocker::screen_locker_, user_context);
 }
 
 }  // namespace test
