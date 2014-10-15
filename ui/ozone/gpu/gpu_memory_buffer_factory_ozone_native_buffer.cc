@@ -41,16 +41,20 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
   scoped_refptr<NativePixmap> pixmap_;
 };
 
-SurfaceFactoryOzone::BufferFormat GetOzoneFormatFor(unsigned internal_format) {
-  switch (internal_format) {
-    case GL_RGBA8_OES:
+SurfaceFactoryOzone::BufferFormat GetOzoneFormatFor(
+    gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::RGBA_8888:
       return SurfaceFactoryOzone::RGBA_8888;
-    case GL_RGB8_OES:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
       return SurfaceFactoryOzone::RGBX_8888;
-    default:
+    case gfx::GpuMemoryBuffer::BGRA_8888:
       NOTREACHED();
       return SurfaceFactoryOzone::RGBA_8888;
   }
+
+  NOTREACHED();
+  return SurfaceFactoryOzone::RGBA_8888;
 }
 
 std::pair<uint32_t, uint32_t> GetIndex(const gfx::GpuMemoryBufferId& id) {
@@ -69,15 +73,14 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::
 bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
     const gfx::GpuMemoryBufferId& id,
     const gfx::Size& size,
-    unsigned internalformat,
-    unsigned usage) {
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage) {
   scoped_refptr<NativePixmap> pixmap =
       SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
-          size, GetOzoneFormatFor(internalformat));
+          size, GetOzoneFormatFor(format));
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.width() << "x"
-               << size.height() << " format " << internalformat << ", usage "
-               << usage;
+               << size.height() << " format " << format << ", usage " << usage;
     return false;
   }
   native_pixmap_map_[GetIndex(id)] = pixmap;

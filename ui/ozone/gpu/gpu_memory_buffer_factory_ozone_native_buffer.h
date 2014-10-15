@@ -30,8 +30,8 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
   // Creates a GPU memory buffer identified by |id|.
   bool CreateGpuMemoryBuffer(const gfx::GpuMemoryBufferId& id,
                              const gfx::Size& size,
-                             unsigned internalformat,
-                             unsigned usage);
+                             gfx::GpuMemoryBuffer::Format format,
+                             gfx::GpuMemoryBuffer::Usage usage);
 
   // Destroys GPU memory buffer identified by |id|.
   void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferId& id);
