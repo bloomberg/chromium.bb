@@ -5585,13 +5585,19 @@
     # In the android webview build, force host targets to be compiled with clang
     # as the hermetic host gcc is very old on some platforms. This is already
     # the default on the current development version of AOSP but we force it
-    # here in case we need to compile against an older release version.
+    # here in case we need to compile against an older release version. We also
+    # explicitly set it to false for target binaries to avoid causing problems
+    # for the work to enable clang by default in AOSP.
     ['android_webview_build==1', {
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="host"', {
             'aosp_build_settings': {
               'LOCAL_CLANG': 'true',
+            },
+          }, {  # else: _toolset != "host"
+            'aosp_build_settings': {
+              'LOCAL_CLANG': 'false',
             },
           }],
         ],
