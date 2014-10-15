@@ -250,8 +250,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
     base::File file,
     const base::MemoryMappedFile::Region& region,
     ScaleFactor scale_factor) {
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(scale_factor));
+  scoped_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromFileRegion(file.Pass(), region)) {
     AddDataPack(data_pack.release());
   } else {
@@ -305,8 +304,7 @@ std::string ResourceBundle::LoadLocaleResources(
     return std::string();
   }
 
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(SCALE_FACTOR_100P));
+  scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromPath(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
@@ -665,17 +663,15 @@ void ResourceBundle::AddDataPackFromPathInternal(const base::FilePath& path,
   if (delegate_)
     pack_path = delegate_->GetPathForResourcePack(pack_path, scale_factor);
 
-  // Don't try to load empty values or values that are not absolute paths.
-  if (pack_path.empty() || !pack_path.IsAbsolute())
+  // An empty path is a request from the delegate to cancel loading.
+  if (pack_path.empty())
     return;
 
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(scale_factor));
+  scoped_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromPath(pack_path)) {
     AddDataPack(data_pack.release());
   } else if (!optional) {
-    LOG(ERROR) << "Failed to load " << pack_path.value()
-               << "\nSome features may not be available.";
+    DLOG(FATAL) << "Failed to load " << pack_path.value();
   }
 }
 

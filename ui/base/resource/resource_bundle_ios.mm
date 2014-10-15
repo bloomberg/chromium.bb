@@ -34,9 +34,16 @@ base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
     resource_path = [base::mac::FrameworkBundle() pathForResource:name
                                                            ofType:@"pak"];
   }
+
   if (!resource_path) {
-    // Return just the name of the pak file.
-    return base::FilePath(base::SysNSStringToUTF8(name) + ".pak");
+    // Trying to load a resources file that doesn't exist is an error. Return
+    // just the name of the pack file so that further down the line it is easier
+    // to track down what happened.
+    std::string name_string = base::SysNSStringToUTF8(name);
+    std::string locale_string = base::SysNSStringToUTF8(mac_locale);
+    LOG(ERROR) << "Tried to get the file path of a non-existent pak file '"
+               << name_string << "' for locale '" << locale_string << "'";
+    return base::FilePath(name_string + ".pak");
   }
   return base::FilePath([resource_path fileSystemRepresentation]);
 }

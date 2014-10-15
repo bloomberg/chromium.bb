@@ -8,6 +8,7 @@
         'files': [
           'test/data/data_pack_unittest/truncated-header.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
         ],
       },
     }],

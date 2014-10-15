@@ -82,10 +82,14 @@ class ComponentsTestSuite : public base::TestSuite {
     // so we can load our pak file instead of chrome.pak. crbug.com/348563
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-    base::FilePath resources_pack_path;
-    PathService::Get(base::DIR_MODULE, &resources_pack_path);
+    base::FilePath resources_pack_dir;
+#if defined(OS_ANDROID)
+    PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &resources_pack_dir);
+#else
+    PathService::Get(base::DIR_MODULE, &resources_pack_dir);
+#endif
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path.AppendASCII("resources.pak"),
+        resources_pack_dir.AppendASCII("resources.pak"),
         ui::SCALE_FACTOR_NONE);
 
     // These schemes need to be added globally to pass tests of

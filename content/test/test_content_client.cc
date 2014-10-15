@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace content {
 
@@ -18,10 +19,7 @@ TestContentClient::TestContentClient()
 #if !defined(OS_IOS)
   base::FilePath content_shell_pack_path;
 #if defined(OS_ANDROID)
-  // on Android all pak files are inside the paks folder.
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path);
-  content_shell_pack_path = content_shell_pack_path.Append(
-      FILE_PATH_LITERAL("paks"));
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &content_shell_pack_path);
 #else
   PathService::Get(base::DIR_MODULE, &content_shell_pack_path);
 #endif

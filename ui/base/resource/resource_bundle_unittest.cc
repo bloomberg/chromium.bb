@@ -186,7 +186,7 @@ TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
           Property(&base::FilePath::value, pack_path.value()),
           pack_scale_factor))
       .Times(1)
-      .WillOnce(Return(pack_path));
+      .WillOnce(Return(base::FilePath()));
 
   resource_bundle->AddDataPackFromPath(pack_path, pack_scale_factor);
 }
@@ -414,7 +414,6 @@ class ResourceBundleImageTest : public ResourceBundleTest {
 };
 
 // Verify that we don't crash when trying to load a resource that is not found.
-// In some cases, we fail to mmap resources.pak, but try to keep going anyway.
 TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
 
@@ -427,13 +426,6 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
 
   const int kUnfoundResourceId = 10000;
-  EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
-      kUnfoundResourceId));
-
-  // Give a .pak file that doesn't exist so we will fail to load it.
-  resource_bundle->AddDataPackFromPath(
-      base::FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
-      ui::SCALE_FACTOR_NONE);
   EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
       kUnfoundResourceId));
 }

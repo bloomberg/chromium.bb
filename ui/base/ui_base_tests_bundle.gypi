@@ -40,15 +40,24 @@
         '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Resources'
       ],
     },
+    # The Mac resource bundle code hard-codes the names of the 100% and 200%
+    # paks. This symlinking allows ui_test.pak to stand in for them.
     {
-      # Resource bundle pak names are hardcoded. This allows ui_test.pak to be
-      # found while running the ResourceBundle tests.
       'postbuild_name': 'Symlink chrome_100_percent for test',
       'action': [
         'ln',
         '-fns',
         'ui_test.pak',
         '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Versions/A/Resources/chrome_100_percent.pak'
+      ],
+    },
+    {
+      'postbuild_name': 'Symlink chrome_200_percent for test',
+      'action': [
+        'ln',
+        '-fns',
+        'ui_test.pak',
+        '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Versions/A/Resources/chrome_200_percent.pak'
       ],
     },
   ],

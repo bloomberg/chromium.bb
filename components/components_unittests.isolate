@@ -8,6 +8,7 @@
         'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/content_resources.pak',
+          '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/resources.pak',
           'test/data/',
