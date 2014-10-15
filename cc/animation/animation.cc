@@ -192,10 +192,11 @@ double Animation::TrimTimeToCurrentIteration(
   DCHECK_GE(iteration_start_, 0);
 
   double active_time = ConvertToActiveTime(monotonic_time);
+  double start_offset = iteration_start_ * curve_->Duration();
 
-  // Return 0 if we are before the start of the animation
+  // Return start offset if we are before the start of the animation
   if (active_time < 0)
-    return 0;
+    return start_offset;
 
   // Always return zero if we have no iterations.
   if (!iterations_)
@@ -207,7 +208,6 @@ double Animation::TrimTimeToCurrentIteration(
 
   double repeated_duration = iterations_ * curve_->Duration();
   double active_duration = repeated_duration / std::abs(playback_rate_);
-  double start_offset = iteration_start_ * curve_->Duration();
 
   // Check if we are past active duration
   if (iterations_ > 0 && active_time >= active_duration)
