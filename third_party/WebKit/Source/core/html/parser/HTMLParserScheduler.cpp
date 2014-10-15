@@ -32,15 +32,6 @@
 
 namespace blink {
 
-// parserChunkSize is used to define how many tokens the parser will
-// process before checking against parserTimeLimit and possibly yielding.
-// This is a performance optimization to prevent checking after every token.
-const int HTMLParserScheduler::parserChunkSize = 4096;
-
-// parserTimeLimit is the seconds the parser will run in one write() call
-// before yielding. Inline <script> execution can cause it to exceed the limit.
-const double HTMLParserScheduler::parserTimeLimit = 0.2;
-
 ActiveParserSession::ActiveParserSession(Document* document)
     : m_document(document)
 {
@@ -59,13 +50,6 @@ ActiveParserSession::~ActiveParserSession()
 PumpSession::PumpSession(unsigned& nestingLevel, Document* document)
     : NestingLevelIncrementer(nestingLevel)
     , ActiveParserSession(document)
-    // Setting processedTokens to INT_MAX causes us to check for yields
-    // after any token during any parse where yielding is allowed.
-    // At that time we'll initialize startTime.
-    , processedTokens(INT_MAX)
-    , startTime(0)
-    , needsYield(false)
-    , didSeeScript(false)
 {
 }
 

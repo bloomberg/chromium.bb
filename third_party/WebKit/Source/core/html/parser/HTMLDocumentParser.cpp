@@ -295,16 +295,12 @@ void HTMLDocumentParser::runScriptsForPausedTreeBuilder()
         m_scriptRunner->execute(scriptElement.release(), scriptStartPosition);
 }
 
-bool HTMLDocumentParser::canTakeNextToken(PumpSession& session)
+bool HTMLDocumentParser::canTakeNextToken()
 {
     if (isStopped())
         return false;
 
     if (isWaitingForScripts()) {
-        // If we don't run the script, we cannot allow the next token to be taken.
-        if (session.needsYield)
-            return false;
-
         // If we're paused waiting for a script, we try to execute scripts before continuing.
         runScriptsForPausedTreeBuilder();
         if (isStopped())
@@ -587,7 +583,7 @@ void HTMLDocumentParser::pumpTokenizer()
 
     m_xssAuditor.init(document(), &m_xssAuditorDelegate);
 
-    while (canTakeNextToken(session) && !session.needsYield) {
+    while (canTakeNextToken()) {
         if (!isParsingFragment())
             m_sourceTracker.start(m_input.current(), m_tokenizer.get(), token());
 
@@ -620,9 +616,6 @@ void HTMLDocumentParser::pumpTokenizer()
     // the task queue before returning. In case that ever changes, crash.
     m_treeBuilder->flush(FlushAlways);
     RELEASE_ASSERT(!isStopped());
-
-    if (session.needsYield)
-        m_parserScheduler->scheduleForResume();
 
     if (isWaitingForScripts()) {
         ASSERT(m_tokenizer->state() == HTMLTokenizer::DataState);

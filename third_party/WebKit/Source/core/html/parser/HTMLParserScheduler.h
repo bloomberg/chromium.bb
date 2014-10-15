@@ -52,11 +52,6 @@ class PumpSession : public NestingLevelIncrementer, public ActiveParserSession {
 public:
     PumpSession(unsigned& nestingLevel, Document*);
     ~PumpSession();
-
-    int processedTokens;
-    double startTime;
-    bool needsYield;
-    bool didSeeScript;
 };
 
 class HTMLParserScheduler {
@@ -75,9 +70,6 @@ public:
     void resume();
 
 private:
-    static const double parserTimeLimit;
-    static const int parserChunkSize;
-
     HTMLParserScheduler(HTMLDocumentParser*);
 
     void continueNextChunkTimerFired(Timer<HTMLParserScheduler>*);

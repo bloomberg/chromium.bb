@@ -150,7 +150,7 @@ private:
 
     Document* contextForParsingSession();
 
-    bool canTakeNextToken(PumpSession&);
+    bool canTakeNextToken();
     void pumpTokenizer();
     void pumpTokenizerIfPossible();
     void constructTreeFromHTMLToken(HTMLToken&);
