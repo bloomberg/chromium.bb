@@ -115,8 +115,12 @@
         <include name="IDR_APPS_FOLDER_OVERLAY_512" file="mac/apps_folder_overlay_512.png" type="BINDATA" />
       </if>
       <if expr="chromeos">
+        <!-- TODO(dzhioev): Remove when we have Roboto among system fonts.
+            http://crbug.com/409047 -->
         <include name="IDR_FONT_ROBOTO_THIN" file="Roboto-Thin.ttf" type="BINDATA" />
         <include name="IDR_FONT_ROBOTO_LIGHT" file="Roboto-Light.ttf" type="BINDATA" />
+        <include name="IDR_FONT_ROBOTO_REGULAR" file="Roboto-Regular.ttf" type="BINDATA" />
+        <include name="IDR_FONT_ROBOTO_MEDIUM" file="Roboto-Medium.ttf" type="BINDATA" />
         <include name="IDR_FONT_ROBOTO_BOLD" file="Roboto-Bold.ttf" type="BINDATA" />
       </if>
     </includes>
