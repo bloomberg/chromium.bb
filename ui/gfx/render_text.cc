@@ -393,15 +393,20 @@ RenderText::~RenderText() {
 }
 
 RenderText* RenderText::CreateInstance() {
-#if defined(OS_MACOSX) && defined(TOOLKIT_VIEWS)
-  // Use the more complete HarfBuzz implementation for Views controls on Mac.
-  return new RenderTextHarfBuzz;
-#else
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHarfBuzzRenderText)) {
     return new RenderTextHarfBuzz;
   }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHarfBuzzRenderText)) {
+    return CreateNativeInstance();
+  }
+
+// Disable on Chrome OS. Blocked on http://crbug.com/423791
+#if defined(OS_CHROMEOS)
   return CreateNativeInstance();
+#else
+  return new RenderTextHarfBuzz;
 #endif
 }
 
