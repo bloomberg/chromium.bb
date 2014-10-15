@@ -16,13 +16,21 @@ function test() {
 
     checkQuery([], "plain text");
     checkQuery(["single"], "single:value");
+    checkQuery(["single"], "-single:value");
     checkQuery(["one", "two"], "one:foo two:bar");
+    checkQuery(["one", "two"], "-one:foo two:bar");
+    checkQuery(["one", "two"], "-one:foo -two:bar");
+    checkQuery(["one", "two"], "one:foo -two:bar");
     checkQuery(["key"], "bar key foo");
     checkQuery(["key"], "bar key:foo");
     checkQuery(["key"], "bar key:foo baz");
+    checkQuery(["key"], "bar key:foo yek:roo baz");
+    checkQuery(["key"], "bar key:foo -yek:roo baz");
     checkQuery(["key"], "bar baz key:foo goo zoo");
     checkQuery(["key"], "bar key:key:foo");
     checkQuery(["key"], "bar :key:foo baz");
+    checkQuery(["key"], "bar -:key:foo baz");
+    checkQuery(["key"], "bar key:-foo baz");
 
     InspectorTest.completeTest();
 }
