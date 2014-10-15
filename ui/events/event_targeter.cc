@@ -39,9 +39,8 @@ EventTarget* EventTargeter::FindTargetForLocatedEvent(EventTarget* root,
         continue;
       target->ConvertEventToTarget(child, event);
       target = child;
-      EventTarget* child_target = targeter ?
-          targeter->FindTargetForLocatedEvent(child, event) :
-          FindTargetForLocatedEvent(child, event);
+      EventTarget* child_target =
+          targeter->FindTargetForLocatedEvent(child, event);
       if (child_target)
         return child_target;
     }
