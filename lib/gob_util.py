@@ -156,16 +156,8 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
       LOGGER.warn('%s%s', err_prefix, str(ex))
       raise
 
-    # Get the response body.
-    response_body = response.read()
-    try:
-      response_body = response_body.encode('utf-8', 'replace')
-    except UnicodeDecodeError:
-      # TODO(davidjames): Figure out why these UnicodeDecodeErrors are
-      # happening.
-      response_body = repr(response_body)
-
     # Normal/good responses.
+    response_body = response.read().encode('utf-8', 'replace')
     if response.status == 404 and ignore_404:
       return StringIO()
     elif response.status == 200:
