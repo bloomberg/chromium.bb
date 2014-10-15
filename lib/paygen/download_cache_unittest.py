@@ -15,6 +15,7 @@ import pickle
 import traceback
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gslib
 
@@ -70,6 +71,43 @@ class DownloadCachePickleTest(cros_test_lib.TempDirTestCase):
     # Load pickle file.
     with open(pickle_path, 'r') as pickle_fh:
       pickle.load(pickle_fh)
+
+
+class FetchFuncTest(cros_test_lib.TempDirTestCase):
+  """Test getting files with a custom fetch function."""
+
+  dummy_uri = 'dummy URI'
+  dummy_uri2 = 'dummy URI 2'
+
+  def testFetchFunc(self):
+    """Test getting files with a custome fetch function."""
+
+    call_count = [0]
+
+    def dummyFetchFunction(uri, cache_file):
+      """Write the uri into the file to have verifiable content"""
+      call_count[0] += 1
+      osutils.WriteFile(cache_file, uri)
+
+    cache = download_cache.DownloadCache(self.tempdir)
+    self.assertEqual(call_count[0], 0)
+    cache.GetFileObject(self.dummy_uri, dummyFetchFunction)
+    self.assertEqual(call_count[0], 1)
+    with cache.GetFileObject(self.dummy_uri, dummyFetchFunction) as f:
+      self.assertEqual(f.read(), self.dummy_uri)
+    self.assertEqual(call_count[0], 1)
+
+    cache.GetFileObject(self.dummy_uri2, dummyFetchFunction)
+    self.assertEqual(call_count[0], 2)
+    with cache.GetFileObject(self.dummy_uri2, dummyFetchFunction) as f:
+      self.assertEqual(f.read(), self.dummy_uri2)
+    self.assertEqual(call_count[0], 2)
+
+    with cache.GetFileObject(self.dummy_uri, dummyFetchFunction) as f:
+      self.assertEqual(f.read(), self.dummy_uri)
+    with cache.GetFileObject(self.dummy_uri2, dummyFetchFunction) as f:
+      self.assertEqual(f.read(), self.dummy_uri2)
+    self.assertEqual(call_count[0], 2)
 
 
 class DownloadCacheTest(cros_test_lib.TempDirTestCase):

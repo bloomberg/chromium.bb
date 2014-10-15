@@ -30,6 +30,18 @@ class RetriesExhaustedError(Exception):
   """Raised when we make too many attempts to download the same file."""
 
 
+def _DefaultFetchFunc(uri, cache_file):
+  """The default fetch function.
+
+  This simply downloads the uri into the cache file using urilib
+
+  Args:
+    uri: The URI to download.
+    cache_file: The path to put the downloaded file in.
+  """
+  urilib.Copy(uri, cache_file)
+
+
 class DownloadCache(object):
   """This class downloads files into a local directory upon request.
 
@@ -218,7 +230,7 @@ class DownloadCache(object):
       # If we can't get an exclusive lock on the file, it's in use, leave it.
       pass
 
-  def _FetchIntoCache(self, uri, cache_file):
+  def _FetchIntoCache(self, uri, cache_file, fetch_func=_DefaultFetchFunc):
     """This function downloads the specified file (if not already local).
 
     You must hold the PurgeLock when calling this method.
@@ -227,8 +239,9 @@ class DownloadCache(object):
     it does nothing.
 
     Args:
-      uri: uri of the file to download.
-      cache_file: location in the cache to download too.
+      uri: The uri of the file.
+      cache_file: The location in the cache to download too.
+      fetch_func: Function to get the file.
 
     Returns:
       True if a file was downloaded, False otherwise. (used in unittests)
@@ -243,8 +256,7 @@ class DownloadCache(object):
           return False
 
         try:
-          # Actually download the file.
-          urilib.Copy(uri, cache_file)
+          fetch_func(uri, cache_file)
           # Make the file read-only by everyone.
           os.chmod(cache_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
         except:
@@ -263,7 +275,11 @@ class DownloadCache(object):
     self.Purge()
     return True
 
-  def GetFileObject(self, uri):
+  # TODO: Instead of hooking in fetch functions in the cache here, we could
+  # set up protocol handlers which would know how to handle special cases
+  # generally, identified by a protocol prefix like "prepimage://" or
+  # "decompress://". That would help make sure they're handled consistently.
+  def GetFileObject(self, uri, fetch_func=_DefaultFetchFunc):
     """Get an open readonly File object for the file in the cache.
 
     This method will populate the cache with the requested file if it's
@@ -279,6 +295,8 @@ class DownloadCache(object):
 
     Args:
       uri: The uri of the file to access.
+      fetch_func: A function to produce the file if it isn't already in the
+                  cache.
 
     Returns:
       File object opened with 'rb' mode.
@@ -296,7 +314,7 @@ class DownloadCache(object):
     for _ in xrange(FETCH_RETRY_COUNT):
       with self._PurgeLock(shared=True, blocking=True):
         # Attempt to download the file, if needed.
-        self._FetchIntoCache(uri, cache_file)
+        self._FetchIntoCache(uri, cache_file, fetch_func)
 
         # Get a shared lock on the file. This can block if another process
         # has a non-shared lock (ie: they are downloading)
