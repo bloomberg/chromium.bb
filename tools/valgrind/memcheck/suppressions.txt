@@ -2746,18 +2746,6 @@
    fun:_ZN3WTFL18callFunctionObjectEPv
 }
 {
-   bug_365259
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7blink20IDBDatabaseCallbacksEEnwEm
-   fun:_ZN5blink20IDBDatabaseCallbacks6createEv
-   fun:_ZN5blink10IDBFactory12openInternalEPNS_16ExecutionContextERKN3WTF6StringElRNS_14ExceptionStateE
-   fun:_ZN5blink10IDBFactory4openEPNS_16ExecutionContextERKN3WTF6StringERNS_14ExceptionStateE
-   fun:_ZN5blink20IDBFactoryV8InternalL10openMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN5blink20IDBFactoryV8InternalL18openMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-}
-{
    bug_367809_a
    Memcheck:Leak
    fun:_Znw*
