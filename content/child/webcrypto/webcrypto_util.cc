@@ -22,7 +22,6 @@ namespace {
 bool BigIntegerToUint(const uint8_t* data,
                       unsigned int data_size,
                       unsigned int* result) {
-  // TODO(eroman): Fix handling of empty biginteger. http://crbug.com/373552
   if (data_size == 0)
     return false;
 
