@@ -60,13 +60,15 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat   *dst,
     case S_IFDIR:
       m = NACL_ABI_S_IFDIR;
       break;
+    case S_IFCHR:
+      /* stdin/out/err can be inherited, so this is okay */
+      m = NACL_ABI_S_IFCHR;
+      break;
     default:
       NaClLog(LOG_INFO,
               ("NaClAbiStatHostDescStatXlateCtor:"
                " Unusual NaCl descriptor type (not constructible)."
-               " The NaCl app has a file with st_mode = 0%o."
-               " (This is normal for std{in,out,err}, or other"
-               " inherited/injected files.)\n"),
+               " The NaCl app has a file with st_mode = 0%o.\n"),
               src->st_mode);
       m = NACL_ABI_S_UNSUP;
   }
