@@ -1,10 +1,10 @@
 android.webkit.WebView focusable focused scrollable
     android.view.View
-        android.view.View clickable name='File'
-        android.view.View clickable name='Edit'
-        android.view.View clickable name='View'
+        android.view.MenuItem clickable name='File'
+        android.view.MenuItem clickable name='Edit'
+        android.view.MenuItem clickable name='View'
     android.view.View name='File'
-        android.view.View clickable name='New'
-        android.view.View clickable name='Open'
-        android.view.View clickable name='Save'
-        android.view.View clickable name='Quit'
+        android.view.MenuItem clickable name='New'
+        android.view.MenuItem clickable name='Open'
+        android.view.MenuItem clickable name='Save'
+        android.view.MenuItem clickable name='Quit'

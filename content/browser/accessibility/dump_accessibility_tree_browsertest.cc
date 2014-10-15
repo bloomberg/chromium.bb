@@ -621,6 +621,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputCheckBox) {
   RunTest(FILE_PATH_LITERAL("input-checkbox.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityInputCheckBoxInMenu) {
+  RunTest(FILE_PATH_LITERAL("input-checkbox-in-menu.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputColor) {
   RunTest(FILE_PATH_LITERAL("input-color.html"));
 }

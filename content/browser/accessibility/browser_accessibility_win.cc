@@ -3620,6 +3620,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
       ia_role_ = ROLE_SYSTEM_MENUITEM;
       ia2_role_ = IA2_ROLE_CHECK_MENU_ITEM;
+      ia2_state_ |= IA2_STATE_CHECKABLE;
       break;
     case ui::AX_ROLE_MENU_ITEM_RADIO:
       ia_role_ = ROLE_SYSTEM_MENUITEM;

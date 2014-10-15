@@ -263,6 +263,11 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     case ui::AX_ROLE_ROOT_WEB_AREA:
       class_name = "android.webkit.WebView";
       break;
+    case ui::AX_ROLE_MENU_ITEM:
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+      class_name = "android.view.MenuItem";
+      break;
     default:
       class_name = "android.view.View";
       break;

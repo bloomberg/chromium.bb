@@ -1,6 +1,5 @@
-#<skip -- Need to generate correct expectations>
 android.webkit.WebView focusable focused scrollable
     android.view.View
-        android.widget.Button clickable focusable name='Button in menu element'
+        android.view.MenuItem clickable focusable name='Button in menu element'
     android.view.View
-        android.widget.Button clickable focusable name='Button in element with menu role'
+        android.view.MenuItem clickable focusable name='Button in element with menu role'
