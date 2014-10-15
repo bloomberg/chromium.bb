@@ -43,4 +43,10 @@ const char kOrigin[] = "origin";
 // message pipes and other activities. This is work in progress.
 const char kSpy[] = "spy";
 
+// Specifies a set of mappings to apply when resolving urls. The value is set of
+// ',' separated mappings, where each mapping consists of a pair of urls giving
+// the to/from url to map. For example, 'a=b,c=d' contains two mappings, the
+// first maps 'a' to 'b' and the second 'c' to 'd'.
+const char kURLMappings[] = "url-mappings";
+
 }  // namespace switches

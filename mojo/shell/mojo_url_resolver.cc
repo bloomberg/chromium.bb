@@ -70,20 +70,33 @@ void MojoURLResolver::AddLocalFileMapping(const GURL& mojo_url) {
 }
 
 GURL MojoURLResolver::Resolve(const GURL& mojo_url) const {
-  std::map<GURL, GURL>::const_iterator it = url_map_.find(mojo_url);
-  if (it != url_map_.end())
-    return it->second;
+  const GURL mapped_url(ApplyCustomMappings(mojo_url));
 
-  std::string lib = MakeSharedLibraryName(mojo_url.host());
+  // Continue resolving if the mapped url is a mojo: url.
+  if (mapped_url.scheme() != "mojo")
+    return mapped_url;
+
+  std::string lib = MakeSharedLibraryName(mapped_url.host());
 
   if (!base_url_.is_valid() ||
-      local_file_set_.find(mojo_url) != local_file_set_.end()) {
+      local_file_set_.find(mapped_url) != local_file_set_.end()) {
     // Resolve to a local file URL.
     return default_base_url_.Resolve(lib);
   }
 
   // Otherwise, resolve to an URL relative to base_url_.
   return base_url_.Resolve(lib);
+}
+
+GURL MojoURLResolver::ApplyCustomMappings(const GURL& url) const {
+  GURL mapped_url(url);
+  for (;;) {
+    std::map<GURL, GURL>::const_iterator it = url_map_.find(mapped_url);
+    if (it == url_map_.end())
+      break;
+    mapped_url = it->second;
+  }
+  return mapped_url;
 }
 
 }  // namespace shell

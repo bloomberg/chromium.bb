@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/basictypes.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -27,7 +28,8 @@ class MojoURLResolver {
   // inserted.
   void SetBaseURL(const GURL& base_url);
 
-  // Add a custom mapping for a particular "mojo:" URL.
+  // Add a custom mapping for a particular "mojo:" URL. If |resolved_url| is
+  // itself a mojo url normal resolution rules apply.
   void AddCustomMapping(const GURL& mojo_url, const GURL& resolved_url);
 
   // Add a local file mapping for a particular "mojo:" URL. This causes the
@@ -39,10 +41,17 @@ class MojoURLResolver {
   GURL Resolve(const GURL& mojo_url) const;
 
  private:
+  // Applies all custom mappings for |url|, returning the last non-mapped url.
+  // For example, if 'a' maps to 'b' and 'b' maps to 'c' calling this with 'a'
+  // returns 'c'.
+  GURL ApplyCustomMappings(const GURL& url) const;
+
   std::map<GURL, GURL> url_map_;
   std::set<GURL> local_file_set_;
   GURL default_base_url_;
   GURL base_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoURLResolver);
 };
 
 }  // namespace shell

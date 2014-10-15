@@ -148,6 +148,7 @@ test("mojo_shell_tests") {
     "child_process_host_unittest.cc",
     "dynamic_application_loader_unittest.cc",
     "in_process_dynamic_service_runner_unittest.cc",
+    "mojo_url_resolver_unittest.cc",
     "shell_test_base.cc",
     "shell_test_base.h",
     "shell_test_base_unittest.cc",

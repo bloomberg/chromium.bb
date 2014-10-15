@@ -15,6 +15,7 @@
 #include "mojo/shell/child_process.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
+#include "mojo/shell/mojo_url_resolver.h"
 #include "mojo/shell/switches.h"
 
 #if defined(COMPONENT_BUILD)
@@ -70,20 +71,38 @@ void RunApps(mojo::shell::Context* context) {
 void Usage() {
   std::cerr << "Launch Mojo applications.\n";
   std::cerr
-    << "Usage: mojo_shell"
-    << " [--" << switches::kArgsFor << "=<mojo-app>]"
-    << " [--" << switches::kContentHandlers << "=<handlers>]"
-    << " [--" << switches::kEnableExternalApplications << "]"
-    << " [--" << switches::kDisableCache << "]"
-    << " [--" << switches::kEnableMultiprocess << "]"
-    << " [--" << switches::kOrigin << "=<url-lib-path>]"
-    << " <mojo-app> ...\n\n"
-    << "A <mojo-app> is a Mojo URL or a Mojo URL and arguments within quotes.\n"
-    << "Example: mojo_shell \"mojo://mojo_js_standalone test.js\".\n"
-    << "<url-lib-path> is searched for shared libraries named by mojo URLs.\n"
-    << "The value of <handlers> is a comma separated list like:\n"
-    << "text/html,mojo://mojo_html_viewer,"
-    << "application/javascript,mojo://mojo_js_content_handler\n";
+      << "Usage: mojo_shell"
+      << " [--" << switches::kArgsFor << "=<mojo-app>]"
+      << " [--" << switches::kContentHandlers << "=<handlers>]"
+      << " [--" << switches::kEnableExternalApplications << "]"
+      << " [--" << switches::kDisableCache << "]"
+      << " [--" << switches::kEnableMultiprocess << "]"
+      << " [--" << switches::kOrigin << "=<url-lib-path>]"
+      << " [--" << switches::kURLMappings << "=from1=to1,from2=to2]"
+      << " <mojo-app> ...\n\n"
+      << "A <mojo-app> is a Mojo URL or a Mojo URL and arguments within "
+      << "quotes.\n"
+      << "Example: mojo_shell \"mojo://mojo_js_standalone test.js\".\n"
+      << "<url-lib-path> is searched for shared libraries named by mojo URLs.\n"
+      << "The value of <handlers> is a comma separated list like:\n"
+      << "text/html,mojo://mojo_html_viewer,"
+      << "application/javascript,mojo://mojo_js_content_handler\n";
+}
+
+bool ConfigureURLMappings(const std::string& mappings,
+                          mojo::shell::MojoURLResolver* resolver) {
+  base::StringPairs pairs;
+  if (!base::SplitStringIntoKeyValuePairs(mappings, '=', ',', &pairs))
+    return false;
+  using StringPair = std::pair<std::string, std::string>;
+  for (const StringPair& pair : pairs) {
+    const GURL from(pair.first);
+    const GURL to(pair.second);
+    if (!from.is_valid() || !to.is_valid())
+      return false;
+    resolver->AddCustomMapping(from, to);
+  }
+  return true;
 }
 
 }  // namespace
@@ -128,6 +147,14 @@ int main(int argc, char** argv) {
       if (command_line.HasSwitch(switches::kOrigin)) {
         shell_context.mojo_url_resolver()->SetBaseURL(
             GURL(command_line.GetSwitchValueASCII(switches::kOrigin)));
+      }
+
+      if (command_line.HasSwitch(switches::kURLMappings) &&
+          !ConfigureURLMappings(
+              command_line.GetSwitchValueASCII(switches::kURLMappings),
+              shell_context.mojo_url_resolver())) {
+        Usage();
+        return 0;
       }
 
       for (const auto& kv : command_line.GetSwitches()) {

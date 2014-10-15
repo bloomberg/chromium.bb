@@ -5,7 +5,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -93,16 +92,8 @@ class RootObserver : public ViewObserver {
 ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
                                              Shell* shell)
     : connected_(false), connection_id_(0), next_id_(1), delegate_(delegate) {
-  // TODO(beng): Come up with a better way of establishing a configuration for
-  //             what the active window manager is.
-  std::string window_manager_url = "mojo:mojo_window_manager";
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch("window-manager")) {
-    window_manager_url =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            "window-manager");
-  }
   InterfacePtr<ServiceProvider> sp;
-  shell->ConnectToApplication(window_manager_url, GetProxy(&sp));
+  shell->ConnectToApplication("mojo:mojo_window_manager", GetProxy(&sp));
   ConnectToService(sp.get(), &window_manager_);
   window_manager_.set_client(this);
 }
