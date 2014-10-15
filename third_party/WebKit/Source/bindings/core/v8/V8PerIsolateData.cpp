@@ -54,12 +54,13 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
 {
     switch (feature) {
     case v8::Isolate::kUseAsm:
-        UseCounter::count(currentExecutionContext(isolate), UseCounter::UseAsm);
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::UseAsm);
+        break;
+    case v8::Isolate::kBreakIterator:
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::BreakIterator);
         break;
     default:
-        // V8 may be a newer version that has some use counters we don't know
-        // about yet. FIXME: Add support for v8::Isolate::kBreakIterator and
-        // UseCounter::BreakIterator.
+        ASSERT_NOT_REACHED();
         break;
     }
 }
