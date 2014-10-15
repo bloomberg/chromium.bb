@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_
-#define CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_
+#ifndef COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
+#define COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
 
 #include <string>
 
@@ -11,8 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chrome/common/localized_error.h"
-#include "chrome/common/net/net_error_info.h"
+#include "components/error_page/common/net_error_info.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -22,6 +21,10 @@ class ListValue;
 namespace blink {
 struct WebURLError;
 }
+
+namespace error_page {
+
+struct ErrorPageParams;
 
 // Class that contains the logic for how the NetErrorHelper.  This allows for
 // testing the logic without a RenderView or WebFrame, which are difficult to
@@ -54,7 +57,7 @@ class NetErrorHelperCore {
     virtual void GenerateLocalizedErrorPage(
         const blink::WebURLError& error,
         bool is_failed_post,
-        scoped_ptr<LocalizedError::ErrorPageParams> params,
+        scoped_ptr<error_page::ErrorPageParams> params,
         bool* reload_button_shown,
         bool* load_stale_button_shown,
         std::string* html) const = 0;
@@ -263,4 +266,6 @@ class NetErrorHelperCore {
   Button navigation_from_button_;
 };
 
-#endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_
+}  // namespace error_page
+
+#endif  // COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_

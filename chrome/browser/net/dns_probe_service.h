@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/dns_probe_runner.h"
-#include "chrome/common/net/net_error_info.h"
+#include "components/error_page/common/net_error_info.h"
 #include "net/base/network_change_notifier.h"
 
 namespace net {

@@ -7,8 +7,6 @@ import("//build/config/crypto.gni")
 # GYP version: chrome/chrome_common.gypi:common_net
 static_library("net") {
   sources = [
-    "net_error_info.cc",
-    "net_error_info.h",
     "net_resource_provider.cc",
     "net_resource_provider.h",
     "predictor_common.h",
@@ -24,6 +22,7 @@ static_library("net") {
     "//base",
     "//chrome:resources",
     "//chrome:strings",
+    "//components/error_page/common",
     "//crypto",
     "//net",
     "//net:net_resources",

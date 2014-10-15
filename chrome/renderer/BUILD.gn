@@ -38,6 +38,7 @@ static_library("renderer") {
     "//components/autofill/content/renderer",
     "//components/cdm/renderer",
     "//components/data_reduction_proxy/core/common",
+    "//components/error_page/renderer",
     "//components/password_manager/content/renderer",
     "//components/startup_metric_utils",
     "//components/translate/content/renderer",

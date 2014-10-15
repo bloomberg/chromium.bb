@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/net/net_error_helper_core.h"
+#include "components/error_page/renderer/net_error_helper_core.h"
 
 #include <set>
 #include <string>
@@ -21,9 +21,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/common/localized_error.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/error_page/common/error_page_params.h"
 #include "content/public/common/url_constants.h"
+#include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -31,6 +31,8 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+namespace error_page {
 
 namespace {
 
@@ -267,7 +269,7 @@ scoped_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
   return response.Pass();
 }
 
-scoped_ptr<LocalizedError::ErrorPageParams> CreateErrorPageParams(
+scoped_ptr<ErrorPageParams> CreateErrorPageParams(
     const NavigationCorrectionResponse& response,
     const blink::WebURLError& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
@@ -279,8 +281,7 @@ scoped_ptr<LocalizedError::ErrorPageParams> CreateErrorPageParams(
       FormatURLForDisplay(SanitizeURL(GURL(error.unreachableURL)), is_rtl,
                           accept_languages);
 
-  scoped_ptr<LocalizedError::ErrorPageParams> params(
-      new LocalizedError::ErrorPageParams());
+  scoped_ptr<ErrorPageParams> params(new ErrorPageParams());
   params->override_suggestions.reset(new base::ListValue());
   scoped_ptr<base::ListValue> parsed_corrections(new base::ListValue());
   for (ScopedVector<NavigationCorrection>::const_iterator it =
@@ -347,7 +348,8 @@ void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
   UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtSuccess",
                                    -error.reason,
                                    net::GetAllErrorCodesForUma());
-  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess", count);
+  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
+                       static_cast<base::HistogramBase::Sample>(count));
   if (count == 1) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtFirstSuccess",
                                      -error.reason,
@@ -361,7 +363,8 @@ void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
   UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtStop",
                                    -error.reason,
                                    net::GetAllErrorCodesForUma());
-  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop", count);
+  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
+                       static_cast<base::HistogramBase::Sample>(count));
 }
 
 }  // namespace
@@ -614,7 +617,7 @@ void NetErrorHelperCore::GetErrorHTML(
     bool load_stale_button_in_page;
 
     delegate_->GenerateLocalizedErrorPage(
-        error, is_failed_post, scoped_ptr<LocalizedError::ErrorPageParams>(),
+        error, is_failed_post, scoped_ptr<ErrorPageParams>(),
         &reload_button_in_page, &load_stale_button_in_page,
         error_html);
   }
@@ -674,7 +677,7 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
 
   delegate_->GenerateLocalizedErrorPage(
       error, pending_error_page_info->was_failed_post,
-      scoped_ptr<LocalizedError::ErrorPageParams>(),
+      scoped_ptr<ErrorPageParams>(),
       &pending_error_page_info->reload_button_in_page,
       &pending_error_page_info->load_stale_button_in_page,
       error_html);
@@ -720,7 +723,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
       ParseNavigationCorrectionResponse(corrections);
 
   std::string error_html;
-  scoped_ptr<LocalizedError::ErrorPageParams> params;
+  scoped_ptr<ErrorPageParams> params;
   if (pending_error_page_info_->navigation_correction_response) {
     // Copy navigation correction parameters used for the request, so tracking
     // requests can still be sent if the configuration changes.
@@ -946,3 +949,4 @@ void NetErrorHelperCore::TrackClick(int tracking_id) {
       request_body);
 }
 
+}  // namespace error_page

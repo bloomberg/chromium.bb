@@ -4,8 +4,8 @@
 
 #include "chrome/browser/net/net_error_tab_helper.h"
 
-#include "chrome/common/net/net_error_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"

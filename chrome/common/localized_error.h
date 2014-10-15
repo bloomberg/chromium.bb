@@ -25,30 +25,12 @@ namespace blink {
 struct WebURLError;
 }
 
+namespace error_page {
+struct ErrorPageParams;
+}
+
 class LocalizedError {
  public:
-  // Optional parameters that affect the display of an error page.
-  struct ErrorPageParams {
-    ErrorPageParams();
-    ~ErrorPageParams();
-
-    // Overrides whether reloading is suggested.
-    bool suggest_reload;
-    int reload_tracking_id;
-
-    // Overrides default suggestions.  Each entry must contain a header and may
-    // optionally contain a body as well.  Must not be NULL.
-    scoped_ptr<base::ListValue> override_suggestions;
-
-    // Prefix to prepend to search terms.  Search box is only shown if this is
-    // a valid url.  The search terms will be appended to the end of this URL to
-    // conduct a search.
-    GURL search_url;
-    // Default search terms.  Ignored if |search_url| is invalid.
-    std::string search_terms;
-    int search_tracking_id;
-  };
-
   // Fills |error_strings| with values to be used to build an error page used
   // on HTTP errors, like 404 or connection reset.
   static void GetStrings(int error_code,
@@ -58,7 +40,7 @@ class LocalizedError {
                          bool show_stale_load_button,
                          const std::string& locale,
                          const std::string& accept_languages,
-                         scoped_ptr<ErrorPageParams> params,
+                         scoped_ptr<error_page::ErrorPageParams> params,
                          base::DictionaryValue* strings);
 
   // Returns a description of the encountered error.

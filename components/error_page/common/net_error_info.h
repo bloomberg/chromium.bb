@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NET_NET_ERROR_INFO_H_
-#define CHROME_COMMON_NET_NET_ERROR_INFO_H_
+#ifndef COMPONENTS_ERROR_PAGE_COMMON_NET_ERROR_INFO_H_
+#define COMPONENTS_ERROR_PAGE_COMMON_NET_ERROR_INFO_H_
 
+// TODO(hashimoto): Change this to namespace error_page.
 namespace chrome_common_net {
 
 // Network error page events.  Used for UMA statistics.
@@ -27,8 +28,7 @@ enum NetworkErrorPageEvent {
   NETWORK_ERROR_PAGE_EVENT_MAX,
 };
 
-// The status of a DNS probe that the NetErrorTabHelper may or may not have
-// started.
+// The status of a DNS probe.
 //
 // The DNS_PROBE_FINISHED_* values are used in histograms, so:
 // 1. FINISHED_UNKNOWN must remain the first FINISHED_* value.
@@ -72,11 +72,9 @@ enum DnsProbeStatus {
 // user as part of the DNS error page (as the error code, at the bottom),
 // and is also used in some verbose log messages.
 //
-// |status| is an int because error codes are ints by the time they get to the
-// localized error system, and we don't want to require the caller to cast back
-// to a probe status.  The function will NOTREACHED() and return an empty
-// string if given an int that does not match a value in DnsProbeStatus (or if
-// it is DNS_PROBE_MAX, which is not a real status).
+// The function will NOTREACHED() and return an empty string if given an int
+// that does not match a value in DnsProbeStatus (or if it is DNS_PROBE_MAX,
+// which is not a real status).
 const char* DnsProbeStatusToString(int status);
 
 // Returns true if |status| is one of the DNS_PROBE_FINISHED_* statuses.
@@ -91,4 +89,4 @@ extern const char kDnsProbeErrorDomain[];
 
 }  // namespace chrome_common_net
 
-#endif  // CHROME_COMMON_NET_NET_ERROR_INFO_H_
+#endif  // COMPONENTS_ERROR_PAGE_COMMON_NET_ERROR_INFO_H_

@@ -458,6 +458,7 @@
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+                'error_page/renderer/net_error_helper_core_unittest.cc',
                 'metrics/gpu/gpu_metrics_provider_unittest.cc',
                 'password_manager/content/browser/content_credential_manager_dispatcher_unittest.cc',
                 'power/origin_power_map_unittest.cc',
@@ -470,6 +471,9 @@
 
                 # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',
+
+                # Dependencies of error_page
+                'components.gyp:error_page_renderer',
 
                 # Dependencies of
                 # intercept_navigation_resource_throttle_unittest.cc

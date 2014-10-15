@@ -590,8 +590,6 @@
       'target_name': 'common_net',
       'type': 'static_library',
       'sources': [
-        'common/net/net_error_info.cc',
-        'common/net/net_error_info.h',
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/predictor_common.h',
@@ -606,6 +604,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
+        '<(DEPTH)/components/components.gyp:error_page_common',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/net/net.gyp:net',

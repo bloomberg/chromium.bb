@@ -11,9 +11,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/net/net_error_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/error_page/common/error_page_params.h"
+#include "components/error_page/common/net_error_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -499,15 +500,6 @@ const char* GetIconClassForError(const std::string& error_domain,
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
 
-LocalizedError::ErrorPageParams::ErrorPageParams()
-    : suggest_reload(false),
-      reload_tracking_id(-1),
-      search_tracking_id(-1) {
-}
-
-LocalizedError::ErrorPageParams::~ErrorPageParams() {
-}
-
 void LocalizedError::GetStrings(int error_code,
                                 const std::string& error_domain,
                                 const GURL& failed_url,
@@ -515,7 +507,7 @@ void LocalizedError::GetStrings(int error_code,
                                 bool show_stale_load_button,
                                 const std::string& locale,
                                 const std::string& accept_languages,
-                                scoped_ptr<ErrorPageParams> params,
+                                scoped_ptr<error_page::ErrorPageParams> params,
                                 base::DictionaryValue* error_strings) {
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
@@ -640,7 +632,7 @@ void LocalizedError::GetStrings(int error_code,
 
   // If no parameters were provided, use the defaults.
   if (!params) {
-    params.reset(new ErrorPageParams());
+    params.reset(new error_page::ErrorPageParams());
     params->suggest_reload = !!(options.suggestions & SUGGEST_RELOAD);
   }
 

@@ -24,6 +24,7 @@
     'dom_distiller.gypi',
     'domain_reliability.gypi',
     'enhanced_bookmarks.gypi',
+    'error_page.gypi',
     'favicon.gypi',
     'favicon_base.gypi',
     'google.gypi',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/net/net_error_helper_core.h"
+#include "components/error_page/renderer/net_error_helper_core.h"
 
 #include <map>
 #include <string>
@@ -17,18 +17,21 @@
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/common/net/net_error_info.h"
+#include "components/error_page/common/error_page_params.h"
+#include "components/error_page/common/net_error_info.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "url/gurl.h"
 
+namespace error_page {
 namespace {
 
 using blink::WebURLError;
 using chrome_common_net::DnsProbeStatus;
 using chrome_common_net::DnsProbeStatusToString;
+using error_page::ErrorPageParams;
 
 const char kFailedUrl[] = "http://failed/";
 const char kFailedHttpsUrl[] = "https://failed/";
@@ -213,7 +216,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   const std::string& last_error_html() const { return last_error_html_; }
   int error_html_update_count() const { return error_html_update_count_; }
 
-  const LocalizedError::ErrorPageParams* last_error_page_params() const {
+  const ErrorPageParams* last_error_page_params() const {
     return last_error_page_params_.get();
   }
 
@@ -293,13 +296,12 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
 
   // NetErrorHelperCore::Delegate implementation:
-  virtual void GenerateLocalizedErrorPage(
-      const WebURLError& error,
-      bool is_failed_post,
-      scoped_ptr<LocalizedError::ErrorPageParams> params,
-      bool* reload_button_shown,
-      bool* load_stale_button_shown,
-      std::string* html) const override {
+  virtual void GenerateLocalizedErrorPage(const WebURLError& error,
+                                          bool is_failed_post,
+                                          scoped_ptr<ErrorPageParams> params,
+                                          bool* reload_button_shown,
+                                          bool* load_stale_button_shown,
+                                          std::string* html) const override {
     last_error_page_params_.reset(params.release());
     *reload_button_shown = false;
     *load_stale_button_shown = false;
@@ -403,7 +405,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   int error_html_update_count_;
 
   // Mutable because GenerateLocalizedErrorPage is const.
-  mutable scoped_ptr<LocalizedError::ErrorPageParams> last_error_page_params_;
+  mutable scoped_ptr<ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
   int load_stale_count_;
@@ -2430,4 +2432,5 @@ TEST_F(NetErrorHelperCoreTest, ExplicitLoadStaleSucceeds) {
   EXPECT_EQ(GURL(kFailedUrl), load_stale_url());
 }
 
-} // namespace
+}  // namespace
+}  // namespace error_page

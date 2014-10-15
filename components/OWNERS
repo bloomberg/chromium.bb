@@ -49,6 +49,9 @@ per-file enhanced_bookmarks*=noyau@chromium.org
 per-file enhanced_bookmarks*=sky@chromium.org
 per-file enhanced_bookmarks*=yfriedman@chromium.org
 
+per-file error_page*=mmenke@chromium.org
+per-file error_page*=ttuttle@chromium.org
+
 per-file favicon*=sky@chromium.org
 per-file favicon*=stevenjb@chromium.org
 # Temporary for the duration of the favicon componentization.

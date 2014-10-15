@@ -9,9 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/localized_error.h"
-#include "chrome/common/net/net_error_info.h"
-#include "chrome/renderer/net/net_error_helper_core.h"
+#include "components/error_page/common/net_error_info.h"
+#include "components/error_page/renderer/net_error_helper_core.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -28,6 +27,10 @@ namespace content {
 class ResourceFetcher;
 }
 
+namespace error_page {
+struct ErrorPageParams;
+}
+
 // Listens for NetErrorInfo messages from the NetErrorTabHelper on the
 // browser side and updates the error page with more details (currently, just
 // DNS probe results) if/when available.
@@ -35,7 +38,7 @@ class NetErrorHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<NetErrorHelper>,
       public content::RenderProcessObserver,
-      public NetErrorHelperCore::Delegate {
+      public error_page::NetErrorHelperCore::Delegate {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_view);
   virtual ~NetErrorHelper();
@@ -84,7 +87,7 @@ class NetErrorHelper
   virtual void GenerateLocalizedErrorPage(
       const blink::WebURLError& error,
       bool is_failed_post,
-      scoped_ptr<LocalizedError::ErrorPageParams> params,
+      scoped_ptr<error_page::ErrorPageParams> params,
       bool* reload_button_shown,
       bool* load_stale_button_shown,
       std::string* html) const override;
@@ -119,7 +122,7 @@ class NetErrorHelper
   scoped_ptr<content::ResourceFetcher> correction_fetcher_;
   scoped_ptr<content::ResourceFetcher> tracking_fetcher_;
 
-  scoped_ptr<NetErrorHelperCore> core_;
+  scoped_ptr<error_page::NetErrorHelperCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };
