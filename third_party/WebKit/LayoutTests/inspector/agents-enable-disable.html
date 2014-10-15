@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+
+var test = function()
+{
+    var requestsSent = 0;
+    var responsesReceived = 0;
+
+    InspectorTest.startDumpingProtocolMessages();
+
+    function finishWhenDone(agentName, action, errorString)
+    {
+        if (action === "enable")
+            InspectorTest.addResult("");
+        if (errorString)
+            InspectorTest.addResult(agentName + "." + action + " finished with error " + errorString);
+        else
+            InspectorTest.addResult(agentName + "." + action + " finished successfully");
+
+        ++responsesReceived;
+        if (responsesReceived === requestsSent)
+            InspectorTest.completeTest();
+    }
+
+    var targets = WebInspector.targetManager.targets();
+    targets.forEach(function(target) {
+        var agentNames = Object.keys(target._agentsMap).filter(function(agentName) {
+            var agent = target._agentsMap[agentName];
+            return agent["enable"] && agent["disable"];
+        }).sort();
+
+        function disableAgent(agentName)
+        {
+            ++requestsSent;
+            target._agentsMap[agentName].disable(finishWhenDone.bind(null, agentName, "disable"));
+        }
+
+        function enableAgent(agentName)
+        {
+            ++requestsSent;
+            target._agentsMap[agentName].enable(finishWhenDone.bind(null, agentName, "enable"));
+        }
+
+        agentNames.forEach(disableAgent);
+
+        agentNames.forEach(function(agentName) {
+            enableAgent(agentName);
+            disableAgent(agentName);
+        });
+    });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that each agent could be enabled/disabled separately.</p>
+</body>
+</html>

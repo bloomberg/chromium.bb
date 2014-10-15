@@ -1,0 +1,75 @@
+Test that each agent could be enabled/disabled separately.
+
+CSS.disable finished successfully
+Canvas.disable finished successfully
+Console.disable finished successfully
+DOM.disable finished successfully
+DOMStorage.disable finished successfully
+Database.disable finished successfully
+Debugger.disable finished successfully
+FileSystem.disable finished successfully
+HeapProfiler.disable finished successfully
+IndexedDB.disable finished successfully
+Inspector.disable finished successfully
+LayerTree.disable finished successfully
+Network.disable finished successfully
+Page.disable finished successfully
+Profiler.disable finished successfully
+Runtime.disable finished successfully
+Timeline.disable finished successfully
+Worker.disable finished successfully
+
+CSS.enable finished with error DOM agent needs to be enabled first.
+CSS.disable finished successfully
+
+Canvas.enable finished successfully
+Canvas.disable finished successfully
+
+Console.enable finished successfully
+Console.disable finished successfully
+
+DOM.enable finished successfully
+DOM.disable finished successfully
+
+DOMStorage.enable finished successfully
+DOMStorage.disable finished successfully
+
+Database.enable finished successfully
+Database.disable finished successfully
+
+Debugger.enable finished successfully
+Debugger.disable finished successfully
+
+FileSystem.enable finished successfully
+FileSystem.disable finished successfully
+
+HeapProfiler.enable finished successfully
+HeapProfiler.disable finished successfully
+
+IndexedDB.enable finished successfully
+IndexedDB.disable finished successfully
+
+Inspector.enable finished successfully
+Inspector.disable finished successfully
+
+LayerTree.enable finished successfully
+LayerTree.disable finished successfully
+
+Network.enable finished successfully
+Network.disable finished successfully
+
+Page.enable finished successfully
+Page.disable finished successfully
+
+Profiler.enable finished successfully
+Profiler.disable finished successfully
+
+Runtime.enable finished successfully
+Runtime.disable finished successfully
+
+Timeline.enable finished successfully
+Timeline.disable finished successfully
+
+Worker.enable finished successfully
+Worker.disable finished successfully
+

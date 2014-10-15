@@ -14,6 +14,7 @@ function pageLoaded()
 function test()
 {
     InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+    InspectorTest.sendCommandOrDie("DOM.enable", {});
     InspectorTest.sendCommand("CSS.enable", {}, null);
 
     function styleSheetAdded(msg)

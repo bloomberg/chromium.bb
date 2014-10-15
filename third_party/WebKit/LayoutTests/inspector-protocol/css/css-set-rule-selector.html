@@ -6,6 +6,7 @@
 function test()
 {
     InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+    InspectorTest.sendCommandOrDie("DOM.enable", {});
     InspectorTest.sendCommandOrDie("CSS.enable", {});
 
     var setRuleSelector;
