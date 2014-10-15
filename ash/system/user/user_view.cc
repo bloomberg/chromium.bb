@@ -378,7 +378,7 @@ void UserView::AddLogoutButton(user::LoginStatus login) {
                        views::Button::STATE_PRESSED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
-    logout_button_->SetBorder(border.PassAs<views::Border>());
+    logout_button_->SetBorder(border.Pass());
   }
   AddChildView(logout_button_);
 }
