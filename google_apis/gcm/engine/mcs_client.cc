@@ -565,9 +565,7 @@ void MCSClient::HandleMCSDataMesssage(
   }
 
   if (send) {
-    SendMessage(
-        MCSMessage(kDataMessageStanzaTag,
-                   response.PassAs<const google::protobuf::MessageLite>()));
+    SendMessage(MCSMessage(kDataMessageStanzaTag, response.Pass()));
   }
 }
 
@@ -619,9 +617,7 @@ void MCSClient::HandlePacketFromWire(
 
   if (unacked_server_ids_.size() > 0 &&
       unacked_server_ids_.size() % kUnackedMessageBeforeStreamAck == 0) {
-    SendMessage(MCSMessage(kIqStanzaTag,
-                           BuildStreamAck().
-                               PassAs<const google::protobuf::MessageLite>()));
+    SendMessage(MCSMessage(kIqStanzaTag, BuildStreamAck()));
   }
 
   // The connection is alive, treat this message as a heartbeat ack.
@@ -659,9 +655,7 @@ void MCSClient::HandlePacketFromWire(
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(message_received_callback_,
-                     MCSMessage(tag,
-                                protobuf.PassAs<
-                                    const google::protobuf::MessageLite>())));
+                     MCSMessage(tag, protobuf.Pass())));
 
       // If there are pending messages, attempt to send one.
       if (!to_send_.empty()) {
@@ -732,9 +726,7 @@ void MCSClient::HandlePacketFromWire(
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(message_received_callback_,
-                     MCSMessage(tag,
-                                protobuf.PassAs<
-                                    const google::protobuf::MessageLite>())));
+                     MCSMessage(tag, protobuf.Pass())));
       return;
     }
     default:

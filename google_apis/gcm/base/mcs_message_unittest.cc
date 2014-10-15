@@ -75,8 +75,7 @@ TEST_F(MCSMessageTest, InitPassOwnership) {
       BuildLoginRequest(kAndroidId, kSecret, ""));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
-  MCSMessage message(kLoginRequestTag,
-                     login_copy.PassAs<const google::protobuf::MessageLite>());
+  MCSMessage message(kLoginRequestTag, login_copy.Pass());
   EXPECT_FALSE(login_copy.get());
   ASSERT_TRUE(message.IsValid());
   EXPECT_EQ(kLoginRequestTag, message.tag());

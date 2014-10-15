@@ -20,7 +20,7 @@ scoped_ptr<google::protobuf::MessageLite> BuildLoginResponse(bool fail_login) {
   login_response->set_id("id");
   if (fail_login)
     login_response->mutable_error()->set_code(1);
-  return login_response.PassAs<google::protobuf::MessageLite>();
+  return login_response.Pass();
 }
 
 }  // namespace

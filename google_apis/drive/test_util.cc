@@ -119,8 +119,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
   std::string remaining_path;
   if (!RemovePrefix(absolute_url.path(), "/files/", &remaining_path))
     return scoped_ptr<net::test_server::HttpResponse>();
-  return CreateHttpResponseFromFile(
-      GetTestFilePath(remaining_path)).PassAs<net::test_server::HttpResponse>();
+  return CreateHttpResponseFromFile(GetTestFilePath(remaining_path));
 }
 
 bool ParseContentRangeHeader(const std::string& value,

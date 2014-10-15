@@ -56,7 +56,7 @@ class GDataWapiRequestsTest : public testing::Test {
     if (!test_util::RemovePrefix(absolute_url.path(),
                                  "/feeds/default/private/full",
                                  &remaining_path)) {
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     }
 
     // Process a feed for a single resource ID.
@@ -66,7 +66,7 @@ class GDataWapiRequestsTest : public testing::Test {
       scoped_ptr<net::test_server::BasicHttpResponse> result(
           test_util::CreateHttpResponseFromFile(
               test_util::GetTestFilePath("gdata/file_entry.json")));
-      return result.PassAs<net::test_server::HttpResponse>();
+      return result.Pass();
     } else if (resource_id == "invalid_resource_id") {
       // Check if this is an authorization request for an app.
       // This emulates to return invalid formatted result from the server.
@@ -75,11 +75,11 @@ class GDataWapiRequestsTest : public testing::Test {
         scoped_ptr<net::test_server::BasicHttpResponse> result(
             test_util::CreateHttpResponseFromFile(
                 test_util::GetTestFilePath("drive/testfile.txt")));
-        return result.PassAs<net::test_server::HttpResponse>();
+        return result.Pass();
       }
     }
 
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return nullptr;
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.

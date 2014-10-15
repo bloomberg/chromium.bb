@@ -482,7 +482,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
         error,
         std::string(),
         base::Time()));
-    return request.PassAs<Request>();
+    return request.Pass();
   }
 
   RequestParameters request_parameters(client_id,
@@ -498,7 +498,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
                      client_secret,
                      scopes);
   }
-  return request.PassAs<Request>();
+  return request.Pass();
 }
 
 void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,

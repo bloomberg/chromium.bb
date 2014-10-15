@@ -228,9 +228,7 @@ void TestConnectionFactoryImpl::SetConnectResult(int connect_result) {
   connect_result_ = connect_result;
   num_expected_attempts_ = 1;
   fake_handler_->ExpectOutgoingMessage(
-      MCSMessage(kLoginRequestTag,
-                 BuildLoginRequest(0, 0, "").PassAs<
-                     const google::protobuf::MessageLite>()));
+      MCSMessage(kLoginRequestTag, BuildLoginRequest(0, 0, "")));
 }
 
 void TestConnectionFactoryImpl::SetMultipleConnectResults(
@@ -244,9 +242,7 @@ void TestConnectionFactoryImpl::SetMultipleConnectResults(
   num_expected_attempts_ = num_expected_attempts;
   for (int i = 0 ; i < num_expected_attempts; ++i) {
     fake_handler_->ExpectOutgoingMessage(
-        MCSMessage(kLoginRequestTag,
-                   BuildLoginRequest(0, 0, "").PassAs<
-                       const google::protobuf::MessageLite>()));
+        MCSMessage(kLoginRequestTag, BuildLoginRequest(0, 0, "")));
   }
 }
 

@@ -78,7 +78,7 @@ class BaseRequestsTest : public testing::Test {
     response->set_code(response_code_);
     response->set_content(response_body_);
     response->set_content_type("application/json");
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   base::MessageLoopForIO message_loop_;

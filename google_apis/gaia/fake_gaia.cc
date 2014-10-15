@@ -224,7 +224,7 @@ scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
     return scoped_ptr<HttpResponse>();      // Request not understood.
   }
 
-  return http_response.PassAs<HttpResponse>();
+  return http_response.Pass();
 }
 
 void FakeGaia::IssueOAuthToken(const std::string& auth_token,

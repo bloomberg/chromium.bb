@@ -165,7 +165,7 @@ class DriveApiRequestsTest : public testing::Test {
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_NO_CONTENT);
-    return http_response.PassAs<net::test_server::HttpResponse>();
+    return http_response.Pass();
   }
 
   // Reads the data file of |expected_data_file_path_| and returns its content
@@ -183,8 +183,7 @@ class DriveApiRequestsTest : public testing::Test {
     http_request_ = request;
 
     // Return the response from the data file.
-    return test_util::CreateHttpResponseFromFile(
-        expected_data_file_path_).PassAs<net::test_server::HttpResponse>();
+    return test_util::CreateHttpResponseFromFile(expected_data_file_path_);
   }
 
   // Deletes the resource and returns no content with HTTP_NO_CONTENT status
@@ -204,7 +203,7 @@ class DriveApiRequestsTest : public testing::Test {
         new net::test_server::BasicHttpResponse);
     response->set_code(net::HTTP_NO_CONTENT);
 
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   // Returns PRECONDITION_FAILED response for ETag mismatching with error JSON
@@ -231,7 +230,7 @@ class DriveApiRequestsTest : public testing::Test {
       response->set_content_type("application/json");
     }
 
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   // Returns the response based on set expected upload url.
@@ -267,7 +266,7 @@ class DriveApiRequestsTest : public testing::Test {
     response->AddCustomHeader(
         "Location",
         test_server_.base_url().Resolve(expected_upload_path_).spec());
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   scoped_ptr<net::test_server::HttpResponse> HandleResumeUploadRequest(
@@ -318,7 +317,7 @@ class DriveApiRequestsTest : public testing::Test {
             "Range", "bytes=0-" + base::Int64ToString(received_bytes_ - 1));
       }
 
-      return response.PassAs<net::test_server::HttpResponse>();
+      return response.Pass();
     }
 
     // All bytes are received. Return the "success" response with the file's
@@ -332,7 +331,7 @@ class DriveApiRequestsTest : public testing::Test {
       response->set_code(net::HTTP_CREATED);
     }
 
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   // Returns the response based on set expected content and its type.
@@ -353,7 +352,7 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_OK);
     response->set_content_type(expected_content_type_);
     response->set_content(expected_content_);
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   // Handles a request for downloading a file.
@@ -375,7 +374,7 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_OK);
     response->set_content(id + id + id);
     response->set_content_type("text/plain");
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   // These are for the current upload file status.
