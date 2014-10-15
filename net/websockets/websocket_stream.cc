@@ -316,7 +316,7 @@ scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
                             connect_delegate.Pass(),
                             create_helper.Pass()));
   request->Start(scoped_ptr<base::Timer>(new base::Timer(false, false)));
-  return request.PassAs<WebSocketStreamRequest>();
+  return request.Pass();
 }
 
 // This is declared in websocket_test_util.h.
@@ -335,7 +335,7 @@ scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamForTesting(
                             connect_delegate.Pass(),
                             create_helper.Pass()));
   request->Start(timer.Pass());
-  return request.PassAs<WebSocketStreamRequest>();
+  return request.Pass();
 }
 
 void WebSocketDispatchOnFinishOpeningHandshake(

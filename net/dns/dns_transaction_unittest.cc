@@ -198,7 +198,7 @@ class TestSocketFactory : public MockClientSocketFactory {
     scoped_ptr<TestUDPClientSocket> socket(
         new TestUDPClientSocket(this, data_provider, net_log));
     data_provider->set_socket(socket.get());
-    return socket.PassAs<DatagramClientSocket>();
+    return socket.Pass();
   }
 
   void OnConnect(const IPEndPoint& endpoint) {

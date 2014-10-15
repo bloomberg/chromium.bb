@@ -683,7 +683,7 @@ MockClientSocketFactory::CreateDatagramClientSocket(
   data_provider->set_socket(socket.get());
   if (bind_type == DatagramSocket::RANDOM_BIND)
     socket->set_source_port(rand_int_cb.Run(1025, 65535));
-  return socket.PassAs<DatagramClientSocket>();
+  return socket.Pass();
 }
 
 scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
@@ -694,7 +694,7 @@ scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
   scoped_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(addresses, net_log, data_provider));
   data_provider->set_socket(socket.get());
-  return socket.PassAs<StreamSocket>();
+  return socket.Pass();
 }
 
 scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
@@ -708,7 +708,7 @@ scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
                               ssl_config,
                               mock_ssl_data_.GetNext()));
   ssl_client_sockets_.push_back(socket.get());
-  return socket.PassAs<SSLClientSocket>();
+  return socket.Pass();
 }
 
 void MockClientSocketFactory::ClearSSLSessionCache() {
@@ -1918,7 +1918,7 @@ DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
   udp_client_sockets().push_back(socket.get());
   if (bind_type == DatagramSocket::RANDOM_BIND)
     socket->set_source_port(rand_int_cb.Run(1025, 65535));
-  return socket.PassAs<DatagramClientSocket>();
+  return socket.Pass();
 }
 
 scoped_ptr<StreamSocket>
@@ -1931,7 +1931,7 @@ DeterministicMockClientSocketFactory::CreateTransportClientSocket(
       new DeterministicMockTCPClientSocket(net_log, data_provider));
   data_provider->set_delegate(socket->AsWeakPtr());
   tcp_client_sockets().push_back(socket.get());
-  return socket.PassAs<StreamSocket>();
+  return socket.Pass();
 }
 
 scoped_ptr<SSLClientSocket>
@@ -1945,7 +1945,7 @@ DeterministicMockClientSocketFactory::CreateSSLClientSocket(
                               host_and_port, ssl_config,
                               mock_ssl_data_.GetNext()));
   ssl_client_sockets_.push_back(socket.get());
-  return socket.PassAs<SSLClientSocket>();
+  return socket.Pass();
 }
 
 void DeterministicMockClientSocketFactory::ClearSSLSessionCache() {

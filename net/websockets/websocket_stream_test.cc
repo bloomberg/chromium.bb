@@ -1121,9 +1121,11 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
-  CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  "http://localhost", socket_data.Pass(),
-                                  timer.PassAs<base::Timer>());
+  CreateAndConnectRawExpectations("ws://localhost/",
+                                  NoSubProtocols(),
+                                  "http://localhost",
+                                  socket_data.Pass(),
+                                  timer.Pass());
   EXPECT_FALSE(has_failed());
   ASSERT_TRUE(weak_timer.get());
   EXPECT_TRUE(weak_timer->IsRunning());
@@ -1142,9 +1144,13 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
 
-  CreateAndConnectStandard(
-      "ws://localhost/", "/", NoSubProtocols(), "http://localhost", "", "",
-      timer.PassAs<base::Timer>());
+  CreateAndConnectStandard("ws://localhost/",
+                           "/",
+                           NoSubProtocols(),
+                           "http://localhost",
+                           "",
+                           "",
+                           timer.Pass());
   ASSERT_TRUE(weak_timer);
   EXPECT_TRUE(weak_timer->IsRunning());
 
@@ -1162,9 +1168,11 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
-  CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  "http://localhost", socket_data.Pass(),
-                                  timer.PassAs<base::Timer>());
+  CreateAndConnectRawExpectations("ws://localhost/",
+                                  NoSubProtocols(),
+                                  "http://localhost",
+                                  socket_data.Pass(),
+                                  timer.Pass());
   ASSERT_TRUE(weak_timer.get());
   EXPECT_TRUE(weak_timer->IsRunning());
 

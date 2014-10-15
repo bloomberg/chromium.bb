@@ -308,7 +308,7 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     simple_cache_impl_ = simple_backend.get();
-    cache_ = simple_backend.PassAs<disk_cache::Backend>();
+    cache_ = simple_backend.Pass();
     if (simple_cache_wait_for_index_) {
       net::TestCompletionCallback wait_for_index_cb;
       rv = simple_cache_impl_->index()->ExecuteWhenReady(

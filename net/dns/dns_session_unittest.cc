@@ -194,7 +194,7 @@ TestClientSocketFactory::CreateDatagramClientSocket(
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
   data_provider->set_socket(socket.get());
-  return socket.PassAs<DatagramClientSocket>();
+  return socket.Pass();
 }
 
 TestClientSocketFactory::~TestClientSocketFactory() {

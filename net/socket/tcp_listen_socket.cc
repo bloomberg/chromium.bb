@@ -107,7 +107,7 @@ void TCPListenSocket::Accept() {
 #if defined(OS_POSIX)
   sock->WatchSocket(WAITING_READ);
 #endif
-  socket_delegate_->DidAccept(this, sock.PassAs<StreamListenSocket>());
+  socket_delegate_->DidAccept(this, sock.Pass());
 }
 
 TCPListenSocketFactory::TCPListenSocketFactory(const string& ip, int port)
@@ -119,8 +119,7 @@ TCPListenSocketFactory::~TCPListenSocketFactory() {}
 
 scoped_ptr<StreamListenSocket> TCPListenSocketFactory::CreateAndListen(
     StreamListenSocket::Delegate* delegate) const {
-  return TCPListenSocket::CreateAndListen(ip_, port_, delegate)
-      .PassAs<StreamListenSocket>();
+  return TCPListenSocket::CreateAndListen(ip_, port_, delegate);
 }
 
 }  // namespace net

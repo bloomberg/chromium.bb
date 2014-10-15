@@ -741,10 +741,7 @@ class ClientSocketPoolBase {
                     internal::ClientSocketPoolBaseHelper::NORMAL,
                     params->ignore_limits(),
                     params, net_log));
-    return helper_.RequestSocket(
-        group_name,
-        request.template PassAs<
-            const internal::ClientSocketPoolBaseHelper::Request>());
+    return helper_.RequestSocket(group_name, request.Pass());
   }
 
   // RequestSockets bundles up the parameters into a Request and then forwards

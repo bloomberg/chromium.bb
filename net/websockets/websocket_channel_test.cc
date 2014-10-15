@@ -780,10 +780,7 @@ class WebSocketChannelTest : public ::testing::Test {
   // will have unpleasant compile errors.
   template <class T>
   void set_stream(scoped_ptr<T> stream) {
-    // Since the definition of "PassAs" depends on the type T, the C++ standard
-    // requires the "template" keyword to indicate that "PassAs" should be
-    // parsed as a template method.
-    stream_ = stream.template PassAs<WebSocketStream>();
+    stream_ = stream.Pass();
   }
 
   // A struct containing the data that will be used to connect the channel.

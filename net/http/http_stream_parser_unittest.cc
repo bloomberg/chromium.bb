@@ -236,7 +236,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
   ASSERT_EQ(OK, rv);
 
   scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-  socket_handle->SetSocket(transport.PassAs<StreamSocket>());
+  socket_handle->SetSocket(transport.Pass());
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -391,7 +391,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
       ASSERT_EQ(OK, rv);
 
       scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-      socket_handle->SetSocket(transport.PassAs<StreamSocket>());
+      socket_handle->SetSocket(transport.Pass());
 
       HttpRequestInfo request_info;
       request_info.method = "GET";
@@ -460,7 +460,7 @@ TEST(HttpStreamParser, Websocket101Response) {
   ASSERT_EQ(OK, rv);
 
   scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-  socket_handle->SetSocket(transport.PassAs<StreamSocket>());
+  socket_handle->SetSocket(transport.Pass());
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -530,7 +530,7 @@ class SimpleGetRunner {
     rv = callback.GetResult(rv);
     ASSERT_EQ(OK, rv);
 
-    socket_handle_->SetSocket(transport_.PassAs<StreamSocket>());
+    socket_handle_->SetSocket(transport_.Pass());
 
     request_info_.method = "GET";
     request_info_.url = GURL("http://localhost");
@@ -835,7 +835,7 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
   ASSERT_EQ(OK, transport->Connect(callback.callback()));
 
   scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-  socket_handle->SetSocket(transport.PassAs<StreamSocket>());
+  socket_handle->SetSocket(transport.Pass());
 
   scoped_ptr<HttpRequestInfo> request_info(new HttpRequestInfo());
   request_info->method = "GET";

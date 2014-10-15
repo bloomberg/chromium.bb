@@ -552,7 +552,7 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   }
 
   if (result == OK || IsCertificateError(result)) {
-    SetSocket(ssl_socket_.PassAs<StreamSocket>());
+    SetSocket(ssl_socket_.Pass());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     error_response_info_.cert_request_info = new SSLCertRequestInfo;
     ssl_socket_->GetSSLCertRequestInfo(

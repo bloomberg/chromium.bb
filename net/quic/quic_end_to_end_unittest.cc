@@ -75,7 +75,7 @@ class QuicEndToEndTest : public PlatformTest {
  protected:
   QuicEndToEndTest()
       : host_resolver_impl_(CreateResolverImpl()),
-        host_resolver_(host_resolver_impl_.PassAs<HostResolver>()),
+        host_resolver_(host_resolver_impl_.Pass()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(

@@ -124,7 +124,7 @@ void UnixDomainListenSocket::Accept() {
       new UnixDomainListenSocket(conn, socket_delegate_, auth_callback_));
   // It's up to the delegate to AddRef if it wants to keep it around.
   sock->WatchSocket(WAITING_READ);
-  socket_delegate_->DidAccept(this, sock.PassAs<StreamListenSocket>());
+  socket_delegate_->DidAccept(this, sock.Pass());
 }
 
 UnixDomainListenSocketFactory::UnixDomainListenSocketFactory(
@@ -138,7 +138,7 @@ UnixDomainListenSocketFactory::~UnixDomainListenSocketFactory() {}
 scoped_ptr<StreamListenSocket> UnixDomainListenSocketFactory::CreateAndListen(
     StreamListenSocket::Delegate* delegate) const {
   return UnixDomainListenSocket::CreateAndListen(
-      path_, delegate, auth_callback_).PassAs<StreamListenSocket>();
+             path_, delegate, auth_callback_).Pass();
 }
 
 #if defined(SOCKET_ABSTRACT_NAMESPACE_SUPPORTED)
@@ -158,8 +158,7 @@ scoped_ptr<StreamListenSocket>
 UnixDomainListenSocketWithAbstractNamespaceFactory::CreateAndListen(
     StreamListenSocket::Delegate* delegate) const {
   return UnixDomainListenSocket::CreateAndListenWithAbstractNamespace(
-             path_, fallback_path_, delegate, auth_callback_)
-         .PassAs<StreamListenSocket>();
+      path_, fallback_path_, delegate, auth_callback_);
 }
 
 #endif

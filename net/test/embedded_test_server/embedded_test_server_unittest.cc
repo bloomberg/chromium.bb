@@ -95,10 +95,10 @@ class EmbeddedTestServerTest: public testing::Test,
       http_response->set_code(code);
       http_response->set_content(content);
       http_response->set_content_type(content_type);
-      return http_response.PassAs<HttpResponse>();
+      return http_response.Pass();
     }
 
-    return scoped_ptr<HttpResponse>();
+    return nullptr;
   }
 
  protected:

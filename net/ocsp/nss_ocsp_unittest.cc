@@ -91,9 +91,7 @@ class NssHttpTest : public ::testing::Test {
     handler_ = handler.get();
 
     URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http",
-        kAiaHost,
-        handler.PassAs<URLRequestInterceptor>());
+        "http", kAiaHost, handler.Pass());
 
     SetURLRequestContextForNSSHttpIO(&context_);
     EnsureNSSHttpIOInit();

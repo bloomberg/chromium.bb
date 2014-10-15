@@ -187,7 +187,7 @@ class MockTriggerableClientSocket : public StreamSocket {
         new MockTriggerableClientSocket(addrlist, should_connect, net_log));
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            socket->GetConnectCallback());
-    return socket.PassAs<StreamSocket>();
+    return socket.Pass();
   }
 
   static scoped_ptr<StreamSocket> MakeMockDelayedClientSocket(
@@ -199,7 +199,7 @@ class MockTriggerableClientSocket : public StreamSocket {
         new MockTriggerableClientSocket(addrlist, should_connect, net_log));
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, socket->GetConnectCallback(), delay);
-    return socket.PassAs<StreamSocket>();
+    return socket.Pass();
   }
 
   static scoped_ptr<StreamSocket> MakeMockStalledClientSocket(
@@ -207,7 +207,7 @@ class MockTriggerableClientSocket : public StreamSocket {
       net::NetLog* net_log) {
     scoped_ptr<MockTriggerableClientSocket> socket(
         new MockTriggerableClientSocket(addrlist, true, net_log));
-    return socket.PassAs<StreamSocket>();
+    return socket.Pass();
   }
 
   // StreamSocket implementation.
@@ -388,7 +388,7 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
       // single-threaded.
       if (!run_loop_quit_closure_.is_null())
         run_loop_quit_closure_.Run();
-      return rv.PassAs<StreamSocket>();
+      return rv.Pass();
     }
     default:
       NOTREACHED();

@@ -73,13 +73,13 @@ scoped_ptr<HttpResponse> HandleFileRequest(
 
     scoped_ptr<CustomHttpResponse> http_response(
         new CustomHttpResponse(headers_contents, file_contents));
-    return http_response.PassAs<HttpResponse>();
+    return http_response.Pass();
   }
 
   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->set_code(HTTP_OK);
   http_response->set_content(file_contents);
-  return http_response.PassAs<HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace
@@ -243,8 +243,7 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                  << request->relative_url;
     scoped_ptr<BasicHttpResponse> not_found_response(new BasicHttpResponse);
     not_found_response->set_code(HTTP_NOT_FOUND);
-    connection->SendResponse(
-        not_found_response.PassAs<HttpResponse>());
+    connection->SendResponse(not_found_response.Pass());
   }
 
   // Drop the connection, since we do not support multiple requests per

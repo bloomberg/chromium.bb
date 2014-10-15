@@ -7616,8 +7616,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
         new MockClientSocketPoolManager);
     mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
     mock_pool_manager->SetSSLSocketPool(ssl_conn_pool);
-    peer.SetClientSocketPoolManager(
-        mock_pool_manager.PassAs<ClientSocketPoolManager>());
+    peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session));
@@ -7683,8 +7682,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
         new MockClientSocketPoolManager);
     mock_pool_manager->SetSocketPoolForHTTPProxy(proxy_host, http_proxy_pool);
     mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
-    peer.SetClientSocketPoolManager(
-        mock_pool_manager.PassAs<ClientSocketPoolManager>());
+    peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session));
@@ -7754,8 +7752,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
         new MockClientSocketPoolManager);
     mock_pool_manager->SetSocketPoolForSOCKSProxy(proxy_host, socks_conn_pool);
     mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
-    peer.SetClientSocketPoolManager(
-        mock_pool_manager.PassAs<ClientSocketPoolManager>());
+    peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
 
     scoped_ptr<HttpTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -9808,8 +9805,7 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
       new MockClientSocketPoolManager);
   mock_pool_manager->SetTransportSocketPool(transport_pool);
-  session_peer.SetClientSocketPoolManager(
-      mock_pool_manager.PassAs<ClientSocketPoolManager>());
+  session_peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));

@@ -32,7 +32,7 @@ TEST(MappedHostResolverTest, Inclusion) {
 
   // Create a remapped resolver that uses |resolver_impl|.
   scoped_ptr<MappedHostResolver> resolver(
-      new MappedHostResolver(resolver_impl.PassAs<HostResolver>()));
+      new MappedHostResolver(resolver_impl.Pass()));
 
   int rv;
   AddressList address_list;
@@ -106,7 +106,7 @@ TEST(MappedHostResolverTest, Exclusion) {
 
   // Create a remapped resolver that uses |resolver_impl|.
   scoped_ptr<MappedHostResolver> resolver(
-      new MappedHostResolver(resolver_impl.PassAs<HostResolver>()));
+      new MappedHostResolver(resolver_impl.Pass()));
 
   int rv;
   AddressList address_list;
@@ -153,7 +153,7 @@ TEST(MappedHostResolverTest, SetRulesFromString) {
 
   // Create a remapped resolver that uses |resolver_impl|.
   scoped_ptr<MappedHostResolver> resolver(
-      new MappedHostResolver(resolver_impl.PassAs<HostResolver>()));
+      new MappedHostResolver(resolver_impl.Pass()));
 
   int rv;
   AddressList address_list;
@@ -210,7 +210,7 @@ TEST(MappedHostResolverTest, MapToError) {
   resolver_impl->rules()->AddRule("*", "192.168.1.5");
 
   scoped_ptr<MappedHostResolver> resolver(
-      new MappedHostResolver(resolver_impl.PassAs<HostResolver>()));
+      new MappedHostResolver(resolver_impl.Pass()));
 
   int rv;
   AddressList address_list;
