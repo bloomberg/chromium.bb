@@ -1226,14 +1226,16 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // Initialize the service worker handler for the request. We don't use
-  // ServiceWorker for synchronous loads to avoid renderer deadlocks.
+  // ServiceWorker for synchronous loads to avoid renderer deadlocks. We
+  // don't use ServiceWorker for favicons to avoid cache tainting.
+  bool is_favicon_load = request_data.resource_type == RESOURCE_TYPE_FAVICON;
   ServiceWorkerRequestHandler::InitializeHandler(
       new_request.get(),
       filter_->service_worker_context(),
       blob_context,
       child_id,
       request_data.service_worker_provider_id,
-      request_data.skip_service_worker || is_sync_load,
+      request_data.skip_service_worker || is_sync_load || is_favicon_load,
       request_data.fetch_request_mode,
       request_data.fetch_credentials_mode,
       request_data.resource_type,
