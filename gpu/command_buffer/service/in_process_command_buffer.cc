@@ -747,7 +747,9 @@ namespace {
 
 void PostCallback(const scoped_refptr<base::MessageLoopProxy>& loop,
                          const base::Closure& callback) {
-  if (!loop->BelongsToCurrentThread()) {
+  // The loop.get() check is to support using InProcessCommandBuffer on a thread
+  // without a message loop.
+  if (loop.get() && !loop->BelongsToCurrentThread()) {
     loop->PostTask(FROM_HERE, callback);
   } else {
     callback.Run();
