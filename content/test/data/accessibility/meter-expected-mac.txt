@@ -1,2 +1,3 @@
+#<skip -- Unskip this with chromium side changes>
 AXWebArea AXRoleDescription='HTML content'
     AXGroup AXRoleDescription='group'
