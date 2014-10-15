@@ -240,7 +240,8 @@ public:
     // stroke color).
     void drawRect(const IntRect&);
     void drawLine(const IntPoint&, const IntPoint&);
-    void drawConvexPolygon(size_t numPoints, const FloatPoint*, bool shouldAntialias = false);
+
+    void fillPolygon(size_t numPoints, const FloatPoint*, const Color&, bool shouldAntialias);
 
     void fillPath(const Path&);
     void strokePath(const Path&);
@@ -306,7 +307,7 @@ public:
     void clipOut(const Path&);
     void clipOutRoundedRect(const RoundedRect&);
     void clipPath(const Path&, WindRule = RULE_EVENODD);
-    void clipConvexPolygon(size_t numPoints, const FloatPoint*, bool antialias = true);
+    void clipPolygon(size_t numPoints, const FloatPoint*, bool antialias);
     void clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     // This clip function is used only by <canvas> code. It allows
     // implementations to handle clipping on the canvas differently since
@@ -418,7 +419,7 @@ private:
         return m_paintState;
     }
 
-    static void setPathFromConvexPoints(SkPath*, size_t, const FloatPoint*);
+    static void setPathFromPoints(SkPath*, size_t, const FloatPoint*);
     static void setRadii(SkVector*, IntSize, IntSize, IntSize, IntSize);
 
     static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);

@@ -299,21 +299,21 @@ void ObjectPainter::drawRidgeOrGrooveBoxSide(GraphicsContext* graphicsContext, i
 void ObjectPainter::drawSolidBoxSide(GraphicsContext* graphicsContext, int x1, int y1, int x2, int y2,
     BoxSide side, Color color, int adjacentWidth1, int adjacentWidth2, bool antialias)
 {
-    StrokeStyle oldStrokeStyle = graphicsContext->strokeStyle();
-    graphicsContext->setStrokeStyle(NoStroke);
-    graphicsContext->setFillColor(color);
     ASSERT(x2 >= x1);
     ASSERT(y2 >= y1);
+
     if (!adjacentWidth1 && !adjacentWidth2) {
-        // Turn off antialiasing to match the behavior of drawConvexPolygon();
+        // Tweak antialiasing to match the behavior of fillPolygon();
         // this matters for rects in transformed contexts.
         bool wasAntialiased = graphicsContext->shouldAntialias();
-        graphicsContext->setShouldAntialias(antialias);
-        graphicsContext->drawRect(IntRect(x1, y1, x2 - x1, y2 - y1));
-        graphicsContext->setShouldAntialias(wasAntialiased);
-        graphicsContext->setStrokeStyle(oldStrokeStyle);
+        if (antialias != wasAntialiased)
+            graphicsContext->setShouldAntialias(antialias);
+        graphicsContext->fillRect(IntRect(x1, y1, x2 - x1, y2 - y1), color);
+        if (antialias != wasAntialiased)
+            graphicsContext->setShouldAntialias(wasAntialiased);
         return;
     }
+
     FloatPoint quad[4];
     switch (side) {
     case BSTop:
@@ -342,8 +342,7 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext* graphicsContext, int x1, i
         break;
     }
 
-    graphicsContext->drawConvexPolygon(4, quad, antialias);
-    graphicsContext->setStrokeStyle(oldStrokeStyle);
+    graphicsContext->fillPolygon(4, quad, color, antialias);
 }
 
 } // namespace blink

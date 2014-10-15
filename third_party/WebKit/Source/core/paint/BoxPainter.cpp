@@ -2109,7 +2109,7 @@ void BoxPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, const R
     // If the border matches both of its adjacent sides, don't anti-alias the clip, and
     // if neither side matches, anti-alias the clip.
     if (firstEdgeMatches == secondEdgeMatches) {
-        graphicsContext->clipConvexPolygon(4, quad, !firstEdgeMatches);
+        graphicsContext->clipPolygon(4, quad, !firstEdgeMatches);
         return;
     }
 
@@ -2141,14 +2141,14 @@ void BoxPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, const R
     firstQuad[1] = quad[1];
     firstQuad[2] = FloatPoint(quad[3].x() + r2 * ax, quad[3].y() + r2 * ay);
     firstQuad[3] = quad[3];
-    graphicsContext->clipConvexPolygon(4, firstQuad, !firstEdgeMatches);
+    graphicsContext->clipPolygon(4, firstQuad, !firstEdgeMatches);
 
     FloatPoint secondQuad[4];
     secondQuad[0] = quad[0];
     secondQuad[1] = FloatPoint(quad[0].x() - r1 * cx, quad[0].y() - r1 * cy);
     secondQuad[2] = quad[2];
     secondQuad[3] = quad[3];
-    graphicsContext->clipConvexPolygon(4, secondQuad, !secondEdgeMatches);
+    graphicsContext->clipPolygon(4, secondQuad, !secondEdgeMatches);
 }
 
 } // namespace blink

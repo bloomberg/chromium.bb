@@ -1098,10 +1098,7 @@ bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInf
     if (bounds.width() < arrowWidth + arrowPaddingLeft * o->style()->effectiveZoom())
         return false;
 
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-
-    paintInfo.context->setFillColor(o->style()->visitedDependentColor(CSSPropertyColor));
-    paintInfo.context->setStrokeStyle(NoStroke);
+    Color color = o->style()->visitedDependentColor(CSSPropertyColor);
 
     FloatPoint arrow1[3];
     arrow1[0] = FloatPoint(leftEdge, centerY - spaceBetweenArrows / 2.0f);
@@ -1109,7 +1106,7 @@ bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInf
     arrow1[2] = FloatPoint(leftEdge + arrowWidth / 2.0f, centerY - spaceBetweenArrows / 2.0f - arrowHeight);
 
     // Draw the top arrow.
-    paintInfo.context->drawConvexPolygon(3, arrow1, true);
+    paintInfo.context->fillPolygon(3, arrow1, color, true);
 
     FloatPoint arrow2[3];
     arrow2[0] = FloatPoint(leftEdge, centerY + spaceBetweenArrows / 2.0f);
@@ -1117,7 +1114,7 @@ bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInf
     arrow2[2] = FloatPoint(leftEdge + arrowWidth / 2.0f, centerY + spaceBetweenArrows / 2.0f + arrowHeight);
 
     // Draw the bottom arrow.
-    paintInfo.context->drawConvexPolygon(3, arrow2, true);
+    paintInfo.context->fillPolygon(3, arrow2, color, true);
     return false;
 }
 

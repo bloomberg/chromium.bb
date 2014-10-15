@@ -572,23 +572,22 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
         restore();
 }
 
-void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* points, bool shouldAntialias)
+void GraphicsContext::fillPolygon(size_t numPoints, const FloatPoint* points, const Color& color,
+    bool shouldAntialias)
 {
     if (contextDisabled())
         return;
 
-    if (numPoints <= 1)
-        return;
+    ASSERT(numPoints > 2);
 
     SkPath path;
-    setPathFromConvexPoints(&path, numPoints, points);
+    setPathFromPoints(&path, numPoints, points);
 
     SkPaint paint(immutableState()->fillPaint());
     paint.setAntiAlias(shouldAntialias);
-    drawPath(path, paint);
+    paint.setColor(color.rgb());
 
-    if (strokeStyle() != NoStroke)
-        drawPath(path, immutableState()->strokePaint());
+    drawPath(path, paint);
 }
 
 float GraphicsContext::prepareFocusRingPaint(SkPaint& paint, const Color& color, int width) const
@@ -1532,16 +1531,15 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
     path.setFillType(previousFillType);
 }
 
-void GraphicsContext::clipConvexPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)
+void GraphicsContext::clipPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)
 {
     if (contextDisabled())
         return;
 
-    if (numPoints <= 1)
-        return;
+    ASSERT(numPoints > 2);
 
     SkPath path;
-    setPathFromConvexPoints(&path, numPoints, points);
+    setPathFromPoints(&path, numPoints, points);
     clipPath(path, antialiased ? AntiAliased : NotAntiAliased);
 }
 
@@ -1798,7 +1796,7 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createRasterBuffer(const IntSize& size,
     return buffer.release();
 }
 
-void GraphicsContext::setPathFromConvexPoints(SkPath* path, size_t numPoints, const FloatPoint* points)
+void GraphicsContext::setPathFromPoints(SkPath* path, size_t numPoints, const FloatPoint* points)
 {
     path->incReserve(numPoints);
     path->moveTo(WebCoreFloatToSkScalar(points[0].x()),
@@ -1807,17 +1805,6 @@ void GraphicsContext::setPathFromConvexPoints(SkPath* path, size_t numPoints, co
         path->lineTo(WebCoreFloatToSkScalar(points[i].x()),
                      WebCoreFloatToSkScalar(points[i].y()));
     }
-
-    /*  The code used to just blindly call this
-            path->setIsConvex(true);
-        But webkit can sometimes send us non-convex 4-point values, so we mark the path's
-        convexity as unknown, so it will get computed by skia at draw time.
-        See crbug.com 108605
-    */
-    SkPath::Convexity convexity = SkPath::kConvex_Convexity;
-    if (numPoints == 4)
-        convexity = SkPath::kUnknown_Convexity;
-    path->setConvexity(convexity);
 }
 
 void GraphicsContext::setRadii(SkVector* radii, IntSize topLeft, IntSize topRight, IntSize bottomRight, IntSize bottomLeft)
