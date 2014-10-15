@@ -361,7 +361,8 @@ input[type='url'].favicon-cell {
   background-position-x: 4px;
 }
 
-html[dir=rtl] input.favicon-cell {
+html[dir=rtl] input.favicon-cell,
+input[dir=rtl].favicon-cell {
   background-position-x: -webkit-calc(100% - 4px);
 }
 
