@@ -41,6 +41,7 @@
 namespace blink {
 
 class Chrome;
+class ConsoleMessageStorage;
 class EventHandlerRegistry;
 class Page;
 class PinchViewport;
@@ -80,6 +81,8 @@ public:
     const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
     void setOverrideEncoding(const AtomicString& encoding) { m_overrideEncoding = encoding; }
 
+    ConsoleMessageStorage& consoleMessageStorage() const;
+
     void trace(Visitor*);
 
 private:
@@ -88,6 +91,7 @@ private:
     RawPtrWillBeMember<Page> m_page;
     const OwnPtrWillBeMember<PinchViewport> m_pinchViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
+    const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;
 
     AtomicString m_overrideEncoding;
 };

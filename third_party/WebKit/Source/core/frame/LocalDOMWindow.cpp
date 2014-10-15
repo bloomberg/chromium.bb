@@ -545,7 +545,7 @@ Page* LocalDOMWindow::page()
 void LocalDOMWindow::willDetachFrameHost()
 {
     m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
-    m_frame->console().messageStorage()->frameWindowDiscarded(this);
+    m_frame->host()->consoleMessageStorage().frameWindowDiscarded(this);
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
 }
 

@@ -481,6 +481,9 @@ interface InspectorConsoleInstrumentation {
 class ConsoleMessage;
 
     [Console, Debugger]
+    void addMessageToConsole(FrameHost* frameHost, ConsoleMessage* consoleMessage);
+
+    [Console, Debugger]
     void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
     [Timeline]
@@ -503,6 +506,9 @@ class ConsoleMessage;
 
     [Profiler, Inline=FastReturn]
     void consoleProfileEnd(ExecutionContext* context, const String& title);
+
+    [Console]
+    void consoleMessagesCleared(FrameHost* frameHost);
 
     [Console]
     void consoleMessagesCleared(ExecutionContext* context);

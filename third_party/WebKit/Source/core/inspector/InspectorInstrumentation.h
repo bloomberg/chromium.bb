@@ -54,6 +54,7 @@ namespace blink {
 class Document;
 class EventTarget;
 class ExecutionContext;
+class FrameHost;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
 class ThreadableLoaderClient;
@@ -108,6 +109,7 @@ InstrumentingAgents* instrumentingAgentsFor(Document*);
 InstrumentingAgents* instrumentingAgentsFor(RenderObject*);
 InstrumentingAgents* instrumentingAgentsFor(Node*);
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
+InstrumentingAgents* instrumentingAgentsFor(FrameHost*);
 
 // Helper for the one above.
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);

@@ -33,6 +33,7 @@
 
 #include "core/events/EventTarget.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/frame/FrameHost.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorController.h"
@@ -226,6 +227,11 @@ InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope
     if (!workerGlobalScope)
         return 0;
     return instrumentationForWorkerGlobalScope(workerGlobalScope);
+}
+
+InstrumentingAgents* instrumentingAgentsFor(FrameHost* host)
+{
+    return instrumentationForPage(&host->page());
 }
 
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* context)

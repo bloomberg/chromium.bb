@@ -308,8 +308,8 @@ void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
     //    die with the window. And the registered DOMWindowProperty instances that don't,
     //    only keep a weak reference to this frame, so there's no need to be
     //    explicitly notified that this frame is going away.
-    if (m_domWindow) {
-        console().messageStorage()->frameWindowDiscarded(m_domWindow.get());
+    if (m_domWindow && host()) {
+        host()->consoleMessageStorage().frameWindowDiscarded(m_domWindow.get());
         InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
     }
     if (domWindow)

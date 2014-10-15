@@ -32,6 +32,7 @@
 #include "core/frame/FrameHost.h"
 
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -47,6 +48,7 @@ FrameHost::FrameHost(Page& page)
     : m_page(&page)
     , m_pinchViewport(PinchViewport::create(*this))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
+    , m_consoleMessageStorage(ConsoleMessageStorage::createForFrameHost(this))
 {
 }
 
@@ -85,11 +87,17 @@ EventHandlerRegistry& FrameHost::eventHandlerRegistry() const
     return *m_eventHandlerRegistry;
 }
 
+ConsoleMessageStorage& FrameHost::consoleMessageStorage() const
+{
+    return *m_consoleMessageStorage;
+}
+
 void FrameHost::trace(Visitor* visitor)
 {
     visitor->trace(m_page);
     visitor->trace(m_pinchViewport);
     visitor->trace(m_eventHandlerRegistry);
+    visitor->trace(m_consoleMessageStorage);
 }
 
 }

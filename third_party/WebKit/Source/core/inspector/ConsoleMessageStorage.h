@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class FrameHost;
 class LocalDOMWindow;
 class WorkerGlobalScopeProxy;
 
@@ -23,9 +24,9 @@ public:
         return adoptPtrWillBeNoop(new ConsoleMessageStorage(context));
     }
 
-    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> createForFrame(LocalFrame* frame)
+    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> createForFrameHost(FrameHost* frameHost)
     {
-        return adoptPtrWillBeNoop(new ConsoleMessageStorage(frame));
+        return adoptPtrWillBeNoop(new ConsoleMessageStorage(frameHost));
     }
 
     void reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
@@ -45,14 +46,12 @@ public:
 
 private:
     explicit ConsoleMessageStorage(ExecutionContext*);
-    explicit ConsoleMessageStorage(LocalFrame*);
-
-    ExecutionContext* executionContext() const;
+    explicit ConsoleMessageStorage(FrameHost*);
 
     int m_expiredCount;
     WillBeHeapDeque<RefPtrWillBeMember<ConsoleMessage> > m_messages;
     RawPtrWillBeMember<ExecutionContext> m_context;
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    RawPtrWillBeMember<FrameHost> m_frameHost;
 };
 
 } // namespace blink

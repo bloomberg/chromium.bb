@@ -336,12 +336,14 @@ class Method:
         elif self.returns_value:
             body_lines.append("\n    return %s;" % self.default_return_value)
 
-        cpp_lines.append(template_outofline.substitute(
+        generated_outofline = template_outofline.substitute(
             None,
             return_type=self.return_type,
             name=self.name,
             params_impl=", ".join(map(Parameter.to_str_class_and_name, self.params_impl)),
-            impl_lines="".join(body_lines)))
+            impl_lines="".join(body_lines))
+        if generated_outofline not in cpp_lines:
+            cpp_lines.append(generated_outofline)
 
     def generate_agent_call(self, agent):
         agent_class, agent_getter = agent_getter_signature(agent)
