@@ -31,6 +31,8 @@
 #ifndef FrameTestHelpers_h
 #define FrameTestHelpers_h
 
+#include "core/frame/Settings.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHistoryItem.h"
@@ -38,6 +40,8 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 #include "wtf/PassOwnPtr.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <string>
 
 namespace blink {
@@ -130,6 +134,22 @@ public:
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
+};
+
+class UseMockScrollbarSettings {
+public:
+    UseMockScrollbarSettings()
+    {
+        Settings::setMockScrollbarsEnabled(true);
+        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
+    }
+
+    ~UseMockScrollbarSettings()
+    {
+        Settings::setMockScrollbarsEnabled(false);
+        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+    }
 };
 
 } // namespace FrameTestHelpers

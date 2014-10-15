@@ -58,6 +58,7 @@
 namespace {
 
 using blink::FrameTestHelpers::runPendingTasks;
+using blink::FrameTestHelpers::UseMockScrollbarSettings;
 using namespace blink;
 
 class ViewportTest : public testing::Test {
@@ -91,22 +92,6 @@ protected:
 
     std::string m_baseURL;
     std::string m_chromeURL;
-};
-
-class UseMockScrollbarSettings {
-public:
-    UseMockScrollbarSettings()
-    {
-        Settings::setMockScrollbarsEnabled(true);
-        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
-    }
-
-    ~UseMockScrollbarSettings()
-    {
-        Settings::setMockScrollbarsEnabled(false);
-        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
-    }
 };
 
 static void setViewportSettings(WebSettings* settings)

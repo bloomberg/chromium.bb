@@ -149,14 +149,15 @@ IntSize PageScaleConstraintsSet::mainFrameSize(const IntSize& contentsSize) cons
     if (m_pageDefinedConstraints.minimumScale < finalConstraints().minimumScale
         && m_userAgentConstraints.minimumScale < finalConstraints().minimumScale
         && contentsSize.width()
-        && m_viewSize.width())
-        return IntSize(contentsSize.width(), computeHeightByAspectRatio(contentsSize.width(), m_viewSize));
+        && m_viewSize.width()) {
+        return expandedIntSize(FloatSize(contentsSize.width(), computeHeightByAspectRatio(contentsSize.width(), m_viewSize)));
+    }
 
     // If there is a minimum scale (or there's no content size yet), the frame size should match the viewport
     // size at minimum scale, since the viewport must always be contained by the frame.
-    IntSize frameSize(m_viewSize);
+    FloatSize frameSize(m_viewSize);
     frameSize.scale(1 / finalConstraints().minimumScale);
-    return frameSize;
+    return expandedIntSize(frameSize);
 }
 
 void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled)

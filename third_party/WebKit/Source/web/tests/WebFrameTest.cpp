@@ -118,6 +118,7 @@ namespace {
 
 using blink::URLTestHelpers::toKURL;
 using blink::FrameTestHelpers::runPendingTasks;
+using blink::FrameTestHelpers::UseMockScrollbarSettings;
 using namespace blink;
 
 const int touchPointPadding = 32;
@@ -232,22 +233,6 @@ protected:
     std::string m_baseURL;
     std::string m_notBaseURL;
     std::string m_chromeURL;
-};
-
-class UseMockScrollbarSettings {
-public:
-    UseMockScrollbarSettings()
-    {
-        Settings::setMockScrollbarsEnabled(true);
-        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
-    }
-
-    ~UseMockScrollbarSettings()
-    {
-        Settings::setMockScrollbarsEnabled(false);
-        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
-    }
 };
 
 TEST_F(WebFrameTest, ContentText)

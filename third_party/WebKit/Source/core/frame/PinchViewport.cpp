@@ -67,6 +67,7 @@ namespace blink {
 PinchViewport::PinchViewport(FrameHost& owner)
     : m_frameHost(owner)
     , m_scale(1)
+    , m_topControlsAdjustment(0)
 {
     reset();
 }
@@ -87,8 +88,6 @@ void PinchViewport::setSize(const IntSize& size)
 
     TRACE_EVENT2("blink", "PinchViewport::setSize", "width", size.width(), "height", size.height());
     m_size = size;
-
-    clampToBoundaries();
 
     if (m_innerViewportContainerLayer) {
         m_innerViewportContainerLayer->setSize(m_size);
@@ -118,6 +117,7 @@ void PinchViewport::mainFrameDidChangeSize()
 FloatRect PinchViewport::visibleRect() const
 {
     FloatSize scaledSize(m_size);
+    scaledSize.expand(0, m_topControlsAdjustment);
     scaledSize.scale(1 / m_scale);
     return FloatRect(m_offset, scaledSize);
 }
@@ -365,7 +365,25 @@ IntPoint PinchViewport::minimumScrollPosition() const
 
 IntPoint PinchViewport::maximumScrollPosition() const
 {
-    return flooredIntPoint(FloatSize(contentsSize()) - visibleRect().size());
+    // FIXME: We probably shouldn't be storing the bounds in a float. crbug.com/422331.
+    FloatSize frameViewSize(contentsSize());
+
+    if (m_topControlsAdjustment) {
+        float aspectRatio = visibleRect().width() / visibleRect().height();
+        float adjustment = frameViewSize.width() / aspectRatio - frameViewSize.height();
+        frameViewSize.expand(0, adjustment);
+    }
+
+    frameViewSize.scale(m_scale);
+    frameViewSize = flooredIntSize(frameViewSize);
+
+    FloatSize viewportSize(m_size);
+    viewportSize.expand(0, m_topControlsAdjustment);
+
+    FloatSize maxPosition = frameViewSize - viewportSize;
+    maxPosition.scale(1 / m_scale);
+
+    return flooredIntPoint(maxPosition);
 }
 
 IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float scale)
@@ -386,6 +404,11 @@ IntPoint PinchViewport::clampDocumentOffsetAtScale(const IntPoint& offset, float
     clamped = clamped.shrunkTo(max);
     clamped = clamped.expandedTo(min);
     return clamped;
+}
+
+void PinchViewport::setTopControlsAdjustment(float adjustment)
+{
+    m_topControlsAdjustment = adjustment;
 }
 
 IntRect PinchViewport::scrollableAreaBoundingBox() const

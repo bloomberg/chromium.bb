@@ -2950,16 +2950,23 @@ void FrameView::setTopControlsViewportAdjustment(float adjustment)
 
 IntPoint FrameView::maximumScrollPosition() const
 {
-    FloatSize visibleContentSizeF = unscaledVisibleContentSize(ExcludeScrollbars);
-    visibleContentSizeF.expand(0, -m_topControlsViewportAdjustment);
-    visibleContentSizeF.scale(1 / visibleContentScaleFactor());
-    IntSize visibleSize = expandedIntSize(visibleContentSizeF);
+    // Make the same calculation as in CC's LayerImpl::MaxScrollOffset()
+    // FIXME: We probably shouldn't be storing the bounds in a float. crbug.com/422331.
+    FloatSize visibleSize = unscaledVisibleContentSize(ExcludeScrollbars);
+    visibleSize.expand(0, m_topControlsViewportAdjustment);
 
-    IntPoint maximumOffset(
-        contentsWidth() - visibleSize.width() - scrollOrigin().x(),
-        contentsHeight() - visibleSize.height() - scrollOrigin().y());
-    maximumOffset.clampNegativeToZero();
-    return maximumOffset;
+    FloatSize contentBounds = contentsSize();
+    contentBounds.scale(visibleContentScaleFactor());
+    contentBounds = flooredIntSize(contentBounds);
+
+    FloatSize maximumOffset = contentBounds - visibleSize - toIntSize(scrollOrigin());
+
+    // Convert back to CSS pixels.
+    maximumOffset.scale(1 / visibleContentScaleFactor());
+
+    IntPoint snappedMaximumOffset = flooredIntPoint(maximumOffset);
+    snappedMaximumOffset.clampNegativeToZero();
+    return snappedMaximumOffset;
 }
 
 void FrameView::addChild(PassRefPtrWillBeRawPtr<Widget> prpChild)

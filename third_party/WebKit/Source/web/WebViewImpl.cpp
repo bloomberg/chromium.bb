@@ -1721,11 +1721,22 @@ void WebViewImpl::didUpdateTopControls()
     if (!view)
         return;
 
-    // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
-    // the FrameView about it so it can make correct scroll offset clamping decisions during compositor
-    // commits.
-    float topControlsViewportAdjustment = m_topControlsContentOffset - m_topControlsLayoutHeight;
-    view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
+    float topControlsViewportAdjustment = m_topControlsLayoutHeight - m_topControlsContentOffset;
+    if (!pinchVirtualViewportEnabled()) {
+        // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
+        // the FrameView about it so it can make correct scroll offset clamping decisions during compositor
+        // commits.
+        view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
+    } else {
+        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+        pinchViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
+
+        // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
+        float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
+        float newHeight = view->unscaledVisibleContentSize(ExcludeScrollbars).width() / aspectRatio;
+        float adjustment = newHeight - view->unscaledVisibleContentSize(ExcludeScrollbars).height();
+        view->setTopControlsViewportAdjustment(adjustment);
+    }
 }
 
 void WebViewImpl::resize(const WebSize& newSize)
