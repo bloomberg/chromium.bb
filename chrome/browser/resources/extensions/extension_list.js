@@ -289,7 +289,7 @@ cr.define('options', function() {
           }.bind(this);
         }
         options.addEventListener('click', function(e) {
-          optionsClickListener(e);
+          optionsClickListener();
           e.preventDefault();
         });
         options.hidden = false;
