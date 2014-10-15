@@ -158,6 +158,16 @@ void FullscreenController::exitFullScreenForElement(Element* element)
         client->exitFullScreen();
 }
 
+void FullscreenController::updateSize()
+{
+    if (!isFullscreen())
+        return;
+
+    RenderFullScreen* renderer = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenRenderer();
+    ASSERT(renderer);
+    renderer->updateStyle();
+}
+
 void FullscreenController::trace(Visitor* visitor)
 {
     visitor->trace(m_provisionalFullScreenElement);

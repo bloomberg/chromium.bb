@@ -81,7 +81,6 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
@@ -1767,8 +1766,7 @@ void WebViewImpl::resize(const WebSize& newSize)
         performResize();
     }
 
-    if (m_fullscreenController->isFullscreen())
-        Fullscreen::from(*view->frame().document()).fullScreenRenderer()->updateStyle();
+    m_fullscreenController->updateSize();
 
     if (settings()->viewportEnabled()) {
         // Relayout immediately to recalculate the minimum scale limit.
