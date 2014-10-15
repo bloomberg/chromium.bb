@@ -1,3 +1,5 @@
 # Preferred reviewers.
 qinmin@chromium.org
 
+# VideoCapture classes under Android java/src/org/chromium/media/
+per-file VideoCapture*.java=mcasas@chromium.org
