@@ -1424,14 +1424,32 @@ workspace_has_only(struct workspace *ws, struct weston_surface *surface)
 }
 
 static void
+surface_keyboard_focus_lost(struct weston_surface *surface)
+{
+	struct weston_compositor *compositor = surface->compositor;
+	struct weston_seat *seat;
+	struct weston_surface *focus;
+
+	wl_list_for_each(seat, &compositor->seat_list, link) {
+		struct weston_keyboard *keyboard =
+			weston_seat_get_keyboard(seat);
+
+		if (!keyboard)
+			continue;
+
+		focus = weston_surface_get_main_surface(keyboard->focus);
+		if (focus == surface)
+			weston_keyboard_set_focus(keyboard, NULL);
+	}
+}
+
+static void
 move_surface_to_workspace(struct desktop_shell *shell,
                           struct shell_surface *shsurf,
                           uint32_t workspace)
 {
 	struct workspace *from;
 	struct workspace *to;
-	struct weston_seat *seat;
-	struct weston_surface *focus;
 	struct weston_view *view;
 
 	if (workspace == shell->workspaces.current)
@@ -1455,17 +1473,7 @@ move_surface_to_workspace(struct desktop_shell *shell,
 	shell_surface_update_child_surface_layers(shsurf);
 
 	drop_focus_state(shell, from, view->surface);
-	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
-		struct weston_keyboard *keyboard =
-			weston_seat_get_keyboard(seat);
-
-		if (!keyboard)
-			continue;
-
-		focus = weston_surface_get_main_surface(keyboard->focus);
-		if (focus == view->surface)
-			weston_keyboard_set_focus(keyboard, NULL);
-	}
+	surface_keyboard_focus_lost(view->surface);
 
 	weston_view_damage_below(view);
 }
@@ -2705,8 +2713,6 @@ set_minimized(struct weston_surface *surface)
 {
 	struct shell_surface *shsurf;
 	struct workspace *current_ws;
-	struct weston_seat *seat;
-	struct weston_surface *focus;
 	struct weston_view *view;
 
 	view = get_default_view(surface);
@@ -2722,16 +2728,7 @@ set_minimized(struct weston_surface *surface)
 	weston_layer_entry_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
 
 	drop_focus_state(shsurf->shell, current_ws, view->surface);
-	wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
-		struct weston_keyboard *keyboard =
-			weston_seat_get_keyboard(seat);
-
-		if (!keyboard)
-			continue;
-		focus = weston_surface_get_main_surface(keyboard->focus);
-		if (focus == view->surface)
-			weston_keyboard_set_focus(keyboard, NULL);
-	}
+	surface_keyboard_focus_lost(surface);
 
 	shell_surface_update_child_surface_layers(shsurf);
 	weston_view_damage_below(view);
