@@ -2637,19 +2637,20 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
 }
 
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
-  // These GUIDs are alphabetical to make validating expectations easier.
-  CreditCard credit_card0("087151C8-6AB1-487C-9095-28E80BE5DA15",
+  // These GUIDs are reverse alphabetical to make validating expectations
+  // easier.
+  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
                           "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0,
       "Clyde Barrow", "347666888555" /* American Express */, "04", "2015");
   personal_data_->AddCreditCard(credit_card0);
 
-  CreditCard credit_card1("6141084B-72D7-4B73-90CF-3D6AC154673B",
+  CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
                           "https://www.example.com");
   test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
   personal_data_->AddCreditCard(credit_card1);
 
-  CreditCard credit_card2("702149C1-EE28-4213-A3B9-DA243FFF021B",
+  CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
                           "https://www.example.com");
   test::SetCreditCardInfo(&credit_card2,
       "Bonnie Parker", "518765432109" /* Mastercard */, "", "");
@@ -2673,12 +2674,12 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
       &guid_pairs);
   ASSERT_EQ(3U, values.size());
   ASSERT_EQ(values.size(), labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), values[0]);
-  EXPECT_EQ(ASCIIToUTF16("*8555"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), values[2]);
+  EXPECT_EQ(ASCIIToUTF16("*8555"), labels[2]);
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"), values[1]);
   EXPECT_EQ(base::string16(), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), values[2]);
-  EXPECT_EQ(ASCIIToUTF16("*2109"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("*2109"), labels[0]);
 
   // Sublabel is expiration date when filling card number.
   values.clear();
@@ -2694,10 +2695,10 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
       &guid_pairs);
   ASSERT_EQ(2U, values.size());
   ASSERT_EQ(values.size(), labels.size());
-  EXPECT_EQ(ASCIIToUTF16("********8555"), values[0]);
-  EXPECT_EQ(ASCIIToUTF16("04/15"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("********2109"), values[1]);
-  EXPECT_EQ(base::string16(), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("********8555"), values[1]);
+  EXPECT_EQ(ASCIIToUTF16("04/15"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("********2109"), values[0]);
+  EXPECT_EQ(base::string16(), labels[0]);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
