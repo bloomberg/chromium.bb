@@ -167,7 +167,7 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_chromeos_sources,
                            ".", "//chrome")
     deps += [
-      #"browser_chromeos",  TODO(GYP)
+      "//chrome/browser/chromeos",
     ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_chromeos_sources,

@@ -1,0 +1,172 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//components/nacl/nacl_defines.gni")
+import("//media/media_options.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("../../chrome_browser_chromeos.gypi") ],
+    "scope",
+    [ "chrome_browser_chromeos.gypi" ])
+
+source_set("chromeos") {
+  assert(enable_extensions, "ChromeOS Chrome has to be built with extensions")
+
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    "//build/config/linux:fontconfig",
+  ]
+
+  public_deps = [
+    "//ash/resources",
+    "//ash/strings",
+    "//chrome/app/resources:platform_locale_settings",
+    "//chrome/app/theme:theme_resources",
+    "//chrome:extra_resources",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//content/app/resources",
+    "//ui/chromeos/resources",
+    "//ui/chromeos/strings",
+    "//ui/resources",
+    "//ui/strings",
+  ]
+
+  deps = [
+    # TODO(tbarzic): Cleanup this list.
+    "//ash",
+    "//ash:ash_with_content",
+    "//breakpad:client",
+    "//components/session_manager/core",
+    "//components/user_manager",
+    "//chrome/browser/devtools",
+    "//chrome/browser/extensions",
+    "//chrome/browser/history:in_memory_url_index_cache_proto",
+    "//chrome/browser/net:cert_logger_proto",
+    "//chrome/browser/safe_browsing:chunk_proto",
+    "//chrome/browser/safe_browsing:metadata_proto",
+    "//chrome/browser/safe_browsing:report_proto",
+    "//chrome/common",
+    "//chrome/common/extensions/api",
+    "//chrome/common/extensions/api:api_registration",
+    "//chrome/common/net",
+    "//chrome/installer/util",
+    "//chromeos",
+    "//chromeos/ime:gencode",
+    "//chromeos:cryptohome_proto",
+    "//chromeos:cryptohome_signkey_proto",
+    "//chromeos:power_manager_proto",
+    "//components/onc",
+    "//components/ownership",
+    "//components/pairing",
+    "//components/policy",
+    # This depends directly on the variations target, rather than just
+    # transitively via the common target because the proto sources need to
+    # be generated before code in this target can start building.
+    "//components/strings",
+    "//components/variations",
+    "//content/public/browser",
+    "//content/public/common",
+    "//crypto",
+    "//dbus",
+    "//device/bluetooth",
+    "//device/hid",
+    "//media",
+    "//net",
+    "//ppapi:ppapi_ipc",  # For PpapiMsg_LoadPlugin
+    "//printing", # TODO: care about enable_printing
+    "//skia",
+    "//storage/browser",
+    "//storage/common",
+    "//sync",
+    "//third_party/adobe/flash:flapper_version_h",
+    "//third_party/cacheinvalidation",
+    "//third_party/expat",
+    "//third_party/hunspell",
+    "//third_party/icu",
+    "//third_party/leveldatabase",
+    "//third_party/libevent",
+    "//third_party/libjingle",
+    "//third_party/libusb",
+    "//third_party/libxml",
+    "//third_party/npapi",
+    "//third_party/protobuf:protobuf_lite",
+    "//third_party/protobuf:protoc($host_toolchain)",
+    "//third_party/re2",
+    "//third_party/zlib",
+    "//ui/app_list",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/display",
+    "//ui/events/platform",
+    "//ui/events:dom4_keycode_converter",
+    "//ui/file_manager",
+    "//ui/message_center",
+    "//ui/surface",
+    "//ui/views",
+    "//ui/views/controls/webview",
+    "//ui/web_dialogs",
+    "//url",
+    "//v8",
+    ":attestation_proto",
+    ":device_policy_proto",
+    ":drive_proto",
+  ]
+
+  defines = nacl_defines
+
+  sources = rebase_path(gypi_values.browser_chromeos_sources,
+                        ".", "//chrome") +
+            rebase_path(gypi_values.browser_chromeos_extension_sources,
+                        ".", "//chrome")
+  if (use_athena) {
+    defines += ["USE_ATHENA=1"]
+  }
+
+  if (use_x11) {
+    configs += [ "//build/config/linux:x11" ]
+  } else {
+    assert(use_ozone, "Either use_x11 or use_ozone has to be specified.")
+    deps += [ "//ui/ozone" ]
+    sources -= [
+      "device_uma.cc",
+      "device_uma.h",
+      "events/system_key_event_listener.cc",
+      "events/system_key_event_listener.h",
+      "events/xinput_hierarchy_changed_event_listener.cc",
+      "events/xinput_hierarchy_changed_event_listener.h",
+    ]
+  }
+
+  if (use_cras) {
+    defines += [ "USE_CRAS" ]
+  }
+
+  if (ui_compositor_image_transport) {
+    deps += [ "//ui/gl" ]
+  }
+}
+
+proto_library("drive_proto") {
+  sources = [ "drive/drive.proto" ]
+}
+
+proto_library("device_policy_proto") {
+  sources = [
+    "policy/proto/chrome_device_policy.proto",
+    "policy/proto/install_attributes.proto",
+  ]
+}
+
+proto_library("attestation_proto") {
+  sources = [
+    "attestation/attestation_key_payload.proto",
+    "attestation/attestation_signed_data.proto",
+  ]
+}

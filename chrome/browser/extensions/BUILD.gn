@@ -86,7 +86,7 @@ static_library("extensions") {
     deps += [
       "//third_party/libevent",
       "//third_party/protobuf:protobuf_lite",
-      #'../chromeos/ime/input_method.gyp:gencode',  TODO(GYP)
+      "//chromeos/ime:gencode",
     ]
   } else {
     sources += [

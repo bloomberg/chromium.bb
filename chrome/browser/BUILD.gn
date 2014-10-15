@@ -350,12 +350,19 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_chromeos_sources,
                            ".", "//chrome")
     deps += [
-      #"browser_chromeos",  TODO(GYP)
+      "//chrome/browser/chromeos",
     ]
   } else {
     # Non-ChromeOS.
     sources += rebase_path(gypi_values.chrome_browser_non_chromeos_sources,
                            ".", "//chrome")
+  }
+
+  if (is_chromeos || is_ios) {
+    sources -= [
+      "metrics/signin_status_metrics_provider.cc",
+      "metrics/signin_status_metrics_provider.h",
+    ]
   }
 
   if (use_cups) {
@@ -404,6 +411,9 @@ static_library("browser") {
   if (use_nss_certs) {
     sources += rebase_path(gypi_values.chrome_browser_nss_sources,
                            ".", "//chrome")
+    if (is_chromeos) {
+      sources -= [ "net/nss_context_linux.cc" ]
+    }
   }
   if (enable_notifications) {
     sources += rebase_path(gypi_values.chrome_browser_notifications_sources,
