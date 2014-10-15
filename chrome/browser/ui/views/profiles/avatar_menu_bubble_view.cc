@@ -517,6 +517,7 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(
       buttons_view_(NULL),
       supervised_user_info_(NULL),
       separator_switch_users_(NULL),
+      switch_profile_link_(nullptr),
       expanded_(false) {
   avatar_menu_.reset(new AvatarMenu(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
