@@ -1362,6 +1362,8 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
 }
 
 bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
+  TRACE_EVENT0("cc",
+               "PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw");
   if (!layer_tree_impl()->IsPendingTree())
     return true;
 
@@ -1396,8 +1398,14 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
       // be out of date. It is updated in the raster/eviction iterators.
       // TODO(vmpstr): Remove the comment once you can't access this information
       // from the tile.
-      if (tiling->IsTileRequiredForActivation(tile) && !tile->IsReadyToDraw())
+      if (tiling->IsTileRequiredForActivation(tile) && !tile->IsReadyToDraw()) {
+        TRACE_EVENT_INSTANT0("cc",
+                             "PictureLayerImpl::"
+                             "AllTilesRequiredForActivationAreReadyToDraw not "
+                             "ready to activate",
+                             TRACE_EVENT_SCOPE_THREAD);
         return false;
+      }
     }
   }
 

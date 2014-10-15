@@ -169,9 +169,19 @@ RasterTilePriorityQueue::PairedPictureLayerQueue::PairedPictureLayerQueue(
       has_both_layers(layer_pair.active && layer_pair.pending) {
   if (has_both_layers)
     SkipTilesReturnedByTwin(tree_priority);
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                       "PairedPictureLayerQueue::PairedPictureLayerQueue",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "state",
+                       StateAsValue());
 }
 
 RasterTilePriorityQueue::PairedPictureLayerQueue::~PairedPictureLayerQueue() {
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                       "PairedPictureLayerQueue::~PairedPictureLayerQueue",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "state",
+                       StateAsValue());
 }
 
 bool RasterTilePriorityQueue::PairedPictureLayerQueue::IsEmpty() const {
@@ -247,6 +257,37 @@ RasterTilePriorityQueue::PairedPictureLayerQueue::NextTileIteratorTree(
   // Now both iterators have tiles, so we have to decide based on tree priority.
   return HigherPriorityTree(
       tree_priority, &active_iterator, &pending_iterator, nullptr);
+}
+
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+RasterTilePriorityQueue::PairedPictureLayerQueue::StateAsValue() const {
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+  state->BeginDictionary("active_iterator");
+  TilePriority::PriorityBin active_priority_bin =
+      active_iterator ? (*active_iterator)->priority(ACTIVE_TREE).priority_bin
+                      : TilePriority::EVENTUALLY;
+  TilePriority::PriorityBin pending_priority_bin =
+      active_iterator ? (*active_iterator)->priority(PENDING_TREE).priority_bin
+                      : TilePriority::EVENTUALLY;
+  state->SetBoolean("has_tile", !!active_iterator);
+  state->SetInteger("active_priority_bin", active_priority_bin);
+  state->SetInteger("pending_priority_bin", pending_priority_bin);
+  state->EndDictionary();
+
+  state->BeginDictionary("pending_iterator");
+  active_priority_bin =
+      pending_iterator ? (*pending_iterator)->priority(ACTIVE_TREE).priority_bin
+                       : TilePriority::EVENTUALLY;
+  pending_priority_bin =
+      pending_iterator
+          ? (*pending_iterator)->priority(PENDING_TREE).priority_bin
+          : TilePriority::EVENTUALLY;
+  state->SetBoolean("has_tile", !!pending_iterator);
+  state->SetInteger("active_priority_bin", active_priority_bin);
+  state->SetInteger("pending_priority_bin", pending_priority_bin);
+  state->EndDictionary();
+  return state;
 }
 
 }  // namespace cc

@@ -1307,6 +1307,7 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
 
 void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
                                          TreePriority tree_priority) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
   picture_layer_pairs_.clear();
   GetPictureLayerImplPairs(&picture_layer_pairs_);
   queue->Build(picture_layer_pairs_, tree_priority);
@@ -1314,6 +1315,7 @@ void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
 
 void LayerTreeHostImpl::BuildEvictionQueue(EvictionTilePriorityQueue* queue,
                                            TreePriority tree_priority) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildEvictionQueue");
   picture_layer_pairs_.clear();
   GetPictureLayerImplPairs(&picture_layer_pairs_);
   queue->Build(picture_layer_pairs_, tree_priority);

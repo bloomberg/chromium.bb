@@ -30,6 +30,8 @@ class CC_EXPORT RasterTilePriorityQueue {
     WhichTree NextTileIteratorTree(TreePriority tree_priority) const;
     void SkipTilesReturnedByTwin(TreePriority tree_priority);
 
+    scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
+
     PictureLayerImpl::LayerRasterTileIterator active_iterator;
     PictureLayerImpl::LayerRasterTileIterator pending_iterator;
     bool has_both_layers;
