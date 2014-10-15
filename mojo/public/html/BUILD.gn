@@ -1,0 +1,25 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+action_foreach("html") {
+  script = "convert_amd_modules_to_html.py"
+  sources = [
+    "//mojo/public/js/bindings/buffer.js",
+    "//mojo/public/js/bindings/codec.js",
+    "//mojo/public/js/bindings/connection.js",
+    "//mojo/public/js/bindings/connector.js",
+    "//mojo/public/js/bindings/router.js",
+    "//mojo/public/js/bindings/unicode.js",
+    "//mojo/public/js/bindings/validator.js",
+  ]
+  outputs = [
+    "$target_gen_dir/{{source_name_part}}.html",
+  ]
+  args = [
+    "--input",
+    "{{source}}",
+    "--output",
+    rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.html"
+  ]
+}

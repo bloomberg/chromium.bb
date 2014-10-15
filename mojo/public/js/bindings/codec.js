@@ -4,8 +4,8 @@
 
 define("mojo/public/js/bindings/codec", [
   "mojo/public/js/bindings/unicode",
-  "mojo/public/js/bindings/buffer"
-  ], function(unicode, buffer) {
+  "mojo/public/js/bindings/buffer",
+], function(unicode, buffer) {
 
   var kErrorUnsigned = "Passing negative value to unsigned";
 
