@@ -23,6 +23,7 @@ struct DriveAppInfo;
 class BrowserContextKeyedServiceFactory;
 class DriveAppConverter;
 class DriveAppMapping;
+class DriveAppUninstallSyncService;
 class DriveServiceBridge;
 class ExtensionService;
 class Profile;
@@ -35,7 +36,8 @@ class Profile;
 class DriveAppProvider : public drive::DriveAppRegistryObserver,
                          public extensions::ExtensionRegistryObserver {
  public:
-  explicit DriveAppProvider(Profile* profile);
+  DriveAppProvider(Profile* profile,
+                   DriveAppUninstallSyncService* uninstall_sync_service);
   virtual ~DriveAppProvider();
 
   // Appends PKS factories this class depends on.
@@ -43,6 +45,13 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
       std::set<BrowserContextKeyedServiceFactory*>* factories);
 
   void SetDriveServiceBridgeForTest(scoped_ptr<DriveServiceBridge> test_bridge);
+
+  // Adds/removes uninstalled Drive app id from DriveAppUninstallSyncService.
+  // If a Drive app id is added as uninstalled Drive app, DriveAppProvider
+  // would not auto create the local URL app for it until the uninstall record
+  // is removed.
+  void AddUninstalledDriveAppFromSync(const std::string& drive_app_id);
+  void RemoveUninstalledDriveAppFromSync(const std::string& drive_app_id);
 
  private:
   friend class DriveAppProviderTest;
@@ -68,6 +77,8 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   void AddOrUpdateDriveApp(const drive::DriveAppInfo& drive_app);
   void ProcessRemovedDriveApp(const std::string& drive_app_id);
 
+  void UpdateDriveApps();
+
   // drive::DriveAppRegistryObserver overrides:
   virtual void OnDriveAppRegistryUpdated() override;
 
@@ -82,6 +93,7 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
       extensions::UninstallReason reason) override;
 
   Profile* profile_;
+  DriveAppUninstallSyncService* uninstall_sync_service_;
 
   scoped_ptr<DriveServiceBridge> service_bridge_;
   scoped_ptr<DriveAppMapping> mapping_;

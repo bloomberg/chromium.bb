@@ -2291,6 +2291,10 @@ const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
 // is unsynable and used to track local mappings only.
 const char kAppLauncherDriveAppMapping[] =
     "apps.app_launcher.drive_app_mapping";
+
+// A list of Drive app ids that tracks the uninstallable Drive apps.
+const char kAppLauncherUninstalledDriveApps[] =
+    "apps.app_launcher.uninstalled_drive_apps";
 #endif
 
 // If set, the user requested to launch the app with this extension id while

@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/apps/drive/drive_app_converter.h"
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
+#include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/apps/drive/drive_service_bridge.h"
 #include "chrome/browser/drive/drive_app_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -34,8 +35,11 @@ void IgnoreUninstallResult(google_apis::GDataErrorCode) {
 
 }  // namespace
 
-DriveAppProvider::DriveAppProvider(Profile* profile)
+DriveAppProvider::DriveAppProvider(
+    Profile* profile,
+    DriveAppUninstallSyncService* uninstall_sync_service)
     : profile_(profile),
+      uninstall_sync_service_(uninstall_sync_service),
       service_bridge_(DriveServiceBridge::Create(profile).Pass()),
       mapping_(new DriveAppMapping(profile->GetPrefs())),
       weak_ptr_factory_(this) {
@@ -60,6 +64,18 @@ void DriveAppProvider::SetDriveServiceBridgeForTest(
   service_bridge_->GetAppRegistry()->RemoveObserver(this);
   service_bridge_ = test_bridge.Pass();
   service_bridge_->GetAppRegistry()->AddObserver(this);
+}
+
+void DriveAppProvider::AddUninstalledDriveAppFromSync(
+    const std::string& drive_app_id) {
+  mapping_->AddUninstalledDriveApp(drive_app_id);
+  UpdateDriveApps();
+}
+
+void DriveAppProvider::RemoveUninstalledDriveAppFromSync(
+    const std::string& drive_app_id) {
+  mapping_->RemoveUninstalledDriveApp(drive_app_id);
+  UpdateDriveApps();
 }
 
 void DriveAppProvider::UpdateMappingAndExtensionSystem(
@@ -97,6 +113,10 @@ void DriveAppProvider::ProcessDeferredOnExtensionInstalled(
       chrome_app_id, ExtensionRegistry::EVERYTHING);
   if (!app)
     return;
+
+  // Remove uninstall tracking for user installed app.
+  mapping_->RemoveUninstalledDriveApp(drive_app_id);
+  uninstall_sync_service_->UntrackUninstalledDriveApp(drive_app_id);
 
   UpdateMappingAndExtensionSystem(drive_app_id, app, false);
 }
@@ -201,12 +221,15 @@ void DriveAppProvider::ProcessRemovedDriveApp(const std::string& drive_app_id) {
                            NULL);
 }
 
-void DriveAppProvider::OnDriveAppRegistryUpdated() {
+void DriveAppProvider::UpdateDriveApps() {
   service_bridge_->GetAppRegistry()->GetAppList(&drive_apps_);
 
   IdSet current_ids;
-  for (size_t i = 0; i < drive_apps_.size(); ++i)
-    current_ids.insert(drive_apps_[i].app_id);
+  for (size_t i = 0; i < drive_apps_.size(); ++i) {
+    const std::string& drive_app_id = drive_apps_[i].app_id;
+    if (!mapping_->IsUninstalledDriveApp(drive_app_id))
+      current_ids.insert(drive_app_id);
+  }
 
   const IdSet existing_ids = mapping_->GetDriveAppIds();
   const IdSet ids_to_remove =
@@ -218,9 +241,14 @@ void DriveAppProvider::OnDriveAppRegistryUpdated() {
   }
 
   for (size_t i = 0; i < drive_apps_.size(); ++i) {
-    AddOrUpdateDriveApp(drive_apps_[i]);
+    if (!mapping_->IsUninstalledDriveApp(drive_apps_[i].app_id))
+      AddOrUpdateDriveApp(drive_apps_[i]);
   }
   SchedulePendingConverters();
+}
+
+void DriveAppProvider::OnDriveAppRegistryUpdated() {
+  UpdateDriveApps();
 }
 
 void DriveAppProvider::OnExtensionInstalled(
@@ -267,6 +295,18 @@ void DriveAppProvider::OnExtensionUninstalled(
   if (drive_app_id.empty())
     return;
 
-  service_bridge_->GetAppRegistry()->UninstallApp(
-      drive_app_id, base::Bind(&IgnoreUninstallResult));
+  for (size_t i = 0; i < drive_apps_.size(); ++i) {
+    if (drive_apps_[i].app_id != drive_app_id)
+      continue;
+
+    if (drive_apps_[i].is_removable) {
+      service_bridge_->GetAppRegistry()->UninstallApp(
+          drive_app_id, base::Bind(&IgnoreUninstallResult));
+    } else {
+      mapping_->AddUninstalledDriveApp(drive_app_id);
+      uninstall_sync_service_->TrackUninstalledDriveApp(drive_app_id);
+    }
+
+    return;
+  }
 }

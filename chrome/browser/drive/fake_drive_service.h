@@ -44,7 +44,8 @@ class FakeDriveService : public DriveServiceInterface {
   void AddApp(const std::string& app_id,
               const std::string& app_name,
               const std::string& product_id,
-              const std::string& create_url);
+              const std::string& create_url,
+              bool is_removable);
 
   // Removes an app by product id.
   void RemoveAppByProductId(const std::string& product_id);

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -46,6 +47,13 @@ namespace app_list {
 namespace {
 
 const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
+
+// Prefix for a sync id of a Drive app. Drive app ids are in a different
+// format and have to be used because a Drive app could have only an URL
+// without a matching Chrome app. To differentiate the Drive app id from
+// Chrome app ids, this prefix will be added to create the sync item id
+// for a Drive app item.
+const char kDriveAppSyncIdPrefix[] = "drive-app-";
 
 void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
                             AppListSyncableService::SyncItem* item) {
@@ -135,6 +143,20 @@ bool GetAppListItemType(AppListItem* item,
     return false;
   }
   return true;
+}
+
+bool IsDriveAppSyncId(const std::string& sync_id) {
+  return StartsWithASCII(sync_id, kDriveAppSyncIdPrefix, true);
+}
+
+std::string GetDriveAppSyncId(const std::string& drive_app_id) {
+  return kDriveAppSyncIdPrefix + drive_app_id;
+}
+
+std::string GetDriveAppIdFromSyncId(const std::string& sync_id) {
+  if (!IsDriveAppSyncId(sync_id))
+    return std::string();
+  return sync_id.substr(strlen(kDriveAppSyncIdPrefix));
 }
 
 }  // namespace
@@ -270,7 +292,7 @@ void AppListSyncableService::BuildModel() {
       new ModelPrefUpdater(AppListPrefs::Get(profile_), model_.get()));
 
   if (app_list::switches::IsDriveAppsInAppListEnabled())
-    drive_app_provider_.reset(new DriveAppProvider(profile_));
+    drive_app_provider_.reset(new DriveAppProvider(profile_, this));
 }
 
 void AppListSyncableService::ResetDriveAppProviderForTest() {
@@ -281,6 +303,33 @@ void AppListSyncableService::Shutdown() {
   // DriveAppProvider touches other KeyedServices in its dtor and needs be
   // released in shutdown stage.
   drive_app_provider_.reset();
+}
+
+void AppListSyncableService::TrackUninstalledDriveApp(
+    const std::string& drive_app_id) {
+  const std::string sync_id = GetDriveAppSyncId(drive_app_id);
+  SyncItem* sync_item = FindSyncItem(sync_id);
+  if (sync_item) {
+    DCHECK_EQ(sync_item->item_type,
+              sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP);
+    return;
+  }
+
+  sync_item = CreateSyncItem(
+      sync_id, sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP);
+  SendSyncChange(sync_item, SyncChange::ACTION_ADD);
+}
+
+void AppListSyncableService::UntrackUninstalledDriveApp(
+    const std::string& drive_app_id) {
+  const std::string sync_id = GetDriveAppSyncId(drive_app_id);
+  SyncItem* sync_item = FindSyncItem(sync_id);
+  if (!sync_item)
+    return;
+
+  DCHECK_EQ(sync_item->item_type,
+            sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP);
+  DeleteSyncItem(sync_item);
 }
 
 void AppListSyncableService::Observe(
@@ -716,8 +765,15 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
     }
     case sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP: {
       VLOG(1) << this << ": Uninstall: " << sync_item->ToString();
-      UninstallExtension(extension_system_->extension_service(),
-                         sync_item->item_id);
+      if (IsDriveAppSyncId(sync_item->item_id)) {
+        if (drive_app_provider_) {
+          drive_app_provider_->AddUninstalledDriveAppFromSync(
+              GetDriveAppIdFromSyncId(sync_item->item_id));
+        }
+      } else {
+        UninstallExtension(extension_system_->extension_service(),
+                           sync_item->item_id);
+      }
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_FOLDER: {
@@ -848,8 +904,14 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   sync_items_.erase(iter);
   // Only delete apps from the model. Folders will be deleted when all
   // children have been deleted.
-  if (item_type == sync_pb::AppListSpecifics::TYPE_APP)
+  if (item_type == sync_pb::AppListSpecifics::TYPE_APP) {
     model_->DeleteItem(item_id);
+  } else if (item_type == sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
+    if (IsDriveAppSyncId(item_id) && drive_app_provider_) {
+      drive_app_provider_->RemoveUninstalledDriveAppFromSync(
+          GetDriveAppIdFromSyncId(item_id));
+    }
+  }
 }
 
 std::string AppListSyncableService::FindOrCreateOemFolder() {

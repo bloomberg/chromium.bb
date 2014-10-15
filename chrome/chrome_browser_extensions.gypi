@@ -839,6 +839,7 @@
       'browser/apps/drive/drive_app_mapping.h',
       'browser/apps/drive/drive_app_provider.cc',
       'browser/apps/drive/drive_app_provider.h',
+      'browser/apps/drive/drive_app_uninstall_sync_service.h',
       'browser/apps/drive/drive_service_bridge.cc',
       'browser/apps/drive/drive_service_bridge.h',
     ],

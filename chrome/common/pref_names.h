@@ -797,6 +797,7 @@ extern const char kAppLauncherIsEnabled[];
 extern const char kAppLauncherShortcutVersion[];
 extern const char kShowAppLauncherPromo[];
 extern const char kAppLauncherDriveAppMapping[];
+extern const char kAppLauncherUninstalledDriveApps[];
 #endif
 
 extern const char kAppLaunchForMetroRestart[];

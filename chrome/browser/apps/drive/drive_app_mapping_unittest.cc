@@ -114,3 +114,13 @@ TEST_F(DriveAppMappingTest, Remove) {
   drive_app_ids = mapping()->GetDriveAppIds();
   EXPECT_EQ(0u, drive_app_ids.size());
 }
+
+TEST_F(DriveAppMappingTest, TrackUninstall) {
+  const std::string drive_app_id = "drive-1";
+
+  mapping()->AddUninstalledDriveApp(drive_app_id);
+  EXPECT_TRUE(mapping()->IsUninstalledDriveApp(drive_app_id));
+
+  mapping()->RemoveUninstalledDriveApp(drive_app_id);
+  EXPECT_FALSE(mapping()->IsUninstalledDriveApp(drive_app_id));
+}

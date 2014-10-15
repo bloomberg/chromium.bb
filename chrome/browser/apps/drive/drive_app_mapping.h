@@ -38,8 +38,16 @@ class DriveAppMapping {
 
   std::set<std::string> GetDriveAppIds() const;
 
+  void AddUninstalledDriveApp(const std::string& drive_app_id);
+  void RemoveUninstalledDriveApp(const std::string& drive_app_id);
+  bool IsUninstalledDriveApp(const std::string& drive_app_id) const;
+
  private:
+  void GetUninstalledIdsFromPref();
+  void UpdateUninstalledList();
+
   PrefService* prefs_;
+  std::set<std::string> uninstalled_app_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAppMapping);
 };

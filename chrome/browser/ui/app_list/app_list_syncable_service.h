@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -41,6 +42,7 @@ class ModelPrefUpdater;
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
                                public KeyedService,
+                               public DriveAppUninstallSyncService,
                                public content::NotificationObserver {
  public:
   struct SyncItem {
@@ -105,6 +107,12 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // KeyedService
   virtual void Shutdown() override;
+
+  // DriveAppUninstallSyncService
+  virtual void TrackUninstalledDriveApp(
+      const std::string& drive_app_id) override;
+  virtual void UntrackUninstalledDriveApp(
+      const std::string& drive_app_id) override;
 
   // content::NotificationObserver
   virtual void Observe(int type,

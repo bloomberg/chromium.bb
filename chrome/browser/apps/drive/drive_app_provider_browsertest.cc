@@ -4,6 +4,9 @@
 
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 
+#include <set>
+#include <string>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
+#include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/apps/drive/drive_service_bridge.h"
 #include "chrome/browser/drive/drive_app_registry.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -56,6 +60,35 @@ class TestDriveServiceBridge : public DriveServiceBridge {
   DISALLOW_COPY_AND_ASSIGN(TestDriveServiceBridge);
 };
 
+class FakeUninstallSyncService : public DriveAppUninstallSyncService {
+ public:
+  FakeUninstallSyncService() {}
+  virtual ~FakeUninstallSyncService() {}
+
+  bool IsUninstallTracked(const std::string& drive_app_id) const {
+    return uninstalled_app_ids_.find(drive_app_id) !=
+           uninstalled_app_ids_.end();
+  }
+
+  // DriveAppUninstallSyncService
+  virtual void TrackUninstalledDriveApp(
+      const std::string& drive_app_id) override {
+    uninstalled_app_ids_.insert(drive_app_id);
+  }
+  virtual void UntrackUninstalledDriveApp(
+      const std::string& drive_app_id) override {
+    auto it = uninstalled_app_ids_.find(drive_app_id);
+    if (it == uninstalled_app_ids_.end())
+      return;
+    uninstalled_app_ids_.erase(it);
+  }
+
+ private:
+  std::set<std::string> uninstalled_app_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeUninstallSyncService);
+};
+
 }  // namespace
 
 class DriveAppProviderTest : public ExtensionBrowserTest,
@@ -73,7 +106,10 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
     apps_registry_.reset(
         new drive::DriveAppRegistry(fake_drive_service_.get()));
 
-    provider_.reset(new DriveAppProvider(profile()));
+    fake_uninstall_sync_service_.reset(new FakeUninstallSyncService);
+
+    provider_.reset(
+        new DriveAppProvider(profile(), fake_uninstall_sync_service_.get()));
     provider_->SetDriveServiceBridgeForTest(
         make_scoped_ptr(new TestDriveServiceBridge(apps_registry_.get()))
             .PassAs<DriveServiceBridge>());
@@ -159,6 +195,9 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   drive::FakeDriveService* fake_drive_service() {
     return fake_drive_service_.get();
   }
+  FakeUninstallSyncService* fake_uninstall_sync_service() {
+    return fake_uninstall_sync_service_.get();
+  }
   DriveAppProvider* provider() { return provider_.get(); }
   DriveAppMapping* mapping() { return provider_->mapping_.get(); }
 
@@ -175,6 +214,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   }
 
   scoped_ptr<drive::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeUninstallSyncService> fake_uninstall_sync_service_;
   scoped_ptr<drive::DriveAppRegistry> apps_registry_;
   scoped_ptr<DriveAppProvider> provider_;
 
@@ -194,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, ExistingChromeApp) {
 
   // Prepare a Drive app that matches the chrome app id.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, chrome_app->id(), kLaunchUrl);
+      kDriveAppId, kDriveAppName, chrome_app->id(), kLaunchUrl, true);
   RefreshDriveAppRegistry();
   EXPECT_FALSE(HasPendingConverters());
 
@@ -211,7 +251,8 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, ExistingChromeApp) {
 // A Drive app creates an URL app when no matching Chrome app presents.
 IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, CreateUrlApp) {
   // Prepare a Drive app with no underlying chrome app.
-  fake_drive_service()->AddApp(kDriveAppId, kDriveAppName, "", kLaunchUrl);
+  fake_drive_service()->AddApp(
+      kDriveAppId, kDriveAppName, "", kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -238,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, CreateUrlApp) {
 IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, MatchingChromeAppInstalled) {
   // Prepare a Drive app that matches the not-yet-installed kChromeAppId.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -272,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest,
                        DisconnectDriveAppUninstallUrlApp) {
   // Prepare a Drive app that matches the not-yet-installed kChromeAppId.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -299,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest,
 
   // Prepare a Drive app that matches the chrome app id.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   EXPECT_FALSE(HasPendingConverters());
 
@@ -315,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest,
 IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, KeepGeneratedFlagBetweenUpdates) {
   // Prepare a Drive app with no underlying chrome app.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -326,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, KeepGeneratedFlagBetweenUpdates) {
   const char kChangedName[] = "Changed name";
   fake_drive_service()->RemoveAppByProductId(kChromeAppId);
   fake_drive_service()->AddApp(
-      kDriveAppId, kChangedName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kChangedName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -340,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, KeepGeneratedFlagBetweenUpdates) {
 IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, DriveAppChanged) {
   // Prepare a Drive app with no underlying chrome app.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -361,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, DriveAppChanged) {
   const char kAnotherLaunchUrl[] = "http://example.com/another_end_point";
   fake_drive_service()->RemoveAppByProductId(kChromeAppId);
   fake_drive_service()->AddApp(
-      kDriveAppId, kAnotherName, kChromeAppId, kAnotherLaunchUrl);
+      kDriveAppId, kAnotherName, kChromeAppId, kAnotherLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -391,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, DriveAppChanged) {
 IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, NoChange) {
   // Prepare one Drive app.
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -420,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UserInstalledBeforeDriveApp) {
   InstallUserUrlApp(kLaunchUrl);
 
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -439,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UserInstalledBeforeDriveApp) {
 // installation happens after Drive app conversion.
 IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UserInstalledAfterDriveApp) {
   fake_drive_service()->AddApp(
-      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl);
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, true);
   RefreshDriveAppRegistry();
   WaitForPendingDriveAppConverters();
 
@@ -457,4 +498,91 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UserInstalledAfterDriveApp) {
   // Url app is still present after the Drive app is disconnected.
   EXPECT_TRUE(ExtensionRegistry::Get(profile())->GetExtensionById(
       url_app_id, ExtensionRegistry::EVERYTHING));
+}
+
+// Tests that uninstalling of a unremovable Drive app is tracked in
+// DriveAppUninstallSyncService.
+IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UninstallUnremovableDriveApp) {
+  // Add an unremovable Drive app.
+  fake_drive_service()->AddApp(
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, false);
+  RefreshDriveAppRegistry();
+  WaitForPendingDriveAppConverters();
+
+  const std::string chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  ASSERT_FALSE(chrome_app_id.empty());
+
+  // Simulate user uninstall.
+  UninstallExtension(chrome_app_id);
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+
+  // Trigger a refresh and the app should stay uninstalled.
+  RefreshDriveAppRegistry();
+  WaitForPendingDriveAppConverters();
+  EXPECT_TRUE(mapping()->GetChromeApp(kDriveAppId).empty());
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+
+  // Drive service still has the app.
+  EXPECT_TRUE(fake_drive_service()->HasApp(kDriveAppId));
+  // Uninstall is tracked by DriveAppUninstallSyncService and mapping.
+  EXPECT_TRUE(fake_uninstall_sync_service()->IsUninstallTracked(kDriveAppId));
+  EXPECT_TRUE(mapping()->IsUninstalledDriveApp(kDriveAppId));
+}
+
+// Tests that user install removes the uninstall tracking from
+// DriveAppUninstallSyncService.
+IN_PROC_BROWSER_TEST_F(DriveAppProviderTest,
+                       UserInstallResetsUninstallTracking) {
+  // Add an unremovable Drive app.
+  fake_drive_service()->AddApp(
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, false);
+  RefreshDriveAppRegistry();
+  WaitForPendingDriveAppConverters();
+
+  const std::string chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  ASSERT_FALSE(chrome_app_id.empty());
+
+  // Simulate user uninstall and uninstall should be tracked.
+  UninstallExtension(chrome_app_id);
+  EXPECT_TRUE(fake_uninstall_sync_service()->IsUninstallTracked(kDriveAppId));
+  EXPECT_TRUE(mapping()->IsUninstalledDriveApp(kDriveAppId));
+
+  // Simulate user install and uninstall is no longer tracked.
+  InstallChromeApp(1);
+  EXPECT_FALSE(fake_uninstall_sync_service()->IsUninstallTracked(kDriveAppId));
+  EXPECT_FALSE(mapping()->IsUninstalledDriveApp(kDriveAppId));
+}
+
+// Tests that Drive app is removed when uninstall is added from sync and
+// added back when uninstall is removed from sync.
+IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UninstallChangedFromSync) {
+  // Add an unremovable Drive app.
+  fake_drive_service()->AddApp(
+      kDriveAppId, kDriveAppName, kChromeAppId, kLaunchUrl, false);
+  RefreshDriveAppRegistry();
+  WaitForPendingDriveAppConverters();
+
+  // The Drive app is present in the system.
+  std::string chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  EXPECT_FALSE(chrome_app_id.empty());
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+
+  // Uninstall is added from sync and the app is removed.
+  provider()->AddUninstalledDriveAppFromSync(kDriveAppId);
+  WaitForPendingDriveAppConverters();
+  chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  EXPECT_TRUE(chrome_app_id.empty());
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
+
+  // Uninstall is removed from sync and the app is added again.
+  provider()->RemoveUninstalledDriveAppFromSync(kDriveAppId);
+  WaitForPendingDriveAppConverters();
+  chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
+  EXPECT_FALSE(chrome_app_id.empty());
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->GetExtensionById(
+      chrome_app_id, ExtensionRegistry::EVERYTHING));
 }

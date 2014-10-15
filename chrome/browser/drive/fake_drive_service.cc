@@ -236,7 +236,8 @@ bool FakeDriveService::LoadAppListForDriveApi(
 void FakeDriveService::AddApp(const std::string& app_id,
                               const std::string& app_name,
                               const std::string& product_id,
-                              const std::string& create_url) {
+                              const std::string& create_url,
+                              bool is_removable) {
   if (app_json_template_.empty()) {
     base::FilePath path =
         test_util::GetTestFilePath("drive/applist_app_template.json");
@@ -248,6 +249,8 @@ void FakeDriveService::AddApp(const std::string& app_id,
   ReplaceSubstringsAfterOffset(&app_json, 0, "$AppName", app_name);
   ReplaceSubstringsAfterOffset(&app_json, 0, "$ProductId", product_id);
   ReplaceSubstringsAfterOffset(&app_json, 0, "$CreateUrl", create_url);
+  ReplaceSubstringsAfterOffset(
+      &app_json, 0, "$Removable", is_removable ? "true" : "false");
 
   JSONStringValueSerializer json(app_json);
   std::string error_message;
