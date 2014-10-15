@@ -111,7 +111,7 @@ class TransientGroupSetter {
   // Aborts all animations including its transient children.
   void AbortAllAnimations() {
     window_->layer()->GetAnimator()->AbortAllAnimations();
-    for (auto* transient_child : wm::GetTransientChildren(window_))
+    for (aura::Window* transient_child : wm::GetTransientChildren(window_))
       transient_child->layer()->GetAnimator()->AbortAllAnimations();
   }
 
@@ -120,7 +120,7 @@ class TransientGroupSetter {
   // it its transient parent.
   void SetTransform(const gfx::Transform& transform) {
     window_->SetTransform(transform);
-    for (auto* transient_child : wm::GetTransientChildren(window_)) {
+    for (aura::Window* transient_child : wm::GetTransientChildren(window_)) {
       gfx::Rect window_bounds = window_->bounds();
       gfx::Rect child_bounds = transient_child->bounds();
       gfx::Transform transient_window_transform(TranslateTransformOrigin(
@@ -132,7 +132,7 @@ class TransientGroupSetter {
   // Sets the opacity to the window and its transient children.
   void SetOpacity(float opacity) {
     window_->layer()->SetOpacity(opacity);
-    for (auto* transient_child : wm::GetTransientChildren(window_)) {
+    for (aura::Window* transient_child : wm::GetTransientChildren(window_)) {
       transient_child->layer()->SetOpacity(opacity);
     }
   }
@@ -167,7 +167,7 @@ class AnimateTransientGroupSetter : public TransientGroupSetter {
   explicit AnimateTransientGroupSetter(aura::Window* window)
       : TransientGroupSetter(window) {
     animation_settings_.push_back(CreateScopedLayerAnimationSettings(window));
-    for (auto* transient_child : wm::GetTransientChildren(window)) {
+    for (aura::Window* transient_child : wm::GetTransientChildren(window)) {
       animation_settings_.push_back(
           CreateScopedLayerAnimationSettings(transient_child));
     }
@@ -317,7 +317,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         window_list_provider_->GetWindowList();
     if (windows.empty())
       return;
-    for (auto* window : windows)
+    for (aura::Window* window : windows)
       RestoreWindowState(window, split_view_controller_);
   }
 
@@ -430,7 +430,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         targeter->FindTargetForLocatedEvent(container_, event));
     while (target && target->parent() != container_)
       target = target->parent();
-    aura::Window* transient_parent = wm::GetTransientParent(target);
+    aura::Window* transient_parent =
+        target ? wm::GetTransientParent(target) : NULL;
     return transient_parent ? transient_parent : target;
   }
 

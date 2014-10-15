@@ -361,4 +361,17 @@ TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
   EXPECT_FALSE(w3->IsVisible());
 }
 
+// Clicking a background in overview should not crash.
+TEST_F(WindowManagerTest, ClickBackgroundInOverview) {
+  test::WindowManagerImplTestApi wm_api;
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate));
+  WindowManager::Get()->EnterOverview();
+
+  ui::test::EventGenerator generator(root_window());
+  generator.MoveMouseTo(1, 1);
+  generator.ClickLeftButton();
+}
+
 }  // namespace athena
