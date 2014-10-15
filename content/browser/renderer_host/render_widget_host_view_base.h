@@ -70,9 +70,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual ~RenderWidgetHostViewBase();
 
   // RenderWidgetHostView implementation.
-  virtual void SetBackgroundColor(SkColor color) override;
-  virtual void SetBackgroundColorToDefault() final override;
-  virtual bool GetBackgroundOpaque() final override;
+  virtual void SetBackgroundOpaque(bool opaque) override;
+  virtual bool GetBackgroundOpaque() override;
   virtual ui::TextInputClient* GetTextInputClient() override;
   virtual bool IsShowingContextMenu() const override;
   virtual void SetShowingContextMenu(bool showing_menu) override;
@@ -380,8 +379,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // autofill...).
   blink::WebPopupType popup_type_;
 
-  // The background color of the web content.
-  SkColor background_color_;
+  // When false, the background of the web content is not fully opaque.
+  bool background_opaque_;
 
   // While the mouse is locked, the cursor is hidden from the user. Mouse events
   // are still generated. However, the position they report is the last known

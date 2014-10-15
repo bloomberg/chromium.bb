@@ -366,7 +366,7 @@ const int kFlushInputRateInUs = 16666;
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
     : popup_type_(blink::WebPopupTypeNone),
-      background_color_(SK_ColorWHITE),
+      background_opaque_(true),
       mouse_locked_(false),
       showing_context_menu_(false),
       selection_text_offset_(0),
@@ -386,16 +386,12 @@ bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
   return false;
 }
 
-void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
-  background_color_ = color;
-}
-
-void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
-  SetBackgroundColor(SK_ColorWHITE);
+void RenderWidgetHostViewBase::SetBackgroundOpaque(bool opaque) {
+  background_opaque_ = opaque;
 }
 
 bool RenderWidgetHostViewBase::GetBackgroundOpaque() {
-  return SkColorGetA(background_color_) == SK_AlphaOPAQUE;
+  return background_opaque_;
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {

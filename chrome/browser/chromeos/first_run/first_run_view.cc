@@ -31,8 +31,7 @@ void FirstRunView::Init(content::BrowserContext* context) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
 
-  web_contents->GetRenderViewHost()->GetView()->SetBackgroundColor(
-      SK_ColorTRANSPARENT);
+  web_contents->GetRenderViewHost()->GetView()->SetBackgroundOpaque(false);
 }
 
 FirstRunActor* FirstRunView::GetActor() {

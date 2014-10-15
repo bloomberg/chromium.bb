@@ -60,7 +60,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual gfx::NativeViewId GetNativeViewId() const override;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
   virtual gfx::Rect GetViewBounds() const override;
-  virtual void SetBackgroundColor(SkColor color) override;
+  virtual void SetBackgroundOpaque(bool opaque) override;
   virtual gfx::Size GetPhysicalBackingSize() const override;
   virtual base::string16 GetSelectedText() const override;
 

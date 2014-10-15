@@ -377,15 +377,8 @@ void WebViewGuest::GuestReady() {
   // WebContents::GetRenderWidgetHostView will return the RWHV of an
   // interstitial page if one is showing at this time. We only want opacity
   // to apply to web pages.
-  if (guest_opaque_) {
-    web_contents()
-        ->GetRenderViewHost()
-        ->GetView()
-        ->SetBackgroundColorToDefault();
-  } else {
-    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
-  }
+  web_contents()->GetRenderViewHost()->GetView()->
+      SetBackgroundOpaque(guest_opaque_);
   if (web_view_guest_delegate_)
     web_view_guest_delegate_->OnGuestReady();
 }
@@ -1039,15 +1032,7 @@ void WebViewGuest::SetAllowTransparency(bool allow) {
   if (!web_contents()->GetRenderViewHost()->GetView())
     return;
 
-  if (guest_opaque_) {
-    web_contents()
-        ->GetRenderViewHost()
-        ->GetView()
-        ->SetBackgroundColorToDefault();
-  } else {
-    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
-  }
+  web_contents()->GetRenderViewHost()->GetView()->SetBackgroundOpaque(!allow);
 }
 
 bool WebViewGuest::LoadDataWithBaseURL(const std::string& data_url,

@@ -282,8 +282,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
 
   // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
   // when RenderView is created.
-  GetWebContents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-      SK_ColorTRANSPARENT);
+  GetWebContents()->GetRenderViewHost()->GetView()->SetBackgroundOpaque(false);
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {

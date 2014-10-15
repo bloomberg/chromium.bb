@@ -355,15 +355,14 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
   guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
 }
 
-void RenderWidgetHostViewGuest::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostViewGuest::SetBackgroundOpaque(bool opaque) {
   // Content embedders can toggle opaque backgrounds through this API.
   // We plumb the value here so that BrowserPlugin updates its compositing
   // state in response to this change. We also want to preserve this flag
   // after recovering from a crash so we let BrowserPluginGuest store it.
   if (!guest_)
     return;
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  bool opaque = GetBackgroundOpaque();
+  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
   host_->SetBackgroundOpaque(opaque);
   guest_->SetContentsOpaque(opaque);
 }

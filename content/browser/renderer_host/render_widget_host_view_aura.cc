@@ -476,7 +476,7 @@ void RenderWidgetHostViewAura::InitAsChild(
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
-  window_->layer()->SetColor(background_color_);
+  window_->layer()->SetColor(SK_ColorWHITE);
 }
 
 void RenderWidgetHostViewAura::InitAsPopup(
@@ -505,7 +505,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetType(ui::wm::WINDOW_TYPE_MENU);
   window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
-  window_->layer()->SetColor(background_color_);
+  window_->layer()->SetColor(SK_ColorWHITE);
 
   // Setting the transient child allows for the popup to get mouse events when
   // in a system modal dialog. Do this before calling ParentWindowWithContext
@@ -534,7 +534,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  window_->layer()->SetColor(background_color_);
+  window_->layer()->SetColor(SK_ColorWHITE);
 
   aura::Window* parent = NULL;
   gfx::Rect bounds;
@@ -805,12 +805,12 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
   return window_->GetBoundsInScreen();
 }
 
-void RenderWidgetHostViewAura::SetBackgroundColor(SkColor color) {
-  RenderWidgetHostViewBase::SetBackgroundColor(color);
-  bool opaque = GetBackgroundOpaque();
+void RenderWidgetHostViewAura::SetBackgroundOpaque(bool opaque) {
+  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
   host_->SetBackgroundOpaque(opaque);
   window_->layer()->SetFillsBoundsOpaquely(opaque);
-  window_->layer()->SetColor(color);
+  SkColor background_color = opaque ? SK_ColorWHITE : SK_ColorTRANSPARENT;
+  window_->layer()->SetColor(background_color);
 }
 
 gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {

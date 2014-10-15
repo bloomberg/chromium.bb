@@ -1281,12 +1281,8 @@ jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env, jobject jobj,
     jboolean opaque) {
-  if (GetRenderWidgetHostViewAndroid()) {
-    if (opaque)
-      GetRenderWidgetHostViewAndroid()->SetBackgroundColorToDefault();
-    else
-      GetRenderWidgetHostViewAndroid()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  }
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SetBackgroundOpaque(opaque);
 }
 
 void ContentViewCoreImpl::RequestTextSurroundingSelection(

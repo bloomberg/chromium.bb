@@ -91,7 +91,7 @@ RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
   return NULL;
 }
 
-void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostViewChildFrame::SetBackgroundOpaque(bool opaque) {
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {
