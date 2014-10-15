@@ -516,9 +516,6 @@ NaClErrorCode NaClAppLoadFileDynamically(
     struct NaClDesc *ndp,
     struct NaClValidationMetadata *metadata) NACL_WUR;
 
-void  NaClAppPrintDetails(struct NaClApp  *nap,
-                          struct Gio      *gp);
-
 NaClErrorCode NaClLoadImage(struct Gio            *gp,
                             struct NaClApp        *nap) NACL_WUR;
 

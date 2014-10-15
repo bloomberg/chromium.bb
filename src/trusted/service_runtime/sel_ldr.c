@@ -527,53 +527,6 @@ void  NaClLoadTrampoline(struct NaClApp *nap, enum NaClAslrMode aslr_mode) {
   NACL_TEST_INJECTION(ChangeTrampolines, (nap));
 }
 
-void  NaClMemRegionPrinter(void                   *state,
-                           struct NaClVmmapEntry  *entry) {
-  struct Gio *gp = (struct Gio *) state;
-
-  gprintf(gp, "\nPage   %"NACL_PRIdPTR" (0x%"NACL_PRIxPTR")\n",
-          entry->page_num, entry->page_num);
-  gprintf(gp,   "npages %"NACL_PRIdS" (0x%"NACL_PRIxS")\n", entry->npages,
-          entry->npages);
-  gprintf(gp,   "start vaddr 0x%"NACL_PRIxPTR"\n",
-          entry->page_num << NACL_PAGESHIFT);
-  gprintf(gp,   "end vaddr   0x%"NACL_PRIxPTR"\n",
-          (entry->page_num + entry->npages) << NACL_PAGESHIFT);
-  gprintf(gp,   "prot   0x%08x\n", entry->prot);
-  gprintf(gp,   "%sshared/backed by a file\n",
-          (NULL == entry->desc) ? "not " : "");
-}
-
-void  NaClAppPrintDetails(struct NaClApp  *nap,
-                          struct Gio      *gp) {
-  NaClXMutexLock(&nap->mu);
-  gprintf(gp,
-          "NaClAppPrintDetails((struct NaClApp *) 0x%08"NACL_PRIxPTR","
-          "(struct Gio *) 0x%08"NACL_PRIxPTR")\n", (uintptr_t) nap,
-          (uintptr_t) gp);
-  gprintf(gp, "addr space size:  2**%"NACL_PRId32"\n", nap->addr_bits);
-  gprintf(gp, "stack size:       0x%08"NACL_PRIx32"\n", nap->stack_size);
-
-  gprintf(gp, "mem start addr:   0x%08"NACL_PRIxPTR"\n", nap->mem_start);
-  /*           123456789012345678901234567890 */
-
-  gprintf(gp, "static_text_end:   0x%08"NACL_PRIxPTR"\n", nap->static_text_end);
-  gprintf(gp, "end-of-text:       0x%08"NACL_PRIxPTR"\n",
-          NaClEndOfStaticText(nap));
-  gprintf(gp, "rodata:            0x%08"NACL_PRIxPTR"\n", nap->rodata_start);
-  gprintf(gp, "data:              0x%08"NACL_PRIxPTR"\n", nap->data_start);
-  gprintf(gp, "data_end:          0x%08"NACL_PRIxPTR"\n", nap->data_end);
-  gprintf(gp, "break_addr:        0x%08"NACL_PRIxPTR"\n", nap->break_addr);
-
-  gprintf(gp, "ELF initial entry point:  0x%08x\n", nap->initial_entry_pt);
-  gprintf(gp, "ELF user entry point:  0x%08x\n", nap->user_entry_pt);
-  gprintf(gp, "memory map:\n");
-  NaClVmmapVisit(&nap->mem_map,
-                 NaClMemRegionPrinter,
-                 gp);
-  NaClXMutexUnlock(&nap->mu);
-}
-
 struct NaClDesc *NaClAppGetDescMu(struct NaClApp *nap,
                                   int            d) {
   struct NaClDesc *result;
