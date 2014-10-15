@@ -48,7 +48,8 @@ if env.Bit('build_x86'):
   #  * avoiding nacl_bootstrap means that we are testing that the
   #    software-under-test works with a non-zero sandbox base.
   node = env.CommandTest('signal_handler_single_step.out',
-                         [step_test_host, step_test_guest],
+                         [step_test_host, step_test_guest,
+                          env.GetPerfEnvDescription()],
                          # Don't hide output: This test reports a
                          # "RESULTS" line for Buildbot to record.
                          capture_output=False)

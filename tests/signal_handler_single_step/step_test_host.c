@@ -50,6 +50,8 @@ static int g_instruction_byte_count = 0;
 static int g_jump_count = 0;
 static nacl_reg_t g_last_prog_ctr = 0;
 
+static const char* g_description = NULL;
+
 
 static void SignalSafePrintf(const char *format, ...) {
   va_list args;
@@ -112,12 +114,13 @@ static void TrapSignalHandler(int signal,
                        g_instruction_byte_count,
                        g_jump_count);
       if (is_untrusted && g_call_count == kNumberOfCallsToTest - 1) {
-        SignalSafePrintf("RESULT InstructionsPerSyscall: value= "
-                         "%i count\n", g_instruction_count);
-        SignalSafePrintf("RESULT InstructionBytesPerSyscall: value= "
-                         "%i count\n", g_instruction_byte_count);
-        SignalSafePrintf("RESULT JumpsPerSyscall: value= "
-                         "%i count\n", g_jump_count);
+        SignalSafePrintf("RESULT InstructionsPerSyscall: %s= "
+                         "%i count\n", g_description, g_instruction_count);
+        SignalSafePrintf("RESULT InstructionBytesPerSyscall: %s= "
+                         "%i count\n",
+                         g_description, g_instruction_byte_count);
+        SignalSafePrintf("RESULT JumpsPerSyscall: %s= "
+                         "%i count\n", g_description, g_jump_count);
       }
       g_instruction_count = 0;
       g_instruction_byte_count = 0;
@@ -159,9 +162,11 @@ int main(int argc, char **argv) {
 
   NaClAllModulesInit();
 
-  if (argc != 2) {
-    NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
+  if (argc != 3) {
+    NaClLog(LOG_FATAL, "Expected 2 arguments: <executable filename> "
+                       "<description-string>\n");
   }
+  g_description = argv[2];
 
   CHECK(NaClAppWithSyscallTableCtor(&app, syscall_table));
 

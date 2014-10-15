@@ -24,13 +24,8 @@ if env.Bit('mac'):
 
 exe = env.ComponentProgram('performance_test', inputs, EXTRA_LIBS=['platform'])
 
-description_list = ['trusted',
-                    env['TARGET_PLATFORM'].lower(),
-                    env['TARGET_FULLARCH']]
-description_string = '_'.join(description_list)
-
 node = env.CommandTest(
-    'performance_test.out', [exe, description_string],
+    'performance_test.out', [exe, env.GetPerfEnvDescription()],
     # Don't hide output: We want the timings to be reported in the
     # Buildbot logs so that Buildbot records the "RESULT" lines.
     capture_output=False)

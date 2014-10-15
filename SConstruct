@@ -146,6 +146,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'msan_track_origins',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
     'nacl_linkflags',
+    # prefix to add in-front of perf tracking trace labels.
+    'perf_prefix',
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
     # Not using nacl_linkflags since that gets clobbered in some tests.
     'pnacl_bcldflags',
@@ -1816,7 +1818,8 @@ def GetPerfEnvDescription(env):
   """
   description_list = [env['TARGET_FULLARCH']]
   # Using a list to keep the order consistent.
-  bit_to_description = [ ('bitcode', ('pnacl', 'nnacl')),
+  bit_to_description = [ ('tests_use_irt', ('with_irt', '')),
+                         ('bitcode', ('pnacl', 'nnacl')),
                          ('translate_fast', ('fast', '')),
                          ('nacl_glibc', ('glibc', 'newlib')),
                          ('nacl_static_link', ('static', 'dynamic')),
@@ -1828,7 +1831,7 @@ def GetPerfEnvDescription(env):
       additional = descr_no
     if additional:
       description_list.append(additional)
-  return '_'.join(description_list)
+  return ARGUMENTS.get('perf_prefix', '') + '_'.join(description_list)
 
 pre_base_env.AddMethod(GetPerfEnvDescription)
 

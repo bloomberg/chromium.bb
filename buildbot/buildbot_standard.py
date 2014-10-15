@@ -282,12 +282,16 @@ def BuildScript(status, context):
       '64': 'x64'
     }[context['arch']]
     gn_sel_ldr = '../out/trusted_%s/sel_ldr' % arch_name
+    gn_extra = [
+        'force_sel_ldr=' + gn_sel_ldr,
+        'perf_prefix=gn_',
+    ]
     with Step('small_tests under GN', status, halt_on_fail=False):
-      SCons(context, args=['small_tests', 'force_sel_ldr=' + gn_sel_ldr])
+      SCons(context, args=['small_tests'] + gn_extra)
     with Step('medium_tests under GN', status, halt_on_fail=False):
-      SCons(context, args=['medium_tests', 'force_sel_ldr=' + gn_sel_ldr])
+      SCons(context, args=['medium_tests'] + gn_extra)
     with Step('large_tests under GN', status, halt_on_fail=False):
-      SCons(context, args=['large_tests', 'force_sel_ldr=' + gn_sel_ldr])
+      SCons(context, args=['large_tests'] + gn_extra)
   ### END GN tests ###
 
 

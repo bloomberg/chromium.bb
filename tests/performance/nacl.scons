@@ -31,20 +31,8 @@ if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-description_list = [trusted_env['TARGET_PLATFORM'].lower(),
-                    env['TARGET_FULLARCH']]
-if env.Bit('nacl_glibc'):
-  description_list.append('glibc')
-else:
-  description_list.append('newlib')
-if env.Bit('tests_use_irt'):
-  description_list.append('irt')
-else:
-  description_list.append('nonirt')
-description_string = '_'.join(description_list)
-
 node = env.CommandSelLdrTestNacl(
-    'performance_test.out', nexe, [description_string],
+    'performance_test.out', nexe, [env.GetPerfEnvDescription()],
     # Pass '-e' to enable untrusted fault handling.  This should not
     # affect performance until the exception_handler() syscall is
     # called -- the Windows debug exception handler process is
