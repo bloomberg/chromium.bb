@@ -3460,6 +3460,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_DIV:
       role_name_ = L"div";
+      ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       break;
     case ui::AX_ROLE_DEFINITION:
@@ -3482,6 +3483,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_DETAILS:
+      role_name_ = html_tag;
       ia_role_ = ROLE_SYSTEM_GROUPING;
       break;
     case ui::AX_ROLE_DIALOG:
@@ -3644,6 +3646,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         if (HasState(ui::AX_STATE_FOCUSED))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
+      break;
+    case ui::AX_ROLE_METER:
+      role_name_ = html_tag;
+      ia_role_ = ROLE_SYSTEM_PROGRESSBAR;
       break;
     case ui::AX_ROLE_NAVIGATION:
       ia_role_ = ROLE_SYSTEM_GROUPING;

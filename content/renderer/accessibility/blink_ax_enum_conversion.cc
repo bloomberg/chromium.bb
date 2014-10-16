@@ -226,6 +226,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_MENU_LIST_OPTION;
     case blink::WebAXRoleMenuListPopup:
       return ui::AX_ROLE_MENU_LIST_POPUP;
+    case blink::WebAXRoleMeter:
+      return ui::AX_ROLE_METER;
     case blink::WebAXRoleNavigation:
       return ui::AX_ROLE_NAVIGATION;
     case blink::WebAXRoleNone:

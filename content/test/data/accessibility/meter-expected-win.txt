@@ -1,3 +1,4 @@
 #<skip -- Unskip this with chromium side changes>
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
     IA2_ROLE_SECTION READONLY
+        ROLE_SYSTEM_PROGRESSBAR

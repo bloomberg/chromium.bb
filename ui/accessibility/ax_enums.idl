@@ -136,6 +136,7 @@
     menu_list_option,
     menu_list_popup,
     menu,
+    meter,
     navigation,
     note,
     outline,

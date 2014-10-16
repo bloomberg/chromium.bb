@@ -127,6 +127,7 @@
     menuListOption,
     menuListPopup,
     menu,
+    meter,
     navigation,
     note,
     outline,

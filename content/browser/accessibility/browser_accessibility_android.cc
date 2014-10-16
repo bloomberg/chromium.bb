@@ -243,6 +243,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     case ui::AX_ROLE_SVG_ROOT:
       class_name = "android.widget.Image";
       break;
+    case ui::AX_ROLE_METER:
     case ui::AX_ROLE_PROGRESS_INDICATOR:
       class_name = "android.widget.ProgressBar";
       break;
