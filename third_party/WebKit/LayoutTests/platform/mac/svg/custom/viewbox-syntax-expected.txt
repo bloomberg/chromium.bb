@@ -4,8 +4,8 @@ CONSOLE ERROR: line 26: Error: Invalid value for <svg> attribute viewBox="0 0 30
 CONSOLE ERROR: line 29: Error: Invalid value for <svg> attribute viewBox="0 0 30 40 50"
 CONSOLE ERROR: line 32: Error: Invalid value for <svg> attribute viewBox="0 0 30 40,"
 CONSOLE ERROR: line 35: Error: Invalid value for <svg> attribute viewBox=",0 0 30 40"
-CONSOLE ERROR: line 38: Error: A negative value for ViewBox width is not allowed
-CONSOLE ERROR: line 41: Error: A negative value for ViewBox height is not allowed
+CONSOLE ERROR: line 38: Error: Invalid negative value for <svg> attribute viewBox="0 0 -30 40"
+CONSOLE ERROR: line 41: Error: Invalid negative value for <svg> attribute viewBox="0 0 30 -40"
 CONSOLE ERROR: line 44: Error: Invalid value for <svg> attribute viewBox="0 0 30, , 40"
 CONSOLE ERROR: line 47: Error: Invalid value for <svg> attribute viewBox="0 0 30% 40"
 layer at (0,0) size 800x600
