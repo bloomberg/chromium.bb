@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "device/bluetooth/bluetooth_device.h"
 
-namespace device {
-class BluetoothUUID;
+namespace base {
+class TaskRunner;
 }
 
 namespace proximity_auth {
@@ -28,13 +27,6 @@ void SeekDeviceByAddress(const std::string& device_address,
                          const base::Closure& callback,
                          const ErrorCallback& error_callback,
                          base::TaskRunner* task_runner);
-
-void ConnectToServiceInsecurely(
-    device::BluetoothDevice* device,
-    const device::BluetoothUUID& uuid,
-    const device::BluetoothDevice::ConnectToServiceCallback& callback,
-    const device::BluetoothDevice::ConnectToServiceErrorCallback&
-        error_callback);
 
 }  // namespace bluetooth_util
 }  // namespace proximity_auth

@@ -29,6 +29,8 @@
 namespace device {
 namespace {
 
+const char kApiUnavailable[] = "This API is not implemented on this platform.";
+
 // Returns the first (should be, only) UUID contained within the
 // |service_class_data|. Returns an invalid (empty) UUID if none is found.
 BluetoothUUID ExtractUuid(IOBluetoothSDPDataElement* service_class_data) {
@@ -205,6 +207,13 @@ void BluetoothDeviceMac::ConnectToService(
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
   socket->Connect(
       device_.get(), uuid, base::Bind(callback, socket), error_callback);
+}
+
+void BluetoothDeviceMac::ConnectToServiceInsecurely(
+      const BluetoothUUID& uuid,
+      const ConnectToServiceCallback& callback,
+      const ConnectToServiceErrorCallback& error_callback) {
+  error_callback.Run(kApiUnavailable);
 }
 
 void BluetoothDeviceMac::CreateGattConnection(

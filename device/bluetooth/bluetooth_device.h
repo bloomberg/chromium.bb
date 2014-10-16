@@ -356,6 +356,19 @@ class BluetoothDevice {
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) = 0;
 
+  // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the
+  // advertised service on this device matching |uuid|, performing an SDP lookup
+  // if necessary to determine the correct protocol and channel for the
+  // connection. Unlike ConnectToService, the outgoing connection will request
+  // no bonding rather than general bonding. |callback| will be called on a
+  // successful connection with a BluetoothSocket instance that is to be owned
+  // by the receiver. |error_callback| will be called on failure with a message
+  // indicating the cause.
+  virtual void ConnectToServiceInsecurely(
+    const device::BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) = 0;
+
   // Opens a new GATT connection to this device. On success, a new
   // BluetoothGattConnection will be handed to the caller via |callback|. On
   // error, |error_callback| will be called. The connection will be kept alive,

@@ -101,7 +101,7 @@ static_library("bluetooth") {
   ]
 
   if (is_chromeos) {
-    public_deps = [
+    deps += [
       "//chromeos",
       "//dbus",
     ]

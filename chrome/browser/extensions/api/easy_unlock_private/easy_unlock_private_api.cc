@@ -388,8 +388,7 @@ EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
 void EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
     ConnectToService(device::BluetoothDevice* device,
                      const device::BluetoothUUID& uuid) {
-  proximity_auth::bluetooth_util::ConnectToServiceInsecurely(
-      device,
+  device->ConnectToServiceInsecurely(
       uuid,
       base::Bind(&EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
                      OnConnect,

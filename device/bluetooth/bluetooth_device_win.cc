@@ -22,6 +22,8 @@ namespace {
 
 const int kSdpBytesBufferSize = 1024;
 
+const char kApiUnavailable[] = "This API is not implemented on this platform.";
+
 }  // namespace
 
 namespace device {
@@ -261,6 +263,13 @@ void BluetoothDeviceWin::ConnectToService(
       BluetoothSocketWin::CreateBluetoothSocket(
           ui_task_runner_, socket_thread_));
   socket->Connect(this, uuid, base::Bind(callback, socket), error_callback);
+}
+
+void BluetoothDeviceWin::ConnectToServiceInsecurely(
+    const BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) {
+  error_callback.Run(kApiUnavailable);
 }
 
 void BluetoothDeviceWin::CreateGattConnection(

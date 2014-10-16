@@ -57,17 +57,6 @@ class MockBluetoothConnection : public BluetoothConnection {
   MockBluetoothConnection()
       : BluetoothConnection(kRemoteDevice, device::BluetoothUUID(kUuid)) {}
 
-  // Bluetooth dependencies.
-  typedef device::BluetoothDevice::ConnectToServiceCallback
-      ConnectToServiceCallback;
-  typedef device::BluetoothDevice::ConnectToServiceErrorCallback
-      ConnectToServiceErrorCallback;
-  MOCK_METHOD4(ConnectToService,
-               void(device::BluetoothDevice* device,
-                    const device::BluetoothUUID& uuid,
-                    const ConnectToServiceCallback& callback,
-                    const ConnectToServiceErrorCallback& error_callback));
-
   // Calls back into the parent Connection class.
   MOCK_METHOD1(SetStatusProxy, void(Status status));
   MOCK_METHOD1(OnBytesReceived, void(const std::string& bytes));
@@ -121,7 +110,7 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
     ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
     EXPECT_CALL(*connection, SetStatusProxy(Connection::IN_PROGRESS));
     EXPECT_CALL(*adapter_, AddObserver(connection));
-    EXPECT_CALL(*connection, ConnectToService(&device_, uuid_, _, _));
+    EXPECT_CALL(device_, ConnectToServiceInsecurely(uuid_, _, _));
     connection->Connect();
 
     EXPECT_EQ(Connection::IN_PROGRESS, connection->status());
@@ -137,8 +126,8 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
     ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
     EXPECT_CALL(*connection, SetStatusProxy(Connection::IN_PROGRESS));
     EXPECT_CALL(*adapter_, AddObserver(connection));
-    EXPECT_CALL(*connection, ConnectToService(_, _, _, _))
-        .WillOnce(SaveArg<2>(&callback));
+    EXPECT_CALL(device_, ConnectToServiceInsecurely(_, _, _))
+        .WillOnce(SaveArg<1>(&callback));
     connection->Connect();
     ASSERT_FALSE(callback.is_null());
 
@@ -261,8 +250,8 @@ TEST_F(ProximityAuthBluetoothConnectionTest, Connect_ConnectionFails) {
   ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
   EXPECT_CALL(connection, SetStatusProxy(Connection::IN_PROGRESS));
   EXPECT_CALL(*adapter_, AddObserver(&connection));
-  EXPECT_CALL(connection, ConnectToService(&device_, uuid_, _, _))
-      .WillOnce(SaveArg<3>(&error_callback));
+  EXPECT_CALL(device_, ConnectToServiceInsecurely(uuid_, _, _))
+      .WillOnce(SaveArg<2>(&error_callback));
   connection.Connect();
   ASSERT_FALSE(error_callback.is_null());
 
@@ -382,8 +371,8 @@ TEST_F(ProximityAuthBluetoothConnectionTest,
   ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
   EXPECT_CALL(connection, SetStatusProxy(Connection::IN_PROGRESS));
   EXPECT_CALL(*adapter_, AddObserver(&connection));
-  EXPECT_CALL(connection, ConnectToService(&device_, uuid_, _, _))
-      .WillOnce(SaveArg<2>(&callback));
+  EXPECT_CALL(device_, ConnectToServiceInsecurely(uuid_, _, _))
+      .WillOnce(SaveArg<1>(&callback));
   connection.Connect();
   ASSERT_FALSE(callback.is_null());
 

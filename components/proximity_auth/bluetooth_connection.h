@@ -45,14 +45,6 @@ class BluetoothConnection : public Connection,
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
                              device::BluetoothDevice* device) override;
 
-  // Exposed for testing.
-  virtual void ConnectToService(
-      device::BluetoothDevice* device,
-      const device::BluetoothUUID& uuid,
-      const device::BluetoothDevice::ConnectToServiceCallback& callback,
-      const device::BluetoothDevice::ConnectToServiceErrorCallback&
-          error_callback);
-
  private:
   // Registers receive callbacks with the backing |socket_|.
   void StartReceive();

@@ -66,25 +66,16 @@ class BluetoothDeviceChromeOS
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
+  virtual void ConnectToServiceInsecurely(
+      const device::BluetoothUUID& uuid,
+      const ConnectToServiceCallback& callback,
+      const ConnectToServiceErrorCallback& error_callback) override;
   virtual void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
   virtual void StartConnectionMonitor(
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
-
-  // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the
-  // advertised service on this device matching |uuid|, performing an SDP lookup
-  // if necessary to determine the correct protocol and channel for the
-  // connection. Unlike ConnectToService, the outgoing connection will request
-  // no bonding rather than general bonding. |callback| will be called on a
-  // successful connection with a BluetoothSocket instance that is to be owned
-  // by the receiver. |error_callback| will be called on failure with a message
-  // indicating the cause.
-  void ConnectToServiceInsecurely(
-    const device::BluetoothUUID& uuid,
-    const ConnectToServiceCallback& callback,
-    const ConnectToServiceErrorCallback& error_callback);
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related

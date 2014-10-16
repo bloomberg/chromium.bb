@@ -8,8 +8,6 @@
 
 #include "base/callback.h"
 
-using device::BluetoothDevice;
-
 namespace proximity_auth {
 namespace bluetooth_util {
 namespace {
@@ -20,14 +18,6 @@ void SeekDeviceByAddress(const std::string& device_address,
                          const base::Closure& callback,
                          const ErrorCallback& error_callback,
                          base::TaskRunner* task_runner) {
-  error_callback.Run(kApiUnavailable);
-}
-
-void ConnectToServiceInsecurely(
-    BluetoothDevice* device,
-    const device::BluetoothUUID& uuid,
-    const BluetoothDevice::ConnectToServiceCallback& callback,
-    const BluetoothDevice::ConnectToServiceErrorCallback& error_callback) {
   error_callback.Run(kApiUnavailable);
 }
 

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
-#include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -96,16 +95,6 @@ void BluetoothConnection::DeviceRemoved(device::BluetoothAdapter* adapter,
   Disconnect();
 }
 
-void BluetoothConnection::ConnectToService(
-    device::BluetoothDevice* device,
-    const device::BluetoothUUID& uuid,
-    const device::BluetoothDevice::ConnectToServiceCallback& callback,
-    const device::BluetoothDevice::ConnectToServiceErrorCallback&
-        error_callback) {
-  bluetooth_util::ConnectToServiceInsecurely(
-      device, uuid, callback, error_callback);
-}
-
 void BluetoothConnection::StartReceive() {
   base::WeakPtr<BluetoothConnection> weak_this = weak_ptr_factory_.GetWeakPtr();
   socket_->Receive(kReceiveBufferSizeBytes,
@@ -130,8 +119,7 @@ void BluetoothConnection::OnAdapterInitialized(
   adapter_->AddObserver(this);
 
   base::WeakPtr<BluetoothConnection> weak_this = weak_ptr_factory_.GetWeakPtr();
-  ConnectToService(
-      bluetooth_device,
+  bluetooth_device->ConnectToServiceInsecurely(
       uuid_,
       base::Bind(&BluetoothConnection::OnConnected, weak_this),
       base::Bind(&BluetoothConnection::OnConnectionError, weak_this));
