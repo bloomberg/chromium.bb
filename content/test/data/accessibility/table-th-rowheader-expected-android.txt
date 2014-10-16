@@ -1,0 +1,11 @@
+android.webkit.WebView focusable focused scrollable name='Table example'
+    android.widget.GridView collection row_count=2 column_count=2
+        android.view.View
+            android.view.View clickable collection_item name='Firstname' row_span=1 column_span=1
+            android.view.View clickable collection_item name='Jill' row_span=1 column_index=1 column_span=1
+        android.view.View
+            android.view.View clickable collection_item name='Lastname' row_index=1 row_span=1 column_span=1
+            android.view.View clickable collection_item name='Smith' row_index=1 row_span=1 column_index=1 column_span=1
+        android.view.View
+        android.view.View
+        android.view.View

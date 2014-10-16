@@ -1,0 +1,6 @@
+AXWebArea
+    AXGroup
+        AXImage
+    AXGroup
+        AXStaticText AXValue='The pipe'
+        AXStaticText AXValue=' clicked by SomeOne.'
