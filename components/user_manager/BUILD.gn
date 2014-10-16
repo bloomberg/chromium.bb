@@ -15,10 +15,8 @@ component("user_manager") {
 
   deps = [
     "//base",
-    "//components/session_manager/core",
     "//skia",
     "//ui/gfx",
-    "//url",
   ]
 
   defines = [
@@ -40,6 +38,12 @@ component("user_manager") {
       "user_manager_base.h",
       "user_type.h",
     ]
-    deps += [ "//ui/chromeos/strings" ]
+    deps += [
+      "//components/session_manager/core",
+      "//google_apis",
+      "//ui/chromeos/resources",
+      "//ui/chromeos/strings",
+      "//url",
+    ]
   }
 }
