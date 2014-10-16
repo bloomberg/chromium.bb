@@ -18,17 +18,6 @@ class EventTarget;
 namespace athena {
 class AcceleratorManager;
 
-class PowerButtonObserver {
- public:
-  enum State {
-    PRESSED,
-    LONG_PRESSED,
-    RELEASED,
-  };
-
-  virtual void OnPowerButtonStateChanged(State state) = 0;
-};
-
 class ATHENA_EXPORT InputManager {
  public:
   // Creates and deletes the singleton object of the InputManager
@@ -40,10 +29,6 @@ class ATHENA_EXPORT InputManager {
   // TODO(oshima): Fix the initialization process and replace this
   // with EnvObserver::WindowInitialized
   virtual void OnRootWindowCreated(aura::Window* root_window) = 0;
-
-  // Add/remove power button observer.
-  virtual void AddPowerButtonObserver(PowerButtonObserver* observer) = 0;
-  virtual void RemovePowerButtonObserver(PowerButtonObserver* observer) = 0;
 
   virtual ui::EventTarget* GetTopmostEventTarget() = 0;
   virtual AcceleratorManager* GetAcceleratorManager() = 0;

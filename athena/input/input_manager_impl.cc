@@ -2,24 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/input/input_manager_impl.h"
+#include "athena/input/public/input_manager.h"
 
-#include "athena/input/power_button_controller.h"
+#include "athena/input/accelerator_manager_impl.h"
 #include "base/logging.h"
+#include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/events/event_target.h"
 
 namespace athena {
 namespace {
 
 InputManager* instance = NULL;
 
-}  // namespace
+class InputManagerImpl : public InputManager,
+                         public ui::EventTarget,
+                         public aura::client::EventClient {
+ public:
+  InputManagerImpl();
+  virtual ~InputManagerImpl();
+
+  void Init();
+  void Shutdown();
+
+ private:
+  // InputManager:
+  virtual void OnRootWindowCreated(aura::Window* root_window) override;
+  virtual ui::EventTarget* GetTopmostEventTarget() override { return this; }
+  virtual AcceleratorManager* GetAcceleratorManager() override {
+    return accelerator_manager_.get();
+  }
+
+  // Overridden from aura::client::EventClient:
+  virtual bool CanProcessEventsWithinSubtree(
+      const aura::Window* window) const override {
+    return window && !window->ignore_events();
+  }
+  virtual ui::EventTarget* GetToplevelEventTarget() override { return this; }
+
+  // ui::EventTarget:
+  virtual bool CanAcceptEvent(const ui::Event& event) override;
+  virtual ui::EventTarget* GetParentTarget() override;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  virtual ui::EventTargeter* GetEventTargeter() override;
+  virtual void OnEvent(ui::Event* event) override;
+
+  scoped_ptr<AcceleratorManagerImpl> accelerator_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputManagerImpl);
+};
 
 InputManagerImpl::InputManagerImpl()
     : accelerator_manager_(
-          AcceleratorManagerImpl::CreateGlobalAcceleratorManager()),
-      power_button_controller_(new PowerButtonController) {
+          AcceleratorManagerImpl::CreateGlobalAcceleratorManager()) {
   DCHECK(!instance);
   instance = this;
 }
@@ -32,7 +68,6 @@ InputManagerImpl::~InputManagerImpl() {
 
 void InputManagerImpl::Init() {
   accelerator_manager_->Init();
-  power_button_controller_->InstallAccelerators();
 }
 
 void InputManagerImpl::Shutdown() {
@@ -42,31 +77,6 @@ void InputManagerImpl::Shutdown() {
 void InputManagerImpl::OnRootWindowCreated(aura::Window* root_window) {
   aura::client::SetEventClient(root_window, this);
   accelerator_manager_->OnRootWindowCreated(root_window);
-}
-
-ui::EventTarget* InputManagerImpl::GetTopmostEventTarget() {
-  return this;
-}
-
-AcceleratorManager* InputManagerImpl::GetAcceleratorManager() {
-  return accelerator_manager_.get();
-}
-
-void InputManagerImpl::AddPowerButtonObserver(PowerButtonObserver* observer) {
-  power_button_controller_->AddPowerButtonObserver(observer);
-}
-void InputManagerImpl::RemovePowerButtonObserver(
-    PowerButtonObserver* observer) {
-  power_button_controller_->RemovePowerButtonObserver(observer);
-}
-
-bool InputManagerImpl::CanProcessEventsWithinSubtree(
-    const aura::Window* window) const {
-  return window && !window->ignore_events();
-}
-
-ui::EventTarget* InputManagerImpl::GetToplevelEventTarget() {
-  return this;
 }
 
 bool InputManagerImpl::CanAcceptEvent(const ui::Event& event) {
@@ -89,9 +99,7 @@ ui::EventTargeter* InputManagerImpl::GetEventTargeter() {
 void InputManagerImpl::OnEvent(ui::Event* event) {
 }
 
-int InputManagerImpl::SetPowerButtonTimeoutMsForTest(int timeout) {
-  return power_button_controller_->SetPowerButtonTimeoutMsForTest(timeout);
-}
+}  // namespace
 
 // static
 InputManager* InputManager::Create() {
