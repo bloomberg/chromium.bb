@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
+import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -665,9 +665,9 @@ public class Tab implements NavigationClient {
     /**
      * @return The current {ToolbarModelSecurityLevel} for the tab.
      */
+    // TODO(tedchoc): Remove this and transition all clients to use ToolbarModel directly.
     public int getSecurityLevel() {
-        if (mNativeTabAndroid == 0) return ToolbarModelSecurityLevel.NONE;
-        return nativeGetSecurityLevel(mNativeTabAndroid);
+        return ToolbarModel.getSecurityLevelForWebContents(getWebContents());
     }
 
     /**
@@ -1223,7 +1223,6 @@ public class Tab implements NavigationClient {
     private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,
             byte[] postData, int transition, String referrerUrl, int referrerPolicy,
             boolean isRendererInitiated);
-    private native int nativeGetSecurityLevel(long nativeTabAndroid);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(long nativeTabAndroid);

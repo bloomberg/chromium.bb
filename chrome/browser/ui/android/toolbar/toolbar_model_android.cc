@@ -77,3 +77,13 @@ jlong Init(JNIEnv* env, jobject obj, jobject delegate) {
   ToolbarModelAndroid* toolbar_model = new ToolbarModelAndroid(env, delegate);
   return reinterpret_cast<intptr_t>(toolbar_model);
 }
+
+// static
+jint GetSecurityLevelForWebContents(JNIEnv* env,
+                                    jclass jcaller,
+                                    jobject jweb_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  DCHECK(web_contents);
+  return ToolbarModelImpl::GetSecurityLevelForWebContents(web_contents);
+}

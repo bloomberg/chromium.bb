@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
@@ -553,11 +552,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;
-}
-
-ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel(JNIEnv* env,
-                                                         jobject obj) {
-  return ToolbarModelImpl::GetSecurityLevelForWebContents(web_contents());
 }
 
 void TabAndroid::SetActiveNavigationEntryTitleForUrl(JNIEnv* env,

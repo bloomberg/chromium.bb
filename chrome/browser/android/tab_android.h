@@ -141,7 +141,6 @@ class TabAndroid : public CoreTabHelperDelegate,
                                 jstring j_referrer_url,
                                 jint referrer_policy,
                                 jboolean is_renderer_initiated);
-  ToolbarModel::SecurityLevel GetSecurityLevel(JNIEnv* env, jobject obj);
   void SetActiveNavigationEntryTitleForUrl(JNIEnv* env,
                                            jobject obj,
                                            jstring jurl,
