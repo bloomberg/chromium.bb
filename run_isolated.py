@@ -261,33 +261,8 @@ def main(args):
   isolateserver.add_isolate_server_options(data_group, True)
   parser.add_option_group(data_group)
 
-  cache_group = optparse.OptionGroup(parser, 'Cache management')
-  cache_group.add_option(
-      '--cache',
-      default='cache',
-      metavar='DIR',
-      help='Cache directory, default=%default')
-  cache_group.add_option(
-      '--max-cache-size',
-      type='int',
-      metavar='NNN',
-      default=20*1024*1024*1024,
-      help='Trim if the cache gets larger than this value, default=%default')
-  cache_group.add_option(
-      '--min-free-space',
-      type='int',
-      metavar='NNN',
-      default=2*1024*1024*1024,
-      help='Trim if disk free space becomes lower than this value, '
-           'default=%default')
-  cache_group.add_option(
-      '--max-items',
-      type='int',
-      metavar='NNN',
-      default=100000,
-      help='Trim if more than this number of items are in the cache '
-           'default=%default')
-  parser.add_option_group(cache_group)
+  isolateserver.add_cache_options(parser)
+  parser.set_defaults(cache='cache')
 
   debug_group = optparse.OptionGroup(parser, 'Debugging')
   debug_group.add_option(
@@ -306,13 +281,7 @@ def main(args):
     logging.debug('One and only one of --isolated or --hash is required.')
     parser.error('One and only one of --isolated or --hash is required.')
 
-  options.cache = os.path.abspath(options.cache)
-  policies = isolateserver.CachePolicies(
-      options.max_cache_size, options.min_free_space, options.max_items)
-
-  # |options.cache| path may not exist until DiskCache() instance is created.
-  cache = isolateserver.DiskCache(
-      options.cache, policies, isolated_format.get_hash_algo(options.namespace))
+  cache = isolateserver.process_cache_options(options)
 
   remote = options.isolate_server or options.indir
   if file_path.is_url(remote):

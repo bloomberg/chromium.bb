@@ -9,6 +9,7 @@ __version__ = '0.3.4'
 
 import functools
 import logging
+import optparse
 import os
 import re
 import signal
@@ -2029,6 +2030,7 @@ def CMDdownload(parser, args):
   parser.add_option(
       '-t', '--target', metavar='DIR', default=os.getcwd(),
       help='destination directory')
+  add_cache_options(parser)
   options, args = parser.parse_args(args)
   process_isolate_server_options(parser, options)
   if args:
@@ -2036,6 +2038,7 @@ def CMDdownload(parser, args):
   if bool(options.isolated) == bool(options.file):
     parser.error('Use one of --isolated or --file, and only one.')
 
+  cache = process_cache_options(options)
   options.target = os.path.abspath(options.target)
 
   remote = options.isolate_server or options.indir
@@ -2045,6 +2048,7 @@ def CMDdownload(parser, args):
   with get_storage(remote, options.namespace) as storage:
     # Fetching individual files.
     if options.file:
+      # TODO(maruel): Enable cache in this case too.
       channel = threading_utils.TaskChannel()
       pending = {}
       for digest, dest in options.file:
@@ -2062,16 +2066,18 @@ def CMDdownload(parser, args):
 
     # Fetching whole isolated tree.
     if options.isolated:
-      bundle = fetch_isolated(
-          isolated_hash=options.isolated,
-          storage=storage,
-          cache=MemoryCache(),
-          outdir=options.target,
-          require_command=False)
-      rel = os.path.join(options.target, bundle.relative_cwd)
-      print('To run this test please run from the directory %s:' %
-            os.path.join(options.target, rel))
-      print('  ' + ' '.join(bundle.command))
+      with cache:
+        bundle = fetch_isolated(
+            isolated_hash=options.isolated,
+            storage=storage,
+            cache=cache,
+            outdir=options.target,
+            require_command=False)
+      if bundle.command:
+        rel = os.path.join(options.target, bundle.relative_cwd)
+        print('To run this test please run from the directory %s:' %
+              os.path.join(options.target, rel))
+        print('  ' + ' '.join(bundle.command))
 
   return 0
 
@@ -2135,6 +2141,49 @@ def process_isolate_server_options(parser, options):
       os.path.normpath(os.path.join(os.getcwd(), options.indir)))
   if not os.path.isdir(options.indir):
     parser.error('Path given to --indir must exist.')
+
+
+def add_cache_options(parser):
+  cache_group = optparse.OptionGroup(parser, 'Cache management')
+  cache_group.add_option(
+      '--cache', metavar='DIR',
+      help='Directory to keep a local cache of the files. Accelerates download '
+           'by reusing already downloaded files. Default=%default')
+  cache_group.add_option(
+      '--max-cache-size',
+      type='int',
+      metavar='NNN',
+      default=20*1024*1024*1024,
+      help='Trim if the cache gets larger than this value, default=%default')
+  cache_group.add_option(
+      '--min-free-space',
+      type='int',
+      metavar='NNN',
+      default=2*1024*1024*1024,
+      help='Trim if disk free space becomes lower than this value, '
+           'default=%default')
+  cache_group.add_option(
+      '--max-items',
+      type='int',
+      metavar='NNN',
+      default=100000,
+      help='Trim if more than this number of items are in the cache '
+           'default=%default')
+  parser.add_option_group(cache_group)
+
+
+def process_cache_options(options):
+  if options.cache:
+    policies = CachePolicies(
+        options.max_cache_size, options.min_free_space, options.max_items)
+
+    # |options.cache| path may not exist until DiskCache() instance is created.
+    return DiskCache(
+        os.path.abspath(options.cache),
+        policies,
+        isolated_format.get_hash_algo(options.namespace))
+  else:
+    return MemoryCache()
 
 
 class OptionParserIsolateServer(tools.OptionParserWithLogging):
