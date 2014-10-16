@@ -182,7 +182,10 @@ struct weston_output {
 	struct wl_list resource_list;
 	struct wl_global *global;
 	struct weston_compositor *compositor;
+
+	/** From global to output buffer coordinates. */
 	struct weston_matrix matrix;
+
 	struct wl_list animation_list;
 	int32_t x, y, width, height;
 	int32_t mm_width, mm_height;

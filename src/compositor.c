@@ -3773,88 +3773,60 @@ weston_output_destroy(struct weston_output *output)
 	wl_global_destroy(output->global);
 }
 
-static void
-weston_output_compute_transform(struct weston_output *output)
-{
-	struct weston_matrix transform;
-	int flip;
-
-	weston_matrix_init(&transform);
-	transform.type = WESTON_MATRIX_TRANSFORM_ROTATE;
-
-	switch(output->transform) {
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		transform.type |= WESTON_MATRIX_TRANSFORM_OTHER;
-		flip = -1;
-		break;
-	default:
-		flip = 1;
-		break;
-	}
-
-        switch(output->transform) {
-        case WL_OUTPUT_TRANSFORM_NORMAL:
-        case WL_OUTPUT_TRANSFORM_FLIPPED:
-                transform.d[0] = flip;
-                transform.d[1] = 0;
-                transform.d[4] = 0;
-                transform.d[5] = 1;
-                break;
-        case WL_OUTPUT_TRANSFORM_90:
-        case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-                transform.d[0] = 0;
-                transform.d[1] = -flip;
-                transform.d[4] = 1;
-                transform.d[5] = 0;
-                break;
-        case WL_OUTPUT_TRANSFORM_180:
-        case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-                transform.d[0] = -flip;
-                transform.d[1] = 0;
-                transform.d[4] = 0;
-                transform.d[5] = -1;
-                break;
-        case WL_OUTPUT_TRANSFORM_270:
-        case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-                transform.d[0] = 0;
-                transform.d[1] = flip;
-                transform.d[4] = -1;
-                transform.d[5] = 0;
-                break;
-        default:
-                break;
-        }
-
-	weston_matrix_multiply(&output->matrix, &transform);
-}
-
 WL_EXPORT void
 weston_output_update_matrix(struct weston_output *output)
 {
 	float magnification;
 
 	weston_matrix_init(&output->matrix);
-	weston_matrix_translate(&output->matrix,
-				-(output->x + output->width / 2.0),
-				-(output->y + output->height / 2.0), 0);
-
-	weston_matrix_scale(&output->matrix,
-			    2.0 / output->width,
-			    -2.0 / output->height, 1);
+	weston_matrix_translate(&output->matrix, -output->x, -output->y, 0);
 
 	if (output->zoom.active) {
 		magnification = 1 / (1 - output->zoom.spring_z.current);
 		weston_output_update_zoom(output);
 		weston_matrix_translate(&output->matrix, -output->zoom.trans_x,
-					output->zoom.trans_y, 0);
+					-output->zoom.trans_y, 0);
 		weston_matrix_scale(&output->matrix, magnification,
 				    magnification, 1.0);
 	}
 
-	weston_output_compute_transform(output);
+	switch (output->transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		weston_matrix_translate(&output->matrix, -output->width, 0, 0);
+		weston_matrix_scale(&output->matrix, -1, 1, 1);
+		break;
+	}
+
+	switch (output->transform) {
+	default:
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		weston_matrix_translate(&output->matrix, 0, -output->height, 0);
+		weston_matrix_rotate_xy(&output->matrix, 0, 1);
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		weston_matrix_translate(&output->matrix,
+					-output->width, -output->height, 0);
+		weston_matrix_rotate_xy(&output->matrix, -1, 0);
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		weston_matrix_translate(&output->matrix, -output->width, 0, 0);
+		weston_matrix_rotate_xy(&output->matrix, 0, -1);
+		break;
+	}
+
+	if (output->current_scale != 1)
+		weston_matrix_scale(&output->matrix,
+				    output->current_scale,
+				    output->current_scale, 1);
 
 	output->dirty = 0;
 }

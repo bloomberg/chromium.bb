@@ -76,6 +76,8 @@ struct gl_output_state {
 	enum gl_border_status border_damage[BUFFER_DAMAGE_COUNT];
 	struct gl_border_image borders[4];
 	enum gl_border_status border_status;
+
+	struct weston_matrix output_matrix;
 };
 
 enum buffer_type {
@@ -574,9 +576,10 @@ shader_uniforms(struct gl_shader *shader,
 {
 	int i;
 	struct gl_surface_state *gs = get_surface_state(view->surface);
+	struct gl_output_state *go = get_output_state(output);
 
 	glUniformMatrix4fv(shader->proj_uniform,
-			   1, GL_FALSE, output->matrix.d);
+			   1, GL_FALSE, go->output_matrix.d);
 	glUniform4fv(shader->color_uniform, 1, gs->color);
 	glUniform1f(shader->alpha_uniform, view->alpha);
 
@@ -953,6 +956,15 @@ gl_renderer_repaint_output(struct weston_output *output,
 		   go->borders[GL_RENDERER_BORDER_BOTTOM].height,
 		   output->current_mode->width,
 		   output->current_mode->height);
+
+	/* Calculate the global GL matrix */
+	go->output_matrix = output->matrix;
+	weston_matrix_translate(&go->output_matrix,
+				-(output->current_mode->width / 2.0),
+				-(output->current_mode->height / 2.0), 0);
+	weston_matrix_scale(&go->output_matrix,
+			    2.0 / output->current_mode->width,
+			    -2.0 / output->current_mode->height, 1);
 
 	/* if debugging, redraw everything outside the damage to clean up
 	 * debug lines from the previous draw on this buffer:
