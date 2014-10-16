@@ -1435,9 +1435,6 @@ crbug.com/420307 [ Win ] http/tests/serviceworker/fetch-frame-resource.html [ Pa
 
 crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Pass Timeout ]
 
-crbug.com/422050 [ SnowLeopard ] fast/text/justification-padding-mid-word.html [ NeedsRebaseline ]
-crbug.com/422050 [ SnowLeopard ] virtual/antialiasedtext/fast/text/justification-padding-mid-word.html [ NeedsRebaseline ]
-
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
