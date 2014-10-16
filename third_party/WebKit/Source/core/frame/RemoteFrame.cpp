@@ -32,8 +32,7 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockB
     // The process where this frame actually lives won't have sufficient information to determine
     // correct referrer, since it won't have access to the originDocument. Set it now.
     ResourceRequest request(url);
-    Referrer referrer(SecurityPolicy::generateReferrerHeader(originDocument.referrerPolicy(), url, originDocument.outgoingReferrer()), originDocument.referrerPolicy());
-    request.setHTTPReferrer(referrer);
+    request.setHTTPReferrer(SecurityPolicy::generateReferrer(originDocument.referrerPolicy(), url, originDocument.outgoingReferrer()));
     remoteFrameClient()->navigate(request, lockBackForwardList);
 }
 

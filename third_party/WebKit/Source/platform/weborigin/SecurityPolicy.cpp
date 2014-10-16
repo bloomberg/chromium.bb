@@ -65,32 +65,32 @@ bool SecurityPolicy::shouldHideReferrer(const KURL& url, const String& referrer)
     return !URLIsSecureURL;
 }
 
-String SecurityPolicy::generateReferrerHeader(ReferrerPolicy referrerPolicy, const KURL& url, const String& referrer)
+Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const KURL& url, const String& referrer)
 {
     if (referrer.isEmpty())
-        return String();
+        return Referrer(String(), referrerPolicy);
 
     if (!(protocolIs(referrer, "https") || protocolIs(referrer, "http")))
-        return String();
+        return Referrer(String(), referrerPolicy);
 
     switch (referrerPolicy) {
     case ReferrerPolicyNever:
-        return String();
+        return Referrer(String(), referrerPolicy);
     case ReferrerPolicyAlways:
-        return referrer;
+        return Referrer(referrer, referrerPolicy);
     case ReferrerPolicyOrigin: {
         String origin = SecurityOrigin::createFromString(referrer)->toString();
         if (origin == "null")
-            return String();
+            return Referrer(String(), referrerPolicy);
         // A security origin is not a canonical URL as it lacks a path. Add /
         // to turn it into a canonical URL we can use as referrer.
-        return origin + "/";
+        return Referrer(origin + "/", referrerPolicy);
     }
     case ReferrerPolicyDefault:
         break;
     }
 
-    return shouldHideReferrer(url, referrer) ? String() : referrer;
+    return Referrer(shouldHideReferrer(url, referrer) ? String() : referrer, referrerPolicy);
 }
 
 bool SecurityPolicy::isAccessWhiteListed(const SecurityOrigin* activeOrigin, const SecurityOrigin* targetOrigin)

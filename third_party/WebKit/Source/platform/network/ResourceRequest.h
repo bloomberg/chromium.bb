@@ -113,7 +113,7 @@ public:
 
     const AtomicString& httpReferrer() const { return httpHeaderField("Referer"); }
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
-    void setHTTPReferrer(const Referrer& httpReferrer) { setHTTPHeaderField("Referer", httpReferrer.referrer); m_referrerPolicy = httpReferrer.referrerPolicy; }
+    void setHTTPReferrer(const Referrer&);
     void clearHTTPReferrer();
 
     const AtomicString& httpOrigin() const { return httpHeaderField("Origin"); }

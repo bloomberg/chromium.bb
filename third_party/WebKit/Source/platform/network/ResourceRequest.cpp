@@ -186,6 +186,15 @@ void ResourceRequest::setHTTPHeaderField(const char* name, const AtomicString& v
     setHTTPHeaderField(AtomicString(name), value);
 }
 
+void ResourceRequest::setHTTPReferrer(const Referrer& referrer)
+{
+    if (referrer.referrer.isEmpty())
+        m_httpHeaderFields.remove("Referer");
+    else
+        setHTTPHeaderField("Referer", referrer.referrer);
+    m_referrerPolicy = referrer.referrerPolicy;
+}
+
 void ResourceRequest::clearHTTPAuthorization()
 {
     m_httpHeaderFields.remove("Authorization");

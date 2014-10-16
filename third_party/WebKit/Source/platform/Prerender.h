@@ -34,7 +34,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -54,7 +54,7 @@ public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<Prerender> create(PrerenderClient*, const KURL&, unsigned relTypes, const String& referrer, ReferrerPolicy);
+    static PassRefPtr<Prerender> create(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
     ~Prerender();
 
     void removeClient();
@@ -65,8 +65,8 @@ public:
 
     const KURL& url() const { return m_url; }
     unsigned relTypes() const { return m_relTypes; }
-    const String& referrer() const { return m_referrer; }
-    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+    const String& referrer() const { return m_referrer.referrer; }
+    ReferrerPolicy referrerPolicy() const { return m_referrer.referrerPolicy; }
 
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
     ExtraData* extraData() { return m_extraData.get(); }
@@ -77,14 +77,13 @@ public:
     void didSendDOMContentLoadedForPrerender();
 
 private:
-    Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const String& referrer, ReferrerPolicy);
+    Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
 
     PrerenderClient* m_client;
 
     const KURL m_url;
     const unsigned m_relTypes;
-    const String m_referrer;
-    const ReferrerPolicy m_referrerPolicy;
+    const Referrer m_referrer;
 
     RefPtr<ExtraData> m_extraData;
 };

@@ -30,6 +30,7 @@
 #define SecurityPolicy_h
 
 #include "platform/PlatformExport.h"
+#include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/text/WTFString.h"
 
@@ -48,7 +49,7 @@ public:
     // Returns the referrer modified according to the referrer policy for a
     // navigation to a given URL. If the referrer returned is empty, the
     // referrer header should be omitted.
-    static String generateReferrerHeader(ReferrerPolicy, const KURL&, const String& referrer);
+    static Referrer generateReferrer(ReferrerPolicy, const KURL&, const String& referrer);
 
     static void addOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomain, bool allowDestinationSubdomains);
     static void removeOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomain, bool allowDestinationSubdomains);

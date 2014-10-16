@@ -41,7 +41,7 @@ namespace {
 
 TEST(SecurityPolicyTest, ReferrerIsAlwaysAWebURL)
 {
-    EXPECT_TRUE(String() == SecurityPolicy::generateReferrerHeader(blink::ReferrerPolicyAlways, KURL(blink::ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")));
+    EXPECT_TRUE(String() == SecurityPolicy::generateReferrer(blink::ReferrerPolicyAlways, KURL(blink::ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")).referrer);
 }
 
 } // namespace

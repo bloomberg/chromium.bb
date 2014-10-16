@@ -133,10 +133,9 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     // Normally, FrameLoader would take care of setting the referrer for a navigation that is
     // triggered from javascript. However, creating a window goes through sufficient processing
     // that it eventually enters FrameLoader as an embedder-initiated navigation. FrameLoader
-    // assumes no responsibility  for generating an embedder-initiated navigation's referrer,
+    // assumes no responsibility for generating an embedder-initiated navigation's referrer,
     // so we need to ensure the proper referrer is set now.
-    Referrer referrer(SecurityPolicy::generateReferrerHeader(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()), activeFrame->document()->referrerPolicy());
-    frameRequest.resourceRequest().setHTTPReferrer(referrer);
+    frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
 
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.

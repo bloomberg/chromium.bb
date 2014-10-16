@@ -924,10 +924,7 @@ bool WebLocalFrameImpl::isViewSourceModeEnabled() const
 void WebLocalFrameImpl::setReferrerForRequest(WebURLRequest& request, const WebURL& referrerURL)
 {
     String referrer = referrerURL.isEmpty() ? frame()->document()->outgoingReferrer() : String(referrerURL.spec().utf16());
-    referrer = SecurityPolicy::generateReferrerHeader(frame()->document()->referrerPolicy(), request.url(), referrer);
-    if (referrer.isEmpty())
-        return;
-    request.setHTTPReferrer(referrer, static_cast<WebReferrerPolicy>(frame()->document()->referrerPolicy()));
+    request.toMutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(frame()->document()->referrerPolicy(), request.url(), referrer));
 }
 
 void WebLocalFrameImpl::dispatchWillSendRequest(WebURLRequest& request)

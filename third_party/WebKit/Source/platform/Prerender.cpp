@@ -38,17 +38,16 @@
 
 namespace blink {
 
-PassRefPtr<Prerender> Prerender::create(PrerenderClient* client, const KURL& url, unsigned relTypes, const String& referrer, ReferrerPolicy policy)
+PassRefPtr<Prerender> Prerender::create(PrerenderClient* client, const KURL& url, unsigned relTypes, const Referrer& referrer)
 {
-    return adoptRef(new Prerender(client, url, relTypes, referrer, policy));
+    return adoptRef(new Prerender(client, url, relTypes, referrer));
 }
 
-Prerender::Prerender(PrerenderClient* client, const KURL& url, const unsigned relTypes, const String& referrer, ReferrerPolicy policy)
+Prerender::Prerender(PrerenderClient* client, const KURL& url, const unsigned relTypes, const Referrer& referrer)
     : m_client(client)
     , m_url(url)
     , m_relTypes(relTypes)
     , m_referrer(referrer)
-    , m_referrerPolicy(policy)
 {
 }
 

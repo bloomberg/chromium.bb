@@ -630,12 +630,12 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
         return;
 
     // Always use the initiating document to generate the referrer.
-    // We need to generateReferrerHeader(), because we haven't enforced ReferrerPolicy or https->http
+    // We need to generateReferrer(), because we haven't enforced ReferrerPolicy or https->http
     // referrer suppression yet.
-    String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), originDocument->outgoingReferrer());
+    Referrer referrer = SecurityPolicy::generateReferrer(originDocument->referrerPolicy(), request.url(), originDocument->outgoingReferrer());
 
-    request.setHTTPReferrer(Referrer(referrer, originDocument->referrerPolicy()));
-    RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
+    request.setHTTPReferrer(referrer);
+    RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer.referrer);
     request.addHTTPOriginIfNeeded(referrerOrigin->toAtomicString());
 }
 

@@ -73,12 +73,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
             outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
         }
 
-        outgoingReferrer = SecurityPolicy::generateReferrerHeader(referrerPolicy, request.url(), outgoingReferrer);
-        if (outgoingReferrer.isEmpty())
-            request.clearHTTPReferrer();
-        else
-            request.setHTTPReferrer(Referrer(outgoingReferrer, referrerPolicy));
-
+        request.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request.url(), outgoingReferrer));
         request.addHTTPOriginIfNeeded(AtomicString(outgoingOrigin));
     }
 

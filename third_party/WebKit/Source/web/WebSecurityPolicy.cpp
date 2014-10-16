@@ -104,7 +104,7 @@ void WebSecurityPolicy::resetOriginAccessWhitelists()
 
 WebString WebSecurityPolicy::generateReferrerHeader(WebReferrerPolicy referrerPolicy, const WebURL& url, const WebString& referrer)
 {
-    return SecurityPolicy::generateReferrerHeader(static_cast<ReferrerPolicy>(referrerPolicy), url, referrer);
+    return SecurityPolicy::generateReferrer(static_cast<ReferrerPolicy>(referrerPolicy), url, referrer).referrer;
 }
 
 void WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(const WebString& scheme)
