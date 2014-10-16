@@ -302,6 +302,17 @@ public class Tab implements NavigationClient {
         }
 
         @Override
+        public void didNavigateMainFrame(String url, String baseUrl,
+                boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) {
+            for (TabObserver observer : mObservers) {
+                observer.onDidNavigateMainFrame(
+                        Tab.this, url, baseUrl, isNavigationToDifferentPage,
+                        isFragmentNavigation, statusCode);
+
+            }
+        }
+
+        @Override
         public void didChangeThemeColor(int color) {
             for (TabObserver observer : mObservers) {
                 observer.onDidChangeThemeColor(color);
