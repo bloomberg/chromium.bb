@@ -719,6 +719,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (roleValue() == DetailsRole)
         return false;
 
+    if (roleValue() == MeterRole)
+        return false;
+
     // if this element has aria attributes on it, it should not be ignored.
     if (supportsARIAAttributes())
         return false;
