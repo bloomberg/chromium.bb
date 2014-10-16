@@ -304,7 +304,7 @@ private:
 
     void applyLineDash() const;
     void setShadow(const FloatSize& offset, float blur, RGBA32 color);
-    void applyShadow();
+    void applyShadow(ShadowMode = DrawShadowAndForeground);
     bool shouldDrawShadows() const;
 
     void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);

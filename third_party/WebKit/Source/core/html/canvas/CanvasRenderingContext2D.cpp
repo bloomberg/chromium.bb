@@ -1410,7 +1410,7 @@ void CanvasRenderingContext2D::setShadow(const FloatSize& offset, float blur, RG
     applyShadow();
 }
 
-void CanvasRenderingContext2D::applyShadow()
+void CanvasRenderingContext2D::applyShadow(ShadowMode shadowMode)
 {
     GraphicsContext* c = drawingContext();
     if (!c)
@@ -1418,7 +1418,7 @@ void CanvasRenderingContext2D::applyShadow()
 
     if (shouldDrawShadows()) {
         c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor,
-            DrawLooperBuilder::ShadowIgnoresTransforms);
+            DrawLooperBuilder::ShadowIgnoresTransforms, DrawLooperBuilder::ShadowRespectsAlpha, shadowMode);
     } else {
         c->clearShadow();
     }
@@ -1648,8 +1648,24 @@ template<CanvasRenderingContext2D::DrawingType drawingType, class T> void Canvas
 
     GraphicsContext* c = drawingContext();
     ASSERT(c);
-    c->beginLayer(1, state().m_globalComposite);
+
     CompositeOperator previousOperator = c->compositeOperation();
+    if (shouldDrawShadows()) {
+        // unroll into two independently composited passes if drawing shadows
+        c->beginLayer(1, state().m_globalComposite);
+        c->setCompositeOperation(CompositeSourceOver);
+        applyShadow(DrawShadowOnly);
+        if (drawingType == Fill) {
+            fillPrimitive(area, c);
+        } else {
+            strokePrimitive(area, c);
+        }
+        c->setCompositeOperation(previousOperator);
+        c->endLayer();
+    }
+
+    c->beginLayer(1, state().m_globalComposite);
+    c->clearShadow();
     c->setCompositeOperation(CompositeSourceOver);
     if (drawingType == Fill) {
         fillPrimitive(area, c);
@@ -1658,6 +1674,7 @@ template<CanvasRenderingContext2D::DrawingType drawingType, class T> void Canvas
     }
     c->setCompositeOperation(previousOperator);
     c->endLayer();
+    applyShadow(DrawShadowAndForeground); // go back to normal shadows mode
 }
 
 PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1)

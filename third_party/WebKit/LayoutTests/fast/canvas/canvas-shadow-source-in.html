@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<canvas id="c" width="200" height="200"></canvas>
+<script>
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'black';
+  ctx.fillRect(50,50,200,100);
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.shadowColor = 'blue';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = -10;
+  ctx.shadowOffsetY = -10;
+  ctx.fillStyle = 'teal';
+  ctx.fillRect(100,100,100,100);
+</script>

@@ -295,19 +295,26 @@ void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient)
 
 void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color,
     DrawLooperBuilder::ShadowTransformMode shadowTransformMode,
-    DrawLooperBuilder::ShadowAlphaMode shadowAlphaMode)
+    DrawLooperBuilder::ShadowAlphaMode shadowAlphaMode, ShadowMode shadowMode)
 {
     if (contextDisabled())
         return;
 
+    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     if (!color.alpha() || (!offset.width() && !offset.height() && !blur)) {
+        if (shadowMode == DrawShadowOnly) {
+            // shadow only, but there is no shadow: use an empty draw looper to disable rendering of the source primitive
+            setDrawLooper(drawLooperBuilder.release());
+            return;
+        }
         clearShadow();
         return;
     }
 
-    OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     drawLooperBuilder->addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
-    drawLooperBuilder->addUnmodifiedContent();
+    if (shadowMode == DrawShadowAndForeground) {
+        drawLooperBuilder->addUnmodifiedContent();
+    }
     setDrawLooper(drawLooperBuilder.release());
 }
 

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<canvas id="c" width="200" height="200"></canvas>
+<script>
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  ctx.beginPath()
+  ctx.rect(100,100,150,50);
+  ctx.clip();
+  ctx.shadowColor = 'teal';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = -310;
+  ctx.fillStyle = 'teal';
+  ctx.fillRect(300,0,200,200);
+</script>

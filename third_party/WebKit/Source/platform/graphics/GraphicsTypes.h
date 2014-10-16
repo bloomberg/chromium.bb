@@ -72,6 +72,11 @@ enum CompositeOperator {
     CompositeDifference
 };
 
+enum ShadowMode {
+    DrawShadowAndForeground,
+    DrawShadowOnly,
+};
+
 enum GradientSpreadMethod {
     SpreadMethodPad,
     SpreadMethodReflect,
