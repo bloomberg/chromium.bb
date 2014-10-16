@@ -23,7 +23,8 @@ class PepperMediaDeviceManager
       public RenderFrameObserverTracker<PepperMediaDeviceManager>,
       public base::SupportsWeakPtr<PepperMediaDeviceManager> {
  public:
-  static PepperMediaDeviceManager* GetForRenderFrame(RenderFrame* render_frame);
+  static base::WeakPtr<PepperMediaDeviceManager> GetForRenderFrame(
+      RenderFrame* render_frame);
   virtual ~PepperMediaDeviceManager();
 
   // PepperDeviceEnumerationHostHelper::Delegate implementation:

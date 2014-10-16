@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/host/host_message_context.h"
@@ -58,7 +59,7 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
 
   // |resource_host| and |delegate| must outlive this object.
   PepperDeviceEnumerationHostHelper(ppapi::host::ResourceHost* resource_host,
-                                    Delegate* delegate,
+                                    base::WeakPtr<Delegate> delegate,
                                     PP_DeviceType_Dev device_type,
                                     const GURL& document_url);
   ~PepperDeviceEnumerationHostHelper();
@@ -93,7 +94,7 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
 
   // Non-owning pointers.
   ppapi::host::ResourceHost* resource_host_;
-  Delegate* delegate_;
+  base::WeakPtr<Delegate> delegate_;
 
   PP_DeviceType_Dev device_type_;
   GURL document_url_;

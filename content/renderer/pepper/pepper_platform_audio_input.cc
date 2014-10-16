@@ -289,7 +289,7 @@ PepperMediaDeviceManager* PepperPlatformAudioInput::GetMediaDeviceManager() {
   RenderFrameImpl* const render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_id_);
   return render_frame ?
-      PepperMediaDeviceManager::GetForRenderFrame(render_frame) : NULL;
+      PepperMediaDeviceManager::GetForRenderFrame(render_frame).get() : NULL;
 }
 
 }  // namespace content

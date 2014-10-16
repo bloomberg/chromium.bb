@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"
@@ -24,7 +25,8 @@ namespace content {
 
 namespace {
 
-class TestDelegate : public PepperDeviceEnumerationHostHelper::Delegate {
+class TestDelegate : public PepperDeviceEnumerationHostHelper::Delegate,
+                     public base::SupportsWeakPtr<TestDelegate> {
  public:
   TestDelegate() : last_used_id_(0) {}
 
@@ -76,7 +78,7 @@ class PepperDeviceEnumerationHostHelperTest : public testing::Test {
       : ppapi_host_(&sink_, ppapi::PpapiPermissions()),
         resource_host_(&ppapi_host_, 12345, 67890),
         device_enumeration_(&resource_host_,
-                            &delegate_,
+                            delegate_.AsWeakPtr(),
                             PP_DEVICETYPE_DEV_AUDIOCAPTURE,
                             GURL("http://example.com")) {}
 

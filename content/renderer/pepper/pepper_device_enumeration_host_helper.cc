@@ -46,6 +46,7 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
     // EnumerateDevicesCallbackBody() to ensure that we always call |callback|
     // asynchronously.
     sync_call_ = true;
+    DCHECK(owner_->delegate_);
     request_id_ = owner_->delegate_->EnumerateDevices(
         owner_->device_type_,
         owner_->document_url_,
@@ -54,7 +55,7 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
   }
 
   ~ScopedRequest() {
-    if (requested_) {
+    if (requested_ && owner_->delegate_) {
       owner_->delegate_->StopEnumerateDevices(request_id_);
     }
   }
@@ -91,7 +92,7 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
 
 PepperDeviceEnumerationHostHelper::PepperDeviceEnumerationHostHelper(
     ppapi::host::ResourceHost* resource_host,
-    Delegate* delegate,
+    base::WeakPtr<Delegate> delegate,
     PP_DeviceType_Dev device_type,
     const GURL& document_url)
     : resource_host_(resource_host),
