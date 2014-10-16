@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Convinience class for tests. Like WebRTC threads supports posts
- * and synchromous invokes.
+ * and synchronous invokes.
  */
 class SignalingThreadMock {
     // TODO: use scaleTimeout when natives for org.chromium.base get available.

@@ -38,19 +38,20 @@ public class DebugActivity extends Activity {
         textView.setText(intro);
         mLayout.addView(textView);
 
-        Button startButton = new Button(this);
-        startButton.setText("Start LocalTunnelBridge");
-        startButton.setOnClickListener(new SendActionOnClickListener(DebugService.START_ACTION));
-        mLayout.addView(startButton);
-
-        Button stopButton = new Button(this);
-        stopButton.setText("Stop");
-        stopButton.setOnClickListener(new SendActionOnClickListener(DebugService.STOP_ACTION));
-        mLayout.addView(stopButton);
+        addActionButton("Start LocalTunnelBridge", DebugService.START_TUNNEL_BRIDGE_ACTION);
+        addActionButton("Start LocalSessionBridge", DebugService.START_SESSION_BRIDGE_ACTION);
+        addActionButton("Stop", DebugService.STOP_ACTION);
 
         LayoutParams layoutParam = new LayoutParams(LayoutParams.MATCH_PARENT,
                                                     LayoutParams.MATCH_PARENT);
         setContentView(mLayout, layoutParam);
+    }
+
+    private void addActionButton(String text, String action) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setOnClickListener(new SendActionOnClickListener(action));
+        mLayout.addView(button);
     }
 
     private class SendActionOnClickListener implements View.OnClickListener {

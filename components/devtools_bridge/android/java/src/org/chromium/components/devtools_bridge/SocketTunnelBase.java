@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * ID is safe to be reused.
  */
 public abstract class SocketTunnelBase {
-    // Data channel is threadsafe but access to the reference needs synchromization.
+    // Data channel is threadsafe but access to the reference needs synchronization.
     private final ReadWriteLock mDataChanneliReferenceLock = new ReentrantReadWriteLock();
     private volatile AbstractDataChannel mDataChannel;
 

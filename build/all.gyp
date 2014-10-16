@@ -806,7 +806,6 @@
             '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components_tests.gyp:components_unittests_apk',
-            '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
             '../content/content_shell_and_tests.gyp:content_gl_tests_apk',
             '../content/content_shell_and_tests.gyp:content_unittests_apk',
@@ -825,6 +824,13 @@
             '../ui/events/events.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
           ],
+          'conditions': [
+            ['"<(libpeer_target_type)"=="static_library"', {
+              'dependencies': [
+                '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
+              ],
+            }],
+          ],
         },
         {
           # WebRTC Chromium tests to run on Android.
@@ -837,13 +843,6 @@
             '../tools/android/android_tools.gyp:memconsumer',
             # Unit test bundles packaged as an apk.
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
-          ],
-          'conditions': [
-            ['"<(libpeer_target_type)"=="static_library"', {
-              'dependencies': [
-                '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection_javalib',
-              ],
-            }],
           ],
         },  # target_name: android_builder_chromium_webrtc
       ], # targets
