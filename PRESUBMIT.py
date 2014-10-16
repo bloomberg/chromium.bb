@@ -9,10 +9,6 @@ for more details about the presubmit API built into gcl.
 """
 
 
-import re
-import sys
-
-
 _EXCLUDED_PATHS = (
     r"^breakpad[\\\/].*",
     r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_rules.py",
@@ -517,6 +513,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
   change. Breaking - rules is an error, breaking ! rules is a
   warning.
   """
+  import sys
   # We need to wait until we have an input_api object and use this
   # roundabout construct to import checkdeps because this file is
   # eval-ed and thus doesn't have __file__.
@@ -569,8 +566,8 @@ def _CheckFilePermissions(input_api, output_api):
   """Check that all files have their permissions properly set."""
   if input_api.platform == 'win32':
     return []
-  args = [sys.executable, 'tools/checkperms/checkperms.py', '--root',
-          input_api.change.RepositoryRoot()]
+  args = [input_api.python_executable, 'tools/checkperms/checkperms.py',
+          '--root', input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
     args += ['--file', f.LocalPath()]
   checkperms = input_api.subprocess.Popen(args,
@@ -969,14 +966,14 @@ def _CheckSpamLogging(input_api, output_api):
 
   for f in input_api.AffectedSourceFiles(source_file_filter):
     contents = input_api.ReadFile(f, 'rb')
-    if re.search(r"\bD?LOG\s*\(\s*INFO\s*\)", contents):
+    if input_api.re.search(r"\bD?LOG\s*\(\s*INFO\s*\)", contents):
       log_info.append(f.LocalPath())
-    elif re.search(r"\bD?LOG_IF\s*\(\s*INFO\s*,", contents):
+    elif input_api.re.search(r"\bD?LOG_IF\s*\(\s*INFO\s*,", contents):
       log_info.append(f.LocalPath())
 
-    if re.search(r"\bprintf\(", contents):
+    if input_api.re.search(r"\bprintf\(", contents):
       printf.append(f.LocalPath())
-    elif re.search(r"\bfprintf\((stdout|stderr)", contents):
+    elif input_api.re.search(r"\bfprintf\((stdout|stderr)", contents):
       printf.append(f.LocalPath())
 
   if log_info:
@@ -1198,6 +1195,7 @@ def _CheckParseErrors(input_api, output_api):
 
 def _CheckJavaStyle(input_api, output_api):
   """Runs checkstyle on changed java files and returns errors if any exist."""
+  import sys
   original_sys_path = sys.path
   try:
     sys.path = sys.path + [input_api.os_path.join(
@@ -1259,6 +1257,23 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
               (fpath.LocalPath(), line_num, deprecated_value, value)))
   return results
 
+
+def _CheckForOverrideAndFinalRules(input_api, output_api):
+  """Checks for final and override used as per C++11"""
+  problems = []
+  for f in input_api.AffectedFiles():
+    if (f.LocalPath().endswith(('.cc', '.cpp', '.h', '.mm'))):
+      for line_num, line in f.ChangedContents():
+        if (input_api.re.search(r'\b(FINAL|OVERRIDE)\b', line)):
+          problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitError('Use C++11\'s |final| and |override| '
+                                    'rather than FINAL and OVERRIDE.',
+                                    problems)]
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -1300,6 +1315,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
+  results.extend(_CheckForOverrideAndFinalRules(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1453,7 +1469,7 @@ def _CheckForUsingSideEffectsOfPass(input_api, output_api):
     if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm')):
       for lnum, line in f.ChangedContents():
         # Disallow Foo(*my_scoped_thing.Pass()); See crbug.com/418297.
-        if re.search(r'\*[a-zA-Z0-9_]+\.Pass\(\)', line):
+        if input_api.re.search(r'\*[a-zA-Z0-9_]+\.Pass\(\)', line):
           errors.append(output_api.PresubmitError(
             ('%s:%d uses *foo.Pass() to delete the contents of scoped_ptr. ' +
              'See crbug.com/418297.') % (f.LocalPath(), lnum)))
@@ -1647,6 +1663,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def GetPreferredTryMasters(project, change):
+  import re
   files = change.LocalPaths()
 
   if not files or all(re.search(r'[\\\/]OWNERS$', f) for f in files):
