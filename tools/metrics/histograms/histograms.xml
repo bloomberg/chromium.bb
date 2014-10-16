@@ -35850,6 +35850,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UMA.FieldTrialsEnabledBenchmarking" enum="BooleanUsage">
+  <obsolete>
+    Deprecated 2012. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Log whether the --enable-benchmarking flag was set, which causes field
@@ -36050,6 +36053,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UMA.UploadResponseStatus.XML" enum="UmaUploadResponseStatus">
+  <obsolete>
+    Deprecated 2013. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     For each upload to the XML (v1) UMA server, log whether the upload was
@@ -36066,6 +36072,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UMA.XMLNodeDumpTime" units="milliseconds">
+  <obsolete>
+    Deprecated 2013. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The time spent in converting the XML tree into a character buffer when
@@ -36074,6 +36083,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UMA.XMLWriterDestructionTime" units="milliseconds">
+  <obsolete>
+    Deprecated 2013. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The time spent in freeing the XML writer and tree when closing a metrics log
