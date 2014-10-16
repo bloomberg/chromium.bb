@@ -642,6 +642,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[profileNameTextField_ cell] setWraps:NO];
       [[profileNameTextField_ cell] setLineBreakMode:
           NSLineBreakByTruncatingTail];
+      [[profileNameTextField_ cell] setUsesSingleLineMode:YES];
       [self addSubview:profileNameTextField_];
       [profileNameTextField_ setTarget:self];
       [profileNameTextField_ setAction:@selector(saveProfileName:)];
