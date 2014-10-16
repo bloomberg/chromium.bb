@@ -152,7 +152,6 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // see if this behavior is really needed as Gecko does not allow this.
     if (RefPtrWillBeRawPtr<Frame> frame = contentFrame()) {
         frame->detach();
-        frame->disconnectOwnerElement();
     }
 #if ENABLE(OILPAN)
     // Oilpan: a plugin container must be explicitly disposed before it
@@ -168,14 +167,9 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
 {
-#if ENABLE(OILPAN)
     // An owner must by now have been informed of detachment
     // when the frame was closed.
     ASSERT(!m_contentFrame);
-#else
-    if (m_contentFrame)
-        m_contentFrame->disconnectOwnerElement();
-#endif
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const

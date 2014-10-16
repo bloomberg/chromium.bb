@@ -80,11 +80,9 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
 
 Frame::~Frame()
 {
-#if ENABLE(OILPAN)
     ASSERT(!m_owner);
-#else
+#if !ENABLE(OILPAN)
     // FIXME: We should not be doing all this work inside the destructor
-    disconnectOwnerElement();
     setDOMWindow(nullptr);
 #endif
 
@@ -109,6 +107,7 @@ void Frame::detach()
     // http://crbug.com/371084 is a probable explanation.
     if (!client())
         return;
+    disconnectOwnerElement();
     // After this, we must no longer talk to the client since this clears
     // its owning reference back to our owning LocalFrame.
     m_client->detached();

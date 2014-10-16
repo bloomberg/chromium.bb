@@ -6505,6 +6505,25 @@ TEST_F(WebFrameTest, ThemeColor)
     EXPECT_EQ(0xff0000ff, frame->document().themeColor());
 }
 
+// Make sure that an embedder-triggered detach with a remote frame parent
+// doesn't leave behind dangling pointers.
+TEST_F(WebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
+{
+    // FIXME: Refactor some of this logic into WebViewHelper to make it easier to
+    // write tests with a top-level remote frame.
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->setMainFrame(WebRemoteFrame::create(&remoteClient));
+    FrameTestHelpers::TestWebFrameClient childFrameClient;
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", &childFrameClient);
+
+    // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
+    RefPtr<Frame> childCoreFrame = toCoreFrame(childFrame);
+    view->close();
+    childCoreFrame.clear();
+}
+
 class WebFrameSwapTest : public WebFrameTest {
 protected:
     WebFrameSwapTest()
