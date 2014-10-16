@@ -201,7 +201,7 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  private:
   // Overridden from ContentHandler:
   virtual void OnConnect(
-      const mojo::String& url,
+      const mojo::String& requestor_url,
       URLResponsePtr response,
       InterfaceRequest<ServiceProvider> service_provider) override {
     ServiceProviderImpl* exported_services = new ServiceProviderImpl();

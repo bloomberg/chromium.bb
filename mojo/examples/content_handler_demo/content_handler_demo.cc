@@ -23,7 +23,7 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
 
  private:
   virtual void OnConnect(
-      const mojo::String& url,
+      const mojo::String& requestor_url,
       URLResponsePtr response,
       InterfaceRequest<ServiceProvider> service_provider) override;
 
@@ -72,11 +72,11 @@ class ContentHandlerApp : public ApplicationDelegate {
 };
 
 void ContentHandlerImpl::OnConnect(
-    const mojo::String& url,
+    const mojo::String& requestor_url,
     URLResponsePtr response,
     InterfaceRequest<ServiceProvider> service_provider) {
-  printf("ContentHandler::OnConnect - url:%s - body follows\n\n",
-         url.To<std::string>().c_str());
+  printf("ContentHandler::OnConnect - requestor_url:%s - body follows\n\n",
+         requestor_url.To<std::string>().c_str());
   content_handler_app_->PrintResponse(response->body.Pass());
 }
 

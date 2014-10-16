@@ -14,22 +14,19 @@ namespace apps {
 class ContentHandlerJSApp : public JSApp {
  public:
   ContentHandlerJSApp(ApplicationDelegateImpl* app_delegate_impl,
-                      const std::string& url,
                       URLResponsePtr content)
       : JSApp(app_delegate_impl),
-        url_(url),
         content_(content.Pass()) {
   }
 
   virtual bool Load(std::string* source, std::string* file_name) override {
-    *file_name = url_;
+    *file_name = content_->url;
     if (content_.is_null())
       return false;
     return common::BlockingCopyToString(content_->body.Pass(), source);
   }
 
  private:
-  std::string url_;
   URLResponsePtr content_;
 };
 
@@ -42,13 +39,11 @@ ContentHandlerImpl::~ContentHandlerImpl() {
 }
 
 void ContentHandlerImpl::OnConnect(
-    const mojo::String& url,
+    const mojo::String& requestor_url,
     URLResponsePtr content,
     InterfaceRequest<ServiceProvider> service_provider) {
   scoped_ptr<JSApp> js_app(
-      new ContentHandlerJSApp(app_delegate_impl_,
-                              url.To<std::string>(),
-                              content.Pass()));
+      new ContentHandlerJSApp(app_delegate_impl_, content.Pass()));
   app_delegate_impl_->StartJSApp(js_app.Pass());
 }
 

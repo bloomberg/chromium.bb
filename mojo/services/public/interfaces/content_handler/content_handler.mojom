@@ -8,7 +8,7 @@ import "mojo/services/public/interfaces/network/url_loader.mojom"
 module mojo {
 
 interface ContentHandler {
-  OnConnect(string url,
+  OnConnect(string requestor_url,
             URLResponse response,
             ServiceProvider&? service_provider);
 };

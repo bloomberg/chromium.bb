@@ -259,7 +259,7 @@ void ApplicationManager::LoadWithContentHandler(
   InterfaceRequest<ServiceProvider> spir;
   spir.Bind(service_provider.PassMessagePipe());
   connection->content_handler->OnConnect(
-      content_url.spec(), url_response.Pass(), spir.Pass());
+      requestor_url.spec(), url_response.Pass(), spir.Pass());
 }
 
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
