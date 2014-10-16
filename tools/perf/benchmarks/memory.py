@@ -30,3 +30,11 @@ class Reload2012Q3(benchmark.Benchmark):
 class MemoryToughDomMemoryCases(benchmark.Benchmark):
   test = memory.Memory
   page_set = page_sets.ToughDomMemoryCasesPageSet
+
+
+@benchmark.Enabled('android', 'has tabs')
+class TypicalMobileSites(benchmark.Benchmark):
+  """Long memory test."""
+  test = memory.Memory
+  page_set = page_sets.TypicalMobileSitesPageSet
+  options = {'pageset_repeat': 15}

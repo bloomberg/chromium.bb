@@ -1,0 +1,26 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "typical_mobile_sites_000.wpr": [
+            "http://baidu.com", 
+            "http://sfbay.craigslist.org", 
+            "http://cnn.com", 
+            "http://amazon.co.jp", 
+            "http://latimes.com", 
+            "http://yandex.ru", 
+            "http://wikipedia.com", 
+            "http://yahoo.co.jp", 
+            "http://apple.com", 
+            "http://nytimes.com", 
+            "http://amazon.com", 
+            "http://weibo.com", 
+            "http://ebay.com", 
+            "http://google.com", 
+            "http://bing.com", 
+            "http://bbc.co.uk", 
+            "http://sina.com.cn", 
+            "http://yahoo.com", 
+            "http://chicagotribune.com"
+        ]
+    }
+}
