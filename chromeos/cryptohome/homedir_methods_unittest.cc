@@ -88,7 +88,7 @@ void HomedirMethodsTest::SetUp() {
       new chromeos::MockCryptohomeClient);
   cryptohome_client_ = cryptohome_client.get();
   chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-      cryptohome_client.PassAs<chromeos::CryptohomeClient>());
+      cryptohome_client.Pass());
   HomedirMethods::Initialize();
 }
 

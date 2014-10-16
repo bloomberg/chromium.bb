@@ -382,7 +382,7 @@ class MergeToAugmented : public MergeToEffective {
       // Don't augment the GUID but write the plain value.
       if (!effective_value) {
         LOG(ERROR) << "GUID field has no effective value";
-        return make_scoped_ptr<base::Value>(NULL);
+        return nullptr;
       }
 
       // DCHECK that all provided GUIDs are identical.
@@ -439,7 +439,7 @@ class MergeToAugmented : public MergeToEffective {
     }
     if (augmented_value->empty())
       augmented_value.reset();
-    return augmented_value.PassAs<base::Value>();
+    return augmented_value.Pass();
   }
 
   // MergeListOfDictionaries override.

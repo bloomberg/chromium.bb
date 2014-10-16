@@ -145,7 +145,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs, "Expected 'ss'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -156,7 +156,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -190,9 +190,9 @@ class BluetoothGattCharacteristicServiceProviderImpl
       writer.CloseContainer(&variant_writer);
     } else {
       response = dbus::ErrorResponse::FromMethodCall(
-          method_call, kErrorInvalidArgs,
-          "No such property: '" + property_name + "'.")
-          .PassAs<dbus::Response>();
+          method_call,
+          kErrorInvalidArgs,
+          "No such property: '" + property_name + "'.");
     }
 
     response_sender.Run(response.Pass());
@@ -218,7 +218,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs, "Expected 'ssv'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -229,7 +229,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -248,7 +248,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, error_name, error_message);
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -260,7 +260,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "Property '" + property_name + "' has type 'ay'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -292,7 +292,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs, "Expected 's'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -303,7 +303,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(error_response.PassAs<dbus::Response>());
+      response_sender.Run(error_response.Pass());
       return;
     }
 
@@ -407,7 +407,7 @@ class BluetoothGattCharacteristicServiceProviderImpl
         dbus::ErrorResponse::FromMethodCall(
             method_call, kErrorFailed,
             "Failed to get/set characteristic value.");
-    response_sender.Run(error_response.PassAs<dbus::Response>());
+    response_sender.Run(error_response.Pass());
   }
 
   // Origin thread (i.e. the UI thread in production).
