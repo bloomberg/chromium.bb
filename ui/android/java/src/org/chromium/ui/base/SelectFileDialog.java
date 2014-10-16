@@ -202,9 +202,13 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         if (results == null) {
             // If we have a successful return but no data, then assume this is the camera returning
             // the photo that we requested.
-            nativeOnFileSelected(mNativeSelectFileDialog, mCameraOutputUri.toString(),
+            // If the uri is a file, we need to convert it to the absolute path or otherwise
+            // android cannot handle it correctly on some earlier versions.
+            // http://crbug.com/423338.
+            String path = ContentResolver.SCHEME_FILE.equals(mCameraOutputUri.getScheme()) ?
+                    mCameraOutputUri.getPath() : mCameraOutputUri.toString();
+            nativeOnFileSelected(mNativeSelectFileDialog, path,
                     mCameraOutputUri.getLastPathSegment());
-
             // Broadcast to the media scanner that there's a new photo on the device so it will
             // show up right away in the gallery (rather than waiting until the next time the media
             // scanner runs).
