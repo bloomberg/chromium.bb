@@ -131,7 +131,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             urlOverrideHelper.setShouldOverrideUrlLoadingReturnValue(true);
 
             TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mContentsClient.getOnPageFinishedHelper();
+                    mContentsClient.getOnPageFinishedHelper();
 
             final int currentOnPageFinishedCallCount = onPageFinishedHelper.getCallCount();
             loadUrlAsync(mAwContents, redirectUrl);

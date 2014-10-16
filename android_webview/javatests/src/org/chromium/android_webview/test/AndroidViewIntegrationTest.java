@@ -47,22 +47,24 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     }
 
     private OnContentSizeChangedHelper mOnContentSizeChangedHelper =
-        new OnContentSizeChangedHelper();
+            new OnContentSizeChangedHelper();
     private CallbackHelper mOnPageScaleChangedHelper = new CallbackHelper();
 
     private class TestAwLayoutSizer extends AwLayoutSizer {
         @Override
         public void onContentSizeChanged(int widthCss, int heightCss) {
             super.onContentSizeChanged(widthCss, heightCss);
-            if (mOnContentSizeChangedHelper != null)
+            if (mOnContentSizeChangedHelper != null) {
                 mOnContentSizeChangedHelper.onContentSizeChanged(widthCss, heightCss);
+            }
         }
 
         @Override
         public void onPageScaleChanged(float pageScaleFactor) {
             super.onPageScaleChanged(pageScaleFactor);
-            if (mOnPageScaleChangedHelper != null)
+            if (mOnPageScaleChangedHelper != null) {
                 mOnPageScaleChangedHelper.notifyCalled();
+            }
         }
     }
 
@@ -77,7 +79,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     }
 
     final LinearLayout.LayoutParams mWrapContentLayoutParams =
-        new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
     private AwTestContainerView createCustomTestContainerViewOnMainSync(
             final AwContentsClient awContentsClient, final int visibility) throws Exception {
@@ -191,7 +193,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
     public void testDisconnectedViewLoadsContent() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createDetachedTestContainerViewOnMainSync(contentsClient);
+                createDetachedTestContainerViewOnMainSync(contentsClient);
         assertZeroHeight(testContainerView);
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
@@ -204,8 +206,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
     private String makeHtmlPageOfSize(int widthCss, int heightCss, boolean heightPercent) {
         String content = "<div class=\"normal\">a</div>";
-        if (heightPercent)
-            content += "<div class=\"heightPercent\"></div>";
+        if (heightPercent) content += "<div class=\"heightPercent\"></div>";
         return CommonResources.makeHtmlPageFrom(
             "<style type=\"text/css\">" +
                 "body { margin:0px; padding:0px; } " +
@@ -282,15 +283,15 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int heightCss = 180;
 
         final String htmlData = CommonResources.makeHtmlPageFrom(
-            "<style type=\"text/css\">" +
-                "body { margin:0px; padding:0px; } " +
-                "div { " +
-                   "position: absolute; " +
-                   "width:" + widthCss + "px; " +
-                   "height:" + heightCss + "px; " +
-                   "background-color: red; " +
-                 "} " +
-            "</style>", "<div>a</div>");
+                "<style type=\"text/css\">" +
+                "  body { margin:0px; padding:0px; } " +
+                "  div { " +
+                "    position: absolute; " +
+                "    width:" + widthCss + "px; " +
+                "    height:" + heightCss + "px; " +
+                "    background-color: red; " +
+                "  } " +
+                "</style>", "<div>a</div>");
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
         loadDataAsync(testContainerView.getAwContents(), htmlData, "text/html", false);
@@ -308,7 +309,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
@@ -316,7 +317,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         // In wrap-content mode the AwLayoutSizer will size the view to be as wide as the parent
         // view.
         final int expectedWidthCss =
-            (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
+                (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
         final int expectedHeightCss = contentHeightCss;
 
         loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
@@ -336,13 +337,13 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
 
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
 
         final int expectedWidthCss =
-            (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
+                (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
         final int expectedHeightCss = contentHeightCss;
 
         loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
@@ -362,15 +363,15 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final AwContents awContents = testContainerView.getAwContents();
 
         final double deviceDIPScale =
-            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+                DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
         final int physicalWidth = 600;
         final int spanWidth = 42;
         final int expectedWidthCss =
-            (int) Math.ceil(physicalWidth / deviceDIPScale);
+                (int) Math.ceil(physicalWidth / deviceDIPScale);
 
         StringBuilder htmlBuilder = new StringBuilder("<html><body style='margin:0px;'>");
         final String spanBlock =
-            "<span style='width: " + spanWidth + "px; display: inline-block;'>a</span>";
+                "<span style='width: " + spanWidth + "px; display: inline-block;'>a</span>";
         for (int i = 0; i < 10; ++i) {
             htmlBuilder.append(spanBlock);
         }

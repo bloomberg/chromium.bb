@@ -63,7 +63,7 @@ public class AndroidProtocolHandler {
     private static int getFieldId(Context context, String assetType, String assetName)
         throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Class<?> d = context.getClassLoader()
-            .loadClass(context.getPackageName() + ".R$" + assetType);
+                .loadClass(context.getPackageName() + ".R$" + assetType);
         java.lang.reflect.Field field = d.getField(assetName);
         int id = field.getInt(null);
         return id;
@@ -90,7 +90,7 @@ public class AndroidProtocolHandler {
         String assetName = pathSegments.get(2);
         if (!("/" + assetPath + "/").equals(nativeGetAndroidResourcePath())) {
             Log.e(TAG, "Resource path does not start with " + nativeGetAndroidResourcePath() +
-                  ": " + uri);
+                    ": " + uri);
             return null;
         }
         // Drop the file extension.

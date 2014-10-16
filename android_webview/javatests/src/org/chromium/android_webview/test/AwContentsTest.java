@@ -217,7 +217,7 @@ public class AwContentsTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-              awContents.documentHasImages(msg);
+                awContents.documentHasImages(msg);
             }
         });
         assertTrue(s.tryAcquire(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -349,7 +349,7 @@ public class AwContentsTest extends AwTestBase {
 
             final Object originalFaviconSource = (new URL(faviconUrl)).getContent();
             final Bitmap originalFavicon =
-                BitmapFactory.decodeStream((InputStream) originalFaviconSource);
+                    BitmapFactory.decodeStream((InputStream) originalFaviconSource);
             assertNotNull(originalFavicon);
 
             assertTrue(awContents.getFavicon().sameAs(originalFavicon));
@@ -379,7 +379,7 @@ public class AwContentsTest extends AwTestBase {
             final String pageUrl = webServer.setResponse(
                     "/download.txt", data, downloadHeaders);
             final OnDownloadStartHelper downloadStartHelper =
-                mContentsClient.getOnDownloadStartHelper();
+                    mContentsClient.getOnDownloadStartHelper();
             final int callCount = downloadStartHelper.getCallCount();
             loadUrlAsync(awContents, pageUrl);
             downloadStartHelper.waitForCallback(callCount);
@@ -405,17 +405,17 @@ public class AwContentsTest extends AwTestBase {
 
         // Default to "online".
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-              script));
+                script));
 
         // Forcing "offline".
         setNetworkAvailableOnUiThread(awContents, false);
         assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-              script));
+                script));
 
         // Forcing "online".
         setNetworkAvailableOnUiThread(awContents, true);
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-              script));
+                script));
     }
 
 

@@ -214,10 +214,10 @@ public class AwSettings {
     public AwSettings(Context context,
             boolean isAccessFromFileURLsGrantedByDefault,
             boolean supportsLegacyQuirks) {
-       boolean hasInternetPermission = context.checkPermission(
-                    android.Manifest.permission.INTERNET,
-                    Process.myPid(),
-                    Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+        boolean hasInternetPermission = context.checkPermission(
+                android.Manifest.permission.INTERNET,
+                Process.myPid(),
+                Process.myUid()) == PackageManager.PERMISSION_GRANTED;
         synchronized (mAwSettingsLock) {
             mHasInternetPermission = hasInternetPermission;
             mBlockNetworkLoads = !hasInternetPermission;

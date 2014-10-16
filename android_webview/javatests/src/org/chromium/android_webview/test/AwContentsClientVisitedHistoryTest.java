@@ -58,7 +58,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
     }
 
     private VisitedHistoryTestAwContentsClient mContentsClient =
-        new VisitedHistoryTestAwContentsClient();
+            new VisitedHistoryTestAwContentsClient();
 
     @Feature({"AndroidWebView"})
     @SmallTest
@@ -73,7 +73,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         try {
             final String pageUrl = webServer.setResponse(path, html, null);
             final DoUpdateVisitedHistoryHelper doUpdateVisitedHistoryHelper =
-                mContentsClient.getDoUpdateVisitedHistoryHelper();
+                    mContentsClient.getDoUpdateVisitedHistoryHelper();
             int callCount = doUpdateVisitedHistoryHelper.getCallCount();
             loadUrlAsync(awContents, pageUrl);
             doUpdateVisitedHistoryHelper.waitForCallback(callCount);
@@ -98,7 +98,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         // possible test this end to end without using the flaky and brittle capturing picture of
         // the web page. So we are doing the next best thing, exercising all the code paths.
         final GetVisitedHistoryHelper visitedHistoryHelper =
-            mContentsClient.getGetVisitedHistoryHelper();
+                mContentsClient.getGetVisitedHistoryHelper();
         final int callCount = visitedHistoryHelper.getCallCount();
         visitedHistoryHelper.setSaveCallback(true);
 
@@ -129,7 +129,7 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
     @SmallTest
     public void testGetVisitedHistoryCallbackAfterDestroy() throws Throwable {
         GetVisitedHistoryHelper visitedHistoryHelper =
-            mContentsClient.getGetVisitedHistoryHelper();
+                mContentsClient.getGetVisitedHistoryHelper();
         visitedHistoryHelper.setSaveCallback(true);
         final int callCount = visitedHistoryHelper.getCallCount();
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);

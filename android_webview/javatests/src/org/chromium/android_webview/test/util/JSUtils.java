@@ -33,8 +33,8 @@ public class JSUtils {
             public boolean isSatisfied() {
                 try {
                     String linkIsNotNull = executeJavaScriptAndWaitForResult(testCase, awContents,
-                        onEvaluateJavaScriptResultHelper,
-                        "document.getElementById('" + linkId + "') != null");
+                            onEvaluateJavaScriptResultHelper,
+                            "document.getElementById('" + linkId + "') != null");
                     return linkIsNotNull.equals("true");
                 } catch (Throwable t) {
                     t.printStackTrace();
@@ -48,11 +48,11 @@ public class JSUtils {
             @Override
             public void run() {
                 awContents.getWebContents().evaluateJavaScript(
-                    "var evObj = document.createEvent('Events'); " +
-                    "evObj.initEvent('click', true, false); " +
-                    "document.getElementById('" + linkId + "').dispatchEvent(evObj);" +
-                    "console.log('element with id [" + linkId + "] clicked');",
-                    null);
+                        "var evObj = document.createEvent('Events'); " +
+                        "evObj.initEvent('click', true, false); " +
+                        "document.getElementById('" + linkId + "').dispatchEvent(evObj);" +
+                        "console.log('element with id [" + linkId + "] clicked');",
+                        null);
             }
         });
     }

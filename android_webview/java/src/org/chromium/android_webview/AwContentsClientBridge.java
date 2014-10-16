@@ -220,7 +220,7 @@ public class AwContentsClientBridge {
                 } catch (IllegalArgumentException e) {
                     Log.w(TAG, "Exception while decoding issuers list: " + e);
                     nativeProvideClientCertificateResponse(mNativeContentsClientBridge, id,
-                        null, null);
+                            null, null);
                     return;
                 }
             }

@@ -133,7 +133,7 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
     @SmallTest
     public void testOnNewPicture() throws Exception {
         final PictureListenerHelper pictureListenerHelper =
-            mContentsClient.getPictureListenerHelper();
+                mContentsClient.getPictureListenerHelper();
 
         final Picture thePicture = new Picture();
 
@@ -183,7 +183,7 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
     @SmallTest
     public void testOnReceivedLoginRequest() throws Exception {
         OnReceivedLoginRequestHelper receivedLoginRequestHelper =
-            mContentsClient.getOnReceivedLoginRequestHelper();
+                mContentsClient.getOnReceivedLoginRequestHelper();
 
         int onReceivedLoginRequestCount = receivedLoginRequestHelper.getCallCount();
         mClientHelper.postOnReceivedLoginRequest(REALM, ACCOUNT, ARGS);
@@ -197,7 +197,7 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
     @SmallTest
     public void testOnReceivedError() throws Exception {
         OnReceivedErrorHelper receivedErrorHelper =
-            mContentsClient.getOnReceivedErrorHelper();
+                mContentsClient.getOnReceivedErrorHelper();
 
         int onReceivedErrorCount = receivedErrorHelper.getCallCount();
         mClientHelper.postOnReceivedError(ERROR_CODE, ERROR_MESSAGE, TEST_URL);
@@ -211,7 +211,7 @@ public class AwContentsClientCallbackHelperTest extends AwTestBase {
     @SmallTest
     public void testOnScaleChangedScaled() throws Exception {
         TestAwContentsClient.OnScaleChangedHelper scaleChangedHelper =
-            mContentsClient.getOnScaleChangedHelper();
+                mContentsClient.getOnScaleChangedHelper();
 
         int onScaleChangeCount = scaleChangedHelper.getCallCount();
         mClientHelper.postOnScaleChangedScaled(OLD_SCALE, NEW_SCALE);

@@ -343,7 +343,7 @@ public class TestAwContentsClient extends NullContentsClient {
     public boolean shouldOverrideUrlLoading(String url) {
         super.shouldOverrideUrlLoading(url);
         boolean returnValue =
-            mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
+                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
         mShouldOverrideUrlLoadingHelper.notifyCalled(url);
         return returnValue;
     }

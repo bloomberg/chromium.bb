@@ -136,7 +136,7 @@ public class AwQuotaManagerBridge {
             long[] quotas) {
         assert mPendingGetOriginCallbacks.get(callbackId) != null;
         mPendingGetOriginCallbacks.get(callbackId).onReceiveValue(
-            new Origins(origin, usages, quotas));
+                new Origins(origin, usages, quotas));
         mPendingGetOriginCallbacks.remove(callbackId);
     }
 

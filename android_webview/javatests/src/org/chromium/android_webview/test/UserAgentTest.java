@@ -33,13 +33,13 @@ public class UserAgentTest extends AwTestBase {
     public void testNoExtraSpaceBeforeBuildName() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
         loadDataSync(
-            mAwContents,
-            mContentsClient.getOnPageFinishedHelper(),
-            // Spaces are replaced with underscores to avoid consecutive spaces compression.
-            "<html>" +
-            "<body onload='document.title=navigator.userAgent.replace(/ /g, \"_\")'></body>" +
-            "</html>",
-            "text/html", false);
+                mAwContents,
+                mContentsClient.getOnPageFinishedHelper(),
+                // Spaces are replaced with underscores to avoid consecutive spaces compression.
+                "<html>" +
+                "<body onload='document.title=navigator.userAgent.replace(/ /g, \"_\")'></body>" +
+                "</html>",
+                "text/html", false);
         final String ua = getTitleOnUiThread(mAwContents);
         Matcher matcher = Pattern.compile("Android_[^;]+;_[^_]").matcher(ua);
         assertTrue(matcher.find());

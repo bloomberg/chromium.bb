@@ -27,7 +27,7 @@ public class AwContentsClientAutoLoginTest extends AwTestBase {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
         final OnReceivedLoginRequestHelper loginRequestHelper =
-            mContentsClient.getOnReceivedLoginRequestHelper();
+                mContentsClient.getOnReceivedLoginRequestHelper();
 
         final String path = "/" + testName + ".html";
         final String html = testName;

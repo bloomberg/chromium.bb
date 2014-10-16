@@ -34,7 +34,7 @@ public abstract class AwContentsIoThreadClient {
 
     @CalledByNative
     public abstract void onDownloadStart(String url, String userAgent,
-        String contentDisposition, String mimeType, long contentLength);
+            String contentDisposition, String mimeType, long contentLength);
 
     @CalledByNative
     public abstract void newLoginRequest(String realm, String account, String args);
@@ -49,7 +49,7 @@ public abstract class AwContentsIoThreadClient {
             boolean hasUserGesture, String method, String[] requestHeaderNames,
             String[] requestHeaderValues) {
         AwContentsClient.ShouldInterceptRequestParams params =
-            new AwContentsClient.ShouldInterceptRequestParams();
+                new AwContentsClient.ShouldInterceptRequestParams();
         params.url = url;
         params.isMainFrame = isMainFrame;
         params.hasUserGesture = hasUserGesture;

@@ -28,7 +28,7 @@ public class AwHttpAuthHandler {
     }
 
     public boolean isFirstAttempt() {
-         return mFirstAttempt;
+        return mFirstAttempt;
     }
 
     @CalledByNative

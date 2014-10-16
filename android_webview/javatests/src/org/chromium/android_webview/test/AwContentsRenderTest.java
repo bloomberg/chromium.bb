@@ -82,8 +82,8 @@ public class AwContentsRenderTest extends AwTestBase {
         pollForBackgroundColor(Color.YELLOW);
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-            "data:text/html,<html><head><style>body {background-color:#227788}</style></head>" +
-            "<body></body></html>");
+                "data:text/html,<html><head><style>body {background-color:#227788}</style></head>" +
+                "<body></body></html>");
         pollForBackgroundColor(Color.rgb(0x22, 0x77, 0x88));
 
         // Changing the base background should not override CSS background.

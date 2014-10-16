@@ -63,7 +63,7 @@ class AwZoomControls implements ZoomControlsDelegate {
 
     private ZoomButtonsController getZoomController() {
         if (mZoomButtonsController == null &&
-            mAwContents.getSettings().shouldDisplayZoomControls()) {
+                mAwContents.getSettings().shouldDisplayZoomControls()) {
             mZoomButtonsController = new ZoomButtonsController(
                     mAwContents.getContentViewCore().getContainerView());
             mZoomButtonsController.setOnZoomListener(new ZoomListener());

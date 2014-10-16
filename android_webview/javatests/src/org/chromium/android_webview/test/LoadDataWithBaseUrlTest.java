@@ -42,8 +42,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
     }
 
     protected void loadDataWithBaseUrlSync(
-        final String data, final String mimeType, final boolean isBase64Encoded,
-        final String baseUrl, final String historyUrl) throws Throwable {
+            final String data, final String mimeType, final boolean isBase64Encoded,
+            final String baseUrl, final String historyUrl) throws Throwable {
         loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 data, mimeType, isBase64Encoded, baseUrl, historyUrl);
     }
@@ -310,20 +310,20 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             // All access to file://, including android_asset and android_res is blocked
             // with a data: base URL, regardless of AwSettings.getAllowFileAccess().
             assertFalse(canAccessFileFromData(dataBaseUrl,
-                  "file:///android_asset/asset_icon.png?" + token));
+                    "file:///android_asset/asset_icon.png?" + token));
             assertFalse(canAccessFileFromData(dataBaseUrl,
-                  "file:///android_res/raw/resource_icon.png?" + token));
+                    "file:///android_res/raw/resource_icon.png?" + token));
             assertFalse(canAccessFileFromData(dataBaseUrl, "file://" + imagePath + "?" + token));
 
             // WebView always has access to android_asset and android_res for non-data
             // base URLs and can access other file:// URLs based on the value of
             // AwSettings.getAllowFileAccess().
             assertTrue(canAccessFileFromData(nonDataBaseUrl,
-                  "file:///android_asset/asset_icon.png?" + token));
+                    "file:///android_asset/asset_icon.png?" + token));
             assertTrue(canAccessFileFromData(nonDataBaseUrl,
-                  "file:///android_res/raw/resource_icon.png?" + token));
+                    "file:///android_res/raw/resource_icon.png?" + token));
             assertFalse(canAccessFileFromData(nonDataBaseUrl,
-                  "file://" + imagePath + "?" + token));
+                    "file://" + imagePath + "?" + token));
 
             token += "a";
             mAwContents.getSettings().setAllowFileAccess(true);
@@ -331,17 +331,17 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             // data: base URL, but we should now be able to access the wider file system
             // (still restricted by OS-level permission checks) with a non-data base URL.
             assertFalse(canAccessFileFromData(dataBaseUrl,
-                  "file:///android_asset/asset_icon.png?" + token));
+                    "file:///android_asset/asset_icon.png?" + token));
             assertFalse(canAccessFileFromData(dataBaseUrl,
-                  "file:///android_res/raw/resource_icon.png?" + token));
+                    "file:///android_res/raw/resource_icon.png?" + token));
             assertFalse(canAccessFileFromData(dataBaseUrl, "file://" + imagePath + "?" + token));
 
             assertTrue(canAccessFileFromData(nonDataBaseUrl,
-                  "file:///android_asset/asset_icon.png?" + token));
+                    "file:///android_asset/asset_icon.png?" + token));
             assertTrue(canAccessFileFromData(nonDataBaseUrl,
-                  "file:///android_res/raw/resource_icon.png?" + token));
+                    "file:///android_res/raw/resource_icon.png?" + token));
             assertTrue(canAccessFileFromData(nonDataBaseUrl,
-                  "file://" + imagePath + "?" + token));
+                    "file://" + imagePath + "?" + token));
         } finally {
             if (!tempImage.delete()) throw new AssertionError();
         }

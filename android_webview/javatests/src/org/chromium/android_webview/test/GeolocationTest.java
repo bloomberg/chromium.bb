@@ -115,7 +115,7 @@ public class GeolocationTest extends AwTestBase {
         poll(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-               return getPositionCountFromJS() == 1;
+                return getPositionCountFromJS() == 1;
             }
         });
 

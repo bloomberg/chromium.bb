@@ -34,7 +34,7 @@ class MockAwContentsClientBridge extends AwContentsClientBridge {
 
     @CalledByNative
     private String[] getKeyTypes() {
-      return mKeyTypes;
+        return mKeyTypes;
     }
 
     @CalledByNative

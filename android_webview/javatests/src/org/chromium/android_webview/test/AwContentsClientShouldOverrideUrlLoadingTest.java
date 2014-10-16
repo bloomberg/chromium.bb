@@ -118,10 +118,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testNotCalledOnLoadUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
@@ -144,10 +144,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testNotCalledOnBackForwardNavigation() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
         final String[] pageTitles = new String[] { "page1", "page2", "page3" };
 
         for (String title : pageTitles) {
@@ -159,38 +159,38 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
-            @Override
-            public void run() {
-                awContents.goBack();
-            }
-        });
+                    @Override
+                    public void run() {
+                        awContents.goBack();
+                    }
+                });
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
-            @Override
-            public void run() {
-                awContents.goForward();
-            }
-        });
+                    @Override
+                    public void run() {
+                        awContents.goForward();
+                    }
+                });
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
-            @Override
-            public void run() {
-                awContents.goBackOrForward(-2);
-            }
-        });
+                    @Override
+                    public void run() {
+                        awContents.goBackOrForward(-2);
+                    }
+                });
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
-            @Override
-            public void run() {
-                awContents.goBackOrForward(1);
-            }
-        });
+                    @Override
+                    public void run() {
+                        awContents.goBackOrForward(1);
+                    }
+                });
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
@@ -199,10 +199,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCantBlockLoads() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
 
@@ -218,10 +218,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledBeforeOnPageStarted() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
         OnPageStartedHelper onPageStartedHelper = contentsClient.getOnPageStartedHelper();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
@@ -242,10 +242,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testDoesNotCauseOnReceivedError() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
         OnReceivedErrorHelper onReceivedErrorHelper = contentsClient.getOnReceivedErrorHelper();
         final int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
 
@@ -284,10 +284,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private void doTestNotCalledForAnchorNavigations(boolean useLoadData) throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String anchorLinkPath = "/anchor_link.html";
         final String anchorLinkUrl = mWebServer.getResponseUrl(anchorLinkPath);
@@ -302,7 +302,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         }
 
         final int shouldOverrideUrlLoadingCallCount =
-            shouldOverrideUrlLoadingHelper.getCallCount();
+                shouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
@@ -319,7 +319,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledWhenLinkClicked() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -340,7 +340,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledWhenTopLevelAboutBlankNavigation() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -367,7 +367,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledWhenSelfLinkClicked() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -395,7 +395,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         enableJavaScriptOnUiThread(awContents);
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
@@ -418,7 +418,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         enableJavaScriptOnUiThread(awContents);
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
@@ -438,7 +438,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testPassesCorrectUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -460,7 +460,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCanIgnoreLoading() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -505,7 +505,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 "L2hlYWQ+PC9odG1sPg==";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -527,7 +527,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledForUnsupportedSchemes() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
                 contentsClient.getShouldOverrideUrlLoadingHelper();
@@ -550,10 +550,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         // The reason POST requests are excluded is BUG 155250.
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String postLinkUrl = addPageToTestServer(mWebServer, "/page_with_post_link.html",
@@ -562,7 +562,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
 
         final int shouldOverrideUrlLoadingCallCount =
-            shouldOverrideUrlLoadingHelper.getCallCount();
+                shouldOverrideUrlLoadingHelper.getCallCount();
 
         assertEquals(0, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
         clickOnLinkUsingJs(awContents, contentsClient);
@@ -588,10 +588,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         // The reason POST requests are excluded is BUG 155250.
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String postToGetRedirectUrl = mWebServer.setRedirect("/302.html", redirectTargetUrl);
@@ -601,7 +601,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
 
         final int shouldOverrideUrlLoadingCallCount =
-            shouldOverrideUrlLoadingHelper.getCallCount();
+                shouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
@@ -624,20 +624,20 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testNotCalledForIframeHttpNavigations() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String iframeRedirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String iframeRedirectUrl =
-            mWebServer.setRedirect("/302.html", iframeRedirectTargetUrl);
+                mWebServer.setRedirect("/302.html", iframeRedirectTargetUrl);
         final String pageWithIframeUrl =
-            addPageToTestServer(mWebServer, "/iframe_intercept.html",
-                makeHtmlPageFrom("", "<iframe src=\"" + iframeRedirectUrl + "\" />"));
+                addPageToTestServer(mWebServer, "/iframe_intercept.html",
+                        makeHtmlPageFrom("", "<iframe src=\"" + iframeRedirectUrl + "\" />"));
 
         final int shouldOverrideUrlLoadingCallCount =
-            shouldOverrideUrlLoadingHelper.getCallCount();
+                shouldOverrideUrlLoadingHelper.getCallCount();
 
         assertEquals(0, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
@@ -659,18 +659,18 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledForIframeUnsupportedSchemeNavigations() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String unsupportedSchemeUrl = "foobar://resource/1";
         final String pageWithIframeUrl =
-            addPageToTestServer(mWebServer, "/iframe_intercept.html",
-                makeHtmlPageFrom("", "<iframe src=\"" + unsupportedSchemeUrl + "\" />"));
+                addPageToTestServer(mWebServer, "/iframe_intercept.html",
+                        makeHtmlPageFrom("", "<iframe src=\"" + unsupportedSchemeUrl + "\" />"));
 
         final int shouldOverrideUrlLoadingCallCount =
-            shouldOverrideUrlLoadingHelper.getCallCount();
+                shouldOverrideUrlLoadingHelper.getCallCount();
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
 
@@ -691,7 +691,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             String redirectUrl, String redirectTarget) throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         final String pageWithLinkToRedirectUrl = addPageToTestServer(webServer,
                 "/page_with_link_to_redirect.html",
@@ -794,10 +794,10 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String jsUrl = "javascript:try{console.log('processed js loadUrl');}catch(e){};";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
+                createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
-            contentsClient.getShouldOverrideUrlLoadingHelper();
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         // Do a double navigagtion, the second being an effective no-op, in quick succession (i.e.
         // without yielding the main thread inbetween).

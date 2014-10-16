@@ -58,18 +58,18 @@ public class CommonResources {
 
     // HTML code of a static simple page with a favicon.
     public static final String FAVICON_STATIC_HTML =
-        "<html><head><link rel=\"icon\" type=\"image/png\" href=\"" + FAVICON_FILENAME + "\">" +
-        "</head><body>Favicon example</body></html>";
+            "<html><head><link rel=\"icon\" type=\"image/png\" href=\"" + FAVICON_FILENAME + "\">" +
+            "</head><body>Favicon example</body></html>";
 
     // Base64 data of a favicon image resource.
     public static final String FAVICON_DATA_BASE64 =
-        "iVBORw0KGgoAAAANSUhEUgAAABAAAAAFCAYAAABM6GxJAAAABHNCSVQICAgIfAhkiAAAASJJREFU" +
-        "GJU9yDtLQnEYwOHfOZ40L3gZDJKgJCKaamvpGzS09wUaormh7xA0S5C0ZDTkZJsNUltkkpAUZkIX" +
-        "L3g9FzzH/9vm9vAgoqRUGUu20JHTXFfafUdERJSIKJnOPFUTERHpqIYclY5nb2QKFumky95OlO+W" +
-        "TSgATqOO5k3xr6ZxelXmDFDhdaqfLkPRWQglULaN/V5DPzl3iIb9xCI+Eskog/wdyhowLlb4vThE" +
-        "giF8zRsurx55beg8lMfMezZW9hqz20M/Owhwe2/yUrPI5Ds8//mRehN7JYWxvIX6eWJkbLK9laL8" +
-        "ZrKxFETzxTBNB5SOJjKV/mhCq+uSjGvE4hHc4QA9YGAEwnhWF1ePkCtOWFv0+PiasL8bR3QDr93h" +
-        "HyFup9LWUksHAAAAAElFTkSuQmCC";
+            "iVBORw0KGgoAAAANSUhEUgAAABAAAAAFCAYAAABM6GxJAAAABHNCSVQICAgIfAhkiAAAASJJREFU" +
+            "GJU9yDtLQnEYwOHfOZ40L3gZDJKgJCKaamvpGzS09wUaormh7xA0S5C0ZDTkZJsNUltkkpAUZkIX" +
+            "L3g9FzzH/9vm9vAgoqRUGUu20JHTXFfafUdERJSIKJnOPFUTERHpqIYclY5nb2QKFumky95OlO+W" +
+            "TSgATqOO5k3xr6ZxelXmDFDhdaqfLkPRWQglULaN/V5DPzl3iIb9xCI+Eskog/wdyhowLlb4vThE" +
+            "giF8zRsurx55beg8lMfMezZW9hqz20M/Owhwe2/yUrPI5Ds8//mRehN7JYWxvIX6eWJkbLK9laL8" +
+            "ZrKxFETzxTBNB5SOJjKV/mhCq+uSjGvE4hHc4QA9YGAEwnhWF1ePkCtOWFv0+PiasL8bR3QDr93h" +
+            "HyFup9LWUksHAAAAAElFTkSuQmCC";
 
     // Default name for an example 'about' HTML page.
     public static final String ABOUT_FILENAME = "about.html";
@@ -79,38 +79,38 @@ public class CommonResources {
 
     // HTML code of an 'about' example.
     public static final String ABOUT_HTML =
-        "<html>" +
-        "  <head>" +
-        "    <title>" + ABOUT_TITLE + "</title>" +
-        "  </head>" +
-        "  <body>" +
-        "    This is the Google!" +
-        "  </body>" +
-        "</html>";
+            "<html>" +
+            "  <head>" +
+            "    <title>" + ABOUT_TITLE + "</title>" +
+            "  </head>" +
+            "  <body>" +
+            "    This is the Google!" +
+            "  </body>" +
+            "</html>";
 
     public static String makeHtmlPageFrom(String headers, String body) {
         return "<html>" +
-                 "<head>" +
-                     "<style type=\"text/css\">" +
-                         // Make the image take up all of the page so that we don't have to do
-                         // any fancy hit target calculations when synthesizing the touch event
-                         // to click it.
-                         "img.big { width:100%; height:100%; background-color:blue; }" +
-                         ".full_view { height:100%; width:100%; position:absolute; }" +
-                     "</style>" +
-                     headers +
-                 "</head>" +
-                 "<body>" +
-                     body +
-                 "</body>" +
-             "</html>";
+                "  <head>" +
+                "    <style type=\"text/css\">" +
+                // Make the image take up all of the page so that we don't have to do
+                // any fancy hit target calculations when synthesizing the touch event
+                // to click it.
+                "      img.big { width:100%; height:100%; background-color:blue; }" +
+                "      .full_view { height:100%; width:100%; position:absolute; }" +
+                "    </style>" +
+                headers +
+                "  </head>" +
+                "  <body>" +
+                body +
+                "  </body>" +
+                "</html>";
     }
 
     public static String makeHtmlPageWithSimpleLinkTo(String headers, String destination) {
         return makeHtmlPageFrom(headers,
-                        "<a href=\"" + destination + "\" id=\"link\">" +
-                           "<img class=\"big\" />" +
-                        "</a>");
+                "<a href=\"" + destination + "\" id=\"link\">" +
+                "  <img class=\"big\" />" +
+                "</a>");
     }
 
     public static String makeHtmlPageWithSimpleLinkTo(String destination) {
@@ -120,7 +120,7 @@ public class CommonResources {
     public static String makeHtmlPageWithSimplePostFormTo(String destination) {
         return makeHtmlPageFrom("",
                 "<form action=\"" + destination + "\" method=\"post\">" +
-                  "<input type=\"submit\" value=\"post\" id=\"link\">" +
+                "  <input type=\"submit\" value=\"post\" id=\"link\">" +
                 "</form>");
     }
 }

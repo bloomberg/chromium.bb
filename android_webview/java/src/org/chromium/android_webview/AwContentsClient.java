@@ -187,8 +187,8 @@ public abstract class AwContentsClient {
 
     // TODO (michaelbai): Remove this method once the same method remove from
     // WebViewContentsClientAdapter.
-    public void onShowCustomView(View view,
-           int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
+    public void onShowCustomView(View view, int requestedOrientation,
+            WebChromeClient.CustomViewCallback callback) {
     }
 
     // TODO (michaelbai): This method should be abstract, having empty body here

@@ -111,9 +111,9 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         int callCount = mContentsClient.mFaviconHelper.getCallCount();
 
         final String faviconUrl = mWebServer.setResponseBase64(FAVICON1_URL,
-            CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
+                CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
         final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
-            CommonResources.getTextHtmlHeaders(true));
+                CommonResources.getTextHtmlHeaders(true));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
@@ -138,7 +138,7 @@ public class AwContentsClientFaviconTest extends AwTestBase {
 
         mWebServer.setResponseWithNotFoundStatus(FAVICON1_URL);
         final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
-            CommonResources.getTextHtmlHeaders(true));
+                CommonResources.getTextHtmlHeaders(true));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         poll(new Callable<Boolean>() {
@@ -161,7 +161,7 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         int callCount = mContentsClient.mFaviconHelper.getCallCount();
 
         final String pageUrl = mWebServer.setResponse(TOUCHICON_REL_URL, TOUCHICON_REL_PAGE_HTML,
-            CommonResources.getTextHtmlHeaders(true));
+                CommonResources.getTextHtmlHeaders(true));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 

@@ -28,7 +28,7 @@ public class KeySystemTest extends AwTestBase {
         enableJavaScriptOnUiThread(mAwContents);
 
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-            getKeySystemTestPage(), "text/html", false);
+                getKeySystemTestPage(), "text/html", false);
     }
 
     private String getKeySystemTestPage() {

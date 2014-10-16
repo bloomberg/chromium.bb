@@ -413,7 +413,7 @@ public class CookieManagerTest extends AwTestBase {
         String response = "";
         List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
         responseHeaders.add(
-            Pair.create("Set-Cookie", key + "=" + value + "; path=" + path));
+                Pair.create("Set-Cookie", key + "=" + value + "; path=" + path));
         return webServer.setResponse(path, response, responseHeaders);
     }
 
@@ -543,7 +543,7 @@ public class CookieManagerTest extends AwTestBase {
             mWebServer = webServer;
             mContentsClient = new TestAwContentsClient();
             final AwTestContainerView containerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
+                    createAwTestContainerViewOnMainSync(mContentsClient);
             mAwContents = containerView.getAwContents();
             mAwContents.getSettings().setJavaScriptEnabled(true);
         }
@@ -613,7 +613,7 @@ public class CookieManagerTest extends AwTestBase {
     private String makeCookieScriptUrl(TestWebServer webServer, String path, String key,
             String value) {
         String response = "<html><head></head><body>" +
-            "<script>document.cookie = \"" + key + "=" + value + "\";</script></body></html>";
+                "<script>document.cookie = \"" + key + "=" + value + "\";</script></body></html>";
         return webServer.setResponse(path, response, null);
     }
 

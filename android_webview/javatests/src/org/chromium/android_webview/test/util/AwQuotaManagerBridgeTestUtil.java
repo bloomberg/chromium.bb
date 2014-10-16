@@ -51,13 +51,12 @@ public class AwQuotaManagerBridgeTestUtil {
             @Override
             public void run() {
                 bridge.getOrigins(
-                    new ValueCallback<AwQuotaManagerBridge.Origins>() {
-                        @Override
-                        public void onReceiveValue(AwQuotaManagerBridge.Origins origins) {
-                            callbackHelper.notifyCalled(origins);
-                        }
-                    }
-                );
+                        new ValueCallback<AwQuotaManagerBridge.Origins>() {
+                            @Override
+                            public void onReceiveValue(AwQuotaManagerBridge.Origins origins) {
+                                callbackHelper.notifyCalled(origins);
+                            }
+                        });
             }
         });
         callbackHelper.waitForCallback(callCount);

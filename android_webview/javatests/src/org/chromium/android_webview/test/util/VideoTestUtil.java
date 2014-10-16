@@ -20,12 +20,12 @@ public class VideoTestUtil {
      * @return true if the event happened,
      * @throws Throwable throw exception if timeout.
      */
-   public static boolean runVideoTest(final AwTestBase testCase, final boolean requiredUserGesture,
-           long waitTime) throws Throwable {
+    public static boolean runVideoTest(final AwTestBase testCase, final boolean requiredUserGesture,
+            long waitTime) throws Throwable {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
         TestAwContentsClient client = new TestAwContentsClient();
         final AwContents awContents =
-            testCase.createAwTestContainerViewOnMainSync(client).getAwContents();
+                testCase.createAwTestContainerViewOnMainSync(client).getAwContents();
         testCase.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -38,14 +38,14 @@ public class VideoTestUtil {
         VideoTestWebServer webServer = new VideoTestWebServer(testCase.getActivity());
         try {
             String data = "<html><head><script>" +
-                "addEventListener('DOMContentLoaded', function() { " +
-                "  document.getElementById('video').addEventListener('play', function() { " +
-                "    javaObserver.notifyJava(); " +
-                "  }, false); " +
-                "}, false); " +
-                "</script></head><body>" +
-                "<video id='video' autoplay control src='" +
-                webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
+                    "addEventListener('DOMContentLoaded', function() { " +
+                    "  document.getElementById('video').addEventListener('play', function() { " +
+                    "    javaObserver.notifyJava(); " +
+                    "  }, false); " +
+                    "}, false); " +
+                    "</script></head><body>" +
+                    "<video id='video' autoplay control src='" +
+                    webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
             testCase.loadDataAsync(awContents, data, "text/html", false);
             return observer.waitForEvent(waitTime);
         } finally {

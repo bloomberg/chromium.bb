@@ -2142,7 +2142,7 @@ public class AwContents {
         mContentWidthDip = contentWidthDip;
         mContentHeightDip = contentHeightDip;
         mScrollOffsetManager.setMaxScrollOffset(maxContainerViewScrollOffsetX,
-            maxContainerViewScrollOffsetY);
+                maxContainerViewScrollOffsetY);
         setPageScaleFactorAndLimits(pageScaleFactor, minPageScaleFactor, maxPageScaleFactor);
     }
 

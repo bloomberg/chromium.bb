@@ -101,13 +101,12 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
             @Override
             public void run() {
                 bridge.getQuotaForOrigin("foo.com",
-                    new ValueCallback<Long>() {
-                        @Override
-                        public void onReceiveValue(Long quota) {
-                            callbackHelper.notifyCalled(quota);
-                        }
-                    }
-                );
+                        new ValueCallback<Long>() {
+                            @Override
+                            public void onReceiveValue(Long quota) {
+                                callbackHelper.notifyCalled(quota);
+                            }
+                        });
             }
         });
         callbackHelper.waitForCallback(callCount);
@@ -125,13 +124,12 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
             @Override
             public void run() {
                 bridge.getUsageForOrigin(origin,
-                    new ValueCallback<Long>() {
-                        @Override
-                        public void onReceiveValue(Long usage) {
-                            callbackHelper.notifyCalled(usage);
-                        }
-                    }
-                );
+                        new ValueCallback<Long>() {
+                            @Override
+                            public void onReceiveValue(Long usage) {
+                                callbackHelper.notifyCalled(usage);
+                            }
+                        });
             }
         });
         callbackHelper.waitForCallback(callCount);
@@ -157,7 +155,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
         executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
-              "window.applicationCache.update();");
+                "window.applicationCache.update();");
     }
 
     @LargeTest

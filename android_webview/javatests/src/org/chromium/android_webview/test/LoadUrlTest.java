@@ -35,14 +35,14 @@ public class LoadUrlTest extends AwTestBase {
     public void testDataUrl() throws Throwable {
         final String expectedTitle = "dataUrlTest";
         final String data =
-            "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
+                "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
 
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(), data,
-                     "text/html", false);
+                "text/html", false);
         assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
@@ -51,14 +51,14 @@ public class LoadUrlTest extends AwTestBase {
     public void testDataUrlBase64() throws Throwable {
         final String expectedTitle = "dataUrlTestBase64";
         final String data = "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48" +
-                            "L2hlYWQ+PC9odG1sPg==";
+                "L2hlYWQ+PC9odG1sPg==";
 
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(), data,
-                     "text/html", true);
+                "text/html", true);
         assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
@@ -69,13 +69,13 @@ public class LoadUrlTest extends AwTestBase {
         // string as it's not in the US_ASCII character set.
         final String expectedTitle = "You win \u00a3100!";
         final String data =
-            "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
+                "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         loadDataSyncWithCharset(awContents, contentsClient.getOnPageFinishedHelper(), data,
-                     "text/html", false, "UTF-8");
+                "text/html", false, "UTF-8");
         assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
@@ -97,7 +97,7 @@ public class LoadUrlTest extends AwTestBase {
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_MS,
-                                             TimeUnit.MILLISECONDS);
+                TimeUnit.MILLISECONDS);
     }
 
     private static List<Pair<String, String>> createHeadersList(String[] namesAndValues) {
@@ -109,13 +109,13 @@ public class LoadUrlTest extends AwTestBase {
 
     private static Map<String, String> createHeadersMap(String[] namesAndValues) {
         Map<String, String> result = new HashMap<String, String>();
-        for (int i = 0; i < namesAndValues.length; i += 2)
+        for (int i = 0; i < namesAndValues.length; i += 2) {
             result.put(namesAndValues[i], namesAndValues[i + 1]);
+        }
         return result;
     }
 
-    private void validateRequestHeaders(String[] refNamesAndValues,
-                                        HttpRequest request) {
+    private void validateRequestHeaders(String[] refNamesAndValues, HttpRequest request) {
         for (int i = 0; i < refNamesAndValues.length; i += 2) {
             Header[] matchingHeaders = request.getHeaders(refNamesAndValues[i]);
             assertEquals(1, matchingHeaders.length);
@@ -126,8 +126,7 @@ public class LoadUrlTest extends AwTestBase {
         }
     }
 
-    private void validateNoRequestHeaders(String[] refNamesAndValues,
-                                          HttpRequest request) {
+    private void validateNoRequestHeaders(String[] refNamesAndValues, HttpRequest request) {
         for (int i = 0; i < refNamesAndValues.length; i += 2) {
             Header[] matchingHeaders = request.getHeaders(refNamesAndValues[i]);
             assertEquals(0, matchingHeaders.length);
