@@ -219,7 +219,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
     {REMOTE_SERVICE_DISABLED, "DISABLED"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     PostUpdateServiceState(test_data[i].state, test_data[i].description);
     EXPECT_EQ(test_data[i].state, sync_engine()->GetCurrentState())
         << "Expected state: REMOTE_SERVICE_" << test_data[i].description;

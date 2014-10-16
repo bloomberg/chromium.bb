@@ -393,7 +393,7 @@ TEST_F(VariationsServiceTest, Observer) {
       {1, 0, 1, 0, 1},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     TestVariationsServiceObserver observer;
     service.AddObserver(&observer);
 

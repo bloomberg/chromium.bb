@@ -31,7 +31,7 @@ TEST(TaskManagerUtilTest, GetMessagePrefixID) {
       {0, 0, 0, 1, 0, IDS_TASK_MANAGER_PRERENDER_PREFIX},
       {0, 0, 1, 0, 0, IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX},
       {0, 0, 0, 0, 0, IDS_TASK_MANAGER_TAB_PREFIX}};
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(configs); ++i) {
+  for (size_t i = 0; i < arraysize(configs); ++i) {
     EXPECT_EQ(configs[i].expected_result,
               GetMessagePrefixID(configs[i].is_app,
                                  configs[i].is_extension,

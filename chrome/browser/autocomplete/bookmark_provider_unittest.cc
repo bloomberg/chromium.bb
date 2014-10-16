@@ -93,7 +93,7 @@ void BookmarkProviderTest::SetUp() {
   provider_->set_bookmark_model_for_testing(model_.get());
 
   const BookmarkNode* other_node = model_->other_node();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(bookmark_provider_test_data); ++i) {
+  for (size_t i = 0; i < arraysize(bookmark_provider_test_data); ++i) {
     const BookmarksTestInfo& cur(bookmark_provider_test_data[i]);
     const GURL url(cur.url);
     model_->AddURL(other_node, other_node->child_count(),
@@ -261,7 +261,7 @@ TEST_F(BookmarkProviderTest, Positions) {
     {"emptytitle",            1, {}},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
+  for (size_t i = 0; i < arraysize(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
@@ -342,7 +342,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
                       "burning worms #2"}},  // not boosted
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
+  for (size_t i = 0; i < arraysize(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, false,
@@ -397,7 +397,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
     // actually bookmarked.
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
+  for (size_t i = 0; i < arraysize(query_data); ++i) {
     const std::string description = "for query=" + query_data[i].query +
         " and url=" + query_data[i].url;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
@@ -441,7 +441,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     { "versi",     "chrome://version",           "0:1,9:3,14:1"          }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
+  for (size_t i = 0; i < arraysize(query_data); ++i) {
     std::string description = "for query=" + query_data[i].query;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, std::string(), GURL(),

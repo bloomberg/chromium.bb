@@ -71,7 +71,7 @@ TEST(GlobalKeyboardShortcuts, KeypadNumberKeysMatch) {
     {kVK_ANSI_9, kVK_ANSI_Keypad9},
   };
 
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(equivalents); ++i) {
+  for (unsigned int i = 0; i < arraysize(equivalents); ++i) {
     for (int command = 0; command <= 1; ++command) {
       for (int shift = 0; shift <= 1; ++shift) {
         for (int control = 0; control <= 1; ++control) {

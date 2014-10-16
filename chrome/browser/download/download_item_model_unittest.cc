@@ -41,7 +41,7 @@ char kInterruptReasonCounter[] = {
 #include "content/public/browser/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 };
-const size_t kInterruptReasonCount = ARRAYSIZE_UNSAFE(kInterruptReasonCounter);
+const size_t kInterruptReasonCount = arraysize(kInterruptReasonCounter);
 
 // Default target path for a mock download item in DownloadItemModelTest.
 const base::FilePath::CharType kDefaultTargetFilePath[] =
@@ -171,11 +171,11 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
       "Failed - Crash" },
   };
-  COMPILE_ASSERT(kInterruptReasonCount == ARRAYSIZE_UNSAFE(kTestCases),
+  COMPILE_ASSERT(kInterruptReasonCount == arraysize(kTestCases),
                  interrupt_reason_mismatch);
 
   SetupDownloadItemDefaults();
-  for (unsigned i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (unsigned i = 0; i < arraysize(kTestCases); ++i) {
     const TestCase& test_case = kTestCases[i];
     SetupInterruptedDownloadItem(test_case.reason);
     EXPECT_STREQ(test_case.expected_status,
@@ -247,7 +247,7 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
     { content::DOWNLOAD_INTERRUPT_REASON_CRASH,
       "foo.bar\nCrash" },
   };
-  COMPILE_ASSERT(kInterruptReasonCount == ARRAYSIZE_UNSAFE(kTestCases),
+  COMPILE_ASSERT(kInterruptReasonCount == arraysize(kTestCases),
                  interrupt_reason_mismatch);
 
   // Large tooltip width. Should be large enough to accommodate the entire
@@ -262,7 +262,7 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::BaseFont);
   SetupDownloadItemDefaults();
-  for (unsigned i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (unsigned i = 0; i < arraysize(kTestCases); ++i) {
     const TestCase& test_case = kTestCases[i];
     SetupInterruptedDownloadItem(test_case.reason);
 
@@ -335,7 +335,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
 
   SetupDownloadItemDefaults();
 
-  for (unsigned i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); i++) {
+  for (unsigned i = 0; i < arraysize(kTestCases); i++) {
     const TestCase& test_case = kTestCases[i];
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
@@ -407,7 +407,7 @@ TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
 
   SetupDownloadItemDefaults();
 
-  for (unsigned i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); i++) {
+  for (unsigned i = 0; i < arraysize(kTestCases); i++) {
     const TestCase& test_case = kTestCases[i];
     EXPECT_CALL(item(), GetOpenWhenComplete())
         .WillRepeatedly(Return(test_case.is_auto_open));

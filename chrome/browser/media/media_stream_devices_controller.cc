@@ -462,7 +462,7 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(device_checks); ++i) {
+  for (size_t i = 0; i < arraysize(device_checks); ++i) {
     if (!device_checks[i].has_capability)
       continue;
 

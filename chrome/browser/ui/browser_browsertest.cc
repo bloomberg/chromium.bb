@@ -1574,7 +1574,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 // set_show_state(ui::SHOW_STATE_MAXIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
+  for (size_t i = 0; i < arraysize(types); ++i) {
     Browser::CreateParams params(types[i], browser()->profile(),
                                  browser()->host_desktop_type());
     params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
@@ -1592,7 +1592,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
 // set_show_state(ui::SHOW_STATE_MINIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_StartMinimized) {
   Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
+  for (size_t i = 0; i < arraysize(types); ++i) {
     Browser::CreateParams params(types[i], browser()->profile(),
                                  browser()->host_desktop_type());
     params.initial_show_state = ui::SHOW_STATE_MINIMIZED;

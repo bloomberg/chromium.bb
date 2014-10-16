@@ -797,7 +797,7 @@ TEST_F(SearchProviderTest, DontGiveNavsuggestionsInForcedQueryMode) {
       { "a2", "a", kEmptyMatch } },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     ForcedQueryTestHelper("a", cases[i].json, cases[i].matches_in_default_mode,
                            "regular input with json=" + cases[i].json);
     ForcedQueryTestHelper("?a", cases[i].json,
@@ -1247,7 +1247,7 @@ TEST_F(SearchProviderTest, DefaultProviderNoSuggestRelevanceInKeywordMode) {
       { "akeyword-query", "a", "k a", "adefault.com", "k adefault-query" } }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     // Send the query twice in order to have a synchronous pass after the first
     // response is received.  This is necessary because SearchProvider doesn't
     // allow an asynchronous response to change the default match.
@@ -1262,13 +1262,13 @@ TEST_F(SearchProviderTest, DefaultProviderNoSuggestRelevanceInKeywordMode) {
         cases[i].default_provider_json + " and keyword_provider_json=" +
         cases[i].keyword_provider_json);
     const ACMatches& matches = provider_->matches();
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j)
       EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]), matches[j].contents);
     // Ensure that no expected matches are missing.
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j)
+    for (; j < arraysize(cases[i].matches); ++j)
       EXPECT_EQ(std::string(), cases[i].matches[j]);
   }
 }
@@ -1492,7 +1492,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
       std::string() },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     // Send the query twice in order to have a synchronous pass after the first
     // response is received.  This is necessary because SearchProvider doesn't
     // allow an asynchronous response to change the default match.
@@ -1502,8 +1502,8 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
     }
 
     const std::string description = "for input with json=" + cases[i].json;
-    CheckMatches(description, ARRAYSIZE_UNSAFE(cases[i].matches),
-                 cases[i].matches, provider_->matches());
+    CheckMatches(description, arraysize(cases[i].matches), cases[i].matches,
+                 provider_->matches());
   }
 }
 
@@ -1924,7 +1924,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
       "3" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     // Send the query twice in order to have a synchronous pass after the first
     // response is received.  This is necessary because SearchProvider doesn't
     // allow an asynchronous response to change the default match.
@@ -1962,7 +1962,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               it->inline_autocompletion);
 
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -1974,7 +1974,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
                 matches[j].allowed_to_be_default_match);
     }
     // Ensure that no expected matches are missing.
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j) {
+    for (; j < arraysize(cases[i].matches); ++j) {
       SCOPED_TRACE(" Case # " + base::IntToString(i));
       EXPECT_EQ(kNotApplicable, cases[i].matches[j].contents);
     }
@@ -2162,7 +2162,7 @@ TEST_F(SearchProviderTest, DontInlineAutocompleteAsynchronously) {
         kEmptyExpectedMatch } },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     // First, send the query "a" and receive the JSON response |first_json|.
     ClearAllResults();
     QueryForInputAndWaitForFetcherResponses(
@@ -2171,14 +2171,14 @@ TEST_F(SearchProviderTest, DontInlineAutocompleteAsynchronously) {
     // Verify that the matches after the asynchronous results are as expected.
     std::string description = "first asynchronous response for input with "
         "first_json=" + cases[i].first_json;
-    CheckMatches(description, ARRAYSIZE_UNSAFE(cases[i].first_async_matches),
+    CheckMatches(description, arraysize(cases[i].first_async_matches),
                  cases[i].first_async_matches, provider_->matches());
 
     // Then, send the query "ab" and check the synchronous matches.
     description = "synchronous response after the first keystroke after input "
         "with first_json=" + cases[i].first_json;
     QueryForInput(ASCIIToUTF16("ab"), false, false);
-    CheckMatches(description, ARRAYSIZE_UNSAFE(cases[i].sync_matches),
+    CheckMatches(description, arraysize(cases[i].sync_matches),
                  cases[i].sync_matches, provider_->matches());
 
     // Finally, get the provided JSON response, |second_json|, and verify the
@@ -2193,7 +2193,7 @@ TEST_F(SearchProviderTest, DontInlineAutocompleteAsynchronously) {
     second_fetcher->SetResponseString(cases[i].second_json);
     second_fetcher->delegate()->OnURLFetchComplete(second_fetcher);
     RunTillProviderDone();
-    CheckMatches(description, ARRAYSIZE_UNSAFE(cases[i].second_async_matches),
+    CheckMatches(description, arraysize(cases[i].second_async_matches),
                  cases[i].second_async_matches, provider_->matches());
   }
 }
@@ -2258,7 +2258,7 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
       { "term", "a1", "a2", "term2", "a3", "a4" } }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     QueryForInputAndWaitForFetcherResponses(
         cases[i].input, false, cases[i].json, std::string());
 
@@ -2266,7 +2266,7 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
     const ACMatches& matches = provider_->matches();
 
     // Ensure no extra matches are present.
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    ASSERT_LE(matches.size(), arraysize(cases[i].matches));
 
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
@@ -2274,7 +2274,7 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
       EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]),
                 matches[j].contents) << description;
     // Ensure that no expected matches are missing.
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j)
+    for (; j < arraysize(cases[i].matches); ++j)
       EXPECT_EQ(kNotApplicable, cases[i].matches[j]) <<
           "Case # " << i << " " << description;
   }
@@ -2370,7 +2370,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
         kEmptyMatch, kEmptyMatch } },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     // Send the query twice in order to have a synchronous pass after the first
     // response is received.  This is necessary because SearchProvider doesn't
     // allow an asynchronous response to change the default match.
@@ -2382,7 +2382,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
     SCOPED_TRACE("input=" + cases[i].input + " json=" + cases[i].json);
     size_t j = 0;
     const ACMatches& matches = provider_->matches();
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].output));
+    ASSERT_LE(matches.size(), arraysize(cases[i].output));
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
       EXPECT_EQ(ASCIIToUTF16(cases[i].output[j].match_contents),
@@ -2392,7 +2392,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
                 matches[j].allowed_to_be_default_match);
     }
     // Ensure that no expected matches are missing.
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].output); ++j) {
+    for (; j < arraysize(cases[i].output); ++j) {
       EXPECT_EQ(kNotApplicable, cases[i].output[j].match_contents);
       EXPECT_EQ(AutocompleteMatchType::NUM_TYPES,
                 cases[i].output[j].match_type);
@@ -2594,7 +2594,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
                                "?www.abc.com", std::string(), true, true },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     // First test regular mode.
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     SearchSuggestionParser::NavigationResult result(
@@ -2730,7 +2730,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
       },
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     QueryForInputAndWaitForFetcherResponses(
         ASCIIToUTF16(cases[i].input_text), false, cases[i].response_json,
         std::string());
@@ -2740,7 +2740,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
 
     SCOPED_TRACE("for input with json = " + cases[i].response_json);
 
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -2757,7 +2757,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
       EXPECT_EQ(match.type, matches[j].type);
     }
     // Ensure that no expected matches are missing.
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j) {
+    for (; j < arraysize(cases[i].matches); ++j) {
       SCOPED_TRACE(" and match index: " + base::IntToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].description, kNotApplicable);
@@ -2856,7 +2856,7 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     QueryForInputAndWaitForFetcherResponses(
         ASCIIToUTF16(cases[i].input_text),
         cases[i].prefer_keyword_provider_results,
@@ -2871,7 +2871,7 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
     ASSERT_FALSE(matches.empty());
     EXPECT_GE(matches[0].relevance, 1300);
 
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     // Ensure that the returned matches equal the expectations.
     for (size_t j = 0; j < matches.size(); ++j) {
       SCOPED_TRACE(description);
@@ -2954,7 +2954,7 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     ClearAllResults();
     QueryForInputAndWaitForFetcherResponses(
         ASCIIToUTF16(cases[i].input_text), false,
@@ -2966,7 +2966,7 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
     EXPECT_GE(matches[0].relevance, 1300);
 
     SCOPED_TRACE("for case: " + base::IntToString(i));
-    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -2975,7 +2975,7 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
                 base::UTF16ToUTF8(matches[j].contents));
       EXPECT_EQ(cases[i].matches[j].type, matches[j].type);
     }
-    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j) {
+    for (; j < arraysize(cases[i].matches); ++j) {
       SCOPED_TRACE("and match: " + base::IntToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].type, AutocompleteMatchType::NUM_TYPES);
@@ -3061,7 +3061,7 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
        },
      };
 
-     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+     for (size_t i = 0; i < arraysize(cases); ++i) {
        QueryForInputAndWaitForFetcherResponses(
            ASCIIToUTF16(cases[i].input_text), false, cases[i].response_json,
            std::string());

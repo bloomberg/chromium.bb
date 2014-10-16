@@ -120,7 +120,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
                                   {&extension2_id_, &extension2_expectation_},
                                   {&extension3_id_, &extension3_expectation_},
                                   {&extension4_id_, &extension4_expectation_}};
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); i++) {
+    for (size_t i = 0; i < arraysize(test_data); i++) {
       std::vector<MediaGalleryPermission> actual =
           gallery_prefs_->GetGalleryPermissionsFromPrefs(*test_data[i].id);
       EXPECT_EQ(test_data[i].expectation->size(), actual.size());

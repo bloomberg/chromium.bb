@@ -258,7 +258,7 @@ TEST(ChromeOSFileSystemBackendTest, GetVirtualPathConflictWithSystemPoints) {
     { FPL("/foo/xxx"), false, FPL("") },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     // Initialize virtual path with a value.
     base::FilePath virtual_path(FPL("/mount"));
     base::FilePath local_path(kTestCases[i].local_path);

@@ -32,7 +32,7 @@ static void OnCompleted(int bytes_read,
 }
 
 static const char test_message[] = "$$TESTMESSAGETESTMESSAGETESTMESSAGETEST$$";
-static const int test_message_length = ARRAYSIZE_UNSAFE(test_message);
+static const int test_message_length = arraysize(test_message);
 
 static void OnSendCompleted(int result) {
   EXPECT_EQ(test_message_length, result);

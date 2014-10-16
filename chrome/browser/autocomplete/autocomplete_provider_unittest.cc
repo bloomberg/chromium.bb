@@ -571,7 +571,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
     SCOPED_TRACE("Duplicate url");
     RunKeywordTest(base::ASCIIToUTF16("fo"), duplicate_url,
-                   ARRAYSIZE_UNSAFE(duplicate_url));
+                   arraysize(duplicate_url));
   }
 
   {
@@ -583,7 +583,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
     SCOPED_TRACE("Duplicate url with keyword match");
     RunKeywordTest(base::ASCIIToUTF16("fo"), keyword_match,
-                   ARRAYSIZE_UNSAFE(keyword_match));
+                   arraysize(keyword_match));
   }
 
   {
@@ -598,7 +598,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
     SCOPED_TRACE("Duplicate url with multiple keywords");
     RunKeywordTest(base::ASCIIToUTF16("fo"), multiple_keyword,
-                   ARRAYSIZE_UNSAFE(multiple_keyword));
+                   arraysize(multiple_keyword));
   }
 }
 
@@ -615,7 +615,7 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
 
     SCOPED_TRACE("keyword match as usual");
     RunKeywordTest(base::ASCIIToUTF16("fo"), keyword_match,
-                   ARRAYSIZE_UNSAFE(keyword_match));
+                   arraysize(keyword_match));
   }
 
   // The same result set with an input of "f" (versus "fo") should get
@@ -630,7 +630,7 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
 
     SCOPED_TRACE("keyword exact match");
     RunKeywordTest(base::ASCIIToUTF16("f"), keyword_match,
-                   ARRAYSIZE_UNSAFE(keyword_match));
+                   arraysize(keyword_match));
   }
 }
 
@@ -652,7 +652,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
       { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome..69i57" }
     };
     SCOPED_TRACE("One match");
-    RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
+    RunAssistedQueryStatsTest(test_data, arraysize(test_data));
   }
 
   {
@@ -675,7 +675,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
         "chrome.7.69i57j69i58j5l2j0l3j69i59" },
     };
     SCOPED_TRACE("Multiple matches");
-    RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
+    RunAssistedQueryStatsTest(test_data, arraysize(test_data));
   }
 }
 

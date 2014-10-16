@@ -258,7 +258,7 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
       ""
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test: %s", tests[i].input_url));
     GURL url(tests[i].input_url);
 

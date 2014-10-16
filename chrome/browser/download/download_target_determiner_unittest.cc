@@ -1786,7 +1786,7 @@ TEST_F(DownloadTargetDeterminerTest,
             download_util::GetFileDangerLevel(
                 base::FilePath(FILE_PATH_LITERAL("foo.crx"))));
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kIntermediateNameTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kIntermediateNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const IntermediateNameTestCase& test_case = kIntermediateNameTestCases[i];
     scoped_ptr<content::MockDownloadItem> item(
@@ -1909,7 +1909,7 @@ TEST_F(DownloadTargetDeterminerTest,
       .WillByDefault(WithArg<1>(
           ScheduleCallback("image/png")));
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kMIMETypeTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kMIMETypeTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Running test case " << i);
     const MIMETypeTestCase& test_case = kMIMETypeTestCases[i];
     scoped_ptr<content::MockDownloadItem> item(

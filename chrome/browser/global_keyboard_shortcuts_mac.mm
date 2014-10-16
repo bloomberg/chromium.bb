@@ -219,7 +219,7 @@ unichar KeyCharacterForEvent(NSEvent* event) {
     // In RTL keyboard layouts, Cocoa mirrors characters in the string
     // returned by [event charactersIgnoringModifiers].  In this case, return
     // the raw (unmirrored) char.
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCharMapping); ++i) {
+    for (size_t i = 0; i < arraysize(kCharMapping); ++i) {
       if (rawChar == kCharMapping[i].rawChar &&
           noModifiersChar == kCharMapping[i].unmodChar) {
         return kCharMapping[i].targetChar;

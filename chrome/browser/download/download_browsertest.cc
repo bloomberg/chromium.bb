@@ -2472,7 +2472,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
     }
   };
 
-  DownloadFilesCheckErrors(ARRAYSIZE_UNSAFE(download_info), download_info);
+  DownloadFilesCheckErrors(arraysize(download_info), download_info);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
@@ -2649,7 +2649,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsFile) {
     }
   };
 
-  DownloadInsertFilesErrorCheckErrors(ARRAYSIZE_UNSAFE(error_info), error_info);
+  DownloadInsertFilesErrorCheckErrors(arraysize(error_info), error_info);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
@@ -2672,7 +2672,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
     }
   };
 
-  DownloadFilesToReadonlyFolder(ARRAYSIZE_UNSAFE(download_info), download_info);
+  DownloadFilesToReadonlyFolder(arraysize(download_info), download_info);
 }
 
 // Test that we show a dangerous downloads warning for a dangerous file

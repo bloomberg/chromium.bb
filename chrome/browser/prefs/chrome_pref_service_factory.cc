@@ -252,11 +252,7 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
           chrome_prefs::internals::kSettingsEnforcementTrialName);
   if (trial) {
     const std::string& group_name = trial->group_name();
-    // ARRAYSIZE_UNSAFE must be used since the array is declared locally; it is
-    // only unsafe because it could not trigger a compile error on some
-    // non-array pointer types; this is fine since kEnforcementLevelMap is
-    // clearly an array.
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEnforcementLevelMap); ++i) {
+    for (size_t i = 0; i < arraysize(kEnforcementLevelMap); ++i) {
       if (kEnforcementLevelMap[i].group_name == group_name) {
         enforcement_group = kEnforcementLevelMap[i].group;
         group_determined_from_trial = true;

@@ -106,7 +106,7 @@ void AddOsStrings(unsigned bitmask, base::ListValue* list) {
     {kOsAndroid, "Android"},
     {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBitsToOs); ++i)
+  for (size_t i = 0; i < arraysize(kBitsToOs); ++i)
     if (bitmask & kBitsToOs[i].bit)
       list->Append(new base::StringValue(kBitsToOs[i].name));
 }

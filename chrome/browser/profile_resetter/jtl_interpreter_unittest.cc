@@ -223,7 +223,7 @@ TEST(JtlInterpreter, CompareBool) {
     { VALUE_TRUE, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +
@@ -271,7 +271,7 @@ TEST(JtlInterpreter, CompareHashString) {
     { GetHash("1"), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +
@@ -287,7 +287,7 @@ TEST(JtlInterpreter, CompareHashString) {
     }
   }
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Negated, Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +
@@ -319,7 +319,7 @@ TEST(JtlInterpreter, StoreNodeBool) {
     { false, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +
@@ -365,7 +365,7 @@ TEST(JtlInterpreter, CompareNodeToStoredBool) {
     { VALUE_TRUE, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     std::string store_op;
     if (cases[i].stored_value == VALUE_TRUE ||
@@ -404,7 +404,7 @@ TEST(JtlInterpreter, StoreNodeHash) {
     { std::string(), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +
@@ -470,7 +470,7 @@ TEST(JtlInterpreter, CompareNodeToStoredHash) {
     { VALUE_FALSE, "{ 'KEY_HASH_1': false }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     std::string store_op;
     if (cases[i].stored_value == VALUE_TRUE ||
@@ -515,7 +515,7 @@ TEST(JtlInterpreter, CompareSubstring) {
     { VALUE_HASH_1, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     std::string pattern = cases[i].pattern;
     uint32 pattern_sum = std::accumulate(
@@ -569,7 +569,7 @@ TEST(JtlInterpreter, StoreNodeRegisterableDomainHash) {
     { std::string(), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +

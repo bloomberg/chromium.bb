@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_Basic) {
     {"3 result", kThreeResults, "one,two,three", kParsedThreeResults, 3 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     if (kTestCases[i].expected_result_titles) {
       RunQuery(kTestCases[i].query, kTestCases[i].mock_server_response);
       ASSERT_EQ(kTestCases[i].expected_result_titles, GetResultTitles())

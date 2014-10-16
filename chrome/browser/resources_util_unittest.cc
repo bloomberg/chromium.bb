@@ -32,6 +32,6 @@ TEST(ResourcesUtil, SpotCheckIds) {
     {"backstar", -1},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCases); ++i)
+  for (size_t i = 0; i < arraysize(kCases); ++i)
     EXPECT_EQ(kCases[i].id, ResourcesUtil::GetThemeResourceId(kCases[i].name));
 }

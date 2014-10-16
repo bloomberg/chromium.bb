@@ -354,7 +354,7 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionURL) {
   AutocompleteMatch match;
   match.type = AutocompleteMatchType::HISTORY_URL;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_url_db); ++i) {
+  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);
     EXPECT_EQ(test_url_db[i].expected_action,
               predictor()->RecommendAction(test_url_db[i].user_text, match))

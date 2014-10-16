@@ -58,7 +58,7 @@ TEST_F(SpellcheckMacTest, IgnoreWords_EN_US) {
     "noooen",
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 word(base::ASCIIToUTF16(kTestCases[i]));
     const int doc_tag = spellcheck_mac::GetDocumentTag();
 
@@ -356,7 +356,7 @@ TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
     {"writting", "writing"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 word(base::ASCIIToUTF16(kTestCases[i].input));
     EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, 0)) << word;
 

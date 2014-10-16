@@ -203,7 +203,7 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
       &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
   OmniboxEditModel model(&view, &controller, &profile);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
+  for (size_t i = 0; i < arraysize(input); ++i) {
     toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
     model.UpdatePermanentText();
 

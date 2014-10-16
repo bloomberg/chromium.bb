@@ -403,14 +403,14 @@ void DeviceStatusCollector::GetNetworkInterfaces(
   for (device = device_list.begin(); device != device_list.end(); ++device) {
     // Determine the type enum constant for |device|.
     size_t type_idx = 0;
-    for (; type_idx < ARRAYSIZE_UNSAFE(kDeviceTypeMap); ++type_idx) {
+    for (; type_idx < arraysize(kDeviceTypeMap); ++type_idx) {
       if ((*device)->type() == kDeviceTypeMap[type_idx].type_string)
         break;
     }
 
     // If the type isn't in |kDeviceTypeMap|, the interface is not relevant for
     // reporting. This filters out VPN devices.
-    if (type_idx >= ARRAYSIZE_UNSAFE(kDeviceTypeMap))
+    if (type_idx >= arraysize(kDeviceTypeMap))
       continue;
 
     em::NetworkInterface* interface = request->add_network_interface();

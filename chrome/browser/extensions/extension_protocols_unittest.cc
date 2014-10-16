@@ -172,7 +172,7 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
     {"split enabled", true, true, true, true},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     scoped_refptr<Extension> extension =
         CreateTestExtension(cases[i].name, cases[i].incognito_split_mode);
     extension_info_map_->AddExtension(

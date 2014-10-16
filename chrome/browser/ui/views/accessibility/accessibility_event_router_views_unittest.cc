@@ -526,7 +526,7 @@ TEST_F(AccessibilityEventRouterViewsTest, MenuIndexAndCountForInvisibleMenu) {
     { SimpleMenuDelegate::IDC_MENU_ITEM_3, 2, 3 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     int index = 0;
     int count = 0;
 

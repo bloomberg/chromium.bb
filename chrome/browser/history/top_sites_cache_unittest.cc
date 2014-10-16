@@ -101,7 +101,7 @@ TEST_F(TopSitesCacheTest, GetCanonicalURL) {
     // Prefix should not work: as-is.
     {"http://www.youtube.com/a", "http://www.youtube.com/a"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::string expected(test_cases[i].expected);
     std::string query(test_cases[i].query);
     EXPECT_EQ(expected, cache_.GetCanonicalURL(GURL(query)).spec())
@@ -200,7 +200,7 @@ TEST_F(TopSitesCacheTest, GetGeneralizedCanonicalURL) {
     // Specialized match only: fails.
     {"", "http://www.chromium.org/a"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::string expected(test_cases[i].expected);
     std::string query(test_cases[i].query);
     GURL result(cache_.GetGeneralizedCanonicalURL(GURL(query)));
@@ -233,7 +233,7 @@ TEST_F(TopSitesCacheTest, GetPrefixCanonicalURLDiffByQuery) {
     {"http://www.dest.com/2", "http://www.source.com/a/t?q=4"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::string expected(test_cases[i].expected);
     std::string query(test_cases[i].query);
     GURL result(cache_.GetGeneralizedCanonicalURL(GURL(query)));

@@ -324,7 +324,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainToFormTranslation) {
       1601,  1,  1,  0,  0,  0 },
   };
 
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {
+  for (unsigned int i = 0; i < arraysize(expected); ++i) {
     // Create our fake KeychainItemRef; see MockAppleKeychain docs.
     SecKeychainItemRef keychain_item =
         reinterpret_cast<SecKeychainItemRef>(i + 1);
@@ -425,7 +425,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (unsigned int i = 0; i < arraysize(test_data); ++i) {
     scoped_ptr<PasswordForm> query_form(
         CreatePasswordFormFromData(test_data[i].data));
 
@@ -582,7 +582,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
 
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (unsigned int i = 0; i < arraysize(test_data); ++i) {
     scoped_ptr<PasswordForm> in_form(
         CreatePasswordFormFromData(test_data[i].data));
     bool add_succeeded = owned_keychain_adapter.AddPassword(*in_form);
@@ -639,7 +639,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainRemove) {
   EXPECT_TRUE(owned_keychain_adapter.AddPassword(*add_form));
   delete add_form;
 
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (unsigned int i = 0; i < arraysize(test_data); ++i) {
     scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(
         test_data[i].data));
     EXPECT_EQ(test_data[i].should_succeed,
@@ -895,7 +895,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestPasswordBulkLookup) {
       true, false, 1212121212 },
   };
   std::vector<PasswordForm*> database_forms;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(db_data); ++i) {
+  for (unsigned int i = 0; i < arraysize(db_data); ++i) {
     database_forms.push_back(CreatePasswordFormFromData(db_data[i]));
   }
   std::vector<PasswordForm*> merged_forms =
@@ -925,7 +925,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestBlacklistedFiltering) {
       true, false, 1240000000 },
   };
   std::vector<PasswordForm*> database_forms;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(db_data); ++i) {
+  for (unsigned int i = 0; i < arraysize(db_data); ++i) {
     database_forms.push_back(CreatePasswordFormFromData(db_data[i]));
   }
   std::vector<PasswordForm*> merged_forms =
@@ -1155,7 +1155,7 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
       NULL,
     },
   };
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(updates); ++i) {
+  for (unsigned int i = 0; i < arraysize(updates); ++i) {
     scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(
         updates[i].form_data));
     store_->UpdateLogin(*form);
@@ -1164,7 +1164,7 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
   WaitForStoreUpdate();
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(updates); ++i) {
+  for (unsigned int i = 0; i < arraysize(updates); ++i) {
     scoped_ptr<PasswordForm> query_form(
         CreatePasswordFormFromData(updates[i].form_data));
 

@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
   };
 
   std::vector<content::WebPluginInfo> plugins = GetPlugins();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {
+  for (size_t i = 0; i < arraysize(expected); ++i) {
     size_t j = 0;
     for (; j < plugins.size(); ++j) {
       if (plugins[j].name == base::ASCIIToUTF16(expected[i]))

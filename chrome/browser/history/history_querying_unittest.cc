@@ -406,7 +406,7 @@ TEST_F(HistoryQueryTest, TextSearchIDN) {
                        L"\u0438\u0434\u0435\u043d\u0442.\u0440\u0444"), 1, },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(queries); ++i) {
+  for (size_t i = 0; i < arraysize(queries); ++i) {
     QueryHistory(queries[i].query, options, &results);
     EXPECT_EQ(queries[i].results_size, results.size());
   }

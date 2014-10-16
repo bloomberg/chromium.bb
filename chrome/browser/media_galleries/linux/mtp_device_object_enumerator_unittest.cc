@@ -43,7 +43,7 @@ TEST_F(MTPDeviceObjectEnumeratorTest, Empty) {
 
 TEST_F(MTPDeviceObjectEnumeratorTest, Traversal) {
   std::vector<MtpFileEntry> entries;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     MtpFileEntry entry;
     entry.set_file_name(kTestCases[i].name);
     entry.set_file_size(kTestCases[i].size);
@@ -56,7 +56,7 @@ TEST_F(MTPDeviceObjectEnumeratorTest, Traversal) {
   MTPDeviceObjectEnumerator enumerator(entries);
   TestEnumeratorIsEmpty(&enumerator);
   TestEnumeratorIsEmpty(&enumerator);
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     EXPECT_EQ(kTestCases[i].name, enumerator.Next().value());
     EXPECT_EQ(kTestCases[i].size, enumerator.Size());
     EXPECT_EQ(kTestCases[i].is_directory, enumerator.IsDirectory());

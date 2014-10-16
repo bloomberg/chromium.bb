@@ -630,7 +630,7 @@ TEST_F(OriginChangeMapTest, Basic) {
 
   const GURL kOrigins[] = { kOrigin1, kOrigin2, kOrigin3 };
   std::set<GURL> all_origins;
-  all_origins.insert(kOrigins, kOrigins + ARRAYSIZE_UNSAFE(kOrigins));
+  all_origins.insert(kOrigins, kOrigins + arraysize(kOrigins));
 
   GURL origin;
   while (!all_origins.empty()) {
@@ -667,7 +667,7 @@ TEST_F(OriginChangeMapTest, Basic) {
   SetOriginChangeCount(kOrigin2, 8);
   ASSERT_EQ(1 + 4 + 8, GetTotalChangeCount());
 
-  all_origins.insert(kOrigins, kOrigins + ARRAYSIZE_UNSAFE(kOrigins));
+  all_origins.insert(kOrigins, kOrigins + arraysize(kOrigins));
   while (!all_origins.empty()) {
     ASSERT_TRUE(NextOriginToProcess(&origin));
     ASSERT_TRUE(ContainsKey(all_origins, origin));
@@ -690,7 +690,7 @@ TEST_F(OriginChangeMapTest, WithDisabled) {
   ASSERT_EQ(1 + 2 + 4, GetTotalChangeCount());
 
   std::set<GURL> all_origins;
-  all_origins.insert(kOrigins, kOrigins + ARRAYSIZE_UNSAFE(kOrigins));
+  all_origins.insert(kOrigins, kOrigins + arraysize(kOrigins));
 
   GURL origin;
   while (!all_origins.empty()) {

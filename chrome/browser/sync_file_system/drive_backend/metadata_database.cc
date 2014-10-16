@@ -1642,7 +1642,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
     "title", "kind", "md5", "etag", "missing", "change_id",
   };
   std::vector<std::string> key_strings(
-      trackerKeys, trackerKeys + ARRAYSIZE_UNSAFE(trackerKeys));
+      trackerKeys, trackerKeys + arraysize(trackerKeys));
   base::ListValue* keys = new base::ListValue;
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Trackers");
@@ -1704,7 +1704,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
     "change_id", "parents"
   };
   std::vector<std::string> key_strings(
-      fileKeys, fileKeys + ARRAYSIZE_UNSAFE(fileKeys));
+      fileKeys, fileKeys + arraysize(fileKeys));
   base::ListValue* keys = new base::ListValue;
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Metadata");

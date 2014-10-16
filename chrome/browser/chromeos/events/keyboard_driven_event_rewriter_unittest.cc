@@ -77,7 +77,7 @@ TEST_F(KeyboardDrivenEventRewriterTest, PassThrough) {
     { ui::VKEY_RETURN, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+  for (size_t i = 0; i < arraysize(kTests); ++i) {
     EXPECT_EQ(GetExpectedResultAsString(kTests[i].ui_flags,
                                         ui::EVENT_REWRITE_CONTINUE),
               GetRewrittenEventAsString(kTests[i].ui_keycode,
@@ -102,7 +102,7 @@ TEST_F(KeyboardDrivenEventRewriterTest, Rewrite) {
     { ui::VKEY_F6, kModifierMask },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+  for (size_t i = 0; i < arraysize(kTests); ++i) {
     EXPECT_EQ(GetExpectedResultAsString(ui::EF_NONE,
                                         ui::EVENT_REWRITE_REWRITTEN),
               GetRewrittenEventAsString(kTests[i].ui_keycode,

@@ -197,7 +197,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
+  for (size_t i = 0; i < arraysize(resources); ++i) {
     localized_strings->SetString(resources[i].name,
                                  l10n_util::GetStringUTF16(resources[i].ids));
   }

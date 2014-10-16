@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas); ++i) {
+  for (size_t i = 0; i < arraysize(kTestDatas); ++i) {
     // Disable auto detect if it is on.
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kWebKitUsesUniversalDetector, false);

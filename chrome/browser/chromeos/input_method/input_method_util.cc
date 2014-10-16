@@ -52,7 +52,7 @@ const struct {
     IDS_LANGUAGES_MEDIUM_LEN_NAME_BRAILLE },
 };
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
-    ARRAYSIZE_UNSAFE(kMappingImeIdToMediumLenNameResourceId);
+    arraysize(kMappingImeIdToMediumLenNameResourceId);
 
 // Due to asynchronous initialization of component extension manager,
 // GetFirstLogingInputMethodIds may miss component extension IMEs. To enable
@@ -385,7 +385,7 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
 
   const std::string current_layout
       = current_input_method.GetPreferredKeyboardLayout();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultInputMethodRecommendation);
+  for (size_t i = 0; i < arraysize(kDefaultInputMethodRecommendation);
        ++i) {
     if (kDefaultInputMethodRecommendation[i].locale == language_code &&
         kDefaultInputMethodRecommendation[i].layout == current_layout) {

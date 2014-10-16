@@ -183,7 +183,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
       "xkb:es:cat:cat",
       "xkb:gb:dvorak:eng",
     };
-    const int len = ARRAYSIZE_UNSAFE(input_method_id);
+    const int len = arraysize(input_method_id);
     for (int i=0; i<len; ++i) {
       InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "", "");
       base::string16 medium_name = util_.GetInputMethodMediumName(desc);
@@ -197,7 +197,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
       pinyin_ime_id,
       zhuyin_ime_id,
     };
-    const int len = ARRAYSIZE_UNSAFE(input_method_id);
+    const int len = arraysize(input_method_id);
     for (int i=0; i<len; ++i) {
       InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "", "");
       base::string16 medium_name = util_.GetInputMethodMediumName(desc);

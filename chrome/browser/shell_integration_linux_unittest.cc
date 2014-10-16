@@ -417,7 +417,7 @@ TEST(ShellIntegrationTest, GetWebShortcutFilename) {
     { FPL("http___foo_.desktop"), "http://foo/bar/././../baz/././../" },
     { FPL("http___.._.desktop"), "http://../../../../" },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+  for (size_t i = 0; i < arraysize(test_cases); i++) {
     EXPECT_EQ(std::string(chrome::kBrowserProcessExecutableName) + "-" +
               test_cases[i].path,
               GetWebShortcutFilename(GURL(test_cases[i].url)).value()) <<
@@ -556,7 +556,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+  for (size_t i = 0; i < arraysize(test_cases); i++) {
     SCOPED_TRACE(i);
     EXPECT_EQ(
         test_cases[i].expected_output,
@@ -631,7 +631,7 @@ TEST(ShellIntegrationTest, GetDirectoryFileContents) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+  for (size_t i = 0; i < arraysize(test_cases); i++) {
     SCOPED_TRACE(i);
     EXPECT_EQ(test_cases[i].expected_output,
               GetDirectoryFileContents(base::ASCIIToUTF16(test_cases[i].title),

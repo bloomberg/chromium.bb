@@ -2309,7 +2309,7 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
     { 7, 4, "2 3 4", 3, "0p 1p 2p 3p 5 4 6" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     TabStripDummyDelegate delegate;
     TabStripModel strip(&delegate, profile());
     ASSERT_NO_FATAL_FAILURE(

@@ -985,7 +985,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
 
   URLIndexPrivateData& private_data(*GetPrivateData());
   const std::set<std::string>& whitelist(scheme_whitelist());
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
               private_data.URLSchemeIsWhitelisted(url, whitelist));

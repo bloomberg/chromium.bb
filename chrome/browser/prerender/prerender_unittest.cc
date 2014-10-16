@@ -617,7 +617,7 @@ TEST_F(PrerenderTest, MaxConcurrencyTest) {
   DummyPrerenderContents* null = NULL;
   GURL url_to_delay("http://www.google.com/delayme");
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(concurrencies_to_test); ++i) {
+  for (size_t i = 0; i < arraysize(concurrencies_to_test); ++i) {
     prerender_manager()->mutable_config().max_link_concurrency =
         concurrencies_to_test[i].max_link_concurrency;
     prerender_manager()->mutable_config().max_link_concurrency_per_launcher =

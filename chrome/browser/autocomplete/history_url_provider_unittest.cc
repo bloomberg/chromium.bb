@@ -448,7 +448,7 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
     {"http://redirects/B", 20},
     {"http://redirects/C", 10}
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     history_service_->AddPageWithDetails(GURL(test_cases[i].url),
         ASCIIToUTF16("Title"), test_cases[i].count, test_cases[i].count,
         Time::Now(), false, history::SOURCE_BROWSED);
@@ -657,7 +657,7 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
     { "gooey/a", 1400 },
     { "gooey/a b", 1400 },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
     if (test_cases[i].relevance == 0) {
       RunTest(ASCIIToUTF16(test_cases[i].input), std::string(), false, NULL, 0);
@@ -786,7 +786,7 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
     {"https://testsearch.com/?q=foobar", 20},
     {"http://foobar.com/", 10}
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     history_service_->AddPageWithDetails(GURL(test_cases[i].url),
         base::UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
         Time::Now(), false, history::SOURCE_BROWSED);
@@ -864,7 +864,7 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
     { "mailto://a@b.com", false,
       "mailto://a@b.com", {0, npos, npos}, 0 },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Index " << i << " input: "
                                     << test_cases[i].input << ", trim_http: "
                                     << test_cases[i].trim_http);
@@ -961,7 +961,7 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     { "7.com/5", max_1100_visit_typed_decays,
       {{"7.com/5", 1203, 1203}, {"7.com/5a", 1202, 50}, {NULL, 0, 0}} },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].input);
     UrlAndLegalDefault output[kMaxMatches];
     int max_matches;

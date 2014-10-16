@@ -160,9 +160,7 @@ bool IsValidMacAddressImpl(const void* bytes, size_t size) {
     return false;
   }
 
-  // Note: Use ARRAYSIZE_UNSAFE() instead of arraysize() because InvalidMacEntry
-  // is declared inside this function.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(invalidAddresses); ++i) {
+  for (size_t i = 0; i < arraysize(invalidAddresses); ++i) {
     size_t count = invalidAddresses[i].size;
     if (memcmp(invalidAddresses[i].address, bytes, count) == 0) {
         return false;

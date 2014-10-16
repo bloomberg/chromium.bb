@@ -110,7 +110,7 @@ bool CanShowHIDDetectionScreen() {
 }
 
 bool IsResumableScreen(const std::string& screen) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kResumableScreens); ++i) {
+  for (size_t i = 0; i < arraysize(kResumableScreens); ++i) {
     if (screen == kResumableScreens[i])
       return true;
   }

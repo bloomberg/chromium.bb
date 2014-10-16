@@ -117,7 +117,7 @@ void ProfileResetter::Reset(
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flagToMethod); ++i) {
+  for (size_t i = 0; i < arraysize(flagToMethod); ++i) {
     if (resettable_flags & flagToMethod[i].flag) {
       reset_triggered_for_flags |= flagToMethod[i].flag;
       (this->*flagToMethod[i].method)();

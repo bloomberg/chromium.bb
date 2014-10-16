@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(PeopleProviderTest, Basic) {
     {"person", kThreeValidResults, "first person,second person,third person" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     EXPECT_EQ(kTestCases[i].expected_results_content,
               RunQuery(kTestCases[i].query,
                        kTestCases[i].mock_server_response))

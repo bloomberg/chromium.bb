@@ -95,7 +95,7 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
       {"af", "ZAF"},
       {"en", "USA"},
     };
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCountries); ++i) {
+    for (size_t i = 0; i < arraysize(kCountries); ++i) {
       if (!language.compare(kCountries[i].language)) {
         country->assign(kCountries[i].country);
         return true;
@@ -304,7 +304,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
   pref->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+  for (size_t i = 0; i < arraysize(kTests); ++i) {
     client_.SetHTTPRequest(kTests[i].request_type, kTests[i].request_text,
                            kTests[i].language);
     client_.SetHTTPResponse(kTests[i].response_status, kTests[i].response_data);
@@ -370,7 +370,7 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
     "ro-RO", "ru-RU", "sk-SK", "sl-SI", "sh", "sr", "sv-SE", "tr-TR",
     "uk-UA", "vi-VN",
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kUnsupported); ++i) {
+  for (size_t i = 0; i < arraysize(kUnsupported); ++i) {
     pref->SetString(prefs::kSpellCheckDictionary, kUnsupported[i]);
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));

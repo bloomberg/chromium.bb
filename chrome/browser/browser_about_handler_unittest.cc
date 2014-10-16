@@ -68,7 +68,7 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   TestingProfile profile;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     GURL url(test_data[i].test_url);
     WillHandleBrowserAboutURL(&url, &profile);
     EXPECT_EQ(test_data[i].result_url, url);
