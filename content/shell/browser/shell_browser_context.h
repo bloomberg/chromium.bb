@@ -90,9 +90,15 @@ class ShellBrowserContext : public BrowserContext {
 
   // Used by ShellBrowserContext to initiate and set different types of
   // URLRequestContextGetter.
+  virtual ShellURLRequestContextGetter* CreateURLRequestContextGetter(
+      ProtocolHandlerMap* protocol_handlers,
+      URLRequestInterceptorScopedVector request_interceptors);
   void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
     url_request_getter_ = getter;
   }
+
+  bool ignore_certificate_errors() const { return ignore_certificate_errors_; }
+  net::NetLog* net_log() const { return net_log_; }
 
   scoped_ptr<ShellResourceContext> resource_context_;
   bool ignore_certificate_errors_;

@@ -117,11 +117,11 @@ net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
+ShellURLRequestContextGetter*
+ShellBrowserContext::CreateURLRequestContextGetter(
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(!url_request_getter_.get());
-  url_request_getter_ = new ShellURLRequestContextGetter(
+  return new ShellURLRequestContextGetter(
       ignore_certificate_errors_,
       GetPath(),
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO),
@@ -129,6 +129,14 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
       protocol_handlers,
       request_interceptors.Pass(),
       net_log_);
+}
+
+net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
+    ProtocolHandlerMap* protocol_handlers,
+    URLRequestInterceptorScopedVector request_interceptors) {
+  DCHECK(!url_request_getter_.get());
+  url_request_getter_ = CreateURLRequestContextGetter(
+      protocol_handlers, request_interceptors.Pass());
   resource_context_->set_url_request_context_getter(url_request_getter_.get());
   return url_request_getter_.get();
 }

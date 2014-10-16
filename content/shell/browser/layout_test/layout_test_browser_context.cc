@@ -9,8 +9,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/shell/browser/layout_test/layout_test_download_manager_delegate.h"
+#include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 
 #if defined(OS_WIN)
@@ -30,6 +32,20 @@ LayoutTestBrowserContext::LayoutTestBrowserContext(bool off_the_record,
 }
 
 LayoutTestBrowserContext::~LayoutTestBrowserContext() {
+}
+
+ShellURLRequestContextGetter*
+LayoutTestBrowserContext::CreateURLRequestContextGetter(
+    ProtocolHandlerMap* protocol_handlers,
+    URLRequestInterceptorScopedVector request_interceptors) {
+  return new LayoutTestURLRequestContextGetter(
+      ignore_certificate_errors(),
+      GetPath(),
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO),
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE),
+      protocol_handlers,
+      request_interceptors.Pass(),
+      net_log());
 }
 
 DownloadManagerDelegate*

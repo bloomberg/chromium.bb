@@ -24,6 +24,11 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
   // BrowserContext implementation.
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() override;
 
+ protected:
+  virtual ShellURLRequestContextGetter* CreateURLRequestContextGetter(
+      ProtocolHandlerMap* protocol_handlers,
+      URLRequestInterceptorScopedVector request_interceptors) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBrowserContext);
 };

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
+#include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -23,6 +24,7 @@ class MappedHostResolver;
 class NetworkDelegate;
 class NetLog;
 class ProxyConfigService;
+class ProxyService;
 class URLRequestContextStorage;
 }
 
@@ -44,13 +46,17 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override;
 
-  // Used by subclasses to create their own implementation of NetworkDelegate.
-  virtual net::NetworkDelegate* CreateNetworkDelegate();
 
   net::HostResolver* host_resolver();
 
  protected:
   virtual ~ShellURLRequestContextGetter();
+
+  // Used by subclasses to create their own implementation of NetworkDelegate
+  // and net::ProxyService.
+  virtual net::NetworkDelegate* CreateNetworkDelegate();
+  virtual net::ProxyConfigService* GetProxyConfigService();
+  virtual net::ProxyService* GetProxyService();
 
  private:
   bool ignore_certificate_errors_;

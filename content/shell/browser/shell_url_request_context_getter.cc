@@ -81,11 +81,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
   // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    proxy_config_service_.reset(
-        net::ProxyService::CreateSystemProxyConfigService(
-            io_loop_->message_loop_proxy(), file_loop_->message_loop_proxy()));
-  }
+  proxy_config_service_.reset(GetProxyConfigService());
 }
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
@@ -93,6 +89,17 @@ ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 
 net::NetworkDelegate* ShellURLRequestContextGetter::CreateNetworkDelegate() {
   return new ShellNetworkDelegate;
+}
+
+net::ProxyConfigService* ShellURLRequestContextGetter::GetProxyConfigService() {
+  return net::ProxyService::CreateSystemProxyConfigService(
+      io_loop_->message_loop_proxy(), file_loop_->message_loop_proxy());
+}
+
+net::ProxyService* ShellURLRequestContextGetter::GetProxyService() {
+  // TODO(jam): use v8 if possible, look at chrome code.
+  return net::ProxyService::CreateUsingSystemProxyResolver(
+      proxy_config_service_.release(), 0, url_request_context_->net_log());
 }
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
@@ -104,8 +111,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_);
     network_delegate_.reset(CreateNetworkDelegate());
-    if (command_line.HasSwitch(switches::kDumpRenderTree))
-      ShellNetworkDelegate::SetAcceptAllCookies(false);
     url_request_context_->set_network_delegate(network_delegate_.get());
     storage_.reset(
         new net::URLRequestContextStorage(url_request_context_.get()));
@@ -123,16 +128,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
     storage_->set_transport_security_state(new net::TransportSecurityState);
-    if (command_line.HasSwitch(switches::kDumpRenderTree)) {
-      storage_->set_proxy_service(net::ProxyService::CreateDirect());
-    } else {
-      // TODO(jam): use v8 if possible, look at chrome code.
-      storage_->set_proxy_service(
-          net::ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service_.release(),
-          0,
-          url_request_context_->net_log()));
-    }
+    storage_->set_proxy_service(GetProxyService());
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
