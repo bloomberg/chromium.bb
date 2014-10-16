@@ -26,6 +26,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/input_method_descriptor.h"
@@ -34,6 +36,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
+
+const char kMostRelevantLanguagesDivider[] = "MOST_RELEVANT_LANGUAGES_DIVIDER";
 
 namespace {
 
@@ -70,6 +74,27 @@ void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
   input_methods_list->Append(optgroup.release());
 }
 #endif
+
+base::DictionaryValue* CreateLanguageEntry(
+    const std::string& language_code,
+    const base::string16& language_display_name,
+    const base::string16& language_native_display_name) {
+  base::string16 display_name = language_display_name;
+  const bool markup_removal =
+      base::i18n::UnadjustStringForLocaleDirection(&display_name);
+  DCHECK(markup_removal);
+
+  const bool has_rtl_chars =
+      base::i18n::StringContainsStrongRTLChars(display_name);
+  const std::string directionality = has_rtl_chars ? "rtl" : "ltr";
+
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
+  dictionary->SetString("code", language_code);
+  dictionary->SetString("displayName", language_display_name);
+  dictionary->SetString("textDirection", directionality);
+  dictionary->SetString("nativeDisplayName", language_native_display_name);
+  return dictionary.release();
+}
 
 // Gets the list of languages with |descriptors| based on |base_language_codes|.
 // The |most_relevant_language_codes| will be first in the list. If
@@ -255,20 +280,10 @@ scoped_ptr<base::ListValue> GetLanguageList(
       language_list->Append(dictionary);
       continue;
     }
-    const bool markup_removal =
-        base::i18n::UnadjustStringForLocaleDirection(&display_name);
-    DCHECK(markup_removal);
-    const bool has_rtl_chars =
-        base::i18n::StringContainsStrongRTLChars(display_name);
-    const std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
     const LanguagePair& pair = language_map[out_display_names[i]];
-    base::DictionaryValue* dictionary = new base::DictionaryValue();
-    dictionary->SetString("code", pair.first);
-    dictionary->SetString("displayName", out_display_names[i]);
-    dictionary->SetString("textDirection", directionality);
-    dictionary->SetString("nativeDisplayName", pair.second);
-    language_list->Append(dictionary);
+    language_list->Append(
+        CreateLanguageEntry(pair.first, out_display_names[i], pair.second));
   }
 
   return language_list.Pass();
@@ -311,26 +326,68 @@ void GetKeyboardLayoutsForResolvedLocale(
   callback.Run(input_methods_list.Pass());
 }
 
-}  // namespace
+// For "UI Language" drop-down menu at OOBE screen we need to decide which
+// entry to mark "selected". If user has just selected "requested_locale",
+// but "loaded_locale" was actually loaded, we mark original user choice
+// "selected" only if loaded_locale is a backup for "requested_locale".
+std::string CalculateSelectedLanguage(const std::string& requested_locale,
+                                      const std::string& loaded_locale) {
+  std::string resolved_locale;
+  if (!l10n_util::CheckAndResolveLocale(requested_locale, &resolved_locale))
+    return loaded_locale;
 
-const char kMostRelevantLanguagesDivider[] = "MOST_RELEVANT_LANGUAGES_DIVIDER";
+  if (resolved_locale == loaded_locale)
+    return requested_locale;
 
-scoped_ptr<base::ListValue> GetUILanguageList(
-    const std::vector<std::string>* most_relevant_language_codes,
-    const std::string& selected) {
-  ComponentExtensionIMEManager* manager =
-      input_method::InputMethodManager::Get()->
-          GetComponentExtensionIMEManager();
-  input_method::InputMethodDescriptors descriptors =
-      manager->GetXkbIMEAsInputMethodDescriptor();
-  scoped_ptr<base::ListValue> languages_list(GetLanguageList(
-      descriptors,
-      l10n_util::GetAvailableLocales(),
-      most_relevant_language_codes
-          ? *most_relevant_language_codes
-          : StartupCustomizationDocument::GetInstance()->configured_locales(),
-      true));
+  return loaded_locale;
+}
 
+void ResolveLanguageListOnBlockingPool(
+    const chromeos::locale_util::LanguageSwitchResult* language_switch_result,
+    scoped_ptr<base::ListValue>* list,
+    std::string* list_locale,
+    std::string* selected_language) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  if (!language_switch_result) {
+    *selected_language =
+        StartupCustomizationDocument::GetInstance()->initial_locale_default();
+  } else {
+    if (language_switch_result->success) {
+      if (language_switch_result->requested_locale ==
+          language_switch_result->loaded_locale) {
+        *selected_language = language_switch_result->requested_locale;
+      } else {
+        *selected_language =
+            CalculateSelectedLanguage(language_switch_result->requested_locale,
+                                      language_switch_result->loaded_locale);
+      }
+    } else {
+      *selected_language = language_switch_result->loaded_locale;
+    }
+  }
+  const std::string selected_code =
+      selected_language->empty() ? g_browser_process->GetApplicationLocale()
+                                 : *selected_language;
+
+  *list_locale = language_switch_result
+                     ? language_switch_result->loaded_locale
+                     : g_browser_process->GetApplicationLocale();
+  list->reset(chromeos::GetUILanguageList(NULL, selected_code).release());
+}
+
+void OnLanguageListResolved(
+    UILanguageListResolvedCallback callback,
+    scoped_ptr<scoped_ptr<base::ListValue>> new_language_list,
+    scoped_ptr<std::string> new_language_list_locale,
+    scoped_ptr<std::string> new_selected_language) {
+  callback.Run(new_language_list->Pass(),
+               *new_language_list_locale,
+               *new_selected_language);
+}
+
+void AdjustUILanguageList(const std::string& selected,
+                          base::ListValue* languages_list) {
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {
     base::DictionaryValue* language_info = NULL;
     if (!languages_list->GetDictionary(i, &language_info))
@@ -360,6 +417,70 @@ scoped_ptr<base::ListValue> GetUILanguageList(
     if (value == selected)
       language_info->SetBoolean("selected", true);
   }
+}
+
+}  // namespace
+
+void ResolveUILanguageList(
+    scoped_ptr<chromeos::locale_util::LanguageSwitchResult>
+        language_switch_result,
+    UILanguageListResolvedCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  scoped_ptr<scoped_ptr<base::ListValue>> new_language_list(
+      new scoped_ptr<base::ListValue>());
+  scoped_ptr<std::string> new_language_list_locale(new std::string);
+  scoped_ptr<std::string> new_selected_language(new std::string);
+
+  base::Closure resolve_on_pool =
+      base::Bind(&ResolveLanguageListOnBlockingPool,
+                 base::Owned(language_switch_result.release()),
+                 base::Unretained(new_language_list.get()),
+                 base::Unretained(new_language_list_locale.get()),
+                 base::Unretained(new_selected_language.get()));
+
+  base::Closure on_language_list_resolved =
+      base::Bind(&OnLanguageListResolved,
+                 callback,
+                 base::Passed(new_language_list.Pass()),
+                 base::Passed(new_language_list_locale.Pass()),
+                 base::Passed(new_selected_language.Pass()));
+
+  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
+      FROM_HERE, resolve_on_pool, on_language_list_resolved);
+}
+
+scoped_ptr<base::ListValue> GetMinimalUILanguageList() {
+  const std::string application_locale =
+      g_browser_process->GetApplicationLocale();
+  base::string16 language_native_display_name =
+      l10n_util::GetDisplayNameForLocale(
+          application_locale, application_locale, true);
+
+  scoped_ptr<base::ListValue> language_list(new base::ListValue());
+  language_list->Append(CreateLanguageEntry(application_locale,
+                                            language_native_display_name,
+                                            language_native_display_name));
+  AdjustUILanguageList(std::string(), language_list.get());
+  return language_list.Pass();
+}
+
+scoped_ptr<base::ListValue> GetUILanguageList(
+    const std::vector<std::string>* most_relevant_language_codes,
+    const std::string& selected) {
+  ComponentExtensionIMEManager* manager =
+      input_method::InputMethodManager::Get()
+          ->GetComponentExtensionIMEManager();
+  input_method::InputMethodDescriptors descriptors =
+      manager->GetXkbIMEAsInputMethodDescriptor();
+  scoped_ptr<base::ListValue> languages_list(GetLanguageList(
+      descriptors,
+      l10n_util::GetAvailableLocales(),
+      most_relevant_language_codes
+          ? *most_relevant_language_codes
+          : StartupCustomizationDocument::GetInstance()->configured_locales(),
+      true));
+  AdjustUILanguageList(selected, languages_list.get());
   return languages_list.Pass();
 }
 
@@ -403,7 +524,8 @@ scoped_ptr<base::ListValue> GetAcceptLanguageList() {
 
 scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
-    const std::string& selected) {
+    const std::string& selected,
+    bool activate_keyboards) {
   scoped_ptr<base::ListValue> input_methods_list(new base::ListValue);
 #if !defined(USE_ATHENA)
   // TODO(dpolukhin): crbug.com/407579
@@ -414,8 +536,12 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
   const std::vector<std::string>& hardware_login_input_methods =
       util->GetHardwareLoginInputMethodIds();
 
-  manager->GetActiveIMEState()->EnableLoginLayouts(
-      locale, hardware_login_input_methods);
+  if (activate_keyboards) {
+    DCHECK(
+        ProfileHelper::IsSigninProfile(ProfileManager::GetActiveUserProfile()));
+    manager->GetActiveIMEState()->EnableLoginLayouts(
+        locale, hardware_login_input_methods);
+  }
 
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveIMEState()->GetActiveInputMethods());
