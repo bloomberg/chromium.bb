@@ -48,6 +48,7 @@
       'include_dirs': ['.'],
       'sources': [
         'dsp/alpha_processing.c',
+        'dsp/alpha_processing_sse2.c',
         'dsp/cpu.c',
         'dsp/dec.c',
         'dsp/dec_clip_tables.c',
