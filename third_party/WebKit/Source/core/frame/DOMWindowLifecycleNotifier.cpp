@@ -62,22 +62,22 @@ PassOwnPtr<DOMWindowLifecycleNotifier> DOMWindowLifecycleNotifier::create(LocalD
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
-        (*it)->didAddEventListener(window, eventType);
+    for (const auto& windowObserver : m_windowObservers)
+        windowObserver->didAddEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
-        (*it)->didRemoveEventListener(window, eventType);
+    for (const auto& windowObserver : m_windowObservers)
+        windowObserver->didRemoveEventListener(window, eventType);
 }
 
 void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* window)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverDOMWindowObservers);
-    for (DOMWindowObserverSet::iterator it = m_windowObservers.begin(); it != m_windowObservers.end(); ++it)
-        (*it)->didRemoveAllEventListeners(window);
+    for (const auto& windowObserver : m_windowObservers)
+        windowObserver->didRemoveAllEventListeners(window);
 }
 
 } // namespace blink

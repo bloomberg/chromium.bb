@@ -123,9 +123,8 @@ void Frame::detachChildren()
     childrenToDetach.reserveCapacity(tree().childCount());
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
         childrenToDetach.append(child);
-    FrameVector::iterator end = childrenToDetach.end();
-    for (FrameVector::iterator it = childrenToDetach.begin(); it != end; ++it)
-        (*it)->detach();
+    for (const auto& child : childrenToDetach)
+        child->detach();
 }
 
 FrameHost* Frame::host() const

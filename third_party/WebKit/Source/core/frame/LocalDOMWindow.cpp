@@ -551,14 +551,14 @@ void LocalDOMWindow::willDetachFrameHost()
 
 void LocalDOMWindow::willDestroyDocumentInFrame()
 {
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty> >::const_iterator it = m_properties.begin(); it != m_properties.end(); ++it)
-        (*it)->willDestroyGlobalObjectInFrame();
+    for (const auto& domWindowProperty : m_properties)
+        domWindowProperty->willDestroyGlobalObjectInFrame();
 }
 
 void LocalDOMWindow::willDetachDocumentFromFrame()
 {
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty> >::const_iterator it = m_properties.begin(); it != m_properties.end(); ++it)
-        (*it)->willDetachGlobalObjectFromFrame();
+    for (const auto& domWindowProperty : m_properties)
+        domWindowProperty->willDetachGlobalObjectFromFrame();
 }
 
 void LocalDOMWindow::registerProperty(DOMWindowProperty* property)

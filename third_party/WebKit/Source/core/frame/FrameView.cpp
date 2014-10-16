@@ -1244,9 +1244,8 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
         && !m_frame->settings()->pinchVirtualViewportEnabled())
         return;
 
-    ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
-    for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {
-        RenderObject* renderer = *it;
+    for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
+        RenderObject* renderer = viewportConstrainedObject;
         RenderStyle* style = renderer->style();
         if (widthChanged) {
             if (style->width().isFixed() && (style->left().isAuto() || style->right().isAuto()))
@@ -1315,9 +1314,8 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         return true;
     }
 
-    ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
-    for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {
-        RenderObject* renderer = *it;
+    for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
+        RenderObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
         ASSERT(renderer->hasLayer());
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
@@ -1909,8 +1907,8 @@ bool FrameView::updateWidgets()
     EmbeddedObjectSet objects;
     objects.swap(m_partUpdateSet);
 
-    for (EmbeddedObjectSet::iterator it = objects.begin(); it != objects.end(); ++it) {
-        RenderEmbeddedObject& object = **it;
+    for (const auto& embeddedObject : objects) {
+        RenderEmbeddedObject& object = *embeddedObject;
         HTMLPlugInElement* element = toHTMLPlugInElement(object.node());
 
         // The object may have already been destroyed (thus node cleared),
@@ -2292,9 +2290,7 @@ void FrameView::notifyPageThatContentAreaWillPaint() const
     if (!m_scrollableAreas)
         return;
 
-    for (HashSet<ScrollableArea*>::const_iterator it = m_scrollableAreas->begin(), end = m_scrollableAreas->end(); it != end; ++it) {
-        ScrollableArea* scrollableArea = *it;
-
+    for (const auto& scrollableArea : *m_scrollableAreas) {
         if (!scrollableArea->scrollbarsCanBeActive())
             continue;
 
@@ -2393,9 +2389,8 @@ Color FrameView::documentBackgroundColor() const
 bool FrameView::hasCustomScrollbars() const
 {
     const ChildrenWidgetSet* viewChildren = children();
-    ChildrenWidgetSet::const_iterator end = viewChildren->end();
-    for (ChildrenWidgetSet::const_iterator current = viewChildren->begin(); current != end; ++current) {
-        Widget* widget = current->get();
+    for (const auto& child : *viewChildren) {
+        Widget* widget = child.get();
         if (widget->isFrameView()) {
             if (toFrameView(widget)->hasCustomScrollbars())
                 return true;
@@ -2523,9 +2518,8 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
             frameViews.append(view);
     }
 
-    const WillBeHeapVector<RefPtrWillBeMember<FrameView> >::iterator end = frameViews.end();
-    for (WillBeHeapVector<RefPtrWillBeMember<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
-        (*it)->updateLayoutAndStyleIfNeededRecursive();
+    for (const auto& frameView : frameViews)
+        frameView->updateLayoutAndStyleIfNeededRecursive();
 
     // When an <iframe> gets composited, it triggers an extra style recalc in its containing FrameView.
     // To avoid pushing an invalid tree for display, we have to check for this case and do another
@@ -3689,9 +3683,8 @@ void FrameView::setFrameRectInternal(const IntRect& newRect)
 
 void FrameView::frameRectsChangedInternal()
 {
-    ChildrenWidgetSet::const_iterator end = m_children.end();
-    for (ChildrenWidgetSet::const_iterator current = m_children.begin(); current != end; ++current)
-        (*current)->frameRectsChanged();
+    for (const auto& child : m_children)
+        child->frameRectsChanged();
 }
 
 static void positionScrollbarLayer(GraphicsLayer* graphicsLayer, Scrollbar* scrollbar)
@@ -3956,9 +3949,8 @@ void FrameView::setParentVisible(bool visible)
     if (!isSelfVisible())
         return;
 
-    ChildrenWidgetSet::const_iterator end = m_children.end();
-    for (ChildrenWidgetSet::const_iterator it = m_children.begin(); it != end; ++it)
-        (*it)->setParentVisible(visible);
+    for (const auto& child : m_children)
+        child->setParentVisible(visible);
 }
 
 void FrameView::show()
@@ -3966,9 +3958,8 @@ void FrameView::show()
     if (!isSelfVisible()) {
         setSelfVisible(true);
         if (isParentVisible()) {
-            ChildrenWidgetSet::const_iterator end = m_children.end();
-            for (ChildrenWidgetSet::const_iterator it = m_children.begin(); it != end; ++it)
-                (*it)->setParentVisible(true);
+            for (const auto& child : m_children)
+                child->setParentVisible(true);
         }
     }
 
@@ -3979,9 +3970,8 @@ void FrameView::hide()
 {
     if (isSelfVisible()) {
         if (isParentVisible()) {
-            ChildrenWidgetSet::const_iterator end = m_children.end();
-            for (ChildrenWidgetSet::const_iterator it = m_children.begin(); it != end; ++it)
-                (*it)->setParentVisible(false);
+            for (const auto& child : m_children)
+                child->setParentVisible(false);
         }
         setSelfVisible(false);
     }

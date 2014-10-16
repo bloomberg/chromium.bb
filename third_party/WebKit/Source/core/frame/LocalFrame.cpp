@@ -134,9 +134,8 @@ LocalFrame::~LocalFrame()
     m_loader.clear();
     setDOMWindow(nullptr);
 
-    HashSet<RawPtr<FrameDestructionObserver> >::iterator stop = m_destructionObservers.end();
-    for (HashSet<RawPtr<FrameDestructionObserver> >::iterator it = m_destructionObservers.begin(); it != stop; ++it)
-        (*it)->frameDestroyed();
+    for (const auto& frameDestructionObserver : m_destructionObservers)
+        frameDestructionObserver->frameDestroyed();
 #endif
 }
 
@@ -165,10 +164,10 @@ void LocalFrame::trace(Visitor* visitor)
 void LocalFrame::clearWeakMembers(Visitor* visitor)
 {
     Vector<HTMLPlugInElement*> deadPlugins;
-    for (HashSet<HTMLPlugInElement*>::const_iterator it = m_pluginElements.begin(); it != m_pluginElements.end(); ++it) {
-        if (!visitor->isAlive(*it)) {
-            (*it)->shouldDisposePlugin();
-            deadPlugins.append(*it);
+    for (const auto& pluginElement : m_pluginElements) {
+        if (!visitor->isAlive(pluginElement)) {
+            pluginElement->shouldDisposePlugin();
+            deadPlugins.append(pluginElement);
         }
     }
     for (unsigned i = 0; i < deadPlugins.size(); ++i)
@@ -354,9 +353,8 @@ void LocalFrame::removeDestructionObserver(FrameDestructionObserver* observer)
 void LocalFrame::willDetachFrameHost()
 {
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> >::iterator stop = m_destructionObservers.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver> >::iterator it = m_destructionObservers.begin(); it != stop; ++it)
-        (*it)->willDetachFrameHost();
+    for (const auto& frameDestructionObserver : m_destructionObservers)
+        frameDestructionObserver->willDetachFrameHost();
 
     // FIXME: Page should take care of updating focus/scrolling instead of Frame.
     // FIXME: It's unclear as to why this is called more than once, but it is,
@@ -740,8 +738,8 @@ void LocalFrame::disconnectOwnerElement()
 #if ENABLE(OILPAN)
         // First give the plugin elements holding persisted,
         // renderer-less plugins the opportunity to dispose of them.
-        for (HashSet<HTMLPlugInElement*>::const_iterator it = m_pluginElements.begin(); it != m_pluginElements.end(); ++it)
-            (*it)->disconnectContentFrame();
+        for (const auto& pluginElement : m_pluginElements)
+            pluginElement->disconnectContentFrame();
         m_pluginElements.clear();
 
         // Clear the FrameView and FrameLoader right here rather than

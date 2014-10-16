@@ -165,12 +165,12 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
 
-        for (ConsoleMessageVector::const_iterator iter = m_consoleMessages.begin(); iter != m_consoleMessages.end(); ++iter)
-            m_executionContext->addConsoleMessage(*iter);
+        for (const auto& consoleMessage : m_consoleMessages)
+            m_executionContext->addConsoleMessage(consoleMessage);
         m_consoleMessages.clear();
 
-        for (CSPDirectiveListVector::const_iterator iter = m_policies.begin(); iter != m_policies.end(); ++iter)
-            UseCounter::count(*document, getUseCounterType((*iter)->headerType()));
+        for (const auto& cspDirective : m_policies)
+            UseCounter::count(*document, getUseCounterType(cspDirective->headerType()));
     }
 
     // We disable 'eval()' even in the case of report-only policies, and rely on the check in the
@@ -192,8 +192,8 @@ Document* ContentSecurityPolicy::document() const
 void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
 {
     ASSERT(m_policies.isEmpty());
-    for (CSPDirectiveListVector::const_iterator iter = other->m_policies.begin(); iter != other->m_policies.end(); ++iter)
-        addPolicyFromHeaderValue((*iter)->header(), (*iter)->headerType(), (*iter)->headerSource());
+    for (const auto& cspDirective : other->m_policies)
+        addPolicyFromHeaderValue(cspDirective->header(), cspDirective->headerType(), cspDirective->headerSource());
 }
 
 void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
