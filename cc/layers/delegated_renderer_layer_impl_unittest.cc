@@ -589,7 +589,8 @@ class DelegatedRendererLayerImplTestTransform
                              gfx::Rect(5, 5, 7, 7),  // visible_rect
                              RenderPassId(10, 7),    // render_pass_id
                              0,                      // mask_resource_id
-                             gfx::RectF(),           // mask_uv_rect
+                             gfx::Vector2dF(),       // mask_uv_scale
+                             gfx::Size(),            // mask_texture_size
                              FilterOperations(),     // filters
                              gfx::Vector2dF(),       // filters_scale
                              FilterOperations());    // background_filters
@@ -1021,7 +1022,8 @@ class DelegatedRendererLayerImplTestClip
                              gfx::Rect(5, 5, 7, 7),  // visible_quad_rect
                              RenderPassId(10, 7),    // render_pass_id
                              0,                      // mask_resource_id
-                             gfx::RectF(),           // mask_uv_rect
+                             gfx::Vector2dF(),       // mask_uv_scale
+                             gfx::Size(),            // mask_texture_size,
                              FilterOperations(),     // filters
                              gfx::Vector2dF(),       // filters_scale
                              FilterOperations());    // background_filters

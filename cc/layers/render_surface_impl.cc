@@ -193,8 +193,11 @@ void RenderSurfaceImpl::AppendQuads(
       mask_layer = nullptr;
   }
 
-  gfx::RectF mask_uv_rect(0.f, 0.f, 1.f, 1.f);
+  ResourceProvider::ResourceId mask_resource_id = 0;
+  gfx::Size mask_texture_size;
+  gfx::Vector2dF mask_uv_scale;
   if (mask_layer) {
+    mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
     gfx::Vector2dF owning_layer_draw_scale =
         MathUtil::ComputeTransform2dScaleComponents(
             owning_layer_->draw_transform(), 1.f);
@@ -202,21 +205,10 @@ void RenderSurfaceImpl::AppendQuads(
         owning_layer_->content_bounds(),
         owning_layer_draw_scale.x(),
         owning_layer_draw_scale.y());
-
-    float uv_scale_x =
-        content_rect_.width() / unclipped_mask_target_size.width();
-    float uv_scale_y =
-        content_rect_.height() / unclipped_mask_target_size.height();
-
-    mask_uv_rect = gfx::RectF(
-        uv_scale_x * content_rect_.x() / content_rect_.width(),
-        uv_scale_y * content_rect_.y() / content_rect_.height(),
-        uv_scale_x,
-        uv_scale_y);
+    mask_uv_scale = gfx::Vector2dF(
+        content_rect_.width() / unclipped_mask_target_size.width(),
+        content_rect_.height() / unclipped_mask_target_size.height());
   }
-
-  ResourceProvider::ResourceId mask_resource_id =
-      mask_layer ? mask_layer->ContentsResourceId() : 0;
 
   DCHECK(owning_layer_->draw_properties().target_space_transform.IsScale2d());
   gfx::Vector2dF owning_layer_to_target_scale =
@@ -231,7 +223,8 @@ void RenderSurfaceImpl::AppendQuads(
                visible_content_rect,
                render_pass_id,
                mask_resource_id,
-               mask_uv_rect,
+               mask_uv_scale,
+               mask_texture_size,
                owning_layer_->filters(),
                owning_layer_to_target_scale,
                owning_layer_->background_filters());

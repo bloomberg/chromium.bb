@@ -71,6 +71,8 @@ bool ConvertDrawQuad(const QuadPtr& input,
           render_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
       RenderPassQuadState* render_pass_quad_state =
           input->render_pass_quad_state.get();
+      gfx::PointF mask_uv_scale_as_point =
+          render_pass_quad_state->mask_uv_scale.To<gfx::PointF>();
       gfx::PointF filter_scale_as_point =
           render_pass_quad_state->filters_scale.To<gfx::PointF>();
       render_pass_quad->SetAll(
@@ -81,9 +83,10 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->needs_blending,
           render_pass_quad_state->render_pass_id.To<cc::RenderPassId>(),
           render_pass_quad_state->mask_resource_id,
-          render_pass_quad_state->mask_uv_rect.To<gfx::RectF>(),
+          mask_uv_scale_as_point.OffsetFromOrigin(),
+          render_pass_quad_state->mask_texture_size.To<gfx::Size>(),
           cc::FilterOperations(),  // TODO(jamesr): filters
-          gfx::Vector2dF(filter_scale_as_point.x(), filter_scale_as_point.y()),
+          filter_scale_as_point.OffsetFromOrigin(),
           cc::FilterOperations());  // TODO(jamesr): background_filters
       break;
     }
@@ -248,7 +251,10 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       pass_state->render_pass_id =
           RenderPassId::From(render_pass_quad->render_pass_id);
       pass_state->mask_resource_id = render_pass_quad->mask_resource_id;
-      pass_state->mask_uv_rect = RectF::From(render_pass_quad->mask_uv_rect);
+      pass_state->mask_uv_scale = PointF::From(
+          gfx::PointAtOffsetFromOrigin(render_pass_quad->mask_uv_scale));
+      pass_state->mask_texture_size =
+          Size::From(render_pass_quad->mask_texture_size);
       // TODO(jamesr): pass_state->filters
       pass_state->filters_scale = PointF::From(
           gfx::PointAtOffsetFromOrigin(render_pass_quad->filters_scale));

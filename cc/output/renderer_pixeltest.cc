@@ -103,11 +103,12 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                rect,
                rect,
                pass_id,
-               0,                     // mask_resource_id
-               gfx::RectF(1.f, 1.f),  // mask_uv_rect
-               FilterOperations(),    // foreground filters
-               gfx::Vector2dF(),      // filters scale
-               FilterOperations());   // background filters
+               0,                    // mask_resource_id
+               gfx::Vector2dF(),     // mask_uv_scale
+               gfx::Size(),          // mask_texture_size
+               FilterOperations(),   // foreground filters
+               gfx::Vector2dF(),     // filters scale
+               FilterOperations());  // background filters
 }
 
 void CreateTestTextureDrawQuad(const gfx::Rect& rect,
@@ -798,7 +799,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
                            pass_rect,
                            child_pass_id,
                            0,
-                           gfx::RectF(),
+                           gfx::Vector2dF(),
+                           gfx::Size(),
                            filters,
                            gfx::Vector2dF(),
                            FilterOperations());
@@ -869,7 +871,8 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
                            pass_rect,
                            child_pass_id,
                            0,
-                           gfx::RectF(),
+                           gfx::Vector2dF(),
+                           gfx::Size(),
                            filters,
                            gfx::Vector2dF(),
                            FilterOperations());
@@ -939,7 +942,8 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
                            pass_rect,
                            child_pass_id,
                            0,
-                           gfx::RectF(),
+                           gfx::Vector2dF(),
+                           gfx::Size(),
                            filters,
                            gfx::Vector2dF(),
                            FilterOperations());
@@ -1031,7 +1035,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
                            pass_rect,
                            child_pass_id,
                            0,
-                           gfx::RectF(),
+                           gfx::Vector2dF(),
+                           gfx::Size(),
                            filters,
                            gfx::Vector2dF(),
                            FilterOperations());
@@ -1237,10 +1242,11 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
                     sub_rect,
                     child_pass_id,
                     mask_resource_id,
-                    gfx::RectF(0.5f, 0.5f, 2.f, 1.f),  // mask_uv_rect
-                    FilterOperations(),                // foreground filters
-                    gfx::Vector2dF(),                  // filters scale
-                    FilterOperations());               // background filters
+                    gfx::Vector2dF(2.f, 1.f),     // mask_uv_scale
+                    gfx::Size(mask_rect.size()),  // mask_texture_size
+                    FilterOperations(),           // foreground filters
+                    gfx::Vector2dF(),             // filters scale
+                    FilterOperations());          // background filters
 
   // White background behind the masked render pass.
   SolidColorDrawQuad* white =
@@ -1304,16 +1310,16 @@ class RendererPixelTestWithBackgroundFilter
                                     filter_pass.get());
       RenderPassDrawQuad* filter_pass_quad =
           root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-      filter_pass_quad->SetNew(
-          shared_state,
-          filter_pass_content_rect_,
-          filter_pass_content_rect_,
-          filter_pass_id,
-          0,                          // mask_resource_id
-          gfx::RectF(),               // mask_uv_rect
-          FilterOperations(),         // filters
-          gfx::Vector2dF(),           // filters_scale
-          this->background_filters_);
+      filter_pass_quad->SetNew(shared_state,
+                               filter_pass_content_rect_,
+                               filter_pass_content_rect_,
+                               filter_pass_id,
+                               0,                   // mask_resource_id
+                               gfx::Vector2dF(),    // mask_uv_scale
+                               gfx::Size(),         // mask_texture_size
+                               FilterOperations(),  // filters
+                               gfx::Vector2dF(),    // filters_scale
+                               this->background_filters_);
     }
 
     const int kColumnWidth = device_viewport_rect.width() / 3;

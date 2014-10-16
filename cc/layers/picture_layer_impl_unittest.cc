@@ -1202,7 +1202,11 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
   // Mask layers have a tiling with a single tile in it.
   EXPECT_EQ(1u, active_layer_->HighResTiling()->AllTilesForTesting().size());
   // The mask resource exists.
-  EXPECT_NE(0u, active_layer_->ContentsResourceId());
+  ResourceProvider::ResourceId mask_resource_id;
+  gfx::Size mask_texture_size;
+  active_layer_->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  EXPECT_NE(0u, mask_resource_id);
+  EXPECT_EQ(mask_texture_size, active_layer_->bounds());
 
   // Resize larger than the max texture size.
   int max_texture_size = host_impl_.GetRendererCapabilities().max_texture_size;
@@ -1225,7 +1229,41 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
   // Mask layers have a tiling, but there should be no tiles in it.
   EXPECT_EQ(0u, active_layer_->HighResTiling()->AllTilesForTesting().size());
   // The mask resource is empty.
-  EXPECT_EQ(0u, active_layer_->ContentsResourceId());
+  active_layer_->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  EXPECT_EQ(0u, mask_resource_id);
+}
+
+TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
+  gfx::Size tile_size(100, 100);
+
+  scoped_refptr<FakePicturePileImpl> valid_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
+  valid_pile->set_is_mask(true);
+  SetupPendingTree(valid_pile);
+
+  float ideal_contents_scale = 1.3f;
+  SetupDrawPropertiesAndUpdateTiles(
+      pending_layer_, ideal_contents_scale, 1.f, 1.f, 1.f, false);
+  EXPECT_EQ(ideal_contents_scale,
+            pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
+
+  pending_layer_->HighResTiling()->CreateAllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(
+      pending_layer_->HighResTiling()->AllTilesForTesting());
+
+  ActivateTree();
+
+  // Mask layers have a tiling with a single tile in it.
+  EXPECT_EQ(1u, active_layer_->HighResTiling()->AllTilesForTesting().size());
+  // The mask resource exists.
+  ResourceProvider::ResourceId mask_resource_id;
+  gfx::Size mask_texture_size;
+  active_layer_->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  EXPECT_NE(0u, mask_resource_id);
+  gfx::Size expected_mask_texture_size = gfx::ToCeiledSize(
+      gfx::ScaleSize(active_layer_->bounds(), ideal_contents_scale));
+  EXPECT_EQ(mask_texture_size, expected_mask_texture_size);
 }
 
 TEST_F(PictureLayerImplTest, ReleaseResources) {

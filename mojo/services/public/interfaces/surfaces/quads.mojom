@@ -28,7 +28,8 @@ struct RenderPassQuadState {
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;
-  RectF mask_uv_rect;
+  PointF mask_uv_scale;
+  Size mask_texture_size;
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
   // TODO(jamesr): Support

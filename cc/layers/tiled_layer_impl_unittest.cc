@@ -304,7 +304,10 @@ TEST_F(TiledLayerImplTest, EmptyMask) {
   scoped_ptr<TiledLayerImpl> layer =
       CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
 
-  EXPECT_EQ(0u, layer->ContentsResourceId());
+  ResourceProvider::ResourceId mask_resource_id;
+  gfx::Size mask_texture_size;
+  layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
+  EXPECT_EQ(0u, mask_resource_id);
   EXPECT_EQ(0, layer->TilingForTesting()->num_tiles_x());
   EXPECT_EQ(0, layer->TilingForTesting()->num_tiles_y());
 }

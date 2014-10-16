@@ -200,7 +200,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                            AppendQuadsData* append_quads_data) {}
   virtual void DidDraw(ResourceProvider* resource_provider);
 
-  virtual ResourceProvider::ResourceId ContentsResourceId() const;
+  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                                     gfx::Size* resource_size) const;
 
   virtual bool HasDelegatedContent() const;
   virtual bool HasContributingDelegatedRenderPasses() const;

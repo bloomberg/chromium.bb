@@ -5290,8 +5290,9 @@ class FakeMaskLayerImpl : public LayerImpl {
     return make_scoped_ptr(new FakeMaskLayerImpl(tree_impl, id));
   }
 
-  virtual ResourceProvider::ResourceId ContentsResourceId() const override {
-    return 0;
+  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                                     gfx::Size* resource_size) const override {
+    *resource_id = 0;
   }
 
  private:
@@ -5373,7 +5374,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5402,7 +5405,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5433,7 +5438,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithScaling) {
     EXPECT_EQ(gfx::Rect(0, 0, 200, 200).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5494,7 +5501,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5522,7 +5531,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5553,7 +5564,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5579,7 +5592,9 @@ TEST_F(LayerTreeHostImplTest, MaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5644,7 +5659,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              replica_quad->mask_uv_rect.ToString());
+              replica_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              replica_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5671,7 +5688,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              replica_quad->mask_uv_rect.ToString());
+              replica_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              replica_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5701,7 +5720,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              replica_quad->mask_uv_rect.ToString());
+              replica_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              replica_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5726,7 +5747,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerWithDifferentBounds) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-              replica_quad->mask_uv_rect.ToString());
+              replica_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(1.f, 1.f).ToString(),
+              replica_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5812,7 +5835,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(0.f, 0.f, 2.f, 1.f).ToString(),
-              replica_quad->mask_uv_rect.ToString());
+              replica_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(2.f, 1.f).ToString(),
+              replica_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5845,7 +5870,9 @@ TEST_F(LayerTreeHostImplTest, ReflectionMaskLayerForSurfaceWithUnclippedChild) {
     EXPECT_EQ(gfx::Rect(-50, 0, 100, 50).ToString(),
               replica_quad->rect.ToString());
     EXPECT_EQ(gfx::RectF(-1.f, 0.f, 2.f, 1.f).ToString(),
-              replica_quad->mask_uv_rect.ToString());
+              replica_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(2.f, 1.f).ToString(),
+              replica_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);
@@ -5929,14 +5956,15 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
             frame.render_passes[0]->quad_list.front());
     EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
               render_pass_quad->rect.ToString());
-
     // The masked layer is 50x50, but the surface size is 10x20. So the texture
     // coords in the mask are scaled by 10/50 and 20/50.
     // The surface is clipped to (20,10) so the mask texture coords are offset
     // by 20/50 and 10/50
-    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f),
-                             1.f / 50.f).ToString(),
-              render_pass_quad->mask_uv_rect.ToString());
+    EXPECT_EQ(gfx::ScaleRect(gfx::RectF(20.f, 10.f, 10.f, 20.f), 1.f / 50.f)
+                  .ToString(),
+              render_pass_quad->MaskUVRect().ToString());
+    EXPECT_EQ(gfx::Vector2dF(10.f / 50.f, 20.f / 50.f).ToString(),
+              render_pass_quad->mask_uv_scale.ToString());
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
     host_impl_->DidDrawAllLayers(frame);

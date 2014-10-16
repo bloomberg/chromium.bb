@@ -58,8 +58,9 @@ void TestRenderPass::AppendOneOfEveryQuadType(
       ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource4);
+  gfx::Size resource5_size(73, 26);
   ResourceProvider::ResourceId resource5 = resource_provider->CreateResource(
-      gfx::Size(73, 26),
+      resource5_size,
       GL_CLAMP_TO_EDGE,
       ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
@@ -124,7 +125,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                              visible_rect,
                              child_pass,
                              resource5,
-                             gfx::RectF(),
+                             gfx::Vector2dF(1.f, 1.f),
+                             resource5_size,
                              FilterOperations(),
                              gfx::Vector2dF(),
                              FilterOperations());
@@ -136,7 +138,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                      visible_rect,
                                      child_pass,
                                      resource5,
-                                     gfx::RectF(),
+                                     gfx::Vector2dF(1.f, 1.f),
+                                     resource5_size,
                                      FilterOperations(),
                                      gfx::Vector2dF(),
                                      FilterOperations());

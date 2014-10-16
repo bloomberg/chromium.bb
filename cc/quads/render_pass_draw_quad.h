@@ -25,7 +25,8 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               RenderPassId render_pass_id,
               ResourceProvider::ResourceId mask_resource_id,
-              const gfx::RectF& mask_uv_rect,
+              const gfx::Vector2dF& mask_uv_scale,
+              const gfx::Size& mask_texture_size,
               const FilterOperations& filters,
               const gfx::Vector2dF& filters_scale,
               const FilterOperations& background_filters);
@@ -37,14 +38,16 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               bool needs_blending,
               RenderPassId render_pass_id,
               ResourceProvider::ResourceId mask_resource_id,
-              const gfx::RectF& mask_uv_rect,
+              const gfx::Vector2dF& mask_uv_scale,
+              const gfx::Size& mask_texture_size,
               const FilterOperations& filters,
               const gfx::Vector2dF& filters_scale,
               const FilterOperations& background_filters);
 
   RenderPassId render_pass_id;
   ResourceProvider::ResourceId mask_resource_id;
-  gfx::RectF mask_uv_rect;
+  gfx::Vector2dF mask_uv_scale;
+  gfx::Size mask_texture_size;
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
   FilterOperations filters;
@@ -58,6 +61,9 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.
   FilterOperations background_filters;
+
+  // Helper function to generate the normalized uv rect.
+  gfx::RectF MaskUVRect() const;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       override;

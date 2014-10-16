@@ -32,7 +32,8 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
                            const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) override;
 
-  virtual ResourceProvider::ResourceId ContentsResourceId() const override;
+  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                                     gfx::Size* resource_size) const override;
 
   void set_skips_draw(bool skips_draw) { skips_draw_ = skips_draw; }
   void SetTilingData(const LayerTilingData& tiler);

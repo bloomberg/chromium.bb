@@ -139,7 +139,8 @@ class CC_EXPORT PictureLayerImpl
   void SyncTiling(const PictureLayerTiling* tiling);
 
   // Mask-related functions.
-  virtual ResourceProvider::ResourceId ContentsResourceId() const override;
+  virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                                     gfx::Size* resource_size) const override;
 
   virtual size_t GPUMemoryUsageInBytes() const override;
 

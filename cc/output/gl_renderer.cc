@@ -1170,12 +1170,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     device_layer_edges.InflateAntiAliasingDistance();
   }
 
-  scoped_ptr<ResourceProvider::ScopedReadLockGL> mask_resource_lock;
+  scoped_ptr<ResourceProvider::ScopedSamplerGL> mask_resource_lock;
   unsigned mask_texture_id = 0;
+  SamplerType mask_sampler = SamplerTypeNA;
   if (quad->mask_resource_id) {
-    mask_resource_lock.reset(new ResourceProvider::ScopedReadLockGL(
-        resource_provider_, quad->mask_resource_id));
+    mask_resource_lock.reset(new ResourceProvider::ScopedSamplerGL(
+        resource_provider_, quad->mask_resource_id, GL_TEXTURE1, GL_LINEAR));
     mask_texture_id = mask_resource_lock->texture_id();
+    mask_sampler = SamplerTypeFromTextureTarget(mask_resource_lock->target());
   }
 
   // TODO(danakj): use the background_texture and blend the background in with
@@ -1370,29 +1372,22 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (shader_mask_sampler_location != -1) {
     DCHECK_NE(shader_mask_tex_coord_scale_location, 1);
     DCHECK_NE(shader_mask_tex_coord_offset_location, 1);
+    DCHECK_EQ(SamplerType2D, mask_sampler);
     GLC(gl_, gl_->Uniform1i(shader_mask_sampler_location, 1));
 
-    float mask_tex_scale_x = quad->mask_uv_rect.width() / tex_scale_x;
-    float mask_tex_scale_y = quad->mask_uv_rect.height() / tex_scale_y;
+    gfx::RectF mask_uv_rect = quad->MaskUVRect();
 
     // Mask textures are oriented vertically flipped relative to the framebuffer
     // and the RenderPass contents texture, so we flip the tex coords from the
     // RenderPass texture to find the mask texture coords.
     GLC(gl_,
         gl_->Uniform2f(shader_mask_tex_coord_offset_location,
-                       quad->mask_uv_rect.x(),
-                       quad->mask_uv_rect.y() + quad->mask_uv_rect.height()));
+                       mask_uv_rect.x(),
+                       mask_uv_rect.bottom()));
     GLC(gl_,
         gl_->Uniform2f(shader_mask_tex_coord_scale_location,
-                       mask_tex_scale_x,
-                       -mask_tex_scale_y));
-    shader_mask_sampler_lock = make_scoped_ptr(
-        new ResourceProvider::ScopedSamplerGL(resource_provider_,
-                                              quad->mask_resource_id,
-                                              GL_TEXTURE1,
-                                              GL_LINEAR));
-    DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
-              shader_mask_sampler_lock->target());
+                       mask_uv_rect.width() / tex_scale_x,
+                       -mask_uv_rect.height() / tex_scale_y));
   }
 
   if (shader_edge_location != -1) {

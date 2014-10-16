@@ -349,9 +349,10 @@ RenderPassId LayerImpl::NextContributingRenderPassId(RenderPassId id) const {
   return RenderPassId(0, 0);
 }
 
-ResourceProvider::ResourceId LayerImpl::ContentsResourceId() const {
+void LayerImpl::GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
+                                      gfx::Size* resource_size) const {
   NOTREACHED();
-  return 0;
+  *resource_id = 0;
 }
 
 void LayerImpl::SetSentScrollDelta(const gfx::Vector2dF& sent_scroll_delta) {

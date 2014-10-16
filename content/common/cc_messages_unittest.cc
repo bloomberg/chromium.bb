@@ -145,7 +145,8 @@ class CCMessagesTest : public testing::Test {
   void Compare(const RenderPassDrawQuad* a, const RenderPassDrawQuad* b) {
     EXPECT_EQ(a->render_pass_id, b->render_pass_id);
     EXPECT_EQ(a->mask_resource_id, b->mask_resource_id);
-    EXPECT_EQ(a->mask_uv_rect.ToString(), b->mask_uv_rect.ToString());
+    EXPECT_EQ(a->mask_uv_scale.ToString(), b->mask_uv_scale.ToString());
+    EXPECT_EQ(a->mask_texture_size.ToString(), b->mask_texture_size.ToString());
     EXPECT_EQ(a->filters.size(), b->filters.size());
     for (size_t i = 0; i < a->filters.size(); ++i) {
       if (a->filters.at(i).type() != cc::FilterOperation::REFERENCE) {
@@ -242,6 +243,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   gfx::PointF arbitrary_pointf1(31.4f, 15.9f);
   gfx::PointF arbitrary_pointf2(26.5f, -35.8f);
   gfx::Vector2dF arbitrary_vector2df1(16.2f, -85.1f);
+  gfx::Vector2dF arbitrary_vector2df2(-8.3f, 0.47f);
   float arbitrary_float1 = 0.7f;
   float arbitrary_float2 = 0.3f;
   float arbitrary_float3 = 0.9f;
@@ -366,9 +368,10 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_bool1,
                         arbitrary_id,
                         arbitrary_resourceid2,
-                        arbitrary_rectf1,
-                        arbitrary_filters1,
                         arbitrary_vector2df1,
+                        arbitrary_size1,
+                        arbitrary_filters1,
+                        arbitrary_vector2df2,
                         arbitrary_filters2);
   pass_cmp->CopyFromAndAppendRenderPassDrawQuad(
       renderpass_in,
