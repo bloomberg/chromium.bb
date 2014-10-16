@@ -15,7 +15,6 @@
 
 #include "chrome/browser/password_manager/password_manager_util.h"
 
-#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -32,15 +31,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #endif
-
-// static
-void password_manager::PasswordManager::RegisterLocalPrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(password_manager::prefs::kOsPasswordLastChanged,
-                              0);
-  registry->RegisterBooleanPref(password_manager::prefs::kOsPasswordBlank,
-                                false);
-}
 
 namespace password_manager_util {
 

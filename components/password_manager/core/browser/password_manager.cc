@@ -22,6 +22,10 @@
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
+#if defined(OS_WIN)
+#include "base/prefs/pref_registry_simple.h"
+#endif
+
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
 
@@ -104,6 +108,14 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
+
+#if defined(OS_WIN)
+// static
+void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kOsPasswordLastChanged, 0);
+  registry->RegisterBooleanPref(prefs::kOsPasswordBlank, false);
+}
+#endif
 
 PasswordManager::PasswordManager(PasswordManagerClient* client)
     : client_(client), driver_(client->GetDriver()) {
