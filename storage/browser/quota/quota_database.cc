@@ -476,8 +476,8 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
 }
 
 bool QuotaDatabase::EnsureDatabaseVersion() {
-  static const size_t kTableCount = ARRAYSIZE_UNSAFE(kTables);
-  static const size_t kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
+  static const size_t kTableCount = arraysize(kTables);
+  static const size_t kIndexCount = arraysize(kIndexes);
   if (!sql::MetaTable::DoesTableExist(db_.get()))
     return CreateSchema(db_.get(), meta_table_.get(),
                         kCurrentVersion, kCompatibleVersion,

@@ -584,7 +584,7 @@ void FileSystemContext::RegisterBackend(FileSystemBackend* backend) {
     kFileSystemTypeExternal,
   };
   // Register file system backends for public mount types.
-  for (size_t j = 0; j < ARRAYSIZE_UNSAFE(mount_types); ++j) {
+  for (size_t j = 0; j < arraysize(mount_types); ++j) {
     if (backend->CanHandleType(mount_types[j])) {
       const bool inserted = backend_map_.insert(
           std::make_pair(mount_types[j], backend)).second;
