@@ -270,6 +270,26 @@ describe('ct-failures', function() {
                 chromium: 199,
               },
             },
+            {
+              sort_key: 'mac: Mac Tests',
+              failure_keys: [ 'f3', ],
+              likely_revisions: [
+                'chromium: 100',
+                'chromium: 101',
+              ],
+              merged_first_failing: {
+                blink: 50,
+                nacl: 50,
+                v8: 50,
+                chromium: 200,
+              },
+              merged_last_passing: {
+                blink: 50,
+                nacl: 50,
+                v8: 50,
+                chromium: 199,
+              },
+            },
           ],
           alerts: [
             {
@@ -334,6 +354,37 @@ describe('ct-failures', function() {
               },
               would_close_tree: true
             },
+            {
+              last_result_time: 1409697347.089103,
+              passing_build: 2485,
+              last_failing_build: 2489,
+              failing_build: 2486,
+              latest_revisions: {
+                v8: 50,
+                chromium: 103,
+                nacl: 50,
+                blink: 51
+              },
+              master_url: "https://build.chromium.org/p/chromium.mac",
+              reason: null,
+              failing_revisions: {
+                v8: 50,
+                chromium: 101,
+                nacl: 50,
+                blink: 50
+              },
+              builder_name: "Mac Tests",
+              key: "f3",
+              step_name: "compile",
+              tree: 'chromium',
+              passing_revisions: {
+                v8: 50,
+                chromium: 99,
+                nacl: 50,
+                blink: 50
+              },
+              would_close_tree: true
+            },
           ],
           date: 1409697816.726562,
         },
@@ -355,16 +406,17 @@ describe('ct-failures', function() {
         var analyzer = new CTFailures(CTCommitLogMock());
         return analyzer.update().then(function() {
           assert.property(analyzer.failures, 'chromium');
-          assert.lengthOf(analyzer.failures.chromium, 3);
+          assert.lengthOf(analyzer.failures.chromium, 4);
           var masterFailureGroup = analyzer.failures.chromium[0];
           var testFailureGroup = analyzer.failures.chromium[1];
           var compileFailureGroup = analyzer.failures.chromium[2];
+          var macCompileFailureGroup = analyzer.failures.chromium[3];
           assert.equal(compileFailureGroup.constructor, CTFailureGroup);
-          assert.equal(compileFailureGroup.key, 'compile::null');
+          assert.equal(compileFailureGroup.key, 'compile::Linux Tests (dbg)(1)');
           assert.lengthOf(compileFailureGroup.data.failures, 1);
           var failure = compileFailureGroup.data.failures[0];
           assert.equal(failure.constructor, CTStepFailure);
-          assert.equal(failure.key, 'compile::null');
+          assert.equal(failure.key, 'compile::Linux Tests (dbg)(1)');
           assert.equal(failure.step, 'compile');
           assert.equal(failure.testName, null);
           var resultNodesByBuilder = failure.resultNodesByBuilder;
@@ -395,6 +447,7 @@ describe('ct-failures', function() {
             assert.strictEqual(analyzer.failures.chromium[0], masterFailureGroup)
             assert.strictEqual(analyzer.failures.chromium[1], testFailureGroup)
             assert.strictEqual(analyzer.failures.chromium[2], compileFailureGroup)
+            assert.strictEqual(analyzer.failures.chromium[3], macCompileFailureGroup)
             assert.strictEqual(compileFailureGroup.data.failures[0], failure)
             assert.strictEqual(failure.resultNodesByBuilder, resultNodesByBuilder);
             assert.strictEqual(resultNodesByBuilder['Linux Tests (dbg)(1)'], dbgBuilder);

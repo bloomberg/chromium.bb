@@ -6,7 +6,18 @@ found in the LICENSE file.
 
 <script>
 function CTStepFailure(step, reason, resultsByBuilder) {
-  this.key = step + '::' + reason;
+  this.key = step + '::'
+
+  // The key needs to be unique, so disambiguate null reason
+  // failures by their builders, but don't do regular failures
+  // by builders because we want failures with reasons to update
+  // the existing failure group instead of causing the group to
+  // get recreated since throwing it away loses in app state.
+  if (reason)
+    this.key += reason;
+  else
+    this.key += Object.keys(resultsByBuilder).join('::');
+
   this.step = step;
   // FIXME: Rename this to reason.
   this.testName = reason;

@@ -11,7 +11,7 @@ found in the LICENSE file.
 
 var assert = chai.assert;
 
-describe('ct-failure model', function() {
+describe('CTStepFailure', function() {
   var tests = [
     {
       failure: new CTStepFailure('browser_tests', 'FooTest.Bar', {}, 123, 123),
@@ -24,9 +24,9 @@ describe('ct-failure model', function() {
       expectedKey: 'webkit_tests::fast/text/foo.html',
     },
     {
-      failure: new CTStepFailure('compile', undefined, {}, 123, 123),
+      failure: new CTStepFailure('compile', undefined, {builder1: {}}, 123, 123),
       expectedGroupName: undefined,
-      expectedKey: 'compile::undefined',
+      expectedKey: 'compile::builder1',
     }
   ];
 
