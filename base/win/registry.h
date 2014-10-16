@@ -12,8 +12,6 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/stl_util.h"
-#include "base/win/object_watcher.h"
-#include "base/win/scoped_handle.h"
 
 namespace base {
 namespace win {
@@ -27,9 +25,6 @@ namespace win {
 // are not touched in case of failure.
 class BASE_EXPORT RegKey {
  public:
-  // Called from the MessageLoop when the key changes.
-  typedef base::Callback<void()> ChangeCallback;
-
   RegKey();
   explicit RegKey(HKEY key);
   RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
@@ -125,16 +120,22 @@ class BASE_EXPORT RegKey {
 
   // Starts watching the key to see if any of its values have changed.
   // The key must have been opened with the KEY_NOTIFY access privilege.
-  // Returns true on success.
-  // To stop watching, delete this RegKey object. To continue watching the
-  // object after the callback is invoked, call StartWatching again.
-  bool StartWatching(const ChangeCallback& callback);
+  LONG StartWatching();
 
+  // If StartWatching hasn't been called, always returns false.
+  // Otherwise, returns true if anything under the key has changed.
+  // This can't be const because the |watch_event_| may be refreshed.
+  bool HasChanged();
+
+  // Will automatically be called by destructor if not manually called
+  // beforehand.  Returns true if it was watching, false otherwise.
+  LONG StopWatching();
+
+  inline bool IsWatching() const { return watch_event_ != 0; }
+  HANDLE watch_event() const { return watch_event_; }
   HKEY Handle() const { return key_; }
 
  private:
-  class Watcher;
-
   // Calls RegDeleteKeyEx on supported platforms, alternatively falls back to
   // RegDeleteKey.
   static LONG RegDeleteKeyExWrapper(HKEY hKey,
@@ -146,10 +147,9 @@ class BASE_EXPORT RegKey {
   static LONG RegDelRecurse(HKEY root_key,
                             const std::wstring& name,
                             REGSAM access);
-
   HKEY key_;  // The registry key being iterated.
+  HANDLE watch_event_;
   REGSAM wow64access_;
-  scoped_ptr<Watcher> key_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RegKey);
 };

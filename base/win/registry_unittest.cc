@@ -7,10 +7,7 @@
 #include <cstring>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -350,68 +347,6 @@ TEST_F(RegistryTest, OpenSubKey) {
 
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_WRITE));
   ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(L"foo"));
-}
-
-class TestChangeDelegate {
- public:
-   TestChangeDelegate() : called_(false) {}
-   ~TestChangeDelegate() {}
-
-   void OnKeyChanged() {
-     MessageLoop::current()->QuitWhenIdle();
-     called_ = true;
-   }
-
-   bool WasCalled() {
-     bool was_called = called_;
-     called_ = false;
-     return was_called;
-   }
-
- private:
-  bool called_;
-};
-
-TEST_F(RegistryTest, ChangeCallback) {
-  RegKey key;
-  TestChangeDelegate delegate;
-  MessageLoop message_loop;
-
-  std::wstring foo_key(kRootKey);
-  foo_key += L"\\Foo";
-  ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ));
-
-  ASSERT_TRUE(key.StartWatching(Bind(&TestChangeDelegate::OnKeyChanged,
-                                     Unretained(&delegate))));
-  EXPECT_FALSE(delegate.WasCalled());
-
-  // Make some change.
-  RegKey key2;
-  ASSERT_EQ(ERROR_SUCCESS, key2.Open(HKEY_CURRENT_USER, foo_key.c_str(),
-                                      KEY_READ | KEY_SET_VALUE));
-  ASSERT_TRUE(key2.Valid());
-  EXPECT_EQ(ERROR_SUCCESS, key2.WriteValue(L"name", L"data"));
-
-  // Allow delivery of the notification.
-  EXPECT_FALSE(delegate.WasCalled());
-  base::RunLoop().Run();
-
-  ASSERT_TRUE(delegate.WasCalled());
-  EXPECT_FALSE(delegate.WasCalled());
-
-  ASSERT_TRUE(key.StartWatching(Bind(&TestChangeDelegate::OnKeyChanged,
-                                     Unretained(&delegate))));
-
-  // Change something else.
-  EXPECT_EQ(ERROR_SUCCESS, key2.WriteValue(L"name2", L"data2"));
-  base::RunLoop().Run();
-  ASSERT_TRUE(delegate.WasCalled());
-
-  ASSERT_TRUE(key.StartWatching(Bind(&TestChangeDelegate::OnKeyChanged,
-                                     Unretained(&delegate))));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(delegate.WasCalled());
 }
 
 }  // namespace

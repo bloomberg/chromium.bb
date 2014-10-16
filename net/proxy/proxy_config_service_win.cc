@@ -7,8 +7,6 @@
 #include <windows.h>
 #include <winhttp.h>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_profile.h"
@@ -18,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_handle.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_config.h"
 
@@ -40,6 +37,36 @@ void FreeIEConfig(WINHTTP_CURRENT_USER_IE_PROXY_CONFIG* ie_config) {
 }
 
 }  // namespace
+
+// RegKey and ObjectWatcher pair.
+class ProxyConfigServiceWin::KeyEntry {
+ public:
+  bool StartWatching(base::win::ObjectWatcher::Delegate* delegate) {
+    // Try to create a watch event for the registry key (which watches the
+    // sibling tree as well).
+    if (key_.StartWatching() != ERROR_SUCCESS)
+      return false;
+
+    // Now setup an ObjectWatcher for this event, so we get OnObjectSignaled()
+    // invoked on this message loop once it is signalled.
+    if (!watcher_.StartWatching(key_.watch_event(), delegate))
+      return false;
+
+    return true;
+  }
+
+  bool CreateRegKey(HKEY rootkey, const wchar_t* subkey) {
+    return key_.Create(rootkey, subkey, KEY_NOTIFY) == ERROR_SUCCESS;
+  }
+
+  HANDLE watch_event() const {
+    return key_.watch_event();
+  }
+
+ private:
+  base::win::RegKey key_;
+  base::win::ObjectWatcher watcher_;
+};
 
 ProxyConfigServiceWin::ProxyConfigServiceWin()
     : PollingProxyConfigService(
@@ -98,38 +125,35 @@ void ProxyConfigServiceWin::StartWatchingRegistryForChanges() {
 
 bool ProxyConfigServiceWin::AddKeyToWatchList(HKEY rootkey,
                                               const wchar_t* subkey) {
-  scoped_ptr<base::win::RegKey> key(new base::win::RegKey);
-  if (key->Create(rootkey, subkey, KEY_NOTIFY) != ERROR_SUCCESS)
+  scoped_ptr<KeyEntry> entry(new KeyEntry);
+  if (!entry->CreateRegKey(rootkey, subkey))
     return false;
 
-  if (!key->StartWatching(base::Bind(&ProxyConfigServiceWin::OnObjectSignaled,
-                                     base::Unretained(this),
-                                     base::Unretained(key.get())))) {
+  if (!entry->StartWatching(this))
     return false;
-  }
 
-  keys_to_watch_.push_back(key.release());
+  keys_to_watch_.push_back(entry.release());
   return true;
 }
 
-void ProxyConfigServiceWin::OnObjectSignaled(base::win::RegKey* key) {
+void ProxyConfigServiceWin::OnObjectSignaled(HANDLE object) {
   // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
   tracked_objects::ScopedProfile tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "ProxyConfigServiceWin_OnObjectSignaled"));
 
   // Figure out which registry key signalled this change.
-  RegKeyList::iterator it =
-      std::find(keys_to_watch_.begin(), keys_to_watch_.end(), key);
+  KeyEntryList::iterator it;
+  for (it = keys_to_watch_.begin(); it != keys_to_watch_.end(); ++it) {
+    if ((*it)->watch_event() == object)
+      break;
+  }
+
   DCHECK(it != keys_to_watch_.end());
 
   // Keep watching the registry key.
-  if (!key->StartWatching(base::Bind(&ProxyConfigServiceWin::OnObjectSignaled,
-                                     base::Unretained(this),
-                                     base::Unretained(key)))) {
-    delete *it;
+  if (!(*it)->StartWatching(this))
     keys_to_watch_.erase(it);
-  }
 
   // Have the PollingProxyConfigService test for changes.
   CheckForChangesNow();

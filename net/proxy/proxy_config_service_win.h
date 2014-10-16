@@ -12,13 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/win/object_watcher.h"
 #include "net/proxy/polling_proxy_config_service.h"
-
-namespace base {
-namespace win {
-class RegKey;
-}
-}  // namespace base.
 
 namespace net {
 
@@ -45,7 +40,8 @@ namespace net {
 // change, or in case we got it wrong (and are not checking all possible
 // registry dependencies).
 class NET_EXPORT_PRIVATE ProxyConfigServiceWin
-    : public PollingProxyConfigService {
+    : public PollingProxyConfigService,
+      public base::win::ObjectWatcher::Delegate {
  public:
   ProxyConfigServiceWin();
   virtual ~ProxyConfigServiceWin();
@@ -55,17 +51,19 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProxyConfigServiceWinTest, SetFromIEConfig);
-  typedef std::vector<base::win::RegKey*> RegKeyList;
+  class KeyEntry;
+  typedef std::vector<KeyEntry*> KeyEntryList;
 
   // Registers change observers on the registry keys relating to proxy settings.
   void StartWatchingRegistryForChanges();
 
-  // Creates a new key and appends it to |keys_to_watch_|. If the key fails to
-  // be created, it is not appended to the list and we return false.
+  // Creates a new KeyEntry and appends it to |keys_to_watch_|. If the key
+  // fails to be created, it is not appended to the list and we return false.
   bool AddKeyToWatchList(HKEY rootkey, const wchar_t* subkey);
 
+  // ObjectWatcher::Delegate methods:
   // This is called whenever one of the registry keys we are watching change.
-  void OnObjectSignaled(base::win::RegKey* key);
+  virtual void OnObjectSignaled(HANDLE object) override;
 
   static void GetCurrentProxyConfig(ProxyConfig* config);
 
@@ -74,7 +72,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
       ProxyConfig* config,
       const WINHTTP_CURRENT_USER_IE_PROXY_CONFIG& ie_config);
 
-  RegKeyList keys_to_watch_;
+  KeyEntryList keys_to_watch_;
 };
 
 }  // namespace net
