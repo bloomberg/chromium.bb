@@ -46,6 +46,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/ImageBitmap.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -87,9 +88,10 @@ static bool contextLostRestoredEventsEnabled()
     return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }
 
-CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
+CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, Document& document)
     : CanvasRenderingContext(canvas)
-    , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
+    , m_usesCSSCompatibilityParseMode(document.inQuirksMode())
+    , m_clipAntialiasing(GraphicsContext::NotAntiAliased)
     , m_hasAlpha(!attrs || attrs->alpha())
     , m_isContextLost(false)
     , m_contextRestorable(true)
@@ -99,6 +101,8 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
     , m_dispatchContextRestoredEventTimer(this, &CanvasRenderingContext2D::dispatchContextRestoredEvent)
     , m_tryRestoreContextEventTimer(this, &CanvasRenderingContext2D::tryRestoreContextEvent)
 {
+    if (document.settings() && document.settings()->antialiasedClips2dCanvasEnabled())
+        m_clipAntialiasing = GraphicsContext::AntiAliased;
     m_stateStack.append(adoptPtrWillBeNoop(new State()));
 }
 
@@ -1113,7 +1117,7 @@ void CanvasRenderingContext2D::clipInternal(const Path& path, const String& wind
     }
 
     realizeSaves(c);
-    c->canvasClip(path, parseWinding(windingRuleString));
+    c->canvasClip(path, parseWinding(windingRuleString), m_clipAntialiasing);
     modifiableState().m_hasClip = true;
 }
 

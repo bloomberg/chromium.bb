@@ -1558,7 +1558,7 @@ void GraphicsContext::clipOutRoundedRect(const RoundedRect& rect)
     clipRoundedRect(rect, SkRegion::kDifference_Op);
 }
 
-void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
+void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule, AntiAliasingMode aa)
 {
     if (contextDisabled())
         return;
@@ -1569,7 +1569,7 @@ void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
 
     SkPath::FillType temporaryFillType = WebCoreWindRuleToSkFillType(clipRule);
     path.setFillType(temporaryFillType);
-    clipPath(path);
+    clipPath(path, aa);
 
     path.setFillType(previousFillType);
 }

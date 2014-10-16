@@ -63,6 +63,7 @@ public:
     virtual void setAllowScriptsToCloseWindows(bool) override;
     virtual void setAllowUniversalAccessFromFileURLs(bool) override;
     virtual void setAntialiased2dCanvasEnabled(bool) override;
+    virtual void setAntialiasedClips2dCanvasEnabled(bool) override;
     virtual void setAsynchronousSpellCheckingEnabled(bool) override;
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool) override;
     virtual void setCaretBrowsingEnabled(bool) override;

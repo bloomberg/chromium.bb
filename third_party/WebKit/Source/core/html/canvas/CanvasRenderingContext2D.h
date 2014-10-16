@@ -36,6 +36,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/graphics/Color.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/Path.h"
@@ -57,7 +58,6 @@ class Path2D;
 class Element;
 class ExceptionState;
 class FloatRect;
-class GraphicsContext;
 class HTMLCanvasElement;
 class HTMLImageElement;
 class HTMLVideoElement;
@@ -69,9 +69,9 @@ typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > 
 class CanvasRenderingContext2D final: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
+    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, Document& document)
     {
-        return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, usesCSSCompatibilityParseMode));
+        return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
     }
     virtual ~CanvasRenderingContext2D();
 
@@ -297,7 +297,7 @@ private:
         bool m_hasClip;
     };
 
-    CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode);
+    CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, Document&);
 
     State& modifiableState() { ASSERT(!state().m_unrealizedSaveCount); return *m_stateStack.last(); }
     const State& state() const { return *m_stateStack.last(); }
@@ -369,6 +369,7 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
     bool m_usesCSSCompatibilityParseMode;
+    GraphicsContext::AntiAliasingMode m_clipAntialiasing;
     bool m_hasAlpha;
     bool m_isContextLost;
     bool m_contextRestorable;

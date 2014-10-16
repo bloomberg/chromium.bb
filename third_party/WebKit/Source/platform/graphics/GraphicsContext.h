@@ -312,7 +312,7 @@ public:
     // This clip function is used only by <canvas> code. It allows
     // implementations to handle clipping on the canvas differently since
     // the discipline is different.
-    void canvasClip(const Path&, WindRule = RULE_EVENODD);
+    void canvasClip(const Path&, WindRule = RULE_EVENODD, AntiAliasingMode = NotAntiAliased);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
     void drawEmphasisMarks(const Font&, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&);

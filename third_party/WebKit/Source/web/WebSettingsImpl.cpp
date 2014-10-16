@@ -496,6 +496,11 @@ void WebSettingsImpl::setAntialiased2dCanvasEnabled(bool enabled)
     m_settings->setAntialiased2dCanvasEnabled(enabled);
 }
 
+void WebSettingsImpl::setAntialiasedClips2dCanvasEnabled(bool enabled)
+{
+    m_settings->setAntialiasedClips2dCanvasEnabled(enabled);
+}
+
 void WebSettingsImpl::setContainerCullingEnabled(bool enabled)
 {
     m_settings->setContainerCullingEnabled(enabled);
