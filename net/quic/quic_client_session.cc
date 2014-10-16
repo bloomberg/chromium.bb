@@ -92,6 +92,18 @@ void RecordHandshakeState(HandshakeState state) {
                             NUM_HANDSHAKE_STATES);
 }
 
+base::Value* NetLogQuicClientSessionCallback(
+    const QuicServerId* server_id,
+    bool require_confirmation,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("host", server_id->host());
+  dict->SetInteger("port", server_id->port());
+  dict->SetBoolean("is_https", server_id->is_https());
+  dict->SetBoolean("require_confirmation", require_confirmation);
+  return dict;
+}
+
 }  // namespace
 
 QuicClientSession::StreamRequest::StreamRequest() : stream_(nullptr) {}
@@ -174,9 +186,10 @@ void QuicClientSession::InitializeSession(
                                      crypto_config));
   QuicClientSessionBase::InitializeSession();
   // TODO(rch): pass in full host port proxy pair
-  net_log_.BeginEvent(
-      NetLog::TYPE_QUIC_SESSION,
-      NetLog::StringCallback("host", &server_id.host()));
+  net_log_.BeginEvent(NetLog::TYPE_QUIC_SESSION,
+                      base::Bind(NetLogQuicClientSessionCallback,
+                                 &server_id,
+                                 require_confirmation_));
 }
 
 QuicClientSession::~QuicClientSession() {
