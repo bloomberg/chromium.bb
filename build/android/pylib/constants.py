@@ -67,6 +67,12 @@ PACKAGE_INFO = {
         None,
         None,
         None),
+    'chromecast_shell': PackageInfo(
+        'com.google.android.apps.mediashell',
+        'com.google.android.apps.mediashell.MediaShellActivity',
+        '/data/local/tmp/castshell-command-line',
+        None,
+        None),
     'content_shell': PackageInfo(
         'org.chromium.content_shell_apk',
         'org.chromium.content_shell_apk.ContentShellActivity',
