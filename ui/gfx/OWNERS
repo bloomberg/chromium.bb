@@ -12,7 +12,6 @@ per-file display*=oshima@chromium.org
 per-file screen*=oshima@chromium.org
 
 # Transform, interpolated transform and transform util.
-per-file transform*=shawnsingh@chromium.org
 per-file transform*=vollick@chromium.org
 per-file interpolated_transform*=vollick@chromium.org
 
