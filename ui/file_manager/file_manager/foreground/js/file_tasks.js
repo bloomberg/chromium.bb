@@ -58,8 +58,8 @@ FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
  * Returns URL of the Chrome Web Store which show apps supporting the given
  * file-extension and mime-type.
  *
- * @param {string} extension Extension of the file (with the first dot).
- * @param {string} mimeType Mime type of the file.
+ * @param {?string} extension Extension of the file (with the first dot).
+ * @param {?string} mimeType Mime type of the file.
  * @return {string} URL
  */
 FileTasks.createWebStoreLink = function(extension, mimeType) {
@@ -290,7 +290,7 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 /**
  * Executes default task.
  *
- * @param {function(boolean, Array.<string>)=} opt_callback Called when the
+ * @param {function(boolean, Array.<Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  * @private
  */

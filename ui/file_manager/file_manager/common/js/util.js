@@ -206,7 +206,7 @@ util.bytesToString = function(bytes) {
  * @param {File} file The file to read.
  * @param {number} begin Starting byte(included).
  * @param {number} end Last byte(excluded).
- * @param {function(File, Uint8Array)} callback Callback to invoke.
+ * @param {function(File, ByteReader)} callback Callback to invoke.
  * @param {function(string)} onError Error handler.
  */
 util.readFileBytes = function(file, begin, end, callback, onError) {
@@ -215,7 +215,8 @@ util.readFileBytes = function(file, begin, end, callback, onError) {
     onError(event.type);
   };
   fileReader.onloadend = function() {
-    callback(file, new ByteReader(fileReader.result));
+    callback(file, new ByteReader(
+        /** @type {ArrayBuffer} */ (fileReader.result)));
   };
   fileReader.readAsArrayBuffer(file.slice(begin, end));
 };
@@ -235,7 +236,7 @@ util.getKeyModifiers = function(event) {
 };
 
 /**
- * @param {HTMLElement} element Element to transform.
+ * @param {Element} element Element to transform.
  * @param {Object} transform Transform object,
  *                           contains scaleX, scaleY and rotate90 properties.
  */
@@ -264,7 +265,7 @@ util.extractFilePath = function(url) {
 /**
  * A shortcut function to create a child element with given tag and class.
  *
- * @param {HTMLElement} parent Parent element.
+ * @param {Element} parent Parent element.
  * @param {string=} opt_className Class name.
  * @param {string=} opt_tag Element tag, DIV is omitted.
  * @return {Element} Newly created element.
@@ -318,7 +319,7 @@ function str(id) {
  * Equivalent to loadTimeData.getStringF(id, ...).
  *
  * @param {string} id The id of the string to return.
- * @param {...string} var_args The values to replace into the string.
+ * @param {...*} var_args The values to replace into the string.
  * @return {string} The translated string with replaced values.
  */
 function strf(id, var_args) {
@@ -480,7 +481,7 @@ util.AppCache.cleanup_ = function(map) {
 /**
  * Load an image.
  *
- * @param {Image} image Image element.
+ * @param {HTMLImageElement} image Image element.
  * @param {string} url Source url.
  * @param {Object=} opt_options Hash array of options, eg. width, height,
  *     maxWidth, maxHeight, scale, cache.
@@ -615,7 +616,7 @@ Object.freeze(util.EntryChangedKind);
 
 /**
  * Obtains whether an entry is fake or not.
- * @param {!Entry|!Object} entry Entry or a fake entry.
+ * @param {(Entry|Object)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is fake.
  */
 util.isFakeEntry = function(entry) {
@@ -916,8 +917,9 @@ util.splitExtension = function(path) {
 /**
  * Returns the localized name of the entry.
  *
- * @param {VolumeManager} volumeManager The volume manager.
- * @param {Entry} entry The entry to be retrieve the name of.
+ * @param {(VolumeManager|VolumeManagerWrapper)} volumeManager The volume
+ *     manager.
+ * @param {!Entry} entry The entry to be retrieve the name of.
  * @return {?string} The localized name.
  */
 util.getEntryLabel = function(volumeManager, entry) {

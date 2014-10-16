@@ -264,7 +264,7 @@ function FileManager() {
 
   /**
    * Background page.
-   * @type {Window}
+   * @type {BackgroundWindow}
    * @private
    */
   this.backgroundPage_ = null;
@@ -405,21 +405,21 @@ function FileManager() {
 
   /**
    * Bound function for onCopyProgress_.
-   * @type {function(this:FileManager, Event)}
+   * @type {?function(this:FileManager, Event)}
    * @private
    */
   this.onCopyProgressBound_ = null;
 
   /**
    * Bound function for onEntriesChanged_.
-   * @type {function(this:FileManager, Event)}
+   * @type {?function(this:FileManager, Event)}
    * @private
    */
   this.onEntriesChangedBound_ = null;
 
   /**
    * Bound function for onCancel_.
-   * @type {function(this:FileManager, Event)}
+   * @type {?function(this:FileManager, Event)}
    * @private
    */
   this.onCancelBound_ = null;
@@ -649,7 +649,7 @@ var DialogType = {
 };
 
 /**
- * @param {string} type Dialog type.
+ * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is modal.
  */
 DialogType.isModal = function(type) {
@@ -661,7 +661,7 @@ DialogType.isModal = function(type) {
 };
 
 /**
- * @param {string} type Dialog type.
+ * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is open dialog.
  */
 DialogType.isOpenDialog = function(type) {
@@ -672,7 +672,7 @@ DialogType.isOpenDialog = function(type) {
 };
 
 /**
- * @param {string} type Dialog type.
+ * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is open dialog for file(s).
  */
 DialogType.isOpenFileDialog = function(type) {
@@ -681,7 +681,7 @@ DialogType.isOpenFileDialog = function(type) {
 };
 
 /**
- * @param {string} type Dialog type.
+ * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is folder selection dialog.
  */
 DialogType.isFolderDialog = function(type) {
@@ -812,7 +812,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // FileListBannerController.
     this.getPreferences_(function(pref) {
       /** @type {boolean} */
-      var showOffers = pref['allowRedeemOffers'];
+      var showOffers = !!pref['allowRedeemOffers'];
       self.bannersController_ = new FileListBannerController(
           self.directoryModel_, self.volumeManager_, self.document_,
           showOffers);
@@ -1217,7 +1217,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var driveEnabled =
         !noLocalPathResolution || !this.params_.shouldReturnLocalPath;
     this.volumeManager_ = new VolumeManagerWrapper(
-        driveEnabled, this.backgroundPage_);
+        /** @type {VolumeManagerWrapper.DriveEnabledStatus} */ (driveEnabled),
+        this.backgroundPage_);
     callback();
   };
 
@@ -1344,7 +1345,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
-    this.renameInput_ = this.document_.createElement('input');
+    this.renameInput_ = /** @type {HTMLInputElement} */
+        (this.document_.createElement('input'));
     this.renameInput_.className = 'rename entry-name';
 
     this.renameInput_.addEventListener(
@@ -1360,7 +1362,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.filenameInput_.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
-    this.listContainer_ = this.dialogDom_.querySelector('#list-container');
+    this.listContainer_ = /** @type {!HTMLDivElement} */
+        (this.dialogDom_.querySelector('#list-container'));
     this.listContainer_.addEventListener(
         'keydown', this.onListKeyDown_.bind(this));
     this.listContainer_.addEventListener(
@@ -1375,12 +1378,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.decorateSplitter(
         this.dialogDom_.querySelector('#navigation-list-splitter'));
 
-    this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
+    this.dialogContainer_ = /** @type {!HTMLDivElement} */
+        (this.dialogDom_.querySelector('.dialog-container'));
 
-    this.syncButton = this.dialogDom_.querySelector(
-        '#gear-menu-drive-sync-settings');
-    this.hostedButton = this.dialogDom_.querySelector(
-        '#gear-menu-drive-hosted-settings');
+    this.syncButton = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#gear-menu-drive-sync-settings'));
+    this.hostedButton = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#gear-menu-drive-hosted-settings'));
 
     this.ui_.toggleViewButton.addEventListener('click',
         this.onToggleViewButtonClick_.bind(this));
@@ -1398,11 +1402,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    this.defaultActionMenuItem_ =
-        this.dialogDom_.querySelector('#default-action');
+    this.defaultActionMenuItem_ = /** @type {HTMLElement} */
+        (this.dialogDom_.querySelector('#default-action'));
 
-    this.openWithCommand_ =
-        this.dialogDom_.querySelector('#open-with');
+    this.openWithCommand_ = /** @type {cr.ui.Command} */
+        (this.dialogDom_.querySelector('#open-with'));
 
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
@@ -1568,7 +1572,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initDirectoryTree_ = function() {
     var fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
-    this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
+    this.directoryTree_ = /** @type {DirectoryTree} */
+        (this.dialogDom_.querySelector('#directory-tree'));
     DirectoryTree.decorate(this.directoryTree_,
                            this.directoryModel_,
                            this.volumeManager_,
@@ -1583,7 +1588,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var observer = new MutationObserver(
         this.directoryTree_.relayout.bind(this.directoryTree_));
     observer.observe(this.progressCenterPanel_.element,
-                     {subtree: true, attributes: true, childList: true});
+                     /** @type {MutationObserverInit} */
+                     ({subtree: true, attributes: true, childList: true}));
   };
 
   /**
@@ -2256,7 +2262,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (leadIndex < 0)
       return;
 
-    var leadEntry = dm.getFileList().item(leadIndex);
+    var leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
     if (!util.isSameEntry(this.renameInput_.currentEntry, leadEntry))
       return;
 
@@ -2715,16 +2721,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (!this.currentVolumeInfo_)
       return;
 
-    var volumeSpaceInfo =
-        this.dialogDom_.querySelector('#volume-space-info');
-    var volumeSpaceInfoSeparator =
-        this.dialogDom_.querySelector('#volume-space-info-separator');
-    var volumeSpaceInfoLabel =
-        this.dialogDom_.querySelector('#volume-space-info-label');
-    var volumeSpaceInnerBar =
-        this.dialogDom_.querySelector('#volume-space-info-bar');
-    var volumeSpaceOuterBar =
-        this.dialogDom_.querySelector('#volume-space-info-bar').parentNode;
+    var volumeSpaceInfo = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#volume-space-info'));
+    var volumeSpaceInfoSeparator = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#volume-space-info-separator'));
+    var volumeSpaceInfoLabel = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#volume-space-info-label'));
+    var volumeSpaceInnerBar = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#volume-space-info-bar'));
+    var volumeSpaceOuterBar = /** @type {!HTMLElement} */
+        (this.dialogDom_.querySelector('#volume-space-info-bar').parentNode);
 
     var currentVolumeInfo = this.currentVolumeInfo_;
 
@@ -2903,7 +2909,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @type {Event} Key event.
+   * @param {Event} event Key event.
    * @private
    */
   FileManager.prototype.onRenameInputKeyDown_ = function(event) {
@@ -2929,7 +2935,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @type {Event} Blur event.
+   * @param {Event} event Blur event.
    * @private
    */
   FileManager.prototype.onRenameInputBlur_ = function(event) {
@@ -3512,10 +3518,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * Handle a click of the cancel button.  Closes the window.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
-   * @param {Event} event The click event.
    * @private
    */
-  FileManager.prototype.onCancel_ = function(event) {
+  FileManager.prototype.onCancel_ = function() {
     chrome.fileManagerPrivate.cancelDialog();
     window.close();
   };
@@ -3648,10 +3653,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * The ok button has different UI labels depending on the type of dialog, but
    * in code it's always referred to as 'ok'.
    *
-   * @param {Event} event The click event.
    * @private
    */
-  FileManager.prototype.onOk_ = function(event) {
+  FileManager.prototype.onOk_ = function() {
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
@@ -3884,7 +3888,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.openWithCommand_.canExecuteChange();
     this.openWithCommand_.setHidden(!(defaultItem && isMultiple));
-    this.openWithCommand_.disabled = defaultItem && !!defaultItem.disabled;
+    this.openWithCommand_.disabled =
+        defaultItem ? !!defaultItem.disabled : false;
 
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;

@@ -143,7 +143,7 @@ FileWatcher.prototype.dispatchMetadataEvent_ = function(
 FileWatcher.prototype.changeWatchedDirectory = function(entry, callback) {
   if (!util.isFakeEntry(entry)) {
     this.changeWatchedEntry_(
-        entry,
+        /** @type {!DirectoryEntry} */ (entry),
         callback,
         function() {
           console.error(

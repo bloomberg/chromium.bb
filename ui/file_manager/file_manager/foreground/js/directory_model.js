@@ -284,7 +284,7 @@ DirectoryModel.prototype.getLeadEntry_ = function() {
 DirectoryModel.prototype.setLeadEntry_ = function(value) {
   var fileList = this.getFileList();
   for (var i = 0; i < fileList.length; i++) {
-    if (util.isSameEntry(fileList.item(i), value)) {
+    if (util.isSameEntry(/** @type {Entry} */ (fileList.item(i)), value)) {
       this.fileListSelection_.leadIndex = i;
       return;
     }
@@ -713,7 +713,7 @@ DirectoryModel.prototype.onEntriesChanged = function(kind, entries) {
 DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
   var fileList = this.getFileList();
   for (var i = 0; i < fileList.length; i++) {
-    if (util.isSameEntry(fileList.item(i), entry))
+    if (util.isSameEntry(/** @type {Entry} */ (fileList.item(i)), entry))
       return i;
   }
   return -1;
@@ -859,7 +859,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
 
                 // Notify that the current task of this.directoryChangeQueue_
                 // is completed.
-                setTimeout(queueTaskCallback);
+                setTimeout(queueTaskCallback, 0);
               });
 
           // For tests that open the dialog to empty directories, everything
@@ -957,7 +957,7 @@ DirectoryModel.prototype.selectEntry = function(entry) {
 };
 
 /**
- * @param {Array.<string>} entries Array of entries.
+ * @param {Array.<Entry>} entries Array of entries.
  */
 DirectoryModel.prototype.selectEntries = function(entries) {
   // URLs are needed here, since we are comparing Entries by URLs.

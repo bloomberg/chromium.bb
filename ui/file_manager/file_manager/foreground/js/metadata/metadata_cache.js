@@ -710,6 +710,7 @@ MetadataProvider.prototype.fetch = function(entry, type, callback) {
  * This provider returns the following objects:
  * filesystem: { size, modificationTime }
  * @constructor
+ * @extends {MetadataProvider}
  */
 function FilesystemProvider() {
   MetadataProvider.call(this);
@@ -772,6 +773,7 @@ FilesystemProvider.prototype.fetch = function(
  *     thumbnail: { url, transform }
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
+ * @extends {MetadataProvider}
  */
 function ExternalProvider(volumeManager) {
   MetadataProvider.call(this);
@@ -800,8 +802,10 @@ ExternalProvider.prototype = {
  */
 ExternalProvider.prototype.supportsEntry = function(entry) {
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  return locationInfo && (locationInfo.isDriveBased ||
-      locationInfo.rootType === VolumeManagerCommon.RootType.PROVIDED);
+  if (!locationInfo)
+    return false;
+  return locationInfo.isDriveBased ||
+      locationInfo.rootType === VolumeManagerCommon.RootType.PROVIDED;
 };
 
 /**
@@ -918,6 +922,7 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
  * media: { artist, album, title, width, height, imageTransform, etc. }
  * fetchedMedia: { same fields here }
  * @constructor
+ * @extends {MetadataProvider}
  */
 function ContentProvider() {
   MetadataProvider.call(this);
@@ -958,7 +963,7 @@ ContentProvider.prototype = {
  * @return {boolean} Whether this provider supports the entry.
  */
 ContentProvider.prototype.supportsEntry = function(entry) {
-  return entry.toURL().match(this.urlFilter_);
+  return !!entry.toURL().match(this.urlFilter_);
 };
 
 /**

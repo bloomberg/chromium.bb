@@ -6,13 +6,13 @@
 
 /**
  * An event handler of the background page for file operations.
- * @param {Window} background Background page.
+ * @param {FileBrowserBackground} background Background page.
  * @constructor
  */
 var FileOperationHandler = function(background) {
   /**
    * Background page.
-   * @type {Window}
+   * @type {FileBrowserBackground}
    * @private
    */
   this.background_ = background;
@@ -67,7 +67,7 @@ FileOperationHandler.PENDING_TIME_MS_ = 500;
 
 /**
  * Generate a progress message from the event.
- * @param {Event} event Progress event.
+ * @param {FileOperationProgressEvent} event Progress event.
  * @return {string} message.
  * @private
  */
@@ -128,6 +128,7 @@ FileOperationHandler.getMessage_ = function(event) {
  * @private
  */
 FileOperationHandler.getDeleteMessage_ = function(event) {
+  event = /** @type {FileOperationProgressEvent} */ (event);
   if (event.reason === 'ERROR') {
     return str('DELETE_ERROR');
   } else if (event.entries.length == 1) {
@@ -164,6 +165,7 @@ FileOperationHandler.getType_ = function(operationType) {
  * @private
  */
 FileOperationHandler.prototype.onCopyProgress_ = function(event) {
+  event = /** @type {FileOperationProgressEvent} */ (event);
   // If the copy is finished, may be we can close the background page.
   if (event.reason !== 'BEGIN' && event.reason !== 'PROGRESS')
     this.background_.tryClose();
@@ -230,6 +232,7 @@ FileOperationHandler.prototype.onCopyProgress_ = function(event) {
  * @private
  */
 FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
+  event = /** @type {FileOperationProgressEvent} */ (event);
   // If the copy is finished, may be we can close the background page.
   if (event.reason !== 'BEGIN' && event.reason !== 'PROGRESS')
     this.background_.tryClose();

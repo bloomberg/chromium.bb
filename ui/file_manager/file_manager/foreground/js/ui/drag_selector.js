@@ -19,7 +19,7 @@ function DragSelector() {
 
   /**
    * Border element of drag handle.
-   * @type {HTMLElement}
+   * @type {Element}
    * @private
    */
   this.border_ = null;
@@ -142,9 +142,10 @@ DragSelector.prototype.startDragSelection = function(list, event) {
 /**
  * Handles the mousemove event.
  * @private
- * @param {MouseEvent} event The mousemove event.
+ * @param {Event} event The mousemove event.
  */
 DragSelector.prototype.onMouseMove_ = function(event) {
+  event = /** @type {MouseEvent} */ (event);
   // Get the selection bounds.
   var pos = DragSelector.getScrolledPosition(this.target_, event);
   var borderBounds = {
@@ -183,7 +184,7 @@ DragSelector.prototype.onMouseMove_ = function(event) {
   // Update the selection
   this.target_.selectionModel_.beginChange();
   for (var name in selectionFlag) {
-    var index = parseInt(name);
+    var index = parseInt(name, 10);
     var flag = selectionFlag[name];
     // The flag may be one of followings:
     // - IN_LAST_SELECTION | IN_CURRENT_SELECTION
@@ -224,9 +225,10 @@ DragSelector.prototype.onMouseMove_ = function(event) {
 /**
  * Handle the mouseup event.
  * @private
- * @param {MouseEvent} event The mouseup event.
+ * @param {Event} event The mouseup event.
  */
 DragSelector.prototype.onMouseUp_ = function(event) {
+  event = /** @type {MouseEvent} */ (event);
   this.onMouseMove_(event);
   this.target_.removeChild(this.border_);
   this.target_.ownerDocument.removeEventListener(

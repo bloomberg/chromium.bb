@@ -19,14 +19,14 @@ function ConflictDialog(parentNode) {
    * argument is which button is pressed. The second argument is whether to
    * apply all or not.
    *
-   * @type {function(ConflictDialog.Result, boolean)}
+   * @type {?function(ConflictDialog.Result, boolean)}
    * @private
    */
   this.callback_ = null;
 
   /**
    * Checkbox to specify whether to apply the selection to all entries or not.
-   * @type {HTMLElement}
+   * @type {Element}
    * @private
    */
   this.applyAllCheckbox_ = parentNode.ownerDocument.createElement('input');
@@ -40,7 +40,7 @@ function ConflictDialog(parentNode) {
 
   /**
    * Element of the keep both button.
-   * @type {HTMLElement}
+   * @type {Element}
    * @private
    */
   this.keepBothButton_ = parentNode.ownerDocument.createElement('button');
@@ -51,7 +51,7 @@ function ConflictDialog(parentNode) {
 
   /**
    * Element of the replace button.
-   * @type {HTMLElement}
+   * @type {Element}
    * @private
    */
   this.replaceButton_ = parentNode.ownerDocument.createElement('button');

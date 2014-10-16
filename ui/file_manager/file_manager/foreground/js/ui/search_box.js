@@ -7,9 +7,9 @@
 /**
  * Search box.
  *
- * @param {HTMLElement} element Root element of the search box.
- * @param {HTMLElement} searchButton Search button.
- * @param {HTMLElement} noResultMessage Message element for the empty result.
+ * @param {Element} element Root element of the search box.
+ * @param {Element} searchButton Search button.
+ * @param {Element} noResultMessage Message element for the empty result.
  * @extends {cr.EventTarget}
  * @constructor
  */
@@ -18,37 +18,38 @@ function SearchBox(element, searchButton, noResultMessage) {
 
   /**
    * Autocomplete List.
-   * @type {SearchBox.AutocompleteList}
+   * @type {!SearchBox.AutocompleteList}
    */
   this.autocompleteList = new SearchBox.AutocompleteList(element.ownerDocument);
 
   /**
    * Root element of the search box.
-   * @type {HTMLElement}
+   * @type {Element}
    */
   this.element = element;
 
   /**
    * Search button.
-   * @type {HTMLElement}
+   * @type {Element}
    */
   this.searchButton = searchButton;
 
   /**
    * No result message.
-   * @type {HTMLElement}
+   * @type {Element}
    */
   this.noResultMessage = noResultMessage;
 
   /**
    * Text input of the search box.
-   * @type {HTMLElement}
+   * @type {!HTMLInputElement}
    */
-  this.inputElement = element.querySelector('input');
+  this.inputElement = /** @type {!HTMLInputElement} */ (
+      element.querySelector('input'));
 
   /**
    * Clear button of the search box.
-   * @type {HTMLElement}
+   * @type {Element}
    */
   this.clearButton = element.querySelector('.clear');
 
@@ -96,8 +97,9 @@ SearchBox.EventType = {
 
 /**
  * Autocomplete list for search box.
- * @param {HTMLDocument} document Document.
+ * @param {Document} document Document.
  * @constructor
+ * @extends {cr.ui.AutocompleteList}
  */
 SearchBox.AutocompleteList = function(document) {
   var self = cr.ui.AutocompleteList.call(this);
@@ -141,7 +143,7 @@ SearchBox.AutocompleteList.prototype.onMouseOver_ = function(event) {
 /**
  * ListItem element for autocomplete.
  *
- * @param {HTMLDocument} document Document.
+ * @param {Document} document Document.
  * @param {Object} item An object representing a suggestion.
  * @constructor
  * @private
@@ -210,9 +212,11 @@ SearchBox.prototype.onBlur_ = function() {
 
 /**
  * Handles a keydown event of the search box.
+ * @param {Event} event
  * @private
  */
-SearchBox.prototype.onKeyDown_ = function() {
+SearchBox.prototype.onKeyDown_ = function(event) {
+  event = /** @type {KeyboardEvent} */ (event);
   // Handle only Esc key now.
   if (event.keyCode != 27 || this.inputElement.value)
     return;
@@ -221,10 +225,11 @@ SearchBox.prototype.onKeyDown_ = function() {
 
 /**
  * Handles a dragenter event and refuses a drag source of files.
- * @param {DragEvent} event The dragenter event.
+ * @param {Event} event The dragenter event.
  * @private
  */
 SearchBox.prototype.onDragEnter_ = function(event) {
+  event = /** @type {DragEvent} */ (event);
   // For normal elements, they does not accept drag drop by default, and accept
   // it by using event.preventDefault. But input elements accept drag drop
   // by default. So disable the input element here to prohibit drag drop.

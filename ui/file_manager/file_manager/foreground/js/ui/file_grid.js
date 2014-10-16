@@ -44,12 +44,12 @@ FileGrid.decorate = function(self, metadataCache, volumeManager) {
   self.volumeManager_ = volumeManager;
 
   self.scrollBar_ = new MainPanelScrollBar();
-  self.scrollBar_.initialize(self.parentNode, self);
+  self.scrollBar_.initialize(self.parentElement, self);
   self.setBottomMarginForPanel(0);
 
   self.itemConstructor = function(entry) {
     var item = self.ownerDocument.createElement('LI');
-    FileGrid.Item.decorate(item, entry, self);
+    FileGrid.Item.decorate(item, entry, /** @type {FileGrid} */ (self));
     return item;
   };
 
@@ -102,7 +102,7 @@ FileGrid.prototype.relayoutImmediately_ = function() {
 
 /**
  * Decorates thumbnail.
- * @param {HTMLElement} li List item.
+ * @param {cr.ui.ListItem} li List item.
  * @param {Entry} entry Entry to render a thumbnail for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
@@ -136,14 +136,14 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
 /**
  * Decorates the box containing a centered thumbnail image.
  *
- * @param {HTMLDivElement} box Box to decorate.
+ * @param {Element} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @param {MetadataCache} metadataCache To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {FileGrid.ThumbnailQuality} quality Thumbnail quality.
- * @param {function(HTMLElement)=} opt_imageLoadCallback Callback called when
- *     the image has been loaded before inserting it into the DOM.
+ * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
+ *     when the image has been loaded before inserting it into the DOM.
  */
 FileGrid.decorateThumbnailBox = function(
     box, entry, metadataCache, volumeManager, fillMode, quality,
@@ -199,6 +199,7 @@ FileGrid.decorateThumbnailBox = function(
 /**
  * Item for the Grid View.
  * @constructor
+ * @extends {cr.ui.ListItem}
  */
 FileGrid.Item = function() {
   throw new Error();

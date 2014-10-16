@@ -136,8 +136,8 @@ SuggestAppsDialog.prototype.onInputFocus = function() {
 /**
  * Injects headers into the passed request.
  *
- * @param {Event} e Request event.
- * @return {{requestHeaders: HttpHeaders}} Modified headers.
+ * @param {!Object} e Request event.
+ * @return {!{requestHeaders: Array.<!HttpHeader>}} Modified headers.
  * @private
  */
 SuggestAppsDialog.prototype.authorizeRequest_ = function(e) {
@@ -217,9 +217,9 @@ SuggestAppsDialog.prototype.showByFilename =
  * Internal method to show a dialog. This should be called only from 'Suggest.
  * appDialog.showXxxx()' functions.
  *
- * @param {string} filename Filename (without extension) of the file.
- * @param {string} extension Extension of the file.
- * @param {string} mime Mime of the file.
+ * @param {?string} filename Filename (without extension) of the file.
+ * @param {?string} extension Extension of the file.
+ * @param {?string} mime Mime of the file.
  * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
  *     The argument is the result of installation: true if an app is installed,
  *     false otherwise.
@@ -405,6 +405,8 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
 };
 
 /**
+ * @param {Function=} opt_originalOnHide Called when the original dialog is
+ *     hidden.
  * @override
  */
 SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
@@ -453,7 +455,7 @@ SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
 };
 
 /**
- * @param {function()=} opt_originalOnHide Original onHide function passed to
+ * @param {Function=} opt_originalOnHide Original onHide function passed to
  *     SuggestAppsDialog.hide().
  * @private
  */
@@ -539,7 +541,7 @@ SuggestAppsDialog.Metrics.recordLoad = function(result) {
 };
 
 /**
- * @param {number} eason Reason of closing dialog, which must be defined in
+ * @param {number} reason Reason of closing dialog, which must be defined in
  *     SuggestAppsDialog.Metrics.CLOSE_DIALOG.
  */
 SuggestAppsDialog.Metrics.recordCloseDialog = function(reason) {

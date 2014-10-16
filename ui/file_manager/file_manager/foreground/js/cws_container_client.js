@@ -14,6 +14,7 @@
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function CWSContainerClient(
     webView, ext, mime, searchQuery, width, height, url, target) {

@@ -13,7 +13,7 @@ cr.define('cr.ui', function() {
    * Creates a new combobutton element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLUListElement}
+   * @extends {cr.ui.MenuButton}
    */
   var ComboButton = cr.ui.define(cr.ui.MenuButton);
 
@@ -116,7 +116,7 @@ cr.define('cr.ui', function() {
         case 'Down':
         case 'Up':
           if (!this.isMenuShown())
-            this.showMenu();
+            this.showMenu(false);
           e.preventDefault();
           break;
         case 'Esc':

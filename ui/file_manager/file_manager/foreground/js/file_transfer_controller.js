@@ -23,6 +23,7 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
  *     used to share files from another profile.
  * @param {ProgressCenter} progressCenter To notify starting copy operation.
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function FileTransferController(doc,
                                 fileOperationManager,
@@ -470,7 +471,7 @@ FileTransferController.prototype = {
    * Renders a drag-and-drop thumbnail.
    *
    * @this {FileTransferController}
-   * @return {HTMLElement} Element containing the thumbnail.
+   * @return {Element} Element containing the thumbnail.
    */
   renderThumbnail_: function() {
     var length = this.selectedEntries_.length;
@@ -600,7 +601,7 @@ FileTransferController.prototype = {
    * @this {FileTransferController}
    * @param {boolean} onlyIntoDirectories True if the drag is only into
    *     directories.
-   * @param {cr.ui.List} list Drop target list.
+   * @param {(cr.ui.List|DirectoryTree)} list Drop target list.
    * @param {Event} event A dragover event of DOM.
    */
   onDragOver_: function(onlyIntoDirectories, list, event) {
@@ -613,13 +614,14 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @param {cr.ui.List} list Drop target list.
+   * @param {(cr.ui.List|DirectoryTree)} list Drop target list.
    * @param {Event} event A dragenter event of DOM.
    */
   onDragEnterFileList_: function(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
-    var item = list.getListItemAncestor(event.target);
+    var item = list.getListItemAncestor(
+        /** @type {HTMLElement} */ (event.target));
     item = item && list.isItem(item) ? item : null;
     if (item === this.dropTarget_)
       return;
@@ -657,7 +659,7 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @param {cr.ui.List} list Drop target list.
+   * @param {*} list Drop target list.
    * @param {Event} event A dragleave event of DOM.
    */
   onDragLeave_: function(list, event) {
@@ -722,9 +724,10 @@ FileTransferController.prototype = {
 
     // Start timer changing the directory.
     this.navigateTimer_ = setTimeout(function() {
-      if (domElement instanceof DirectoryItem)
+      if (domElement instanceof DirectoryItem) {
         // Do custom action.
-        (/** @type {DirectoryItem} */ domElement).doDropTargetAction();
+        /** @type {DirectoryItem} */ (domElement).doDropTargetAction();
+      }
       this.directoryModel_.changeDirectoryEntry(destinationEntry);
     }.bind(this), 2000);
   },

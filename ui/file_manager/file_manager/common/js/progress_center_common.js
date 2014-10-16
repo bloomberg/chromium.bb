@@ -64,7 +64,7 @@ Object.freeze(ProgressItemType);
 var ProgressCenterItem = function() {
   /**
    * Item ID.
-   * @type {string}
+   * @type {?string}
    * @private
    */
   this.id_ = null;
@@ -95,7 +95,7 @@ var ProgressCenterItem = function() {
 
   /**
    * Type of progress item.
-   * @type {ProgressItemType}
+   * @type {?ProgressItemType}
    */
   this.type = null;
 
@@ -114,7 +114,7 @@ var ProgressCenterItem = function() {
 
   /**
    * Callback function to cancel the item.
-   * @type {function()}
+   * @type {?function()}
    */
   this.cancelCallback = null;
 
@@ -137,7 +137,7 @@ ProgressCenterItem.prototype = {
 
   /**
    * Getter of Item ID.
-   * @return {string} Item ID.
+   * @return {?string} Item ID.
    */
   get id() {
     return this.id_;

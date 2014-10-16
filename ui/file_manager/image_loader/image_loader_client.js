@@ -141,7 +141,7 @@ ImageLoaderClient.prototype.load = function(
     var task = this.tasks_[taskKey];
     if (!task.isValid()) {
       // Cancel this task since it is not valid anymore.
-      this.cancel(taskKey);
+      this.cancel(parseInt(taskKey, 10));
       delete this.tasks_[taskKey];
     }
   }
@@ -343,7 +343,8 @@ ImageLoaderClient.Cache.prototype.removeImage = function(key) {
  * which are not valid anymore, which will reduce cpu consumption.
  *
  * @param {string} url Url of the requested image.
- * @param {Image} image Image node to load the requested picture into.
+ * @param {HTMLImageElement} image Image node to load the requested picture
+ *     into.
  * @param {Object} options Loader options, such as: orientation, scale,
  *     maxHeight, width, height and/or cache.
  * @param {function()} onSuccess Callback for success.

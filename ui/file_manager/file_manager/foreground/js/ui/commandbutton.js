@@ -12,7 +12,7 @@
  * Creates a new button element.
  * @param {Object=} opt_propertyBag Optional properties.
  * @constructor
- * @extends {HTMLDivElement}
+ * @extends {HTMLButtonElement}
  */
 var CommandButton = cr.ui.define('button');
 
@@ -21,7 +21,7 @@ CommandButton.prototype.__proto__ = HTMLButtonElement.prototype;
 
 /**
  * Associated command.
- * @type {Command}
+ * @type {cr.ui.Command}
  * @private
  */
 CommandButton.prototype.command_ = null;
@@ -52,13 +52,17 @@ CommandButton.prototype.getCommand = function() {
  */
 CommandButton.prototype.setCommand = function(command) {
   if (this.command_) {
-    this.command_.removeEventListener('labelChange', this);
-    this.command_.removeEventListener('disabledChange', this);
-    this.command_.removeEventListener('hiddenChange', this);
+    this.command_.removeEventListener('labelChange',
+                                      /** @type {EventListener} */ (this));
+    this.command_.removeEventListener('disabledChange',
+                                      /** @type {EventListener} */ (this));
+    this.command_.removeEventListener('hiddenChange',
+                                      /** @type {EventListener} */ (this));
   }
 
   if (typeof command == 'string' && command[0] == '#') {
-    command = this.ownerDocument.getElementById(command.slice(1));
+    command = /** @type {!cr.ui.Command} */
+        (this.ownerDocument.getElementById(command.slice(1)));
     cr.ui.decorate(command, cr.ui.Command);
   }
 
@@ -71,9 +75,12 @@ CommandButton.prototype.setCommand = function(command) {
     this.disabled = command.disabled;
     this.hidden = command.hidden;
 
-    this.command_.addEventListener('labelChange', this);
-    this.command_.addEventListener('disabledChange', this);
-    this.command_.addEventListener('hiddenChange', this);
+    this.command_.addEventListener('labelChange',
+                                   /** @type {EventListener} */ (this));
+    this.command_.addEventListener('disabledChange',
+                                   /** @type {EventListener} */ (this));
+    this.command_.addEventListener('hiddenChange',
+                                   /** @type {EventListener} */ (this));
   }
 };
 

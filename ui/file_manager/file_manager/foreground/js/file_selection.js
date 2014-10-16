@@ -29,7 +29,8 @@ function FileSelection(fileManager, indexes) {
 
   // Synchronously compute what we can.
   for (var i = 0; i < this.indexes.length; i++) {
-    var entry = fileManager.getFileList().item(this.indexes[i]);
+    var entry = /** @type {!Entry} */
+        (fileManager.getFileList().item(this.indexes[i]));
     if (!entry)
       continue;
 
@@ -211,10 +212,8 @@ FileSelectionHandler.IMAGE_HOVER_PREVIEW_SIZE = 200;
 
 /**
  * Update the UI when the selection model changes.
- *
- * @param {Event} event The change event.
  */
-FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
+FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   var indexes =
       this.fileManager_.getCurrentList().selectionModel.selectedIndexes;
   if (this.selection) this.selection.cancelComputing_();

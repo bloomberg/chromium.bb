@@ -130,7 +130,7 @@ VolumeManagerWrapper.prototype.dispose = function() {
 /**
  * Called on events sent from VolumeManager. This has responsibility to
  * re-dispatch the event to the listeners.
- * @param {Event} event Event object sent from VolumeManager.
+ * @param {!Event} event Event object sent from VolumeManager.
  * @private
  */
 VolumeManagerWrapper.prototype.onEvent_ = function(event) {
@@ -202,7 +202,7 @@ VolumeManagerWrapper.prototype.ensureInitialized = function(callback) {
 };
 
 /**
- * @return {VolumeManagerCommon.DriveConnectionType} Current drive connection
+ * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
  *     state.
  */
 VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
@@ -258,7 +258,7 @@ VolumeManagerWrapper.prototype.getDefaultDisplayRoot =
 /**
  * Obtains location information from an entry.
  *
- * @param {Entry} entry File or directory entry.
+ * @param {(Entry|Object)} entry File or directory entry.
  * @return {EntryLocation} Location information.
  */
 VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {

@@ -46,8 +46,8 @@ FileManagerDialogBase.shown = false;
 /**
  * @param {string} title Title.
  * @param {string} message Message.
- * @param {function()} onOk Called when the OK button is pressed.
- * @param {function()} onCancel Called when the cancel button is pressed.
+ * @param {?function()} onOk Called when the OK button is pressed.
+ * @param {?function()} onCancel Called when the cancel button is pressed.
  * @return {boolean} True if the dialog can show successfully. False if the
  *     dialog failed to show due to an existing dialog.
  */
@@ -59,8 +59,8 @@ FileManagerDialogBase.prototype.showOkCancelDialog = function(
 /**
  * @param {string} title Title.
  * @param {string} message Message.
- * @param {function()} onOk Called when the OK button is pressed.
- * @param {function()} onCancel Called when the cancel button is pressed.
+ * @param {?function()} onOk Called when the OK button is pressed.
+ * @param {?function()} onCancel Called when the cancel button is pressed.
  * @return {boolean} True if the dialog can show successfully. False if the
  *     dialog failed to show due to an existing dialog.
  * @private
@@ -84,7 +84,7 @@ FileManagerDialogBase.prototype.showImpl_ = function(
  *     dialog failed to show due to an existing dialog.
  */
 FileManagerDialogBase.prototype.showBlankDialog = function() {
-  return this.showImpl_('', '', null, null, null);
+  return this.showImpl_('', '', null, null);
 };
 
 /**
@@ -93,7 +93,7 @@ FileManagerDialogBase.prototype.showBlankDialog = function() {
  *     dialog failed to show due to an existing dialog.
  */
 FileManagerDialogBase.prototype.showTitleOnlyDialog = function(title) {
-  return this.showImpl_(title, '', null, null, null);
+  return this.showImpl_(title, '', null, null);
 };
 
 /**
@@ -104,11 +104,11 @@ FileManagerDialogBase.prototype.showTitleOnlyDialog = function(title) {
  */
 FileManagerDialogBase.prototype.showTitleAndTextDialog = function(title, text) {
   this.buttons.style.display = 'none';
-  return this.showImpl_(title, text, null, null, null);
+  return this.showImpl_(title, text, null, null);
 };
 
 /**
- * @param {function()=} opt_onHide Called when the dialog is hidden.
+ * @param {Function=} opt_onHide Called when the dialog is hidden.
  */
 FileManagerDialogBase.prototype.hide = function(opt_onHide) {
   cr.ui.dialogs.BaseDialog.prototype.hide.call(

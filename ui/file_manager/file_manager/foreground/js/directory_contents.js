@@ -259,7 +259,7 @@ LocalSearchContentScanner.prototype.scan = function(
 
 /**
  * Scanner of the entries for the metadata search on Drive File System.
- * @param {DriveMetadataSearchContentScanner.SearchType} searchType The option
+ * @param {!DriveMetadataSearchContentScanner.SearchType} searchType The option
  *     of the search.
  * @constructor
  * @extends {ContentScanner}
@@ -341,7 +341,8 @@ function FileFilter(metadataCache, showHidden) {
 
   // Do not show entries marked as 'deleted'.
   this.addFilter('deleted', function(entry) {
-    var internal = this.metadataCache_.getCached(entry, 'internal');
+    var internal = /** @type {{deleted}} */
+        (this.metadataCache_.getCached(entry, 'internal'));
     return !(internal && internal.deleted);
   }.bind(this));
 }
@@ -423,10 +424,14 @@ function FileListModel(metadataCache) {
   this.metadataCache_ = metadataCache;
 
   // Initialize compare functions.
-  this.setCompareFunction('name', util.compareName);
-  this.setCompareFunction('modificationTime', this.compareMtime_.bind(this));
-  this.setCompareFunction('size', this.compareSize_.bind(this));
-  this.setCompareFunction('type', this.compareType_.bind(this));
+  this.setCompareFunction('name',
+      /** @type {function(*, *): number} */ (util.compareName));
+  this.setCompareFunction('modificationTime',
+      /** @type {function(*, *): number} */ (this.compareMtime_.bind(this)));
+  this.setCompareFunction('size',
+      /** @type {function(*, *): number} */ (this.compareSize_.bind(this)));
+  this.setCompareFunction('type',
+      /** @type {function(*, *): number} */ (this.compareType_.bind(this)));
 }
 
 FileListModel.prototype = {
@@ -591,7 +596,7 @@ DirectoryContents.prototype.makeSpaceInMetadataCache_ = function(size) {
 
 /**
  * Use a given fileList instead of the fileList from the context.
- * @param {Array|cr.ui.ArrayDataModel} fileList The new file list.
+ * @param {(!Array|!cr.ui.ArrayDataModel)} fileList The new file list.
  */
 DirectoryContents.prototype.setFileList = function(fileList) {
   if (fileList instanceof cr.ui.ArrayDataModel)
@@ -939,7 +944,7 @@ DirectoryContents.createForLocalSearch = function(
  * @param {DirectoryEntry} fakeDirectoryEntry Fake directory entry representing
  *     the set of result entries. This serves as a top directory for the
  *     search.
- * @param {DriveMetadataSearchContentScanner.SearchType} searchType The type of
+ * @param {!DriveMetadataSearchContentScanner.SearchType} searchType The type of
  *     the search. The scanner will restricts the entries based on the given
  *     type.
  * @return {DirectoryContents} Created DirectoryContents instance.

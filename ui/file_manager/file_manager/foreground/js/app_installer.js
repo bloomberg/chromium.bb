@@ -44,8 +44,8 @@ AppInstaller.USER_CANCELLED_ERROR_STR_ = 'User cancelled install';
 
 /**
  * Start an installation.
- * @param {function(boolean, string)} callback Called when the installation is
- *     finished.
+ * @param {function(AppInstaller.Result, string)} callback Called when the
+ *     installation is finished.
  */
 AppInstaller.prototype.install = function(callback) {
   this.callback_ = callback;

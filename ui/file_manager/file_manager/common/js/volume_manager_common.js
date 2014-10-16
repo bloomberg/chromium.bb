@@ -130,3 +130,11 @@ VolumeManagerCommon.VolumeType = {
   PROVIDED: 'provided'
 };
 Object.freeze(VolumeManagerCommon.VolumeType);
+
+/**
+ * @typedef {{
+ *   type: VolumeManagerCommon.DriveConnectionType,
+ *   reason: VolumeManagerCommon.DriveConnectionReason
+ * }}
+ */
+VolumeManagerCommon.DriveConnectionState;

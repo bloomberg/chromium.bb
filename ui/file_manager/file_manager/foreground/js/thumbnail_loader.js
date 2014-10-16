@@ -9,7 +9,7 @@
  * are attached as <canvas> element, while in IMAGE mode as <img>.
  * <canvas> renders faster than <img>, however has bigger memory overhead.
  *
- * @param {FileEntry} entry File entry.
+ * @param {Entry} entry File entry.
  * @param {ThumbnailLoader.LoaderType=} opt_loaderType Canvas or Image loader,
  *     default: IMAGE.
  * @param {Object=} opt_metadata Metadata object.
@@ -136,7 +136,7 @@ ThumbnailLoader.THUMBNAIL_MAX_HEIGHT = 500;
 /**
  * Loads and attaches an image.
  *
- * @param {HTMLElement} box Container element.
+ * @param {Element} box Container element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization
  *     for downloading thumbnails. By default optimizations are disabled.
@@ -349,7 +349,7 @@ ThumbnailLoader.prototype.getImage = function() {
  * to wait until the image loads and its dimensions are known, then manually
  * position it at the center.
  *
- * @param {HTMLElement} box Containing element.
+ * @param {Element} box Containing element.
  * @param {Image|HTMLCanvasElement} img Element containing an image.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {boolean} rotate True if the image should be rotated 90 degrees.

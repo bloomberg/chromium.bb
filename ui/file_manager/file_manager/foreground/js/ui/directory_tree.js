@@ -22,6 +22,7 @@ var DirectoryItemTreeBaseMethods = {};
  * @param {boolean} recursive True if the all visible sub-directories are
  *     updated recursively including left arrows. If false, the update walks
  *     only immediate child directories without arrows.
+ * @this {DirectoryItem}
  */
 DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
   var index = 0;
@@ -70,6 +71,7 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
  * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
  *     a fake.
  * @return {boolean} True if the parent item is found.
+ * @this {(DirectoryItem|VolumeItem|DirectoryTree)}
  */
 DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
   for (var i = 0; i < this.items.length; i++) {
@@ -101,7 +103,8 @@ var TREE_ITEM_INNTER_HTML =
  *
  * @param {string} label Label for this item.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
- * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
+ * @param {DirectoryItem|VolumeItem|ShortcutItem|DirectoryTree} parentDirItem
+ *     Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
@@ -116,13 +119,14 @@ function DirectoryItem(label, dirEntry, parentDirItem, tree) {
  * @param {HTMLElement} el Element to be DirectoryItem.
  * @param {string} label Label for this item.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
- * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
+ * @param {DirectoryItem|VolumeItem|ShortcutItem|DirectoryTree} parentDirItem
+ *     Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
 DirectoryItem.decorate =
     function(el, label, dirEntry, parentDirItem, tree) {
   el.__proto__ = DirectoryItem.prototype;
-  (/** @type {DirectoryItem} */ el).decorate(
+  /** @type {DirectoryItem} */ (el).decorate(
       label, dirEntry, parentDirItem, tree);
 };
 
@@ -173,7 +177,8 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
 /**
  * @param {string} label Localized label for this item.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
- * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
+ * @param {DirectoryItem|VolumeItem|ShortcutItem|DirectoryTree} parentDirItem
+ *     Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
 DirectoryItem.prototype.decorate = function(
@@ -238,7 +243,7 @@ DirectoryItem.prototype.remove = function(child) {
 
 /**
  * Invoked when the item is being expanded.
- * @param {!UIEvent} e Event.
+ * @param {!Event} e Event.
  * @private
  **/
 DirectoryItem.prototype.onExpand_ = function(e) {
@@ -384,7 +389,7 @@ DirectoryItem.prototype.doDropTargetAction = function() {
 
 /**
  * Sets the context menu for directory tree.
- * @param {cr.ui.Menu} menu Menu to be set.
+ * @param {!cr.ui.Menu} menu Menu to be set.
  */
 DirectoryItem.prototype.setContextMenu = function(menu) {
   var tree = this.parentTree_ || this;  // If no parent, 'this' itself is tree.
@@ -562,7 +567,7 @@ VolumeItem.prototype.selectByEntry = function(entry) {
 
 /**
  * Sets the context menu for volume items.
- * @param {cr.ui.Menu} menu Menu to be set.
+ * @param {!cr.ui.Menu} menu Menu to be set.
  */
 VolumeItem.prototype.setContextMenu = function(menu) {
   if (this.isRemovable_())
@@ -613,7 +618,7 @@ VolumeItem.prototype.isRemovable_ = function() {
 
 /**
  * Set up icon of this volume item.
- * @param {HTMLElement} icon Icon element to be setup.
+ * @param {Element} icon Icon element to be setup.
  * @param {VolumeInfo} volumeInfo VolumeInfo determines the icon type.
  * @private
  */
@@ -631,7 +636,7 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
         'style', 'background-image: ' + backgroundImage);
   }
   icon.setAttribute('volume-type-icon', volumeInfo.volumeType);
-  icon.setAttribute('volume-subtype', volumeInfo.deviceType);
+  icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
 };
 
 /**
@@ -747,7 +752,7 @@ ShortcutItem.prototype.selectByEntry = function(entry) {
 
 /**
  * Sets the context menu for shortcut items.
- * @param {cr.ui.Menu} menu Menu to be set.
+ * @param {!cr.ui.Menu} menu Menu to be set.
  */
 ShortcutItem.prototype.setContextMenu = function(menu) {
   cr.ui.contextMenuHandler.setContextMenu(this, menu);
@@ -802,7 +807,7 @@ function DirectoryTree() {}
 DirectoryTree.decorate = function(
     el, directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
   el.__proto__ = DirectoryTree.prototype;
-  (/** @type {DirectoryTree} */ el).decorate(
+  /** @type {DirectoryTree} */ (el).decorate(
       directoryModel, volumeManager, metadataCache, fakeEntriesVisible);
 };
 
@@ -993,7 +998,7 @@ DirectoryTree.prototype.decorate = function(
       this.privateOnDirectoryChangedBound_);
 
   this.scrollBar_ = new MainPanelScrollBar();
-  this.scrollBar_.initialize(this.parentNode, this);
+  this.scrollBar_.initialize(this.parentElement, this);
 
   /**
    * Flag to show fake entries in the tree.
@@ -1078,7 +1083,7 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
 
 /**
  * Invoked when a directory is changed.
- * @param {!UIEvent} event Event.
+ * @param {!Event} event Event.
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
@@ -1093,7 +1098,7 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
 
 /**
  * Invoked when the current directory is changed.
- * @param {!UIEvent} event Event.
+ * @param {!Event} event Event.
  * @private
  */
 DirectoryTree.prototype.onCurrentDirectoryChanged_ = function(event) {

@@ -106,10 +106,10 @@ Object.freeze(ProgressCenterItemGroup.State);
  * contains is used as a summarized item. But If all the group returns null, the
  * progress center panel generates the summarized item by using the method.
  *
- * @param {Array.<ProgressCenterItemGroup>} var_groups List of groups.
+ * @param {...ProgressCenterItemGroup} var_args List of groups.
  * @return {ProgressCenterItem} Summarized item.
  */
-ProgressCenterItemGroup.getSummarizedErrorItem = function(var_groups) {
+ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
   var groups = Array.prototype.slice.call(arguments);
   var errorItems = [];
   for (var i = 0; i < groups.length; i++) {

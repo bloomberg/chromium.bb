@@ -12,7 +12,7 @@ var filelist = {};
 /**
  * Custom column model for advanced auto-resizing.
  *
- * @param {Array.<cr.ui.table.TableColumn>} tableColumns Table columns.
+ * @param {!Array.<cr.ui.table.TableColumn>} tableColumns Table columns.
  * @extends {cr.ui.table.TableColumnModel}
  * @constructor
  */
@@ -227,7 +227,7 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  * Decorates the element.
  * @param {HTMLElement} self Table to decorate.
  * @param {MetadataCache} metadataCache To retrieve metadata.
- * @param {VolumeManager} volumeManager To retrieve volume info.
+ * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
  * @param {boolean} fullPage True if it's full page File Manager,
  *                           False if a file open/save dialog.
  */
@@ -256,10 +256,7 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
   columns[3].renderFunction = self.renderDate_.bind(self);
   columns[3].defaultOrder = 'desc';
 
-  var tableColumnModelClass;
-  tableColumnModelClass = FileTableColumnModel;
-
-  var columnModel = Object.create(tableColumnModelClass.prototype, {
+  var columnModel = Object.create(FileTableColumnModel.prototype, {
     /**
      * The number of columns.
      * @type {number}
@@ -309,7 +306,8 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
     }
   });
 
-  tableColumnModelClass.call(columnModel, columns);
+  FileTableColumnModel.call(
+      /** @type {FileTableColumnModel} */ (columnModel), columns);
   self.columnModel = columnModel;
   self.setDateTimeFormat(true);
   self.setRenderFunction(self.renderTableRow_.bind(self,
@@ -327,6 +325,7 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
       new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
 
   // Override header#redraw to use FileTableSplitter.
+  /** @this {cr.ui.table.TableHeader} */
   self.header_.redraw = function() {
     this.__proto__.redraw.call(this);
     // Extend table splitters
@@ -354,6 +353,7 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
    * @param {number=} opt_width Width of the coordinate.
    * @param {number=} opt_height Height of the coordinate.
    * @return {Array.<number>} Index list of hit elements.
+   * @this {cr.ui.List}
    */
   self.list.getHitElements = function(x, y, opt_width, opt_height) {
     var currentSelection = [];
@@ -497,11 +497,12 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
  * @param {Entry} entry The Entry object to render.
  * @param {string} columnId The id of the column to be rendered.
  * @param {cr.ui.Table} table The table doing the rendering.
- * @return {HTMLDivElement} Created element.
+ * @return {!HTMLDivElement} Created element.
  * @private
  */
 FileTable.prototype.renderName_ = function(entry, columnId, table) {
-  var label = this.ownerDocument.createElement('div');
+  var label = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
   label.appendChild(this.renderIconType_(entry, columnId, table));
   label.entry = entry;
   label.className = 'detail-name';
@@ -515,11 +516,12 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
  * @param {Entry} entry The Entry object to render.
  * @param {string} columnId The id of the column to be rendered.
  * @param {cr.ui.Table} table The table doing the rendering.
- * @return {HTMLDivElement} Created element.
+ * @return {!HTMLDivElement} Created element.
  * @private
  */
 FileTable.prototype.renderSize_ = function(entry, columnId, table) {
-  var div = this.ownerDocument.createElement('div');
+  var div = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
   div.className = 'size';
   this.updateSize_(div, entry);
 
@@ -567,11 +569,12 @@ FileTable.prototype.updateSize_ = function(div, entry) {
  * @param {Entry} entry The Entry object to render.
  * @param {string} columnId The id of the column to be rendered.
  * @param {cr.ui.Table} table The table doing the rendering.
- * @return {HTMLDivElement} Created element.
+ * @return {!HTMLDivElement} Created element.
  * @private
  */
 FileTable.prototype.renderType_ = function(entry, columnId, table) {
-  var div = this.ownerDocument.createElement('div');
+  var div = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
   div.className = 'type';
   div.textContent = FileType.typeToString(FileType.getType(entry));
   return div;
@@ -641,8 +644,10 @@ FileTable.prototype.updateDate_ = function(div, entry) {
  * @param {Entry} entry File entry.
  */
 FileTable.prototype.updateFileMetadata = function(item, entry) {
-  this.updateDate_(item.querySelector('.date'), entry);
-  this.updateSize_(item.querySelector('.size'), entry);
+  this.updateDate_(
+      /** @type {!HTMLDivElement} */ (item.querySelector('.date')), entry);
+  this.updateSize_(
+      /** @type {!HTMLDivElement} */ (item.querySelector('.size')), entry);
 };
 
 /**
@@ -699,11 +704,12 @@ FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
  * @param {Entry} entry The Entry object to render.
  * @param {string} columnId The id of the column to be rendered.
  * @param {cr.ui.Table} table The table doing the rendering.
- * @return {HTMLDivElement} Created element.
+ * @return {!HTMLDivElement} Created element.
  * @private
  */
 FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
-  var icon = this.ownerDocument.createElement('div');
+  var icon = /** @type {!HTMLDivElement} */
+      (this.ownerDocument.createElement('div'));
   icon.className = 'detail-icon';
   icon.setAttribute('file-type-icon', FileType.getIcon(entry));
   return icon;
@@ -778,14 +784,14 @@ filelist.decorateListItem = function(li, entry, metadataCache) {
 
 /**
  * Render filename label for grid and list view.
- * @param {HTMLDocument} doc Owner document.
+ * @param {Document} doc Owner document.
  * @param {Entry} entry The Entry object to render.
- * @return {HTMLDivElement} The label.
+ * @return {!HTMLDivElement} The label.
  */
 filelist.renderFileNameLabel = function(doc, entry) {
   // Filename need to be in a '.filename-label' container for correct
   // work of inplace renaming.
-  var box = doc.createElement('div');
+  var box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   box.className = 'filename-label';
   var fileName = doc.createElement('span');
   fileName.className = 'entry-name';

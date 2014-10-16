@@ -10,9 +10,10 @@
  *  - AuthFailBanner
  * @param {DirectoryModel} directoryModel The model.
  * @param {VolumeManagerWrapper} volumeManager The manager.
- * @param {DOMDocument} document HTML document.
+ * @param {Document} document HTML document.
  * @param {boolean} showOffers True if we should show offer banners.
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function FileListBannerController(
     directoryModel, volumeManager, document, showOffers) {
@@ -45,9 +46,9 @@ function FileListBannerController(
       [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
       function(values) {
         this.welcomeHeaderCounter_ =
-            parseInt(values[WELCOME_HEADER_COUNTER_KEY]) || 0;
+            parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
         this.warningDismissedCounter_ =
-            parseInt(values[WARNING_DISMISSED_KEY]) || 0;
+            parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
       }.bind(this));
 
   this.authFailedBanner_ =
@@ -211,12 +212,12 @@ FileListBannerController.prototype.prepareAndShowWelcomeBanner_ =
 /**
  * Show or hide the "Low Google Drive space" warning.
  * @param {boolean} show True if the box need to be shown.
- * @param {Object} sizeStats Size statistics. Should be defined when showing the
- *     warning.
+ * @param {Object=} opt_sizeStats Size statistics. Should be defined when
+ *     showing the warning.
  * @private
  */
 FileListBannerController.prototype.showLowDriveSpaceWarning_ =
-    function(show, sizeStats) {
+    function(show, opt_sizeStats) {
   var box = this.document_.querySelector('#volume-space-warning');
 
   // Avoid showing two banners.
@@ -228,9 +229,10 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     return;
 
   if (this.warningDismissedCounter_) {
-    if (this.warningDismissedCounter_ ==
-            sizeStats.totalSize && // Quota had not changed
-        sizeStats.remainingSize / sizeStats.totalSize < 0.15) {
+    if (opt_sizeStats &&
+        // Quota had not changed
+        this.warningDismissedCounter_ == opt_sizeStats.totalSize &&
+        opt_sizeStats.remainingSize / opt_sizeStats.totalSize < 0.15) {
       // Since the last dismissal decision the quota has not changed AND
       // the user did not free up significant space. Obey the dismissal.
       show = false;
@@ -241,7 +243,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
   }
 
   box.textContent = '';
-  if (show) {
+  if (show && opt_sizeStats) {
     var icon = this.document_.createElement('div');
     icon.className = 'drive-icon';
     box.appendChild(icon);
@@ -249,7 +251,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     var text = this.document_.createElement('div');
     text.className = 'drive-text';
     text.textContent = strf('DRIVE_SPACE_AVAILABLE_LONG',
-        util.bytesToString(sizeStats.remainingSize));
+        util.bytesToString(opt_sizeStats.remainingSize));
     box.appendChild(text);
 
     var link = this.document_.createElement('a');
@@ -268,7 +270,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
       chrome.storage.local.set(values);
       box.hidden = true;
       this.requestRelayout_(100);
-    }.bind(this, sizeStats.totalSize));
+    }.bind(this, opt_sizeStats.totalSize));
   }
 
   if (box.hidden != !show) {
@@ -399,9 +401,10 @@ FileListBannerController.prototype.isOnCurrentProfileDrive = function() {
   if (!entry || util.isFakeEntry(entry))
     return false;
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  return locationInfo &&
-      locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE &&
-      locationInfo.volumeInfo.profile.isCurrentProfile;
+  if (!locationInfo)
+    return false;
+  return locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE &&
+         locationInfo.volumeInfo.profile.isCurrentProfile;
 };
 
 /**
@@ -464,10 +467,11 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
  */
 FileListBannerController.prototype.isLowSpaceWarningTarget_ =
     function(volumeInfo) {
-  return volumeInfo &&
-      volumeInfo.profile.isCurrentProfile &&
-      (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
-       volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE);
+  if (!volumeInfo)
+    return false;
+  return volumeInfo.profile.isCurrentProfile &&
+         (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE);
 };
 
 /**
@@ -600,6 +604,14 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
   if (panel.firstElementChild)
     return;
 
+  /**
+   * Creates an element using given parameters.
+   * @param {!Element} parent Parent element of the new element.
+   * @param {string} tag Tag of the new element.
+   * @param {string} className Class name of the new element.
+   * @param {string=} opt_textContent Text content of the new element.
+   * @return {!Element} The newly created element.
+   */
   var create = function(parent, tag, className, opt_textContent) {
     var div = panel.ownerDocument.createElement(tag);
     div.className = className;

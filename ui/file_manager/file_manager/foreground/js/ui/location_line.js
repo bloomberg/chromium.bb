@@ -59,7 +59,7 @@ LocationLine.prototype.show = function(entry) {
     this.volumeIcon_.setAttribute(
         'volume-type-icon', location.volumeInfo.volumeType);
     this.volumeIcon_.setAttribute(
-        'volume-subtype', location.volumeInfo.deviceType);
+        'volume-subtype', location.volumeInfo.deviceType || '');
   }
 
   var queue = new AsyncUtil.Queue();
@@ -144,7 +144,7 @@ LocationLine.prototype.show = function(entry) {
 
 /**
  * Updates the breadcrumb display.
- * @param {Array.<Entry>} entries Entries on the target path.
+ * @param {Array.<!Entry>} entries Entries on the target path.
  * @private
  */
 LocationLine.prototype.updateInternal_ = function(entries) {

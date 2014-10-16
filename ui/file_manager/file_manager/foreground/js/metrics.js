@@ -94,8 +94,8 @@ metrics.recordInterval = function(name) {
  * Record an enum value.
  *
  * @param {string} name Metric name.
- * @param {Object} value Enum value.
- * @param {Array.<Object>|number} validValues Array of valid values
+ * @param {*} value Enum value.
+ * @param {Array.<*>|number} validValues Array of valid values
  *                                            or a boundary number value.
  */
 metrics.recordEnum = function(name, value, validValues) {
@@ -105,7 +105,7 @@ metrics.recordEnum = function(name, value, validValues) {
     index = validValues.indexOf(value);
     boundaryValue = validValues.length;
   } else {
-    index = value;
+    index = /** @type {number} */ (value);
     boundaryValue = validValues;
   }
   // Collect invalid values in the overflow bucket at the end.

@@ -82,7 +82,8 @@ NavigationModelVolumeItem.prototype = {
 /**
  * A navigation list model. This model combines the 2 lists.
  * @param {VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
- * @param {cr.ui.ArrayDataModel} shortcutListModel The list of folder shortcut.
+ * @param {(cr.ui.ArrayDataModel|FolderShortcutsDataModel)} shortcutListModel
+ *     The list of folder shortcut.
  * @constructor
  * @extends {cr.EventTarget}
  */
@@ -122,7 +123,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
 
   this.shortcutList_ = [];
   for (var i = 0; i < this.shortcutListModel_.length; i++) {
-    var shortcutEntry = this.shortcutListModel_.item(i);
+    var shortcutEntry = /** @type {Entry} */ (this.shortcutListModel_.item(i));
     var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }

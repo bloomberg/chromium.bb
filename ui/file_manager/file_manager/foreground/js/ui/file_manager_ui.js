@@ -100,25 +100,25 @@ function FileManagerUI(element, dialogType) {
 
   /**
    * Toggle-view button.
-   * @type {HTMLElement}
+   * @type {Element}
    */
   this.toggleViewButton = null;
 
   /**
    * File type selector in the footer.
-   * @type {HTMLElement}
+   * @type {HTMLSelectElement}
    */
   this.fileTypeSelector = null;
 
   /**
    * OK button in the footer.
-   * @type {HTMLElement}
+   * @type {HTMLButtonElement}
    */
   this.okButton = null;
 
   /**
    * Cancel button in the footer.
-   * @type {HTMLElement}
+   * @type {HTMLButtonElement}
    */
   this.cancelButton = null;
 
@@ -151,9 +151,12 @@ FileManagerUI.prototype.initDialogType_ = function() {
   var parentPanelOfButtons = this.element_.ownerDocument.querySelector(
       !hasFooterPanel ? '.preview-panel' : '.dialog-footer');
   parentPanelOfButtons.classList.add('button-panel');
-  this.fileTypeSelector = parentPanelOfButtons.querySelector('.file-type');
-  this.okButton = parentPanelOfButtons.querySelector('.ok');
-  this.cancelButton = parentPanelOfButtons.querySelector('.cancel');
+  this.fileTypeSelector = /** @type {!HTMLSelectElement} */
+      (parentPanelOfButtons.querySelector('.file-type'));
+  this.okButton = /** @type {!HTMLButtonElement} */
+      (parentPanelOfButtons.querySelector('.ok'));
+  this.cancelButton = /** @type {!HTMLButtonElement} */
+      (parentPanelOfButtons.querySelector('.cancel'));
 
   // Set attributes.
   var okLabel = str('OPEN_LABEL');

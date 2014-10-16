@@ -102,7 +102,7 @@ function FileBrowserBackground() {
   /**
    * Last time when the background page can close.
    *
-   * @type {number}
+   * @type {?number}
    * @private
    */
   this.lastTimeCanClose_ = null;
@@ -199,7 +199,7 @@ FileBrowserBackground.prototype.canClose = function() {
 
 /**
  * Opens the root directory of the volume in Files.app.
- * @param {string} volumeId ID of a volume to be opened.
+ * @param {string} devicePath Device path to a volume to be opened.
  * @private
  */
 FileBrowserBackground.prototype.navigateToVolume = function(devicePath) {
@@ -214,7 +214,7 @@ FileBrowserBackground.prototype.navigateToVolume = function(devicePath) {
   }).then(function(entry) {
     launchFileManager(
         {currentDirectoryURL: entry.toURL()},
-        /* App ID */ null,
+        /* App ID */ undefined,
         LaunchType.FOCUS_SAME_OR_CREATE);
   }).catch(function(error) {
     console.error(error.stack || error);
@@ -422,7 +422,7 @@ FileBrowserBackground.prototype.onExecute_ = function(action, details) {
   // volume will appear on the navigation list.
   launchFileManager(
       appState,
-      /* App ID */ null,
+      /* App ID */ undefined,
       LaunchType.FOCUS_SAME_OR_CREATE);
 };
 
@@ -443,7 +443,7 @@ FileBrowserBackground.prototype.onLaunched_ = function() {
       }
     });
   }
-  launchFileManager(null, null, LaunchType.FOCUS_ANY_OR_CREATE);
+  launchFileManager(null, undefined, LaunchType.FOCUS_ANY_OR_CREATE);
 };
 
 /**
@@ -459,7 +459,7 @@ FileBrowserBackground.prototype.onRestarted_ = function() {
         if (match) {
           var id = Number(match[1]);
           try {
-            var appState = JSON.parse(items[key]);
+            var appState = /** @type {Object} */ (JSON.parse(items[key]));
             launchFileManager(appState, id);
           } catch (e) {
             console.error('Corrupt launch data for ' + id);

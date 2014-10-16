@@ -97,8 +97,8 @@ ShareDialog.WebViewAuthorizer.prototype.authorize = function(callback) {
 
 /**
  * Injects headers into the passed request.
- * @param {Event} e Request event.
- * @return {{requestHeaders: HttpHeaders}} Modified headers.
+ * @param {!Object} e Request event.
+ * @return {!{requestHeaders: Array.<!HttpHeader>}} Modified headers.
  * @private
  */
 ShareDialog.WebViewAuthorizer.prototype.authorizeRequest_ = function(e) {
@@ -174,6 +174,7 @@ ShareDialog.prototype.onLoadFailed = function() {
 };
 
 /**
+ * @param {Function=} opt_onHide Called when the dialog is hidden.
  * @override
  */
 ShareDialog.prototype.hide = function(opt_onHide) {
@@ -183,7 +184,7 @@ ShareDialog.prototype.hide = function(opt_onHide) {
 /**
  * Hide the dialog with the result and the callback.
  * @param {ShareDialog.Result} result Result passed to the closing callback.
- * @param {function()=} opt_onHide Callback called at the end of hiding.
+ * @param {Function=} opt_onHide Callback called at the end of hiding.
  */
 ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
   if (!this.isShowing())
@@ -213,9 +214,9 @@ ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
 /**
  * Shows the dialog.
  * @param {FileEntry} entry Entry to share.
- * @param {function(boolean)} callback Callback to be called when the showing
- *     task is completed. The argument is whether to succeed or not. Note that
- *     cancel is regarded as success.
+ * @param {function(ShareDialog.Result)} callback Callback to be called when the
+ *     showing task is completed. The argument is whether to succeed or not.
+ *     Note that cancel is regarded as success.
  */
 ShareDialog.prototype.show = function(entry, callback) {
   // If the dialog is already showing, return the error.

@@ -413,7 +413,8 @@ FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
   if (reason === 'SUCCESS' || reason === 'CANCELED')
     this.entryChangedEventRateLimiter_.runImmediately();
 
-  var event = new Event('copy-progress');
+  var event = /** @type {FileOperationProgressEvent} */
+      (new Event('copy-progress'));
   event.reason = reason;
   event.status = status;
   event.taskId = taskId;
@@ -470,7 +471,7 @@ FileOperationManager.EventRouter.prototype.dispatchEntryChangedEvent_ =
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
     reason, task) {
-  var event = new Event('delete');
+  var event = /** @type {FileOperationProgressEvent} */ (new Event('delete'));
   event.reason = reason;
   event.taskId = task.taskId;
   event.entries = task.entries;
@@ -531,7 +532,7 @@ FileOperationManager.Task = function(
 
   /**
    * Callback to cancel the running process.
-   * @private {function()}
+   * @private {?function()}
    */
   this.cancelCallback_ = null;
 
@@ -953,7 +954,7 @@ FileOperationManager.MoveTask.prototype.run = function(
  * Moves the sourceEntry to the targetDirEntry in this task.
  *
  * @param {Entry} sourceEntry An entry to be moved.
- * @param {DirectoryEntry} destinationEntry The entry of the destination
+ * @param {!DirectoryEntry} destinationEntry The entry of the destination
  *     directory.
  * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
  *     Callback invoked when an entry is changed.
@@ -1457,7 +1458,7 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
 /**
  * Creates a zip file for the selection of files.
  *
- * @param {Entry} dirEntry The directory containing the selection.
+ * @param {!DirectoryEntry} dirEntry The directory containing the selection.
  * @param {Array.<Entry>} selectionEntries The selected entries.
  */
 FileOperationManager.prototype.zipSelection = function(

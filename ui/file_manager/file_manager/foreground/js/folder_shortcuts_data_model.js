@@ -271,7 +271,7 @@ FolderShortcutsDataModel.prototype = {
    *
    * @param {Entry} a First entry.
    * @param {Entry} b Second entry.
-   * @return {boolean} Returns -1, if |a| < |b|. Returns 0, if |a| === |b|.
+   * @return {number} Returns -1, if |a| < |b|. Returns 0, if |a| === |b|.
    *     Otherwise, returns 1.
    */
   compare: function(a, b) {
@@ -493,7 +493,7 @@ FolderShortcutsDataModel.prototype = {
    * for detail.
    *
    * @param {string} path Path in Drive with the stored drive mount path.
-   * @return {string} URL of the given path.
+   * @return {?string} URL of the given path.
    * @private
    */
   convertStoredPathToUrl_: function(path) {
@@ -511,7 +511,7 @@ FolderShortcutsDataModel.prototype = {
    * See the comment of convertStoredPathToUrl_() for further information.
    *
    * @param {string} url URL of the directory in Drive.
-   * @return {string} Path with the stored drive mount path.
+   * @return {?string} Path with the stored drive mount path.
    * @private
    */
   convertUrlToStoredPath_: function(url) {

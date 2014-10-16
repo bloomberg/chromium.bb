@@ -13,7 +13,7 @@ var ScrollBar = cr.ui.define('div');
 
 /**
  * Mode of the scrollbar. As for now, only vertical scrollbars are supported.
- * @type {number}
+ * @enum {number}
  */
 ScrollBar.Mode = {
   VERTICAL: 0,
@@ -81,7 +81,9 @@ ScrollBar.prototype.attachToView = function(view) {
   this.view_.addEventListener('scroll', this.onScroll_.bind(this));
   this.view_.addEventListener('relayout', this.onRelayout_.bind(this));
   this.domObserver_ = new MutationObserver(this.onDomChanged_.bind(this));
-  this.domObserver_.observe(this.view_, {subtree: true, attributes: true});
+  this.domObserver_.observe(
+      this.view_,
+      /** @type {MutationObserverInit} */ ({subtree: true, attributes: true}));
   this.onRelayout_();
 };
 

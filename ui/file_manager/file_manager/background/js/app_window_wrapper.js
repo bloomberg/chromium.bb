@@ -34,7 +34,7 @@ function AppWindowWrapper(url, id, options) {
 
 AppWindowWrapper.prototype = {
   /**
-   * @return {AppWindow} Wrapped application window.
+   * @return {chrome.app.window.AppWindow} Wrapped application window.
    */
   get rawAppWindow() {
     return this.window_;
@@ -59,7 +59,7 @@ AppWindowWrapper.makeGeometryKey = function(url) {
 
 /**
  * Focuses the window on the specified desktop.
- * @param {AppWindow} appWindow Application window.
+ * @param {chrome.app.window.AppWindow} appWindow Application window.
  * @param {string=} opt_profileId The profiled ID of the target window. If it is
  *     dropped, the window is focused on the current window.
  */
@@ -281,6 +281,7 @@ AppWindowWrapper.prototype.onBoundsChanged_ = function() {
  * @param {string} url App window content url.
  * @param {Object|function()} options Options object or a function to return it.
  * @constructor
+ * @extends {AppWindowWrapper}
  */
 function SingletonAppWindowWrapper(url, options) {
   AppWindowWrapper.call(this, url, url, options);

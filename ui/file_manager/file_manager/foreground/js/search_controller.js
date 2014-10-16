@@ -6,7 +6,7 @@
 
 /**
  * Controller for searching.
- * @param {SearchBox} ui Search box UI element.
+ * @param {SearchBox} searchBox Search box UI element.
  * @param {LocationLine} locationLine Location line UI element.
  * @param {DirectoryModel} directoryModel Directory model.
  * @param {{doAction: function(FileEntry)}} taskController Task controller to
@@ -22,7 +22,7 @@ function SearchController(
   this.searchBox_ = searchBox;
 
   /**
-   * @type {FileManagerUI}
+   * @type {LocationLine}
    * @private
    */
   this.locationLine_ = locationLine;
@@ -54,7 +54,7 @@ function SearchController(
 SearchController.prototype = {
   /**
    * Obtains current directory's locaiton info.
-   * @type {LocationInfo}
+   * @type {EntryLocation}
    * @private
    */
   get currentLocationInfo_() {

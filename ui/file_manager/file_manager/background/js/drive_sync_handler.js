@@ -9,6 +9,7 @@
  * @param {ProgressCenter} progressCenter Progress center to submit the
  *     progressing items.
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function DriveSyncHandler(progressCenter) {
   /**
