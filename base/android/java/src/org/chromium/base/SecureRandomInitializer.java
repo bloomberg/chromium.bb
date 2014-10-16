@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.base;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,6 +16,8 @@ import java.security.SecureRandom;
 public class SecureRandomInitializer {
     private static final int NUM_RANDOM_BYTES = 16;
 
+    private static byte[] sSeedBytes = new byte[NUM_RANDOM_BYTES];
+
     /**
      * Safely initializes the random number generator, by seeding it with data from /dev/urandom.
      */
@@ -23,11 +25,10 @@ public class SecureRandomInitializer {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream("/dev/urandom");
-            byte[] bytes = new byte[NUM_RANDOM_BYTES];
-            if (bytes.length != fis.read(bytes)) {
+            if (fis.read(sSeedBytes) != sSeedBytes.length) {
                 throw new IOException("Failed to get enough random data.");
             }
-            generator.setSeed(bytes);
+            generator.setSeed(sSeedBytes);
         } finally {
             try {
                 if (fis != null) {

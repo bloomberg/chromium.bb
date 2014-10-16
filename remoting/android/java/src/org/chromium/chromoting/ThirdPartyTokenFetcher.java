@@ -15,6 +15,8 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
+import org.chromium.base.SecureRandomInitializer;
+
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
