@@ -69,6 +69,7 @@ class SupervisedUserService : public KeyedService,
   typedef std::vector<base::string16> CategoryList;
   typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
   typedef base::Callback<void(const GoogleServiceAuthError&)> AuthErrorCallback;
+  typedef base::Callback<void(bool)> SuccessCallback;
 
   enum ManualBehavior {
     MANUAL_NONE = 0,
@@ -121,7 +122,7 @@ class SupervisedUserService : public KeyedService,
   // Adds an access request for the given URL. The requests are stored using
   // a prefix followed by a URIEncoded version of the URL. Each entry contains
   // a dictionary which currently has the timestamp of the request in it.
-  void AddAccessRequest(const GURL& url);
+  void AddAccessRequest(const GURL& url, const SuccessCallback& callback);
 
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;
@@ -172,6 +173,9 @@ class SupervisedUserService : public KeyedService,
 
   void AddObserver(SupervisedUserServiceObserver* observer);
   void RemoveObserver(SupervisedUserServiceObserver* observer);
+
+  // Will take ownership of |creator|.
+  void AddPermissionRequestCreatorForTesting(PermissionRequestCreator* creator);
 
 #if defined(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:
@@ -284,8 +288,13 @@ class SupervisedUserService : public KeyedService,
   SupervisedUserSettingsService* GetSettingsService();
 
   size_t FindEnabledPermissionRequestCreator(size_t start);
-  void AddAccessRequestInternal(const GURL& url, size_t index);
-  void OnPermissionRequestIssued(const GURL& url, size_t index, bool success);
+  void AddAccessRequestInternal(const GURL& url,
+                                const SuccessCallback& callback,
+                                size_t index);
+  void OnPermissionRequestIssued(const GURL& url,
+                                 const SuccessCallback& callback,
+                                 size_t index,
+                                 bool success);
 
   void OnSupervisedUserIdChanged();
 

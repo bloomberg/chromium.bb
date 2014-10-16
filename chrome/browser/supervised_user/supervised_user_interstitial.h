@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -47,6 +48,8 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   virtual void OnURLFilterChanged() override;
   // TODO(treib): Also listen to OnCustodianInfoChanged and update as required.
 
+  void OnAccessRequestAdded(bool success);
+
   // Returns whether the blocked URL is now allowed. Called initially before the
   // interstitial is shown (to catch race conditions), or when the URL filtering
   // prefs change.
@@ -64,6 +67,8 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   GURL url_;
 
   base::Callback<void(bool)> callback_;
+
+  base::WeakPtrFactory<SupervisedUserInterstitial> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserInterstitial);
 };

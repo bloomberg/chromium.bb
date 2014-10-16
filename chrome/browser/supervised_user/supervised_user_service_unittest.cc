@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service_factory.h"
+#include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -70,6 +71,28 @@ class SupervisedUserURLFilterObserver :
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
+class AsyncResultHolder {
+ public:
+  AsyncResultHolder() : result_(false) {}
+  ~AsyncResultHolder() {}
+
+  void SetResult(bool result) {
+    result_ = result;
+    run_loop_.Quit();
+  }
+
+  bool GetResult() {
+    run_loop_.Run();
+    return result_;
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  bool result_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncResultHolder);
+};
+
 class SupervisedUserServiceTest : public ::testing::Test {
  public:
   SupervisedUserServiceTest() {}
@@ -90,6 +113,12 @@ class SupervisedUserServiceTest : public ::testing::Test {
   virtual ~SupervisedUserServiceTest() {}
 
  protected:
+  void AddAccessRequest(const GURL& url, AsyncResultHolder* result_holder) {
+    supervised_user_service_->AddAccessRequest(
+        url, base::Bind(&AsyncResultHolder::SetResult,
+                        base::Unretained(result_holder)));
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   SupervisedUserService* supervised_user_service_;
@@ -169,6 +198,131 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
   // ProfileDownloader gets created.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "Logged In");
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
+}
+
+namespace {
+
+class MockPermissionRequestCreator : public PermissionRequestCreator {
+ public:
+  MockPermissionRequestCreator() : enabled_(false) {}
+  virtual ~MockPermissionRequestCreator() {}
+
+  void set_enabled(bool enabled) {
+    enabled_ = enabled;
+  }
+
+  const std::vector<GURL>& requested_urls() const {
+    return requested_urls_;
+  }
+
+  void AnswerRequest(size_t index, bool result) {
+    ASSERT_LT(index, requested_urls_.size());
+    callbacks_[index].Run(result);
+    callbacks_.erase(callbacks_.begin() + index);
+    requested_urls_.erase(requested_urls_.begin() + index);
+  }
+
+ private:
+  // PermissionRequestCreator:
+  virtual bool IsEnabled() const override {
+    return enabled_;
+  }
+
+  virtual void CreatePermissionRequest(
+      const GURL& url_requested,
+      const SuccessCallback& callback) override {
+    ASSERT_TRUE(enabled_);
+    requested_urls_.push_back(url_requested);
+    callbacks_.push_back(callback);
+  }
+
+  bool enabled_;
+  std::vector<GURL> requested_urls_;
+  std::vector<SuccessCallback> callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPermissionRequestCreator);
+};
+
+}  // namespace
+
+TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
+  GURL url("http://www.example.com");
+
+  // Without any permission request creators, it should be disabled, and any
+  // AddAccessRequest() calls should fail.
+  EXPECT_FALSE(supervised_user_service_->AccessRequestsEnabled());
+  {
+    AsyncResultHolder result_holder;
+    AddAccessRequest(url, &result_holder);
+    EXPECT_FALSE(result_holder.GetResult());
+  }
+
+  // Add a disabled permission request creator. This should not change anything.
+  MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
+  supervised_user_service_->AddPermissionRequestCreatorForTesting(creator);
+
+  EXPECT_FALSE(supervised_user_service_->AccessRequestsEnabled());
+  {
+    AsyncResultHolder result_holder;
+    AddAccessRequest(url, &result_holder);
+    EXPECT_FALSE(result_holder.GetResult());
+  }
+
+  // Enable the permission request creator. This should enable permission
+  // requests and queue them up.
+  creator->set_enabled(true);
+  EXPECT_TRUE(supervised_user_service_->AccessRequestsEnabled());
+  {
+    AsyncResultHolder result_holder;
+    AddAccessRequest(url, &result_holder);
+    ASSERT_EQ(1u, creator->requested_urls().size());
+    EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
+
+    creator->AnswerRequest(0, true);
+    EXPECT_TRUE(result_holder.GetResult());
+  }
+
+  {
+    AsyncResultHolder result_holder;
+    AddAccessRequest(url, &result_holder);
+    ASSERT_EQ(1u, creator->requested_urls().size());
+    EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
+
+    creator->AnswerRequest(0, false);
+    EXPECT_FALSE(result_holder.GetResult());
+  }
+
+  // Add a second permission request creator.
+  MockPermissionRequestCreator* creator_2 = new MockPermissionRequestCreator;
+  creator_2->set_enabled(true);
+  supervised_user_service_->AddPermissionRequestCreatorForTesting(creator_2);
+
+  {
+    AsyncResultHolder result_holder;
+    AddAccessRequest(url, &result_holder);
+    ASSERT_EQ(1u, creator->requested_urls().size());
+    EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
+
+    // Make the first creator succeed. This should make the whole thing succeed.
+    creator->AnswerRequest(0, true);
+    EXPECT_TRUE(result_holder.GetResult());
+  }
+
+  {
+    AsyncResultHolder result_holder;
+    AddAccessRequest(url, &result_holder);
+    ASSERT_EQ(1u, creator->requested_urls().size());
+    EXPECT_EQ(url.spec(), creator->requested_urls()[0].spec());
+
+    // Make the first creator fail. This should fall back to the second one.
+    creator->AnswerRequest(0, false);
+    ASSERT_EQ(1u, creator_2->requested_urls().size());
+    EXPECT_EQ(url.spec(), creator_2->requested_urls()[0].spec());
+
+    // Make the second creator succeed, which will make the whole thing succeed.
+    creator_2->AnswerRequest(0, true);
+    EXPECT_TRUE(result_holder.GetResult());
+  }
 }
 
 #if !defined(OS_ANDROID)

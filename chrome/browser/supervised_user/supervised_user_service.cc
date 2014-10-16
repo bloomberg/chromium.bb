@@ -329,6 +329,11 @@ void SupervisedUserService::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+void SupervisedUserService::AddPermissionRequestCreatorForTesting(
+    PermissionRequestCreator* creator) {
+  permissions_creators_.push_back(creator);
+}
+
 #if defined(ENABLE_EXTENSIONS)
 std::string SupervisedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
@@ -556,29 +561,34 @@ size_t SupervisedUserService::FindEnabledPermissionRequestCreator(
   return permissions_creators_.size();
 }
 
-void SupervisedUserService::AddAccessRequestInternal(const GURL& url,
-                                                     size_t index) {
+void SupervisedUserService::AddAccessRequestInternal(
+    const GURL& url,
+    const SuccessCallback& callback,
+    size_t index) {
   // Find a permission request creator that is enabled.
   size_t next_index = FindEnabledPermissionRequestCreator(index);
-  if (next_index >= permissions_creators_.size())
+  if (next_index >= permissions_creators_.size()) {
+    callback.Run(false);
     return;
+  }
 
   permissions_creators_[next_index]->CreatePermissionRequest(
       url,
       base::Bind(&SupervisedUserService::OnPermissionRequestIssued,
-                 weak_ptr_factory_.GetWeakPtr(), url, next_index));
+                 weak_ptr_factory_.GetWeakPtr(), url, callback, next_index));
 }
 
-void SupervisedUserService::OnPermissionRequestIssued(const GURL& url,
-                                                      size_t index,
-                                                      bool success) {
-  // TODO(akuegel): Figure out how to show the result of issuing the permission
-  // request in the UI. Currently, we assume the permission request was created
-  // successfully.
-  if (success)
+void SupervisedUserService::OnPermissionRequestIssued(
+    const GURL& url,
+    const SuccessCallback& callback,
+    size_t index,
+    bool success) {
+  if (success) {
+    callback.Run(true);
     return;
+  }
 
-  AddAccessRequestInternal(url, index + 1);
+  AddAccessRequestInternal(url, callback, index + 1);
 }
 
 void SupervisedUserService::OnSupervisedUserIdChanged() {
@@ -646,8 +656,10 @@ bool SupervisedUserService::AccessRequestsEnabled() {
   return FindEnabledPermissionRequestCreator(0) < permissions_creators_.size();
 }
 
-void SupervisedUserService::AddAccessRequest(const GURL& url) {
-  AddAccessRequestInternal(SupervisedUserURLFilter::Normalize(url), 0);
+void SupervisedUserService::AddAccessRequest(const GURL& url,
+                                             const SuccessCallback& callback) {
+  AddAccessRequestInternal(SupervisedUserURLFilter::Normalize(url), callback,
+                           0);
 }
 
 SupervisedUserService::ManualBehavior

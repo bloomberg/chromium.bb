@@ -114,7 +114,8 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       interstitial_page_(NULL),
       url_(url),
-      callback_(callback) {}
+      callback_(callback),
+      weak_ptr_factory_(this) {}
 
 SupervisedUserInterstitial::~SupervisedUserInterstitial() {
   DCHECK(!web_contents_);
@@ -250,9 +251,9 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 
     SupervisedUserService* supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile_);
-    supervised_user_service->AddAccessRequest(url_);
-    DVLOG(1) << "Sent access request for " << url_.spec();
-
+    supervised_user_service->AddAccessRequest(
+        url_, base::Bind(&SupervisedUserInterstitial::OnAccessRequestAdded,
+                         weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -273,6 +274,14 @@ void SupervisedUserInterstitial::OnDontProceed() {
 void SupervisedUserInterstitial::OnURLFilterChanged() {
   if (ShouldProceed())
     interstitial_page_->Proceed();
+}
+
+void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
+  // TODO(akuegel): Figure out how to show the result of issuing the permission
+  // request in the UI. Currently, we assume the permission request was created
+  // successfully.
+  DVLOG(1) << "Sent access request for " << url_.spec()
+           << (success ? " successfully" : " unsuccessfully");
 }
 
 bool SupervisedUserInterstitial::ShouldProceed() {
