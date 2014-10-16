@@ -61,25 +61,57 @@ const int kMaxRetrySeedFetch = 5;
 // For the HTTP date headers, the resolution of the server time is 1 second.
 const int64 kServerTimeResolutionMs = 1000;
 
-// Experimentally makes 50% of genuine Canary users Stable variation configs,
-// to determine impact on stability. The field trial is set up in the client
-// code because it has to run before server-side configs are processed and is
-// created the first time the function is called.
-variations::Study_Channel GetOverrideCanaryChannel() {
-  static variations::Study_Channel override_channel =
-      variations::Study_Channel_UNKNOWN;
-  if (override_channel == variations::Study_Channel_UNKNOWN) {
+// Name of the field trial to control which experiments Canary users use.
+const char kChannelOverrideTrialName[] = "UMA-Variations-ChannelOverride";
+// This is the default behavior.
+const char kNoOverrideGroupName[] = "NoOverride";
+// Users in this group get Stable variation configs.
+const char kStableOverrideGroupName[] = "StableOverride";
+// Users in this group do not create any field trials from variation configs.
+const char kNoExperimentsGroupName[] = "NoExperiments";
+
+// Creates a field trial the first time it's called to control how Canary will
+// evaluate experiment configs, to determine impact on stability. Currently,
+// this makes 50% of Canary users not use server side experiments. The field
+// trial is set up in the client code because it has to run before server-side
+// configs are processed.
+void CreateChannelOverrideFieldTrial() {
+  static bool created = false;
+  if (!created) {
     scoped_refptr<base::FieldTrial> trial(
         base::FieldTrialList::FactoryGetFieldTrial(
-            "UMA-Variations-ChannelOverride", 100, "NoOverride", 2015, 1, 1,
+            kChannelOverrideTrialName, 100, kNoOverrideGroupName, 2015, 1, 1,
             base::FieldTrial::SESSION_RANDOMIZED, NULL));
-
-    static const char kStableOverrideGroup[] = "StableOverride";
-    trial->AppendGroup(kStableOverrideGroup, 50);
-    override_channel = (trial->group_name() == kStableOverrideGroup) ?
-        variations::Study_Channel_STABLE : variations::Study_Channel_CANARY;
+    // Currently, experimenting with 50% no experiments and 50% default, with
+    // the |kStableOverrideGroupName| intentionally at 0 for now.
+    trial->AppendGroup(kStableOverrideGroupName, 0);
+    trial->AppendGroup(kNoExperimentsGroupName, 50);
+    created = true;
   }
-  return override_channel;
+}
+
+// Returns the group name of the channel override field trial.
+std::string GetChannelOverrideFieldTrialGroup() {
+  return base::FieldTrialList::FindFullName(kChannelOverrideTrialName);
+}
+
+// Whether field trials should be created from server configs.
+bool ShouldCreateServerTrials() {
+  // Always use server trials if not on Canary.
+  if (chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_CANARY)
+    return true;
+  // On Canary, use server trials unless in |kNoExperimentsGroupName| group.
+  CreateChannelOverrideFieldTrial();
+  return GetChannelOverrideFieldTrialGroup() != kNoExperimentsGroupName;
+}
+
+// Returns the channel that should be on for evaluating variation configs when
+// running the Canary version, based on an experiment.
+variations::Study_Channel GetOverrideCanaryChannel() {
+  CreateChannelOverrideFieldTrial();
+  if (GetChannelOverrideFieldTrialGroup() == kStableOverrideGroupName)
+    return variations::Study_Channel_STABLE;
+  return variations::Study_Channel_CANARY;
 }
 
 // Wrapper around channel checking, used to enable channel mocking for
@@ -287,15 +319,17 @@ bool VariationsService::CreateTrialsFromSeed() {
   variations::Study_Channel channel = GetChannelForVariations();
   UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", channel);
 
-  variations::VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed,
-      g_browser_process->GetApplicationLocale(),
-      GetReferenceDateForExpiryChecks(local_state_),
-      current_version,
-      channel,
-      GetCurrentFormFactor(),
-      GetHardwareClass(),
-      base::Bind(&OverrideUIString));
+  if (ShouldCreateServerTrials()) {
+    variations::VariationsSeedProcessor().CreateTrialsFromSeed(
+        seed,
+        g_browser_process->GetApplicationLocale(),
+        GetReferenceDateForExpiryChecks(local_state_),
+        current_version,
+        channel,
+        GetCurrentFormFactor(),
+        GetHardwareClass(),
+        base::Bind(&OverrideUIString));
+  }
 
   const base::Time now = base::Time::Now();
 
@@ -622,6 +656,9 @@ void VariationsService::PerformSimulationWithVersion(
     scoped_ptr<variations::VariationsSeed> seed,
     const base::Version& version) {
   if (!version.IsValid())
+    return;
+
+  if (!ShouldCreateServerTrials())
     return;
 
   const base::ElapsedTimer timer;
