@@ -8,4 +8,5 @@ component("core") {
     "session_manager.cc",
     "session_manager.h",
   ]
+  defines = [ "SESSION_IMPLEMENTATION" ]
 }
