@@ -614,6 +614,7 @@ void ChromeClientImpl::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> f
     if (params.selectedFiles.size() > 0)
         params.initialValue = params.selectedFiles[0];
     params.useMediaCapture = fileChooser->settings().useMediaCapture;
+    params.needLocalPath = fileChooser->settings().allowsDirectoryUpload;
 
     WebFileChooserCompletionImpl* chooserCompletion =
         new WebFileChooserCompletionImpl(fileChooser);

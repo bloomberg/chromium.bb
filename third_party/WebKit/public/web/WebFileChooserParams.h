@@ -71,12 +71,18 @@ struct WebFileChooserParams {
     // provided for compatibility reasons.
     WebString capture;
     bool useMediaCapture;
+    // Whether WebFileChooserCompletion needs local paths or not. If the result
+    // of file chooser is handled by the implementation of
+    // WebFileChooserCompletion that can handle files without local paths,
+    // 'false' should be specified to the flag.
+    bool needLocalPath;
 
     WebFileChooserParams()
         : multiSelect(false)
         , directory(false)
         , saveAs(false)
         , useMediaCapture(false)
+        , needLocalPath(true)
     {
     }
 };
