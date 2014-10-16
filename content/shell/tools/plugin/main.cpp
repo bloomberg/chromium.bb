@@ -352,6 +352,7 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save)
             // Note: this intentionally avoids using pluginLog(), because that
             // requires running JS during document detach, which is forbidden.
             puts("PLUGIN: NPP_Destroy");
+            fflush(stdout);
         }
 
 #ifdef XP_MACOSX
