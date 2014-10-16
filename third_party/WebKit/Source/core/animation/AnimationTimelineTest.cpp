@@ -196,8 +196,8 @@ TEST_F(AnimationAnimationTimelineTest, PauseForTesting)
     AnimationPlayer* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
 
-    EXPECT_FLOAT_EQ(seekTime, player1->currentTimeInternal());
-    EXPECT_FLOAT_EQ(seekTime, player2->currentTimeInternal());
+    EXPECT_FLOAT_EQ(seekTime, player1->currentTime() / 1000.0);
+    EXPECT_FLOAT_EQ(seekTime, player2->currentTime() / 1000.0);
 }
 
 TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart)

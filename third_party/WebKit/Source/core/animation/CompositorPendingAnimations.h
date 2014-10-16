@@ -55,6 +55,7 @@ public:
     // Returns whether we are waiting for an animation to start and should
     // service again on the next frame.
     bool update(bool startOnCompositor = true);
+    void notifyAnimationStarted(double monotonicAnimationStartTime, bool startedOnCompositor);
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
     void trace(Visitor*);

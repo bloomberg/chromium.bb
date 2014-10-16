@@ -28,7 +28,7 @@ protected:
     AnimationPlayer* play(Animation* animation, double startTime)
     {
         AnimationPlayer* player = timeline->createAnimationPlayer(animation);
-        player->setStartTimeInternal(startTime);
+        player->setStartTime(startTime * 1000);
         player->update(TimingUpdateOnDemand);
         return player;
     }

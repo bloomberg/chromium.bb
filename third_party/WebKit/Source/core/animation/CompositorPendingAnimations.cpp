@@ -114,22 +114,34 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     }
 
     // If not, go ahead and start any animations that were waiting.
-    notifyCompositorAnimationStarted(monotonicallyIncreasingTime());
+    notifyAnimationStarted(monotonicallyIncreasingTime(), false);
 
     ASSERT(m_pending.isEmpty());
     return false;
 }
 
-void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
+void CompositorPendingAnimations::notifyAnimationStarted(double monotonicAnimationStartTime, bool startedOnCompositor)
 {
+    TRACE_EVENT0("blink", "CompositorPendingAnimations::notifyCompositorAnimationStarted");
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         AnimationPlayer* player = m_waitingForCompositorAnimationStart[i].get();
         if (player->hasStartTime())
             continue;
-        player->notifyCompositorStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime());
+        double effectiveStartTime = monotonicAnimationStartTime - player->timeline()->zeroTime();
+        if (startedOnCompositor) {
+            player->notifyCompositorStartTime(effectiveStartTime);
+        } else {
+            player->notifyStartTime(effectiveStartTime);
+        }
     }
 
     m_waitingForCompositorAnimationStart.clear();
+}
+
+void CompositorPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
+{
+    TRACE_EVENT0("blink", "CompositorPendingAnimations::notifyCompositorAnimationStarted");
+    notifyAnimationStarted(monotonicAnimationStartTime, true);
 }
 
 void CompositorPendingAnimations::trace(Visitor* visitor)
