@@ -28,6 +28,7 @@ if ({{variable}} == null) {
     for (java.util.Map.Entry<{{kind.key_kind|java_type(true)}}, {{kind.value_kind|java_type(true)}}> entry{{level}} : {{variable}}.entrySet()) {
         keys{{level}}[index{{level}}] = entry{{level}}.getKey();
         values{{level}}[index{{level}}] = entry{{level}}.getValue();
+        ++index{{level}};
     }
     {{encode('keys'~level, kind.key_kind|array, 'DataHeader.HEADER_SIZE', 0, level+1, False)|indent(4)}}
     {{encode('values'~level, kind.value_kind|array, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE', 0, level+1, False)|indent(4)}}
