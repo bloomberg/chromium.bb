@@ -63,6 +63,9 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
                                    ScreenlockBridge* screenlock_bridge);
   virtual ~EasyUnlockScreenlockStateHandler();
 
+  // Returns true if handler is not in INACTIVE state.
+  bool IsActive() const;
+
   // Changes internal state to |new_state| and updates the user's screenlock
   // accordingly.
   void ChangeState(State new_state);

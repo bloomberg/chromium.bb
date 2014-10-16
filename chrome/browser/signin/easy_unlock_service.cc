@@ -11,6 +11,8 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -143,7 +145,10 @@ class EasyUnlockService::BluetoothDetector
 class EasyUnlockService::PowerMonitor
     : public chromeos::PowerManagerClient::Observer {
  public:
-  explicit PowerMonitor(EasyUnlockService* service) : service_(service) {
+  explicit PowerMonitor(EasyUnlockService* service)
+      : service_(service),
+        waking_up_(false),
+        weak_ptr_factory_(this) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
         AddObserver(this);
   }
@@ -153,17 +158,33 @@ class EasyUnlockService::PowerMonitor
         RemoveObserver(this);
   }
 
+  bool waking_up() const { return waking_up_; }
+
  private:
   // chromeos::PowerManagerClient::Observer:
   virtual void SuspendImminent() override {
-    service_->DisableAppIfLoaded();
+    service_->PrepareForSuspend();
   }
 
   virtual void SuspendDone(const base::TimeDelta& sleep_duration) override {
-    service_->LoadApp();
+    waking_up_ = true;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PowerMonitor::ResetWakingUp,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(5));
+    service_->UpdateAppState();
+    // Note that |this| may get deleted after |UpdateAppState| is called.
+  }
+
+  void ResetWakingUp() {
+    waking_up_ = false;
+    service_->UpdateAppState();
   }
 
   EasyUnlockService* service_;
+  bool waking_up_;
+  base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
 };
@@ -423,9 +444,6 @@ void EasyUnlockService::LoadApp() {
 }
 
 void EasyUnlockService::DisableAppIfLoaded() {
-  // Make sure lock screen state set by the extension gets reset.
-  ResetScreenlockState();
-
   extensions::ComponentLoader* loader = GetComponentLoader(profile_);
   if (!loader->Exists(extension_misc::kEasyUnlockAppId))
     return;
@@ -458,14 +476,27 @@ void EasyUnlockService::UpdateAppState() {
     LoadApp();
 
 #if defined(OS_CHROMEOS)
-  if (!power_monitor_)
-    power_monitor_.reset(new PowerMonitor(this));
+    if (!power_monitor_)
+      power_monitor_.reset(new PowerMonitor(this));
 #endif
   } else {
-    DisableAppIfLoaded();
+    bool bluetooth_waking_up = false;
 #if defined(OS_CHROMEOS)
-    power_monitor_.reset();
+    // If the service is not allowed due to bluetooth not being detected just
+    // after system suspend is done, give bluetooth more time to be detected
+    // before disabling the app (and resetting screenlock state).
+    bluetooth_waking_up =
+        power_monitor_.get() && power_monitor_->waking_up() &&
+        !bluetooth_detector_->IsPresent();
 #endif
+
+    if (!bluetooth_waking_up) {
+      DisableAppIfLoaded();
+      ResetScreenlockState();
+#if defined(OS_CHROMEOS)
+      power_monitor_.reset();
+#endif
+    }
   }
 }
 
@@ -568,4 +599,12 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
   }
 }
 #endif
+
+void EasyUnlockService::PrepareForSuspend() {
+  DisableAppIfLoaded();
+  if (screenlock_state_handler_ && screenlock_state_handler_->IsActive()) {
+    UpdateScreenlockState(
+        EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING);
+  }
+}
 

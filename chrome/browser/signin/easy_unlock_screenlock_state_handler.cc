@@ -95,6 +95,10 @@ EasyUnlockScreenlockStateHandler::~EasyUnlockScreenlockStateHandler() {
   ChangeState(STATE_INACTIVE);
 }
 
+bool EasyUnlockScreenlockStateHandler::IsActive() const {
+  return state_ != STATE_INACTIVE;
+}
+
 void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   if (state_ == new_state)
     return;

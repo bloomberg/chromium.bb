@@ -266,9 +266,20 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, AuthenticatedNotInitialRun) {
   EXPECT_TRUE(lock_handler_->CustomIconHardlocksOnClick());
 }
 
+TEST_F(EasyUnlockScreenlockStateHandlerTest, IsActive) {
+  EXPECT_FALSE(state_handler_->IsActive());
+  state_handler_->ChangeState(
+      EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED);
+  EXPECT_TRUE(state_handler_->IsActive());
+  state_handler_->ChangeState(
+      EasyUnlockScreenlockStateHandler::STATE_INACTIVE);
+  EXPECT_FALSE(state_handler_->IsActive());
+}
+
 TEST_F(EasyUnlockScreenlockStateHandlerTest, BluetoothConnecting) {
   state_handler_->ChangeState(
       EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING);
+  EXPECT_TRUE(state_handler_->IsActive());
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
   EXPECT_EQ(ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
@@ -341,6 +352,7 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon) {
 
   for (size_t i = 0; i < states.size(); ++i) {
     state_handler_->ChangeState(states[i]);
+    EXPECT_TRUE(state_handler_->IsActive());
 
     EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount())
         << "State: " << states[i];

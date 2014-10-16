@@ -232,6 +232,9 @@ class EasyUnlockService : public KeyedService {
       const chromeos::EasyUnlockDeviceKeyDataList& key_data_list);
 #endif
 
+  // Updates the service to state for handling system suspend.
+  void PrepareForSuspend();
+
   Profile* profile_;
 
   // Created lazily in |GetScreenlockStateHandler|.
