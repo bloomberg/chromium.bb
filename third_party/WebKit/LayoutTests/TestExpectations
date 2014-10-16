@@ -1437,6 +1437,12 @@ crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-d
 
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
+# Disabled until the test plugin is fixed.
+crbug.com/363099 plugins/geturlnotify-during-document-teardown.html [ Failure ]
+crbug.com/363099 plugins/nested-plugin-objects.html [ Failure ]
+crbug.com/363099 plugins/netscape-destroy-plugin-script-objects.html [ Failure ]
+crbug.com/363099 plugins/open-and-close-window-with-plugin.html [ Failure ]
+
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
