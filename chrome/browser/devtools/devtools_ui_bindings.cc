@@ -66,6 +66,8 @@ static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
 static const char kTitleFormat[] = "Developer Tools - %s";
 
+const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
+
 typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
 base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
     LAZY_INSTANCE_INITIALIZER;
@@ -437,9 +439,20 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontendToBackend(
 void DevToolsUIBindings::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host, const std::string& message) {
   DCHECK(agent_host == agent_host_.get());
-  base::StringValue message_value(message);
-  CallClientFunction("InspectorFrontendAPI.dispatchMessage",
-                     &message_value, NULL, NULL);
+
+  if (message.length() < kMaxMessageChunkSize) {
+    base::StringValue message_value(message);
+    CallClientFunction("InspectorFrontendAPI.dispatchMessage",
+                       &message_value, NULL, NULL);
+    return;
+  }
+
+  base::FundamentalValue total_size(static_cast<int>(message.length()));
+  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+    base::StringValue message_value(message.substr(pos, kMaxMessageChunkSize));
+    CallClientFunction("InspectorFrontendAPI.dispatchMessageChunk",
+                       &message_value, pos ? NULL : &total_size, NULL);
+  }
 }
 
 void DevToolsUIBindings::AgentHostClosed(

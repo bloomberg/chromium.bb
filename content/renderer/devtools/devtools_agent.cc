@@ -52,6 +52,8 @@ base::subtle::AtomicWord DevToolsAgent::event_callback_;
 
 namespace {
 
+const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
+
 class WebKitClientMessageLoopImpl
     : public WebDevToolsAgentClient::WebKitClientMessageLoop {
  public:
@@ -116,8 +118,19 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 
 void DevToolsAgent::sendMessageToInspectorFrontend(
     const blink::WebString& message) {
-  Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(routing_id(),
-                                                         message.utf8()));
+  std::string msg(message.utf8());
+  if (msg.length() < kMaxMessageChunkSize) {
+    Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        routing_id(), msg, msg.size()));
+    return;
+  }
+
+  for (size_t pos = 0; pos < msg.length(); pos += kMaxMessageChunkSize) {
+    Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        routing_id(),
+        msg.substr(pos, kMaxMessageChunkSize),
+        pos ? 0 : msg.size()));
+  }
 }
 
 long DevToolsAgent::processId() {

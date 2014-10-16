@@ -6,6 +6,7 @@
 
 #include "content/child/child_thread.h"
 #include "content/common/devtools_messages.h"
+#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
@@ -14,6 +15,9 @@ using blink::WebSharedWorker;
 using blink::WebString;
 
 namespace content {
+
+static const size_t kMaxMessageChunkSize =
+    IPC::Channel::kMaximumMessageSize / 4;
 
 SharedWorkerDevToolsAgent::SharedWorkerDevToolsAgent(
     int route_id,
@@ -43,9 +47,19 @@ bool SharedWorkerDevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 
 void SharedWorkerDevToolsAgent::SendDevToolsMessage(
     const blink::WebString& message) {
+  std::string msg(message.utf8());
+  if (message.length() < kMaxMessageChunkSize) {
+    Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        route_id_, msg, msg.size()));
+    return;
+  }
+
+  for (size_t pos = 0; pos < msg.length(); pos += kMaxMessageChunkSize) {
     Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
         route_id_,
-        message.utf8()));
+        msg.substr(pos, kMaxMessageChunkSize),
+        pos ? 0 : msg.size()));
+  }
 }
 
 void SharedWorkerDevToolsAgent::SaveDevToolsAgentState(

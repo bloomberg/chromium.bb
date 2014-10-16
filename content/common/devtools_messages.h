@@ -55,8 +55,13 @@
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.
 // WebKit-level transport.
-IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                    std::string /* message */)
+
+// Sends response from the agent to the client. Supports chunked encoding.
+// First (the only) chunk arrives with the |total_size| != 0,
+// remaining chunks arrive with |total_size| == 0.
+IPC_MESSAGE_ROUTED2(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                    std::string /* message */,
+                    uint32 /* total_size */)
 
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the

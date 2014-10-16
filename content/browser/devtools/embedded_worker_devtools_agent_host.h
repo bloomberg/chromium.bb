@@ -68,7 +68,8 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   void AttachToWorker();
   void DetachFromWorker();
   void WorkerCreated();
-  void OnDispatchOnInspectorFrontend(const std::string& message);
+  void OnDispatchOnInspectorFrontend(const std::string& message,
+                                     uint32 total_size);
   void OnSaveAgentRuntimeState(const std::string& state);
 
   scoped_ptr<SharedWorkerInstance> shared_worker_;

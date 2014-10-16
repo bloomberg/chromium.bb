@@ -36,6 +36,8 @@ namespace content {
 
 namespace {
 
+const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
+
 // For now client must be a per-thread instance.
 // TODO(kinuko): This needs to be refactored when we start using thread pool
 // or having multiple clients per one thread.
@@ -243,8 +245,20 @@ void EmbeddedWorkerContextClient::reportConsoleMessage(
 
 void EmbeddedWorkerContextClient::dispatchDevToolsMessage(
     const blink::WebString& message) {
-  sender_->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-      worker_devtools_agent_route_id_, message.utf8()));
+  std::string msg(message.utf8());
+
+  if (msg.length() < kMaxMessageChunkSize) {
+    sender_->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        worker_devtools_agent_route_id_, msg, msg.size()));
+    return;
+  }
+
+  for (size_t pos = 0; pos < msg.length(); pos += kMaxMessageChunkSize) {
+    sender_->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        worker_devtools_agent_route_id_,
+        msg.substr(pos, kMaxMessageChunkSize),
+        pos ? 0 : msg.size()));
+  }
 }
 
 void EmbeddedWorkerContextClient::saveDevToolsAgentState(

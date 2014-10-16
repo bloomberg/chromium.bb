@@ -124,7 +124,7 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
   handler_impl_->SetPowerHandler(power_handler_.get());
   SetRenderViewHost(rvh);
   DevToolsProtocol::Notifier notifier(base::Bind(
-      &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend,
+      &RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend,
       base::Unretained(this)));
   handler_impl_->SetNotifier(notifier);
   tracing_handler_->SetNotifier(notifier);
@@ -164,7 +164,7 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
       overridden_response = handler_impl_->HandleCommand(command);
     if (overridden_response.get()) {
       if (!overridden_response->is_async_promise())
-        OnDispatchOnInspectorFrontend(overridden_response->Serialize());
+        DispatchOnInspectorFrontend(overridden_response->Serialize());
       return;
     }
   }
@@ -494,8 +494,16 @@ void RenderViewDevToolsAgentHost::OnSaveAgentRuntimeState(
 }
 
 void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
+    const std::string& message,
+    uint32 total_size) {
+  if (!IsAttached() || !render_view_host_)
+    return;
+  ProcessChunkedMessageFromAgent(message, total_size);
+}
+
+void RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend(
     const std::string& message) {
-  if (!render_view_host_)
+  if (!IsAttached() || !render_view_host_)
     return;
   SendMessageToClient(message);
 }

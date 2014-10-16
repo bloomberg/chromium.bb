@@ -41,7 +41,8 @@ class CONTENT_EXPORT DevToolsClient
 
   virtual bool isUnderTest() override;
 
-  void OnDispatchOnInspectorFrontend(const std::string& message);
+  void OnDispatchOnInspectorFrontend(const std::string& message,
+                                     uint32 total_size);
 
   scoped_ptr<blink::WebDevToolsFrontend> web_tools_frontend_;
 

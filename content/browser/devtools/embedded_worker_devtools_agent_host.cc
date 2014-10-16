@@ -219,8 +219,12 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerCreated() {
 }
 
 void EmbeddedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
-    const std::string& message) {
-  SendMessageToClient(message);
+    const std::string& message,
+    uint32 total_size) {
+  if (!IsAttached())
+    return;
+
+  ProcessChunkedMessageFromAgent(message, total_size);
 }
 
 void EmbeddedWorkerDevToolsAgentHost::OnSaveAgentRuntimeState(

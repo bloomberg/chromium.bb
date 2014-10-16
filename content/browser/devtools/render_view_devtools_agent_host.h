@@ -102,7 +102,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   bool OnSetTouchEventEmulationEnabled(const IPC::Message& message);
 
-  void OnDispatchOnInspectorFrontend(const std::string& message);
+  void OnDispatchOnInspectorFrontend(const std::string& message,
+                                     uint32 total_size);
+  void DispatchOnInspectorFrontend(const std::string& message);
   void OnSaveAgentRuntimeState(const std::string& state);
 
   void ClientDetachedFromRenderer();
