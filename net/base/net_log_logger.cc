@@ -117,7 +117,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCertStatusFlags); i++)
+    for (size_t i = 0; i < arraysize(kCertStatusFlags); i++)
       dict->SetInteger(kCertStatusFlags[i].name, kCertStatusFlags[i].constant);
 
     constants_dict->Set("certStatusFlag", dict);
@@ -128,7 +128,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLoadFlags); i++)
+    for (size_t i = 0; i < arraysize(kLoadFlags); i++)
       dict->SetInteger(kLoadFlags[i].name, kLoadFlags[i].constant);
 
     constants_dict->Set("loadFlag", dict);
@@ -139,7 +139,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLoadStateTable); i++)
+    for (size_t i = 0; i < arraysize(kLoadStateTable); i++)
       dict->SetInteger(kLoadStateTable[i].name, kLoadStateTable[i].constant);
 
     constants_dict->Set("loadState", dict);
@@ -150,7 +150,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNetErrors); i++)
+    for (size_t i = 0; i < arraysize(kNetErrors); i++)
       dict->SetInteger(ErrorToShortString(kNetErrors[i]), kNetErrors[i]);
 
     constants_dict->Set("netError", dict);

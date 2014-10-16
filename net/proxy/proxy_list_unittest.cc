@@ -58,7 +58,7 @@ TEST(ProxyListTest, SetFromPacString) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     ProxyList list;
     list.SetFromPacString(tests[i].pac_input);
     EXPECT_EQ(tests[i].pac_output, list.ToPacString());
@@ -84,7 +84,7 @@ TEST(ProxyListTest, RemoveProxiesWithoutScheme) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     ProxyList list;
     list.SetFromPacString(tests[i].pac_input);
     list.RemoveProxiesWithoutScheme(tests[i].filter);

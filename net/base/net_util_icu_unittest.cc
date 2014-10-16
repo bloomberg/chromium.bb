@@ -411,7 +411,7 @@ void CheckAdjustedOffsets(const std::string& url_string,
 }  // anonymous namespace
 
 TEST(NetUtilTest, IDNToUnicodeFast) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(idn_cases); i++) {
+  for (size_t i = 0; i < arraysize(idn_cases); i++) {
     for (size_t j = 0; j < arraysize(kLanguages); j++) {
       // ja || zh-TW,en || ko,ja -> IDNToUnicodeSlow
       if (j == 3 || j == 17 || j == 18)
@@ -427,7 +427,7 @@ TEST(NetUtilTest, IDNToUnicodeFast) {
 }
 
 TEST(NetUtilTest, IDNToUnicodeSlow) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(idn_cases); i++) {
+  for (size_t i = 0; i < arraysize(idn_cases); i++) {
     for (size_t j = 0; j < arraysize(kLanguages); j++) {
       // !(ja || zh-TW,en || ko,ja) -> IDNToUnicodeFast
       if (!(j == 3 || j == 17 || j == 18))
@@ -506,7 +506,7 @@ TEST(NetUtilTest, GetDirectoryListingEntry) {
          ",0,\"9.8 kB\",\"\");</script>\n"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     const std::string results = GetDirectoryListingEntry(
         WideToUTF16(test_cases[i].name),
         test_cases[i].raw_bytes,

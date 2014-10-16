@@ -22,7 +22,7 @@ const char* kSourceNames[] = {
   "CUSTOM",
   "TEST"
 };
-COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kSourceNames) == NUM_PROXY_CONFIG_SOURCES,
+COMPILE_ASSERT(arraysize(kSourceNames) == NUM_PROXY_CONFIG_SOURCES,
                source_names_incorrect_size);
 
 }  // namespace

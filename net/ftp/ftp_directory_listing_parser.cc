@@ -77,7 +77,7 @@ int ParseListing(const base::string16& text,
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(parsers); i++) {
+  for (size_t i = 0; i < arraysize(parsers); i++) {
     entries->clear();
     if (parsers[i].callback.Run()) {
       *server_type = parsers[i].server_type;

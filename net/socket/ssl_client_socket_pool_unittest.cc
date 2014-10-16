@@ -1279,7 +1279,7 @@ TEST_P(SSLClientSocketPoolTest, IPPooling) {
   };
 
   host_resolver_.set_synchronous_mode(true);
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_hosts); i++) {
+  for (size_t i = 0; i < arraysize(test_hosts); i++) {
     host_resolver_.rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 
@@ -1339,7 +1339,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
 
   TestCompletionCallback callback;
   int rv;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_hosts); i++) {
+  for (size_t i = 0; i < arraysize(test_hosts); i++) {
     host_resolver_.rules()->AddIPLiteralRule(
         test_hosts[i].name, test_hosts[i].iplist, std::string());
 

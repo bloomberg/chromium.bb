@@ -244,7 +244,7 @@ void AppendEscapedCharForHTMLImpl(typename str::value_type c, str* output) {
     { '\'', "&#39;" },
   };
   size_t k;
-  for (k = 0; k < ARRAYSIZE_UNSAFE(kCharsToEscape); ++k) {
+  for (k = 0; k < arraysize(kCharsToEscape); ++k) {
     if (c == kCharsToEscape[k].key) {
       const char* p = kCharsToEscape[k].replacement;
       while (*p)
@@ -252,7 +252,7 @@ void AppendEscapedCharForHTMLImpl(typename str::value_type c, str* output) {
       break;
     }
   }
-  if (k == ARRAYSIZE_UNSAFE(kCharsToEscape))
+  if (k == arraysize(kCharsToEscape))
     output->push_back(c);
 }
 
@@ -385,14 +385,14 @@ base::string16 UnescapeForHTML(const base::string16& input) {
   if (input.find(base::ASCIIToUTF16("&")) == std::string::npos)
     return input;
 
-  base::string16 ampersand_chars[ARRAYSIZE_UNSAFE(kEscapeToChars)];
+  base::string16 ampersand_chars[arraysize(kEscapeToChars)];
   base::string16 text(input);
   for (base::string16::iterator iter = text.begin();
        iter != text.end(); ++iter) {
     if (*iter == '&') {
       // Potential ampersand encode char.
       size_t index = iter - text.begin();
-      for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEscapeToChars); i++) {
+      for (size_t i = 0; i < arraysize(kEscapeToChars); i++) {
         if (ampersand_chars[i].empty()) {
           ampersand_chars[i] =
               base::ASCIIToUTF16(kEscapeToChars[i].ampersand_code);

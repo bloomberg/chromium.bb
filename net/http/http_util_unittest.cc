@@ -114,7 +114,7 @@ TEST(HttpUtilTest, HasHeader) {
     { "fOO: 1\r\nbar: 2", "foo", true },
     { "g: 0\r\nfoo: 1\r\nbar: 2", "foo", true },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     bool result = HttpUtil::HasHeader(tests[i].headers, tests[i].name);
     EXPECT_EQ(tests[i].expected_result, result);
   }
@@ -272,7 +272,7 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
     { "foo\nbar\n\r\njunk", 10 },
     { "foo\nbar\r\n\njunk", 10 },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     int input_len = static_cast<int>(strlen(tests[i].input));
     int eoh = HttpUtil::LocateEndOfHeaders(tests[i].input, input_len);
     EXPECT_EQ(tests[i].expected_result, eoh);
@@ -582,7 +582,7 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
       "HTTP/1.0 200 OK|Foo: 1Foo2: 3|Bar: 2||"
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string input = tests[i].input;
     std::replace(input.begin(), input.end(), '|', '\0');
     std::string raw = HttpUtil::AssembleRawHeaders(input.data(), input.size());
@@ -629,7 +629,7 @@ TEST(HttpUtilTest, RequestUrlSanitize) {
       "/foobar?query=1"
     }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     GURL url(GURL(tests[i].url));
     std::string expected_spec(tests[i].expected_spec);
     std::string expected_path(tests[i].expected_path);
@@ -725,7 +725,7 @@ TEST(HttpUtilTest, ParseContentType) {
     },
     // TODO(abarth): Add more interesting test cases.
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string mime_type;
     std::string charset;
     bool had_charset = false;
@@ -853,7 +853,7 @@ TEST(HttpUtilTest, ParseRanges) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::vector<net::HttpByteRange> ranges;
     bool return_value = HttpUtil::ParseRanges(std::string(tests[i].headers),
                                               &ranges);

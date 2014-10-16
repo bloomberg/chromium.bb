@@ -39,7 +39,7 @@ TEST(CryptoUtilsTest, NormalizeHostname) {
     { "www.google.com........", "www.google.com", },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(std::string(tests[i].expected),
               CryptoUtils::NormalizeHostname(tests[i].input));
   }
@@ -93,7 +93,7 @@ TEST(CryptoUtilsTest, TestExportKeyingMaterial) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_vector); i++) {
+  for (size_t i = 0; i < arraysize(test_vector); i++) {
     // Decode the test vector.
     string subkey_secret;
     string label;

@@ -441,7 +441,7 @@ TEST(DnsResponseTest, ParseToAddressList) {
       },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     const TestCase& t = cases[i];
     DnsResponse response(t.response_data, t.response_size, t.query_size);
     AddressList addr_list;
@@ -565,7 +565,7 @@ TEST(DnsResponseTest, ParseToAddressListFail) {
 
   const size_t kQuerySize = 12 + 7;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     const TestCase& t = cases[i];
 
     DnsResponse response(t.data, t.size, kQuerySize);

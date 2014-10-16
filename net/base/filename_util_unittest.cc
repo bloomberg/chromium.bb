@@ -183,7 +183,7 @@ TEST(FilenameUtilTest, FileURLConversion) {
 
   // First, we'll test that we can round-trip all of the above cases of URLs
   base::FilePath output;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(round_trip_cases); i++) {
+  for (size_t i = 0; i < arraysize(round_trip_cases); i++) {
     // convert to the file URL
     GURL file_url(FilePathToFileURL(
                       WStringAsFilePath(round_trip_cases[i].file)));
@@ -228,7 +228,7 @@ TEST(FilenameUtilTest, FileURLConversion) {
     //{L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
 #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(url_cases); i++) {
+  for (size_t i = 0; i < arraysize(url_cases); i++) {
     FileURLToFilePath(GURL(url_cases[i].url), &output);
     EXPECT_EQ(url_cases[i].file, FilePathAsWString(output));
   }
@@ -409,7 +409,7 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
 #endif  // !defined(OS_WIN)
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(safe_tests); ++i) {
+  for (size_t i = 0; i < arraysize(safe_tests); ++i) {
     base::FilePath file_path(safe_tests[i].filename);
     GenerateSafeFileName(safe_tests[i].mime_type, false, &file_path);
     EXPECT_EQ(safe_tests[i].expected_filename, file_path.value())
@@ -1651,13 +1651,13 @@ TEST(FilenameUtilTest, GenerateFileName) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(selection_tests); ++i)
+  for (size_t i = 0; i < arraysize(selection_tests); ++i)
     RunGenerateFileNameTestCase(&selection_tests[i]);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generation_tests); ++i)
+  for (size_t i = 0; i < arraysize(generation_tests); ++i)
     RunGenerateFileNameTestCase(&generation_tests[i]);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generation_tests); ++i) {
+  for (size_t i = 0; i < arraysize(generation_tests); ++i) {
     GenerateFilenameCase test_case = generation_tests[i];
     test_case.referrer_charset = "GBK";
     RunGenerateFileNameTestCase(&test_case);

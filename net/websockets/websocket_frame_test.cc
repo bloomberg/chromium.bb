@@ -31,7 +31,7 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
     { "\x81\x7F\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 10,
       GG_UINT64_C(0x7FFFFFFFFFFFFFFF) }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
@@ -51,7 +51,7 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
 
 TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
   static const char kMaskingKey[] = "\xDE\xAD\xBE\xEF";
-  COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMaskingKey) - 1 ==
+  COMPILE_ASSERT(arraysize(kMaskingKey) - 1 ==
                      WebSocketFrameHeader::kMaskingKeyLength,
                  incorrect_masking_key_size);
 
@@ -70,7 +70,7 @@ TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
     { "\x81\xFF\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xDE\xAD\xBE\xEF", 14,
       GG_UINT64_C(0x7FFFFFFFFFFFFFFF) }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   WebSocketMaskingKey masking_key;
   std::copy(kMaskingKey,
@@ -119,7 +119,7 @@ TEST(WebSocketFrameHeaderTest, FrameOpCodes) {
     { "\x8E\x00", 2, 0xE },
     { "\x8F\x00", 2, 0xF }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     WebSocketFrameHeader header(kTests[i].opcode);
@@ -155,7 +155,7 @@ TEST(WebSocketFrameHeaderTest, FinalBitAndReservedBits) {
     { "\x71\x00", 2, false, true, true, true },
     { "\xF1\x00", 2, true, true, true, true }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
@@ -196,7 +196,7 @@ TEST(WebSocketFrameHeaderTest, InsufficientBufferSize) {
     { GG_UINT64_C(0x10000), true, 14u },
     { GG_UINT64_C(0x7FFFFFFFFFFFFFFF), true, 14u }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     WebSocketFrameHeader header(WebSocketFrameHeader::kOpCodeText);
@@ -235,7 +235,7 @@ TEST(WebSocketFrameTest, MaskPayload) {
     { "\x00\x00\x00\x00", 0, "FooBar", "FooBar", 6 },
     { "\xFF\xFF\xFF\xFF", 0, "FooBar", "\xB9\x90\x90\xBD\x9E\x8D", 6 },
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     WebSocketMaskingKey masking_key;

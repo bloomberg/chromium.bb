@@ -118,7 +118,7 @@ TEST(NetUtilTest, GetIdentityFromURL) {
       "p&ssword",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     tests[i].input_url));
     GURL url(tests[i].input_url);
@@ -180,14 +180,14 @@ TEST(NetUtilTest, GetSpecificHeader) {
   };
 
   // Test first with google_headers.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string result =
         GetSpecificHeader(google_headers, tests[i].header_name);
     EXPECT_EQ(result, tests[i].expected);
   }
 
   // Test again with empty headers.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string result = GetSpecificHeader(std::string(), tests[i].header_name);
     EXPECT_EQ(result, std::string());
   }
@@ -224,7 +224,7 @@ TEST(NetUtilTest, CompliantHost) {
     {"1.2.3.4.5.", true},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(compliant_host_cases); ++i) {
+  for (size_t i = 0; i < arraysize(compliant_host_cases); ++i) {
     EXPECT_EQ(compliant_host_cases[i].expected_output,
               IsCanonicalizedHostCompliant(compliant_host_cases[i].host));
   }
@@ -274,7 +274,7 @@ TEST(NetUtilTest, ParseHostAndPort) {
     {"[]", false, "", -1},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string host;
     int port;
     bool ok = ParseHostAndPort(tests[i].input, &host, &port);
@@ -300,7 +300,7 @@ TEST(NetUtilTest, GetHostAndPort) {
     { GURL("http://[1::2]/x"), "[1::2]:80"},
     { GURL("http://[::a]:33/x"), "[::a]:33"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string host_and_port = GetHostAndPort(tests[i].url);
     EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
   }
@@ -318,7 +318,7 @@ TEST(NetUtilTest, GetHostAndOptionalPort) {
     { GURL("http://[1::2]/x"), "[1::2]"},
     { GURL("http://[::a]:33/x"), "[::a]:33"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string host_and_port = GetHostAndOptionalPort(tests[i].url);
     EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
   }
@@ -358,7 +358,7 @@ TEST(NetUtilTest, NetAddressToString_IPv4) {
     {{192, 168, 0, 1}, "192.168.0.1"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SockaddrStorage storage;
     MakeIPv4Address(tests[i].addr, 80, &storage);
     std::string result = NetAddressToString(storage.addr, storage.addr_len);
@@ -376,7 +376,7 @@ TEST(NetUtilTest, NetAddressToString_IPv6) {
      "fedc:ba98:7654:3210:fedc:ba98:7654:3210"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SockaddrStorage storage;
     MakeIPv6Address(tests[i].addr, 80, &storage);
     EXPECT_EQ(std::string(tests[i].result),
@@ -452,7 +452,7 @@ TEST(NetUtilTest, SimplifyUrlForRequest) {
       "foobar://user:pass@google.com:80/sup?yo",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
                                     tests[i].input_url));
     GURL input_url(GURL(tests[i].input_url));
@@ -465,12 +465,12 @@ TEST(NetUtilTest, SetExplicitlyAllowedPortsTest) {
   std::string invalid[] = { "1,2,a", "'1','2'", "1, 2, 3", "1 0,11,12" };
   std::string valid[] = { "", "1", "1,2", "1,2,3", "10,11,12,13" };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(invalid); ++i) {
+  for (size_t i = 0; i < arraysize(invalid); ++i) {
     SetExplicitlyAllowedPorts(invalid[i]);
     EXPECT_EQ(0, static_cast<int>(GetCountOfExplicitlyAllowedPorts()));
   }
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(valid); ++i) {
+  for (size_t i = 0; i < arraysize(valid); ++i) {
     SetExplicitlyAllowedPorts(valid[i]);
     EXPECT_EQ(i, GetCountOfExplicitlyAllowedPorts());
   }
@@ -683,7 +683,7 @@ TEST(NetUtilTest, IPNumberMatchesPrefix) {
       false
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s, %s", i,
                                     tests[i].cidr_literal,
                                     tests[i].ip_literal));

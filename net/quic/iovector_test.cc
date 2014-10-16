@@ -23,7 +23,7 @@ const char* const test_data[] = {
 
 TEST(IOVectorTest, CopyConstructor) {
   IOVector iov1;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     iov1.Append(const_cast<char*>(test_data[i]), strlen(test_data[i]));
   }
   IOVector iov2 = iov1;
@@ -37,7 +37,7 @@ TEST(IOVectorTest, CopyConstructor) {
 
 TEST(IOVectorTest, AssignmentOperator) {
   IOVector iov1;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     iov1.Append(const_cast<char*>(test_data[i]), strlen(test_data[i]));
   }
   IOVector iov2;
@@ -60,7 +60,7 @@ TEST(IOVectorTest, Append) {
 
   ASSERT_EQ(0u, iov.Size());
   ASSERT_TRUE(iov2 == nullptr);
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     const int str_len = strlen(test_data[i]);
     const int append_len = str_len / 2;
     // This should append a new block
@@ -91,8 +91,8 @@ TEST(IOVectorTest, AppendIovec) {
     {const_cast<char*>("bar"), 3},
     {const_cast<char*>("buzzzz"), 6}
   };
-  iov.AppendIovec(test_iov, ARRAYSIZE_UNSAFE(test_iov));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_iov); ++i) {
+  iov.AppendIovec(test_iov, arraysize(test_iov));
+  for (size_t i = 0; i < arraysize(test_iov); ++i) {
     EXPECT_EQ(test_iov[i].iov_base, iov.iovec()[i].iov_base);
     EXPECT_EQ(test_iov[i].iov_len, iov.iovec()[i].iov_len);
   }
@@ -100,14 +100,13 @@ TEST(IOVectorTest, AppendIovec) {
   // Test AppendIovecAtMostBytes.
   iov.Clear();
   // Stop in the middle of a block.
-  EXPECT_EQ(5u, iov.AppendIovecAtMostBytes(test_iov, ARRAYSIZE_UNSAFE(test_iov),
-                                           5));
+  EXPECT_EQ(5u, iov.AppendIovecAtMostBytes(test_iov, arraysize(test_iov), 5));
   EXPECT_EQ(5u, iov.TotalBufferSize());
   iov.Append(static_cast<char*>(test_iov[1].iov_base) + 2, 1);
   // Make sure the boundary case, where max_bytes == size of block also works.
   EXPECT_EQ(6u, iov.AppendIovecAtMostBytes(&test_iov[2], 1, 6));
-  ASSERT_LE(ARRAYSIZE_UNSAFE(test_iov), static_cast<size_t>(iov.Size()));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_iov); ++i) {
+  ASSERT_LE(arraysize(test_iov), static_cast<size_t>(iov.Size()));
+  for (size_t i = 0; i < arraysize(test_iov); ++i) {
     EXPECT_EQ(test_iov[i].iov_base, iov.iovec()[i].iov_base);
     EXPECT_EQ(test_iov[i].iov_len, iov.iovec()[i].iov_len);
   }
@@ -117,13 +116,13 @@ TEST(IOVectorTest, ConsumeHalfBlocks) {
   IOVector iov;
   int length = 0;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     const int str_len = strlen(test_data[i]);
     iov.Append(const_cast<char*>(test_data[i]), str_len);
     length += str_len;
   }
   const char* endp = iov.LastBlockEnd();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     const struct iovec* iov2 = iov.iovec();
     const size_t str_len = strlen(test_data[i]);
     size_t tmp = str_len / 2;
@@ -135,7 +134,7 @@ TEST(IOVectorTest, ConsumeHalfBlocks) {
     // Consume half of the first block.
     size_t consumed = iov.Consume(tmp);
     ASSERT_EQ(tmp, consumed);
-    ASSERT_EQ(ARRAYSIZE_UNSAFE(test_data) - i, static_cast<size_t>(iov.Size()));
+    ASSERT_EQ(arraysize(test_data) - i, static_cast<size_t>(iov.Size()));
     iov2 = iov.iovec();
     ASSERT_TRUE(iov2 != nullptr);
     ASSERT_TRUE(iov2[0].iov_base == test_data[i] + tmp);
@@ -144,8 +143,7 @@ TEST(IOVectorTest, ConsumeHalfBlocks) {
     // Consume the rest of the first block
     consumed = iov.Consume(str_len - tmp);
     ASSERT_EQ(str_len - tmp, consumed);
-    ASSERT_EQ(ARRAYSIZE_UNSAFE(test_data) - i - 1,
-              static_cast<size_t>(iov.Size()));
+    ASSERT_EQ(arraysize(test_data) - i - 1, static_cast<size_t>(iov.Size()));
     iov2 = iov.iovec();
     if (iov.Size() > 0) {
       ASSERT_TRUE(iov2 != nullptr);
@@ -161,12 +159,12 @@ TEST(IOVectorTest, ConsumeTwoAndHalfBlocks) {
   IOVector iov;
   int length = 0;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     const int str_len = strlen(test_data[i]);
     iov.Append(const_cast<char*>(test_data[i]), str_len);
     length += str_len;
   }
-  const size_t last_len = strlen(test_data[ARRAYSIZE_UNSAFE(test_data) - 1]);
+  const size_t last_len = strlen(test_data[arraysize(test_data) - 1]);
   const size_t half_len = last_len / 2;
 
   const char* endp = iov.LastBlockEnd();
@@ -176,7 +174,7 @@ TEST(IOVectorTest, ConsumeTwoAndHalfBlocks) {
   ASSERT_TRUE(iov2 != nullptr);
   ASSERT_EQ(1u, iov.Size());
   ASSERT_TRUE(iov2[0].iov_base ==
-              test_data[ARRAYSIZE_UNSAFE(test_data) - 1] + last_len - half_len);
+              test_data[arraysize(test_data) - 1] + last_len - half_len);
   ASSERT_EQ(half_len, iov2[0].iov_len);
   ASSERT_TRUE(iov.LastBlockEnd() == endp);
 
@@ -192,7 +190,7 @@ TEST(IOVectorTest, ConsumeTooMuch) {
   IOVector iov;
   int length = 0;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     const int str_len = strlen(test_data[i]);
     iov.Append(const_cast<char*>(test_data[i]), str_len);
     length += str_len;
@@ -217,14 +215,14 @@ TEST(IOVectorTest, Clear) {
   IOVector iov;
   int length = 0;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     const int str_len = strlen(test_data[i]);
     iov.Append(const_cast<char*>(test_data[i]), str_len);
     length += str_len;
   }
   const struct iovec* iov2 = iov.iovec();
   ASSERT_TRUE(iov2 != nullptr);
-  ASSERT_EQ(ARRAYSIZE_UNSAFE(test_data), static_cast<size_t>(iov.Size()));
+  ASSERT_EQ(arraysize(test_data), static_cast<size_t>(iov.Size()));
 
   iov.Clear();
   iov2 = iov.iovec();

@@ -3238,7 +3238,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
     test_cases[2].expected_headers["version"] = "HTTP/1.1";
   }
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     scoped_ptr<SpdyFrame> req(
         spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
     MockWrite writes[] = { CreateMockWrite(*req) };
@@ -3351,7 +3351,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     // Construct the request.
     scoped_ptr<SpdyFrame> frame_req(
         spdy_util_.ConstructSpdyGet(test_cases[i].extra_headers[0],
@@ -3455,7 +3455,7 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
     { 0, { NULL }, },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     scoped_ptr<SpdyFrame> req(
         spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
     scoped_ptr<SpdyFrame> rst(
@@ -3511,7 +3511,7 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
     { syn_reply_wrong_length.get(), },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     scoped_ptr<SpdyFrame> req(
         spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
     scoped_ptr<SpdyFrame> rst(

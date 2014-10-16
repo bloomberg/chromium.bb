@@ -32,7 +32,7 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
   };
   GURL origin("http://www.example.com");
   HttpAuthHandlerBasic::Factory factory;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string challenge = "Basic realm=\"Atlantis\"";
     scoped_ptr<HttpAuthHandler> basic;
     EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
@@ -90,7 +90,7 @@ TEST(HttpAuthHandlerBasicTest, HandleAnotherChallenge) {
       tests[0].challenge, HttpAuth::AUTH_SERVER, origin,
       BoundNetLog(), &basic));
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string challenge(tests[i].challenge);
     HttpAuthChallengeTokenizer tok(challenge.begin(),
                                    challenge.end());
@@ -183,7 +183,7 @@ TEST(HttpAuthHandlerBasicTest, InitFromChallenge) {
   };
   HttpAuthHandlerBasic::Factory factory;
   GURL origin("http://www.example.com");
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string challenge = tests[i].challenge;
     scoped_ptr<HttpAuthHandler> basic;
     int rv = factory.CreateAuthHandlerFromString(

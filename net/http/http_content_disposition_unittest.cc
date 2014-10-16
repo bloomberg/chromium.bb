@@ -195,7 +195,7 @@ TEST(HttpContentDispositionTest, Filename) {
     {"attachment; foobar=x; filename=\"foo.html\"", "",
       L"foo.html"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     HttpContentDisposition header(tests[i].header, tests[i].referrer_charset);
     EXPECT_EQ(tests[i].expected,
         base::UTF8ToWide(header.filename()))
@@ -503,7 +503,7 @@ TEST(HttpContentDispositionTest, tc2231) {
     // TODO(abarth): http://greenbytes.de/tech/tc2231/#attrfc2047token
     // TODO(abarth): http://greenbytes.de/tech/tc2231/#attrfc2047quoted
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     HttpContentDisposition header(tests[i].header, std::string());
     EXPECT_EQ(tests[i].expected_type, header.type())
         << "Failed on input: " << tests[i].header;
@@ -576,7 +576,7 @@ TEST(HttpContentDispositionTest, ParseResult) {
       HttpContentDisposition::HAS_NAME },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const ParseResultTestCase& test_case = kTestCases[i];
     HttpContentDisposition content_disposition(test_case.header, "utf-8");
     int result = content_disposition.parse_result_flags();

@@ -66,7 +66,7 @@ TEST(DnsHostsTest, ParseHosts) {
   };
 
   DnsHosts expected_hosts, actual_hosts;
-  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  PopulateExpectedHosts(kEntries, arraysize(kEntries), &expected_hosts);
   ParseHosts(kContents, &actual_hosts);
   ASSERT_EQ(expected_hosts, actual_hosts);
 }
@@ -79,7 +79,7 @@ TEST(DnsHostsTest, ParseHosts_CommaIsToken) {
   };
 
   DnsHosts expected_hosts, actual_hosts;
-  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  PopulateExpectedHosts(kEntries, arraysize(kEntries), &expected_hosts);
   ParseHostsWithCommaModeForTesting(
       kContents, &actual_hosts, PARSE_HOSTS_COMMA_IS_TOKEN);
   ASSERT_EQ(expected_hosts, actual_hosts);
@@ -94,7 +94,7 @@ TEST(DnsHostsTest, ParseHosts_CommaIsWhitespace) {
   };
 
   DnsHosts expected_hosts, actual_hosts;
-  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  PopulateExpectedHosts(kEntries, arraysize(kEntries), &expected_hosts);
   ParseHostsWithCommaModeForTesting(
       kContents, &actual_hosts, PARSE_HOSTS_COMMA_IS_WHITESPACE);
   ASSERT_EQ(expected_hosts, actual_hosts);
@@ -116,7 +116,7 @@ TEST(DnsHostsTest, ParseHosts_CommaModeByPlatform) {
 #endif
 
   DnsHosts expected_hosts, actual_hosts;
-  PopulateExpectedHosts(kEntries, ARRAYSIZE_UNSAFE(kEntries), &expected_hosts);
+  PopulateExpectedHosts(kEntries, arraysize(kEntries), &expected_hosts);
   ParseHosts(kContents, &actual_hosts);
   ASSERT_EQ(expected_hosts, actual_hosts);
 }

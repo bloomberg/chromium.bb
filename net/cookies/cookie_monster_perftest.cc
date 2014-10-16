@@ -363,7 +363,7 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
       0,
     },
   };
-  for (int ci = 0; ci < static_cast<int>(ARRAYSIZE_UNSAFE(test_cases)); ++ci) {
+  for (int ci = 0; ci < static_cast<int>(arraysize(test_cases)); ++ci) {
     const TestCase& test_case(test_cases[ci]);
     scoped_refptr<CookieMonster> cm(
         CreateMonsterFromStoreForGC(

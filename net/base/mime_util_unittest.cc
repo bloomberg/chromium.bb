@@ -33,7 +33,7 @@ TEST(MimeUtilTest, ExtensionTest) {
   std::string mime_type;
   bool rv;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     rv = GetMimeTypeFromExtension(tests[i].extension, &mime_type);
     EXPECT_EQ(tests[i].valid, rv);
     if (rv)
@@ -58,7 +58,7 @@ TEST(MimeUtilTest, FileTest) {
   std::string mime_type;
   bool rv;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     rv = GetMimeTypeFromFile(base::FilePath(tests[i].file_path),
                                   &mime_type);
     EXPECT_EQ(tests[i].valid, rv);
@@ -274,7 +274,7 @@ TEST(MimeUtilTest, ParseCodecString) {
     { ",",                          2, { "", "" }             },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::vector<std::string> codecs_out;
     ParseCodecString(tests[i].original, &codecs_out, true);
     ASSERT_EQ(tests[i].expected_size, codecs_out.size());
@@ -401,7 +401,7 @@ TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
     { "aUDIo/*",    6, "wav" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::vector<base::FilePath::StringType> extensions;
     GetExtensionsForMimeType(tests[i].mime_type, &extensions);
     ASSERT_TRUE(tests[i].min_expected_size <= extensions.size());

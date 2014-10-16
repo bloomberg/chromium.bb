@@ -383,7 +383,7 @@ TEST_F(MultiThreadedCertVerifierTest, RequestParamsComparators) {
       -1,
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
 
     const MultiThreadedCertVerifier::RequestParams& key1 = tests[i].key1;

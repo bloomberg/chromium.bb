@@ -126,7 +126,7 @@ TEST(WebSocketFrameParserTest, DecodeManyFrames) {
     { "\x81\x05" "Ninth", 7, "Ninth", 5 },
     { "\x81\x05" "Tenth", 7, "Tenth", 5 }
   };
-  static const int kNumInputs = ARRAYSIZE_UNSAFE(kInputs);
+  static const int kNumInputs = arraysize(kInputs);
 
   std::vector<char> input;
   // Concatenate all frames.
@@ -432,7 +432,7 @@ TEST(WebSocketFrameParserTest, InvalidLengthEncoding) {
     { "\x81\x7F\x00\x00\x00\x00\x00\x00\x00\x00", 10 },
     { "\x81\x7E\x00\x00\x00\x00\x00\x00\xFF\xFF", 10 },
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     const char* frame_header = kTests[i].frame_header;
@@ -480,7 +480,7 @@ TEST(WebSocketFrameParserTest, FrameTypes) {
     { "\x8E\x00", 2, 0xE },
     { "\x8F\x00", 2, 0xF }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     const char* frame_header = kTests[i].frame_header;
@@ -533,7 +533,7 @@ TEST(WebSocketFrameParserTest, FinalBitAndReservedBits) {
     { "\x71\x00", 2, false, true, true, true },
     { "\xF1\x00", 2, true, true, true, true }
   };
-  static const int kNumTests = ARRAYSIZE_UNSAFE(kTests);
+  static const int kNumTests = arraysize(kTests);
 
   for (int i = 0; i < kNumTests; ++i) {
     const char* frame_header = kTests[i].frame_header;

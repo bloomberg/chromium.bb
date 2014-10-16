@@ -718,7 +718,7 @@ TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
   // If things don't converge by the time we've done 100K trials, then
   // clearly one or more of the expected intervals are wrong.
   while (global_stats.num_runs < 100000) {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(trials); ++i) {
+    for (size_t i = 0; i < arraysize(trials); ++i) {
       ++global_stats.num_runs;
       ++trials[i].stats.num_runs;
       double ratio_unprotected = SimulateDowntime(
@@ -746,7 +746,7 @@ TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
 
   // Print individual trial results for optional manual evaluation.
   double max_increase_ratio = 0.0;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(trials); ++i) {
+  for (size_t i = 0; i < arraysize(trials); ++i) {
     double increase_ratio;
     trials[i].stats.DidConverge(&increase_ratio);
     max_increase_ratio = std::max(max_increase_ratio, increase_ratio);

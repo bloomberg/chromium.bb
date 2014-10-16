@@ -441,7 +441,7 @@ TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
     { "2001:db8:0::42", "::1", true },
 #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); i++) {
+  for (size_t i = 0; i < arraysize(tests); i++) {
     SCOPED_TRACE(std::string("Connecting from ") +  tests[i].local_address +
                  std::string(" to ") + tests[i].remote_address);
 

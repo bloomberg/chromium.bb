@@ -1958,7 +1958,7 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
   {
     scoped_refptr<CookieMonster> cmout(new CookieMonster(store.get(), NULL));
     for (const CookiesInputInfo* p = input_info;
-         p < &input_info[ARRAYSIZE_UNSAFE(input_info)];
+         p < &input_info[arraysize(input_info)];
          p++) {
       EXPECT_TRUE(SetCookieWithDetails(cmout.get(),
                                        p->url,
@@ -2112,7 +2112,7 @@ TEST_F(CookieMonsterTest, MAYBE_GarbageCollectionTriggers) {
     }
   };
 
-  for (int ci = 0; ci < static_cast<int>(ARRAYSIZE_UNSAFE(test_cases)); ++ci) {
+  for (int ci = 0; ci < static_cast<int>(arraysize(test_cases)); ++ci) {
     const TestCase *test_case = &test_cases[ci];
     scoped_refptr<CookieMonster> cm(
         CreateMonsterFromStoreForGC(

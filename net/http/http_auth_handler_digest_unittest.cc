@@ -351,7 +351,7 @@ TEST(HttpAuthHandlerDigestTest, ParseChallenge) {
   GURL origin("http://www.example.com");
   scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_ptr<HttpAuthHandler> handler;
     int rv = factory->CreateAuthHandlerFromString(tests[i].challenge,
                                                   HttpAuth::AUTH_SERVER,
@@ -516,7 +516,7 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
   GURL origin("http://www.example.com");
   scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_ptr<HttpAuthHandler> handler;
     int rv = factory->CreateAuthHandlerFromString(tests[i].challenge,
                                                   HttpAuth::AUTH_SERVER,

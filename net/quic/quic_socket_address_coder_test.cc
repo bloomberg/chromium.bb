@@ -100,7 +100,7 @@ TEST(QuicSocketAddressCoderTest, EncodeAndDecode) {
     { "::1", 65534 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_case); i++) {
+  for (size_t i = 0; i < arraysize(test_case); i++) {
     IPAddressNumber ip;
     ASSERT_TRUE(ParseIPLiteralToNumber(test_case[i].ip_literal, &ip));
     QuicSocketAddressCoder encoder(IPEndPoint(ip, test_case[i].port));

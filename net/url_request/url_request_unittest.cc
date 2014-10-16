@@ -6342,7 +6342,7 @@ TEST_F(URLRequestTestHTTP, EmptyHttpUserAgentSettings) {
                 { "echoheader?Accept-Charset", "None" },
                 { "echoheader?User-Agent", "" } };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); i++) {
+  for (size_t i = 0; i < arraysize(tests); i++) {
     TestDelegate d;
     scoped_ptr<URLRequest> req(context.CreateRequest(
         test_server_.GetURL(tests[i].request), DEFAULT_PRIORITY, &d, NULL));

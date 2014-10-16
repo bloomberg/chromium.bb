@@ -129,7 +129,7 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
   http_auth_handler_factory->SetURLSecurityManager(
       "negotiate", &url_security_manager);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     // Make a HttpResponseHeaders object.
     std::string headers_with_status_line("HTTP/1.1 401 Unauthorized\n");
     headers_with_status_line += tests[i].headers;

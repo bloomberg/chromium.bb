@@ -23,7 +23,7 @@ TEST(HttpByteRangeTest, ValidRanges) {
     {  -1, -1, 100000, true },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::HttpByteRange range;
     range.set_first_byte_position(tests[i].first_byte_position);
     range.set_last_byte_position(tests[i].last_byte_position);
@@ -55,7 +55,7 @@ TEST(HttpByteRangeTest, SetInstanceSize) {
     {  10, 10000, -1, 1000000, true, 10, 10000 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::HttpByteRange range;
     range.set_first_byte_position(tests[i].first_byte_position);
     range.set_last_byte_position(tests[i].last_byte_position);
@@ -86,7 +86,7 @@ TEST(HttpByteRangeTest, GetHeaderValue) {
                {net::HttpByteRange::Bounded(0, -1),      "bytes=0-"},
                {net::HttpByteRange::RightUnbounded(100), "bytes=100-"},
                {net::HttpByteRange::Suffix(100),         "bytes=-100"}, };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(tests[i].expected, tests[i].range.GetHeaderValue());
   }
 }

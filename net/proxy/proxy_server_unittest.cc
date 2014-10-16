@@ -159,7 +159,7 @@ TEST(ProxyServerTest, FromURI) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::ProxyServer uri =
         net::ProxyServer::FromURI(tests[i].input_uri,
                                   net::ProxyServer::SCHEME_HTTP);
@@ -202,7 +202,7 @@ TEST(ProxyServerTest, Invalid) {
     "http:",  // ambiguous, but will fail because of bad port.
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::ProxyServer uri =
         net::ProxyServer::FromURI(tests[i], net::ProxyServer::SCHEME_HTTP);
     EXPECT_FALSE(uri.is_valid());
@@ -220,7 +220,7 @@ TEST(ProxyServerTest, Whitespace) {
     "  \tfoopy:80  ",
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::ProxyServer uri =
         net::ProxyServer::FromURI(tests[i], net::ProxyServer::SCHEME_HTTP);
     EXPECT_EQ("foopy:80", uri.ToURI());
@@ -279,7 +279,7 @@ TEST(ProxyServerTest, FromPACString) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::ProxyServer uri = net::ProxyServer::FromPacString(tests[i].input_pac);
     EXPECT_TRUE(uri.is_valid());
     EXPECT_EQ(tests[i].expected_uri, uri.ToURI());
@@ -295,7 +295,7 @@ TEST(ProxyServerTest, FromPACStringInvalid) {
     "DIRECT foopy:10",  // direct cannot have host/port.
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     net::ProxyServer uri = net::ProxyServer::FromPacString(tests[i]);
     EXPECT_FALSE(uri.is_valid());
   }
@@ -335,7 +335,7 @@ TEST(ProxyServerTest, ComparatorAndEquality) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     // Parse the expected inputs to ProxyServer instances.
     const net::ProxyServer server1 =
         net::ProxyServer::FromURI(

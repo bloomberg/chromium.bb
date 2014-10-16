@@ -308,7 +308,7 @@ TEST(ProxyConfigTest, ParseProxyRules) {
 
   ProxyConfig config;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     config.proxy_rules().ParseFromString(tests[i].proxy_rules);
 
     EXPECT_EQ(tests[i].type, config.proxy_rules().type);

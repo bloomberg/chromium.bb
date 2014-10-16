@@ -196,7 +196,7 @@ TEST(ProxyConfigServiceWinTest, SetFromIEConfig) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ie_config = {
         tests[i].ie_config.auto_detect,
         const_cast<wchar_t*>(tests[i].ie_config.auto_config_url),

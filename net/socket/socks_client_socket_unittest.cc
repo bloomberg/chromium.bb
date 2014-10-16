@@ -214,7 +214,7 @@ TEST_F(SOCKSClientSocketTest, HandshakeFailures) {
 
   //---------------------------------------
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     MockWrite data_writes[] = {
         MockWrite(SYNCHRONOUS, kSOCKSOkRequest, arraysize(kSOCKSOkRequest)) };
     MockRead data_reads[] = {

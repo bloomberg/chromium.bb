@@ -29,7 +29,7 @@ struct TestData {
   { "::1", "[::1]", true },
   { "2001:db8:0::42", "[2001:db8::42]", true },
 };
-int test_count = ARRAYSIZE_UNSAFE(tests);
+int test_count = arraysize(tests);
 
 class IPEndPointTest : public PlatformTest {
  public:

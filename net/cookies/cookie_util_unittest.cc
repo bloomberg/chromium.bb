@@ -55,7 +55,7 @@ TEST(CookieUtilTest, TestDomainIsHostOnly) {
     { ".google.com",    false }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(tests[i].is_host_only,
               net::cookie_util::DomainIsHostOnly(tests[i].str));
   }
@@ -138,7 +138,7 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
   };
 
   base::Time parsed_time;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     parsed_time = net::cookie_util::ParseCookieTime(tests[i].str);
     if (!tests[i].valid) {
       EXPECT_FALSE(!parsed_time.is_null()) << tests[i].str;

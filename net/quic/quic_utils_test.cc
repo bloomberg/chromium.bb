@@ -53,7 +53,7 @@ TEST(QuicUtilsTest, StringToHexASCIIDumpArgTypes) {
       "0x0000:  6f72 6967 696e 616c                      original\n", },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(tests[i].expected,
               QuicUtils::StringToHexASCIIDump(tests[i].input.c_str()));
     EXPECT_EQ(tests[i].expected,

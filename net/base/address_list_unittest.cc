@@ -121,7 +121,7 @@ TEST(AddressListTest, CreateFromIPAddressList) {
 
   // Construct a list of ip addresses.
   IPAddressList ip_list;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     IPAddressNumber ip_number;
     ASSERT_TRUE(ParseIPLiteralToNumber(tests[i].ip_address, &ip_number));
     ip_list.push_back(ip_number);
@@ -131,7 +131,7 @@ TEST(AddressListTest, CreateFromIPAddressList) {
                                                                kCanonicalName);
   std::string canonical_name;
   EXPECT_EQ(kCanonicalName, test_list.canonical_name());
-  EXPECT_EQ(ARRAYSIZE_UNSAFE(tests), test_list.size());
+  EXPECT_EQ(arraysize(tests), test_list.size());
 }
 
 }  // namespace

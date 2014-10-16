@@ -681,7 +681,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicGConfTest) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
     MockEnvironment* env = new MockEnvironment;
@@ -989,7 +989,7 @@ TEST_F(ProxyConfigServiceLinuxTest, BasicEnvTest) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
     MockEnvironment* env = new MockEnvironment;
@@ -1493,7 +1493,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEConfigParser) {
 
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
     MockEnvironment* env = new MockEnvironment;

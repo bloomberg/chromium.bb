@@ -7601,7 +7601,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
 
   session_deps_.use_alternate_protocols = true;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service.reset(
         ProxyService::CreateFixed(tests[i].proxy_server));
     scoped_refptr<HttpNetworkSession> session(
@@ -7664,7 +7664,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
 
   session_deps_.use_alternate_protocols = true;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service.reset(
         ProxyService::CreateFixed(tests[i].proxy_server));
     scoped_refptr<HttpNetworkSession> session(
@@ -7734,7 +7734,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
 
   session_deps_.use_alternate_protocols = true;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     session_deps_.proxy_service.reset(
         ProxyService::CreateFixed(tests[i].proxy_server));
     scoped_refptr<HttpNetworkSession> session(
@@ -9652,7 +9652,7 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
         TestRound(kGetAuth, kFailure, kAuthErr)}},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_configs); ++i) {
+  for (size_t i = 0; i < arraysize(test_configs); ++i) {
     HttpAuthHandlerMock::Factory* auth_factory(
         new HttpAuthHandlerMock::Factory());
     session_deps_.http_auth_handler_factory.reset(auth_factory);
