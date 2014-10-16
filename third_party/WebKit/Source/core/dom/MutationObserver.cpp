@@ -209,7 +209,7 @@ WillBeHeapHashSet<RawPtrWillBeMember<Node> > MutationObserver::getObservedNodes(
 
 bool MutationObserver::canDeliver()
 {
-    return !m_callback->executionContext()->activeDOMObjectsAreSuspended();
+    return m_callback->canInvokeCallback();
 }
 
 void MutationObserver::deliver()

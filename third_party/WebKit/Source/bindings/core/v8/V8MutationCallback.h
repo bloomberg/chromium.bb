@@ -47,6 +47,7 @@ public:
 
     virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) override;
     virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    virtual bool canInvokeCallback() const override { return ActiveDOMCallback::canInvokeCallback(); }
 
 private:
     V8MutationCallback(v8::Handle<v8::Function>, v8::Handle<v8::Object>, ScriptState*);

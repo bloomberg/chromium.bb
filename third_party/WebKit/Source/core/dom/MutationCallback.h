@@ -46,6 +46,7 @@ public:
 
     virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) = 0;
     virtual ExecutionContext* executionContext() const = 0;
+    virtual bool canInvokeCallback() const = 0;
 };
 
 }
