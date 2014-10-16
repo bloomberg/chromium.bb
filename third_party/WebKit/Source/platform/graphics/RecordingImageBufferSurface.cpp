@@ -16,11 +16,12 @@
 
 namespace blink {
 
-RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
+RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
     , m_imageBuffer(0)
     , m_initialSaveCount(0)
     , m_frameWasCleared(true)
+    , m_fallbackFactory(fallbackFactory)
 {
     initializeCurrentFrame();
 }
@@ -60,42 +61,49 @@ void RecordingImageBufferSurface::setImageBuffer(ImageBuffer* imageBuffer)
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingOverwrite);
         m_imageBuffer->context()->resetCanvas(m_currentFrame->getRecordingCanvas());
     }
+    if (m_fallbackSurface) {
+        m_fallbackSurface->setImageBuffer(imageBuffer);
+    }
 }
 
 void RecordingImageBufferSurface::willAccessPixels()
 {
-    fallBackToRasterCanvas();
+    if (m_fallbackSurface)
+        m_fallbackSurface->willAccessPixels();
+    else
+        fallBackToRasterCanvas();
 }
 
 void RecordingImageBufferSurface::fallBackToRasterCanvas()
 {
-    if (m_rasterCanvas) {
+    if (m_fallbackSurface) {
         ASSERT(!m_currentFrame);
         return;
     }
 
-    m_rasterCanvas = adoptPtr(SkCanvas::NewRasterN32(size().width(), size().height()));
+    m_fallbackSurface = m_fallbackFactory->createSurface(size(), opacityMode());
+    m_fallbackSurface->setImageBuffer(m_imageBuffer);
 
     if (m_previousFrame) {
-        m_previousFrame->draw(m_rasterCanvas.get());
+        m_previousFrame->draw(m_fallbackSurface->canvas());
         m_previousFrame.clear();
     }
     if (m_currentFrame) {
         RefPtr<SkPicture> currentPicture = adoptRef(m_currentFrame->endRecording());
-        currentPicture->draw(m_rasterCanvas.get());
+        currentPicture->draw(m_fallbackSurface->canvas());
         m_currentFrame.clear();
     }
 
     if (m_imageBuffer) {
         m_imageBuffer->context()->setRegionTrackingMode(GraphicsContext::RegionTrackingDisabled);
-        m_imageBuffer->context()->resetCanvas(m_rasterCanvas.get());
+        m_imageBuffer->context()->resetCanvas(m_fallbackSurface->canvas());
     }
 }
 
 SkCanvas* RecordingImageBufferSurface::canvas() const
 {
-    if (m_rasterCanvas)
-        return m_rasterCanvas.get();
+    if (m_fallbackSurface)
+        return m_fallbackSurface->canvas();
 
     ASSERT(m_currentFrame->getRecordingCanvas());
     return m_currentFrame->getRecordingCanvas();
@@ -103,6 +111,9 @@ SkCanvas* RecordingImageBufferSurface::canvas() const
 
 PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
 {
+    if (m_fallbackSurface)
+        return nullptr;
+
     bool canUsePicture = finalizeFrameInternal();
     m_imageBuffer->didFinalizeFrame();
 
@@ -110,25 +121,35 @@ PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
         return m_previousFrame;
     }
 
-    if (!m_rasterCanvas)
+    if (!m_fallbackSurface)
         fallBackToRasterCanvas();
     return nullptr;
 }
 
-void RecordingImageBufferSurface::finalizeFrame(const FloatRect &)
+void RecordingImageBufferSurface::finalizeFrame(const FloatRect &dirtyRect)
 {
-    if (!finalizeFrameInternal() && !m_rasterCanvas) {
-        fallBackToRasterCanvas();
+    if (m_fallbackSurface) {
+        m_fallbackSurface->finalizeFrame(dirtyRect);
+        return;
     }
+
+    if (!finalizeFrameInternal())
+        fallBackToRasterCanvas();
 }
 
 void RecordingImageBufferSurface::didClearCanvas()
 {
+    if (m_fallbackSurface) {
+        m_fallbackSurface->didClearCanvas();
+        return;
+    }
     m_frameWasCleared = true;
 }
 
 bool RecordingImageBufferSurface::finalizeFrameInternal()
 {
+    ASSERT(!m_fallbackSurface);
+
     if (!m_imageBuffer->isDirty()) {
         if (m_currentFrame && !m_previousFrame) {
             // Create an initial blank frame
@@ -136,10 +157,6 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
             initializeCurrentFrame();
         }
         return m_currentFrame;
-    }
-
-    if (!m_currentFrame) {
-        return false;
     }
 
     IntRect canvasRect(IntPoint(0, 0), size());
@@ -192,6 +209,81 @@ void RecordingImageBufferSurface::setCurrentState(SkCanvas* dstCanvas, StateStac
     dstCanvas->resetMatrix();
     dstCanvas->clipRect(SkRect::MakeFromIRect(stateStack->peek().m_clip));
     dstCanvas->setMatrix(stateStack->peek().m_ctm);
+}
+
+// Fallback passthroughs
+
+const SkBitmap& RecordingImageBufferSurface::bitmap()
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->bitmap();
+    return ImageBufferSurface::bitmap();
+}
+
+bool RecordingImageBufferSurface::restore()
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->restore();
+    return ImageBufferSurface::restore();
+}
+
+WebLayer* RecordingImageBufferSurface::layer() const
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->layer();
+    return ImageBufferSurface::layer();
+}
+
+bool RecordingImageBufferSurface::isAccelerated() const
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->isAccelerated();
+    return ImageBufferSurface::isAccelerated();
+}
+
+Platform3DObject RecordingImageBufferSurface::getBackingTexture() const
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->getBackingTexture();
+    return ImageBufferSurface::getBackingTexture();
+}
+
+bool RecordingImageBufferSurface::cachedBitmapEnabled() const
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->cachedBitmapEnabled();
+    return ImageBufferSurface::cachedBitmapEnabled();
+}
+
+const SkBitmap& RecordingImageBufferSurface::cachedBitmap() const
+{
+    if (m_fallbackSurface)
+        return m_fallbackSurface->cachedBitmap();
+    return ImageBufferSurface::cachedBitmap();
+}
+
+void RecordingImageBufferSurface::invalidateCachedBitmap()
+{
+    if (m_fallbackSurface)
+        m_fallbackSurface->invalidateCachedBitmap();
+    else
+        ImageBufferSurface::invalidateCachedBitmap();
+}
+
+void RecordingImageBufferSurface::updateCachedBitmapIfNeeded()
+{
+    if (m_fallbackSurface)
+        m_fallbackSurface->updateCachedBitmapIfNeeded();
+    else
+        ImageBufferSurface::updateCachedBitmapIfNeeded();
+}
+
+void RecordingImageBufferSurface::setIsHidden(bool hidden)
+{
+    if (m_fallbackSurface)
+        m_fallbackSurface->setIsHidden(hidden);
+    else
+        ImageBufferSurface::setIsHidden(hidden);
 }
 
 } // namespace blink

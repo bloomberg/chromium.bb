@@ -9,6 +9,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageBufferClient.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -73,13 +74,33 @@ private:
     int m_frameCount;
 };
 
+class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
+public:
+    MockSurfaceFactory() : m_createSurfaceCount(0) { }
+
+    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    {
+        m_createSurfaceCount++;
+        return adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
+    }
+
+    virtual ~MockSurfaceFactory() { }
+
+    int createSurfaceCount() { return m_createSurfaceCount; }
+
+private:
+    int m_createSurfaceCount;
+};
+
 } // unnamed namespace
 
 class RecordingImageBufferSurfaceTest : public Test {
 protected:
     RecordingImageBufferSurfaceTest()
     {
-        OwnPtr<RecordingImageBufferSurface> testSurface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10)));
+        OwnPtr<MockSurfaceFactory> surfaceFactory = adoptPtr(new MockSurfaceFactory());
+        m_surfaceFactory = surfaceFactory.get();
+        OwnPtr<RecordingImageBufferSurface> testSurface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), surfaceFactory.release()));
         m_testSurface = testSurface.get();
         // We create an ImageBuffer in order for the testSurface to be
         // properly initialized with a GraphicsContext
@@ -125,6 +146,7 @@ public:
         m_fakeImageBufferClient->fakeDraw();
         m_testSurface->getPicture();
         EXPECT_EQ(1, m_fakeImageBufferClient->frameCount());
+        EXPECT_EQ(0, m_surfaceFactory->createSurfaceCount());
         expectDisplayListEnabled(true); // first frame has an implicit clear
         m_fakeImageBufferClient->fakeDraw();
         m_testSurface->getPicture();
@@ -155,10 +177,10 @@ public:
         EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
         m_testSurface->getPicture();
-        EXPECT_EQ(4, m_fakeImageBufferClient->frameCount());
+        EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
         m_fakeImageBufferClient->fakeDraw();
-        EXPECT_EQ(4, m_fakeImageBufferClient->frameCount());
+        EXPECT_EQ(3, m_fakeImageBufferClient->frameCount());
         expectDisplayListEnabled(false);
     }
 
@@ -196,10 +218,13 @@ public:
     void expectDisplayListEnabled(bool displayListEnabled)
     {
         EXPECT_EQ(displayListEnabled, (bool)m_testSurface->m_currentFrame.get());
-        EXPECT_EQ(!displayListEnabled, (bool)m_testSurface->m_rasterCanvas.get());
+        EXPECT_EQ(!displayListEnabled, (bool)m_testSurface->m_fallbackSurface.get());
+        int expectedSurfaceCreationCount = displayListEnabled ? 0 : 1;
+        EXPECT_EQ(expectedSurfaceCreationCount, m_surfaceFactory->createSurfaceCount());
     }
 
 private:
+    MockSurfaceFactory* m_surfaceFactory;
     RecordingImageBufferSurface* m_testSurface;
     OwnPtr<FakeImageBufferClient> m_fakeImageBufferClient;
     OwnPtr<ImageBuffer> m_imageBuffer;

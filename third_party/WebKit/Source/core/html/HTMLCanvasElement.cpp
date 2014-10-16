@@ -473,6 +473,47 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     return true;
 }
 
+class UnacceleratedSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
+public:
+    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    {
+        return adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
+    }
+
+    virtual ~UnacceleratedSurfaceFactory() { }
+};
+
+class Accelerated2dSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
+public:
+    Accelerated2dSurfaceFactory(int msaaSampleCount) : m_msaaSampleCount(msaaSampleCount) { }
+
+    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    {
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(size, opacityMode, m_msaaSampleCount));
+        if (surface->isValid())
+            return surface.release();
+        return adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode));
+    }
+
+    virtual ~Accelerated2dSurfaceFactory() { }
+private:
+    int m_msaaSampleCount;
+};
+
+PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> HTMLCanvasElement::createSurfaceFactory(const IntSize& deviceSize, int* msaaSampleCount) const
+{
+    *msaaSampleCount = 0;
+    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory;
+    if (shouldAccelerate(deviceSize)) {
+        if (document().settings())
+            *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
+        surfaceFactory = adoptPtr(new Accelerated2dSurfaceFactory(*msaaSampleCount));
+    } else {
+        surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory());
+    }
+    return surfaceFactory.release();
+}
+
 PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount)
 {
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
@@ -486,25 +527,20 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
         // FIXME: Actually, avoid setting m_accelerationDisabled at all when
         // doing GPU-based rasterization.
         if (m_accelerationDisabled)
-            return adoptPtr(new UnacceleratedImageBufferSurface(size(), opacityMode));
-        return adoptPtr(new WebGLImageBufferSurface(size(), opacityMode));
+            return adoptPtr(new UnacceleratedImageBufferSurface(deviceSize, opacityMode));
+        return adoptPtr(new WebGLImageBufferSurface(deviceSize, opacityMode));
     }
+
+    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount);
 
     if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
-        OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(size(), opacityMode));
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, surfaceFactory.release(), opacityMode));
         if (surface->isValid())
             return surface.release();
+        surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount); // recreate because old previous one was released
     }
 
-    if (shouldAccelerate(deviceSize)) {
-        if (document().settings())
-            *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
-        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(size(), opacityMode, *msaaSampleCount));
-        if (surface->isValid())
-            return surface.release();
-    }
-
-    return adoptPtr(new UnacceleratedImageBufferSurface(size(), opacityMode));
+    return surfaceFactory->createSurface(deviceSize, opacityMode);
 }
 
 void HTMLCanvasElement::createImageBuffer()

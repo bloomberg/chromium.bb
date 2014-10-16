@@ -20,10 +20,16 @@ namespace blink {
 
 class ImageBuffer;
 
+class RecordingImageBufferFallbackSurfaceFactory {
+public:
+    virtual PassOwnPtr<ImageBufferSurface> createSurface(const IntSize&, OpacityMode) = 0;
+    virtual ~RecordingImageBufferFallbackSurfaceFactory() { }
+};
+
 class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(RecordingImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
 public:
-    RecordingImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
+    RecordingImageBufferSurface(const IntSize&, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode = NonOpaque);
     virtual ~RecordingImageBufferSurface();
 
     // Implementation of ImageBufferSurface interfaces
@@ -34,6 +40,18 @@ public:
     virtual void finalizeFrame(const FloatRect&) override;
     virtual void didClearCanvas() override;
     virtual void setImageBuffer(ImageBuffer*) override;
+
+    // Passthroughs to fallback surface
+    virtual const SkBitmap& bitmap() override;
+    virtual bool restore() override;
+    virtual WebLayer* layer() const override;
+    virtual bool isAccelerated() const override;
+    virtual Platform3DObject getBackingTexture() const override;
+    virtual bool cachedBitmapEnabled() const override;
+    virtual const SkBitmap& cachedBitmap() const override;
+    virtual void invalidateCachedBitmap() override;
+    virtual void updateCachedBitmapIfNeeded() override;
+    virtual void setIsHidden(bool) override;
 
 private:
     struct StateRec {
@@ -55,10 +73,11 @@ private:
 
     OwnPtr<SkPictureRecorder> m_currentFrame;
     RefPtr<SkPicture> m_previousFrame;
-    OwnPtr<SkCanvas> m_rasterCanvas;
+    OwnPtr<ImageBufferSurface> m_fallbackSurface;
     ImageBuffer* m_imageBuffer;
     int m_initialSaveCount;
     bool m_frameWasCleared;
+    OwnPtr<RecordingImageBufferFallbackSurfaceFactory> m_fallbackFactory;
 };
 
 } // namespace blink
