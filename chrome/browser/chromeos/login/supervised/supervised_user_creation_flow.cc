@@ -52,6 +52,10 @@ bool SupervisedUserCreationFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
+bool SupervisedUserCreationFlow::SupportsEarlyRestartToApplyFlags() {
+  return false;
+}
+
 void SupervisedUserCreationFlow::HandleOAuthTokenStatusChange(
     user_manager::User::OAuthTokenStatus status) {
   if (status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN)

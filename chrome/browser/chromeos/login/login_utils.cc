@@ -147,6 +147,11 @@ bool CanPerformEarlyRestart() {
   if (!base::SysInfo::IsRunningOnChromeOS())
     return false;
 
+  if (!ChromeUserManager::Get()->GetCurrentUserFlow()->
+          SupportsEarlyRestartToApplyFlags()) {
+    return false;
+  }
+
   const ExistingUserController* controller =
       ExistingUserController::current_controller();
   if (!controller)
@@ -399,7 +404,7 @@ bool LoginUtilsImpl::RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
   CommandLine::StringVector flags;
   // argv[0] is the program name |CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
-  VLOG(1) << "Restarting to apply per-session flags...";
+  LOG(WARNING) << "Restarting to apply per-session flags...";
   DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
       user_manager::UserManager::Get()->GetActiveUser()->email(), flags);
   AttemptRestart(profile);

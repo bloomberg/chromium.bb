@@ -47,6 +47,10 @@ bool SupervisedUserLoginFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
+bool SupervisedUserLoginFlow::SupportsEarlyRestartToApplyFlags() {
+  return false;
+}
+
 bool SupervisedUserLoginFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }

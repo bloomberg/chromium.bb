@@ -25,6 +25,7 @@ class SupervisedUserCreationFlow : public ExtendedUserFlow {
   virtual bool ShouldShowSettings() override;
   virtual bool ShouldLaunchBrowser() override;
   virtual bool ShouldSkipPostLoginScreens() override;
+  virtual bool SupportsEarlyRestartToApplyFlags() override;
   virtual bool HandleLoginFailure(const AuthFailure& failure) override;
   virtual void HandleLoginSuccess(const UserContext& context) override;
   virtual bool HandlePasswordChangeDetected() override;

@@ -40,6 +40,10 @@ bool DefaultUserFlow::ShouldSkipPostLoginScreens() {
   return false;
 }
 
+bool DefaultUserFlow::SupportsEarlyRestartToApplyFlags() {
+  return true;
+}
+
 bool DefaultUserFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }
