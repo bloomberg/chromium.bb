@@ -83,8 +83,8 @@ void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(JSONObject* jsonObje
         const FloatRect& rect = annotatedRect.rect;
         rectArray->pushNumber(rect.x());
         rectArray->pushNumber(rect.y());
-        rectArray->pushNumber(rect.maxX());
-        rectArray->pushNumber(rect.maxY());
+        rectArray->pushNumber(rect.width());
+        rectArray->pushNumber(rect.height());
         rectContainer->setArray("geometry_rect", rectArray);
         rectContainer->setString("reason", paintInvalidationReasonToString(annotatedRect.reason));
         jsonArray->pushObject(rectContainer);
