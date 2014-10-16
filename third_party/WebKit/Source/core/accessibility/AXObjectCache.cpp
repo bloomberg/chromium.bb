@@ -1000,7 +1000,7 @@ void AXObjectCache::postPlatformNotification(AXObject* obj, AXNotification notif
     if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())
         return;
 
-    ChromeClient& client = obj->documentFrameView()->frame().page()->chrome().client();
+    ChromeClient& client = obj->document()->axObjectCacheOwner().page()->chrome().client();
 
     if (notification == AXActiveDescendantChanged
         && obj->document()->focusedElement()
