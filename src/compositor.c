@@ -642,6 +642,9 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_init(&surface->subsurface_list);
 	wl_list_init(&surface->subsurface_list_pending);
 
+	weston_matrix_init(&surface->buffer_to_surface_matrix);
+	weston_matrix_init(&surface->surface_to_buffer_matrix);
+
 	return surface;
 }
 
@@ -2560,6 +2563,82 @@ weston_surface_commit_subsurface_order(struct weston_surface *surface)
 }
 
 static void
+weston_surface_build_buffer_matrix(struct weston_surface *surface,
+				   struct weston_matrix *matrix)
+{
+	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
+	double src_width, src_height, dest_width, dest_height;
+
+	weston_matrix_init(matrix);
+
+	if (vp->buffer.src_width == wl_fixed_from_int(-1)) {
+		src_width = surface->width_from_buffer;
+		src_height = surface->height_from_buffer;
+	} else {
+		src_width = wl_fixed_to_double(vp->buffer.src_width);
+		src_height = wl_fixed_to_double(vp->buffer.src_height);
+	}
+
+	if (vp->surface.width == -1) {
+		dest_width = src_width;
+		dest_height = src_height;
+	} else {
+		dest_width = vp->surface.width;
+		dest_height = vp->surface.height;
+	}
+
+	if (src_width != dest_width || src_height != dest_height)
+		weston_matrix_scale(matrix,
+				    src_width / dest_width,
+				    src_height / dest_height, 1);
+
+	if (vp->buffer.src_width != wl_fixed_from_int(-1))
+		weston_matrix_translate(matrix,
+					wl_fixed_to_double(vp->buffer.src_x),
+					wl_fixed_to_double(vp->buffer.src_y),
+					0);
+
+	switch (vp->buffer.transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		weston_matrix_scale(matrix, -1, 1, 1);
+		weston_matrix_translate(matrix,
+					surface->width_from_buffer, 0, 0);
+		break;
+	}
+
+	switch (vp->buffer.transform) {
+	default:
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		weston_matrix_rotate_xy(matrix, 0, 1);
+		weston_matrix_translate(matrix,
+					surface->height_from_buffer, 0, 0);
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		weston_matrix_rotate_xy(matrix, -1, 0);
+		weston_matrix_translate(matrix,
+					surface->width_from_buffer,
+					surface->height_from_buffer, 0);
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		weston_matrix_rotate_xy(matrix, 0, -1);
+		weston_matrix_translate(matrix,
+					0, surface->width_from_buffer, 0);
+		break;
+	}
+
+	weston_matrix_scale(matrix, vp->buffer.scale, vp->buffer.scale, 1);
+}
+
+static void
 weston_surface_commit_state(struct weston_surface *surface,
 			    struct weston_surface_state *state)
 {
@@ -2575,6 +2654,11 @@ weston_surface_commit_state(struct weston_surface *surface,
 	if (state->newly_attached)
 		weston_surface_attach(surface, state->buffer);
 	weston_surface_state_set_buffer(state, NULL);
+
+	weston_surface_build_buffer_matrix(surface,
+					   &surface->surface_to_buffer_matrix);
+	weston_matrix_invert(&surface->buffer_to_surface_matrix,
+			     &surface->surface_to_buffer_matrix);
 
 	if (state->newly_attached || state->buffer_viewport.changed) {
 		weston_surface_update_size(surface);

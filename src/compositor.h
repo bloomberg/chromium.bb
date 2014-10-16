@@ -926,6 +926,12 @@ struct weston_surface {
 	/* All the pending state, that wl_surface.commit will apply. */
 	struct weston_surface_state pending;
 
+	/* Matrices representating of the full transformation between
+	 * buffer and surface coordinates.  These matrices are updated
+	 * using the weston_surface_build_buffer_matrix function. */
+	struct weston_matrix buffer_to_surface_matrix;
+	struct weston_matrix surface_to_buffer_matrix;
+
 	/*
 	 * If non-NULL, this function will be called on
 	 * wl_surface::commit after a new buffer has been set up for
