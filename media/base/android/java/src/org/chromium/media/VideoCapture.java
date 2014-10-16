@@ -161,7 +161,7 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
             int diff = Math.abs(size.width - width) +
                        Math.abs(size.height - height);
             Log.d(TAG, "allocate: supported (" +
-                  size.width + ", " + size.height + "), diff=" + diff);
+                    size.width + ", " + size.height + "), diff=" + diff);
             // TODO(wjia): Remove this hack (forcing width to be multiple
             // of 32) by supporting stride in video frame buffer.
             // Right now, VideoCaptureController requires compact YV12
@@ -180,7 +180,7 @@ public abstract class VideoCapture implements android.hardware.Camera.PreviewCal
 
         if (parameters.isVideoStabilizationSupported()) {
             Log.d(TAG, "Image stabilization supported, currently: " +
-                  parameters.getVideoStabilization() + ", setting it.");
+                    parameters.getVideoStabilization() + ", setting it.");
             parameters.setVideoStabilization(true);
         } else {
             Log.d(TAG, "Image stabilization not supported.");

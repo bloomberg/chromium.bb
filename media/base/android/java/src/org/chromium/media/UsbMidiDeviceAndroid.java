@@ -86,7 +86,7 @@ class UsbMidiDeviceAndroid {
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
             UsbInterface iface = device.getInterface(i);
             if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO ||
-                iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
+                    iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
                 continue;
             }
             mConnection.claimInterface(iface, true);
@@ -110,12 +110,12 @@ class UsbMidiDeviceAndroid {
      */
     private void startListen(final UsbDevice device) {
         final Map<UsbEndpoint, ByteBuffer> bufferForEndpoints =
-            new HashMap<UsbEndpoint, ByteBuffer>();
+                new HashMap<UsbEndpoint, ByteBuffer>();
 
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
             UsbInterface iface = device.getInterface(i);
             if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO ||
-                iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
+                    iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
                 continue;
             }
             for (int j = 0; j < iface.getEndpointCount(); ++j) {
@@ -135,6 +135,7 @@ class UsbMidiDeviceAndroid {
         mHasInputThread = true;
         // bufferForEndpoints must not be accessed hereafter on this thread.
         new Thread() {
+            @Override
             public void run() {
                 while (true) {
                     UsbRequest request = mConnection.requestWait();
@@ -166,6 +167,7 @@ class UsbMidiDeviceAndroid {
      */
     private void postOnDataEvent(final int endpointNumber, final byte[] bs) {
         mHandler.post(new Runnable() {
+                @Override
                 public void run() {
                     if (mIsClosed) {
                         return;

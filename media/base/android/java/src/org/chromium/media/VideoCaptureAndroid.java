@@ -92,7 +92,7 @@ public class VideoCaptureAndroid extends VideoCapture {
     static CaptureFormat[] getDeviceSupportedFormats(int id) {
         android.hardware.Camera camera;
         try {
-             camera = android.hardware.Camera.open(id);
+            camera = android.hardware.Camera.open(id);
         } catch (RuntimeException ex) {
             Log.e(TAG, "Camera.open: " + ex);
             return null;

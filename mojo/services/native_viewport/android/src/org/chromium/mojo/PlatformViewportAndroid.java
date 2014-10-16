@@ -76,16 +76,16 @@ public class PlatformViewportAndroid extends SurfaceView {
 
     private static native void nativeDestroy(long nativePlatformViewportAndroid);
     private static native void nativeSurfaceCreated(
-        long nativePlatformViewportAndroid, Surface surface);
+            long nativePlatformViewportAndroid, Surface surface);
     private static native void nativeSurfaceDestroyed(
-        long nativePlatformViewportAndroid);
+            long nativePlatformViewportAndroid);
     private static native void nativeSurfaceSetSize(
-        long nativePlatformViewportAndroid,
-        int width, int height);
+            long nativePlatformViewportAndroid,
+            int width, int height);
     private static native boolean nativeTouchEvent(
-        long nativePlatformViewportAndroid,
-        int pointerId,
-        int action,
-        float x, float y,
-        long timeMs);
+            long nativePlatformViewportAndroid,
+            int pointerId,
+            int action,
+            float x, float y,
+            long timeMs);
 };

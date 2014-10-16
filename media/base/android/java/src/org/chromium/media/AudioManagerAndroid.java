@@ -109,14 +109,14 @@ class AudioManagerAndroid {
     // performed where the AEC performance is evaluated using e.g. a WebRTC
     // audio client such as https://apprtc.appspot.com/?r=<ROOM NAME>.
     private static final String[] SUPPORTED_AEC_MODELS = new String[] {
-         "GT-I9300",  // Galaxy S3
-         "GT-I9500",  // Galaxy S4
-         "GT-N7105",  // Galaxy Note 2
-         "Nexus 4",   // Nexus 4
-         "Nexus 5",   // Nexus 5
-         "Nexus 7",   // Nexus 7
-         "SM-N9005",  // Galaxy Note 3
-         "SM-T310",   // Galaxy Tab 3 8.0 (WiFi)
+            "GT-I9300", // Galaxy S3
+            "GT-I9500", // Galaxy S4
+            "GT-N7105", // Galaxy Note 2
+            "Nexus 4", // Nexus 4
+            "Nexus 5", // Nexus 5
+            "Nexus 7", // Nexus 7
+            "SM-N9005", // Galaxy Note 3
+            "SM-T310", // Galaxy Tab 3 8.0 (WiFi)
     };
 
     // Supported audio device types.
@@ -392,8 +392,7 @@ class AudioManagerAndroid {
             return false;
         }
 
-        int intDeviceId = deviceId.isEmpty() ?
-            DEVICE_DEFAULT : Integer.parseInt(deviceId);
+        int intDeviceId = deviceId.isEmpty() ? DEVICE_DEFAULT : Integer.parseInt(deviceId);
 
         if (intDeviceId == DEVICE_DEFAULT) {
             boolean devices[] = null;
@@ -707,10 +706,10 @@ class AudioManagerAndroid {
                     int microphone = intent.getIntExtra("microphone", HAS_NO_MIC);
                     String name = intent.getStringExtra("name");
                     logd("BroadcastReceiver.onReceive: a=" + intent.getAction() +
-                        ", s=" + state +
-                        ", m=" + microphone +
-                        ", n=" + name +
-                        ", sb=" + isInitialStickyBroadcast());
+                            ", s=" + state +
+                            ", m=" + microphone +
+                            ", n=" + name +
+                            ", sb=" + isInitialStickyBroadcast());
                 }
                 switch (state) {
                     case STATE_UNPLUGGED:
@@ -764,7 +763,7 @@ class AudioManagerAndroid {
      */
     private void registerForBluetoothHeadsetIntentBroadcast() {
         IntentFilter filter = new IntentFilter(
-            android.bluetooth.BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+                android.bluetooth.BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
 
         /** Receiver which handles changes in BT headset availability. */
         mBluetoothHeadsetReceiver = new BroadcastReceiver() {
@@ -774,12 +773,12 @@ class AudioManagerAndroid {
                 // been detected, e.g. BT headset has been connected or
                 // disconnected. This broadcast is *not* sticky.
                 int profileState = intent.getIntExtra(
-                    android.bluetooth.BluetoothHeadset.EXTRA_STATE,
-                    android.bluetooth.BluetoothHeadset.STATE_DISCONNECTED);
+                        android.bluetooth.BluetoothHeadset.EXTRA_STATE,
+                        android.bluetooth.BluetoothHeadset.STATE_DISCONNECTED);
                 if (DEBUG) {
                     logd("BroadcastReceiver.onReceive: a=" + intent.getAction() +
-                        ", s=" + profileState +
-                        ", sb=" + isInitialStickyBroadcast());
+                            ", s=" + profileState +
+                            ", sb=" + isInitialStickyBroadcast());
                 }
 
                 switch (profileState) {
@@ -816,7 +815,7 @@ class AudioManagerAndroid {
                 } else if (DEBUG) {
                     reportUpdate();
                 }
-           }
+            }
         };
 
         mContext.registerReceiver(mBluetoothHeadsetReceiver, filter);
@@ -833,19 +832,19 @@ class AudioManagerAndroid {
      */
     private void registerForBluetoothScoIntentBroadcast() {
         IntentFilter filter = new IntentFilter(
-            AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED);
+                AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED);
 
         /** BroadcastReceiver implementation which handles changes in BT SCO. */
         mBluetoothScoReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 int state = intent.getIntExtra(
-                    AudioManager.EXTRA_SCO_AUDIO_STATE,
-                    AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
+                        AudioManager.EXTRA_SCO_AUDIO_STATE,
+                        AudioManager.SCO_AUDIO_STATE_DISCONNECTED);
                 if (DEBUG) {
                     logd("BroadcastReceiver.onReceive: a=" + intent.getAction() +
-                        ", s=" + state +
-                        ", sb=" + isInitialStickyBroadcast());
+                            ", s=" + state +
+                            ", sb=" + isInitialStickyBroadcast());
                 }
 
                 switch (state) {
@@ -864,7 +863,7 @@ class AudioManagerAndroid {
                 if (DEBUG) {
                     reportUpdate();
                 }
-           }
+            }
         };
 
         mContext.registerReceiver(mBluetoothScoReceiver, filter);
@@ -881,7 +880,7 @@ class AudioManagerAndroid {
             return;
         }
         if (mBluetoothScoState == STATE_BLUETOOTH_SCO_ON ||
-            mBluetoothScoState == STATE_BLUETOOTH_SCO_TURNING_ON) {
+                mBluetoothScoState == STATE_BLUETOOTH_SCO_TURNING_ON) {
             // Unable to turn on BT in this state.
             return;
         }
@@ -904,7 +903,7 @@ class AudioManagerAndroid {
             return;
         }
         if (mBluetoothScoState != STATE_BLUETOOTH_SCO_ON &&
-            mBluetoothScoState != STATE_BLUETOOTH_SCO_TURNING_ON) {
+                mBluetoothScoState != STATE_BLUETOOTH_SCO_TURNING_ON) {
             // No need to turn off BT in this state.
             return;
         }
@@ -1032,8 +1031,8 @@ class AudioManagerAndroid {
             }
             if (DEBUG) {
                 logd("reportUpdate: requested=" + mRequestedAudioDevice +
-                    ", btSco=" + mBluetoothScoState +
-                    ", devices=" + devices);
+                        ", btSco=" + mBluetoothScoState +
+                        ", devices=" + devices);
             }
         }
     }
@@ -1041,14 +1040,14 @@ class AudioManagerAndroid {
     /** Information about the current build, taken from system properties. */
     private void logDeviceInfo() {
         logd("Android SDK: " + Build.VERSION.SDK_INT + ", " +
-            "Release: " + Build.VERSION.RELEASE + ", " +
-            "Brand: " + Build.BRAND + ", " +
-            "Device: " + Build.DEVICE + ", " +
-            "Id: " + Build.ID + ", " +
-            "Hardware: " + Build.HARDWARE + ", " +
-            "Manufacturer: " + Build.MANUFACTURER + ", " +
-            "Model: " + Build.MODEL + ", " +
-            "Product: " + Build.PRODUCT);
+                "Release: " + Build.VERSION.RELEASE + ", " +
+                "Brand: " + Build.BRAND + ", " +
+                "Device: " + Build.DEVICE + ", " +
+                "Id: " + Build.ID + ", " +
+                "Hardware: " + Build.HARDWARE + ", " +
+                "Manufacturer: " + Build.MANUFACTURER + ", " +
+                "Model: " + Build.MODEL + ", " +
+                "Product: " + Build.PRODUCT);
     }
 
     /** Trivial helper method for debug logging */
@@ -1087,15 +1086,14 @@ class AudioManagerAndroid {
                     // the volume index is zero. It is not possible to move the volume
                     // slider all the way down in communication mode but the callback
                     // implementation can ensure that the volume is completely muted.
-                    int volume = mAudioManager.getStreamVolume(
-                        AudioManager.STREAM_VOICE_CALL);
+                    int volume = mAudioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
                     if (DEBUG) logd("nativeSetMute: " + (volume == 0));
                     nativeSetMute(mNativeAudioManagerAndroid, (volume == 0));
                 }
         };
 
         mContentResolver.registerContentObserver(
-            Settings.System.CONTENT_URI, true, mSettingsObserver);
+                Settings.System.CONTENT_URI, true, mSettingsObserver);
     }
 
     /** Quit observer thread and stop listening for volume changes. */

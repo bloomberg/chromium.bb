@@ -15,12 +15,12 @@ import org.chromium.base.JNINamespace;
 // Callbacks will be sent to the native class for processing.
 @JNINamespace("media")
 class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
-    MediaPlayer.OnCompletionListener,
-    MediaPlayer.OnBufferingUpdateListener,
-    MediaPlayer.OnSeekCompleteListener,
-    MediaPlayer.OnVideoSizeChangedListener,
-    MediaPlayer.OnErrorListener,
-    AudioManager.OnAudioFocusChangeListener {
+        MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnBufferingUpdateListener,
+        MediaPlayer.OnSeekCompleteListener,
+        MediaPlayer.OnVideoSizeChangedListener,
+        MediaPlayer.OnErrorListener,
+        AudioManager.OnAudioFocusChangeListener {
     // These values are mirrored as enums in media/base/android/media_player_bridge.h.
     // Please ensure they stay in sync.
     private static final int MEDIA_ERROR_FORMAT = 0;

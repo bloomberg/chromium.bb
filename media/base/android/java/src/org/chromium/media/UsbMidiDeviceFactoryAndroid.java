@@ -55,7 +55,7 @@ class UsbMidiDeviceFactoryAndroid {
     private long mNativePointer;
 
     private static final String ACTION_USB_PERMISSION =
-        "org.chromium.media.USB_PERMISSION";
+            "org.chromium.media.USB_PERMISSION";
 
     /**
      * Constructs a UsbMidiDeviceAndroid.
@@ -95,7 +95,7 @@ class UsbMidiDeviceFactoryAndroid {
             for (int i = 0; i < device.getInterfaceCount() && !found; ++i) {
                 UsbInterface iface = device.getInterface(i);
                 if (iface.getInterfaceClass() == UsbConstants.USB_CLASS_AUDIO &&
-                    iface.getInterfaceSubclass() == UsbMidiDeviceAndroid.MIDI_SUBCLASS) {
+                        iface.getInterfaceSubclass() == UsbMidiDeviceAndroid.MIDI_SUBCLASS) {
                     found = true;
                 }
             }

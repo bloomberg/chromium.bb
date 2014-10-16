@@ -88,8 +88,7 @@ class WebAudioMediaCodecBridge {
             durationMicroseconds = 0;
         }
 
-        Log.d(LOG_TAG, "Initial: Tracks: " + extractor.getTrackCount() +
-              " Format: " + format);
+        Log.d(LOG_TAG, "Initial: Tracks: " + extractor.getTrackCount() + " Format: " + format);
 
         // Create decoder
         MediaCodec codec;
@@ -157,9 +156,9 @@ class WebAudioMediaCodecBridge {
                     // initialize it BEFORE we send any decoded audio,
                     // and only initialize once.
                     Log.d(LOG_TAG, "Final:  Rate: " + sampleRate +
-                          " Channels: " + inputChannelCount +
-                          " Mime: " + mime +
-                          " Duration: " + durationMicroseconds + " microsec");
+                            " Channels: " + inputChannelCount +
+                            " Mime: " + mime +
+                            " Duration: " + durationMicroseconds + " microsec");
 
                     nativeInitializeDestination(nativeMediaCodecBridge,
                                                 inputChannelCount,
@@ -199,12 +198,12 @@ class WebAudioMediaCodecBridge {
     }
 
     private static native void nativeOnChunkDecoded(
-        long nativeWebAudioMediaCodecBridge, ByteBuffer buf, int size,
-        int inputChannelCount, int outputChannelCount);
+            long nativeWebAudioMediaCodecBridge, ByteBuffer buf, int size,
+            int inputChannelCount, int outputChannelCount);
 
     private static native void nativeInitializeDestination(
-        long nativeWebAudioMediaCodecBridge,
-        int inputChannelCount,
-        int sampleRate,
-        long durationMicroseconds);
+            long nativeWebAudioMediaCodecBridge,
+            int inputChannelCount,
+            int sampleRate,
+            long durationMicroseconds);
 }

@@ -501,7 +501,7 @@ public class MediaDrmBridge {
         try {
             // Create MediaCrypto if necessary.
             if (mMediaCrypto == null && !createMediaCrypto()) {
-              onSessionError(sessionId);
+                onSessionError(sessionId);
                 return;
             }
             assert mMediaCrypto != null;

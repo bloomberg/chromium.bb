@@ -185,19 +185,19 @@ class MediaCodecBridge {
         for (int i = 0; i < count; ++i) {
             MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
             int direction =
-                info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
+                    info.isEncoder() ? MEDIA_CODEC_ENCODER : MEDIA_CODEC_DECODER;
             String codecString = info.getName();
             String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
                 Map<String, CodecInfo> map = info.isEncoder() ? encoderInfoMap : decoderInfoMap;
                 if (!map.containsKey(supportedTypes[j])) {
                     map.put(supportedTypes[j], new CodecInfo(
-                        supportedTypes[j], codecString, direction));
+                            supportedTypes[j], codecString, direction));
                 }
             }
         }
         ArrayList<CodecInfo> codecInfos = new ArrayList<CodecInfo>(
-            decoderInfoMap.size() + encoderInfoMap.size());
+                decoderInfoMap.size() + encoderInfoMap.size());
         codecInfos.addAll(encoderInfoMap.values());
         codecInfos.addAll(decoderInfoMap.values());
         return codecInfos.toArray(new CodecInfo[codecInfos.size()]);
@@ -580,7 +580,7 @@ class MediaCodecBridge {
             return (capabilities != null) && capabilities.isFeatureSupported(
                     MediaCodecInfo.CodecCapabilities.FEATURE_AdaptivePlayback);
         } catch (IllegalArgumentException e) {
-              Log.e(TAG, "Cannot retrieve codec information", e);
+            Log.e(TAG, "Cannot retrieve codec information", e);
         }
         return false;
     }
