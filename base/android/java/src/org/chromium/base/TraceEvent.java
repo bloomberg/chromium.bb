@@ -175,9 +175,9 @@ public class TraceEvent {
      */
     @CalledByNative
     public static void setEnabled(boolean enabled) {
-       sEnabled = enabled;
-       ThreadUtils.getUiThreadLooper().setMessageLogging(
-           enabled ? LooperMonitorHolder.sInstance : null);
+        sEnabled = enabled;
+        ThreadUtils.getUiThreadLooper().setMessageLogging(
+                enabled ? LooperMonitorHolder.sInstance : null);
     }
 
     /**

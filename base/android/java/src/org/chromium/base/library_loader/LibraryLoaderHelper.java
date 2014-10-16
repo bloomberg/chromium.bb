@@ -238,7 +238,7 @@ public class LibraryLoaderHelper {
             if (files != null) {
                 for (File file : files) {
                     if (!file.delete()) {
-                      Log.e(TAG, "Failed to remove " + file.getAbsolutePath());
+                        Log.e(TAG, "Failed to remove " + file.getAbsolutePath());
                     }
                 }
             }

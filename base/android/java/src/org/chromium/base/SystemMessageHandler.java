@@ -37,7 +37,7 @@ class SystemMessageHandler extends Handler {
     private SystemMessageHandler(long messagePumpDelegateNative) {
         mMessagePumpDelegateNative = messagePumpDelegateNative;
         tryEnableSyncBarrierDetection();
-     }
+    }
 
     @Override
     public void handleMessage(Message msg) {
@@ -154,7 +154,7 @@ class SystemMessageHandler extends Handler {
             disableSyncBarrierDetection();
         }
         return null;
-     }
+    }
 
     @CalledByNative
     private static SystemMessageHandler create(long messagePumpDelegateNative) {

@@ -106,11 +106,9 @@ public class SysUtils {
         if (CommandLine.isInitialized()) {
             if (CommandLine.getInstance().hasSwitch(BaseSwitches.LOW_END_DEVICE_MODE)) {
                 int mode = Integer.parseInt(CommandLine.getInstance().getSwitchValue(
-                  BaseSwitches.LOW_END_DEVICE_MODE));
-                if (mode == 1)
-                    return true;
-                if (mode == 0)
-                    return false;
+                        BaseSwitches.LOW_END_DEVICE_MODE));
+                if (mode == 1) return true;
+                if (mode == 0) return false;
             }
         }
 

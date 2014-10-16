@@ -755,8 +755,7 @@ public class Linker {
 
             String libName = System.mapLibraryName(library);
 
-            if (sLoadedLibraries == null)
-              sLoadedLibraries = new HashMap<String, LibInfo>();
+            if (sLoadedLibraries == null) sLoadedLibraries = new HashMap<String, LibInfo>();
 
             if (sLoadedLibraries.containsKey(libName)) {
                 if (DEBUG) Log.i(TAG, "Not loading " + libName + " twice");
