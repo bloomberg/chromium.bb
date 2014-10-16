@@ -6544,10 +6544,26 @@ private:
     FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
-// FIXME: We should have tests for main frame swaps, but it interacts poorly
-// with the geolocation inspector agent, since the lifetime of the inspector
-// agent is tied to the Page, but the inspector agent is created by the
-// instantiation of the main frame.
+TEST_F(WebFrameSwapTest, SwapMainFrame)
+{
+    WebFrame* remoteFrame = WebRemoteFrame::create(0);
+    mainFrame()->swap(remoteFrame);
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebFrame* localFrame = WebLocalFrame::create(&client);
+    remoteFrame->swap(localFrame);
+
+    // Finally, make sure an embedder triggered load in the local frame swapped
+    // back in works.
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    std::string content = localFrame->contentAsText(1024).utf8();
+    EXPECT_EQ("hello", content);
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
 
 void swapAndVerifyFirstChildConsistency(const char* const message, WebFrame* parent, WebFrame* newChild)
 {
