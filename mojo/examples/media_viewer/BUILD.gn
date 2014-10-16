@@ -24,7 +24,7 @@ shared_library("media_viewer") {
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/navigation",
     "//mojo/services/public/interfaces/view_manager",
-    "//mojo/views",
+    "//mojo/views:views",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",

@@ -40,21 +40,18 @@ source_set("lib") {
   ]
   deps = [
     "//base",
-    "//mojo/application",
-    "//mojo/common",
-    "//mojo/converters/input_events",
-    "//mojo/environment:chromium",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/interfaces/application:application",
-    "//mojo/services/public/cpp/view_manager",
-    "//mojo/services/public/interfaces/window_manager",
-    "//mojo/services/public/interfaces/window_manager2",
-    "//ui/aura",
     "//ui/base",
-    "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/wm",
+    "//mojo/aura",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/converters/input_events",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/public/interfaces/application:application",
+    "//mojo/services/public/interfaces/window_manager",
+    "//mojo/services/public/interfaces/window_manager2",
   ]
 }
 

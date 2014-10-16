@@ -29,7 +29,7 @@ shared_library("browser") {
     "//mojo/services/public/interfaces/input_events",
     "//mojo/services/public/interfaces/navigation",
     "//mojo/services/public/interfaces/view_manager",
-    "//mojo/views",
+    "//mojo/views:views",
     "//third_party/icu",
     "//ui/aura",
     "//ui/base",

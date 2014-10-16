@@ -7,7 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(use_aura)
 
-group("wm_flow" ) {
+group("wm_flow") {
   deps = [
     ":app",
     ":embedded",
@@ -28,11 +28,16 @@ shared_library("wm") {
 
   deps = [
     "//base",
+    "//skia",
+    "//ui/aura",
+    "//ui/views",
+    "//ui/wm:wm",
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/input_events",
     "//mojo/services/window_manager:lib",
-    "//mojo/views",
+    "//mojo/views:views",
   ]
 }
 
@@ -46,8 +51,11 @@ shared_library("init") {
 
   deps = [
     "//base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//mojo/application",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/interfaces/application:application",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/public/interfaces/view_manager",
   ]
@@ -68,6 +76,7 @@ shared_library("app") {
     "//mojo/application",
     "//mojo/examples/bitmap_uploader",
     "//mojo/public/c/system:for_shared_library",
+    "//mojo/public/interfaces/application:application",
     "//mojo/services/public/cpp/view_manager",
     "//mojo/services/window_manager:lib",
   ]

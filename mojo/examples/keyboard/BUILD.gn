@@ -34,7 +34,7 @@ shared_library("keyboard") {
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/navigation",
     "//mojo/services/public/interfaces/view_manager",
-    "//mojo/views",
+    "//mojo/views:views",
     "//third_party/icu",
     "//ui/aura",
     "//ui/base",

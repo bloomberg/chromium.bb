@@ -532,21 +532,22 @@
           ],
         },
         {
-          # GN version: //mojo/views
+          # GN version: //mojo/views:views
           'target_name': 'mojo_views_support',
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../skia/skia.gyp:skia',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
             '../ui/aura/aura.gyp:aura',
             '../ui/base/ui_base.gyp:ui_base',
+            '../ui/gfx/gfx.gyp:gfx',
             '../ui/views/views.gyp:views',
             '../ui/wm/wm.gyp:wm',
             'mojo_aura_support',
-            'mojo_views_support_internal',
             'mojo_view_manager_lib',
             'services/public/mojo_services_public.gyp:mojo_view_manager_bindings',
           ],
@@ -557,29 +558,6 @@
             'views/native_widget_view_manager.h',
             'views/views_init.cc',
             'views/views_init.h',
-          ],
-        },
-        {
-          # GN version: //mojo/views:views_internal
-          'target_name': 'mojo_views_support_internal',
-          'type': '<(component)',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../skia/skia.gyp:skia',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-            '../ui/base/ui_base.gyp:ui_base',
-            '../ui/gfx/gfx.gyp:gfx',
-          ],
-          'sources': [
-            'views/mojo_views_export.h',
-            'views/views_init_internal.cc',
-            'views/views_init_internal.h',
-          ],
-          'defines': [
-            'MOJO_VIEWS_IMPLEMENTATION',
           ],
         },
         {

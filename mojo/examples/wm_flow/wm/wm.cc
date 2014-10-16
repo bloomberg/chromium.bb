@@ -102,6 +102,10 @@ class SimpleWM : public mojo::ApplicationDelegate,
  private:
   // Overridden from mojo::ApplicationDelegate:
   virtual void Initialize(mojo::ApplicationImpl* impl) override {
+    // Create views_init here as we need ApplicationRunnerChromium to install
+    // an AtExitManager and CommandLine.
+    if (!views_init_.get())
+      views_init_.reset(new mojo::ViewsInit);
     shell_ = impl->shell();
     window_manager_app_->Initialize(impl);
   }
@@ -183,6 +187,8 @@ class SimpleWM : public mojo::ApplicationDelegate,
 
   mojo::Shell* shell_;
 
+  scoped_ptr<mojo::ViewsInit> views_init_;
+
   scoped_ptr<mojo::WindowManagerApp> window_manager_app_;
 
   mojo::ViewManager* view_manager_;
@@ -197,7 +203,6 @@ class SimpleWM : public mojo::ApplicationDelegate,
 }  // namespace examples
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ViewsInit views_init;
   mojo::ApplicationRunnerChromium runner(new examples::SimpleWM);
   return runner.Run(shell_handle);
 }
