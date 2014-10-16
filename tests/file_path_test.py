@@ -9,7 +9,10 @@ import os
 import tempfile
 import unittest
 import shutil
+import StringIO
+import subprocess
 import sys
+import time
 
 BASE_DIR = unicode(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(BASE_DIR)
@@ -17,10 +20,49 @@ sys.path.insert(0, ROOT_DIR)
 
 FILE_PATH = unicode(os.path.abspath(__file__))
 
+import test_utils
 from utils import file_path
 
 
-class FilePath(unittest.TestCase):
+def write_content(filepath, content):
+  with open(filepath, 'wb') as f:
+    f.write(content)
+
+
+class FilePathTest(unittest.TestCase):
+  def setUp(self):
+    super(FilePathTest, self).setUp()
+    self._tempdir = None
+
+  def tearDown(self):
+    if self._tempdir:
+      for dirpath, dirnames, filenames in os.walk(self._tempdir, topdown=True):
+        for filename in filenames:
+          file_path.set_read_only(os.path.join(dirpath, filename), False)
+        for dirname in dirnames:
+          file_path.set_read_only(os.path.join(dirpath, dirname), False)
+      shutil.rmtree(self._tempdir)
+    super(FilePathTest, self).tearDown()
+
+  @property
+  def tempdir(self):
+    if not self._tempdir:
+      self._tempdir = tempfile.mkdtemp(prefix='run_isolated_test')
+    return self._tempdir
+
+  def assertFileMode(self, filepath, mode, umask=None):
+    umask = test_utils.umask() if umask is None else umask
+    actual = os.stat(filepath).st_mode
+    expected = mode & ~umask
+    self.assertEqual(
+        expected,
+        actual,
+        (filepath, oct(expected), oct(actual), oct(umask)))
+
+  def assertMaskedFileMode(self, filepath, mode):
+    """It's usually when the file was first marked read only."""
+    self.assertFileMode(filepath, mode, 0 if sys.platform == 'win32' else 077)
+
   def test_native_case_end_with_os_path_sep(self):
     # Make sure the trailing os.path.sep is kept.
     path = file_path.get_native_path_case(ROOT_DIR) + os.path.sep
@@ -39,6 +81,104 @@ class FilePath(unittest.TestCase):
     self.assertFalse(os.path.exists(path))
     path = file_path.get_native_path_case(ROOT_DIR) + os.path.sep
     self.assertEqual(file_path.get_native_path_case(path), path)
+
+  def test_delete_wd_rf(self):
+    # Confirms that a RO file in a RW directory can be deleted on non-Windows.
+    dir_foo = os.path.join(self.tempdir, 'foo')
+    file_bar = os.path.join(dir_foo, 'bar')
+    os.mkdir(dir_foo, 0777)
+    write_content(file_bar, 'bar')
+    file_path.set_read_only(dir_foo, False)
+    file_path.set_read_only(file_bar, True)
+    self.assertFileMode(dir_foo, 040777)
+    self.assertMaskedFileMode(file_bar, 0100444)
+    if sys.platform == 'win32':
+      # On Windows, a read-only file can't be deleted.
+      with self.assertRaises(OSError):
+        os.remove(file_bar)
+    else:
+      os.remove(file_bar)
+
+  def test_delete_rd_wf(self):
+    # Confirms that a Rw file in a RO directory can be deleted on Windows only.
+    dir_foo = os.path.join(self.tempdir, 'foo')
+    file_bar = os.path.join(dir_foo, 'bar')
+    os.mkdir(dir_foo, 0777)
+    write_content(file_bar, 'bar')
+    file_path.set_read_only(dir_foo, True)
+    file_path.set_read_only(file_bar, False)
+    self.assertMaskedFileMode(dir_foo, 040555)
+    self.assertFileMode(file_bar, 0100666)
+    if sys.platform == 'win32':
+      # A read-only directory has a convoluted meaning on Windows, it means that
+      # the directory is "personalized". This is used as a signal by Windows
+      # Explorer to tell it to look into the directory for desktop.ini.
+      # See http://support.microsoft.com/kb/326549 for more details.
+      # As such, it is important to not try to set the read-only bit on
+      # directories on Windows since it has no effect other than trigger
+      # Windows Explorer to look for desktop.ini, which is unnecessary.
+      os.remove(file_bar)
+    else:
+      with self.assertRaises(OSError):
+        os.remove(file_bar)
+
+  def test_delete_rd_rf(self):
+    # Confirms that a RO file in a RO directory can't be deleted.
+    dir_foo = os.path.join(self.tempdir, 'foo')
+    file_bar = os.path.join(dir_foo, 'bar')
+    os.mkdir(dir_foo, 0777)
+    write_content(file_bar, 'bar')
+    file_path.set_read_only(dir_foo, True)
+    file_path.set_read_only(file_bar, True)
+    self.assertMaskedFileMode(dir_foo, 040555)
+    self.assertMaskedFileMode(file_bar, 0100444)
+    with self.assertRaises(OSError):
+      # It fails for different reason depending on the OS. See the test cases
+      # above.
+      os.remove(file_bar)
+
+  def test_hard_link_mode(self):
+    # Creates a hard link, see if the file mode changed on the node or the
+    # directory entry.
+    dir_foo = os.path.join(self.tempdir, 'foo')
+    file_bar = os.path.join(dir_foo, 'bar')
+    file_link = os.path.join(dir_foo, 'link')
+    os.mkdir(dir_foo, 0777)
+    write_content(file_bar, 'bar')
+    file_path.hardlink(file_bar, file_link)
+    self.assertFileMode(file_bar, 0100666)
+    self.assertFileMode(file_link, 0100666)
+    file_path.set_read_only(file_bar, True)
+    self.assertMaskedFileMode(file_bar, 0100444)
+    self.assertMaskedFileMode(file_link, 0100444)
+    # This is bad news for Windows; on Windows, the file must be writeable to be
+    # deleted, but the file node is modified. This means that every hard links
+    # must be reset to be read-only after deleting one of the hard link
+    # directory entry.
+
+  if sys.platform == 'darwin':
+    def test_native_case_symlink_wrong_case(self):
+      base_dir = file_path.get_native_path_case(BASE_DIR)
+      trace_inputs_dir = os.path.join(base_dir, 'trace_inputs')
+      actual = file_path.get_native_path_case(trace_inputs_dir)
+      self.assertEqual(trace_inputs_dir, actual)
+
+      # Make sure the symlink is not resolved.
+      data = os.path.join(trace_inputs_dir, 'Files2')
+      actual = file_path.get_native_path_case(data)
+      self.assertEqual(
+          os.path.join(trace_inputs_dir, 'files2'), actual)
+
+      data = os.path.join(trace_inputs_dir, 'Files2', '')
+      actual = file_path.get_native_path_case(data)
+      self.assertEqual(
+          os.path.join(trace_inputs_dir, 'files2', ''), actual)
+
+      data = os.path.join(trace_inputs_dir, 'Files2', 'Child1.py')
+      actual = file_path.get_native_path_case(data)
+      # TODO(maruel): Should be child1.py.
+      self.assertEqual(
+          os.path.join(trace_inputs_dir, 'files2', 'Child1.py'), actual)
 
   if sys.platform in ('darwin', 'win32'):
     def test_native_case_not_sensitive(self):
@@ -73,6 +213,54 @@ class FilePath(unittest.TestCase):
       self.assertTrue(lower.endswith(non_existing.lower()))
       self.assertTrue(upper.endswith(non_existing.upper()))
       self.assertEqual(lower[:-len(non_existing)], upper[:-len(non_existing)])
+
+  if sys.platform == 'win32':
+    def test_native_case_alternate_datastream(self):
+      # Create the file manually, since tempfile doesn't support ADS.
+      tempdir = unicode(tempfile.mkdtemp(prefix='trace_inputs'))
+      try:
+        tempdir = file_path.get_native_path_case(tempdir)
+        basename = 'foo.txt'
+        filename = basename + ':Zone.Identifier'
+        filepath = os.path.join(tempdir, filename)
+        open(filepath, 'w').close()
+        self.assertEqual(filepath, file_path.get_native_path_case(filepath))
+        data_suffix = ':$DATA'
+        self.assertEqual(
+            filepath + data_suffix,
+            file_path.get_native_path_case(filepath + data_suffix))
+
+        open(filepath + '$DATA', 'w').close()
+        self.assertEqual(
+            filepath + data_suffix,
+            file_path.get_native_path_case(filepath + data_suffix))
+        # Ensure the ADS weren't created as separate file. You love NTFS, don't
+        # you?
+        self.assertEqual([basename], os.listdir(tempdir))
+      finally:
+        shutil.rmtree(tempdir)
+
+    def test_rmtree_win(self):
+      # Mock our sleep for faster test case execution.
+      sleeps = []
+      self.mock(time, 'sleep', sleeps.append)
+      self.mock(sys, 'stderr', StringIO.StringIO())
+
+      # Open a child process, so the file is locked.
+      subdir = os.path.join(self.tempdir, 'to_be_deleted')
+      os.mkdir(subdir)
+      script = 'import time; open(\'a\', \'w\'); time.sleep(60)'
+      proc = subprocess.Popen([sys.executable, '-c', script], cwd=subdir)
+      try:
+        # Wait until the file exist.
+        while not os.path.isfile(os.path.join(subdir, 'a')):
+          self.assertEqual(None, proc.poll())
+        file_path.rmtree(subdir)
+        self.assertEqual([2, 4, 2], sleeps)
+        # sys.stderr.getvalue() would return a fair amount of output but it is
+        # not completely deterministic so we're not testing it here.
+      finally:
+        proc.wait()
 
   if sys.platform != 'win32':
     def test_symlink(self):
@@ -113,56 +301,6 @@ class FilePath(unittest.TestCase):
       actual = file_path.get_native_path_case(
           os.path.join(BASE_DIR, 'trace_inputs', 'files2'))
       self.assertEqual('files2', os.path.basename(actual))
-
-  if sys.platform == 'darwin':
-    def test_native_case_symlink_wrong_case(self):
-      base_dir = file_path.get_native_path_case(BASE_DIR)
-      trace_inputs_dir = os.path.join(base_dir, 'trace_inputs')
-      actual = file_path.get_native_path_case(trace_inputs_dir)
-      self.assertEqual(trace_inputs_dir, actual)
-
-      # Make sure the symlink is not resolved.
-      data = os.path.join(trace_inputs_dir, 'Files2')
-      actual = file_path.get_native_path_case(data)
-      self.assertEqual(
-          os.path.join(trace_inputs_dir, 'files2'), actual)
-
-      data = os.path.join(trace_inputs_dir, 'Files2', '')
-      actual = file_path.get_native_path_case(data)
-      self.assertEqual(
-          os.path.join(trace_inputs_dir, 'files2', ''), actual)
-
-      data = os.path.join(trace_inputs_dir, 'Files2', 'Child1.py')
-      actual = file_path.get_native_path_case(data)
-      # TODO(maruel): Should be child1.py.
-      self.assertEqual(
-          os.path.join(trace_inputs_dir, 'files2', 'Child1.py'), actual)
-
-  if sys.platform == 'win32':
-    def test_native_case_alternate_datastream(self):
-      # Create the file manually, since tempfile doesn't support ADS.
-      tempdir = unicode(tempfile.mkdtemp(prefix='trace_inputs'))
-      try:
-        tempdir = file_path.get_native_path_case(tempdir)
-        basename = 'foo.txt'
-        filename = basename + ':Zone.Identifier'
-        filepath = os.path.join(tempdir, filename)
-        open(filepath, 'w').close()
-        self.assertEqual(filepath, file_path.get_native_path_case(filepath))
-        data_suffix = ':$DATA'
-        self.assertEqual(
-            filepath + data_suffix,
-            file_path.get_native_path_case(filepath + data_suffix))
-
-        open(filepath + '$DATA', 'w').close()
-        self.assertEqual(
-            filepath + data_suffix,
-            file_path.get_native_path_case(filepath + data_suffix))
-        # Ensure the ADS weren't created as separate file. You love NTFS, don't
-        # you?
-        self.assertEqual([basename], os.listdir(tempdir))
-      finally:
-        shutil.rmtree(tempdir)
 
 
 if __name__ == '__main__':

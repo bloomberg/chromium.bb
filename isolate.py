@@ -68,7 +68,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
     outdir:    Output directory to create the files in.
     indir:     Root directory the infiles are based in.
     infiles:   dict of files to map from |indir| to |outdir|.
-    action:    One of accepted action of run_isolated.link_file().
+    action:    One of accepted action of file_path.link_file().
     as_hash:   Output filename is the hash instead of relfile.
   """
   logging.info(
@@ -111,7 +111,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
       # symlink doesn't exist on Windows.
       os.symlink(pointed, outfile)  # pylint: disable=E1101
     else:
-      run_isolated.link_file(outfile, infile, action)
+      file_path.link_file(outfile, infile, action)
 
 
 ### Variable stuff.
@@ -704,9 +704,9 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
   # modified, and this cause real problems because the user's source tree
   # becomes read only. On the other hand, the cost of doing file copy is huge.
   if read_only not in (0, None):
-    action = run_isolated.COPY
+    action = file_path.COPY
   else:
-    action = run_isolated.HARDLINK_WITH_FALLBACK
+    action = file_path.HARDLINK_WITH_FALLBACK
 
   recreate_tree(
       outdir=outdir,
@@ -1028,7 +1028,7 @@ def CMDrun(parser, args):
           (' '.join(cmd), cwd))
       result = 1
   finally:
-    run_isolated.rmtree(outdir)
+    file_path.rmtree(outdir)
 
   if complete_state.isolated_filepath:
     complete_state.save_files()

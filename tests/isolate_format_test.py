@@ -14,7 +14,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import isolate_format
-import run_isolated
+from utils import file_path
 
 
 # Access to a protected member XXX of a client class
@@ -603,7 +603,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
 
   def tearDown(self):
     try:
-      run_isolated.rmtree(self.tempdir)
+      file_path.rmtree(self.tempdir)
     finally:
       super(IsolateFormatTmpDirTest, self).tearDown()
 

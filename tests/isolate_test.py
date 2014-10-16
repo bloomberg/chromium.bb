@@ -10,6 +10,7 @@ import logging
 import optparse
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -19,8 +20,11 @@ sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 from depot_tools import auto_stub
+import auth
 import isolate
+import isolate_format
 import isolated_format
+import isolateserver
 from utils import file_path
 from utils import tools
 
@@ -39,7 +43,7 @@ def hash_file(*args):
 class IsolateBase(auto_stub.TestCase):
   def setUp(self):
     super(IsolateBase, self).setUp()
-    self.mock(isolate.auth, 'ensure_logged_in', lambda _: None)
+    self.mock(auth, 'ensure_logged_in', lambda _: None)
     self.old_cwd = os.getcwd()
     self.cwd = tempfile.mkdtemp(prefix='isolate_')
     # Everything should work even from another directory.
@@ -48,7 +52,7 @@ class IsolateBase(auto_stub.TestCase):
   def tearDown(self):
     try:
       os.chdir(self.old_cwd)
-      isolate.run_isolated.rmtree(self.cwd)
+      file_path.rmtree(self.cwd)
     finally:
       super(IsolateBase, self).tearDown()
 
@@ -153,7 +157,7 @@ class IsolateTest(IsolateBase):
       'foo.pyc',
       'bar.swp',
     ]
-    blacklist = tools.gen_blacklist(isolate.isolateserver.DEFAULT_BLACKLIST)
+    blacklist = tools.gen_blacklist(isolateserver.DEFAULT_BLACKLIST)
     for i in ok:
       self.assertFalse(blacklist(i), i)
     for i in blocked:
@@ -169,7 +173,7 @@ class IsolateTest(IsolateBase):
       'testserver.log',
       os.path.join('foo', 'testserver.log'),
     ]
-    blacklist = tools.gen_blacklist(isolate.isolateserver.DEFAULT_BLACKLIST)
+    blacklist = tools.gen_blacklist(isolateserver.DEFAULT_BLACKLIST)
     for i in ok:
       self.assertFalse(blacklist(i), i)
     for i in blocked:
@@ -203,7 +207,7 @@ class IsolateLoad(IsolateBase):
 
   def tearDown(self):
     try:
-      isolate.run_isolated.rmtree(self.directory)
+      file_path.rmtree(self.directory)
     finally:
       super(IsolateLoad, self).tearDown()
 
@@ -868,12 +872,12 @@ class IsolateLoad(IsolateBase):
       isolated = os.path.join(isolated_dir, u'foo.isolated')
 
       with open(os.path.join(isolate_dir_1, 'isolate1.isolate'), 'wb') as f:
-        isolate.isolate_format.pretty_print(isolate1, f)
+        isolate_format.pretty_print(isolate1, f)
       with open(os.path.join(isolate_dir_3_2, 'isolate2.isolate'), 'wb') as f:
-        isolate.isolate_format.pretty_print(isolate2, f)
+        isolate_format.pretty_print(isolate2, f)
       root_isolate = os.path.join(isolate_dir_3, 'isolate3.isolate')
       with open(root_isolate, 'wb') as f:
-        isolate.isolate_format.pretty_print(isolate3, f)
+        isolate_format.pretty_print(isolate3, f)
 
       # Make all the touched files.
       mapping = {1: isolate_dir_1, 2: isolate_dir_3_2, 3: isolate_dir_3}
@@ -1052,12 +1056,12 @@ class IsolateLoad(IsolateBase):
       isolated = os.path.join(isolated_dir, u'foo.isolated')
 
       with open(os.path.join(isolate_dir_1, 'isolate1.isolate'), 'wb') as f:
-        isolate.isolate_format.pretty_print(isolate1, f)
+        isolate_format.pretty_print(isolate1, f)
       with open(os.path.join(isolate_dir_3_2, 'isolate2.isolate'), 'wb') as f:
-        isolate.isolate_format.pretty_print(isolate2, f)
+        isolate_format.pretty_print(isolate2, f)
       root_isolate = os.path.join(isolate_dir_3, 'isolate3.isolate')
       with open(root_isolate, 'wb') as f:
-        isolate.isolate_format.pretty_print(isolate3, f)
+        isolate_format.pretty_print(isolate3, f)
 
       # Make all the touched files.
       path_dir = os.path.join(cwd, 'path')
@@ -1172,7 +1176,7 @@ class IsolateCommand(IsolateBase):
         'infiles': dict(infiles),
         'namespace': namespace,
       })
-    self.mock(isolate.isolateserver, 'upload_tree', mocked_upload_tree)
+    self.mock(isolateserver, 'upload_tree', mocked_upload_tree)
 
     def join(*path):
       return os.path.join(self.cwd, *path)
@@ -1235,7 +1239,7 @@ class IsolateCommand(IsolateBase):
         'infiles': dict(infiles),
         'namespace': namespace,
       })
-    self.mock(isolate.isolateserver, 'upload_tree', mocked_upload_tree)
+    self.mock(isolateserver, 'upload_tree', mocked_upload_tree)
 
     def join(*path):
       return os.path.join(self.cwd, *path)
@@ -1483,8 +1487,7 @@ class IsolateCommand(IsolateBase):
     self.assertEqual(
         0,
         isolate.CMDcheck(
-            optparse.OptionParser(),
-            cmd + ['--config-variable', 'foo=bar']))
+            optparse.OptionParser(), cmd + ['--config-variable', 'foo=bar']))
 
   def test_CMDcheck_isolate_copied(self):
     # Note that moving the .isolate file is a different code path, this is about
@@ -1515,7 +1518,7 @@ class IsolateCommand(IsolateBase):
       '--', 'extra_args',
     ]
     self.mock(isolate, 'load_complete_state', self.load_complete_state)
-    self.mock(isolate.subprocess, 'call', lambda *_, **_kwargs: 0)
+    self.mock(subprocess, 'call', lambda *_, **_kwargs: 0)
     self.assertEqual(0, isolate.CMDrun(optparse.OptionParser(), cmd))
 
   def test_CMDrun_no_isolated(self):
@@ -1527,7 +1530,7 @@ class IsolateCommand(IsolateBase):
       self.assertEqual([sys.executable, '-c', "print('hi')", 'run'], cmd)
       self.assertTrue(os.path.isdir(cwd))
       return 0
-    self.mock(isolate.subprocess, 'call', expect_call)
+    self.mock(subprocess, 'call', expect_call)
 
     cmd = ['run', '--isolate', isolate_file]
     self.assertEqual(0, isolate.CMDrun(optparse.OptionParser(), cmd))

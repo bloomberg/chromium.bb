@@ -17,6 +17,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolated_format
 import run_isolated
+from utils import file_path
 
 VERBOSE = False
 
@@ -96,7 +97,7 @@ class RunIsolatedTest(unittest.TestCase):
     self.data_dir = os.path.join(ROOT_DIR, 'tests', 'run_isolated')
 
   def tearDown(self):
-    run_isolated.rmtree(self.tempdir)
+    file_path.rmtree(self.tempdir)
     super(RunIsolatedTest, self).tearDown()
 
   def _result_tree(self):

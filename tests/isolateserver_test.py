@@ -20,10 +20,11 @@ import zlib
 # net_utils adjusts sys.path.
 import net_utils
 
-from depot_tools import auto_stub
+import auth
 import isolated_format
 import isolateserver
 import test_utils
+from depot_tools import auto_stub
 from utils import threading_utils
 
 
@@ -34,7 +35,7 @@ class TestCase(net_utils.TestCase):
   """Mocks out url_open() calls and sys.stdout/stderr."""
   def setUp(self):
     super(TestCase, self).setUp()
-    self.mock(isolateserver.auth, 'ensure_logged_in', lambda _: None)
+    self.mock(auth, 'ensure_logged_in', lambda _: None)
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 

@@ -8,14 +8,24 @@ This module assumes that filesystem is not changing while current process
 is running and thus it caches results of functions that depend on FS state.
 """
 
+import ctypes
 import logging
 import os
 import posixpath
 import re
+import shutil
+import stat
 import sys
 import unicodedata
+import time
 
+from utils import threading_utils
 from utils import tools
+
+
+# Types of action accepted by link_file().
+HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY = range(1, 5)
+
 
 ## OS-specific imports
 
@@ -527,3 +537,312 @@ def ensure_command_has_abs_path(command, cwd):
   """
   if not os.path.isabs(command[0]):
     command[0] = os.path.abspath(os.path.join(cwd, command[0]))
+
+
+def is_same_filesystem(path1, path2):
+  """Returns True if both paths are on the same filesystem.
+
+  This is required to enable the use of hardlinks.
+  """
+  assert os.path.isabs(path1), path1
+  assert os.path.isabs(path2), path2
+  if sys.platform == 'win32':
+    # If the drive letter mismatches, assume it's a separate partition.
+    # TODO(maruel): It should look at the underlying drive, a drive letter could
+    # be a mount point to a directory on another drive.
+    assert re.match(r'^[a-zA-Z]\:\\.*', path1), path1
+    assert re.match(r'^[a-zA-Z]\:\\.*', path2), path2
+    if path1[0].lower() != path2[0].lower():
+      return False
+  return os.stat(path1).st_dev == os.stat(path2).st_dev
+
+
+def get_free_space(path):
+  """Returns the number of free bytes."""
+  if sys.platform == 'win32':
+    free_bytes = ctypes.c_ulonglong(0)
+    ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+        ctypes.c_wchar_p(path), None, None, ctypes.pointer(free_bytes))
+    return free_bytes.value
+  # For OSes other than Windows.
+  f = os.statvfs(path)  # pylint: disable=E1101
+  return f.f_bfree * f.f_frsize
+
+
+### Write file functions.
+
+
+def hardlink(source, link_name):
+  """Hardlinks a file.
+
+  Add support for os.link() on Windows.
+  """
+  if sys.platform == 'win32':
+    if not ctypes.windll.kernel32.CreateHardLinkW(
+        unicode(link_name), unicode(source), 0):
+      raise OSError()
+  else:
+    os.link(source, link_name)
+
+
+def readable_copy(outfile, infile):
+  """Makes a copy of the file that is readable by everyone."""
+  shutil.copy2(infile, outfile)
+  read_enabled_mode = (os.stat(outfile).st_mode | stat.S_IRUSR |
+                       stat.S_IRGRP | stat.S_IROTH)
+  os.chmod(outfile, read_enabled_mode)
+
+
+def set_read_only(path, read_only):
+  """Sets or resets the write bit on a file or directory.
+
+  Zaps out access to 'group' and 'others'.
+  """
+  assert isinstance(read_only, bool), read_only
+  mode = os.lstat(path).st_mode
+  # TODO(maruel): Stop removing GO bits.
+  if read_only:
+    mode = mode & 0500
+  else:
+    mode = mode | 0200
+  if hasattr(os, 'lchmod'):
+    os.lchmod(path, mode)  # pylint: disable=E1101
+  else:
+    if stat.S_ISLNK(mode):
+      # Skip symlink without lchmod() support.
+      logging.debug(
+          'Can\'t change %sw bit on symlink %s',
+          '-' if read_only else '+', path)
+      return
+
+    # TODO(maruel): Implement proper DACL modification on Windows.
+    os.chmod(path, mode)
+
+
+def try_remove(filepath):
+  """Removes a file without crashing even if it doesn't exist."""
+  try:
+    # TODO(maruel): Not do it unless necessary since it slows this function
+    # down.
+    if sys.platform == 'win32':
+      # Deleting a read-only file will fail if it is read-only.
+      set_read_only(filepath, False)
+    else:
+      # Deleting a read-only file will fail if the directory is read-only.
+      set_read_only(os.path.dirname(filepath), False)
+    os.remove(filepath)
+  except OSError:
+    pass
+
+
+def link_file(outfile, infile, action):
+  """Links a file. The type of link depends on |action|."""
+  if action not in (HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, COPY):
+    raise ValueError('Unknown mapping action %s' % action)
+  if not os.path.isfile(infile):
+    raise OSError('%s is missing' % infile)
+  if os.path.isfile(outfile):
+    raise OSError(
+        '%s already exist; insize:%d; outsize:%d' %
+        (outfile, os.stat(infile).st_size, os.stat(outfile).st_size))
+
+  if action == COPY:
+    readable_copy(outfile, infile)
+  elif action == SYMLINK and sys.platform != 'win32':
+    # On windows, symlink are converted to hardlink and fails over to copy.
+    os.symlink(infile, outfile)  # pylint: disable=E1101
+  else:
+    # HARDLINK or HARDLINK_WITH_FALLBACK.
+    try:
+      hardlink(infile, outfile)
+    except OSError as e:
+      if action == HARDLINK:
+        raise OSError('Failed to hardlink %s to %s: %s' % (infile, outfile, e))
+      # Probably a different file system.
+      logging.warning(
+          'Failed to hardlink, failing back to copy %s to %s' % (
+            infile, outfile))
+      readable_copy(outfile, infile)
+
+
+### Write directory functions.
+
+
+def make_tree_read_only(root):
+  """Makes all the files in the directories read only.
+
+  Also makes the directories read only, only if it makes sense on the platform.
+
+  This means no file can be created or deleted.
+  """
+  logging.debug('make_tree_read_only(%s)', root)
+  assert os.path.isabs(root), root
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    for filename in filenames:
+      set_read_only(os.path.join(dirpath, filename), True)
+    if sys.platform != 'win32':
+      # It must not be done on Windows.
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), True)
+  if sys.platform != 'win32':
+    set_read_only(root, True)
+
+
+def make_tree_files_read_only(root):
+  """Makes all the files in the directories read only but not the directories
+  themselves.
+
+  This means files can be created or deleted.
+  """
+  logging.debug('make_tree_files_read_only(%s)', root)
+  assert os.path.isabs(root), root
+  if sys.platform != 'win32':
+    set_read_only(root, False)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    for filename in filenames:
+      set_read_only(os.path.join(dirpath, filename), True)
+    if sys.platform != 'win32':
+      # It must not be done on Windows.
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), False)
+
+
+def make_tree_writeable(root):
+  """Makes all the files in the directories writeable.
+
+  Also makes the directories writeable, only if it makes sense on the platform.
+
+  It is different from make_tree_deleteable() because it unconditionally affects
+  the files.
+  """
+  logging.debug('make_tree_writeable(%s)', root)
+  assert os.path.isabs(root), root
+  if sys.platform != 'win32':
+    set_read_only(root, False)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    for filename in filenames:
+      set_read_only(os.path.join(dirpath, filename), False)
+    if sys.platform != 'win32':
+      # It must not be done on Windows.
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), False)
+
+
+def make_tree_deleteable(root):
+  """Changes the appropriate permissions so the files in the directories can be
+  deleted.
+
+  On Windows, the files are modified. On other platforms, modify the directory.
+  It only does the minimum so the files can be deleted safely.
+
+  Warning on Windows: since file permission is modified, the file node is
+  modified. This means that for hard-linked files, every directory entry for the
+  file node has its file permission modified.
+  """
+  logging.debug('make_tree_deleteable(%s)', root)
+  assert os.path.isabs(root), root
+  if sys.platform != 'win32':
+    set_read_only(root, False)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    if sys.platform == 'win32':
+      for filename in filenames:
+        set_read_only(os.path.join(dirpath, filename), False)
+    else:
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), False)
+
+
+def rmtree(root):
+  """Wrapper around shutil.rmtree() to retry automatically on Windows.
+
+  On Windows, forcibly kills processes that are found to interfere with the
+  deletion.
+
+  Returns:
+    True on normal execution, False if berserk techniques (like killing
+    processes) had to be used.
+  """
+  make_tree_deleteable(root)
+  logging.info('rmtree(%s)', root)
+  if sys.platform != 'win32':
+    shutil.rmtree(root)
+    return True
+
+  # Windows is more 'challenging'. First tries the soft way: tries 3 times to
+  # delete and sleep a bit in between.
+  max_tries = 3
+  for i in xrange(max_tries):
+    # errors is a list of tuple(function, path, excinfo).
+    errors = []
+    shutil.rmtree(root, onerror=lambda *args: errors.append(args))
+    if not errors:
+      return True
+    if i == max_tries - 1:
+      sys.stderr.write(
+          'Failed to delete %s. The following files remain:\n' % root)
+      for _, path, _ in errors:
+        sys.stderr.write('- %s\n' % path)
+    else:
+      delay = (i+1)*2
+      sys.stderr.write(
+          'Failed to delete %s (%d files remaining).\n'
+          '  Maybe the test has a subprocess outliving it.\n'
+          '  Sleeping %d seconds.\n' %
+          (root, len(errors), delay))
+      time.sleep(delay)
+
+  # The soft way was not good enough. Try the hard way. Enumerates both:
+  # - all child processes from this process.
+  # - processes where the main executable in inside 'root'. The reason is that
+  #   the ancestry may be broken so stray grand-children processes could be
+  #   undetected by the first technique.
+  # This technique is not fool-proof but gets mostly there.
+  def get_processes():
+    processes = threading_utils.enum_processes_win()
+    tree_processes = threading_utils.filter_processes_tree_win(processes)
+    dir_processes = threading_utils.filter_processes_dir_win(processes, root)
+    # Convert to dict to remove duplicates.
+    processes = {p.ProcessId: p for p in tree_processes}
+    processes.update((p.ProcessId, p) for p in dir_processes)
+    processes.pop(os.getpid())
+    return processes
+
+  for i in xrange(3):
+    sys.stderr.write('Enumerating processes:\n')
+    processes = get_processes()
+    if not processes:
+      break
+    for _, proc in sorted(processes.iteritems()):
+      sys.stderr.write(
+          '- pid %d; Handles: %d; Exe: %s; Cmd: %s\n' % (
+            proc.ProcessId,
+            proc.HandleCount,
+            proc.ExecutablePath,
+            proc.CommandLine))
+    sys.stderr.write('Terminating %d processes.\n' % len(processes))
+    for pid in sorted(processes):
+      try:
+        # Killing is asynchronous.
+        os.kill(pid, 9)
+        sys.stderr.write('- %d killed\n' % pid)
+      except OSError:
+        sys.stderr.write('- failed to kill %s\n' % pid)
+    if i < 2:
+      time.sleep((i+1)*2)
+  else:
+    processes = get_processes()
+    if processes:
+      sys.stderr.write('Failed to terminate processes.\n')
+      raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
+
+  # Now that annoying processes in root are evicted, try again.
+  errors = []
+  shutil.rmtree(root, onerror=lambda *args: errors.append(args))
+  if errors:
+    # There's no hope.
+    sys.stderr.write(
+        'Failed to delete %s. The following files remain:\n' % root)
+    for _, path, _ in errors:
+      sys.stderr.write('- %s\n' % path)
+    raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
+  return False
