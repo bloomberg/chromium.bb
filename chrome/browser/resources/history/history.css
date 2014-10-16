@@ -165,11 +165,17 @@ html[dir='rtl'] #range-previous {
   text-shadow: 0 1px 0 rgb(240, 240, 240);
   text-transform: none;
   vertical-align: middle;
+  width: auto;
   word-spacing: normal;
 }
 
 #timeframe-controls input[type='radio']:not(:first-of-type) {
   -webkit-border-start-width: 0;
+}
+
+#timeframe-controls input[type='radio']:not(:first-of-type):focus {
+  -webkit-border-start-width: 1px;
+  -webkit-margin-start: -1px;
 }
 
 html[dir='ltr'] #timeframe-controls input[type='radio']:first-of-type,
@@ -200,6 +206,7 @@ html[dir='rtl'] #timeframe-controls input[type='radio']:first-of-type {
 
 #timeframe-controls input[type='radio']::after {
   content: attr(aria-label);
+  padding: 0 1em;
 }
 
 #results-display {
