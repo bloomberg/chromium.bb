@@ -387,7 +387,7 @@ void EncryptedMediaPlayerSupportImpl::OnNeedKey(const std::string& type,
     init_data_type_ = type;
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  client_->keyNeeded(
+  client_->encrypted(
       WebString::fromUTF8(type), init_data_ptr, init_data.size());
 }
 
