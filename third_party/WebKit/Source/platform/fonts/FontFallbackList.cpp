@@ -144,7 +144,7 @@ const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(const Fon
                 return fontData->fontDataForCharacter(space);
 
             SimpleFontData* lastResortFallback = FontCache::fontCache()->getLastResortFallbackFont(fontDescription).get();
-            RELEASE_ASSERT(lastResortFallback);
+            ASSERT(lastResortFallback);
             return lastResortFallback;
         }
 
