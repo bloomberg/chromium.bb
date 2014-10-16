@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/WebKit/Source/bindings/core/core.gni")
 import("//third_party/WebKit/Source/bindings/idl.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
@@ -35,9 +36,7 @@ core_static_dependency_idl_files =
 core_generated_interface_idl_files =
   generated_webcore_testing_idl_files  # interfaces
 core_generated_dependency_idl_files =
-  # FIXME: Generate separate core_global_constructors_idls
-  # http://crbug.com/358074
-  generated_global_constructors_idl_files  # partial interfaces
+  core_global_constructors_generated_idl_files  # partial interfaces
 
 # Static IDL files / Generated IDL files
 #

@@ -10,6 +10,14 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
 
+core_idl_files_list = "$target_gen_dir/core_idl_files.tmp"
+write_file(core_idl_files_list,
+           rebase_path(core_idl_files, root_build_dir))
+
+modules_idl_files_list = "$target_gen_dir/modules_idl_files.tmp"
+write_file(modules_idl_files_list,
+           rebase_path(modules_idl_files, root_build_dir))
+
 # GYP version: Source/bindings/modules/generated.gyp:bindings_modules_generated
 group("bindings_modules_generated") {
   deps = [
@@ -69,6 +77,10 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_generated = []
   output_file =
     "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle"
+  deps = [
+    ":modules_core_global_constructors_idls",
+    ":modules_global_constructors_idls",
+  ]
 }
 
 # GYP version: Source/bindings/modules/generated.gyp:interfaces_info
@@ -101,4 +113,32 @@ action("interfaces_info") {
     ":interfaces_info_individual_modules",
     "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
   ]
+}
+
+# GYP version: Source/bindings/modules/generated.gyp:modules_global_objects
+compute_global_objects("modules_global_objects") {
+  sources = modules_idl_files
+  sources_generated = [ "$bindings_core_output_dir/GlobalObjectsCore.pickle" ]
+  output_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+  deps = [ "//third_party/WebKit/Source/bindings/core:core_global_objects" ]
+}
+
+# GYP version: Source/bindings/modules/generated.gyp:modules_core_global_constructors_idls
+generate_global_constructors("modules_core_global_constructors_idls") {
+  sources = core_idl_files
+  global_objects_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+  interfaces = modules_core_global_constructors_original_interfaces
+  component = "Core"
+  output_dir = blink_modules_output_dir
+  deps = [ ":modules_global_objects" ]
+}
+
+# GYP version: Source/bindings/modules/generated.gyp:modules_global_constructors_idls
+generate_global_constructors("modules_global_constructors_idls") {
+  sources = modules_idl_files
+  global_objects_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
+  interfaces = modules_global_constructors_original_interfaces
+  component = "Modules"
+  output_dir = blink_modules_output_dir
+  deps = [ ":modules_global_objects" ]
 }

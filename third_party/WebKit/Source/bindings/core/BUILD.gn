@@ -8,10 +8,35 @@ import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 
 visibility = [ "//third_party/WebKit/*" ]
 
+core_idl_files_list = "$target_gen_dir/core_idl_files.tmp"
+write_file(core_idl_files_list,
+           rebase_path(core_idl_files, root_build_dir))
+
 # GYP version: Source/bindings/core/generated.gyp:interfaces_info_individual_core
 compute_interfaces_info_individual("interfaces_info_individual_core") {
   sources_static = core_static_idl_files
   sources_generated = core_generated_idl_files
   output_file =
     "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
+  deps = [
+    "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
+  ]
+}
+
+# GYP version: Source/bindings/core/generated.gyp:core_global_objects
+compute_global_objects("core_global_objects") {
+  sources = core_idl_files
+  sources_generated = []
+  output_file = "$bindings_core_output_dir/GlobalObjectsCore.pickle"
+  deps = []
+}
+
+# GYP version: Source/bindings/core/generated.gyp:core_global_constructors_idls
+generate_global_constructors("core_global_constructors_idls") {
+  sources = core_idl_files
+  global_objects_file = "$bindings_core_output_dir/GlobalObjectsCore.pickle"
+  interfaces = core_global_constructors_original_interfaces
+  component = "Core"
+  output_dir = blink_core_output_dir
+  deps = [ ":core_global_objects" ]
 }
