@@ -1,3 +1,37 @@
 Tests RequestJSONView ability to parse JSON passed in XHR, JSONP
 
 Bug 65559
+
+Input: {"name": "value"}
+Prefix: 
+Data: {"name":"value"}
+Suffix: 
+
+Input: while(1); {"name": "value"}
+Prefix: while(1); 
+Data: {"name":"value"}
+Suffix: 
+
+Input: [,"foo", -4.2, true, false, null]
+Prefix: 
+Data: [null,"foo",-4.2,true,false,null]
+Suffix: 
+
+Input: [{"foo": {}, "bar": []},[[],{}]]
+Prefix: 
+Data: [{"foo":{},"bar":[]},[[],{}]]
+Suffix: 
+
+Input: /* vanilla */ run([1, 2, 3]);
+Prefix: /* vanilla */ run(
+Data: [1,2,3]
+Suffix: );
+
+Input: ["A\"B\u0020C\nD\\E\u04ABF"]
+Prefix: 
+Data: ["A\"B C\nD\\EҫF"]
+Suffix: 
+
+Input: <html>404 Page not found</html>
+Can't parse
+

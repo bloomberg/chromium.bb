@@ -6,43 +6,27 @@
 
 function test()
 {
-    var testData;
+    function check(text) {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Input: " + text);
+        var parsedJSON = WebInspector.RequestJSONView.parseJSON(text);
+        if (!parsedJSON) {
+            InspectorTest.addResult("Can't parse");
+            return;
+        }
+        InspectorTest.addResult("Prefix: " + parsedJSON.prefix);
+        InspectorTest.addResult("Data: " + JSON.stringify(parsedJSON.data));
+        InspectorTest.addResult("Suffix: " + parsedJSON.suffix);
+    }
 
-    testData = "while(1);";
-    InspectorTest.assertTrue(!WebInspector.RequestJSONView.parseJSON(testData), "Should not be able to parse \"" + testData + "\".");
+    check("{\"name\": \"value\"}");
+    check("while(1); {\"name\": \"value\"}");
+    check("[,\"foo\", -4.2, true, false, null]");
+    check("[{\"foo\": {}, \"bar\": []},[[],{}]]");
+    check("/* vanilla */ run([1, 2, 3]);");
+    check("[\"A\\\"B\\u0020C\\nD\\\\E\\u04ABF\"]");
 
-    testData = "{\"name\": \"value\"";
-    InspectorTest.assertTrue(!WebInspector.RequestJSONView.parseJSON(testData), "Should not be able to parse \"" + testData + "\".");
-
-    testData = "{\"name\": \"value\"}";
-    var parsedJSON = WebInspector.RequestJSONView.parseJSON(testData);
-    InspectorTest.assertEquals(parsedJSON.prefix, "");
-    InspectorTest.assertEquals(parsedJSON.data.name, "value");
-    InspectorTest.assertEquals(parsedJSON.suffix, "");
-
-    testData = "while(1); {\"name\": \"value\"}";
-    parsedJSON = WebInspector.RequestJSONView.parseJSON(testData);
-    InspectorTest.assertEquals(parsedJSON.prefix, "while(1); ");
-    InspectorTest.assertEquals(parsedJSON.data.name, "value");
-    InspectorTest.assertEquals(parsedJSON.suffix, "");
-
-    testData = "func({)";
-    InspectorTest.assertTrue(!WebInspector.RequestJSONView.parseJSONP(testData), "Should not be able to parse \"" + testData + "\".");
-
-    testData = "func){(";
-    InspectorTest.assertTrue(!WebInspector.RequestJSONView.parseJSONP(testData), "Should not be able to parse \"" + testData + "\".");
-
-    testData = "func({\"name\": \"value\"}";
-    InspectorTest.assertTrue(!WebInspector.RequestJSONView.parseJSONP(testData), "Should not be able to parse \"" + testData + "\".");
-
-    testData = "func{\"name\": \"value\"})";
-    InspectorTest.assertTrue(!WebInspector.RequestJSONView.parseJSONP(testData), "Should not be able to parse \"" + testData + "\".");
-
-    testData = "func({\"name\": \"value\"})";
-    var parsedJSONP = WebInspector.RequestJSONView.parseJSONP(testData);
-    InspectorTest.assertEquals(parsedJSONP.prefix, "func(");
-    InspectorTest.assertEquals(parsedJSONP.data.name, "value");
-    InspectorTest.assertEquals(parsedJSONP.suffix, ")");
+    check("<html>404 Page not found</html>");
 
     InspectorTest.completeTest();
 }
