@@ -51,7 +51,24 @@ bool skipExactly(const CharType*& position, const CharType* end)
     return false;
 }
 
-template<typename CharType>
+template <typename CharType>
+bool skipToken(const CharType*& position, const CharType* end, const char* token)
+{
+    const CharType* current = position;
+    while (current < end && *token) {
+        if (*current != *token)
+            return false;
+        ++current;
+        ++token;
+    }
+    if (*token)
+        return false;
+
+    position = current;
+    return true;
+}
+
+template <typename CharType>
 void skipUntil(const CharType*& position, const CharType* end, CharType delimiter)
 {
     while (position < end && *position != delimiter)

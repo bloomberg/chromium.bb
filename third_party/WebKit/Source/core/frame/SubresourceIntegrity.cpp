@@ -28,6 +28,8 @@ namespace blink {
 // FIXME: This should probably use common functions with ContentSecurityPolicy.
 static bool isIntegrityCharacter(UChar c)
 {
+    // FIXME: This should be checking base64url encoding, not base64 encoding.
+
     // Check if it's a base64 encoded value.
     return isASCIIAlphanumeric(c) || c == '+' || c == '/' || c == '=';
 }
@@ -112,9 +114,9 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     String integrity;
     HashAlgorithm algorithm;
     String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
-    if (!parseIntegrityAttribute(attribute, integrity, algorithm)) {
+    if (!parseIntegrityAttribute(attribute, integrity, algorithm, document)) {
+        // An error is logged to the console during parsing; we don't need to log one here.
         UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
-        logErrorToConsole("The 'integrity' attribute's value  '" + attribute + "' is not valid integrity metadata.", document);
         return false;
     }
 
@@ -148,9 +150,19 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     return false;
 }
 
-bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& integrity, HashAlgorithm& algorithm)
+// Before:
+//
+// ni:///[algorithm];[hash]
+//       ^                 ^
+//       position          end
+//
+// After:
+//
+// ni:///[algorithm];[hash]
+//                  ^      ^
+//           position    end
+bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* end, HashAlgorithm& algorithm)
 {
-    DEFINE_STATIC_LOCAL(const String, integrityPrefix, ("ni://"));
     // Any additions or subtractions from this struct should also modify the
     // respective entries in the kAlgorithmMap array in checkDigest() as well
     // as the array in algorithmToString().
@@ -162,50 +174,71 @@ bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, Stri
         { "sha384", HashAlgorithmSha384 },
         { "sha512", HashAlgorithmSha512 }
     };
-    Vector<UChar> characters;
-    attribute.stripWhiteSpace().appendTo(characters);
-    UChar* begin = characters.data();
-    UChar* end = characters.end();
 
-    if (characters.size() < 1)
-        return false;
-
-    if (!equalIgnoringCase(integrityPrefix.characters8(), begin, integrityPrefix.length()))
-        return false;
-
-    const UChar* algorithmStart = begin + integrityPrefix.length();
-    const UChar* algorithmEnd = algorithmStart;
-
-    skipUntil<UChar>(algorithmEnd, end, ';');
-
-    // Instead of this sizeof() calculation to get the length of this array,
-    // it would be preferable to use WTF_ARRAY_LENGTH for simplicity and to
-    // guarantee a compile time calculation. Unfortunately, on some
-    // compliers, the call to WTF_ARRAY_LENGTH fails on arrays of anonymous
-    // stucts, so, for now, it is necessary to resort to this sizeof
-    // calculation.
-    size_t i = 0;
-    size_t kSupportedPrefixesLength = sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0]);
-    for (; i < kSupportedPrefixesLength; i++) {
-        if (equalIgnoringCase(kSupportedPrefixes[i].prefix, algorithmStart, strlen(kSupportedPrefixes[i].prefix))) {
-            algorithm = kSupportedPrefixes[i].algorithm;
-            break;
+    for (auto& prefix : kSupportedPrefixes) {
+        if (skipToken<UChar>(position, end, prefix.prefix)) {
+            algorithm = prefix.algorithm;
+            return true;
         }
     }
 
-    if (i == kSupportedPrefixesLength)
-        return false;
+    return false;
+}
 
-    const UChar* integrityStart = algorithmEnd;
-    if (!skipExactly<UChar>(integrityStart, end, ';'))
-        return false;
+// Before:
+//
+// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
+//                   ^     ^                              ^              ^
+//            position   end                       position            end
+//
+// After:
+//
+// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
+//                         ^                                    ^        ^
+//                         position/end                  position      end
+bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end, String& digest)
+{
+    const UChar* begin = position;
+    skipWhile<UChar, isIntegrityCharacter>(position, end);
 
-    const UChar* integrityEnd = integrityStart;
-    skipWhile<UChar, isIntegrityCharacter>(integrityEnd, end);
-    if (integrityEnd != end)
+    if (position == begin || (position != end && *position != '?')) {
+        digest = emptyString();
         return false;
+    }
 
-    integrity = String(integrityStart, integrityEnd - integrityStart);
+    digest = String(begin, position - begin);
+    return true;
+}
+
+bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& digest, HashAlgorithm& algorithm, Document& document)
+{
+    Vector<UChar> characters;
+    attribute.stripWhiteSpace().appendTo(characters);
+    const UChar* position = characters.data();
+    const UChar* end = characters.end();
+
+    if (!skipToken<UChar>(position, end, "ni:///")) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The value must begin with 'ni:///'.", document);
+        return false;
+    }
+
+    if (!parseAlgorithm(position, end, algorithm)) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The specified hash algorithm must be one of 'sha256', 'sha384', or 'sha512'.", document);
+        return false;
+    }
+
+    if (!skipExactly<UChar>(position, end, ';')) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The hash algorithm must be followed by a ';' character.", document);
+        return false;
+    }
+
+    if (!parseDigest(position, end, digest)) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The digest must be a valid, base64-encoded value.", document);
+        return false;
+    }
+
+    // FIXME: Parse params in order to get content type (e.g. "?ct=application/javascript")
+
     return true;
 }
 

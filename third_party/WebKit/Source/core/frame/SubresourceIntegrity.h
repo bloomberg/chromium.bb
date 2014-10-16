@@ -13,6 +13,7 @@ class String;
 
 namespace blink {
 
+class Document;
 class Element;
 class KURL;
 
@@ -23,9 +24,12 @@ public:
 private:
     // FIXME: After the merge with the Chromium repo, this should be refactored
     // to use FRIEND_TEST in base/gtest_prod_util.h.
-    friend class SubresourceIntegrityTest_Parsing_Test;
+    friend class SubresourceIntegrityTest;
 
-    static bool parseIntegrityAttribute(const WTF::String& attribute, WTF::String& integrity, HashAlgorithm&);
+    static bool parseAlgorithm(const UChar*& begin, const UChar* end, HashAlgorithm&);
+    static bool parseDigest(const UChar*& begin, const UChar* end, String& digest);
+
+    static bool parseIntegrityAttribute(const WTF::String& attribute, WTF::String& integrity, HashAlgorithm&, Document&);
 };
 
 } // namespace blink

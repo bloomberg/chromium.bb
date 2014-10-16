@@ -18,96 +18,206 @@
 namespace blink {
 
 static const char kBasicScript[] = "alert('test');";
-static const char kSha256Integrity[] = "ni://sha256;GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4=";
-static const char kSha384Intgrity[] = "ni://sha384;nep3XpvhUxpCMOVXIFPecThAqdY/uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
-static const char kSha512Integrity[] = "ni://sha512;TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1/ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ++ItA==";
-static const char kSha384IntegrityLabeledAs256[] = "ni://sha256;nep3XpvhUxpCMOVXIFPecThAqdY/uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
-static const char kUnsupportedHashFunctionIntegrity[] = "ni://sha1;JfLW308qMPKfb4DaHpUBEESwuPc=";
+static const char kSha256Integrity[] = "ni:///sha256;GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4=";
+static const char kSha384Integrity[] = "ni:///sha384;nep3XpvhUxpCMOVXIFPecThAqdY/uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kSha512Integrity[] = "ni:///sha512;TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1/ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ++ItA==";
+static const char kSha384IntegrityLabeledAs256[] = "ni:///sha256;nep3XpvhUxpCMOVXIFPecThAqdY/uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kUnsupportedHashFunctionIntegrity[] = "ni:///sha1;JfLW308qMPKfb4DaHpUBEESwuPc=";
 
-TEST(SubresourceIntegrityTest, CheckSubresourceIntegrity)
+class SubresourceIntegrityTest : public ::testing::Test {
+public:
+    SubresourceIntegrityTest()
+        : secureURL(ParsedURLString, "https://example.test:443")
+        , insecureURL(ParsedURLString, "http://example.test:80")
+        , secureOrigin(SecurityOrigin::create(secureURL))
+        , insecureOrigin(SecurityOrigin::create(insecureURL))
+    {
+    }
+
+protected:
+    virtual void SetUp()
+    {
+        document = Document::create();
+        scriptElement = HTMLScriptElement::create(*document, true);
+    }
+
+    void expectAlgorithm(const String& text, HashAlgorithm expectedAlgorithm)
+    {
+        Vector<UChar> characters;
+        text.appendTo(characters);
+        const UChar* position = characters.data();
+        const UChar* end = characters.end();
+        HashAlgorithm algorithm;
+
+        EXPECT_TRUE(SubresourceIntegrity::parseAlgorithm(position, end, algorithm));
+        EXPECT_EQ(expectedAlgorithm, algorithm);
+        EXPECT_EQ(';', *position);
+    }
+
+    void expectAlgorithmFailure(const String& text)
+    {
+        Vector<UChar> characters;
+        text.appendTo(characters);
+        const UChar* position = characters.data();
+        const UChar* begin = characters.data();
+        const UChar* end = characters.end();
+        HashAlgorithm algorithm;
+
+        EXPECT_FALSE(SubresourceIntegrity::parseAlgorithm(position, end, algorithm));
+        EXPECT_EQ(begin, position);
+    }
+
+    void expectDigest(const String& text, const char* expectedDigest)
+    {
+        Vector<UChar> characters;
+        text.appendTo(characters);
+        const UChar* position = characters.data();
+        const UChar* end = characters.end();
+        String digest;
+
+        EXPECT_TRUE(SubresourceIntegrity::parseDigest(position, end, digest));
+        EXPECT_EQ(expectedDigest, digest);
+    }
+
+    void expectDigestFailure(const String& text)
+    {
+        Vector<UChar> characters;
+        text.appendTo(characters);
+        const UChar* position = characters.data();
+        const UChar* end = characters.end();
+        String digest;
+
+        EXPECT_FALSE(SubresourceIntegrity::parseDigest(position, end, digest));
+        EXPECT_TRUE(digest.isEmpty());
+    }
+
+    void expectParse(const char* integrityAttribute, const char* expectedDigest, HashAlgorithm expectedAlgorithm)
+    {
+        String digest;
+        HashAlgorithm algorithm;
+
+        EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, *document));
+        EXPECT_EQ(expectedDigest, digest);
+        EXPECT_EQ(expectedAlgorithm, algorithm);
+    }
+
+    void expectParseFailure(const char* integrityAttribute)
+    {
+        String digest;
+        HashAlgorithm algorithm;
+
+        EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, *document));
+    }
+
+    void expectIntegrity(const char* integrity, const char* script, const KURL& url)
+    {
+        scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
+        EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url));
+    }
+
+    void expectIntegrityFailure(const char* integrity, const char* script, const KURL& url)
+    {
+        scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
+        EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, url));
+    }
+
+    KURL secureURL;
+    KURL insecureURL;
+    RefPtr<SecurityOrigin> secureOrigin;
+    RefPtr<SecurityOrigin> insecureOrigin;
+
+    RefPtrWillBeRawPtr<Document> document;
+    RefPtrWillBeRawPtr<HTMLScriptElement> scriptElement;
+};
+
+TEST_F(SubresourceIntegrityTest, ParseAlgorithm)
 {
-    KURL secureKURL(KURL(), "https://foobar.com:443");
-    KURL insecureKURL(KURL(), "http://foobar.com:80");
-    RefPtr<SecurityOrigin> secureOrigin = SecurityOrigin::create(secureKURL);
-    RefPtr<SecurityOrigin> insecureOrigin = SecurityOrigin::create(insecureKURL);
-    RefPtrWillBeRawPtr<Document> document = Document::create();
-    RefPtrWillBeRawPtr<HTMLScriptElement> scriptElement = HTMLScriptElement::create(*document, true);
+    expectAlgorithm("sha256;", HashAlgorithmSha256);
+    expectAlgorithm("sha384;", HashAlgorithmSha384);
+    expectAlgorithm("sha512;", HashAlgorithmSha512);
 
-    // Verify basic sha256, sha384, and sha512 integrity checks.
-    document->updateSecurityOrigin(secureOrigin->isolatedCopy());
-    scriptElement->setAttribute(HTMLNames::integrityAttr, kSha256Integrity);
-    EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, secureKURL));
-    scriptElement->setAttribute(HTMLNames::integrityAttr, kSha384Intgrity);
-    EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, secureKURL));
-    scriptElement->setAttribute(HTMLNames::integrityAttr, kSha512Integrity);
-    EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, secureKURL));
-
-    // The hash label must match the hash value.
-    scriptElement->setAttribute(HTMLNames::integrityAttr, kSha384IntegrityLabeledAs256);
-    EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, secureKURL));
-
-    scriptElement->setAttribute(HTMLNames::integrityAttr, kSha256Integrity);
-    // Check should fail if the document is not on an authenticated origin or
-    // if the resource is not on an authenticated origin.
-    document->updateSecurityOrigin(insecureOrigin->isolatedCopy());
-    EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, secureKURL));
-    document->updateSecurityOrigin(secureOrigin->isolatedCopy());
-    EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, insecureKURL));
-
-    scriptElement->setAttribute(HTMLNames::integrityAttr, kUnsupportedHashFunctionIntegrity);
-    EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, kBasicScript, insecureKURL));
+    expectAlgorithmFailure("sha1;");
+    expectAlgorithmFailure("sha-1;");
+    expectAlgorithmFailure("sha-256;");
+    expectAlgorithmFailure("sha-384;");
+    expectAlgorithmFailure("sha-512;");
 }
 
-TEST(SubresourceIntegrityTest, Parsing)
+TEST_F(SubresourceIntegrityTest, ParseDigest)
 {
-    String attribute;
-    String integrity;
-    HashAlgorithm algorithm;
+    expectDigest("abcdefg", "abcdefg");
+    expectDigest("abcdefg?", "abcdefg");
 
-    // Verify that empty attribute is not valid.
-    EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
+    expectDigestFailure("?");
+    expectDigestFailure("&&&foobar&&&");
+    expectDigestFailure("\x01\x02\x03\x04");
+}
 
-    // Valid sha256 attribute
-    attribute = "ni://sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=";
-    EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
-    EXPECT_EQ(integrity, "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=");
-    EXPECT_EQ(algorithm, HashAlgorithmSha256);
+//
+// End-to-end parsing tests.
+//
 
-    // Another valid sha256 attribute, but this time with whitespace
-    attribute = "    ni://sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=    ";
-    EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
-    EXPECT_EQ(integrity, "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=");
-    EXPECT_EQ(algorithm, HashAlgorithmSha256);
+TEST_F(SubresourceIntegrityTest, Parsing)
+{
+    expectParseFailure("");
+    expectParseFailure("not/really/a/valid/anything");
+    expectParseFailure("foobar:///sha256;abcdefg");
+    expectParseFailure("ni://sha256;abcdefg");
+    expectParseFailure("ni:///not-sha256-at-all;abcdefg");
+    expectParseFailure("ni:///sha256;&&&foobar&&&");
+    expectParseFailure("ni:///sha256;\x01\x02\x03\x04");
 
-    // Valid sha384 attribute
-    attribute = "ni://sha384;XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr";
-    EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
-    EXPECT_EQ(integrity, "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr");
-    EXPECT_EQ(algorithm, HashAlgorithmSha384);
+    expectParse(
+        "ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        HashAlgorithmSha256);
 
-    // Valid sha512 attribute
-    attribute = "ni://sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==";
-    EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
-    EXPECT_EQ(integrity, "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==");
-    EXPECT_EQ(algorithm, HashAlgorithmSha512);
+    expectParse(
+        "     ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=     ",
+        "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        HashAlgorithmSha256);
 
-    // Invalid prefix
-    attribute = "foobar://sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=";
-    EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
+    expectParse(
+        "ni:///sha384;XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        HashAlgorithmSha384);
 
-    // Invalid hash function
-    attribute = "ni://not_a_hash_function;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=";
-    EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
+    expectParse(
+        "ni:///sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        HashAlgorithmSha512);
+}
 
-    // Invalid integrity (not base64)
-    attribute = "ni://sha256;&&&foobar&&&";
-    EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
-    attribute = "ni://sha256;\x01\x02\x03\x04";
-    EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
+//
+// End-to-end tests of ::CheckSubresourceIntegrity.
+//
 
-    // Just integrity
-    attribute = "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=";
-    EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(attribute, integrity, algorithm));
+TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
+{
+    document->updateSecurityOrigin(secureOrigin->isolatedCopy());
+
+    // Verify basic sha256, sha384, and sha512 integrity checks.
+    expectIntegrity(kSha256Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha384Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha512Integrity, kBasicScript, secureURL);
+
+    // The hash label must match the hash value.
+    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL);
+
+    // Unsupported hash functions should fail.
+    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL);
+}
+
+TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
+{
+    // The same checks as CheckSubresourceIntegrityInSecureOrigin should fail here.
+    document->updateSecurityOrigin(insecureOrigin->isolatedCopy());
+
+    expectIntegrityFailure(kSha256Integrity, kBasicScript, secureURL);
+    expectIntegrityFailure(kSha384Integrity, kBasicScript, secureURL);
+    expectIntegrityFailure(kSha512Integrity, kBasicScript, secureURL);
+    expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL);
+    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL);
 }
 
 } // namespace blink
