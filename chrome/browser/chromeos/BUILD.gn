@@ -102,6 +102,7 @@ source_set("chromeos") {
     "//ui/app_list",
     "//ui/aura",
     "//ui/base",
+    "//ui/chromeos:ui_chromeos",
     "//ui/compositor",
     "//ui/display",
     "//ui/events/platform",
