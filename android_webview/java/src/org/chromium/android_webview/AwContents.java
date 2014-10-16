@@ -581,8 +581,8 @@ public class AwContents {
         mDIPScale = DeviceDisplayInfo.create(mContext).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mLayoutSizer.setDIPScale(mDIPScale);
-        mWebContentsDelegate = new AwWebContentsDelegateAdapter(this, contentsClient,
-                mContainerView, mContext);
+        mWebContentsDelegate = new AwWebContentsDelegateAdapter(
+                this, contentsClient, mContentViewClient, mContext, mContainerView);
         mContentsClientBridge = new AwContentsClientBridge(contentsClient,
                 mBrowserContext.getKeyStore(), AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
@@ -665,6 +665,13 @@ public class AwContents {
         setContainerView(fullScreenView);
 
         return fullScreenView;
+    }
+
+    /**
+     * Called when the app has requested to exit fullscreen.
+     */
+    void requestExitFullscreen() {
+        mContentViewCore.getWebContents().exitFullscreen();
     }
 
     /**

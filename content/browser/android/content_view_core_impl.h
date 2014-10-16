@@ -245,12 +245,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // testing/benchmarking purposes
   base::android::ScopedJavaLocalRef<jobject> CreateTouchEventSynthesizer();
 
-  base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewClient();
-
-  // Returns the context that the ContentViewCore was created with, it would
-  // typically be an Activity context for an on screen view.
-  base::android::ScopedJavaLocalRef<jobject> GetContext();
-
   // Returns True if the given media should be blocked to load.
   bool ShouldBlockMediaRequest(const GURL& url);
 

@@ -19,7 +19,6 @@ import android.webkit.ValueCallback;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.ContentVideoView;
 
 /**
  * Adapts the AwWebContentsDelegate interface to the AwContentsClient interface.
@@ -29,17 +28,19 @@ import org.chromium.content.browser.ContentVideoView;
 class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     private static final String TAG = "AwWebContentsDelegateAdapter";
 
-    final AwContents mAwContents;
-    final AwContentsClient mContentsClient;
-    View mContainerView;
-    final Context mContext;
+    private final AwContents mAwContents;
+    private final AwContentsClient mContentsClient;
+    private final AwContentViewClient mContentViewClient;
+    private final Context mContext;
+    private View mContainerView;
 
     public AwWebContentsDelegateAdapter(AwContents awContents, AwContentsClient contentsClient,
-            View containerView, Context context) {
+            AwContentViewClient contentViewClient, Context context, View containerView) {
         mAwContents = awContents;
         mContentsClient = contentsClient;
-        setContainerView(containerView);
+        mContentViewClient = contentViewClient;
         mContext = context;
+        setContainerView(containerView);
     }
 
     public void setContainerView(View containerView) {
@@ -213,9 +214,10 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
 
     @Override
     public void toggleFullscreenModeForTab(boolean enterFullscreen) {
-        if (!enterFullscreen) {
-            ContentVideoView videoView = ContentVideoView.getContentVideoView();
-            if (videoView != null) videoView.exitFullscreen(false);
+        if (enterFullscreen) {
+            mContentViewClient.enterFullscreen();
+        } else {
+            mContentViewClient.exitFullscreen();
         }
     }
 

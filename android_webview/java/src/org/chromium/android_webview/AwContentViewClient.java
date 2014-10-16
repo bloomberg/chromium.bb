@@ -11,7 +11,6 @@ import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
-import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 
@@ -19,14 +18,14 @@ import org.chromium.content.browser.ContentViewClient;
  * ContentViewClient implementation for WebView
  */
 public class AwContentViewClient extends ContentViewClient implements ContentVideoViewClient {
-    private AwContentsClient mAwContentsClient;
-    private AwSettings mAwSettings;
-    private AwContents mAwContents;
-    private Context mContext;
+    private final AwContentsClient mAwContentsClient;
+    private final AwSettings mAwSettings;
+    private final AwContents mAwContents;
+    private final Context mContext;
+    private FrameLayout mCustomView;
 
-    public AwContentViewClient(
-            AwContentsClient awContentsClient, AwSettings awSettings, AwContents awContents,
-            Context context) {
+    public AwContentViewClient(AwContentsClient awContentsClient, AwSettings awSettings,
+            AwContents awContents, Context context) {
         mAwContentsClient = awContentsClient;
         mAwSettings = awSettings;
         mAwContents = awContents;
@@ -66,45 +65,57 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     }
 
     @Override
-    public void enterFullscreenVideo(View view) {
-        final FrameLayout viewGroup = new FrameLayout(mContext);
-        viewGroup.addView(view);
-        viewGroup.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewDetachedFromWindow(View v) {
-                // Intentional no-op (see onDestroyContentVideoView).
-            }
-
-            @Override
-            public void onViewAttachedToWindow(View v) {
-                if (mAwContents.isFullScreen()) {
-                    return;
-                }
-                View fullscreenView = mAwContents.enterFullScreen();
-                if (fullscreenView != null) {
-                    viewGroup.addView(fullscreenView);
-                }
-            }
-        });
-        WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
-            @Override
-            public void onCustomViewHidden() {
-                ContentVideoView contentVideoView = ContentVideoView.getContentVideoView();
-                if (contentVideoView != null)
-                    contentVideoView.exitFullscreen(false);
-            }
-        };
-        mAwContentsClient.onShowCustomView(viewGroup, cb);
+    public void enterFullscreenVideo(View videoView) {
+        // enterFullscreenVideo will only be called after enterFullscreen.
+        assert mCustomView != null;
+        mCustomView.addView(videoView, 0);
     }
 
     @Override
     public void exitFullscreenVideo() {
-        mAwContents.exitFullScreen();
-        mAwContentsClient.onHideCustomView();
+        // Intentional no-op
     }
 
     @Override
     public View getVideoLoadingProgressView() {
         return mAwContentsClient.getVideoLoadingProgressView();
+    }
+
+    /**
+     * Called to show the web contents in fullscreen mode.
+     *
+     * <p>If entering fullscreen on a video element the web contents will contain just
+     * the html5 video controls. {@link #enterFullscreenVideo(View)} will be called later
+     * once the ContentVideoView, which contains the hardware accelerated fullscreen video,
+     * is ready to be shown.
+     */
+    public void enterFullscreen() {
+        if (mAwContents.isFullScreen()) {
+            return;
+        }
+        View fullscreenView = mAwContents.enterFullScreen();
+        if (fullscreenView == null) {
+            return;
+        }
+        WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
+            @Override
+            public void onCustomViewHidden() {
+                mAwContents.requestExitFullscreen();
+            }
+        };
+        mCustomView = new FrameLayout(mContext);
+        mCustomView.addView(fullscreenView);
+        mAwContentsClient.onShowCustomView(mCustomView, cb);
+    }
+
+    /**
+     * Called to show the web contents in embedded mode.
+     */
+    public void exitFullscreen() {
+        if (mCustomView != null) {
+            mAwContents.exitFullScreen();
+            mAwContentsClient.onHideCustomView();
+            mCustomView = null;
+        }
     }
 }

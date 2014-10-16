@@ -401,7 +401,6 @@ void AwSettings::PopulateWebPreferencesLocked(
   web_prefs->allow_running_insecure_content =
       Java_AwSettings_getAllowRunningInsecureContentLocked(env, obj);
 
-  web_prefs->disallow_fullscreen_for_non_media_elements = true;
   web_prefs->fullscreen_supported =
       Java_AwSettings_getFullscreenSupportedLocked(env, obj);
 }

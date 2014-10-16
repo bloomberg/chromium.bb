@@ -253,9 +253,8 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
       env,
       Java_ContentVideoView_createContentVideoView(
           env,
-          content_view_core->GetContext().obj(),
-          reinterpret_cast<intptr_t>(this),
-          content_view_core->GetContentVideoViewClient().obj()).obj());
+          content_view_core->GetJavaObject().obj(),
+          reinterpret_cast<intptr_t>(this)).obj());
 }
 
 void ContentVideoView::CreatePowerSaveBlocker() {

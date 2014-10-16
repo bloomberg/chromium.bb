@@ -683,26 +683,6 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateTouchEventSynthesizer() {
   return Java_ContentViewCore_createTouchEventSynthesizer(env, obj.obj());
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContentVideoViewClient() {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-
-  return Java_ContentViewCore_getContentVideoViewClient(env, obj.obj());
-}
-
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-
-  return Java_ContentViewCore_getContext(env, obj.obj());
-}
-
 bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
 

@@ -146,7 +146,6 @@ WebPreferences::WebPreferences()
       font_scale_factor(1.0f),
       device_scale_adjustment(1.0f),
       force_enable_zoom(false),
-      disallow_fullscreen_for_non_media_elements(false),
       fullscreen_supported(true),
       double_tap_to_zoom_enabled(true),
       user_gesture_required_for_media_playback(true),

@@ -392,7 +392,6 @@ public class ContentViewCore
     /**
      * @return The context used for creating this ContentViewCore.
      */
-    @CalledByNative
     public Context getContext() {
         return mContext;
     }
@@ -2702,6 +2701,7 @@ public class ContentViewCore
     }
 
     /**
+     *
      * @return The cached copy of render positions and scales.
      */
     public RenderCoordinates getRenderCoordinates() {
@@ -2794,8 +2794,7 @@ public class ContentViewCore
     private native long nativeInit(long webContentsPtr,
             long viewAndroidPtr, long windowAndroidPtr, HashSet<Object> retainedObjectSet);
 
-    @CalledByNative
-    private ContentVideoViewClient getContentVideoViewClient() {
+    ContentVideoViewClient getContentVideoViewClient() {
         return getContentViewClient().getContentVideoViewClient();
     }
 
