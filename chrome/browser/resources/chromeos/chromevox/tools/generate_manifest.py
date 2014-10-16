@@ -43,11 +43,14 @@ def main():
       '-o', '--output_manifest', action='store', metavar='OUTPUT_MANIFEST',
       help='File to place generated manifest')
   parser.add_option(
-      '-g', '--is_guest_manifest', action='store', metavar='GUEST_MANIFEST',
-      help='Generate a guest mode capable manifest')
+      '--is_guest_manifest', action='store', metavar='NUM',
+      help='Whether to generate a guest mode capable manifest')
   parser.add_option(
-      '--use_chromevox_next', action='store', metavar='CHROMEVOX2',
-      help='Generate a ChromeVox next manifest')
+      '--is_chromevox_next', action='store', metavar='NUM',
+      help='Whether to generate a ChromeVox Next manifest')
+  parser.add_option(
+      '--is_js_compressed', action='store', metavar='NUM',
+      help='Whether compressed JavaScript files are used')
   parser.add_option(
       '--set_version', action='store', metavar='SET_VERSION',
       help='Set the extension version')

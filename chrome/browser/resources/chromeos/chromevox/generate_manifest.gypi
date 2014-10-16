@@ -11,16 +11,17 @@
 #
 # The following variables are optional:
 #
-# guest_manifest: 1 or 0; generates a manifest usable while in guest
+# is_guest_manifest: 1 or 0; generates a manifest usable while in guest
 # mode.
-# use_chromevox_next: 1 or 0; generates a manifest for ChromeVox next.
+# is_chromevox_next: 1 or 0; generates a manifest for ChromeVox Next.
+# chromevox_compress_js: 1 or 0; whether the javascript is compressed.
 
 {
   'variables': {
     'generate_manifest_script_path': 'tools/generate_manifest.py',
     'is_guest_manifest%': 0,
+    'is_chromevox_next%': 0,
     'key': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB',
-    'use_chromevox_next%': 0,
   },
   'includes': [
     '../../../../../build/util/version.gypi',
@@ -41,9 +42,10 @@
         '<(generate_manifest_script_path)',
         '--is_guest_manifest=<(is_guest_manifest)',
         '--key=<(key)',
-        '--use_chromevox_next=<(use_chromevox_next)',
+        '--is_chromevox_next=<(is_chromevox_next)',
+        '--is_js_compressed=<(chromevox_compress_js)',
         '--set_version=<(version_full)',
-        '-o', '<(output_manifest_path)',
+        '--output_manifest=<(output_manifest_path)',
         '<(template_manifest_path)',
       ],
     },

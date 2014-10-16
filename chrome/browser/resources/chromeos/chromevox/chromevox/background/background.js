@@ -155,16 +155,13 @@ cvox.ChromeVoxBackground.prototype.init = function() {
 /**
  * Inject ChromeVox into a tab.
  * @param {Array.<Tab>} tabs The tab where ChromeVox scripts should be injected.
- * @param {boolean=} opt_forceCompiled forces compiled ChromeVox to be injected;
- * defaults to Closure's compiled flag.
  */
-cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs =
-    function(tabs, opt_forceCompiled) {
+cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
   var listOfFiles;
 
   // These lists of files must match the content_scripts section in
   // the manifest files.
-  if (COMPILED || opt_forceCompiled) {
+  if (COMPILED) {
     listOfFiles = ['chromeVoxChromePageScript.js'];
   } else {
     listOfFiles = [

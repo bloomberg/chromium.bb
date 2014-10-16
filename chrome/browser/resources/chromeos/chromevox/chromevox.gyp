@@ -8,10 +8,11 @@
       'variables': {
         # Whether to compress the 4 main ChromeVox scripts.
         'chromevox_compress_js%': '1',
-        'background_script_loader_file': 'chromevox/background/loader.js',
-        'content_script_loader_file': 'chromevox/injected/loader.js',
-        'options_script_loader_file': 'chromevox/background/options_loader.js',
-        'kbexplorer_loader_file': 'chromevox/background/kbexplorer_loader.js',
+        'chromevox1_background_script_loader_file': 'chromevox/background/loader.js',
+        'chromevox1_content_script_loader_file': 'chromevox/injected/loader.js',
+        'chromevox1_kbexplorer_loader_file': 'chromevox/background/kbexplorer_loader.js',
+        'chromevox1_options_script_loader_file': 'chromevox/background/options_loader.js',
+        'chromevox2_background_script_loader_file': 'cvox2/background/loader.js',
       },
       'includes': [
         'chromevox_tests.gypi',
@@ -23,9 +24,10 @@
           'type': 'none',
           'dependencies': [
             'chromevox_resources',
-            'chromevox_manifest',
-            'chromevox_guest_manifest',
-            'chromevox2',
+            'chromevox1_manifest',
+            'chromevox1_guest_manifest',
+            'chromevox2_manifest',
+            'chromevox2_guest_manifest',
           ],
         },
         {
@@ -47,15 +49,16 @@
             }],
             ['chromevox_compress_js==1', {
               'dependencies': [
-                'chromevox_content_script',
-                'chromevox_background_script',
-                'chromevox_options_script',
-                'chromevox_kbexplorer_script',
+                'chromevox1_background_script',
+                'chromevox1_content_script',
+                'chromevox1_kbexplorer_script',
+                'chromevox1_options_script',
+                'chromevox2_background_script',
               ],
-            }],
-            ['chromevox_compress_js==0', {
+            }, {  # chromevox_compress_js==0
               'dependencies': [
                 'chromevox_copied_scripts',
+                'chromevox_deps',
               ],
             }],
           ],
@@ -66,23 +69,6 @@
           'includes': [
             'chromevox_assets.gypi',
           ],
-        },
-        {
-          'target_name': 'chromevox_manifest',
-          'type': 'none',
-          'variables': {
-            'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
-          },
-          'includes': [ 'generate_manifest.gypi', ],
-        },
-        {
-          'target_name': 'chromevox_guest_manifest',
-          'type': 'none',
-          'variables': {
-            'output_manifest_path': '<(chromevox_dest_dir)/manifest_guest.json',
-            'is_guest_manifest': 1,
-          },
-          'includes': [ 'generate_manifest.gypi', ],
         },
         {
           'target_name': 'chromevox_static_files',
@@ -96,6 +82,12 @@
                 'chromevox/background/options.html',
               ],
             },
+            {
+              'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/cvox2/background',
+              'files': [
+                'cvox2/background/background.html',
+              ],
+            },
           ],
         },
         {
@@ -105,18 +97,32 @@
           'type': 'none',
           'copies': [
             {
-              'destination': '<(chromevox_dest_dir)/closure',
-              'files': [
-                'closure/closure_preinit.js',
-              ],
-            },
-            {
               'destination': '<(chromevox_dest_dir)/chromevox/injected',
               'files': [
                 'chromevox/injected/api.js',
-                'chromevox/injected/api_util.js',
+              ],
+              'conditions': [
+                [ 'chromevox_compress_js==1', {
+                  'files': [
+                    # api_util.js is copied by the chromevox_copied_scripts
+                    # target in the non-compressed case.
+                    'chromevox/injected/api_util.js',
+                  ],
+                }],
               ],
             },
+          ],
+          'conditions': [
+            [ 'chromevox_compress_js==0', {
+              'copies': [
+                {
+                  'destination': '<(chromevox_dest_dir)/closure',
+                  'files': [
+                    'closure/closure_preinit.js',
+                  ],
+                },
+              ],
+            }],
           ],
         },
         {
@@ -136,56 +142,43 @@
           ],
         },
         {
-          'target_name': 'chromevox2',
-          'type': 'none',
-          'dependencies': [
-            'chromevox2_copied_scripts',
-            'chromevox2_deps',
-            'chromevox2_manifest',
-            'chromevox2_guest_manifest',
-            'chromevox2_resources',
-          ],
-        },
-        {
-          'target_name': 'chromevox2_copied_scripts',
-          'type': 'none',
-          'variables': {
-            'dest_dir': '<(chromevox_dest_dir)',
-          },
-          'sources': [
-            'cvox2/background/loader.js',
-          ],
-          'includes': [ 'copy_js.gypi', ],
-        },
-        {
-          'target_name': 'chromevox2_deps',
+          'target_name': 'chromevox_deps',
           'type': 'none',
           'variables': {
             'deps_js_output_file': '<(chromevox_dest_dir)/deps.js',
           },
           'sources': [
-            'cvox2/background/loader.js',
+            '<(chromevox1_background_script_loader_file)',
+            '<(chromevox1_content_script_loader_file)',
+            '<(chromevox1_kbexplorer_loader_file)',
+            '<(chromevox1_options_script_loader_file)',
+            '<(chromevox2_background_script_loader_file)',
           ],
           'includes': ['generate_deps.gypi'],
         },
         {
-          'target_name': 'chromevox2_resources',
+          'target_name': 'chromevox1_manifest',
           'type': 'none',
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/cvox2/background',
-              'files': [
-                'cvox2/background/background.html',
-              ],
-            },
-          ],
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
+          },
+          'includes': [ 'generate_manifest.gypi', ],
+        },
+        {
+          'target_name': 'chromevox1_guest_manifest',
+          'type': 'none',
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest_guest.json',
+            'is_guest_manifest': 1,
+          },
+          'includes': [ 'generate_manifest.gypi', ],
         },
         {
           'target_name': 'chromevox2_manifest',
           'type': 'none',
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest_next.json',
-            'use_chromevox_next': 1,
+            'is_chromevox_next': 1,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },
@@ -195,7 +188,7 @@
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest_next_guest.json',
             'is_guest_manifest': 1,
-            'use_chromevox_next': 1,
+            'is_chromevox_next': 1,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },
@@ -204,45 +197,55 @@
         ['chromevox_compress_js==1', {
           'targets': [
             {
-              'target_name': 'chromevox_content_script',
+              'target_name': 'chromevox1_content_script',
               'type': 'none',
               'variables': {
                 'output_file': '<(chromevox_dest_dir)/chromeVoxChromePageScript.js',
               },
-              'sources': [ '<(content_script_loader_file)' ],
+              'sources': [ '<(chromevox1_content_script_loader_file)' ],
               'includes': [ 'compress_js.gypi', ],
             },
             {
-              'target_name': 'chromevox_background_script',
+              'target_name': 'chromevox1_background_script',
               'type': 'none',
               'variables': {
                 'output_file': '<(chromevox_dest_dir)/chromeVoxChromeBackgroundScript.js',
               },
-              'sources': [ '<(background_script_loader_file)' ],
+              'sources': [ '<(chromevox1_background_script_loader_file)' ],
               'includes': [ 'compress_js.gypi', ],
             },
             {
-              'target_name': 'chromevox_options_script',
+              'target_name': 'chromevox1_options_script',
               'type': 'none',
               'variables': {
                 'output_file': '<(chromevox_dest_dir)/chromeVoxChromeOptionsScript.js',
               },
-              'sources': [ '<(options_script_loader_file)' ],
+              'sources': [ '<(chromevox1_options_script_loader_file)' ],
               'includes': [ 'compress_js.gypi', ],
             },
             {
-              'target_name': 'chromevox_kbexplorer_script',
+              'target_name': 'chromevox1_kbexplorer_script',
               'type': 'none',
               'variables': {
                 'output_file': '<(chromevox_dest_dir)/chromeVoxKbExplorerScript.js',
               },
-              'sources': [ '<(kbexplorer_loader_file)' ],
+              'sources': [ '<(chromevox1_kbexplorer_loader_file)' ],
+              'includes': [ 'compress_js.gypi', ],
+            },
+            {
+              'target_name': 'chromevox2_background_script',
+              'type': 'none',
+              'variables': {
+                'output_file': '<(chromevox_dest_dir)/chromeVox2ChromeBackgroundScript.js',
+              },
+              'sources': [
+                '<(chromevox1_background_script_loader_file)',
+                '<(chromevox2_background_script_loader_file)',
+              ],
               'includes': [ 'compress_js.gypi', ],
             },
           ],
-        },
-        ],
-        ['chromevox_compress_js==0', {
+        }, {  # chromevox_compress_js==0
           'targets': [
             {
               'target_name': 'chromevox_copied_scripts',
@@ -251,10 +254,11 @@
                 'dest_dir': '<(chromevox_dest_dir)',
               },
               'sources': [
-                '<(background_script_loader_file)',
-                '<(content_script_loader_file)',
-                '<(kbexplorer_loader_file)',
-                '<(options_script_loader_file)',
+                '<(chromevox1_background_script_loader_file)',
+                '<(chromevox1_content_script_loader_file)',
+                '<(chromevox1_kbexplorer_loader_file)',
+                '<(chromevox1_options_script_loader_file)',
+                '<(chromevox2_background_script_loader_file)',
               ],
               'includes': [ 'copy_js.gypi', ],
             },

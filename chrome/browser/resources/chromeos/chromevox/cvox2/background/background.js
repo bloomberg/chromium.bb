@@ -287,7 +287,7 @@ Background.prototype = {
 
     chrome.tabs.query({active: true}, function(tabs) {
       if (opt_options.classic) {
-        cvox.ChromeVox.injectChromeVoxIntoTabs(tabs, true);
+        cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
       } else {
         tabs.forEach(function(tab) {
           this.disableClassicChromeVox_(tab.id);

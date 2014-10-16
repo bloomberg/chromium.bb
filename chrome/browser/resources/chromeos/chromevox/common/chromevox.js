@@ -273,6 +273,5 @@ function $(id) {
 
 /**
  * @param {Array} tabs
- * @param {boolean=} opt_forceCompile
  */
-cvox.ChromeVox.injectChromeVoxIntoTabs = function(tabs, opt_forceCompile) {};
+cvox.ChromeVox.injectChromeVoxIntoTabs = function(tabs) {};
