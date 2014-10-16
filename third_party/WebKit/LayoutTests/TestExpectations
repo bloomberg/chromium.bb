@@ -1313,8 +1313,6 @@ crbug.com/418864 [ Win ] http/tests/serviceworker/chromium/registration-stress.h
 crbug.com/418868 [ XP ] http/tests/serviceworker/ready.html [ Pass Timeout ]
 crbug.com/418869 [ Win ] http/tests/serviceworker/register-same-scope-different-script-url.html [ Pass Timeout ]
 
-crbug.com/397902 svg/custom/viewbox-syntax.svg [ NeedsRebaseline ]
-
 crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/implsidepainting/inspector/tracing/update-layer-tree.html [ Failure Pass ]
