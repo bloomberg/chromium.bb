@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/message_pump_mojo.h"
@@ -43,6 +44,10 @@ MojoResult ApplicationRunnerChromium::Run(MojoHandle shell_handle) {
   base::CommandLine::Init(0, NULL);
 #if !defined(COMPONENT_BUILD)
   base::AtExitManager at_exit;
+#endif
+
+#ifndef NDEBUG
+  base::debug::EnableInProcessStackDumping();
 #endif
 
   {
