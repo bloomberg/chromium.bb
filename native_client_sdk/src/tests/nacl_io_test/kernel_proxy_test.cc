@@ -636,6 +636,26 @@ TEST_F(KernelProxyTest, Utime) {
   EXPECT_GE(buf.st_mtimensec, tm.tv_usec * 1000);
 }
 
+TEST_F(KernelProxyTest, Umask) {
+  mode_t oldmask = ki_umask(0222);
+  EXPECT_EQ(0, oldmask);
+
+  int fd = ki_open("/foo", O_CREAT | O_RDONLY, 0666);
+  ASSERT_GT(fd, -1);
+  ki_close(fd);
+
+  EXPECT_EQ(0, ki_mkdir("/dir", 0777));
+
+  struct stat buf;
+  EXPECT_EQ(0, ki_stat("/foo", &buf));
+  EXPECT_EQ(0444, buf.st_mode & ~S_IFMT);
+
+  EXPECT_EQ(0, ki_stat("/dir", &buf));
+  EXPECT_EQ(0555, buf.st_mode & ~S_IFMT);
+
+  EXPECT_EQ(0222, ki_umask(0));
+}
+
 namespace {
 
 StringMap_t g_string_map;

@@ -137,6 +137,7 @@
         "syscalls/termios/tcsetattr.c",
         "syscalls/symlink.c",
         "syscalls/truncate.c",
+        "syscalls/umask.c",
         "syscalls/umount.c",
         "syscalls/uname.c",
         "syscalls/utime.c",

@@ -324,7 +324,7 @@ Error DevFs::Init(const FsInitArgs& args) {
   if (error)
     return error;
 
-  root_.reset(new DirNode(this));
+  root_.reset(new DirNode(this, S_IRALL | S_IXALL));
 
   ScopedNode new_node;
   INITIALIZE_DEV_NODE("/null", NullNode);
@@ -348,7 +348,7 @@ Error DevFs::Init(const FsInitArgs& args) {
   // Add a directory for "fs" nodes; they represent all currently-mounted
   // filesystems. We can ioctl these nodes to make changes or provide input to
   // a mounted filesystem.
-  INITIALIZE_DEV_NODE("/fs", DirNode);
+  INITIALIZE_DEV_NODE_1("/fs", DirNode, S_IRALL | S_IWALL | S_IXALL);
   fs_dir_ = new_node;
 
   return 0;

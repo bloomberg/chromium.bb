@@ -29,7 +29,7 @@ Error MemFs::Init(const FsInitArgs& args) {
   if (error)
     return error;
 
-  root_.reset(new DirNode(this));
+  root_.reset(new DirNode(this, S_IRALL | S_IWALL | S_IXALL));
   error = root_->Init(0);
   if (error) {
     root_.reset(NULL);
@@ -146,7 +146,7 @@ Error MemFs::Mkdir(const Path& path, int mode) {
   // Allocate a node, with a RefCount of 1.  If added to the parent
   // it will get ref counted again.  In either case, release the
   // recount we have on exit.
-  node.reset(new DirNode(this));
+  node.reset(new DirNode(this, mode));
   error = node->Init(0);
   if (error)
     return error;

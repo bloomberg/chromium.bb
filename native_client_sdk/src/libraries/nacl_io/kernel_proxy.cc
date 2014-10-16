@@ -209,8 +209,9 @@ int KernelProxy::open_resource(const char* path) {
 int KernelProxy::open(const char* path, int open_flags, mode_t mode) {
   ScopedFilesystem fs;
   ScopedNode node;
+  mode_t mask = ~GetUmask();
 
-  Error error = AcquireFsAndNode(path, open_flags, mode, &fs, &node);
+  Error error = AcquireFsAndNode(path, open_flags, mode & mask, &fs, &node);
   if (error) {
     errno = error;
     return -1;
@@ -371,7 +372,7 @@ int KernelProxy::mkdir(const char* path, mode_t mode) {
     return -1;
   }
 
-  error = fs->Mkdir(rel, mode);
+  error = fs->Mkdir(rel, mode & ~GetUmask());
   if (error) {
     errno = error;
     return -1;
@@ -1180,6 +1181,10 @@ int KernelProxy::sigaction(int signum,
   // Unknown signum
   errno = EINVAL;
   return -1;
+}
+
+mode_t KernelProxy::umask(mode_t mask) {
+  return SetUmask(mask);
 }
 
 #ifdef PROVIDES_SOCKET_API

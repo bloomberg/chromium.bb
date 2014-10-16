@@ -24,7 +24,7 @@ typedef sdk_util::ScopedRef<DirNode> ScopedDirNode;
 
 class DirNode : public Node {
  protected:
-  explicit DirNode(Filesystem* fs);
+  explicit DirNode(Filesystem* fs, mode_t mode);
   virtual ~DirNode();
 
  public:

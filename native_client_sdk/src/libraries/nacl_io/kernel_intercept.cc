@@ -427,6 +427,11 @@ int ki_futimens(int fd, const struct timespec times[2]) {
   return s_state.kp->futimens(fd, times);
 }
 
+mode_t ki_umask(mode_t mask) {
+  ON_NOSYS_RETURN(0);
+  return s_state.kp->umask(mask);
+}
+
 int ki_poll(struct pollfd* fds, nfds_t nfds, int timeout) {
   return s_state.kp->poll(fds, nfds, timeout);
 }

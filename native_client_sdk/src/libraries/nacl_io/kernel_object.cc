@@ -25,7 +25,7 @@
 
 namespace nacl_io {
 
-KernelObject::KernelObject() {
+KernelObject::KernelObject() : umask_(0) {
   cwd_ = "/";
 }
 
@@ -153,6 +153,17 @@ Error KernelObject::SetCWD(const std::string& path) {
   AUTO_LOCK(cwd_lock_);
   cwd_ = abs_path;
   return 0;
+}
+
+mode_t KernelObject::GetUmask() {
+  return umask_;
+}
+
+mode_t KernelObject::SetUmask(mode_t newmask) {
+  AUTO_LOCK(umask_lock_);
+  mode_t oldmask = umask_;
+  umask_ = newmask & 0777;
+  return oldmask;
 }
 
 Error KernelObject::GetFDFlags(int fd, int* out_flags) {

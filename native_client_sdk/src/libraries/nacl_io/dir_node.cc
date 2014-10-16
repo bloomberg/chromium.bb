@@ -22,13 +22,12 @@ namespace {
 const ino_t kParentDirIno = -1;
 }
 
-DirNode::DirNode(Filesystem* filesystem)
+DirNode::DirNode(Filesystem* filesystem, mode_t mode)
     : Node(filesystem),
       cache_(stat_.st_ino, kParentDirIno),
       cache_built_(false) {
   SetType(S_IFDIR);
-  // Directories are raadable, writable and executable by default.
-  stat_.st_mode |= S_IRALL | S_IWALL | S_IXALL;
+  SetMode(mode);
 }
 
 DirNode::~DirNode() {

@@ -123,6 +123,7 @@ int ki_fchown(int fd, uid_t owner, gid_t group);
 int ki_lchown(const char* path, uid_t owner, gid_t group);
 int ki_utime(const char* filename, const struct utimbuf* times);
 int ki_futimens(int fd, const struct timespec times[2]);
+mode_t ki_umask(mode_t mask);
 
 int ki_poll(struct pollfd* fds, nfds_t nfds, int timeout);
 int ki_select(int nfds,

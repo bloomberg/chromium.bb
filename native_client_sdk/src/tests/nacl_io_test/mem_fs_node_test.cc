@@ -62,7 +62,9 @@ class MemFsNodeForTesting : public MemFsNode {
 
 class DirNodeForTesting : public DirNode {
  public:
-  DirNodeForTesting() : DirNode(NULL) { s_alloc_num++; }
+  DirNodeForTesting() : DirNode(NULL, S_IRALL | S_IWALL | S_IXALL) {
+    s_alloc_num++;
+  }
 
   ~DirNodeForTesting() { s_alloc_num--; }
 
