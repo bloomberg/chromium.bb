@@ -134,7 +134,7 @@ class NaClBrowserTestGLibcVcacheExtension:
 };
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
-                       ValidationCacheOfMainNexe) {
+                       MAYBE_GLIBC(ValidationCacheOfMainNexe)) {
   // Make sure histograms from child processes have been accumulated in the
   // browser process.
   base::HistogramTester histograms;
