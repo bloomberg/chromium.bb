@@ -1122,7 +1122,16 @@ void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* 
     CurrentRenderFlowThreadMaintainer flowThreadMaintainer(childFlowThread);
 
     parent->children()->removeChildNode(parent, child, child->hasLayer());
+    // FIXME: Get rid of the temporary disabling of continuations. This is needed by the old
+    // multicol implementation, because of buggy block continuation handling (which is hard and
+    // rather pointless to fix at this point). Support for block continuations can be removed
+    // together with the old multicol implementation. crbug.com/408123
+    RenderBoxModelObject* temporarilyInactiveContinuation = parent->continuation();
+    if (temporarilyInactiveContinuation)
+        parent->setContinuation(0);
     child->moveAllChildrenTo(parent, nextSibling, child->hasLayer());
+    if (temporarilyInactiveContinuation)
+        parent->setContinuation(temporarilyInactiveContinuation);
     // Explicitly delete the child's line box tree, or the special anonymous
     // block handling in willBeDestroyed will cause problems.
     child->deleteLineBoxTree();
