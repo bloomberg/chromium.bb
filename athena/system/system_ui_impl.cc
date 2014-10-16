@@ -7,7 +7,7 @@
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/background_controller.h"
 #include "athena/system/orientation_controller.h"
-#include "athena/system/power_button_controller.h"
+#include "athena/system/shutdown_dialog.h"
 #include "athena/system/status_icon_container_view.h"
 #include "athena/system/time_view.h"
 #include "athena/util/container_priorities.h"
@@ -106,8 +106,8 @@ class SystemUIImpl : public SystemUI {
     // because it needs to show over the login screen.
     // TODO(pkotwicz): Pick the most appropriate container based on whether the
     // user has logged in.
-    power_button_controller_.reset(
-        new PowerButtonController(login_screen_system_modal_container_));
+    shutdown_dialog_.reset(
+        new ShutdownDialog(login_screen_system_modal_container_));
     background_controller_.reset(
         new BackgroundController(background_container_));
   }
@@ -122,7 +122,7 @@ class SystemUIImpl : public SystemUI {
 
  private:
   scoped_ptr<OrientationController> orientation_controller_;
-  scoped_ptr<PowerButtonController> power_button_controller_;
+  scoped_ptr<ShutdownDialog> shutdown_dialog_;
   scoped_ptr<BackgroundController> background_controller_;
 
   // The parent container for the background.

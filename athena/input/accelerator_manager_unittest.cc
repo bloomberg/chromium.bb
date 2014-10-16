@@ -43,7 +43,7 @@ class TestHandler : public AcceleratorHandler {
   DISALLOW_COPY_AND_ASSIGN(TestHandler);
 };
 
-}  // namespace athena
+}  // namespace
 
 typedef test::AthenaTestBase InputManagerTest;
 
