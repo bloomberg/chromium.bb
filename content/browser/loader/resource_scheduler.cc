@@ -511,11 +511,11 @@ class ResourceScheduler::Client {
     // If a request is already marked as layout-blocking make sure to keep the
     // classification across redirects unless the priority was lowered.
     if (request->classification() == LAYOUT_BLOCKING_REQUEST &&
-        request->url_request()->priority() >= net::LOW) {
+        request->url_request()->priority() > net::LOW) {
       return LAYOUT_BLOCKING_REQUEST;
     }
 
-    if (!has_body_ && request->url_request()->priority() >= net::LOW)
+    if (!has_body_ && request->url_request()->priority() > net::LOW)
       return LAYOUT_BLOCKING_REQUEST;
 
     if (request->url_request()->priority() < net::LOW) {
@@ -566,7 +566,8 @@ class ResourceScheduler::Client {
   //   * Higher priority requests (>= net::LOW).
   //
   // 4. Layout-blocking requests:
-  //   * High-priority requests initiated before the renderer has a <body>.
+  //   * High-priority requests (> net::LOW) initiated before the renderer has
+  //     a <body>.
   //
   // 5. Low priority requests
   //
@@ -577,7 +578,7 @@ class ResourceScheduler::Client {
   //     immediately.
   //   * Low priority requests are delayable.
   //   * Allow one delayable request to load at a time while layout-blocking
-  //     requests are loading.
+  //     requests are loading or the body tag has not yet been parsed.
   //   * If no high priority or layout-blocking requests are in flight, start
   //     loading delayable requests.
   //   * Never exceed 10 delayable requests in flight per client.
@@ -656,7 +657,7 @@ class ResourceScheduler::Client {
     bool have_immediate_requests_in_flight =
         in_flight_requests_.size() > in_flight_delayable_count_;
     if (have_immediate_requests_in_flight &&
-        total_layout_blocking_count_ != 0 &&
+        (!has_body_ || total_layout_blocking_count_ != 0) &&
         in_flight_delayable_count_ != 0) {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
     }

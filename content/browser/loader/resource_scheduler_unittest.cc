@@ -327,6 +327,18 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
   EXPECT_TRUE(low2->started());
 }
 
+TEST_F(ResourceSchedulerTest, LowDoesNotBlockCriticalComplete) {
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOW));
+  scoped_ptr<TestRequest> lowest(NewRequest("http://host/lowest", net::LOWEST));
+  scoped_ptr<TestRequest> lowest2(
+      NewRequest("http://host/lowest", net::LOWEST));
+  EXPECT_TRUE(low->started());
+  EXPECT_TRUE(lowest->started());
+  EXPECT_FALSE(lowest2->started());
+  scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  EXPECT_TRUE(lowest2->started());
+}
+
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
   http_server_properties_.SetSupportsSpdy(
       net::HostPortPair("spdyhost", 443), true);
