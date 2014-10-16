@@ -99,9 +99,12 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   EnableBrowserSideNavigation();
 
   // Add a subframe.
+  FrameTreeNode* root = contents()->GetFrameTree()->root();
   TestRenderFrameHost* subframe_rfh = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->AddFrame(
-          contents()->GetFrameTree()->root(), 14, "Child"));
+          root, root->current_frame_host()->GetProcess()->GetID(), 14,
+          "Child"));
+  EXPECT_TRUE(subframe_rfh);
 
   FrameTreeNode* subframe_node = subframe_rfh->frame_tree_node();
   SendRequestNavigation(subframe_rfh->frame_tree_node(), kUrl2);
@@ -116,13 +119,10 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   EXPECT_FALSE(subframe_request->info_for_test()->is_main_frame);
   EXPECT_TRUE(subframe_request->info_for_test()->parent_is_main_frame);
 
-  FrameTreeNode* main_frame_node =
-      contents()->GetMainFrame()->frame_tree_node();
-  SendRequestNavigation(main_frame_node, kUrl3);
+  SendRequestNavigation(root, kUrl3);
   // Simulate a BeginNavigation IPC on the main frame.
   contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl3);
-  NavigationRequest* main_request =
-      GetNavigationRequestForFrameTreeNode(main_frame_node);
+  NavigationRequest* main_request = GetNavigationRequestForFrameTreeNode(root);
   ASSERT_TRUE(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
   EXPECT_EQ(kUrl3, main_request->info_for_test()->first_party_for_cookies);
