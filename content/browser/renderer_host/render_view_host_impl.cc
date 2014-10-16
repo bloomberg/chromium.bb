@@ -734,6 +734,10 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 void RenderViewHostImpl::FilesSelectedInChooser(
     const std::vector<content::FileChooserFileInfo>& files,
     FileChooserParams::Mode permissions) {
+  storage::FileSystemContext* const file_system_context =
+      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
+                                          GetSiteInstance())
+          ->GetFileSystemContext();
   // Grant the security access requested to the given files.
   for (size_t i = 0; i < files.size(); ++i) {
     const content::FileChooserFileInfo& file = files[i];
@@ -743,6 +747,12 @@ void RenderViewHostImpl::FilesSelectedInChooser(
     } else {
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
           GetProcess()->GetID(), file.file_path);
+    }
+    if (file.file_system_url.is_valid()) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFileSystem(
+          GetProcess()->GetID(),
+          file_system_context->CrackURL(file.file_system_url)
+          .mount_filesystem_id());
     }
   }
   Send(new ViewMsg_RunFileChooserResponse(GetRoutingID(), files));
