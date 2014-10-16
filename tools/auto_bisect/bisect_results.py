@@ -7,6 +7,7 @@ import os
 
 import bisect_utils
 import math_utils
+import source_control
 import ttest
 
 
@@ -48,11 +49,10 @@ def ConfidenceScore(good_results_lists, bad_results_lists):
 
 class BisectResults(object):
 
-  def __init__(self, depot_registry, source_control):
+  def __init__(self, depot_registry):
     self._depot_registry = depot_registry
     self.revision_data = {}
     self.error = None
-    self._source_control = source_control
 
   @staticmethod
   def _FindOtherRegressions(revision_data_sorted, bad_greater_than_good):
@@ -232,7 +232,7 @@ class BisectResults(object):
                 changes.append([last_depot, contents[0]])
         for c in changes:
           os.chdir(c[0])
-          info = self._source_control.QueryRevisionInfo(c[1])
+          info = source_control.QueryRevisionInfo(c[1])
           culprit_revisions.append((c[1], info, None))
       else:
         for i in xrange(last_broken_revision_index, len(revision_data_sorted)):
@@ -240,7 +240,7 @@ class BisectResults(object):
           if k == first_working_revision:
             break
           self._depot_registry.ChangeToDepotDir(v['depot'])
-          info = self._source_control.QueryRevisionInfo(k)
+          info = source_control.QueryRevisionInfo(k)
           culprit_revisions.append((k, info, v['depot']))
       os.chdir(cwd)
 

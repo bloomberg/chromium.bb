@@ -54,7 +54,7 @@ import bisect_utils
 import builder
 import math_utils
 import request_build
-import source_control as source_control_module
+import source_control
 from telemetry.util import cloud_storage
 
 # Below is the map of "depot" names to information about each depot. Each depot
@@ -957,11 +957,10 @@ class BisectPerformanceMetrics(object):
   The main entry-point is the Run method.
   """
 
-  def __init__(self, source_control, opts):
+  def __init__(self, opts):
     super(BisectPerformanceMetrics, self).__init__()
 
     self.opts = opts
-    self.source_control = source_control
 
     # The src directory here is NOT the src/ directory for the repository
     # where the bisect script is running from. Instead, it's the src/ directory
@@ -1014,13 +1013,13 @@ class BisectPerformanceMetrics(object):
       revision_work_list = sorted(revision_work_list, reverse=True)
     else:
       cwd = self.depot_registry.GetDepotDir(depot)
-      revision_work_list = self.source_control.GetRevisionList(bad_revision,
+      revision_work_list = source_control.GetRevisionList(bad_revision,
           good_revision, cwd=cwd)
 
     return revision_work_list
 
   def _GetV8BleedingEdgeFromV8TrunkIfMappable(self, revision):
-    commit_position = self.source_control.GetCommitPosition(revision)
+    commit_position = source_control.GetCommitPosition(revision)
 
     if bisect_utils.IsStringInt(commit_position):
       # V8 is tricky to bisect, in that there are only a few instances when
@@ -1036,8 +1035,7 @@ class BisectPerformanceMetrics(object):
       v8_dir = self.depot_registry.GetDepotDir('v8')
       v8_bleeding_edge_dir = self.depot_registry.GetDepotDir('v8_bleeding_edge')
 
-      revision_info = self.source_control.QueryRevisionInfo(revision,
-          cwd=v8_dir)
+      revision_info = source_control.QueryRevisionInfo(revision, cwd=v8_dir)
 
       version_re = re.compile("Version (?P<values>[0-9,.]+)")
 
@@ -1052,7 +1050,7 @@ class BisectPerformanceMetrics(object):
             bleeding_edge_revision = revision_info['subject'].split(
                 'bleeding_edge revision r')[1]
             bleeding_edge_revision = int(bleeding_edge_revision.split(')')[0])
-            git_revision = self.source_control.ResolveToRevision(
+            git_revision = source_control.ResolveToRevision(
                 bleeding_edge_revision, 'v8_bleeding_edge', DEPOT_DEPS_NAME, 1,
                 cwd=v8_bleeding_edge_dir)
             return git_revision
@@ -1061,12 +1059,12 @@ class BisectPerformanceMetrics(object):
 
         if not git_revision:
           # Wasn't successful, try the old way of looking for "Prepare push to"
-          git_revision = self.source_control.ResolveToRevision(
+          git_revision = source_control.ResolveToRevision(
               int(commit_position) - 1, 'v8_bleeding_edge', DEPOT_DEPS_NAME, -1,
               cwd=v8_bleeding_edge_dir)
 
           if git_revision:
-            revision_info = self.source_control.QueryRevisionInfo(git_revision,
+            revision_info = source_control.QueryRevisionInfo(git_revision,
                 cwd=v8_bleeding_edge_dir)
 
             if 'Prepare push to trunk' in revision_info['subject']:
@@ -1277,7 +1275,7 @@ class BisectPerformanceMetrics(object):
     downloaded_archive = FetchFromCloudStorage(gs_bucket, source_file, out_dir)
     if not downloaded_archive:
       # Get commit position for the given SHA.
-      commit_position = self.source_control.GetCommitPosition(revision)
+      commit_position = source_control.GetCommitPosition(revision)
       if commit_position:
         # Source archive file path on cloud storage using SVN revision.
         source_file = GetRemoteBuildPath(
@@ -1405,7 +1403,7 @@ class BisectPerformanceMetrics(object):
         '%s-%s-%s' % (git_revision, patch, time.time()))
 
     # Reverts any changes to DEPS file.
-    self.source_control.CheckoutFileAtRevision(
+    source_control.CheckoutFileAtRevision(
       bisect_utils.FILE_DEPS, git_revision, cwd=self.src_cwd)
 
     bot_name, build_timeout = GetBuilderNameAndBuildTime(
@@ -1452,7 +1450,7 @@ class BisectPerformanceMetrics(object):
                                re.MULTILINE)
     new_data = None
     if re.search(deps_revision, deps_contents):
-      commit_position = self.source_control.GetCommitPosition(
+      commit_position = source_control.GetCommitPosition(
           git_revision, self.depot_registry.GetDepotDir(depot))
       if not commit_position:
         print 'Could not determine commit position for %s' % git_revision
@@ -1543,7 +1541,7 @@ class BisectPerformanceMetrics(object):
     if ('chromium' in DEPOT_DEPS_NAME[depot]['from'] or
         'v8' in DEPOT_DEPS_NAME[depot]['from']):
       # Checkout DEPS file for the current chromium revision.
-      if self.source_control.CheckoutFileAtRevision(
+      if source_control.CheckoutFileAtRevision(
           bisect_utils.FILE_DEPS, chromium_sha, cwd=self.src_cwd):
         if self.UpdateDeps(revision, depot, deps_file_path):
           diff_command = [
@@ -1618,8 +1616,8 @@ class BisectPerformanceMetrics(object):
       if depot != 'chromium':
         revision = bisect_utils.CheckRunGit(
             ['rev-parse', 'HEAD'], cwd=self.src_cwd).strip()
-      commit_position = self.source_control.GetCommitPosition(revision,
-                                                              cwd=self.src_cwd)
+      commit_position = source_control.GetCommitPosition(revision,
+                                                         cwd=self.src_cwd)
       if not commit_position:
         return command_to_run
       cmd_re = re.compile('--browser=(?P<browser_type>\S+)')
@@ -1803,15 +1801,13 @@ class BisectPerformanceMetrics(object):
     # figure out for each mirror which git revision to grab. There's no
     # guarantee that the SVN revision will exist for each of the dependent
     # depots, so we have to grep the git logs and grab the next earlier one.
-    if (not is_base
-        and DEPOT_DEPS_NAME[depot]['depends']
-        and self.source_control.IsGit()):
-      commit_position = self.source_control.GetCommitPosition(revision)
+    if not is_base and DEPOT_DEPS_NAME[depot]['depends']:
+      commit_position = source_control.GetCommitPosition(revision)
 
       for d in DEPOT_DEPS_NAME[depot]['depends']:
         self.depot_registry.ChangeToDepotDir(d)
 
-        dependant_rev = self.source_control.ResolveToRevision(
+        dependant_rev = source_control.ResolveToRevision(
             commit_position, d, DEPOT_DEPS_NAME, -1000)
 
         if dependant_rev:
@@ -1898,7 +1894,8 @@ class BisectPerformanceMetrics(object):
       return self.RunGClientHooks()
     return True
 
-  def ShouldSkipRevision(self, depot, revision):
+  @staticmethod
+  def ShouldSkipRevision(depot, revision):
     """Checks whether a particular revision can be safely skipped.
 
     Some commits can be safely skipped (such as a DEPS roll), since the tool
@@ -1912,14 +1909,13 @@ class BisectPerformanceMetrics(object):
       True if we should skip building/testing this revision.
     """
     if depot == 'chromium':
-      if self.source_control.IsGit():
-        cmd = ['diff-tree', '--no-commit-id', '--name-only', '-r', revision]
-        output = bisect_utils.CheckRunGit(cmd)
+      cmd = ['diff-tree', '--no-commit-id', '--name-only', '-r', revision]
+      output = bisect_utils.CheckRunGit(cmd)
 
-        files = output.splitlines()
+      files = output.splitlines()
 
-        if len(files) == 1 and files[0] == 'DEPS':
-          return True
+      if len(files) == 1 and files[0] == 'DEPS':
+        return True
 
     return False
 
@@ -2022,7 +2018,7 @@ class BisectPerformanceMetrics(object):
       if sync_client == 'gclient':
         revision = '%s@%s' % (DEPOT_DEPS_NAME[depot]['src'], revision)
 
-      sync_success = self.source_control.SyncToRevision(revision, sync_client)
+      sync_success = source_control.SyncToRevision(revision, sync_client)
       if not sync_success:
         return False
 
@@ -2220,15 +2216,15 @@ class BisectPerformanceMetrics(object):
     if good_svn_revision >= 291563:
       return (bad_revision, good_revision)
 
-    if self.source_control.IsGit() and self.opts.target_platform == 'chromium':
-      changes_to_deps = self.source_control.QueryFileRevisionHistory(
+    if self.opts.target_platform == 'chromium':
+      changes_to_deps = source_control.QueryFileRevisionHistory(
           bisect_utils.FILE_DEPS, good_revision, bad_revision)
 
       if changes_to_deps:
         # DEPS file was changed, search from the oldest change to DEPS file to
         # bad_revision to see if there are matching .DEPS.git changes.
         oldest_deps_change = changes_to_deps[-1]
-        changes_to_gitdeps = self.source_control.QueryFileRevisionHistory(
+        changes_to_gitdeps = source_control.QueryFileRevisionHistory(
             bisect_utils.FILE_DEPS_GIT, oldest_deps_change, bad_revision)
 
         if len(changes_to_deps) != len(changes_to_gitdeps):
@@ -2264,10 +2260,10 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if the revisions are in the proper order (good earlier than bad).
     """
-    if self.source_control.IsGit() and target_depot != 'cros':
+    if target_depot != 'cros':
       cwd = self.depot_registry.GetDepotDir(target_depot)
-      good_position = self.source_control.GetCommitPosition(good_revision, cwd)
-      bad_position = self.source_control.GetCommitPosition(bad_revision, cwd)
+      good_position = source_control.GetCommitPosition(good_revision, cwd)
+      bad_position = source_control.GetCommitPosition(bad_revision, cwd)
     else:
       # CrOS and SVN use integers.
       good_position = int(good_revision)
@@ -2291,7 +2287,7 @@ class BisectPerformanceMetrics(object):
       this will contain the field "error", otherwise None.
     """
     if self.opts.target_platform == 'android':
-      good_revision = self.source_control.GetCommitPosition(good_revision)
+      good_revision = source_control.GetCommitPosition(good_revision)
       if (bisect_utils.IsStringInt(good_revision)
           and good_revision < 265549):
         return {'error': (
@@ -2303,8 +2299,8 @@ class BisectPerformanceMetrics(object):
             'Please try bisecting revisions greater than or equal to r265549.')}
 
     if bisect_utils.IsWindowsHost():
-      good_revision = self.source_control.GetCommitPosition(good_revision)
-      bad_revision = self.source_control.GetCommitPosition(bad_revision)
+      good_revision = source_control.GetCommitPosition(good_revision)
+      bad_revision = source_control.GetCommitPosition(bad_revision)
       if (bisect_utils.IsStringInt(good_revision) and
           bisect_utils.IsStringInt(bad_revision)):
         if (289987 <= good_revision < 290716 or
@@ -2329,7 +2325,7 @@ class BisectPerformanceMetrics(object):
     Returns:
       A BisectResults object.
     """
-    results = BisectResults(self.depot_registry, self.source_control)
+    results = BisectResults(self.depot_registry)
 
     # Choose depot to bisect first
     target_depot = 'chromium'
@@ -2342,9 +2338,9 @@ class BisectPerformanceMetrics(object):
     self.depot_registry.ChangeToDepotDir(target_depot)
 
     # If they passed SVN revisions, we can try match them to git SHA1 hashes.
-    bad_revision = self.source_control.ResolveToRevision(
+    bad_revision = source_control.ResolveToRevision(
         bad_revision_in, target_depot, DEPOT_DEPS_NAME, 100)
-    good_revision = self.source_control.ResolveToRevision(
+    good_revision = source_control.ResolveToRevision(
         good_revision_in, target_depot, DEPOT_DEPS_NAME, -100)
 
     os.chdir(cwd)
@@ -2610,7 +2606,7 @@ class BisectPerformanceMetrics(object):
 
   def _GetViewVCLinkFromDepotAndHash(self, revision_id, depot):
     """Gets link to the repository browser."""
-    info = self.source_control.QueryRevisionInfo(revision_id,
+    info = source_control.QueryRevisionInfo(revision_id,
         self.depot_registry.GetDepotDir(depot))
     if depot and DEPOT_DEPS_NAME[depot].has_key('viewvc'):
       try:
@@ -2719,7 +2715,7 @@ class BisectPerformanceMetrics(object):
             current_data['depot'])
         if not cl_link:
           cl_link = current_id
-        commit_position = self.source_control.GetCommitPosition(
+        commit_position = source_control.GetCommitPosition(
             current_id, self.depot_registry.GetDepotDir(current_data['depot']))
         commit_position = str(commit_position)
         if not commit_position:
@@ -3223,11 +3219,7 @@ def main():
     if not _IsPlatformSupported():
       raise RuntimeError('Sorry, this platform isn\'t supported yet.')
 
-    # Check what source control method is being used, and create a
-    # SourceControl object if possible.
-    source_control = source_control_module.DetermineAndCreateSourceControl(opts)
-
-    if not source_control:
+    if not source_control.IsInGitRepository():
       raise RuntimeError(
           'Sorry, only the git workflow is supported at the moment.')
 
@@ -3236,7 +3228,7 @@ def main():
         not opts.debug_ignore_sync and
         not opts.working_directory):
       raise RuntimeError('You must switch to master branch to run bisection.')
-    bisect_test = BisectPerformanceMetrics(source_control, opts)
+    bisect_test = BisectPerformanceMetrics(opts)
     try:
       bisect_results = bisect_test.Run(opts.command,
                                        opts.bad_revision,

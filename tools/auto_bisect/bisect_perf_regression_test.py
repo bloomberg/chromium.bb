@@ -14,7 +14,7 @@ sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 import bisect_perf_regression
 import bisect_results
 import mock
-import source_control as source_control_module
+import source_control
 
 
 def _GetBisectPerformanceMetricsInstance():
@@ -29,10 +29,8 @@ def _GetBisectPerformanceMetricsInstance():
     'bad_revision': 280005,
   }
   bisect_options = bisect_perf_regression.BisectOptions.FromDict(options_dict)
-  source_control = source_control_module.DetermineAndCreateSourceControl(
-      bisect_options)
   bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
-      source_control, bisect_options)
+      bisect_options)
   return bisect_instance
 
 
@@ -207,12 +205,10 @@ class BisectPerfRegressionTest(unittest.TestCase):
     """
     bisect_options = bisect_perf_regression.BisectOptions()
     bisect_options.output_buildbot_annotations = None
-    source_control = source_control_module.DetermineAndCreateSourceControl(
-        bisect_options)
     bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
-        source_control, bisect_options)
+        bisect_options)
     bisect_instance.opts.target_platform = target_platform
-    git_revision = bisect_instance.source_control.ResolveToRevision(
+    git_revision = source_control.ResolveToRevision(
         revision, 'chromium', bisect_perf_regression.DEPOT_DEPS_NAME, 100)
     depot = 'chromium'
     command = bisect_instance.GetCompatibleCommand(
@@ -275,30 +271,25 @@ class BisectPerfRegressionTest(unittest.TestCase):
       shutil.rmtree = old_rmtree
 
   def testGetCommitPosition(self):
-    bisect_instance = _GetBisectPerformanceMetricsInstance()
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
-    self.assertEqual(
-        291765, bisect_instance.source_control.GetCommitPosition(cp_git_rev))
+    self.assertEqual(291765, source_control.GetCommitPosition(cp_git_rev))
 
     svn_git_rev = 'e6db23a037cad47299a94b155b95eebd1ee61a58'
-    self.assertEqual(
-        291467, bisect_instance.source_control.GetCommitPosition(svn_git_rev))
+    self.assertEqual(291467, source_control.GetCommitPosition(svn_git_rev))
 
   def testGetCommitPositionForV8(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
     v8_rev = '21d700eedcdd6570eff22ece724b63a5eefe78cb'
     depot_path = os.path.join(bisect_instance.src_cwd, 'v8')
     self.assertEqual(
-        23634,
-        bisect_instance.source_control.GetCommitPosition(v8_rev, depot_path))
+        23634, source_control.GetCommitPosition(v8_rev, depot_path))
 
   def testGetCommitPositionForWebKit(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
     wk_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
     depot_path = os.path.join(bisect_instance.src_cwd, 'third_party', 'WebKit')
     self.assertEqual(
-        181660,
-        bisect_instance.source_control.GetCommitPosition(wk_rev, depot_path))
+        181660, source_control.GetCommitPosition(wk_rev, depot_path))
 
   def testUpdateDepsContent(self):
     bisect_instance = _GetBisectPerformanceMetricsInstance()
