@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -223,6 +224,7 @@ PrefMetricsService::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
         "PrefMetricsService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
 PrefMetricsService::Factory::~Factory() {
