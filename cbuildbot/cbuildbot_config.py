@@ -2075,6 +2075,8 @@ internal_notest_paladin.add_config('kayle-paladin',
   paladin_builder_name='kayle paladin',
   important=False,
   manifest='kayle.xml',
+  factory_toolkit=False,
+  factory_install_netboot=False,
 )
 
 internal_notest_paladin.add_config('peach_pit-paladin',
@@ -2537,6 +2539,8 @@ _non_testable_brillo_release.add_config('kayle-release',
   paygen=False,
   important=False,
   signer_tests=False,
+  factory_toolkit=False,
+  factory_install_netboot=False,
 )
 
 _non_testable_brillo_release.add_config('storm-release',
