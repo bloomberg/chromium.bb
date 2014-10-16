@@ -8,7 +8,7 @@
   'conditions': [
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       # This list comes from running:
-      #   tools/perf/run_measurement --print-bootstrap-deps
+      #   tools/perf/run_benchmark --print-bootstrap-deps
       # and filtering out obvious undesired dependencies:
       #   'src/tools/perf/page_sets/'
       #   'src/tools/perf/measurements/'
