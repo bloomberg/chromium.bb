@@ -160,6 +160,7 @@ class RunAttributes(object):
       'debug_tarball_generated',    # Set by DebugSymbolsStage.
       'images_generated',           # Set by BuildImageStage.
       'payloads_generated',         # Set by UploadHWTestArtifacts.
+      'delta_payloads_generated',   # Set by UploadHWTestArtifacts.
       'instruction_urls_per_channel', # Set by ArchiveStage
       'success',                    # Set by cbuildbot.py:Builder
   ))

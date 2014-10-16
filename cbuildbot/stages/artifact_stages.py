@@ -782,6 +782,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     self._GeneratePayloads(image_name, full=True, stateful=True)
     self.board_runattrs.SetParallel('payloads_generated', True)
     self._GeneratePayloads(image_name, delta=True)
+    self.board_runattrs.SetParallel('delta_payloads_generated', True)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -800,6 +801,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     # Tell the HWTestStage not to wait for payloads to be uploaded
     # in case UploadHWTestArtifacts throws an exception.
     self.board_runattrs.SetParallelDefault('payloads_generated', False)
+    self.board_runattrs.SetParallelDefault('delta_payloads_generated', False)
     return super(UploadTestArtifactsStage, self)._HandleStageException(exc_info)
 
 

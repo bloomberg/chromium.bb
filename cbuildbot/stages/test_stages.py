@@ -321,6 +321,14 @@ class AUTestStage(HWTestStage):
 
   def PerformStage(self):
     """Wait for payloads to be staged and uploads its au control files."""
+    # Wait for UploadHWTestArtifacts to generate the payloads.
+    if not self.GetParallel('delta_payloads_generated',
+                            pretty_name='delta payloads'):
+      cros_build_lib.PrintBuildbotStepText('missing delta payloads')
+      cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
+                             'failed. See UploadTestArtifacts for details.')
+      return
+
     with osutils.TempDir() as tempdir:
       tarball = commands.BuildAUTestTarball(
           self._build_root, self._current_board, tempdir,

@@ -407,6 +407,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
   def ConstructStage(self):
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallelDefault('payloads_generated', True)
+    board_runattrs.SetParallelDefault('delta_payloads_generated', True)
     return test_stages.AUTestStage(
         self._run, self._current_board, self.suite_config)
 
@@ -420,6 +421,15 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
     self.assertCommandContains(cmd)
     # pylint: disable=W0212
     self.assertCommandContains([commands._AUTOTEST_RPC_CLIENT, self.suite])
+
+  def testPayloadsNotGenerated(self):
+    """Test that we exit early if payloads are not generated."""
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('delta_payloads_generated', False)
+    cros_build_lib.Warning(mox.IgnoreArg())
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
 
 
 class ImageTestStageTest(generic_stages_unittest.AbstractStageTest,
