@@ -25,6 +25,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -296,6 +297,55 @@ calculate_edges(struct weston_view *ev, pixman_box32_t *rect,
 	return n;
 }
 
+static bool
+merge_down(pixman_box32_t *a, pixman_box32_t *b, pixman_box32_t *merge)
+{
+	if (a->x1 == b->x1 && a->x2 == b->x2 && a->y1 == b->y2) {
+		merge->x1 = a->x1;
+		merge->x2 = a->x2;
+		merge->y1 = b->y1;
+		merge->y2 = a->y2;
+		return true;
+	}
+	return false;
+}
+
+static int
+compress_bands(pixman_box32_t *inrects, int nrects,
+		   pixman_box32_t **outrects)
+{
+	bool merged;
+	pixman_box32_t *out, merge_rect;
+	int i, j, nout;
+
+	if (!nrects) {
+		*outrects = NULL;
+		return 0;
+	}
+
+	/* nrects is an upper bound - we're not too worried about
+	 * allocating a little extra
+	 */
+	out = malloc(sizeof(pixman_box32_t) * nrects);
+	out[0] = inrects[0];
+	nout = 1;
+	for (i = 1; i < nrects; i++) {
+		for (j = 0; j < nout; j++) {
+			merged = merge_down(&inrects[i], &out[j], &merge_rect);
+			if (merged) {
+				out[j] = merge_rect;
+				break;
+			}
+		}
+		if (!merged) {
+			out[nout] = inrects[i];
+			nout++;
+		}
+	}
+	*outrects = out;
+	return nout;
+}
+
 static int
 texture_region(struct weston_view *ev, pixman_region32_t *region,
 		pixman_region32_t *surf_region)
@@ -306,11 +356,20 @@ texture_region(struct weston_view *ev, pixman_region32_t *region,
 	GLfloat *v, inv_width, inv_height;
 	unsigned int *vtxcnt, nvtx = 0;
 	pixman_box32_t *rects, *surf_rects;
-	int i, j, k, nrects, nsurf;
-
-	rects = pixman_region32_rectangles(region, &nrects);
+	pixman_box32_t *raw_rects;
+	int i, j, k, nrects, nsurf, raw_nrects;
+	bool used_band_compression;
+	raw_rects = pixman_region32_rectangles(region, &raw_nrects);
 	surf_rects = pixman_region32_rectangles(surf_region, &nsurf);
 
+	if (raw_nrects < 4) {
+		used_band_compression = false;
+		nrects = raw_nrects;
+		rects = raw_rects;
+	} else {
+		nrects = compress_bands(raw_rects, raw_nrects, &rects);
+		used_band_compression = true;
+	}
 	/* worst case we can have 8 vertices per rect (ie. clipped into
 	 * an octagon):
 	 */
@@ -369,6 +428,8 @@ texture_region(struct weston_view *ev, pixman_region32_t *region,
 		}
 	}
 
+	if (used_band_compression)
+		free(rects);
 	return nvtx;
 }
 
