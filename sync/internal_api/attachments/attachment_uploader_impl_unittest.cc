@@ -385,7 +385,7 @@ scoped_ptr<HttpResponse> RequestHandler::HandleRequest(
   scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
   response->set_code(GetStatusCode());
   response->set_content_type("text/plain");
-  return response.PassAs<HttpResponse>();
+  return response.Pass();
 }
 
 void RequestHandler::SetStatusCode(const net::HttpStatusCode& status_code) {

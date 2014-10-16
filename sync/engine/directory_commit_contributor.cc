@@ -22,10 +22,7 @@ DirectoryCommitContributor::~DirectoryCommitContributor() {}
 scoped_ptr<CommitContribution>
 DirectoryCommitContributor::GetContribution(size_t max_entries) {
   return DirectoryCommitContribution::Build(
-      dir_,
-      type_,
-      max_entries,
-      debug_info_emitter_).PassAs<CommitContribution>();
+      dir_, type_, max_entries, debug_info_emitter_);
 }
 
 }  // namespace syncer

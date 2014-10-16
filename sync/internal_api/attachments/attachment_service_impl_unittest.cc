@@ -195,8 +195,8 @@ class AttachmentServiceImplTest : public testing::Test,
     }
     attachment_service_.reset(
         new AttachmentServiceImpl(attachment_store,
-                                  uploader.PassAs<AttachmentUploader>(),
-                                  downloader.PassAs<AttachmentDownloader>(),
+                                  uploader.Pass(),
+                                  downloader.Pass(),
                                   delegate,
                                   base::TimeDelta::FromMinutes(1),
                                   base::TimeDelta::FromMinutes(8)));
@@ -204,7 +204,7 @@ class AttachmentServiceImplTest : public testing::Test,
     scoped_ptr<base::MockTimer> timer_to_pass(
         new base::MockTimer(false, false));
     mock_timer_ = timer_to_pass.get();
-    attachment_service_->SetTimerForTest(timer_to_pass.PassAs<base::Timer>());
+    attachment_service_->SetTimerForTest(timer_to_pass.Pass());
   }
 
   AttachmentService* attachment_service() { return attachment_service_.get(); }

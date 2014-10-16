@@ -26,8 +26,7 @@ namespace {
 scoped_ptr<InvalidationInterface> BuildInvalidation(
     int64 version,
     const std::string& payload) {
-  return MockInvalidation::Build(version, payload)
-      .PassAs<InvalidationInterface>();
+  return MockInvalidation::Build(version, payload);
 }
 
 }  // namespace

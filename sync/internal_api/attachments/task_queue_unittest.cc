@@ -100,7 +100,7 @@ TEST_F(TaskQueueTest, AddToQueue_NoDuplicates) {
 TEST_F(TaskQueueTest, Retry) {
   scoped_ptr<base::MockTimer> timer_to_pass(new base::MockTimer(false, false));
   base::MockTimer* mock_timer = timer_to_pass.get();
-  queue_->SetTimerForTest(timer_to_pass.PassAs<base::Timer>());
+  queue_->SetTimerForTest(timer_to_pass.Pass());
 
   // 1st attempt.
   queue_->AddToQueue(1);
@@ -198,7 +198,7 @@ TEST_F(TaskQueueTest, Cancel) {
 TEST_F(TaskQueueTest, ResetBackoff) {
   scoped_ptr<base::MockTimer> timer_to_pass(new base::MockTimer(false, false));
   base::MockTimer* mock_timer = timer_to_pass.get();
-  queue_->SetTimerForTest(timer_to_pass.PassAs<base::Timer>());
+  queue_->SetTimerForTest(timer_to_pass.Pass());
 
   // Add an item, mark it as failed, re-add it and see that we now have a
   // backoff delay.
