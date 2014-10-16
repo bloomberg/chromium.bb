@@ -1203,3 +1203,12 @@ template("proto_java_library") {
     ]
   }
 }
+
+# TODO(GYP): implement this.
+template("uiautomator_test") {
+  if (defined(invoker.testonly)) { testonly = invoker.testonly }
+  assert(target_name != "")
+  assert(invoker.deps != [] || true)
+  group(target_name) {
+  }
+}

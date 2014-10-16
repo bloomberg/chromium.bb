@@ -19,6 +19,9 @@ def main(argv):
   options, directories = parser.parse_args(argv)
 
   for d in directories:
+    if not os.path.exists(d):
+      print >> sys.stderr, '%s does not exist' % d
+      return 1
     for root, _, filenames in os.walk(d):
       for f in fnmatch.filter(filenames, options.pattern):
         print os.path.join(root, f)

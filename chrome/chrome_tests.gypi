@@ -2867,6 +2867,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN: //chrome/android:chrome_shell_test_apk
           'target_name': 'chrome_shell_test_apk',
           'type': 'none',
           'dependencies': [
@@ -2888,6 +2889,7 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          # GN: //chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk
           'target_name': 'chromedriver_webview_shell_apk',
           'type': 'none',
           'variables': {
@@ -2898,6 +2900,7 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          # GN: //chrome/android:uiautomator_tests_java
           'target_name': 'chrome_shell_uiautomator_tests_java',
           'type': 'none',
           'variables': {
@@ -2910,6 +2913,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //chrome/android:uiautomator_tests
           'target_name': 'chrome_shell_uiautomator_tests',
           'type': 'none',
           'dependencies': [
@@ -2918,6 +2922,7 @@
           'includes': [ '../build/uiautomator_test.gypi' ],
         },
         {
+          # GN: //chrome/android:chrome_sync_shell_test_apk
           'target_name': 'chrome_sync_shell_test_apk',
           'type': 'none',
           'dependencies': [
@@ -2937,6 +2942,7 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          # GN: //chrome/test/android:chrome_java_test_support
           'target_name': 'chrome_java_test_support',
           'type': 'none',
           'variables': {
