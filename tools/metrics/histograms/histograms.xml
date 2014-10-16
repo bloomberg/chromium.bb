@@ -35798,6 +35798,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Whether the scroll is executed on main thread.</summary>
 </histogram>
 
+<histogram name="UMA.ActualLogUploadInterval" units="minutes">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    The actual interval between log upload start and previous log upload
+    finished within the same process.
+  </summary>
+</histogram>
+
 <histogram name="UMA.CleanExitBeaconConsistency" enum="UmaCleanExitConsistency">
   <owner>erikwright@chromium.org</owner>
   <summary>

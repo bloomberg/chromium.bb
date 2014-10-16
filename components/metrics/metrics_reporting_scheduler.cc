@@ -62,6 +62,14 @@ void LogMetricsInitSequence(InitSequence sequence) {
                             INIT_SEQUENCE_ENUM_SIZE);
 }
 
+void LogActualUploadInterval(TimeDelta interval) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("UMA.ActualLogUploadInterval",
+                             interval.InMinutes(),
+                             1,
+                             base::TimeDelta::FromHours(12).InMinutes(),
+                             50);
+}
+
 // Returns upload interval specified for the current experiment running.
 // TODO(gayane): Only for experimenting with upload interval for Android
 // (bug: 17391128). Should be removed once the experiments are done.
@@ -126,6 +134,7 @@ void MetricsReportingScheduler::UploadFinished(bool server_is_healthy,
     upload_interval_ = TimeDelta::FromSeconds(kUnsentLogsIntervalSeconds);
   } else {
     upload_interval_ = GetStandardUploadInterval();
+    last_upload_finish_time_ = base::TimeTicks::Now();
   }
 
   if (running_)
@@ -152,6 +161,12 @@ void MetricsReportingScheduler::TriggerUpload() {
     waiting_for_init_task_complete_ = true;
     return;
   }
+
+  if (!last_upload_finish_time_.is_null()) {
+    LogActualUploadInterval(base::TimeTicks::Now() - last_upload_finish_time_);
+    last_upload_finish_time_ = base::TimeTicks();
+  }
+
   callback_pending_ = true;
   upload_callback_.Run();
 }

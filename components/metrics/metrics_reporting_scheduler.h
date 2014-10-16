@@ -66,6 +66,10 @@ class MetricsReportingScheduler {
   // upload.
   base::TimeDelta upload_interval_;
 
+  // The tick count of the last time log upload has been finished and null if no
+  // upload has been done yet.
+  base::TimeTicks last_upload_finish_time_;
+
   // Indicates that the scheduler is running (i.e., that Start has been called
   // more recently than Stop).
   bool running_;
