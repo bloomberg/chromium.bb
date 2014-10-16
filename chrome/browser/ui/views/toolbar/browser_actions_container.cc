@@ -819,8 +819,10 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
 void BrowserActionsContainer::ToolbarExtensionUpdated(
     const Extension* extension) {
   BrowserActionView* view = GetViewForExtension(extension);
-  DCHECK(view);
-  view->UpdateState();
+  // There might not be a view in cases where we are highlighting or if we
+  // haven't fully initialized extensions.
+  if (view)
+    view->UpdateState();
 }
 
 bool BrowserActionsContainer::ShowExtensionActionPopup(
