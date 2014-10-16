@@ -33,29 +33,33 @@ function onload()
     runTest();
 }
 
+function runPromisesFromInspector()
+{
+    // setTimeout to cut off VM call frames from the stack trace.
+    setTimeout(function timeout() {
+        runPromises("inspector")
+    }, 0);
+}
+
 function test()
 {
-    InspectorTest.addConsoleViewSniffer(addMessage, true);
+    InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
+    WebInspector.console.showPromise().done();
 
-    WebInspector.console.showPromise().then(function() {
-        InspectorTest.evaluateInPage("runPromises('inspector')");
-    });
+    checkConsoleMessages();
 
-    var count = 0;
-    function addMessage(uiMessage)
+    function checkConsoleMessages()
     {
-        if (uiMessage.toString().indexOf("inspector.err") !== -1)
-            ++count;
+        var count = InspectorTest.consoleMessagesCount();
         if (count === 2)
+            InspectorTest.evaluateInPage("runPromisesFromInspector()");
+        else if (count === 4)
             InspectorTest.expandConsoleMessages(dump);
     }
 
     function dump()
     {
-        // Sort console messages from async Promises to avoid flakiness.
-        var results = InspectorTest.dumpConsoleMessagesIntoArray(false, false, InspectorTest.textContentWithLineBreaks);
-        results.sort();
-        InspectorTest.addResults(results);
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
         InspectorTest.completeTest();
     }
 }

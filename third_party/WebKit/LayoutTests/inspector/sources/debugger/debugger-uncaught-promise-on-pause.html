@@ -34,6 +34,14 @@ function runPromises(source)
     reject(new Error(source + ".err2"));
 }
 
+function runPromisesFromInspector()
+{
+    // setTimeout to cut off VM call frames from the stack trace.
+    setTimeout(function timeout() {
+        runPromises("inspector")
+    }, 0);
+}
+
 function test()
 {
     InspectorTest.setQuiet(true);
@@ -47,7 +55,7 @@ function test()
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
-        InspectorTest.evaluateInPage("runPromises('inspector')", resumeExecution);
+        InspectorTest.evaluateInPage("runPromisesFromInspector()", resumeExecution);
     }
 
     function resumeExecution()

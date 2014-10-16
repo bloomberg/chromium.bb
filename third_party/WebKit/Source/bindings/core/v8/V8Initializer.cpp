@@ -158,7 +158,23 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     }
 }
 
-typedef WillBeHeapDeque<ScriptValue> PromiseRejectMessageQueue;
+namespace {
+
+class PromiseRejectMessage {
+public:
+    PromiseRejectMessage(const ScriptValue& promise, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+        : m_promise(promise)
+        , m_callStack(callStack)
+    {
+    }
+
+    const ScriptValue m_promise;
+    const RefPtrWillBeMember<ScriptCallStack> m_callStack;
+};
+
+} // namespace
+
+typedef WillBeHeapDeque<PromiseRejectMessage> PromiseRejectMessageQueue;
 
 static PromiseRejectMessageQueue& promiseRejectMessageQueue()
 {
@@ -172,14 +188,14 @@ void V8Initializer::reportRejectedPromises()
 
     PromiseRejectMessageQueue& queue = promiseRejectMessageQueue();
     while (!queue.isEmpty()) {
-        ScriptValue promise = queue.takeFirst();
-        ScriptState* scriptState = promise.scriptState();
+        PromiseRejectMessage message = queue.takeFirst();
+        ScriptState* scriptState = message.m_promise.scriptState();
         if (!scriptState->contextIsValid())
             continue;
         ScriptState::Scope scope(scriptState);
 
-        ASSERT(!promise.isEmpty());
-        v8::Handle<v8::Value> value = promise.v8Value();
+        ASSERT(!message.m_promise.isEmpty());
+        v8::Handle<v8::Value> value = message.m_promise.v8Value();
         ASSERT(!value.IsEmpty() && value->IsPromise());
         if (v8::Handle<v8::Promise>::Cast(value)->HasHandler())
             continue;
@@ -191,11 +207,12 @@ void V8Initializer::reportRejectedPromises()
         const String errorMessage = "Unhandled promise rejection";
         Vector<ScriptValue> args;
         args.append(ScriptValue(scriptState, v8String(scriptState->isolate(), errorMessage)));
-        args.append(promise);
+        args.append(message.m_promise);
         RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(scriptState, args);
 
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, "", 0);
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage);
         consoleMessage->setScriptArguments(arguments);
+        consoleMessage->setCallStack(message.m_callStack);
         executionContext->addConsoleMessage(consoleMessage.release());
     }
 }
@@ -226,8 +243,13 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage message)
     if (!toFrameIfNotDetached(context))
         return;
 
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
+    v8::Handle<v8::StackTrace> stackTrace = message.GetStackTrace();
+    if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
+        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+
     ScriptState* scriptState = ScriptState::from(context);
-    promiseRejectMessageQueue().append(ScriptValue(scriptState, promise));
+    promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), callStack));
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)

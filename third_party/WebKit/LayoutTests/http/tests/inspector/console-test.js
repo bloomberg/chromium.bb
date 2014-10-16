@@ -72,6 +72,12 @@ InspectorTest.fixConsoleViewportDimensions = function(width, height)
     viewport.invalidate();
 }
 
+InspectorTest.consoleMessagesCount = function()
+{
+    var consoleView = WebInspector.ConsolePanel._view();
+    return consoleView._consoleMessages.length;
+}
+
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames, formatter)
 {
     InspectorTest.addResults(InspectorTest.dumpConsoleMessagesIntoArray(printOriginatingCommand, dumpClassNames, formatter));
