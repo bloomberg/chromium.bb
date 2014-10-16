@@ -1,0 +1,7 @@
+include_rules = [
+  "+athena/input/public",
+  "+base",
+
+  # TODO(dpolukhin): move lock screen to component, see crbug.com/370175
+  "+chrome/browser/chromeos/login/lock",
+]

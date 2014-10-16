@@ -154,6 +154,10 @@ class AthenaEventTargeter : public aura::WindowTargeter,
       container_->RemoveObserver(this);
   }
 
+  void SetPreviousEventTargeter(scoped_ptr<ui::EventTargeter> targeter) {
+    previous_root_event_targeter_ = targeter.Pass();
+  }
+
  private:
   // aura::WindowTargeter:
   virtual bool SubtreeCanAcceptEvent(
@@ -183,10 +187,11 @@ class AthenaEventTargeter : public aura::WindowTargeter,
     container_ = NULL;
 
     // This will remove myself.
-    root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
+    root_window->SetEventTargeter(previous_root_event_targeter_.Pass());
   }
 
   aura::Window* container_;
+  scoped_ptr<ui::EventTargeter> previous_root_event_targeter_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaEventTargeter);
 };
@@ -325,8 +330,11 @@ aura::Window* ScreenManagerImpl::CreateContainer(
     DCHECK(std::find_if(children.begin(), children.end(), &GrabsInput)
            == children.end())
         << "input has already been grabbed by another container";
-    root_window_->SetEventTargeter(
-        scoped_ptr<ui::EventTargeter>(new AthenaEventTargeter(container)));
+    AthenaEventTargeter* athena_event_targeter =
+        new AthenaEventTargeter(container);
+    athena_event_targeter->SetPreviousEventTargeter(
+        root_window_->SetEventTargeter(
+            scoped_ptr<ui::EventTargeter>(athena_event_targeter)));
   }
 
   root_window_->AddChild(container);

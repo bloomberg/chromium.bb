@@ -180,6 +180,9 @@
         'extensions/pubilc/apps_search_controller_factory.h',
         'extensions/public/extension_app_model_builder.h',
         'extensions/public/extensions_delegate.h',
+        'screen_lock/public/screen_lock_manager.h',
+        'screen_lock/screen_lock_manager_base.cc',
+        'screen_lock/screen_lock_manager_base.h',
         'virtual_keyboard/public/virtual_keyboard_manager.h',
         'virtual_keyboard/virtual_keyboard_manager_impl.cc',
       ],
@@ -189,6 +192,7 @@
       'type': 'static_library',
       'dependencies': [
         '../components/components.gyp:component_metrics_proto',
+        '../chrome/chrome.gyp:browser_chromeos',
         '../chrome/chrome.gyp:browser_extensions',
         '../components/components.gyp:omnibox',
       ],
@@ -205,6 +209,7 @@
         'extensions/chrome/chrome_search_controller_factory.cc',
         'extensions/chrome/chrome_search_controller_factory.h',
         'extensions/chrome/extensions_delegate_impl.cc',
+        'screen_lock/chrome/chrome_screen_lock_manager.cc',
       ],
     },
     {
@@ -232,6 +237,7 @@
         'extensions/shell/shell_search_controller_factory.h',
         'extensions/shell/url_search_provider.cc',
         'extensions/shell/url_search_provider.h',
+        'screen_lock/shell/shell_screen_lock_manager.cc',
       ],
     },
     {

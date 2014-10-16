@@ -82,8 +82,10 @@ const char kNewWallpaperLayoutNodeName[] = "layout";
 const char kNewWallpaperLocationNodeName[] = "file";
 const char kNewWallpaperTypeNodeName[] = "type";
 
+#if !defined(USE_ATHENA)
 // Maximum number of wallpapers cached by CacheUsersWallpapers().
 const int kMaxWallpapersToCache = 3;
+#endif
 
 // Maximum number of entries in WallpaperManager::last_load_times_ .
 const size_t kLastLoadsStatsMsMaxSize = 4;
@@ -1301,6 +1303,8 @@ bool WallpaperManager::GetWallpaperFromCache(const std::string& user_id,
 }
 
 void WallpaperManager::CacheUsersWallpapers() {
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): crbug.com/408734.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   user_manager::UserList users = user_manager::UserManager::Get()->GetUsers();
 
@@ -1315,6 +1319,7 @@ void WallpaperManager::CacheUsersWallpapers() {
       CacheUserWallpaper(user_id);
     }
   }
+#endif
 }
 
 void WallpaperManager::CacheUserWallpaper(const std::string& user_id) {

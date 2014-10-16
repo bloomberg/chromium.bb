@@ -25,8 +25,6 @@ using core_api::system_display::Insets;
 
 namespace {
 
-// TODO(hshi): determine the DPI of the screen.
-const float kDpi96 = 96.0;
 // Maximum allowed bounds origin absolute value.
 const int kMaxBoundsOrigin = 200 * 1000;
 
@@ -360,6 +358,9 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::core_api::system_display::DisplayUnitInfo* unit) {
+#if !defined(USE_ATHENA)
+  // TODO(dpolukhin): put something reasonable to the unit without ash::Shell.
+  // crbug.com/416961
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());
@@ -367,6 +368,9 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     unit->mirroring_source_id =
         base::Int64ToString(display_manager->mirrored_display_id());
   }
+
+  // TODO(hshi): determine the DPI of the screen.
+  const float kDpi96 = 96.0;
 
   const float dpi = display.device_scale_factor() * kDpi96;
   unit->dpi_x = dpi;
@@ -378,6 +382,7 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.top = overscan_insets.top();
   unit->overscan.right = overscan_insets.right();
   unit->overscan.bottom = overscan_insets.bottom();
+#endif
 }
 
 gfx::Screen* DisplayInfoProviderChromeOS::GetActiveScreen() {

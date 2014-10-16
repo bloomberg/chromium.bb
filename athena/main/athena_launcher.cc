@@ -20,6 +20,7 @@
 #include "athena/main/placeholder.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/screen_lock/public/screen_lock_manager.h"
 #include "athena/system/public/system_ui.h"
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 #include "athena/wm/public/window_manager.h"
@@ -128,6 +129,7 @@ void CreateVirtualKeyboardWithContext(content::BrowserContext* context) {
 }
 
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
+  athena::ScreenLockManager::Create();
   athena::ExtensionsDelegate::CreateExtensionsDelegate(context);
   StartAthenaSession(
       athena::CreateContentActivityFactory(),
@@ -160,6 +162,7 @@ void ShutdownAthena() {
     athena::ActivityManager::Shutdown();
     athena::HomeCard::Shutdown();
     athena::ExtensionsDelegate::Shutdown();
+    athena::ScreenLockManager::Shutdown();
     session_started = false;
   }
   athena::AppRegistry::ShutDown();
