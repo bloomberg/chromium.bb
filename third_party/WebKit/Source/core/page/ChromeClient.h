@@ -62,7 +62,6 @@ class Node;
 class Page;
 class PagePopupDriver;
 class PopupMenuClient;
-class RemoteFrame;
 
 struct CompositedSelectionBound;
 struct DateTimeChooserParameters;
@@ -223,10 +222,6 @@ public:
     virtual void didChangeValueInTextField(HTMLFormControlElement&) { }
     virtual void didEndEditingOnTextField(HTMLInputElement&) { }
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) { }
-
-    // FIXME: Remove this method once we have input routing in the browser
-    // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(RemoteFrame*, Event*) { }
 
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }

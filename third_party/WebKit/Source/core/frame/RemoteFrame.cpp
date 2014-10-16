@@ -42,6 +42,11 @@ void RemoteFrame::detach()
     Frame::detach();
 }
 
+void RemoteFrame::forwardInputEvent(Event* event)
+{
+    remoteFrameClient()->forwardInputEvent(event);
+}
+
 void RemoteFrame::trace(Visitor* visitor)
 {
     visitor->trace(m_view);

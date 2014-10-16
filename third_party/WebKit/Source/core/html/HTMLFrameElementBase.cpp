@@ -34,7 +34,6 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
@@ -213,7 +212,7 @@ bool HTMLFrameElementBase::isHTMLContentAttribute(const Attribute& attribute) co
 void HTMLFrameElementBase::defaultEventHandler(Event* event)
 {
     if (contentFrame() && contentFrame()->isRemoteFrame()) {
-        contentFrame()->chromeClient().forwardInputEvent(toRemoteFrame(contentFrame()), event);
+        toRemoteFrame(contentFrame())->forwardInputEvent(event);
         return;
     }
     HTMLFrameOwnerElement::defaultEventHandler(event);

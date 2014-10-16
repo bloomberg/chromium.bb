@@ -173,10 +173,6 @@ public:
     virtual void didEndEditingOnTextField(HTMLInputElement&) override;
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;
 
-    // FIXME: Remove this method once we have input routing in the browser
-    // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(RemoteFrame*, Event*) override;
-
     virtual void didCancelCompositionOnSelectionChange() override;
     virtual void willSetInputMethodState() override;
     virtual void didUpdateTextOfFocusedElementByNonUserInput() override;

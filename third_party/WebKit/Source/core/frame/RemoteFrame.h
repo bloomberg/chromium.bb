@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class Event;
 class RemoteFrameClient;
 class RemoteFrameView;
 
@@ -21,6 +22,10 @@ public:
 
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
+
+    // FIXME: Remove this method once we have input routing in the browser
+    // process. See http://crbug.com/339659.
+    void forwardInputEvent(Event*);
 
     void setView(PassRefPtrWillBeRawPtr<RemoteFrameView>);
     void createView();
