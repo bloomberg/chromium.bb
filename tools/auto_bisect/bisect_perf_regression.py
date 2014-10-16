@@ -167,7 +167,7 @@ MAX_MAC_BUILD_TIME = 14400
 MAX_WIN_BUILD_TIME = 14400
 MAX_LINUX_BUILD_TIME = 14400
 
-# The confidence percentage at which confidence can be consider "high".
+# The percentage at which confidence is considered high.
 HIGH_CONFIDENCE = 95
 
 # Patch template to add a new file, DEPS.sha under src folder.
@@ -1249,7 +1249,7 @@ class BisectPerformanceMetrics(object):
     if restore:
       source_dir, destination_dir = destination_dir, source_dir
     if os.path.exists(source_dir):
-      RmTreeAndMkDir(destination_dir, skip_makedir=True)
+      RemoveDirectoryTree(destination_dir)
       shutil.move(source_dir, destination_dir)
       return destination_dir
     return None
@@ -1289,9 +1289,9 @@ class BisectPerformanceMetrics(object):
     """Downloads the build archive for the given revision.
 
     Args:
-      revision: The Git revision to download or build.
-      build_type: Target build type ('Release', 'Debug', 'Release_x64' etc.)
-      patch: A DEPS patch (used while bisecting 3rd party repositories).
+      revision: The git revision to download or build.
+      depot: The name of a dependency repository. Should be in DEPOT_NAMES.
+      build_type: Target build type, e.g. Release', 'Debug', 'Release_x64' etc.
 
     Returns:
       True if download succeeds, otherwise False.
@@ -1310,9 +1310,9 @@ class BisectPerformanceMetrics(object):
       # 'DEPS.sha' and add patch_sha evaluated above to it.
       patch = '%s\n%s' % (patch, DEPS_SHA_PATCH % {'deps_sha': patch_sha})
 
-    # Get Build output directory
-    abs_build_dir = os.path.abspath(
-        builder.GetBuildOutputDirectory(self.opts, self.src_cwd))
+    # Get build output directory.
+    build_dir = builder.GetBuildOutputDirectory(self.opts, self.src_cwd)
+    abs_build_dir = os.path.abspath(build_dir)
 
     fetch_build_func = lambda: self.GetBuildArchiveForRevision(
       revision, self.opts.gs_bucket, self.opts.target_arch,
@@ -1332,9 +1332,10 @@ class BisectPerformanceMetrics(object):
     # Generic name for the archive, created when archive file is extracted.
     output_dir = os.path.join(
         abs_build_dir, GetZipFileName(target_arch=self.opts.target_arch))
+
     # Unzip build archive directory.
     try:
-      RmTreeAndMkDir(output_dir, skip_makedir=True)
+      RemoveDirectoryTree(output_dir)
       self.BackupOrRestoreOutputDirectory(restore=False)
       # Build output directory based on target(e.g. out/Release, out/Debug).
       target_build_output_dir = os.path.join(abs_build_dir, build_type)
@@ -1356,7 +1357,7 @@ class BisectPerformanceMetrics(object):
       self.BackupOrRestoreOutputDirectory(restore=True)
       # Cleanup any leftovers from unzipping.
       if os.path.exists(output_dir):
-        RmTreeAndMkDir(output_dir, skip_makedir=True)
+        RemoveDirectoryTree(output_dir)
     finally:
       # Delete downloaded archive
       if os.path.exists(downloaded_file):
@@ -2889,36 +2890,32 @@ def _IsPlatformSupported():
   return os.name in supported
 
 
-def RmTreeAndMkDir(path_to_dir, skip_makedir=False):
-  """Removes the directory tree specified, and then creates an empty
-  directory in the same location (if not specified to skip).
+def RemakeDirectoryTree(path_to_dir):
+  """Removes a directory tree and replaces it with an empty one.
 
-  Args:
-    path_to_dir: Path to the directory tree.
-    skip_makedir: Whether to skip creating empty directory, default is False.
-
-  Returns:
-    True if successful, False if an error occurred.
+  Returns True if successful, False otherwise.
   """
+  if not RemoveDirectoryTree(path_to_dir):
+    return False
+  return MaybeMakeDirectory(path_to_dir)
+
+
+def RemoveDirectoryTree(path_to_dir):
+  """Removes a directory tree. Returns True if successful or False otherwise."""
   try:
     if os.path.exists(path_to_dir):
       shutil.rmtree(path_to_dir)
   except OSError, e:
     if e.errno != errno.ENOENT:
       return False
-
-  if not skip_makedir:
-    return MaybeMakeDirectory(path_to_dir)
-
   return True
 
 
 def RemoveBuildFiles(build_type):
   """Removes build files from previous runs."""
-  if RmTreeAndMkDir(os.path.join('out', build_type)):
-    if RmTreeAndMkDir(os.path.join('build', build_type)):
-      return True
-  return False
+  out_dir = os.path.join('out', build_type)
+  build_dir = os.path.join('build', build_type)
+  return RemakeDirectoryTree(out_dir) and RemakeDirectoryTree(build_dir)
 
 
 class BisectOptions(object):
