@@ -250,9 +250,8 @@ IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
                     kFileNamePattern);
 }
 
-// This test has real failures. http://crbug.com/323093
 IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
-    DISABLED_DataDrivenHeuristics16) {
+    MAYBE_DataDrivenHeuristics(16)) {
   const base::FilePath::CharType kFileNamePattern[] =
       FILE_PATH_LITERAL("16_*.html");
   RunDataDrivenTest(GetInputDirectory(kTestName),
