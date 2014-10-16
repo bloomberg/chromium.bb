@@ -15,8 +15,8 @@
             {
                 var video = document.getElementById('testVideo');
                 var mediaKeySession = null;
-                var isSessionCreated = false;
                 var sessionReadyReceived = false;
+                var encryptedEventCount = 0;
 
                 var rawKey = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
@@ -27,11 +27,14 @@
                     assert_true(event instanceof window.MediaEncryptedEvent);
                     assert_equals(event.type, 'encrypted');
 
-                    // The same decryption key is shared by all streams so only
-                    // create a shared session once.
-                    if (isSessionCreated)
+                    // The same decryption key is used by both the audio and
+                    // the video streams so only create a session once. To
+                    // avoid issues when comparing the expected.txt file
+                    // (which logs the events in the order they occur), create
+                    // the session on the second event. This also ensures we
+                    // see both events.
+                    if (++encryptedEventCount != 2)
                         return;
-                    isSessionCreated = true;
 
                     mediaKeySession = video.mediaKeys.createSession();
                     waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
