@@ -38,7 +38,7 @@ struct MESSAGE_CENTER_EXPORT ComparePriorityTimestampSerial {
   bool operator()(Notification* n1, Notification* n2);
 };
 
-struct CompareTimestampSerial {
+struct MESSAGE_CENTER_EXPORT CompareTimestampSerial {
   bool operator()(Notification* n1, Notification* n2);
 };
 
