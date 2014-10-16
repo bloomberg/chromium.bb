@@ -129,6 +129,8 @@
         'browser/ui/cocoa/constrained_window/constrained_window_custom_window.mm',
         'browser/ui/cocoa/extensions/browser_actions_container_view.h',
         'browser/ui/cocoa/extensions/browser_actions_container_view.mm',
+        'browser/ui/cocoa/extensions/device_permissions_view_controller.h',
+        'browser/ui/cocoa/extensions/device_permissions_view_controller.mm',
         'browser/ui/cocoa/extensions/extension_install_dialog_controller.h',
         'browser/ui/cocoa/extensions/extension_install_dialog_controller.mm',
         'browser/ui/cocoa/extensions/extension_install_view_controller.h',

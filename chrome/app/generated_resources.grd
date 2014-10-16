@@ -14782,6 +14782,17 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_DESCRIPTION" desc="Description of about:flags option for message center always scroll up experiment.">
       Enables experiment that message center always scroll up when a notification is removed.
     </message>
+
+    <!-- Device permissions dialog strings. -->
+    <message name="IDS_DEVICE_PERMISSIONS_DIALOG_DEVICE_NAME_COLUMN" desc="Label for the table column displaying the name of a device.">
+      Device Name
+    </message>
+    <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SERIAL_NUMBER_COLUMN" desc="Label for the table column displaying the serial number of a device.">
+      Serial Number
+    </message>
+    <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SELECT" desc="Button confirming the devices selected for access by the app.">
+      Select
+    </message>
   </messages>
   </release>
 </grit>

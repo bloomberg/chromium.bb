@@ -415,6 +415,8 @@
         'browser/api/declarative_webrequest/webrequest_rules_registry.h',
         'browser/api/device_permissions_manager.cc',
         'browser/api/device_permissions_manager.h',
+        'browser/api/device_permissions_prompt.cc',
+        'browser/api/device_permissions_prompt.h',
         'browser/api/dns/dns_api.cc',
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',

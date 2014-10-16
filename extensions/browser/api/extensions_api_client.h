@@ -19,12 +19,14 @@ class ObserverListThreadSafe;
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace extensions {
 
 class AppViewGuestDelegate;
 class ContentRulesRegistry;
+class DevicePermissionsPrompt;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
 class MimeHandlerViewGuest;

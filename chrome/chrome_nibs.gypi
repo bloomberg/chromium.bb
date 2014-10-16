@@ -53,6 +53,7 @@
       'app/nibs/AboutIPC.xib',
       'app/nibs/ActionBoxMenuItem.xib',
       'app/nibs/BookmarkBarFolderWindow.xib',
+      'app/nibs/DevicePermissionsPrompt.xib',
       'app/nibs/ExtensionInstalledBubbleBundle.xib',
       'app/nibs/FindBar.xib',
       'app/nibs/GlobalErrorBubble.xib',

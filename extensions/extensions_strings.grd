@@ -305,6 +305,27 @@
       </message>
 
       <!-- Device API strings. Please keep alphabetized. -->
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_HEADING" desc="Title of the device selection dialog.">
+        USB Devices
+      </message>
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE" desc="Instructions asking the user to select one device for use with an app.">
+        Select a device to use with <ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>.
+      </message>
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_MULTIPLE" desc="Instructions asking the user to select one or more devices for use with an app.">
+        Select devices to use with <ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>.
+      </message>
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_DEVICE_NAME" desc="String describing a device in a list of devices.">
+        <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
+      </message>
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_DEVICE_TOOLTIP" desc="String providing device vendor and product ID details in a tooltip.">
+        <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph> (<ph name="VENDOR_ID">$2<ex>0x1234</ex></ph>), <ph name="PRODUCT_NAME">$3<ex>SoundKnob</ex></ph> (<ph name="PRODUCT_ID">$4<ex>0x5678</ex></ph>)
+      </message>
+      <message name="IDS_DEVICE_UNKNOWN_PRODUCT" desc="String used when no human-readable product name is available for a device.">
+        Unknown Product
+      </message>
+      <message name="IDS_DEVICE_UNKNOWN_VENDOR" desc="String used when no human-readable vendor name is available for a device.">
+        Unknown Vendor
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HID" desc="Permission string for access to HID devices.">
         Access your input devices
       </message>
