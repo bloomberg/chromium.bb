@@ -30,8 +30,7 @@ enum {
   PATH_END
 };
 
-// Call to register the provider for the path keys defined above. It is safe to
-// call this multiple times.
+// Call once to register the provider for the path keys defined above.
 UI_BASE_EXPORT void RegisterPathProvider();
 
 }  // namespace ui

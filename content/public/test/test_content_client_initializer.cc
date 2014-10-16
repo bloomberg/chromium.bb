@@ -10,14 +10,10 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_view_host_factory.h"
-#include "ui/base/ui_base_paths.h"
 
 namespace content {
 
 TestContentClientInitializer::TestContentClientInitializer() {
-  // The TestContentClient uses content_shell.pak, so ensure the paths are set.
-  ui::RegisterPathProvider();
-
   notification_service_.reset(new NotificationServiceImpl());
 
   content_client_.reset(new TestContentClient);

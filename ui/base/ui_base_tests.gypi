@@ -100,26 +100,6 @@
           'includes': [ '../../build/copy_test_data_ios.gypi' ],
         },
       ],
-      'postbuilds': [
-        # The iOS resource bundle code hard-codes the names of the 100% and
-        # 200% paks. This copying allows locale.pak to stand in for them.
-        {
-          'postbuild_name': 'Copy chrome_100_percent for test',
-          'action': [
-            'cp',
-            '${BUILT_PRODUCTS_DIR}/ui/en.lproj/locale.pak',
-            '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/chrome_100_percent.pak'
-          ],
-        },
-        {
-          'postbuild_name': 'Copy chrome_200_percent for test',
-          'action': [
-            'cp',
-            '${BUILT_PRODUCTS_DIR}/ui/en.lproj/locale.pak',
-            '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/chrome_200_percent.pak'
-          ],
-        },
-      ],
     }],
     ['OS == "win"', {
       'sources': [
