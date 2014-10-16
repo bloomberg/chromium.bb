@@ -687,8 +687,8 @@ ServiceWorkerDatabase::PurgeUncommittedResourceIds(
   return WriteBatch(&batch);
 }
 
-ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigin(
-    const GURL& origin,
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigins(
+    const std::set<GURL>& origins,
     std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   Status status = LazyOpen(false);
@@ -696,27 +696,28 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigin(
     return STATUS_OK;
   if (status != STATUS_OK)
     return status;
-  if (!origin.is_valid())
-    return STATUS_ERROR_FAILED;
-
   leveldb::WriteBatch batch;
 
-  // Delete from the unique origin list.
-  batch.Delete(CreateUniqueOriginKey(origin));
+  for (const GURL& origin : origins) {
+    if (!origin.is_valid())
+      return STATUS_ERROR_FAILED;
 
-  std::vector<RegistrationData> registrations;
-  status = GetRegistrationsForOrigin(origin, &registrations);
-  if (status != STATUS_OK)
-    return status;
+    // Delete from the unique origin list.
+    batch.Delete(CreateUniqueOriginKey(origin));
 
-  // Delete registrations and resource records.
-  for (std::vector<RegistrationData>::const_iterator itr =
-           registrations.begin(); itr != registrations.end(); ++itr) {
-    batch.Delete(CreateRegistrationKey(itr->registration_id, origin));
-    status = DeleteResourceRecords(
-        itr->version_id, newly_purgeable_resources, &batch);
+    std::vector<RegistrationData> registrations;
+    status = GetRegistrationsForOrigin(origin, &registrations);
     if (status != STATUS_OK)
       return status;
+
+    // Delete registrations and resource records.
+    for (const RegistrationData& data : registrations) {
+      batch.Delete(CreateRegistrationKey(data.registration_id, origin));
+      status = DeleteResourceRecords(
+          data.version_id, newly_purgeable_resources, &batch);
+      if (status != STATUS_OK)
+        return status;
+    }
   }
 
   return WriteBatch(&batch);

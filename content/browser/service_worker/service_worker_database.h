@@ -185,13 +185,12 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Returns OK on success. Otherwise deletes nothing and returns an error.
   Status PurgeUncommittedResourceIds(const std::set<int64>& ids);
 
-  // Deletes all data for |origin|, namely, unique origin, registrations and
+  // Deletes all data for |origins|, namely, unique origin, registrations and
   // resource records. Resources are moved to the purgeable list. Returns OK if
   // they are successfully deleted or not found in the database. Otherwise,
   // returns an error.
-  Status DeleteAllDataForOrigin(
-      const GURL& origin,
-      std::vector<int64>* newly_purgeable_resources);
+  Status DeleteAllDataForOrigins(const std::set<GURL>& origins,
+                                 std::vector<int64>* newly_purgeable_resources);
 
   // Completely deletes the contents of the database.
   // Be careful using this function.

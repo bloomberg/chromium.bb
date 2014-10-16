@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_database_task_manager.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -84,9 +85,10 @@ void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
+    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : weak_factory_(this),
@@ -94,9 +96,10 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       providers_(new ProcessToProviderMap),
       storage_(ServiceWorkerStorage::Create(path,
                                             AsWeakPtr(),
-                                            database_task_runner,
+                                            database_task_manager.Pass(),
                                             disk_cache_thread,
-                                            quota_manager_proxy)),
+                                            quota_manager_proxy,
+                                            special_storage_policy)),
       cache_manager_(
           ServiceWorkerCacheStorageManager::Create(path,
                                                    cache_task_runner.get())),

@@ -192,11 +192,15 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   virtual void SetUp() override {
+    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
+        new MockServiceWorkerDatabaseTaskManager(
+            base::ThreadTaskRunnerHandle::Get()));
     context_.reset(
         new ServiceWorkerContextCore(GetUserDataDirectory(),
                                      base::ThreadTaskRunnerHandle::Get(),
+                                     database_task_manager.Pass(),
                                      base::ThreadTaskRunnerHandle::Get(),
-                                     base::ThreadTaskRunnerHandle::Get(),
+                                     NULL,
                                      NULL,
                                      NULL,
                                      NULL));
@@ -810,11 +814,15 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
   // Simulate browser shutdown. The purgeable and uncommitted resources are now
   // stale.
   context_.reset();
+  scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
+      new MockServiceWorkerDatabaseTaskManager(
+          base::ThreadTaskRunnerHandle::Get()));
   context_.reset(
       new ServiceWorkerContextCore(GetUserDataDirectory(),
                                    base::ThreadTaskRunnerHandle::Get(),
+                                   database_task_manager.Pass(),
                                    base::ThreadTaskRunnerHandle::Get(),
-                                   base::ThreadTaskRunnerHandle::Get(),
+                                   NULL,
                                    NULL,
                                    NULL,
                                    NULL));

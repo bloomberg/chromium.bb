@@ -1179,6 +1179,8 @@
       'browser/service_worker/service_worker_controllee_request_handler.h',
       'browser/service_worker/service_worker_database.cc',
       'browser/service_worker/service_worker_database.h',
+      'browser/service_worker/service_worker_database_task_manager.cc',
+      'browser/service_worker/service_worker_database_task_manager.h',
       'browser/service_worker/service_worker_disk_cache.cc',
       'browser/service_worker/service_worker_disk_cache.h',
       'browser/service_worker/service_worker_dispatcher_host.cc',

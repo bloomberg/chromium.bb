@@ -995,9 +995,11 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
       database->WriteRegistration(
           data3, resources3, &deleted_version_id, &newly_purgeable_resources));
 
+  std::set<GURL> origins_to_delete;
+  origins_to_delete.insert(origin1);
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteAllDataForOrigin(origin1,
-                                             &newly_purgeable_resources));
+            database->DeleteAllDataForOrigins(origins_to_delete,
+                                              &newly_purgeable_resources));
 
   // |origin1| should be removed from the unique origin list.
   std::set<GURL> unique_origins;

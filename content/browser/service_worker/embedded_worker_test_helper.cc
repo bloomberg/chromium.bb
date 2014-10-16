@@ -23,10 +23,14 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
       next_thread_id_(0),
       mock_render_process_id_(mock_render_process_id),
       weak_factory_(this) {
+  scoped_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
+      new MockServiceWorkerDatabaseTaskManager(
+          base::MessageLoopProxy::current()));
   wrapper_->InitInternal(base::FilePath(),
                          base::MessageLoopProxy::current(),
+                         database_task_manager.Pass(),
                          base::MessageLoopProxy::current(),
-                         base::MessageLoopProxy::current(),
+                         NULL,
                          NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
   registry()->AddChildProcessSender(mock_render_process_id, this);

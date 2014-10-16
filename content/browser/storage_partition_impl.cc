@@ -452,7 +452,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
       new ServiceWorkerContextWrapper(context);
-  service_worker_context->Init(path, quota_manager->proxy());
+  service_worker_context->Init(
+      path, quota_manager->proxy(), context->GetSpecialStoragePolicy());
 
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());

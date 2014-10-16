@@ -23,11 +23,15 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       : io_thread_(BrowserThread::IO, &message_loop_) {}
 
   virtual void SetUp() override {
+    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
+        new MockServiceWorkerDatabaseTaskManager(
+            base::ThreadTaskRunnerHandle::Get()));
     context_.reset(
         new ServiceWorkerContextCore(base::FilePath(),
                                      base::ThreadTaskRunnerHandle::Get(),
+                                     database_task_manager.Pass(),
                                      base::ThreadTaskRunnerHandle::Get(),
-                                     base::ThreadTaskRunnerHandle::Get(),
+                                     NULL,
                                      NULL,
                                      NULL,
                                      NULL));
