@@ -30,7 +30,6 @@
  */
 
 [
-    WillBeGarbageCollected,
     ActiveDOMObject,
     Constructor(DOMString url, optional EventSourceInit eventSourceInit),
     ConstructorCallWith=ExecutionContext,

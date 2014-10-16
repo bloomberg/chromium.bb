@@ -27,7 +27,6 @@
 [
     Custom=ToV8,
     Exposed=Worker,
-    WillBeGarbageCollected
 ] interface WorkerGlobalScope : EventTarget {
 
     // WorkerGlobalScope

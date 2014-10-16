@@ -27,7 +27,6 @@
 
 [
     ActiveDOMObject,
-    WillBeGarbageCollected
 ] interface MessagePort : EventTarget {
     [Custom, RaisesException] void postMessage(any message, optional sequence<Transferable> transfer);
 

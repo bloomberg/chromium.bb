@@ -37,7 +37,6 @@
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=SharedWorker,
-    WillBeGarbageCollected,
 ] interface SharedWorker : EventTarget {
     readonly attribute MessagePort port;
 };

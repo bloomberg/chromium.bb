@@ -25,7 +25,6 @@
 
 [
     DoNotCheckConstants,
-    WillBeGarbageCollected,
 ] interface ApplicationCache : EventTarget {
     // update status
     const unsigned short UNCACHED = 0;
@@ -50,4 +49,3 @@
     attribute EventHandler oncached;
     attribute EventHandler onobsolete;
 };
-

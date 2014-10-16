@@ -32,7 +32,6 @@
     Custom=ToV8,
     ImplementedAs=LocalDOMWindow,
     PrimaryGlobal,
-    WillBeGarbageCollected,
 ] interface Window : EventTarget {
     // DOM Level 0
     readonly attribute Screen screen;

@@ -41,7 +41,6 @@ enum ServiceWorkerState {
 [
     ActiveDOMObject,
     RuntimeEnabled=ServiceWorker,
-    WillBeGarbageCollected
 ] interface ServiceWorker : EventTarget {
 
     // FIXME: Should inherit this from Worker.

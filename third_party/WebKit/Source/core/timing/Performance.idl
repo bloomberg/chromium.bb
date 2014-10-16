@@ -30,9 +30,7 @@
  */
 
 // See: http://www.w3.org/TR/navigation-timing/
-[
-    WillBeGarbageCollected
-] interface Performance : EventTarget {
+interface Performance : EventTarget {
     readonly attribute PerformanceNavigation navigation;
     readonly attribute PerformanceTiming timing;
     readonly attribute MemoryInfo memory;
@@ -56,4 +54,3 @@
     // See http://www.w3.org/TR/hr-time/ for details.
     double now();
 };
-

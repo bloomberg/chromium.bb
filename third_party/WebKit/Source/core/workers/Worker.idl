@@ -32,7 +32,6 @@
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    WillBeGarbageCollected,
 ] interface Worker : EventTarget {
 
     attribute EventHandler onmessage;

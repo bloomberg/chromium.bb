@@ -28,7 +28,6 @@
 [
     SetWrapperReferenceFrom=owner,
     TypeChecking=Unrestricted,
-    WillBeGarbageCollected,
 ] interface TextTrackCue : EventTarget {
     readonly attribute TextTrack? track;
 
