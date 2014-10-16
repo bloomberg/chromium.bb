@@ -1577,9 +1577,6 @@ def ValidateSuperinstruction64(superinstruction):
       raise DoNotMatchError(superinstruction)
     if lea_r15_rdi_rdi.match(superinstruction[1].disasm) is None:
       raise DoNotMatchError(superinstruction)
-    # vmaskmovdqu is disabled for compatibility with the previous validator
-    if dangerous_instruction.startswith('vmaskmovdqu '):
-      raise SandboxingError('vmaskmovdqu is disallowed', superinstruction)
 
   elif string_instruction_rsi_rdi.match(dangerous_instruction):
     if len(superinstruction) != 5:

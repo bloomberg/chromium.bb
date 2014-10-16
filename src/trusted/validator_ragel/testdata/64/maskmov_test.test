@@ -56,5 +56,4 @@
   0: unrecognized instruction
   return code: 1
 @spec:
-  0: ('vmaskmovdqu is disallowed', [Instruction(0x0: 89 ff  mov %edi,%edi), Instruction(0x2: 49 8d 3c 3f  lea (%r15,%rdi,1),%rdi), Instruction(0x6: c5 f9 f7 d1  vmaskmovdqu %xmm1,%xmm2)])
-  6: unrecognized instruction 'vmaskmovdqu %xmm1,%xmm2'
+  SAFE
