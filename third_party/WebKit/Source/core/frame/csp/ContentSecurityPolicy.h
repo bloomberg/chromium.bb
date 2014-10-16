@@ -230,6 +230,7 @@ private:
     String m_disableEvalErrorMessage;
 
     OwnPtr<CSPSource> m_selfSource;
+    String m_selfProtocol;
 };
 
 }
