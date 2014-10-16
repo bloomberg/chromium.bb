@@ -128,6 +128,7 @@ source_set("google_apis") {
 
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//crypto",
     "//net",
     "//third_party/libxml",
