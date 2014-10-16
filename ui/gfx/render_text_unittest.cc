@@ -2309,4 +2309,19 @@ TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
   EXPECT_EQ(Range(0, 0), glyphs);
 }
 
+// Ensure a string fits in a display rect with a width equal to the string's.
+TEST_F(RenderTextTest, StringFitsOwnWidth) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  const base::string16 kString = ASCIIToUTF16("www.example.com");
+
+  render_text->SetText(kString);
+  render_text->ApplyStyle(BOLD, true, Range(0, 3));
+  render_text->SetElideBehavior(ELIDE_TAIL);
+
+  render_text->SetDisplayRect(Rect(0, 0, 500, 100));
+  EXPECT_EQ(kString, render_text->GetLayoutText());
+  render_text->SetDisplayRect(Rect(0, 0, render_text->GetContentWidth(), 100));
+  EXPECT_EQ(kString, render_text->GetLayoutText());
+}
+
 }  // namespace gfx
