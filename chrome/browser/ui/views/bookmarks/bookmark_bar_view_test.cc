@@ -283,29 +283,20 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     AddTestData(CreateBigMenu());
 
     // Calculate the preferred size so that one button doesn't fit, which
-    // triggers the overflow button to appear.
-    //
-    // BookmarkBarView::Layout does nothing if the parent is NULL and
-    // GetPreferredSize hard codes a width of 1. For that reason we add the
-    // BookmarkBarView to a dumby view as the parent.
+    // triggers the overflow button to appear. We have to do this incrementally
+    // as there isn't a good way to determine the point at which the overflow
+    // button is shown.
     //
     // This code looks a bit hacky, but I've written it so that it shouldn't
     // be dependant upon any of the layout code in BookmarkBarView. Instead
     // we brute force search for a size that triggers the overflow button.
-    views::View tmp_parent;
-
-    tmp_parent.AddChildView(bb_view_.get());
-
     bb_view_pref_ = bb_view_->GetPreferredSize();
     bb_view_pref_.set_width(1000);
-    views::LabelButton* button = GetBookmarkButton(6);
-    while (button->visible()) {
+    do {
       bb_view_pref_.set_width(bb_view_pref_.width() - 25);
       bb_view_->SetBounds(0, 0, bb_view_pref_.width(), bb_view_pref_.height());
       bb_view_->Layout();
-    }
-
-    tmp_parent.RemoveChildView(bb_view_.get());
+    } while (GetBookmarkButton(6)->visible());
 
     ViewEventTestBase::SetUp();
   }

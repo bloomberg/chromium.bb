@@ -783,7 +783,109 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
 }
 
 void BookmarkBarView::Layout() {
-  LayoutItems();
+  int x = kLeftMargin;
+  int top_margin = IsDetached() ? kDetachedTopMargin : 0;
+  int y = top_margin;
+  int width = View::width() - kRightMargin - kLeftMargin;
+  int height = chrome::kBookmarkBarHeight - kBottomMargin;
+  int separator_margin = kSeparatorMargin;
+
+  if (IsDetached()) {
+    double current_state = 1 - size_animation_->GetCurrentValue();
+    x += static_cast<int>(kNewtabHorizontalPadding * current_state);
+    y += (View::height() - chrome::kBookmarkBarHeight) / 2;
+    width -= static_cast<int>(kNewtabHorizontalPadding * current_state);
+    separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
+  } else {
+    // For the attached appearance, pin the content to the bottom of the bar
+    // when animating in/out, as shrinking its height instead looks weird.  This
+    // also matches how we layout infobars.
+    y += View::height() - chrome::kBookmarkBarHeight;
+  }
+
+  gfx::Size other_bookmarked_pref = other_bookmarked_button_->visible() ?
+      other_bookmarked_button_->GetPreferredSize() : gfx::Size();
+  gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
+  gfx::Size bookmarks_separator_pref =
+      bookmarks_separator_view_->GetPreferredSize();
+  gfx::Size apps_page_shortcut_pref = apps_page_shortcut_->visible() ?
+      apps_page_shortcut_->GetPreferredSize() : gfx::Size();
+
+  int max_x = width - overflow_pref.width() - kButtonPadding -
+      bookmarks_separator_pref.width();
+  if (other_bookmarked_button_->visible())
+    max_x -= other_bookmarked_pref.width() + kButtonPadding;
+
+  // Next, layout out the buttons. Any buttons that are placed beyond the
+  // visible region are made invisible.
+
+  // Start with the apps page shortcut button.
+  if (apps_page_shortcut_->visible()) {
+    apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
+                                   height);
+    x += apps_page_shortcut_pref.width() + kButtonPadding;
+  }
+
+  // Then comes the managed bookmarks folder, if visible.
+  if (managed_bookmarks_button_->visible()) {
+    gfx::Size managed_bookmarks_pref = managed_bookmarks_button_->visible() ?
+        managed_bookmarks_button_->GetPreferredSize() : gfx::Size();
+    managed_bookmarks_button_->SetBounds(x, y, managed_bookmarks_pref.width(),
+                                         height);
+    x += managed_bookmarks_pref.width() + kButtonPadding;
+  }
+
+  // Then go through the bookmark buttons.
+  if (GetBookmarkButtonCount() == 0 && model_ && model_->loaded()) {
+    gfx::Size pref = instructions_->GetPreferredSize();
+    instructions_->SetBounds(
+        x + kInstructionsPadding, y,
+        std::min(static_cast<int>(pref.width()),
+                 max_x - x),
+        height);
+    instructions_->SetVisible(true);
+  } else {
+    instructions_->SetVisible(false);
+
+    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
+      views::View* child = child_at(i);
+      gfx::Size pref = child->GetPreferredSize();
+      int next_x = x + pref.width() + kButtonPadding;
+      child->SetVisible(next_x < max_x);
+      child->SetBounds(x, y, pref.width(), height);
+      x = next_x;
+    }
+  }
+
+  // Layout the right side of the bar.
+  const bool all_visible = (GetBookmarkButtonCount() == 0 ||
+                            child_at(GetBookmarkButtonCount() - 1)->visible());
+
+  // Layout the right side buttons.
+  x = max_x + kButtonPadding;
+
+  // The overflow button.
+  overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
+  overflow_button_->SetVisible(!all_visible);
+  x += overflow_pref.width();
+
+  // Separator.
+  if (bookmarks_separator_view_->visible()) {
+    bookmarks_separator_view_->SetBounds(x,
+                                         y - top_margin,
+                                         bookmarks_separator_pref.width(),
+                                         height + top_margin + kBottomMargin -
+                                         separator_margin);
+
+    x += bookmarks_separator_pref.width();
+  }
+
+  // The other bookmarks button.
+  if (other_bookmarked_button_->visible()) {
+    other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
+                                        height);
+    x += other_bookmarked_pref.width() + kButtonPadding;
+  }
 }
 
 void BookmarkBarView::ViewHierarchyChanged(
@@ -1859,115 +1961,6 @@ void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
   bookmarks_separator_view_->SetVisible(
       browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH &&
       other_bookmarked_button_->visible());
-}
-
-void BookmarkBarView::LayoutItems() {
-  if (!parent())
-    return;
-
-  int x = kLeftMargin;
-  int top_margin = IsDetached() ? kDetachedTopMargin : 0;
-  int y = top_margin;
-  int width = View::width() - kRightMargin - kLeftMargin;
-  int height = chrome::kBookmarkBarHeight - kBottomMargin;
-  int separator_margin = kSeparatorMargin;
-
-  if (IsDetached()) {
-    double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(kNewtabHorizontalPadding * current_state);
-    y += (View::height() - chrome::kBookmarkBarHeight) / 2;
-    width -= static_cast<int>(kNewtabHorizontalPadding * current_state);
-    separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
-  } else {
-    // For the attached appearance, pin the content to the bottom of the bar
-    // when animating in/out, as shrinking its height instead looks weird.  This
-    // also matches how we layout infobars.
-    y += View::height() - chrome::kBookmarkBarHeight;
-  }
-
-  gfx::Size other_bookmarked_pref = other_bookmarked_button_->visible() ?
-      other_bookmarked_button_->GetPreferredSize() : gfx::Size();
-  gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
-  gfx::Size bookmarks_separator_pref =
-      bookmarks_separator_view_->GetPreferredSize();
-  gfx::Size apps_page_shortcut_pref = apps_page_shortcut_->visible() ?
-      apps_page_shortcut_->GetPreferredSize() : gfx::Size();
-
-  int max_x = width - overflow_pref.width() - kButtonPadding -
-      bookmarks_separator_pref.width();
-  if (other_bookmarked_button_->visible())
-    max_x -= other_bookmarked_pref.width() + kButtonPadding;
-
-  // Next, layout out the buttons. Any buttons that are placed beyond the
-  // visible region are made invisible.
-
-  // Start with the apps page shortcut button.
-  if (apps_page_shortcut_->visible()) {
-    apps_page_shortcut_->SetBounds(x, y, apps_page_shortcut_pref.width(),
-                                   height);
-    x += apps_page_shortcut_pref.width() + kButtonPadding;
-  }
-
-  // Then comes the managed bookmarks folder, if visible.
-  if (managed_bookmarks_button_->visible()) {
-    gfx::Size managed_bookmarks_pref = managed_bookmarks_button_->visible() ?
-        managed_bookmarks_button_->GetPreferredSize() : gfx::Size();
-    managed_bookmarks_button_->SetBounds(x, y, managed_bookmarks_pref.width(),
-                                         height);
-    x += managed_bookmarks_pref.width() + kButtonPadding;
-  }
-
-  // Then go through the bookmark buttons.
-  if (GetBookmarkButtonCount() == 0 && model_ && model_->loaded()) {
-    gfx::Size pref = instructions_->GetPreferredSize();
-    instructions_->SetBounds(
-        x + kInstructionsPadding, y,
-        std::min(static_cast<int>(pref.width()),
-                 max_x - x),
-        height);
-    instructions_->SetVisible(true);
-  } else {
-    instructions_->SetVisible(false);
-
-    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-      views::View* child = child_at(i);
-      gfx::Size pref = child->GetPreferredSize();
-      int next_x = x + pref.width() + kButtonPadding;
-      child->SetVisible(next_x < max_x);
-      child->SetBounds(x, y, pref.width(), height);
-      x = next_x;
-    }
-  }
-
-  // Layout the right side of the bar.
-  const bool all_visible = (GetBookmarkButtonCount() == 0 ||
-                            child_at(GetBookmarkButtonCount() - 1)->visible());
-
-  // Layout the right side buttons.
-  x = max_x + kButtonPadding;
-
-  // The overflow button.
-  overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
-  overflow_button_->SetVisible(!all_visible);
-  x += overflow_pref.width();
-
-  // Separator.
-  if (bookmarks_separator_view_->visible()) {
-    bookmarks_separator_view_->SetBounds(x,
-                                         y - top_margin,
-                                         bookmarks_separator_pref.width(),
-                                         height + top_margin + kBottomMargin -
-                                         separator_margin);
-
-    x += bookmarks_separator_pref.width();
-  }
-
-  // The other bookmarks button.
-  if (other_bookmarked_button_->visible()) {
-    other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
-                                        height);
-    x += other_bookmarked_pref.width() + kButtonPadding;
-  }
 }
 
 void BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged() {

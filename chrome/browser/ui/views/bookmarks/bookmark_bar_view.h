@@ -379,9 +379,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the visibility of |bookmarks_separator_view_|.
   void UpdateBookmarksSeparatorVisibility();
 
-  // This method computes the bounds for the bookmark bar items.
-  void LayoutItems();
-
   // Updates the visibility of the apps shortcut based on the pref value.
   void OnAppsPageShortcutVisibilityPrefChanged();
 
