@@ -569,6 +569,83 @@ uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Various predefined FormatTypes.
+// static
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeURIList));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  return GetUrlFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
+  return GetPlainTextFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeFilename));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
+  return Clipboard::GetFilenameFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePNG));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
+  return type;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Clipboard
 
 Clipboard::Clipboard()
@@ -582,30 +659,12 @@ Clipboard::~Clipboard() {
   aurax11_details_->StoreCopyPasteDataAndWait();
 }
 
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsSupportedClipboardType(type));
-
-  aurax11_details_->CreateNewClipboardData();
-  for (ObjectMap::const_iterator iter = objects.begin();
-       iter != objects.end(); ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
-  }
-  aurax11_details_->TakeOwnershipOfSelection(type);
-
-  if (type == CLIPBOARD_TYPE_COPY_PASTE) {
-    ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
-    if (text_iter != objects.end()) {
-      aurax11_details_->CreateNewClipboardData();
-      const ObjectMapParams& params_vector = text_iter->second;
-      if (params_vector.size()) {
-        const ObjectMapParam& char_vector = params_vector[0];
-        if (char_vector.size())
-          WriteText(&char_vector.front(), char_vector.size());
-      }
-      aurax11_details_->TakeOwnershipOfSelection(CLIPBOARD_TYPE_SELECTION);
-    }
-  }
+  if (type == CLIPBOARD_TYPE_COPY_PASTE)
+    return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
+  else
+    return SelectionChangeObserver::GetInstance()->primary_sequence_number();
 }
 
 bool Clipboard::IsFormatAvailable(const FormatType& format,
@@ -751,12 +810,30 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
     data.AssignTo(result);
 }
 
-uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  if (type == CLIPBOARD_TYPE_COPY_PASTE)
-    return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
-  else
-    return SelectionChangeObserver::GetInstance()->primary_sequence_number();
+  DCHECK(IsSupportedClipboardType(type));
+
+  aurax11_details_->CreateNewClipboardData();
+  for (ObjectMap::const_iterator iter = objects.begin();
+       iter != objects.end(); ++iter) {
+    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+  }
+  aurax11_details_->TakeOwnershipOfSelection(type);
+
+  if (type == CLIPBOARD_TYPE_COPY_PASTE) {
+    ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
+    if (text_iter != objects.end()) {
+      aurax11_details_->CreateNewClipboardData();
+      const ObjectMapParams& params_vector = text_iter->second;
+      if (params_vector.size()) {
+        const ObjectMapParam& char_vector = params_vector[0];
+        if (char_vector.size())
+          WriteText(&char_vector.front(), char_vector.size());
+      }
+      aurax11_details_->TakeOwnershipOfSelection(CLIPBOARD_TYPE_SELECTION);
+    }
+  }
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
@@ -840,81 +917,6 @@ void Clipboard::WriteData(const FormatType& format,
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
   aurax11_details_->InsertMapping(format.ToString(), mem);
-}
-
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType::Deserialize(format_string);
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeURIList));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
-  return GetUrlFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  return GetPlainTextFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeFilename));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
-  return Clipboard::GetFilenameFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePNG));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
-  return type;
 }
 
 }  // namespace ui

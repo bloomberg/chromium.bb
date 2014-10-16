@@ -50,6 +50,7 @@ NSPasteboard* GetPasteboard() {
 
 }  // namespace
 
+// Clipboard::FormatType implementation.
 Clipboard::FormatType::FormatType() : data_(nil) {
 }
 
@@ -88,109 +89,89 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
   return FormatType(base::SysUTF8ToNSString(serialization));
 }
 
+// Various predefined FormatTypes.
+// static
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSURLPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  return GetUrlFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSStringPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
+  return GetPlainTextFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSFilenamesPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
+  return GetFilenameFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSHTMLPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSRTFPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSTIFFPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebSmartPastePboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPepperCustomDataPboardType));
+  return type;
+}
+
+// Clipboard implementation.
 Clipboard::Clipboard() {
   DCHECK(CalledOnValidThread());
 }
 
 Clipboard::~Clipboard() {
   DCHECK(CalledOnValidThread());
-}
-
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
-
-  NSPasteboard* pb = GetPasteboard();
-  [pb declareTypes:[NSArray array] owner:nil];
-
-  for (ObjectMap::const_iterator iter = objects.begin();
-       iter != objects.end(); ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
-  }
-}
-
-void Clipboard::WriteText(const char* text_data, size_t text_len) {
-  std::string text_str(text_data, text_len);
-  NSString *text = base::SysUTF8ToNSString(text_str);
-  NSPasteboard* pb = GetPasteboard();
-  [pb addTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-  [pb setString:text forType:NSStringPboardType];
-}
-
-void Clipboard::WriteHTML(const char* markup_data,
-                          size_t markup_len,
-                          const char* url_data,
-                          size_t url_len) {
-  // We need to mark it as utf-8. (see crbug.com/11957)
-  std::string html_fragment_str("<meta charset='utf-8'>");
-  html_fragment_str.append(markup_data, markup_len);
-  NSString *html_fragment = base::SysUTF8ToNSString(html_fragment_str);
-
-  // TODO(avi): url_data?
-  NSPasteboard* pb = GetPasteboard();
-  [pb addTypes:[NSArray arrayWithObject:NSHTMLPboardType] owner:nil];
-  [pb setString:html_fragment forType:NSHTMLPboardType];
-}
-
-void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
-  WriteData(GetRtfFormatType(), rtf_data, data_len);
-}
-
-void Clipboard::WriteBookmark(const char* title_data,
-                              size_t title_len,
-                              const char* url_data,
-                              size_t url_len) {
-  std::string title_str(title_data, title_len);
-  NSString *title =  base::SysUTF8ToNSString(title_str);
-  std::string url_str(url_data, url_len);
-  NSString *url =  base::SysUTF8ToNSString(url_str);
-
-  // TODO(playmobil): In the Windows version of this function, an HTML
-  // representation of the bookmark is also added to the clipboard, to support
-  // drag and drop of web shortcuts.  I don't think we need to do this on the
-  // Mac, but we should double check later on.
-  NSURL* nsurl = [NSURL URLWithString:url];
-
-  NSPasteboard* pb = GetPasteboard();
-  // passing UTIs into the pasteboard methods is valid >= 10.5
-  [pb addTypes:[NSArray arrayWithObjects:NSURLPboardType,
-                                         kUTTypeURLName,
-                                         nil]
-         owner:nil];
-  [nsurl writeToPasteboard:pb];
-  [pb setString:title forType:kUTTypeURLName];
-}
-
-void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
-  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
-      bitmap, base::mac::GetSystemColorSpace());
-  // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
-  // For now, spit out the image as a TIFF.
-  NSPasteboard* pb = GetPasteboard();
-  [pb addTypes:[NSArray arrayWithObject:NSTIFFPboardType] owner:nil];
-  NSData *tiff_data = [image TIFFRepresentation];
-  LOG_IF(ERROR, tiff_data == NULL) << "Failed to allocate image for clipboard";
-  if (tiff_data) {
-    [pb setData:tiff_data forType:NSTIFFPboardType];
-  }
-}
-
-void Clipboard::WriteData(const FormatType& format,
-                          const char* data_data,
-                          size_t data_len) {
-  NSPasteboard* pb = GetPasteboard();
-  [pb addTypes:[NSArray arrayWithObject:format.ToNSString()] owner:nil];
-  [pb setData:[NSData dataWithBytes:data_data length:data_len]
-      forType:format.ToNSString()];
-}
-
-// Write an extra flavor that signifies WebKit was the last to modify the
-// pasteboard. This flavor has no data.
-void Clipboard::WriteWebSmartPaste() {
-  NSPasteboard* pb = GetPasteboard();
-  NSString* format = GetWebKitSmartPasteFormatType().ToNSString();
-  [pb addTypes:[NSArray arrayWithObject:format] owner:nil];
-  [pb setData:nil forType:format];
 }
 
 uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
@@ -366,79 +347,101 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
     result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType::Deserialize(format_string);
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+
+  NSPasteboard* pb = GetPasteboard();
+  [pb declareTypes:[NSArray array] owner:nil];
+
+  for (ObjectMap::const_iterator iter = objects.begin();
+       iter != objects.end(); ++iter) {
+    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+  }
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSURLPboardType));
-  return type;
+void Clipboard::WriteText(const char* text_data, size_t text_len) {
+  std::string text_str(text_data, text_len);
+  NSString *text = base::SysUTF8ToNSString(text_str);
+  NSPasteboard* pb = GetPasteboard();
+  [pb addTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+  [pb setString:text forType:NSStringPboardType];
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
-  return GetUrlFormatType();
+void Clipboard::WriteHTML(const char* markup_data,
+                          size_t markup_len,
+                          const char* url_data,
+                          size_t url_len) {
+  // We need to mark it as utf-8. (see crbug.com/11957)
+  std::string html_fragment_str("<meta charset='utf-8'>");
+  html_fragment_str.append(markup_data, markup_len);
+  NSString *html_fragment = base::SysUTF8ToNSString(html_fragment_str);
+
+  // TODO(avi): url_data?
+  NSPasteboard* pb = GetPasteboard();
+  [pb addTypes:[NSArray arrayWithObject:NSHTMLPboardType] owner:nil];
+  [pb setString:html_fragment forType:NSHTMLPboardType];
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSStringPboardType));
-  return type;
+void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
+  WriteData(GetRtfFormatType(), rtf_data, data_len);
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  return GetPlainTextFormatType();
+void Clipboard::WriteBookmark(const char* title_data,
+                              size_t title_len,
+                              const char* url_data,
+                              size_t url_len) {
+  std::string title_str(title_data, title_len);
+  NSString *title =  base::SysUTF8ToNSString(title_str);
+  std::string url_str(url_data, url_len);
+  NSString *url =  base::SysUTF8ToNSString(url_str);
+
+  // TODO(playmobil): In the Windows version of this function, an HTML
+  // representation of the bookmark is also added to the clipboard, to support
+  // drag and drop of web shortcuts.  I don't think we need to do this on the
+  // Mac, but we should double check later on.
+  NSURL* nsurl = [NSURL URLWithString:url];
+
+  NSPasteboard* pb = GetPasteboard();
+  // passing UTIs into the pasteboard methods is valid >= 10.5
+  [pb addTypes:[NSArray arrayWithObjects:NSURLPboardType,
+                                         kUTTypeURLName,
+                                         nil]
+         owner:nil];
+  [nsurl writeToPasteboard:pb];
+  [pb setString:title forType:kUTTypeURLName];
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSFilenamesPboardType));
-  return type;
+void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
+  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+      bitmap, base::mac::GetSystemColorSpace());
+  // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
+  // For now, spit out the image as a TIFF.
+  NSPasteboard* pb = GetPasteboard();
+  [pb addTypes:[NSArray arrayWithObject:NSTIFFPboardType] owner:nil];
+  NSData *tiff_data = [image TIFFRepresentation];
+  LOG_IF(ERROR, tiff_data == NULL) << "Failed to allocate image for clipboard";
+  if (tiff_data) {
+    [pb setData:tiff_data forType:NSTIFFPboardType];
+  }
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
-  return GetFilenameFormatType();
+void Clipboard::WriteData(const FormatType& format,
+                          const char* data_data,
+                          size_t data_len) {
+  NSPasteboard* pb = GetPasteboard();
+  [pb addTypes:[NSArray arrayWithObject:format.ToNSString()] owner:nil];
+  [pb setData:[NSData dataWithBytes:data_data length:data_len]
+      forType:format.ToNSString()];
 }
 
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSHTMLPboardType));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSRTFPboardType));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSTIFFPboardType));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebSmartPastePboardType));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataPboardType));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPepperCustomDataPboardType));
-  return type;
+// Write an extra flavor that signifies WebKit was the last to modify the
+// pasteboard. This flavor has no data.
+void Clipboard::WriteWebSmartPaste() {
+  NSPasteboard* pb = GetPasteboard();
+  NSString* format = GetWebKitSmartPasteFormatType().ToNSString();
+  [pb addTypes:[NSArray arrayWithObject:format] owner:nil];
+  [pb setData:nil forType:format];
 }
 
 }  // namespace ui

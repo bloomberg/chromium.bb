@@ -406,6 +406,7 @@ ClipboardData* ClipboardDataBuilder::current_data_ = NULL;
 
 }  // namespace
 
+// Clipboard FormatType implementation.
 Clipboard::FormatType::FormatType() {
 }
 
@@ -434,6 +435,83 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
   return data_ == other.data_;
 }
 
+// Various predefined FormatTypes.
+// static
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeURIList));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  return GetUrlFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
+  return GetPlainTextFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeFilename));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
+  return Clipboard::GetFilenameFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeBitmap));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
+  return type;
+}
+
+// Clipboard implementation.
 Clipboard::Clipboard() {
   DCHECK(CalledOnValidThread());
   // Make sure clipboard is created.
@@ -445,14 +523,9 @@ Clipboard::~Clipboard() {
   DeleteClipboard();
 }
 
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsSupportedClipboardType(type));
-  for (ObjectMap::const_iterator iter = objects.begin();
-       iter != objects.end(); ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
-  }
-  ClipboardDataBuilder::CommitToClipboard();
+  return GetClipboard()->sequence_number();
 }
 
 bool Clipboard::IsFormatAvailable(const FormatType& format,
@@ -559,9 +632,14 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   GetClipboard()->ReadData(format.ToString(), result);
 }
 
-uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  return GetClipboard()->sequence_number();
+  DCHECK(IsSupportedClipboardType(type));
+  for (ObjectMap::const_iterator iter = objects.begin();
+       iter != objects.end(); ++iter) {
+    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+  }
+  ClipboardDataBuilder::CommitToClipboard();
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
@@ -598,81 +676,6 @@ void Clipboard::WriteData(const FormatType& format,
                           const char* data_data,
                           size_t data_len) {
   ClipboardDataBuilder::WriteData(format.ToString(), data_data, data_len);
-}
-
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType::Deserialize(format_string);
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeURIList));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
-  return GetUrlFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeText));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  return GetPlainTextFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeFilename));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
-  return Clipboard::GetFilenameFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeRTF));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeBitmap));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebkitSmartPaste));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
-  return type;
 }
 
 }  // namespace ui

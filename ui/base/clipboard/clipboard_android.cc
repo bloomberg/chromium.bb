@@ -178,6 +178,7 @@ void ClipboardMap::SyncWithAndroidClipboard() {
 
 }  // namespace
 
+// Clipboard::FormatType implementation.
 Clipboard::FormatType::FormatType() {
 }
 
@@ -202,23 +203,68 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
   return data_ == other.data_;
 }
 
+// Various predefined FormatTypes.
+// static
+Clipboard::FormatType Clipboard::GetFormatType(
+    const std::string& format_string) {
+  return FormatType::Deserialize(format_string);
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPlainTextFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPlainTextFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebKitSmartPasteFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kHTMLFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kRTFFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kBitmapFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
+  return type;
+}
+
+// Clipboard implementation.
 Clipboard::Clipboard() {
   DCHECK(CalledOnValidThread());
 }
 
 Clipboard::~Clipboard() {
   DCHECK(CalledOnValidThread());
-}
-
-// Main entry point used to write several values in the clipboard.
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
-  g_map.Get().Clear();
-  for (ObjectMap::const_iterator iter = objects.begin();
-       iter != objects.end(); ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
-  }
 }
 
 uint64 Clipboard::GetSequenceNumber(ClipboardType /* type */) {
@@ -333,58 +379,15 @@ void Clipboard::ReadData(const Clipboard::FormatType& format,
   *result = g_map.Get().Get(format.data());
 }
 
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType::Deserialize(format_string);
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPlainTextFormat));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPlainTextFormat));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebKitSmartPasteFormat));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kHTMLFormat));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kRTFFormat));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kBitmapFormat));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
-  return type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
-  return type;
+// Main entry point used to write several values in the clipboard.
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  g_map.Get().Clear();
+  for (ObjectMap::const_iterator iter = objects.begin();
+       iter != objects.end(); ++iter) {
+    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+  }
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
