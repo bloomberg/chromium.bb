@@ -726,8 +726,19 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteAllDataForOrigins(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   Disable(FROM_HERE, STATUS_OK);
+
+  leveldb::Options options;
+  if (path_.empty()) {
+    if (env_) {
+      options.env = env_.get();
+    } else {
+      // In-memory database not initialized.
+      return STATUS_OK;
+    }
+  }
+
   return LevelDBStatusToStatus(
-      leveldb::DestroyDB(path_.AsUTF8Unsafe(), leveldb::Options()));
+      leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(

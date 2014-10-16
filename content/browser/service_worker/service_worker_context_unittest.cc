@@ -339,15 +339,8 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_registration_id, new_registration_id);
 }
 
-// TODO(jmadill): Fix on Windows 8. http://crbug.com/420124
-#if defined(OS_WIN)
-#define MAYBE_DeleteAndStartOver DISABLED_DeleteAndStartOver
-#else
-#define MAYBE_DeleteAndStartOver DeleteAndStartOver
-#endif
-
 // TODO(nhiroki): Test this for on-disk storage.
-TEST_F(ServiceWorkerContextTest, MAYBE_DeleteAndStartOver) {
+TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
