@@ -1,2 +1,2 @@
-ALERT: windows-1252
+ALERT: ISO-8859-1
 
