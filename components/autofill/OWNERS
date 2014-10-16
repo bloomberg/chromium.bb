@@ -1,5 +1,8 @@
 estade@chromium.org
 isherman@chromium.org
 
-# Owner for password autofill/generation only.
-gcasto@chromium.org
+# Owners for password autofill/generation only.
+per-file *password*=gcasto@chromium.org
+per-file *password*=vabr@chromium.org
+per-file autofill_param_traits_macros.h=gcasto@chromium.org
+per-file autofill_param_traits_macros.h=vabr@chromium.org
