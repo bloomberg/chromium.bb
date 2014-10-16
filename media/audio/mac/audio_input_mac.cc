@@ -136,6 +136,11 @@ double PCMQueueInAudioInputStream::GetVolume() {
   return 0.0;
 }
 
+bool PCMQueueInAudioInputStream::IsMuted() {
+  NOTREACHED() << "Only supported for low-latency mode.";
+  return false;
+}
+
 void PCMQueueInAudioInputStream::SetAutomaticGainControl(bool enabled) {
   NOTREACHED() << "Only supported for low-latency mode.";
 }

@@ -253,7 +253,7 @@ void WASAPIAudioInputStream::SetVolume(double volume) {
 }
 
 double WASAPIAudioInputStream::GetVolume() {
-  DLOG_IF(ERROR, !opened_) << "Open() has not been called successfully";
+  DCHECK(opened_) << "Open() has not been called successfully";
   if (!opened_)
     return 0.0;
 
@@ -263,6 +263,20 @@ double WASAPIAudioInputStream::GetVolume() {
   DLOG_IF(WARNING, FAILED(hr)) << "Failed to get input master volume.";
 
   return static_cast<double>(level);
+}
+
+bool WASAPIAudioInputStream::IsMuted() {
+  DCHECK(opened_) << "Open() has not been called successfully";
+  DCHECK(CalledOnValidThread());
+  if (!opened_)
+    return false;
+
+  // Retrieves the current muting state for the audio session.
+  BOOL is_muted = FALSE;
+  HRESULT hr = simple_audio_volume_->GetMute(&is_muted);
+  DLOG_IF(WARNING, FAILED(hr)) << "Failed to get input master volume.";
+
+  return is_muted != FALSE;
 }
 
 // static

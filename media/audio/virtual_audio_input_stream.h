@@ -56,6 +56,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   virtual double GetVolume() override;
   virtual void SetAutomaticGainControl(bool enabled) override;
   virtual bool GetAutomaticGainControl() override;
+  virtual bool IsMuted() override;
 
   // Attaches a VirtualAudioOutputStream to be used as input. This
   // VirtualAudioInputStream must outlive all attached streams, so any attached

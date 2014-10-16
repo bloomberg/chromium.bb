@@ -134,4 +134,9 @@ bool AudioRecordInputStream::GetAutomaticGainControl() {
   return false;
 }
 
+bool AudioRecordInputStream::IsMuted() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace media

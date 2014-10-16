@@ -173,4 +173,8 @@ bool VirtualAudioInputStream::GetAutomaticGainControl() {
   return false;
 }
 
+bool VirtualAudioInputStream::IsMuted() {
+  return false;
+}
+
 }  // namespace media

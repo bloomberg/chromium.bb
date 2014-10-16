@@ -34,6 +34,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   virtual double GetMaxVolume() override;
   virtual void SetVolume(double volume) override;
   virtual double GetVolume() override;
+  virtual bool IsMuted() override;
   virtual void SetAutomaticGainControl(bool enabled) override;
   virtual bool GetAutomaticGainControl() override;
 

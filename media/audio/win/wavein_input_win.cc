@@ -226,6 +226,11 @@ bool PCMWaveInAudioInputStream::GetAutomaticGainControl() {
   return false;
 }
 
+bool PCMWaveInAudioInputStream::IsMuted() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void PCMWaveInAudioInputStream::HandleError(MMRESULT error) {
   DLOG(WARNING) << "PCMWaveInAudio error " << error;
   if (callback_)

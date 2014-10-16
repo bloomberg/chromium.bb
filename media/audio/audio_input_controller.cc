@@ -583,11 +583,24 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
   if (!handler_)
     return;
 
+  // Detect if the user has enabled hardware mute by pressing the mute
+  // button in audio settings for the selected microphone.
+  const bool microphone_is_muted = stream_->IsMuted();
+  if (microphone_is_muted) {
+    LogMicrophoneMuteResult(MICROPHONE_IS_MUTED);
+    handler_->OnLog(this, "AIC::OnData: microphone is muted!");
+    // Return early if microphone is muted. No need to adding logs and UMA stats
+    // of audio levels if we know that the micropone is muted.
+    return;
+  }
+
+  LogMicrophoneMuteResult(MICROPHONE_IS_NOT_MUTED);
+
   std::string log_string = base::StringPrintf(
       "AIC::OnData: average audio level=%.2f dBFS", level_dbfs);
   static const float kSilenceThresholdDBFS = -72.24719896f;
   if (level_dbfs < kSilenceThresholdDBFS)
-    log_string += " <=> no audio input!";
+    log_string += " <=> low audio input level!";
   handler_->OnLog(this, log_string);
 
   UpdateSilenceState(level_dbfs < kSilenceThresholdDBFS);
@@ -598,20 +611,6 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
   if (microphone_volume_percent < kLowLevelMicrophoneLevelPercent)
     log_string += " <=> low microphone level!";
   handler_->OnLog(this, log_string);
-
-  // Try to detect if the user has enabled hardware mute by pressing the mute
-  // button in audio settings for the selected microphone. The idea here is to
-  // detect when all input samples are zeros but the actual volume slider is
-  // larger than zero. It should correspond to a hardware mute state.
-  if (level_dbfs == -std::numeric_limits<float>::infinity() &&
-      microphone_volume_percent > 0) {
-    LogMicrophoneMuteResult(MICROPHONE_IS_MUTED);
-    log_string = base::StringPrintf(
-        "AIC::OnData: microphone is muted!");
-    handler_->OnLog(this, log_string);
-  } else {
-    LogMicrophoneMuteResult(MICROPHONE_IS_NOT_MUTED);
-  }
 #endif
 }
 

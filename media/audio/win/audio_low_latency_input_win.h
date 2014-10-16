@@ -102,6 +102,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   virtual double GetMaxVolume() override;
   virtual void SetVolume(double volume) override;
   virtual double GetVolume() override;
+  virtual bool IsMuted() override;
 
   bool started() const { return started_; }
 

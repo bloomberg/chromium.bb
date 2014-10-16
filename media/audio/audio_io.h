@@ -164,6 +164,9 @@ class MEDIA_EXPORT AudioInputStream {
 
   // Returns the Automatic Gain Control (AGC) state.
   virtual bool GetAutomaticGainControl() = 0;
+
+  // Returns the current muting state for the microphone.
+  virtual bool IsMuted() = 0;
 };
 
 }  // namespace media

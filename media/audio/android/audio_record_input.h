@@ -40,6 +40,7 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
   virtual double GetVolume() override;
   virtual void SetAutomaticGainControl(bool enabled) override;
   virtual bool GetAutomaticGainControl() override;
+  virtual bool IsMuted() override;
 
   static bool RegisterAudioRecordInput(JNIEnv* env);
 

@@ -185,6 +185,11 @@ bool OpenSLESInputStream::GetAutomaticGainControl() {
   return false;
 }
 
+bool OpenSLESInputStream::IsMuted() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool OpenSLESInputStream::CreateRecorder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!engine_object_.Get());

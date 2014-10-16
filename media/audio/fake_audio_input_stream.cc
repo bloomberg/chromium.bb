@@ -203,6 +203,11 @@ double FakeAudioInputStream::GetVolume() {
   return 1.0;
 }
 
+bool FakeAudioInputStream::IsMuted() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  return false;
+}
+
 void FakeAudioInputStream::SetAutomaticGainControl(bool enabled) {}
 
 bool FakeAudioInputStream::GetAutomaticGainControl() {

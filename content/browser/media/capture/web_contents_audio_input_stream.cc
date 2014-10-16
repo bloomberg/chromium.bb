@@ -391,4 +391,8 @@ bool WebContentsAudioInputStream::GetAutomaticGainControl() {
   return impl_->mixer_stream()->GetAutomaticGainControl();
 }
 
+bool WebContentsAudioInputStream::IsMuted() {
+  return false;
+}
+
 }  // namespace content

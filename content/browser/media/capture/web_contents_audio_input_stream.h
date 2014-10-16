@@ -46,6 +46,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   virtual double GetVolume() override;
   virtual void SetAutomaticGainControl(bool enabled) override;
   virtual bool GetAutomaticGainControl() override;
+  virtual bool IsMuted() override;
 
   // Create a new audio mirroring session, or return NULL on error.  |device_id|
   // should be in the format accepted by

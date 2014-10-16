@@ -38,6 +38,7 @@ class PCMQueueInAudioInputStream : public AudioInputStream {
   virtual double GetVolume() override;
   virtual void SetAutomaticGainControl(bool enabled) override;
   virtual bool GetAutomaticGainControl() override;
+  virtual bool IsMuted() override;
 
  private:
   // Issue the OnError to |callback_|;

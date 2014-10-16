@@ -301,6 +301,10 @@ double CrasInputStream::GetVolume() {
   return GetVolumeRatioFromDecibels(dB);
 }
 
+bool CrasInputStream::IsMuted() {
+  return false;
+}
+
 double CrasInputStream::GetVolumeRatioFromDecibels(double dB) const {
   return pow(10, dB / 20.0);
 }
