@@ -57,26 +57,23 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     // TODO(sandersd): Stop checking contentType once we complete the switch to
     // using the 'encrypted' event.
     var init_data_type = message.initDataType || message.contentType;
-    Utils.timeLog('Creating new media key session for initDataType: ' +
-                  init_data_type + ', initData: ' +
-                  Utils.getHexString(new Uint8Array(message.initData)));
     try {
-      if (message.target.mediaKeys.createSession.length == 0) {
-        // FIXME(jrummell): Remove this test (and else branch) once blink
-        // uses the new API.
+      if (player.testConfig.sessionToLoad) {
+        Utils.timeLog('Loading session: ' + player.testConfig.sessionToLoad);
+        var session = message.target.mediaKeys.createSession('persistent');
+        addMediaKeySessionListeners(session);
+        session.load(player.testConfig.sessionToLoad)
+            .catch(function(error) { Utils.failTest(error, KEY_ERROR); });
+      } else {
+        Utils.timeLog('Creating new media key session for initDataType: ' +
+                      init_data_type + ', initData: ' +
+                      Utils.getHexString(new Uint8Array(message.initData)));
         var session = message.target.mediaKeys.createSession();
         addMediaKeySessionListeners(session);
         session.generateRequest(init_data_type, message.initData)
           .catch(function(error) {
             Utils.failTest(error, KEY_ERROR);
           });
-      } else {
-        var session = message.target.mediaKeys.createSession(
-            init_data_type, message.initData);
-        session.then(addMediaKeySessionListeners)
-            .catch(function(error) {
-              Utils.failTest(error, KEY_ERROR);
-            });
       }
     } catch (e) {
       Utils.failTest(e);

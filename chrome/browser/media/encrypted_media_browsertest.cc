@@ -332,6 +332,19 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
   }
 };
 
+// Tests encrypted media playback using ExternalClearKey key system in
+// decrypt-and-decode mode for unprefixed EME.
+// TODO(jrummell): Merge with ECKEncryptedMediaTest once unprefixed is
+// enabled by default.
+class ECKUnprefixedEncryptedMediaTest : public EncryptedMediaTestBase {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
+    EncryptedMediaTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableEncryptedMedia);
+    SetUpCommandLineForKeySystem(kExternalClearKeyKeySystem, command_line);
+  }
+};
+
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // Tests encrypted media playback using Widevine key system.
 class WVEncryptedMediaTest : public EncryptedMediaTestBase {
@@ -662,6 +675,31 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
                         kExternalClearKeyKeySystem,
                         SRC,
                         PREFIXED,
+                        kUnknownSession,
+                        false,
+                        kEmeKeyError);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKUnprefixedEncryptedMediaTest, LoadLoadableSession) {
+  RunEncryptedMediaTest(kDefaultEmePlayer,
+                        "bear-320x240-v_enc-v.webm",
+                        kWebMVideoOnly,
+                        kExternalClearKeyKeySystem,
+                        SRC,
+                        UNPREFIXED,
+                        kLoadableSession,
+                        false,
+                        kEnded);
+}
+
+IN_PROC_BROWSER_TEST_F(ECKUnprefixedEncryptedMediaTest, LoadUnknownSession) {
+  // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
+  RunEncryptedMediaTest(kDefaultEmePlayer,
+                        "bear-320x240-v_enc-v.webm",
+                        kWebMVideoOnly,
+                        kExternalClearKeyKeySystem,
+                        SRC,
+                        UNPREFIXED,
                         kUnknownSession,
                         false,
                         kEmeKeyError);
