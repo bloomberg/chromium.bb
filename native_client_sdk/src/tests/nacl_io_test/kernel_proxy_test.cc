@@ -558,6 +558,11 @@ TEST_F(KernelProxyTest, OpenWithMode) {
   EXPECT_EQ(0723, buf.st_mode & ~S_IFMT);
 }
 
+TEST_F(KernelProxyTest, CreateWronlyWithReadOnlyMode) {
+  int fd = ki_open("/foo", O_CREAT | O_WRONLY, 0444);
+  ASSERT_GT(fd, -1);
+}
+
 TEST_F(KernelProxyTest, UseAfterClose) {
   int fd = ki_open("/dummy", O_CREAT | O_WRONLY, 0777);
   ASSERT_GT(fd, -1);

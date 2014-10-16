@@ -40,7 +40,7 @@ SocketNode* KernelHandle::socket_node() {
 Error KernelHandle::Init(int open_flags) {
   handle_attr_.flags = open_flags;
 
-  if (!node_->CanOpen(open_flags)) {
+  if ((open_flags & O_CREAT) == 0 && !node_->CanOpen(open_flags)) {
     return EACCES;
   }
 
