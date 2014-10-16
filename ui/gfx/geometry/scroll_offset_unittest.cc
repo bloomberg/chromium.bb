@@ -32,7 +32,7 @@ TEST(ScrollOffsetTest, Add) {
     { ScrollOffset(3.1 - 4.3, 5.1f + 1.3), f1 - f2 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(scroll_offset_tests); ++i)
+  for (size_t i = 0; i < arraysize(scroll_offset_tests); ++i)
     EXPECT_EQ(scroll_offset_tests[i].expected.ToString(),
               scroll_offset_tests[i].actual.ToString());
 }
@@ -48,7 +48,7 @@ TEST(ScrollOffsetTest, Negative) {
     { ScrollOffset(0.3, -0.3), -ScrollOffset(-0.3, 0.3) }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(scroll_offset_tests); ++i)
+  for (size_t i = 0; i < arraysize(scroll_offset_tests); ++i)
     EXPECT_EQ(scroll_offset_tests[i].expected.ToString(),
               scroll_offset_tests[i].actual.ToString());
 }
@@ -66,7 +66,7 @@ TEST(ScrollOffsetTest, Scale) {
     { 0, 1.2, 3.3, 5.6 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(double_values); ++i) {
+  for (size_t i = 0; i < arraysize(double_values); ++i) {
     ScrollOffset v(double_values[i][0], double_values[i][1]);
     v.Scale(double_values[i][2], double_values[i][3]);
     EXPECT_EQ(v.x(), double_values[i][0] * double_values[i][2]);
@@ -85,7 +85,7 @@ TEST(ScrollOffsetTest, Scale) {
     { 0, 1.2, 3.3 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(single_values); ++i) {
+  for (size_t i = 0; i < arraysize(single_values); ++i) {
     ScrollOffset v(single_values[i][0], single_values[i][1]);
     v.Scale(single_values[i][2]);
     EXPECT_EQ(v.x(), single_values[i][0] * single_values[i][2]);

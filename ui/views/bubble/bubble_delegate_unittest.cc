@@ -229,7 +229,7 @@ TEST_F(BubbleDelegateTest, NonClientHitTest) {
     { 1000,        HTNOWHERE },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     gfx::Point point(cases[i].point, cases[i].point);
     EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
         << " with border: " << border << ", at point " << cases[i].point;

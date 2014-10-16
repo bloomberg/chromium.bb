@@ -36,7 +36,7 @@ TEST_F(L10nUtilMacTest, FixUpWindowsStyleLabel) {
     { @"foo(&b)...", @"foo\u2026" },
     { @"(&b)foo", @"foo" },
   };
-  for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(data); ++idx) {
+  for (size_t idx = 0; idx < arraysize(data); ++idx) {
     base::string16 input16(base::SysNSStringToUTF16(data[idx].input));
 
     NSString* result = l10n_util::FixUpWindowsStyleLabel(input16);

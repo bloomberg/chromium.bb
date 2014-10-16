@@ -51,7 +51,7 @@ TEST(ShadowValueTest, GetMargin) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     Insets margin = ShadowValue::GetMargin(
         ShadowValues(kTestCases[i].shadows,
                      kTestCases[i].shadows + kTestCases[i].shadow_count));

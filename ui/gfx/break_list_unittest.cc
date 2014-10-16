@@ -156,7 +156,7 @@ TEST_F(BreakListTest, GetBreakAndRange) {
   };
 
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     BreakList<bool>::const_iterator it = breaks.GetBreak(cases[i].position);
     EXPECT_EQ(breaks.breaks()[cases[i].break_index], *it);
     EXPECT_EQ(breaks.GetRange(it), cases[i].range);

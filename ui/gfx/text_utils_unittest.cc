@@ -46,7 +46,7 @@ TEST(TextUtilsTest, RemoveAcceleratorChar) {
       "Test\xF0\x9D\x92\x9C\xF0\x9D\x92\x9Cing" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     int accelerated_char_pos;
     int accelerated_char_span;
     base::string16 result = RemoveAcceleratorChar(

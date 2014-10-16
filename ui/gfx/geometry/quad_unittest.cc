@@ -150,7 +150,7 @@ TEST(QuadTest, IsRectilinear) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     PointF a_off = tests[i].a_off;
     PointF b_off = tests[i].b_off;
     PointF c_off = tests[i].c_off;

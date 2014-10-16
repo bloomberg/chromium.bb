@@ -66,7 +66,7 @@ TEST(PointTest, VectorArithmetic) {
     { Point(-10, 9), a - v1 + v2 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i)
+  for (size_t i = 0; i < arraysize(tests); ++i)
     EXPECT_EQ(tests[i].expected.ToString(), tests[i].actual.ToString());
 }
 

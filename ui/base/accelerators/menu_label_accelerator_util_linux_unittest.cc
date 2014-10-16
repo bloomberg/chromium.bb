@@ -22,7 +22,7 @@ TEST(MenuLabelAcceleratorTest, ConvertAcceleratorsFromWindowsStyle) {
     { "&foo &&bar", "_foo &bar" },
     { "&foo &bar", "_foo _bar" },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::string result = ConvertAcceleratorsFromWindowsStyle(cases[i].input);
     EXPECT_EQ(cases[i].output, result);
   }
@@ -41,7 +41,7 @@ TEST(MenuLabelAcceleratorTest, RemoveWindowsStyleAccelerators) {
     { "&foo &&bar", "foo &bar" },
     { "&foo &bar", "foo bar" },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::string result = RemoveWindowsStyleAccelerators(cases[i].input);
     EXPECT_EQ(cases[i].output, result);
   }
@@ -66,7 +66,7 @@ TEST(MenuLabelAcceleratorTest, EscapeWindowsStyleAccelerators) {
     { "&_foo_bar_&", "&&_foo_bar_&&" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::string result = EscapeWindowsStyleAccelerators(cases[i].input);
     EXPECT_EQ(cases[i].output, result);
   }

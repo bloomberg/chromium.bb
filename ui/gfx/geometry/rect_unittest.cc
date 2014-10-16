@@ -37,7 +37,7 @@ TEST(RectTest, Contains) {
     {0, 0, -10, -10, 0, 0, false},
   #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(contains_cases); ++i) {
+  for (size_t i = 0; i < arraysize(contains_cases); ++i) {
     const ContainsCase& value = contains_cases[i];
     Rect rect(value.rect_x, value.rect_y, value.rect_width, value.rect_height);
     EXPECT_EQ(value.contained, rect.Contains(value.point_x, value.point_y));
@@ -67,7 +67,7 @@ TEST(RectTest, Intersects) {
     { 10, 10, 10, 10, 20, 15, 10, 10, false },
     { 10, 10, 10, 10, 21, 15, 10, 10, false }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     EXPECT_EQ(tests[i].intersects, r1.Intersects(r2));
@@ -109,7 +109,7 @@ TEST(RectTest, Intersect) {
       0, 0, 2, 2,
       0, 0, 0, 0 }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
@@ -158,7 +158,7 @@ TEST(RectTest, Union) {
       2, 2, 2, 2,
       2, 2, 2, 2 }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
@@ -210,7 +210,7 @@ TEST(RectTest, AdjustToFit) {
       0, 0, 3, 3,
       2, 2, 1, 1 }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
@@ -454,7 +454,7 @@ TEST(RectTest, ScaleRect) {
       std::numeric_limits<float>::max() }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     RectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
@@ -504,7 +504,7 @@ TEST(RectTest, ToEnclosedRect) {
       0, 0, 0, 0 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
@@ -556,7 +556,7 @@ TEST(RectTest, ToEnclosingRect) {
       0, 0, 0, 0 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
@@ -600,7 +600,7 @@ TEST(RectTest, ToFlooredRect) {
       20000, 20000, 0, 0 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
@@ -649,7 +649,7 @@ TEST(RectTest, ScaleToEnclosedRect) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect result = ScaleToEnclosedRect(tests[i].input_rect,
                                       tests[i].input_scale);
     EXPECT_EQ(tests[i].expected_rect, result);
@@ -693,7 +693,7 @@ TEST(RectTest, ScaleToEnclosingRect) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     Rect result = ScaleToEnclosingRect(tests[i].input_rect,
                                        tests[i].input_scale);
     EXPECT_EQ(tests[i].expected_rect, result);
@@ -743,7 +743,7 @@ TEST(RectTest, BoundingRect) {
     { Point(-4, 6), Point(6, -4), Rect(-4, -4, 10, 10) },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i) {
+  for (size_t i = 0; i < arraysize(int_tests); ++i) {
     Rect actual = BoundingRect(int_tests[i].a, int_tests[i].b);
     EXPECT_EQ(int_tests[i].expected, actual);
   }
@@ -780,7 +780,7 @@ TEST(RectTest, BoundingRect) {
       RectF(-4.2f, -4.2f, 11.0f, 11.0f) }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i) {
+  for (size_t i = 0; i < arraysize(float_tests); ++i) {
     RectF actual = BoundingRect(float_tests[i].a, float_tests[i].b);
     EXPECT_RECTF_EQ(float_tests[i].expected, actual);
   }

@@ -223,7 +223,7 @@ TEST(TextEliderTest, MAYBE_ElideTextTruncate) {
     { "Tests", kTestWidth, "Test" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                       cases[i].width, TRUNCATE);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
@@ -255,7 +255,7 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsis) {
     { "Test", kTestWidth, "Test" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                       cases[i].width, ELIDE_TAIL);
     EXPECT_EQ(cases[i].output, UTF16ToUTF8(result));
@@ -290,7 +290,7 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsisFront) {
     { "Test123", kEllipsis23Width, UTF8ToUTF16(kEllipsisStr + "23") },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
                                       cases[i].width, ELIDE_HEAD);
     EXPECT_EQ(cases[i].output, result);
@@ -458,7 +458,7 @@ TEST(TextEliderTest, ElideString) {
     { "Hello, my name is Tom", 10, true, "Hell...Tom" },
     { "Hello, my name is Tom", 100, false, "Hello, my name is Tom" }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     base::string16 output;
     EXPECT_EQ(cases[i].result,
               ElideString(UTF8ToUTF16(cases[i].input),
@@ -512,7 +512,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleText) {
     { "Te  Te Test", test_width, 3 * line_height, false, "Te|Te|Test" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::vector<base::string16> lines;
     EXPECT_EQ(cases[i].truncated_y ? INSUFFICIENT_SPACE_VERTICAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
@@ -557,7 +557,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
     { "Test. Test", test_width, line_height * 3, true, false, "Test|.|Test" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::vector<base::string16> lines;
     const WordWrapBehavior wrap_behavior =
         (cases[i].wrap_words ? WRAP_LONG_WORDS : TRUNCATE_LONG_WORDS);
@@ -627,7 +627,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
     { "TestTestTestT", test_width, WRAP_LONG_WORDS, false, "Test|Test|Test|T" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::vector<base::string16> lines;
     EXPECT_EQ(cases[i].truncated_x ? INSUFFICIENT_SPACE_HORIZONTAL : 0,
               ElideRectangleText(UTF8ToUTF16(cases[i].input),
@@ -750,7 +750,7 @@ TEST(TextEliderTest, ElideRectangleString) {
     { "Hi, my name is Tom",  1, 40, false, "Hi, my name is Tom" },
   };
   base::string16 output;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_EQ(cases[i].result,
               ElideRectangleString(UTF8ToUTF16(cases[i].input),
                                    cases[i].max_rows, cases[i].max_cols,
@@ -832,7 +832,7 @@ TEST(TextEliderTest, ElideRectangleStringNotStrict) {
     { "Hi, my name_is Dick",  1, 40, false, "Hi, my name_is Dick" },
   };
   base::string16 output;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_EQ(cases[i].result,
               ElideRectangleString(UTF8ToUTF16(cases[i].input),
                                    cases[i].max_rows, cases[i].max_cols,

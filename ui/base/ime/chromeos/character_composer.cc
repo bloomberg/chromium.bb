@@ -456,7 +456,7 @@ bool CharacterComposer::FilterKeyPressSequenceMode(unsigned int keyval,
   compose_buffer_.push_back(keyval);
 
   if (compose_buffer_.size() == 2U) {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBlackListedDeadKeys); ++i) {
+    for (size_t i = 0; i < arraysize(kBlackListedDeadKeys); ++i) {
       if (compose_buffer_[0] == kBlackListedDeadKeys[i].first_key &&
           compose_buffer_[1] == kBlackListedDeadKeys[i].second_key ) {
         Reset();

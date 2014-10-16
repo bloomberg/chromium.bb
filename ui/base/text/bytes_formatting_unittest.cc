@@ -25,7 +25,7 @@ TEST(BytesFormattingTest, GetByteDisplayUnits) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].expected, GetByteDisplayUnits(cases[i].bytes));
 }
 
@@ -68,7 +68,7 @@ TEST(BytesFormattingTest, FormatBytes) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_EQ(base::ASCIIToUTF16(cases[i].expected),
               FormatBytesWithUnits(cases[i].bytes, cases[i].units, false));
     EXPECT_EQ(base::ASCIIToUTF16(cases[i].expected_with_units),

@@ -159,7 +159,7 @@ TEST_F(MixerTest, Basic) {
         {0, 0, 0, ""},
     };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);
     omnibox_provider()->set_count(kTestCases[i].omnibox_results);
     webstore_provider()->set_count(kTestCases[i].webstore_results);

@@ -43,7 +43,7 @@ TEST(Vector2dTest, Add) {
     { Vector2d(3 - 4, 5 + 1), i1 - i2 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i)
+  for (size_t i = 0; i < arraysize(int_tests); ++i)
     EXPECT_EQ(int_tests[i].expected.ToString(),
               int_tests[i].actual.ToString());
 
@@ -60,7 +60,7 @@ TEST(Vector2dTest, Add) {
     { Vector2dF(3.1f - 4.3f, 5.1f + 1.3f), f1 - f2 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i)
+  for (size_t i = 0; i < arraysize(float_tests); ++i)
     EXPECT_EQ(float_tests[i].expected.ToString(),
               float_tests[i].actual.ToString());
 }
@@ -77,7 +77,7 @@ TEST(Vector2dTest, Negative) {
     { Vector2d(3, -3), -Vector2d(-3, 3) }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i)
+  for (size_t i = 0; i < arraysize(int_tests); ++i)
     EXPECT_EQ(int_tests[i].expected.ToString(),
               int_tests[i].actual.ToString());
 
@@ -92,7 +92,7 @@ TEST(Vector2dTest, Negative) {
     { Vector2dF(0.3f, -0.3f), -Vector2dF(-0.3f, 0.3f) }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i)
+  for (size_t i = 0; i < arraysize(float_tests); ++i)
     EXPECT_EQ(float_tests[i].expected.ToString(),
               float_tests[i].actual.ToString());
 }
@@ -110,7 +110,7 @@ TEST(Vector2dTest, Scale) {
     { 0, 1.2f, 3.3f, 5.6f }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(double_values); ++i) {
+  for (size_t i = 0; i < arraysize(double_values); ++i) {
     Vector2dF v(double_values[i][0], double_values[i][1]);
     v.Scale(double_values[i][2], double_values[i][3]);
     EXPECT_EQ(v.x(), double_values[i][0] * double_values[i][2]);
@@ -135,7 +135,7 @@ TEST(Vector2dTest, Scale) {
     { 0, 1.2f, 3.3f }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(single_values); ++i) {
+  for (size_t i = 0; i < arraysize(single_values); ++i) {
     Vector2dF v(single_values[i][0], single_values[i][1]);
     v.Scale(single_values[i][2]);
     EXPECT_EQ(v.x(), single_values[i][0] * single_values[i][2]);
@@ -159,7 +159,7 @@ TEST(Vector2dTest, Length) {
     { 10, -20 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_values); ++i) {
+  for (size_t i = 0; i < arraysize(int_values); ++i) {
     int v0 = int_values[i][0];
     int v1 = int_values[i][1];
     double length_squared =
@@ -183,7 +183,7 @@ TEST(Vector2dTest, Length) {
       335890352589839028212313231225425134332.38123f },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_values); ++i) {
+  for (size_t i = 0; i < arraysize(float_values); ++i) {
     double v0 = float_values[i][0];
     double v1 = float_values[i][1];
     double length_squared =

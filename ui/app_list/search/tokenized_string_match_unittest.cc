@@ -44,7 +44,7 @@ TEST(TokenizedStringMatchTest, NotMatch) {
   };
 
   TokenizedStringMatch match;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
     EXPECT_FALSE(match.Calculate(base::UTF8ToUTF16(kTestCases[i].query), text))
         << "Test case " << i
@@ -73,7 +73,7 @@ TEST(TokenizedStringMatchTest, Match) {
   };
 
   TokenizedStringMatch match;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
     EXPECT_TRUE(match.Calculate(base::UTF8ToUTF16(kTestCases[i].query), text));
     EXPECT_EQ(kTestCases[i].expect, MatchHit(text, match));
@@ -105,7 +105,7 @@ TEST(TokenizedStringMatchTest, Relevance) {
 
   TokenizedStringMatch match_low;
   TokenizedStringMatch match_high;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
     EXPECT_TRUE(
         match_low.Calculate(base::UTF8ToUTF16(kTestCases[i].query_low), text));

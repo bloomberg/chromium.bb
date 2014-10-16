@@ -449,7 +449,7 @@ TEST_F(EventsXTest, NumpadKeyEvents) {
     { false, XK_A },
   };
 
-  for (size_t k = 0; k < ARRAYSIZE_UNSAFE(keys); ++k) {
+  for (size_t k = 0; k < arraysize(keys); ++k) {
     int x_keycode = XKeysymToKeycode(display, keys[k].x_keysym);
     // Exclude keysyms for which the server has no corresponding keycode.
     if (x_keycode) {
@@ -606,7 +606,7 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
   unsigned int state_to_be_fabricated[] = {
     0, ShiftMask, LockMask, ShiftMask | LockMask,
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(state_to_be_fabricated); ++i) {
+  for (size_t i = 0; i < arraysize(state_to_be_fabricated); ++i) {
     unsigned int state = state_to_be_fabricated[i];
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;
@@ -623,7 +623,7 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
   unsigned int state_to_be_not_fabricated[] = {
     ControlMask, Mod1Mask, Mod2Mask, ShiftMask | ControlMask,
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(state_to_be_not_fabricated); ++i) {
+  for (size_t i = 0; i < arraysize(state_to_be_not_fabricated); ++i) {
     unsigned int state = state_to_be_not_fabricated[i];
     for (int is_char = 0; is_char < 2; ++is_char) {
       XEvent x_event;

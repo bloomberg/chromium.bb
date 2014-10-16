@@ -120,7 +120,7 @@ TEST(SingleSplitViewTest, Resize) {
     split.Layout();
 
     // Run all test cases.
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    for (size_t i = 0; i < arraysize(test_cases); ++i) {
       split.set_resize_leading_on_bounds_change(
           test_cases[i].resize_leading_on_bounds_change);
       if (split.orientation() == SingleSplitView::HORIZONTAL_SPLIT) {

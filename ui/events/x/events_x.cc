@@ -312,7 +312,7 @@ unsigned int UpdateX11EventFlags(int ui_flags, unsigned int old_x_flags) {
     {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},
   };
   unsigned int new_x_flags = old_x_flags;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flags); ++i) {
+  for (size_t i = 0; i < arraysize(flags); ++i) {
     if (ui_flags & flags[i].ui)
       new_x_flags |= flags[i].x;
     else

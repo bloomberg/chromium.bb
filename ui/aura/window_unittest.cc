@@ -3365,7 +3365,7 @@ TEST_F(WindowTest, StackChildAtLayerless) {
       "21 11 12",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     test::TestWindowDelegate delegate;
     Window root(NULL);
     root.Init(WINDOW_LAYER_NOT_DRAWN);

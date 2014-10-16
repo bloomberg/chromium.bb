@@ -387,7 +387,7 @@ bool CheckAndResolveLocale(const std::string& locale,
       {"en", "en-US"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(alias_map); ++i) {
+  for (size_t i = 0; i < arraysize(alias_map); ++i) {
     if (LowerCaseEqualsASCII(lang, alias_map[i].source)) {
       std::string tmp_locale(alias_map[i].dest);
       if (IsLocaleAvailable(tmp_locale)) {

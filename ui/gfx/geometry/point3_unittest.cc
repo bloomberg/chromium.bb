@@ -26,7 +26,7 @@ TEST(Point3Test, VectorArithmetic) {
     { gfx::Point3F(-9.6f, 9.5f, -2.8f), a - v1 + v2 }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i)
+  for (size_t i = 0; i < arraysize(tests); ++i)
     EXPECT_EQ(tests[i].expected.ToString(),
               tests[i].actual.ToString());
 

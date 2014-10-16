@@ -235,7 +235,7 @@ TEST(EventTest, KeyEvent) {
     { VKEY_OEM_3, EF_SHIFT_DOWN, '~' },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestData); ++i) {
+  for (size_t i = 0; i < arraysize(kTestData); ++i) {
     KeyEvent key(ET_KEY_PRESSED,
                  kTestData[i].key_code,
                  kTestData[i].flags);
