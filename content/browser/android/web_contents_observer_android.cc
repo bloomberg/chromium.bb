@@ -15,7 +15,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "jni/WebContentsObserverAndroid_jni.h"
+#include "jni/WebContentsObserver_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -59,7 +59,7 @@ void WebContentsObserverAndroid::WebContentsDestroyed() {
     delete this;
   } else {
     // The java side will destroy |this|
-    Java_WebContentsObserverAndroid_detachFromWebContents(env, obj.obj());
+    Java_WebContentsObserver_detachFromWebContents(env, obj.obj());
   }
 }
 
@@ -71,7 +71,7 @@ void WebContentsObserverAndroid::RenderProcessGone(
     return;
   jboolean was_oom_protected =
       termination_status == base::TERMINATION_STATUS_OOM_PROTECTED;
-  Java_WebContentsObserverAndroid_renderProcessGone(
+  Java_WebContentsObserver_renderProcessGone(
       env, obj.obj(), was_oom_protected);
 }
 
@@ -83,7 +83,7 @@ void WebContentsObserverAndroid::DidStartLoading(
     return;
   ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
       env, web_contents()->GetVisibleURL().spec()));
-  Java_WebContentsObserverAndroid_didStartLoading(
+  Java_WebContentsObserver_didStartLoading(
       env, obj.obj(), jstring_url.obj());
 }
 
@@ -95,7 +95,7 @@ void WebContentsObserverAndroid::DidStopLoading(
     return;
   ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
       env, web_contents()->GetLastCommittedURL().spec()));
-  Java_WebContentsObserverAndroid_didStopLoading(
+  Java_WebContentsObserver_didStopLoading(
       env, obj.obj(), jstring_url.obj());
 }
 
@@ -148,7 +148,7 @@ void WebContentsObserverAndroid::DidNavigateMainFrame(
   // that would also be valid for a fragment navigation.
   bool is_fragment_navigation = urls_same_ignoring_fragment &&
       (details.type == NAVIGATION_TYPE_IN_PAGE || details.is_in_page);
-  Java_WebContentsObserverAndroid_didNavigateMainFrame(
+  Java_WebContentsObserver_didNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       details.is_navigation_to_different_page(), is_fragment_navigation,
       details.http_status_code);
@@ -169,7 +169,7 @@ void WebContentsObserverAndroid::DidNavigateAnyFrame(
   jboolean jboolean_is_reload = ui::PageTransitionCoreTypeIs(
       params.transition, ui::PAGE_TRANSITION_RELOAD);
 
-  Java_WebContentsObserverAndroid_didNavigateAnyFrame(
+  Java_WebContentsObserver_didNavigateAnyFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       jboolean_is_reload);
 }
@@ -187,7 +187,7 @@ void WebContentsObserverAndroid::DidStartProvisionalLoadForFrame(
       ConvertUTF8ToJavaString(env, validated_url.spec()));
   // TODO(dcheng): Does Java really need the parent frame ID? It doesn't appear
   // to be used at all, and it just adds complexity here.
-  Java_WebContentsObserverAndroid_didStartProvisionalLoadForFrame(
+  Java_WebContentsObserver_didStartProvisionalLoadForFrame(
       env,
       obj.obj(),
       render_frame_host->GetRoutingID(),
@@ -210,7 +210,7 @@ void WebContentsObserverAndroid::DidCommitProvisionalLoadForFrame(
     return;
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url.spec()));
-  Java_WebContentsObserverAndroid_didCommitProvisionalLoadForFrame(
+  Java_WebContentsObserver_didCommitProvisionalLoadForFrame(
       env,
       obj.obj(),
       render_frame_host->GetRoutingID(),
@@ -236,7 +236,7 @@ void WebContentsObserverAndroid::DidFinishLoad(
 
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url_string));
-  Java_WebContentsObserverAndroid_didFinishLoad(
+  Java_WebContentsObserver_didFinishLoad(
       env,
       obj.obj(),
       render_frame_host->GetRoutingID(),
@@ -250,7 +250,7 @@ void WebContentsObserverAndroid::DocumentLoadedInFrame(
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_documentLoadedInFrame(
+  Java_WebContentsObserver_documentLoadedInFrame(
       env, obj.obj(), render_frame_host->GetRoutingID());
 }
 
@@ -260,7 +260,7 @@ void WebContentsObserverAndroid::NavigationEntryCommitted(
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_navigationEntryCommitted(env, obj.obj());
+  Java_WebContentsObserver_navigationEntryCommitted(env, obj.obj());
 }
 
 void WebContentsObserverAndroid::DidAttachInterstitialPage() {
@@ -268,7 +268,7 @@ void WebContentsObserverAndroid::DidAttachInterstitialPage() {
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_didAttachInterstitialPage(env, obj.obj());
+  Java_WebContentsObserver_didAttachInterstitialPage(env, obj.obj());
 }
 
 void WebContentsObserverAndroid::DidDetachInterstitialPage() {
@@ -276,7 +276,7 @@ void WebContentsObserverAndroid::DidDetachInterstitialPage() {
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_didDetachInterstitialPage(env, obj.obj());
+  Java_WebContentsObserver_didDetachInterstitialPage(env, obj.obj());
 }
 
 void WebContentsObserverAndroid::DidChangeThemeColor(SkColor color) {
@@ -284,7 +284,7 @@ void WebContentsObserverAndroid::DidChangeThemeColor(SkColor color) {
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_didChangeThemeColor(env, obj.obj(), color);
+  Java_WebContentsObserver_didChangeThemeColor(env, obj.obj(), color);
 }
 
 void WebContentsObserverAndroid::DidFailLoadInternal(
@@ -302,7 +302,7 @@ void WebContentsObserverAndroid::DidFailLoadInternal(
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url.spec()));
 
-  Java_WebContentsObserverAndroid_didFailLoad(
+  Java_WebContentsObserver_didFailLoad(
       env, obj.obj(),
       is_provisional_load,
       is_main_frame,
@@ -315,7 +315,7 @@ void WebContentsObserverAndroid::DidFirstVisuallyNonEmptyPaint() {
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  Java_WebContentsObserverAndroid_didFirstVisuallyNonEmptyPaint(
+  Java_WebContentsObserver_didFirstVisuallyNonEmptyPaint(
       env, obj.obj());
 }
 

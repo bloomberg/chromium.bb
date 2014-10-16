@@ -4,17 +4,17 @@
 
 package org.chromium.content.browser.test.util;
 
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * The default WebContentsObserverAndroid used by ContentView tests. The below callbacks can be
+ * The default WebContentsObserver used by ContentView tests. The below callbacks can be
  * accessed by using {@link TestCallbackHelperContainer} or extending this class.
  */
-public class TestWebContentsObserver extends WebContentsObserverAndroid {
+public class TestWebContentsObserver extends WebContentsObserver {
 
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;

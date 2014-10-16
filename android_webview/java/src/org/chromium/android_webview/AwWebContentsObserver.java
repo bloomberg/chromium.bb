@@ -4,14 +4,14 @@
 
 package org.chromium.android_webview;
 
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetError;
 
 /**
  * Routes notifications from WebContents to AwContentsClient and other listeners.
  */
-public class AwWebContentsObserver extends WebContentsObserverAndroid {
+public class AwWebContentsObserver extends WebContentsObserver {
     private final AwContentsClient mAwContentsClient;
 
     public AwWebContentsObserver(WebContents webContents, AwContentsClient awContentsClient) {

@@ -230,7 +230,7 @@ public class ContentViewCore
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContents mWebContents;
-    private WebContentsObserverAndroid mWebContentsObserver;
+    private WebContentsObserver mWebContentsObserver;
 
     private ContentViewClient mContentViewClient;
 
@@ -627,7 +627,7 @@ public class ContentViewCore
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
 
-        mWebContentsObserver = new WebContentsObserverAndroid(mWebContents) {
+        mWebContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {

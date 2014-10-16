@@ -39,7 +39,7 @@
     'public/android/java/src/org/chromium/content/browser/TouchEventSynthesizer.java',
     'public/android/java/src/org/chromium/content/browser/TracingControllerAndroid.java',
     'public/android/java/src/org/chromium/content/browser/VibrationProvider.java',
-    'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',
+    'public/android/java/src/org/chromium/content/browser/WebContentsObserver.java',
     'public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java',
     'public/android/java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java',
     'public/android/java/src/org/chromium/content_public/browser/LoadUrlParams.java',

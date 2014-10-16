@@ -48,7 +48,7 @@ import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -188,7 +188,7 @@ public class AwContents {
     private NavigationController mNavigationController;
     private final AwContentsClient mContentsClient;
     private final AwContentViewClient mContentViewClient;
-    private WebContentsObserverAndroid mWebContentsObserver;
+    private WebContentsObserver mWebContentsObserver;
     private final AwContentsClientBridge mContentsClientBridge;
     private final AwWebContentsDelegateAdapter mWebContentsDelegate;
     private final AwContentsIoThreadClient mIoThreadClient;

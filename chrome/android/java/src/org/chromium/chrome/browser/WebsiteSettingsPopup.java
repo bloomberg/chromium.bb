@@ -25,7 +25,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -77,8 +77,7 @@ public class WebsiteSettingsPopup {
 
         // This needs to come after other member initialization.
         mNativeWebsiteSettingsPopup = nativeInit(this, webContents);
-        final WebContentsObserverAndroid webContentsObserver = new WebContentsObserverAndroid(
-                mWebContents) {
+        final WebContentsObserver webContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
             public void navigationEntryCommitted() {
                 // If a navigation is committed (e.g. from in-page redirect), the data we're

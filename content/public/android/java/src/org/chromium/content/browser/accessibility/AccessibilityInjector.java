@@ -24,7 +24,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.JavascriptInterface;
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content.common.ContentSwitches;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * Responsible for accessibility injection and management of a {@link ContentViewCore}.
  */
-public class AccessibilityInjector extends WebContentsObserverAndroid {
+public class AccessibilityInjector extends WebContentsObserver {
     private static final String TAG = "AccessibilityInjector";
 
     // The ContentView this injector is responsible for managing.

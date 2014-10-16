@@ -118,7 +118,7 @@ public interface TabObserver {
      */
     void onToggleFullscreenMode(Tab tab, boolean enable);
 
-    // WebContentsObserverAndroid methods ---------------------------------------------------------
+    // WebContentsObserver methods ---------------------------------------------------------
 
     /**
      * Called when an error occurs while loading a page and/or the page fails to load.

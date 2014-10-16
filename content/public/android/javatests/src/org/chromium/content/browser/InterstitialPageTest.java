@@ -27,10 +27,10 @@ public class InterstitialPageTest extends ContentShellTestBase {
     private static final String URL = UrlUtils.encodeHtmlDataUri(
             "<html><head></head><body>test</body></html>");
 
-    private static class TestWebContentsObserverAndroid extends WebContentsObserverAndroid {
+    private static class TestWebContentsObserver extends WebContentsObserver {
         private boolean mInterstitialShowing;
 
-        public TestWebContentsObserverAndroid(WebContents webContents) {
+        public TestWebContentsObserver(WebContents webContents) {
             super(webContents);
         }
 
@@ -111,12 +111,12 @@ public class InterstitialPageTest extends ContentShellTestBase {
                 proceed();
             }
         };
-        TestWebContentsObserverAndroid observer = ThreadUtils.runOnUiThreadBlocking(
-                new Callable<TestWebContentsObserverAndroid>() {
+        TestWebContentsObserver observer = ThreadUtils.runOnUiThreadBlocking(
+                new Callable<TestWebContentsObserver>() {
                     @Override
-                    public TestWebContentsObserverAndroid call() throws Exception {
+                    public TestWebContentsObserver call() throws Exception {
                         getWebContents().showInterstitialPage(URL, delegate.getNative());
-                        return new TestWebContentsObserverAndroid(getWebContents());
+                        return new TestWebContentsObserver(getWebContents());
                     }
                 });
 

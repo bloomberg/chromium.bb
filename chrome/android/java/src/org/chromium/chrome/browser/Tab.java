@@ -31,7 +31,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationClient;
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
@@ -121,7 +121,7 @@ public class Tab implements NavigationClient {
 
     // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
-    private WebContentsObserverAndroid mWebContentsObserver;
+    private WebContentsObserver mWebContentsObserver;
     private VoiceSearchTabHelper mVoiceSearchTabHelper;
     private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
     private DomDistillerFeedbackReporter mDomDistillerFeedbackReporter;
@@ -261,8 +261,8 @@ public class Tab implements NavigationClient {
         }
     }
 
-    private class TabWebContentsObserverAndroid extends WebContentsObserverAndroid {
-        public TabWebContentsObserverAndroid(WebContents webContents) {
+    private class TabWebContentsObserver extends WebContentsObserver {
+        public TabWebContentsObserver(WebContents webContents) {
             super(webContents);
         }
 
@@ -828,7 +828,7 @@ public class Tab implements NavigationClient {
         mContentViewCore = cvc;
 
         mWebContentsDelegate = createWebContentsDelegate();
-        mWebContentsObserver = new TabWebContentsObserverAndroid(mContentViewCore.getWebContents());
+        mWebContentsObserver = new TabWebContentsObserver(mContentViewCore.getWebContents());
         mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore.getWebContents());
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);

@@ -20,7 +20,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -41,7 +41,7 @@ public class CastWindowAndroid extends LinearLayout {
     private ContentViewRenderView mContentViewRenderView;
     private NavigationController mNavigationController;
     private WebContents mWebContents;
-    private WebContentsObserverAndroid mWebContentsObserver;
+    private WebContentsObserver mWebContentsObserver;
     private WindowAndroid mWindow;
 
     /**
@@ -132,7 +132,7 @@ public class CastWindowAndroid extends LinearLayout {
         view.requestFocus();
         mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
 
-        mWebContentsObserver = new WebContentsObserverAndroid(mWebContents) {
+        mWebContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
             public void didStopLoading(String url) {
                 Uri intentUri = Uri.parse(mNavigationController

@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
 
 /**
  * Tab helper to toggle media autoplay for voice URL searches.
  */
-public class VoiceSearchTabHelper extends WebContentsObserverAndroid {
+public class VoiceSearchTabHelper extends WebContentsObserver {
     private final WebContents mWebContents;
 
     /**

@@ -95,7 +95,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
     {"VibrationProvider", content::VibrationProviderAndroid::Register},
     {"WebContentsAndroid", content::WebContentsAndroid::Register},
-    {"WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid},
+    {"WebContentsObserver", content::RegisterWebContentsObserverAndroid},
     {"WebViewStatics", content::RegisterWebViewStatics},
 };
 

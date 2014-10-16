@@ -16,16 +16,16 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 import java.util.concurrent.Callable;
 
 /**
- * Tests for the WebContentsObserverAndroid APIs.
+ * Tests for the WebContentsObserver APIs.
  */
 public class WebContentsObserverAndroidTest extends ContentShellTestBase {
     private static final String URL = UrlUtils.encodeHtmlDataUri(
             "<html><head></head><body>didFirstVisuallyNonEmptyPaint test</body></html>");
 
-    private static class TestWebContentsObserverAndroid extends WebContentsObserverAndroid {
+    private static class TestWebContentsObserver extends WebContentsObserver {
         private CallbackHelper mDidFirstVisuallyNonEmptyPaintCallbackHelper = new CallbackHelper();
 
-        public TestWebContentsObserverAndroid(WebContents webContents) {
+        public TestWebContentsObserver(WebContents webContents) {
             super(webContents);
         }
 
@@ -54,12 +54,11 @@ public class WebContentsObserverAndroidTest extends ContentShellTestBase {
     */
     @DisabledTest
     public void testDidFirstVisuallyNonEmptyPaint() throws Throwable {
-        TestWebContentsObserverAndroid observer = ThreadUtils.runOnUiThreadBlocking(
-                new Callable<TestWebContentsObserverAndroid>() {
+        TestWebContentsObserver observer = ThreadUtils.runOnUiThreadBlocking(
+                new Callable<TestWebContentsObserver>() {
                     @Override
-                    public TestWebContentsObserverAndroid call() throws Exception {
-                        return new TestWebContentsObserverAndroid(
-                                getContentViewCore().getWebContents());
+                    public TestWebContentsObserver call() throws Exception {
+                        return new TestWebContentsObserver(getContentViewCore().getWebContents());
                     }
                 });
 
