@@ -361,6 +361,54 @@ backgroundPageConnection.postMessage({
 });
 </pre>
 
+
+<h3 id="evaluated-scripts-to-devtools">Messaging from Injected Scripts to the DevTools Page</h3>
+ 
+<p>While the above solution works for content scripts, code that is injected
+directly into the page (e.g. through appending a <code>&lt;script&gt;</code> tag
+or through <code>$(ref:inspectedWindow.eval)</code>) requires a different strategy.
+In this context, <code>$(ref:runtime.sendMessage)</code> will not pass messages
+to the background script as expected.</p>
+
+<p>As a workaround, you can combine your injected script with a content script
+that acts as an intermediary. To pass messages to the content script, you can
+use the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window.postMessage">
+<code>window.postMessage</code></a> API. Here's an example, assuming the
+background script from the previous section:</p>
+
+<pre>
+// injected-script.js
+
+window.postMessage({
+  greeting: 'hello there!',
+  source: 'my-devtools-extension'
+}, '*');
+</pre>
+
+<pre>
+// content-script.js
+
+window.addEventListener('message', function(event) {
+  // Only accept messages from the same frame
+  if (event.source !== window) {
+    return;
+  }
+
+  var message = event.data;
+
+  // Only accept messages that we know are ours
+  if (typeof message !== 'object' || message === null ||
+      !message.source === 'my-devtools-extension') {
+    return;
+  }
+
+  chrome.runtime.sendMessage(message);
+});
+</pre>
+
+Your message will now flow from the injected script, to the content script, to
+the background script, and finally to the DevTools page.
+
 <h3 id="detecting-open-close">Detecting When DevTools Opens and Closes</h3>
 
 <p>If your extension needs to track whether the DevTools window is open, you can
