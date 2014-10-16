@@ -437,6 +437,11 @@ int TtsControllerImpl::GetMatchingVoice(
 }
 
 void TtsControllerImpl::VoicesChanged() {
+  // Existence of platform tts indicates explicit requests to tts. Since
+  // |VoicesChanged| can occur implicitly, only send if needed.
+  if (!platform_impl_)
+    return;
+
   for (std::set<VoicesChangedDelegate*>::iterator iter =
            voices_changed_delegates_.begin();
        iter != voices_changed_delegates_.end(); ++iter) {
