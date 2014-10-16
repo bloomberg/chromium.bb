@@ -1455,6 +1455,7 @@ crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-3.html [ NeedsManualRebaseline ]
+crbug.com/422199 ietestcenter/Javascript/15.2.3.4-1.html [ NeedsManualRebaseline ]
 
 # Timing out on WinXP after r183502
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pass Timeout ]
