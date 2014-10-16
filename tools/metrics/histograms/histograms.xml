@@ -37345,7 +37345,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Variations.SeedFetchResponseCode">
+<histogram name="Variations.SeedFetchResponseCode" enum="HttpResponseCode">
   <owner>asvitkine@chromium.org</owner>
   <summary>
     The counts of HTTP response codes encountered by VariationsService when
