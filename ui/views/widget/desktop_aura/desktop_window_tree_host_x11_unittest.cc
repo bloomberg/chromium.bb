@@ -12,6 +12,7 @@
 #undef None
 
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
@@ -189,6 +190,12 @@ bool ShapeRectContainsPoint(const std::vector<gfx::Rect>& shape_rects,
   return false;
 }
 
+// Flush the message loop.
+void RunAllPendingInMessageLoop() {
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
 }  // namespace
 
 class DesktopWindowTreeHostX11Test : public ViewsTestBase {
@@ -262,6 +269,9 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
       widget1->Maximize();
       waiter.Wait();
     }
+
+    // Ensure that the task which is posted when a window is resized is run.
+    RunAllPendingInMessageLoop();
 
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
