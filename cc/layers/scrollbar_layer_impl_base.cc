@@ -122,7 +122,7 @@ bool ScrollbarLayerImplBase::SetMaximum(int maximum) {
   return true;
 }
 
-bool ScrollbarLayerImplBase::can_scroll_orientation() const {
+bool ScrollbarLayerImplBase::CanScrollOrientation() const {
   if (!scroll_layer_)
     return false;
   return scroll_layer_->user_scrollable(orientation()) && (0 < maximum());
