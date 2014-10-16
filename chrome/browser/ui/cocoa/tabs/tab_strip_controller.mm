@@ -2314,5 +2314,9 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
   // the devtools view is always in the hierarchy even if it is not open or it
   // is detached.
   NSView* devtools_view = [[[view superview] superview] superview];
-  return [devtools_view convertRect:[devtools_view bounds] toView:nil];
+  if (devtools_view) {
+    return [devtools_view convertRect:[devtools_view bounds] toView:nil];
+  } else {
+    return [view convertRect:[view bounds] toView:nil];
+  }
 }
