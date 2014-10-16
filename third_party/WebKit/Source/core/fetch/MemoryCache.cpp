@@ -404,17 +404,7 @@ MemoryCacheLRUList* MemoryCache::lruListFor(unsigned accessCount, size_t size)
 
 void MemoryCache::removeFromLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList* list)
 {
-#if ENABLE(ASSERT)
-    // Verify that we are in fact in this list.
-    bool found = false;
-    for (MemoryCacheEntry* current = list->m_head; current; current = current->m_nextInAllResourcesList) {
-        if (current == entry) {
-            found = true;
-            break;
-        }
-    }
-    ASSERT(found);
-#endif
+    ASSERT(containedInLRUList(entry, list));
 
     MemoryCacheEntry* next = entry->m_nextInAllResourcesList;
     MemoryCacheEntry* previous = entry->m_previousInAllResourcesList;
@@ -430,11 +420,13 @@ void MemoryCache::removeFromLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList*
         previous->m_nextInAllResourcesList = next;
     else
         list->m_head = next;
+
+    ASSERT(!containedInLRUList(entry, list));
 }
 
 void MemoryCache::insertInLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList* list)
 {
-    ASSERT(!entry->m_nextInAllResourcesList && !entry->m_previousInAllResourcesList);
+    ASSERT(!containedInLRUList(entry, list));
 
     entry->m_nextInAllResourcesList = list->m_head;
     list->m_head = entry;
@@ -444,17 +436,17 @@ void MemoryCache::insertInLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList* l
     else
         list->m_tail = entry;
 
-#if ENABLE(ASSERT)
-    // Verify that we are in now in the list like we should be.
-    bool found = false;
+    ASSERT(containedInLRUList(entry, list));
+}
+
+bool MemoryCache::containedInLRUList(MemoryCacheEntry* entry, MemoryCacheLRUList* list)
+{
     for (MemoryCacheEntry* current = list->m_head; current; current = current->m_nextInAllResourcesList) {
-        if (current == entry) {
-            found = true;
-            break;
-        }
+        if (current == entry)
+            return true;
     }
-    ASSERT(found);
-#endif
+    ASSERT(!entry->m_nextInAllResourcesList && !entry->m_previousInAllResourcesList);
+    return false;
 }
 
 void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
@@ -462,21 +454,11 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
     // If we've never been accessed, then we're brand new and not in any list.
     if (!entry->m_inLiveDecodedResourcesList)
         return;
+    ASSERT(containedInLiveDecodedResourcesList(entry));
+
     entry->m_inLiveDecodedResourcesList = false;
 
     MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
-
-#if ENABLE(ASSERT)
-    // Verify that we are in fact in this list.
-    bool found = false;
-    for (MemoryCacheEntry* current = list->m_head; current; current = current->m_nextInLiveResourcesList) {
-        if (current == entry) {
-            found = true;
-            break;
-        }
-    }
-    ASSERT(found);
-#endif
 
     MemoryCacheEntry* next = entry->m_nextInLiveResourcesList;
     MemoryCacheEntry* previous = entry->m_previousInLiveResourcesList;
@@ -493,12 +475,14 @@ void MemoryCache::removeFromLiveDecodedResourcesList(MemoryCacheEntry* entry)
         previous->m_nextInLiveResourcesList = next;
     else
         list->m_head = next;
+
+    ASSERT(!containedInLiveDecodedResourcesList(entry));
 }
 
 void MemoryCache::insertInLiveDecodedResourcesList(MemoryCacheEntry* entry)
 {
-    // Make sure we aren't in the list already.
-    ASSERT(!entry->m_nextInLiveResourcesList && !entry->m_previousInLiveResourcesList && !entry->m_inLiveDecodedResourcesList);
+    ASSERT(!containedInLiveDecodedResourcesList(entry));
+
     entry->m_inLiveDecodedResourcesList = true;
 
     MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
@@ -510,17 +494,20 @@ void MemoryCache::insertInLiveDecodedResourcesList(MemoryCacheEntry* entry)
     if (!entry->m_nextInLiveResourcesList)
         list->m_tail = entry;
 
-#if ENABLE(ASSERT)
-    // Verify that we are in now in the list like we should be.
-    bool found = false;
+    ASSERT(containedInLiveDecodedResourcesList(entry));
+}
+
+bool MemoryCache::containedInLiveDecodedResourcesList(MemoryCacheEntry* entry)
+{
+    MemoryCacheLRUList* list = &m_liveDecodedResources[entry->m_liveResourcePriority];
     for (MemoryCacheEntry* current = list->m_head; current; current = current->m_nextInLiveResourcesList) {
         if (current == entry) {
-            found = true;
-            break;
+            ASSERT(entry->m_inLiveDecodedResourcesList);
+            return true;
         }
     }
-    ASSERT(found);
-#endif
+    ASSERT(!entry->m_nextInLiveResourcesList && !entry->m_previousInLiveResourcesList && !entry->m_inLiveDecodedResourcesList);
+    return false;
 }
 
 void MemoryCache::makeLive(Resource* resource)

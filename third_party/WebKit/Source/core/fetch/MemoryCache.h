@@ -234,10 +234,12 @@ private:
     // Calls to put the cached resource into and out of LRU lists.
     void insertInLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
     void removeFromLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
+    bool containedInLRUList(MemoryCacheEntry*, MemoryCacheLRUList*);
 
     // Track decoded resources that are in the cache and referenced by a Web page.
     void insertInLiveDecodedResourcesList(MemoryCacheEntry*);
     void removeFromLiveDecodedResourcesList(MemoryCacheEntry*);
+    bool containedInLiveDecodedResourcesList(MemoryCacheEntry*);
 
     size_t liveCapacity() const;
     size_t deadCapacity() const;
