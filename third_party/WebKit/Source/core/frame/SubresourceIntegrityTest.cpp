@@ -126,8 +126,8 @@ protected:
     RefPtr<SecurityOrigin> secureOrigin;
     RefPtr<SecurityOrigin> insecureOrigin;
 
-    RefPtrWillBeRawPtr<Document> document;
-    RefPtrWillBeRawPtr<HTMLScriptElement> scriptElement;
+    RefPtrWillBePersistent<Document> document;
+    RefPtrWillBePersistent<HTMLScriptElement> scriptElement;
 };
 
 TEST_F(SubresourceIntegrityTest, ParseAlgorithm)
