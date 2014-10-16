@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
@@ -67,10 +69,10 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
         name, trusted, gfx::Rect(), profile(), chrome::GetActiveDesktop());
   }
 
-  // Simluate restarting the browser
-  void SetRestart() {
-    PrefService* pref_service = g_browser_process->local_state();
-    pref_service->SetBoolean(prefs::kWasRestarted, true);
+  // Turn on session restore before we restart.
+  void TurnOnSessionRestore() {
+    SessionStartupPref::SetStartupPref(
+        browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -91,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreBrowserWindows) {
   // Create a third incognito browser window which should not get restored.
   CreateBrowserWithParams(Browser::CreateParams(
       profile()->GetOffTheRecordProfile(), chrome::GetActiveDesktop()));
-  SetRestart();
+  TurnOnSessionRestore();
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreBrowserWindows) {
@@ -115,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreAppsV1) {
   // Create a third untrusted (child) app3 popup. This should not get restored.
   CreateBrowserWithParams(CreateParamsForApp(test_app_popup_name2, false));
 
-  SetRestart();
+  TurnOnSessionRestore();
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreAppsV1) {
@@ -154,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreMaximized) {
   EXPECT_FALSE(app_browser1->window()->IsMaximized());
   EXPECT_TRUE(app_browser2->window()->IsMaximized());
 
-  SetRestart();
+  TurnOnSessionRestore();
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMaximized) {

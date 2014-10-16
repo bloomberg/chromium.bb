@@ -579,13 +579,16 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   CheckFormRestored(new_browser, false, false);
 }
 
+// ChromeOS does not override the SessionStartupPreference upon controlled
+// system restart.
+#if !defined(OS_CHROMEOS)
 class RestartTest : public BetterSessionRestoreTest {
  public:
   RestartTest() { }
   virtual ~RestartTest() { }
  protected:
   void Restart() {
-    // Simluate restarting the browser, but let the test exit peacefully.
+    // Simulate restarting the browser, but let the test exit peacefully.
     for (chrome::BrowserIterator it; !it.done(); it.Next())
       content::BrowserContext::SaveSessionState(it->profile());
     PrefService* pref_service = g_browser_process->local_state();
@@ -658,6 +661,7 @@ IN_PROC_BROWSER_TEST_F(RestartTest, PostWithPassword) {
   // The form data contained passwords, so it's removed completely.
   CheckFormRestored(false, false);
 }
+#endif
 
 // These tests ensure that the Better Session Restore features are not triggered
 // when they shouldn't be.

@@ -362,8 +362,13 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
 #if defined(OS_CHROMEOS)
   const bool is_first_run =
       user_manager::UserManager::Get()->IsCurrentUserNew();
+  // On ChromeOS restarts force the user to login again. The expectation is that
+  // after a login the user gets clean state. For this reason we ignore
+  // StartupBrowserCreator::WasRestarted().
+  const bool did_restart = false;
 #else
   const bool is_first_run = first_run::IsChromeFirstRun();
+  const bool did_restart = StartupBrowserCreator::WasRestarted();
 #endif
 
   // The pref has an OS-dependent default value. For the first run only, this
@@ -379,8 +384,7 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
   // However, new profiles can be created from a browser process that has this
   // switch so do not set the session pref to SessionStartupPref::LAST for
   // those as there is nothing to restore.
-  if ((command_line.HasSwitch(switches::kRestoreLastSession) ||
-       StartupBrowserCreator::WasRestarted()) &&
+  if ((command_line.HasSwitch(switches::kRestoreLastSession) || did_restart) &&
       !profile->IsNewProfile()) {
     pref.type = SessionStartupPref::LAST;
   }
