@@ -58,15 +58,15 @@ GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
       kOpenGL_GrBackend,
       reinterpret_cast<GrBackendContext>(interface.get())));
   if (gr_context_) {
-    // The limit of the number of textures we hold in the GrContext's
-    // bitmap->texture cache.
-    static const int kMaxGaneshTextureCacheCount = 2048;
-    // The limit of the bytes allocated toward textures in the GrContext's
-    // bitmap->texture cache.
-    static const size_t kMaxGaneshTextureCacheBytes = 96 * 1024 * 1024;
+    // The limit of the number of GPU resources we hold in the GrContext's
+    // GPU cache.
+    static const int kMaxGaneshResourceCacheCount = 2048;
+    // The limit of the bytes allocated toward GPU resources in the GrContext's
+    // GPU cache.
+    static const size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
 
-    gr_context_->setTextureCacheLimits(kMaxGaneshTextureCacheCount,
-                                       kMaxGaneshTextureCacheBytes);
+    gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
+                                        kMaxGaneshResourceCacheBytes);
   }
 }
 
@@ -75,7 +75,7 @@ GrContextForWebGraphicsContext3D::~GrContextForWebGraphicsContext3D() {
 
 void GrContextForWebGraphicsContext3D::OnLostContext() {
   if (gr_context_)
-    gr_context_->contextDestroyed();
+    gr_context_->abandonContext();
 }
 
 void GrContextForWebGraphicsContext3D::FreeGpuResources() {
