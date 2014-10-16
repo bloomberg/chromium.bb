@@ -642,8 +642,10 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
-  AutoLoginPrompter::ShowInfoBarIfPossible(request, info->GetChildID(),
-                                           info->GetRouteID());
+  if (info->IsMainFrame()) {
+    AutoLoginPrompter::ShowInfoBarIfPossible(request, info->GetChildID(),
+                                             info->GetRouteID());
+  }
 #endif
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
