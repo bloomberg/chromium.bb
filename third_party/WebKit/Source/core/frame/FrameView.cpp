@@ -2389,14 +2389,13 @@ Color FrameView::documentBackgroundColor() const
 bool FrameView::hasCustomScrollbars() const
 {
     const ChildrenWidgetSet* viewChildren = children();
-    for (const auto& child : *viewChildren) {
+    for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
         Widget* widget = child.get();
         if (widget->isFrameView()) {
             if (toFrameView(widget)->hasCustomScrollbars())
                 return true;
         } else if (widget->isScrollbar()) {
-            Scrollbar* scrollbar = static_cast<Scrollbar*>(widget);
-            if (scrollbar->isCustomScrollbar())
+            if (toScrollbar(widget)->isCustomScrollbar())
                 return true;
         }
     }
