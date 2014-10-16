@@ -81,10 +81,7 @@ def get_asan_env(cmd, lsan):
   extra_env = {}
 
   # Instruct GTK to use malloc while running ASan or LSan tests.
-  # TODO(earthdok): enabling G_SLICE gives these leaks, locally and on swarming
-  #0 0x62c01b in __interceptor_malloc (/tmp/run_tha_testXukBDT/out/Release/browser_tests+0x62c01b)
-  #1 0x7fb64ab64a38 in g_malloc /build/buildd/glib2.0-2.32.4/./glib/gmem.c:159
-  #extra_env['G_SLICE'] = 'always-malloc'
+  extra_env['G_SLICE'] = 'always-malloc'
 
   extra_env['NSS_DISABLE_ARENA_FREE_LIST'] = '1'
   extra_env['NSS_DISABLE_UNLOAD'] = '1'
