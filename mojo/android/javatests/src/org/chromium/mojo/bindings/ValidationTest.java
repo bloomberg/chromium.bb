@@ -97,7 +97,9 @@ public class ValidationTest extends MojoTestCase {
             throws FileNotFoundException {
         List<TestData> testData = getTestData(prefix);
         for (TestData test : testData) {
-            assertNull(test.inputData.getErrorMessage());
+            assertNull("Unable to read: " + test.dataFile.getName() +
+                    ": " + test.inputData.getErrorMessage(),
+                    test.inputData.getErrorMessage());
             List<Handle> handles = new ArrayList<Handle>();
             for (int i = 0; i < test.inputData.getHandlesCount(); ++i) {
                 handles.add(new HandleMock());

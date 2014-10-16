@@ -1,12 +1,16 @@
 {% from "constant_definition.tmpl" import constant_def %}
 {% from "enum_definition.tmpl" import enum_def %}
 
-{% macro encode(variable, kind, offset, bit, level=0) %}
+{% macro encode(variable, kind, offset, bit, level=0, check_for_null=True) %}
 {% if kind|is_pointer_array_kind %}
 {% set sub_kind = kind.kind %}
+{%   if check_for_null %}
 if ({{variable}} == null) {
     encoder{{level}}.encodeNullPointer({{offset}}, {{kind|is_nullable_kind|java_true_false}});
 } else {
+{%   else %}
+{
+{%   endif %}
     org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{kind|array_expected_length}});
     for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
         {{encode(variable~'[i'~level~']', sub_kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~level, 0, level+1)|indent(8)}}
@@ -25,8 +29,8 @@ if ({{variable}} == null) {
         keys{{level}}[index{{level}}] = entry{{level}}.getKey();
         values{{level}}[index{{level}}] = entry{{level}}.getValue();
     }
-    {{encode('keys'~level, kind.key_kind|array, 'DataHeader.HEADER_SIZE', 0, level+1)|indent(4)}}
-    {{encode('values'~level, kind.value_kind|array, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE', 0, level+1)|indent(4)}}
+    {{encode('keys'~level, kind.key_kind|array, 'DataHeader.HEADER_SIZE', 0, level+1, False)|indent(4)}}
+    {{encode('values'~level, kind.value_kind|array, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE', 0, level+1, False)|indent(4)}}
 }
 {% else %}
 encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
@@ -39,9 +43,13 @@ org.chromium.mojo.bindings.Decoder decoder{{level+1}} = decoder{{level}}.readPoi
 {%   if kind|is_struct_kind %}
 {{variable}} = {{kind|java_type}}.decode(decoder{{level+1}});
 {%   else %}{# kind|is_pointer_array_kind or is_map_kind #}
+{%     if kind|is_nullable_kind %}
 if (decoder{{level+1}} == null) {
     {{variable}} = null;
 } else {
+{%     else %}
+{
+{%     endif %}
 {%     if kind|is_map_kind %}
     decoder{{level+1}}.readDataHeaderForMap();
     {{kind.key_kind|java_type}}[] keys{{level}};
