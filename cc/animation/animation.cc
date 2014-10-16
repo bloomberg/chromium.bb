@@ -90,15 +90,14 @@ void Animation::SetRunState(RunState run_state,
   char name_buffer[256];
   base::snprintf(name_buffer,
                  sizeof(name_buffer),
-                 "%s-%d%s",
+                 "%s-%d",
                  s_targetPropertyNames[target_property_],
-                 group_,
-                 is_controlling_instance_ ? "(impl)" : "");
+                 group_);
 
   bool is_waiting_to_start = run_state_ == WaitingForTargetAvailability ||
                              run_state_ == Starting;
 
-  if (is_waiting_to_start && run_state == Running) {
+  if (is_controlling_instance_ && is_waiting_to_start && run_state == Running) {
     TRACE_EVENT_ASYNC_BEGIN1(
         "cc", "Animation", this, "Name", TRACE_STR_COPY(name_buffer));
   }
@@ -115,7 +114,7 @@ void Animation::SetRunState(RunState run_state,
 
   const char* new_run_state_name = s_runStateNames[run_state];
 
-  if (!was_finished && is_finished())
+  if (is_controlling_instance_ && !was_finished && is_finished())
     TRACE_EVENT_ASYNC_END0("cc", "Animation", this);
 
   char state_buffer[256];
