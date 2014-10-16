@@ -117,6 +117,7 @@ class InputFileManager : public base::RefCountedThreadSafe<InputFileManager> {
 
     // Null before the file is loaded or if loading failed.
     scoped_ptr<ParseNode> parsed_root;
+    Err parse_error;
   };
 
   virtual ~InputFileManager();
