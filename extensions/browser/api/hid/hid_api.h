@@ -78,10 +78,9 @@ class HidConnectFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidConnectFunction();
 
-  void OnRequestAccessComplete(bool success);
+  void OnConnectComplete(scoped_refptr<device::HidConnection> connection);
 
   scoped_ptr<core_api::hid::Connect::Params> parameters_;
-  device::HidDeviceInfo device_info_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectFunction);
 };

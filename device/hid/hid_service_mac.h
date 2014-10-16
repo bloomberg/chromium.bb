@@ -27,8 +27,8 @@ class HidServiceMac : public HidService {
  public:
   HidServiceMac(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
-      override;
+  virtual void Connect(const HidDeviceId& device_id,
+                       const ConnectCallback& connect) override;
 
  private:
   virtual ~HidServiceMac();

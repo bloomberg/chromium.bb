@@ -23,14 +23,8 @@ class HidServiceLinux : public HidService,
  public:
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-#if defined(OS_CHROMEOS)
-  virtual void RequestAccess(
-      const HidDeviceId& device_id,
-      const base::Callback<void(bool success)>& callback) override;
-#endif
-
-  virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
-      override;
+  virtual void Connect(const HidDeviceId& device_id,
+                       const ConnectCallback& callback) override;
 
   // Implements DeviceMonitorLinux::Observer:
   virtual void OnDeviceAdded(udev_device* device) override;
@@ -39,9 +33,10 @@ class HidServiceLinux : public HidService,
  private:
   virtual ~HidServiceLinux();
 
-  void OnRequestAccessComplete(
-      const base::Callback<void(bool success)>& callback,
-      bool success);
+  void FinishConnect(const HidDeviceId& device_id,
+                     const std::string device_node,
+                     const ConnectCallback& callback,
+                     bool success);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

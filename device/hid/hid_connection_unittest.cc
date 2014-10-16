@@ -21,14 +21,39 @@ namespace {
 
 using net::IOBufferWithSize;
 
-class TestCompletionCallback {
+class TestConnectCallback {
  public:
-  TestCompletionCallback()
-      : read_callback_(base::Bind(&TestCompletionCallback::SetReadResult,
-                                  base::Unretained(this))),
-        write_callback_(base::Bind(&TestCompletionCallback::SetWriteResult,
+  TestConnectCallback()
+      : callback_(base::Bind(&TestConnectCallback::SetConnection,
+                             base::Unretained(this))) {}
+  ~TestConnectCallback() {}
+
+  void SetConnection(scoped_refptr<HidConnection> connection) {
+    connection_ = connection;
+    run_loop_.Quit();
+  }
+
+  scoped_refptr<HidConnection> WaitForConnection() {
+    run_loop_.Run();
+    return connection_;
+  }
+
+  const HidService::ConnectCallback& callback() { return callback_; }
+
+ private:
+  HidService::ConnectCallback callback_;
+  base::RunLoop run_loop_;
+  scoped_refptr<HidConnection> connection_;
+};
+
+class TestIoCallback {
+ public:
+  TestIoCallback()
+      : read_callback_(
+            base::Bind(&TestIoCallback::SetReadResult, base::Unretained(this))),
+        write_callback_(base::Bind(&TestIoCallback::SetWriteResult,
                                    base::Unretained(this))) {}
-  ~TestCompletionCallback() {}
+  ~TestIoCallback() {}
 
   void SetReadResult(bool success,
                      scoped_refptr<net::IOBuffer> buffer,
@@ -128,7 +153,9 @@ class HidConnectionTest : public testing::Test {
 TEST_F(HidConnectionTest, ReadWrite) {
   if (!UsbTestGadget::IsTestEnabled()) return;
 
-  scoped_refptr<HidConnection> conn = service_->Connect(device_id_);
+  TestConnectCallback connect_callback;
+  service_->Connect(device_id_, connect_callback.callback());
+  scoped_refptr<HidConnection> conn = connect_callback.WaitForConnection();
   ASSERT_TRUE(conn.get());
 
   for (int i = 0; i < 8; ++i) {
@@ -138,11 +165,11 @@ TEST_F(HidConnectionTest, ReadWrite) {
       buffer->data()[j] = i + j - 1;
     }
 
-    TestCompletionCallback write_callback;
+    TestIoCallback write_callback;
     conn->Write(buffer, buffer->size(), write_callback.write_callback());
     ASSERT_TRUE(write_callback.WaitForResult());
 
-    TestCompletionCallback read_callback;
+    TestIoCallback read_callback;
     conn->Read(read_callback.read_callback());
     ASSERT_TRUE(read_callback.WaitForResult());
     ASSERT_EQ(9UL, read_callback.size());

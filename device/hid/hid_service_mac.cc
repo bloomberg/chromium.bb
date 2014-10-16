@@ -259,13 +259,14 @@ void HidServiceMac::RemoveDevices() {
   }
 }
 
-scoped_refptr<HidConnection> HidServiceMac::Connect(
-    const HidDeviceId& device_id) {
+void HidServiceMac::Connect(const HidDeviceId& device_id,
+                            const ConnectCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const auto& map_entry = devices().find(device_id);
   if (map_entry == devices().end()) {
-    return NULL;
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
   }
   const HidDeviceInfo& device_info = map_entry->second;
 
@@ -275,7 +276,8 @@ scoped_refptr<HidConnection> HidServiceMac::Connect(
       IORegistryEntryFromPath(kIOMasterPortDefault, service_path));
   if (!service.get()) {
     VLOG(1) << "IOService not found for path: " << device_id;
-    return NULL;
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
   }
 
   base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device(
@@ -284,11 +286,15 @@ scoped_refptr<HidConnection> HidServiceMac::Connect(
   if (result != kIOReturnSuccess) {
     VLOG(1) << "Failed to open device: "
             << base::StringPrintf("0x%04x", result);
-    return NULL;
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
   }
 
-  return make_scoped_refptr(new HidConnectionMac(
-      hid_device.release(), device_info, file_task_runner_));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 make_scoped_refptr(new HidConnectionMac(
+                     hid_device.release(), device_info, file_task_runner_))));
 }
 
 }  // namespace device

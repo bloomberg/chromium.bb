@@ -38,6 +38,40 @@ const char kHIDName[] = "HID_NAME";
 const char kHIDUnique[] = "HID_UNIQ";
 const char kSysfsReportDescriptorKey[] = "report_descriptor";
 
+#if defined(OS_CHROMEOS)
+void OnRequestAccessComplete(
+    scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
+    const base::Callback<void(bool success)>& callback,
+    bool success) {
+  reply_task_runner->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+
+void RequestAccess(
+    const std::string& device_node,
+    scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
+    const base::Callback<void(bool success)>& callback) {
+  bool success = false;
+
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    chromeos::PermissionBrokerClient* client =
+        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+    DCHECK(client) << "Could not get permission broker client.";
+    if (client) {
+      client->RequestPathAccess(
+          device_node,
+          -1,
+          base::Bind(OnRequestAccessComplete, reply_task_runner, callback));
+      return;
+    }
+  } else {
+    // Not really running on Chrome OS, declare success.
+    success = true;
+  }
+
+  reply_task_runner->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+#endif
+
 }  // namespace
 
 HidServiceLinux::HidServiceLinux(
@@ -52,61 +86,42 @@ HidServiceLinux::HidServiceLinux(
       base::Bind(&HidServiceLinux::OnDeviceAdded, weak_factory_.GetWeakPtr()));
 }
 
-#if defined(OS_CHROMEOS)
-void HidServiceLinux::RequestAccess(
-    const HidDeviceId& device_id,
-    const base::Callback<void(bool success)>& callback) {
-  bool success = false;
+void HidServiceLinux::Connect(const HidDeviceId& device_id,
+                              const ConnectCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   ScopedUdevDevicePtr device =
       DeviceMonitorLinux::GetInstance()->GetDeviceFromPath(
           device_id);
-
-  if (device) {
-    const char* dev_node = udev_device_get_devnode(device.get());
-
-    if (base::SysInfo::IsRunningOnChromeOS()) {
-      chromeos::PermissionBrokerClient* client =
-          chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-      DCHECK(client) << "Could not get permission broker client.";
-      if (client) {
-        ui_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&chromeos::PermissionBrokerClient::RequestPathAccess,
-                       base::Unretained(client),
-                       std::string(dev_node),
-                       -1,
-                       base::Bind(&HidServiceLinux::OnRequestAccessComplete,
-                                  weak_factory_.GetWeakPtr(),
-                                  callback)));
-        return;
-      }
-    } else {
-      // Not really running on Chrome OS, declare success.
-      success = true;
-    }
+  if (!device) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
   }
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, success));
-}
+
+  const char* device_node = udev_device_get_devnode(device.get());
+  if (!device_node) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
+
+  base::Callback<void(bool success)> finish_connect =
+      base::Bind(&HidServiceLinux::FinishConnect,
+                 weak_factory_.GetWeakPtr(),
+                 device_id,
+                 std::string(device_node),
+                 callback);
+
+#if defined(OS_CHROMEOS)
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(RequestAccess,
+                                       std::string(device_node),
+                                       task_runner_,
+                                       finish_connect));
+#else
+  // Use the task runner to preserve the asynchronous behavior of this call on
+  // non-Chrome OS platforms.
+  task_runner_->PostTask(FROM_HERE, base::Bind(finish_connect, true));
 #endif
-
-scoped_refptr<HidConnection> HidServiceLinux::Connect(
-    const HidDeviceId& device_id) {
-  HidDeviceInfo device_info;
-  if (!GetDeviceInfo(device_id, &device_info))
-    return NULL;
-
-  ScopedUdevDevicePtr device =
-      DeviceMonitorLinux::GetInstance()->GetDeviceFromPath(
-          device_info.device_id);
-
-  if (device) {
-    const char* dev_node = udev_device_get_devnode(device.get());
-    if (dev_node) {
-      return new HidConnectionLinux(device_info, dev_node);
-    }
-  }
-
-  return NULL;
 }
 
 HidServiceLinux::~HidServiceLinux() {
@@ -195,10 +210,22 @@ void HidServiceLinux::OnDeviceRemoved(udev_device* device) {
   }
 }
 
-void HidServiceLinux::OnRequestAccessComplete(
-    const base::Callback<void(bool success)>& callback,
+void HidServiceLinux::FinishConnect(
+    const HidDeviceId& device_id,
+    const std::string device_node,
+    const base::Callback<void(scoped_refptr<HidConnection>)>& callback,
     bool success) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, success));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!success) {
+    callback.Run(nullptr);
+  }
+
+  const auto& map_entry = devices().find(device_id);
+  if (map_entry == devices().end()) {
+    callback.Run(nullptr);
+  }
+
+  callback.Run(new HidConnectionLinux(map_entry->second, device_node));
 }
 
 }  // namespace device
