@@ -422,7 +422,7 @@ TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {
   };
 #undef URL_PREFIX
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     GURL url(test_cases[i].url);
     base::FilePath expected_path =
         base::FilePath::FromUTF8Unsafe(test_cases[i].expected_relative_path);
@@ -487,7 +487,7 @@ TEST_F(FileUtilTest, ExtensionResourceURLToFilePath) {
 #undef SEP
 #undef URL_PREFIX
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     GURL url(test_cases[i].url);
     base::FilePath expected_path;
     if (test_cases[i].expected_path)

@@ -39,7 +39,7 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
     { "http://bar", URLPattern::PARSE_ERROR_EMPTY_PATH },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInvalidPatterns); ++i) {
+  for (size_t i = 0; i < arraysize(kInvalidPatterns); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(kInvalidPatterns[i].expected_result,
               pattern.Parse(kInvalidPatterns[i].pattern))
@@ -82,7 +82,7 @@ TEST(ExtensionURLPatternTest, Ports) {
     { "http://foo/bar:1234/path", URLPattern::PARSE_SUCCESS, "*" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
+  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     URLPattern pattern(URLPattern::SCHEME_ALL);
     EXPECT_EQ(kTestPatterns[i].expected_result,
               pattern.Parse(kTestPatterns[i].pattern))
@@ -663,7 +663,7 @@ TEST(ExtensionURLPatternTest, Equals) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEqualsTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kEqualsTestCases); ++i) {
     std::string message = kEqualsTestCases[i].pattern1;
     message += " ";
     message += kEqualsTestCases[i].pattern2;
