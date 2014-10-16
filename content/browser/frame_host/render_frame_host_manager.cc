@@ -1108,9 +1108,6 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
         DCHECK(new_render_frame_host.get());
         success = InitRenderFrame(new_render_frame_host.get());
       }
-      if (swapped_out) {
-        proxy_hosts_[instance->GetId()]->InitRenderFrameProxy();
-      }
     } else if (!swapped_out && pending_render_frame_host_) {
       CancelPending();
     }
