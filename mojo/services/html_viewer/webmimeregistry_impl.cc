@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -89,8 +90,14 @@ blink::WebMimeRegistry::SupportsType WebMimeRegistryImpl::supportsMediaMIMEType(
 bool WebMimeRegistryImpl::supportsMediaSourceMIMEType(
     const blink::WebString& mime_type,
     const blink::WebString& codecs) {
-  NOTIMPLEMENTED();
-  return false;
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
+  if (mime_type_ascii.empty())
+    return false;
+
+  std::vector<std::string> parsed_codec_ids;
+  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
+  return media::StreamParserFactory::IsTypeSupported(mime_type_ascii,
+                                                     parsed_codec_ids);
 }
 
 bool WebMimeRegistryImpl::supportsEncryptedMediaMIMEType(

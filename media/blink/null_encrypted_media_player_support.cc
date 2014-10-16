@@ -4,10 +4,16 @@
 
 #include "media/blink/null_encrypted_media_player_support.h"
 
+#include "base/bind.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
 namespace media {
+
+static void NeedKeyHandler(const std::string& type,
+                           const std::vector<uint8>& init_data) {
+  NOTIMPLEMENTED();
+}
 
 scoped_ptr<EncryptedMediaPlayerSupport>
 NullEncryptedMediaPlayerSupport::Create(blink::WebMediaPlayerClient* client) {
@@ -66,7 +72,7 @@ void NullEncryptedMediaPlayerSupport::SetContentDecryptionModule(
 }
 
 Demuxer::NeedKeyCB NullEncryptedMediaPlayerSupport::CreateNeedKeyCB() {
-  return Demuxer::NeedKeyCB();
+  return base::Bind(&NeedKeyHandler);
 }
 
 SetDecryptorReadyCB
