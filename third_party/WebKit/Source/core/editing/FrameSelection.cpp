@@ -1602,7 +1602,7 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
     if (startPos.isNotNull() && endPos.isNotNull() && selection.visibleStart() != selection.visibleEnd()) {
         RenderObject* startRenderer = startPos.deprecatedNode()->renderer();
         RenderObject* endRenderer = endPos.deprecatedNode()->renderer();
-        if (startRenderer->view() == view && endRenderer->view() == view)
+        if (startRenderer && endRenderer && startRenderer->view() == view && endRenderer->view() == view)
             view->setSelection(startRenderer, startPos.deprecatedEditingOffset(), endRenderer, endPos.deprecatedEditingOffset());
     }
 }
