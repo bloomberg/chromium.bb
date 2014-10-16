@@ -315,7 +315,8 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     // Ignore the request initiated internally.
     if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
-    if (loader && loader->substituteData().isValid())
+
+    if (initiatorInfo.name == FetchInitiatorTypeNames::document && loader && loader->substituteData().isValid())
         return;
 
     String requestId = IdentifiersFactory::requestId(identifier);
@@ -373,9 +374,6 @@ bool isResponseEmpty(PassRefPtr<TypeBuilder::Network::Response> response)
 
 void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
-    if (loader && loader->substituteData().isValid())
-        return;
-
     String requestId = IdentifiersFactory::requestId(identifier);
     RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response, loader);
 
@@ -387,11 +385,9 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     if (!cachedResource || cachedResource->type() == Resource::MainResource)
         cachedResource = InspectorPageAgent::cachedResource(frame, response.url());
 
-    if (cachedResource) {
+    if (cachedResource && resourceResponse && response.mimeType().isEmpty()) {
         // Use mime type from cached resource in case the one in response is empty.
-        if (resourceResponse && response.mimeType().isEmpty())
-            resourceResponse->setString(TypeBuilder::Network::Response::MimeType, cachedResource->response().mimeType());
-        m_resourcesData->addResource(requestId, cachedResource);
+        resourceResponse->setString(TypeBuilder::Network::Response::MimeType, cachedResource->response().mimeType());
     }
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
@@ -402,8 +398,14 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     if (loader && equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
         type = InspectorPageAgent::DocumentResource;
 
+    if (type == InspectorPageAgent::DocumentResource && loader && loader->substituteData().isValid())
+        return;
+
+    if (cachedResource)
+        m_resourcesData->addResource(requestId, cachedResource);
     m_resourcesData->responseReceived(requestId, m_pageAgent->frameId(frame), response);
     m_resourcesData->setResourceType(requestId, type);
+
 
     if (!isResponseEmpty(resourceResponse))
         m_frontend->responseReceived(requestId, m_pageAgent->frameId(frame), m_pageAgent->loaderId(loader), currentTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
