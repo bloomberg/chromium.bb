@@ -267,8 +267,12 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
                       bool try_panel_fitting,
                       bool preserve_aspect);
 
-  // Configures displays.
+  // Configures displays. Invoked by |configure_timer_|.
   void ConfigureDisplays();
+
+  // Restores |requested_power_state_| after the system has resumed,
+  // additionally forcing a probe. Invoked by |configure_timer_|.
+  void RestoreRequestedPowerStateAfterResume();
 
   // Notifies observers about an attempted state change.
   void NotifyObservers(bool success, MultipleDisplayState attempted_state);

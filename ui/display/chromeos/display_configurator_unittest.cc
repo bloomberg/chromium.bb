@@ -1338,4 +1338,67 @@ TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
       log_->GetActionsAndClear());
 }
 
+// Tests that the SetDisplayPowerState() task posted by HandleResume() doesn't
+// use a stale state if a new state is requested before it runs:
+// http://crosbug.com/p/32393
+TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
+  // Start out with two displays in mirrored mode.
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
+  configurator_.Init(false);
+  configurator_.ForceInitialConfigure(0);
+  log_->GetActionsAndClear();
+
+  // Turn off the internal display, simulating docked mode.
+  EXPECT_TRUE(configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags));
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(big_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &big_mode_, gfx::Point(0, 0)).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+
+  // Suspend and resume the system. Resuming should post a task to restore the
+  // previous power state, additionally forcing a probe.
+  configurator_.SuspendDisplays();
+  configurator_.ResumeDisplays();
+
+  // Before the task runs, exit docked mode.
+  EXPECT_TRUE(configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags));
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+
+  // Check that the task doesn't restore the old internal-off-external-on power
+  // state.
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+}
+
 }  // namespace ui

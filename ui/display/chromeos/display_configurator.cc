@@ -517,9 +517,10 @@ void DisplayConfigurator::OnConfigurationChanged() {
   // so that time-consuming ConfigureDisplays() won't be called multiple times.
   if (configure_timer_.IsRunning()) {
     // Note: when the timer is running it is possible that a different task
-    // (SetDisplayPower()) is scheduled. In these cases, prefer the already
-    // scheduled task to ConfigureDisplays() since ConfigureDisplays() performs
-    // only basic configuration while SetDisplayPower() will perform additional
+    // (RestoreRequestedPowerStateAfterResume()) is scheduled. In these cases,
+    // prefer the already scheduled task to ConfigureDisplays() since
+    // ConfigureDisplays() performs only basic configuration while
+    // RestoreRequestedPowerStateAfterResume() will perform additional
     // operations.
     configure_timer_.Reset();
   } else {
@@ -557,15 +558,11 @@ void DisplayConfigurator::SuspendDisplays() {
 }
 
 void DisplayConfigurator::ResumeDisplays() {
-  // Force probing to ensure that we pick up any changes that were made
-  // while the system was suspended.
   configure_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kResumeDelayMs),
-      base::Bind(base::IgnoreResult(&DisplayConfigurator::SetDisplayPower),
-                 base::Unretained(this),
-                 requested_power_state_,
-                 kSetDisplayPowerForceProbe));
+      base::Bind(&DisplayConfigurator::RestoreRequestedPowerStateAfterResume,
+                 base::Unretained(this)));
 }
 
 void DisplayConfigurator::UpdateCachedDisplays() {
@@ -723,6 +720,12 @@ void DisplayConfigurator::ConfigureDisplays() {
   native_display_delegate_->UngrabServer();
 
   NotifyObservers(success, new_state);
+}
+
+void DisplayConfigurator::RestoreRequestedPowerStateAfterResume() {
+  // Force probing to ensure that we pick up any changes that were made while
+  // the system was suspended.
+  SetDisplayPower(requested_power_state_, kSetDisplayPowerForceProbe);
 }
 
 void DisplayConfigurator::NotifyObservers(
