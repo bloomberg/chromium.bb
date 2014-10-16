@@ -1007,7 +1007,7 @@ TEST_F(WalletClientTest, WalletErrorCodes) {
       },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(
         base::StringPrintf(
             "%s - %s",

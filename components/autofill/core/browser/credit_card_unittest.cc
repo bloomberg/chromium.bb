@@ -518,7 +518,7 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "7000700070007000", kGenericCard, true },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::string16 card_number = ASCIIToUTF16(test_cases[i].card_number);
     SCOPED_TRACE(card_number);
     EXPECT_EQ(test_cases[i].type, CreditCard::GetCreditCardType(card_number));

@@ -287,7 +287,7 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
       { "POST", false },
       { "CONNECT", false },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_ptr<net::URLRequest> request(
         context.CreateRequest(GURL("http://www.google.com/"),
                               net::DEFAULT_PRIORITY,
@@ -331,7 +331,7 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirect) {
       },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<HttpResponseHeaders> original_response_headers(
@@ -374,7 +374,7 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirectCORS) {
       },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<HttpResponseHeaders> original_response_headers(
@@ -752,7 +752,7 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
   };
   std::string primary = proxy_params_->DefaultOrigin();
   std::string fallback = proxy_params_->DefaultFallbackOrigin();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     DataReductionProxyBypassType bypass_type;
     ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
         "PROXY " +

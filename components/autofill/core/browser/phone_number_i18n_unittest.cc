@@ -121,7 +121,7 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
         {true, "(08) 450 777 7777", "DE", "7777777", "8450", "", "DE"},
     };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE("Testing phone number " + test_cases[i].input);
 
     base::string16 country_code, city_code, number;

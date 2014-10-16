@@ -142,7 +142,7 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
       true
     }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     TestCase test_case = test_cases[i];
 
     EXPECT_CALL(mock_params_, IsDataReductionProxy(testing::_, testing::_))
@@ -295,7 +295,7 @@ TEST_F(DataReductionProxyUsageStatsTest,
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     std::string raw_headers(test_cases[i].headers);
     HeadersToRaw(&raw_headers);
@@ -405,7 +405,7 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
         new DataReductionProxyUsageStats(&mock_params_, loop_proxy_));

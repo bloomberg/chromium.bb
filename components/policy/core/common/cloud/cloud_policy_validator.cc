@@ -253,7 +253,7 @@ void CloudPolicyValidatorBase::RunChecks() {
     { VALIDATE_PAYLOAD,     &CloudPolicyValidatorBase::CheckPayload },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCheckFunctions); ++i) {
+  for (size_t i = 0; i < arraysize(kCheckFunctions); ++i) {
     if (validation_flags_ & kCheckFunctions[i].flag) {
       status_ = (this->*(kCheckFunctions[i].checkFunction))();
       if (status_ != VALIDATION_OK)

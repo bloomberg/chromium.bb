@@ -24,7 +24,7 @@ TEST(MetricsUtilTest, HashName) {
     {"0123456789ABCDEF", 348858318U}
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(known_hashes); ++i)
+  for (size_t i = 0; i < arraysize(known_hashes); ++i)
     EXPECT_EQ(known_hashes[i].hash_value, HashName(known_hashes[i].name));
 }
 

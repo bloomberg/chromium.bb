@@ -93,7 +93,7 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
       "",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -343,7 +343,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       false,
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -495,7 +495,7 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
       true,
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -618,7 +618,7 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
       BYPASS_EVENT_TYPE_MAX,
     }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -657,7 +657,7 @@ TEST_F(DataReductionProxyHeadersTest,
       "fp1",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -701,7 +701,7 @@ TEST_F(DataReductionProxyHeadersTest,
       "fvia1",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -745,7 +745,7 @@ TEST_F(DataReductionProxyHeadersTest,
       "foh1",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -789,7 +789,7 @@ TEST_F(DataReductionProxyHeadersTest,
       "fcl1",
     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -854,7 +854,7 @@ TEST_F(DataReductionProxyHeadersTest,
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     std::string headers(test[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(

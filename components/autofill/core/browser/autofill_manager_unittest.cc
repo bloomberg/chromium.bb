@@ -1493,7 +1493,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
                      {"Phone Extension", "ext", 5, "tel-extension"}};
 
   FormFieldData field;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_fields); ++i) {
+  for (size_t i = 0; i < arraysize(test_fields); ++i) {
     test::CreateTestFormField(
         test_fields[i].label, test_fields[i].name, "", "text", &field);
     field.max_length = test_fields[i].max_length;
@@ -2135,7 +2135,7 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
 
   FormFieldData field;
   const size_t default_max_length = field.max_length;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_fields); ++i) {
+  for (size_t i = 0; i < arraysize(test_fields); ++i) {
     test::CreateTestFormField(
         test_fields[i].label, test_fields[i].name, "", "text", &field);
     field.max_length = test_fields[i].max_length;

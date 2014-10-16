@@ -34,7 +34,7 @@ TEST(AutofillRegexesTest, AutofillRegexes) {
     // Case-insensitive
     {"StRiNg", "string"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPositiveCases); ++i) {
+  for (size_t i = 0; i < arraysize(kPositiveCases); ++i) {
     const TestCase& test_case = kPositiveCases[i];
     SCOPED_TRACE(test_case.input);
     SCOPED_TRACE(test_case.pattern);
@@ -54,7 +54,7 @@ TEST(AutofillRegexesTest, AutofillRegexes) {
     {"string", "ring "},
     {"string", "rin$"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNegativeCases); ++i) {
+  for (size_t i = 0; i < arraysize(kNegativeCases); ++i) {
     const TestCase& test_case = kNegativeCases[i];
     SCOPED_TRACE(test_case.input);
     SCOPED_TRACE(test_case.pattern);

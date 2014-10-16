@@ -33,8 +33,8 @@ std::string GetEncoded(const std::string& input) {
   base::MD5Digest digest;
   base::MD5Sum(input.c_str(), input.size(), &digest);
   std::string base64encoded;
-  base::Base64Encode(std::string((char*)digest.a,
-                     ARRAYSIZE_UNSAFE(digest.a)), &base64encoded);
+  base::Base64Encode(std::string((char*)digest.a, arraysize(digest.a)),
+                     &base64encoded);
   return base64encoded;
 }
 
@@ -237,7 +237,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ChromeProxy) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     ReplaceWithEncodedString(&test[i].received_fingerprint);
 
     std::string raw_headers(test[i].raw_header);
@@ -363,7 +363,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, Via) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     std::string raw_headers(test[i].raw_header);
     HeadersToRaw(&raw_headers);
     scoped_refptr<net::HttpResponseHeaders> headers(
@@ -494,7 +494,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, OtherHeaders) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     ReplaceWithEncodedString(&test[i].received_fingerprint);
 
     std::string raw_headers(test[i].raw_header);
@@ -572,7 +572,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     std::string raw_headers(test[i].raw_header);
     HeadersToRaw(&raw_headers);
     scoped_refptr<net::HttpResponseHeaders> headers(
@@ -611,7 +611,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ValuesToSortedString) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     std::vector<std::string> input_values =
         StringsToVector(test[i].input_values);
     std::string output_string =
@@ -659,7 +659,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, GetHeaderValues) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     std::string raw_headers(test[i].raw_header);
     HeadersToRaw(&raw_headers);
     scoped_refptr<net::HttpResponseHeaders> headers(
@@ -735,7 +735,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
 
   InitEnv();
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test); ++i) {
+  for (size_t i = 0; i < arraysize(test); ++i) {
     std::string raw_headers(test[i].raw_header);
     ReplaceWithEncodedString(&raw_headers);
     HeadersToRaw(&raw_headers);

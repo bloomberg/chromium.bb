@@ -334,7 +334,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     { "aa foo", base::string16::npos, false, "", "aa foo",
       base::string16::npos },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+  for (size_t i = 0; i < arraysize(cases); i++) {
     AutocompleteInput input(
         ASCIIToUTF16(cases[i].text), cases[i].cursor_position, std::string(),
         GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,

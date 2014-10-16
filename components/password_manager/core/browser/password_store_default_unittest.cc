@@ -91,7 +91,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 
   // Build the expected forms vector and add the forms to the store.
   std::vector<PasswordForm*> expected_forms;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(form_data); ++i) {
+  for (unsigned int i = 0; i < arraysize(form_data); ++i) {
     PasswordForm* form = CreatePasswordFormFromData(form_data[i]);
     expected_forms.push_back(form);
     store->AddLogin(*form);

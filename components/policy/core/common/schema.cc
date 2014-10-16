@@ -76,7 +76,7 @@ bool SchemaTypeToValueType(const std::string& type_string,
     { schema::kObject,       base::Value::TYPE_DICTIONARY },
     { schema::kString,       base::Value::TYPE_STRING     },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSchemaToValueTypeMap); ++i) {
+  for (size_t i = 0; i < arraysize(kSchemaToValueTypeMap); ++i) {
     if (kSchemaToValueTypeMap[i].schema_type == type_string) {
       *type = kSchemaToValueTypeMap[i].value_type;
       return true;

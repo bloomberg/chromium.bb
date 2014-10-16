@@ -204,7 +204,7 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
         base::string16(), TemplateURLFetcher::EXPLICIT_PROVIDER },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     StartDownload(test_cases[i].keyword, test_cases[i].osdd_file_name,
                   test_cases[i].provider_type, false);
     ASSERT_EQ(1, template_url_fetcher()->requests_count())
@@ -213,7 +213,7 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
   }
 
   WaitForDownloadToFinish();
-  ASSERT_EQ(1 + ARRAYSIZE_UNSAFE(test_cases),
+  ASSERT_EQ(1 + arraysize(test_cases),
             static_cast<size_t>(callbacks_destroyed()));
   ASSERT_EQ(0, add_provider_called());
 }

@@ -153,7 +153,7 @@ TEST_F(VariationsHttpHeaderProviderTest, ShouldAppendHeaders) {
         {"http://a.b.ytimg.com", true},
     };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     const GURL url(cases[i].url);
     EXPECT_EQ(cases[i].should_append_headers,
               VariationsHttpHeaderProvider::ShouldAppendHeaders(url))

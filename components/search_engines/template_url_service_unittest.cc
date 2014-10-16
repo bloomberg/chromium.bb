@@ -889,7 +889,7 @@ TEST_F(TemplateURLServiceTest, UpdateKeywordSearchTermsForURL) {
                      "http://sugg1", "http://x/foo#query={searchTerms}",
                      "http://icon1", false, "UTF-8;UTF-16", Time(), Time());
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     TemplateURLService::URLVisitedDetails details = {
       GURL(data[i].url), false
     };
@@ -911,7 +911,7 @@ TEST_F(TemplateURLServiceTest, DontUpdateKeywordSearchForNonReplaceable) {
   AddKeywordWithDate("name", "x", "http://x/foo", "http://sugg1", std::string(),
                      "http://icon1", false, "UTF-8;UTF-16", Time(), Time());
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     TemplateURLService::URLVisitedDetails details = {
       GURL(data[i].url), false
     };

@@ -219,7 +219,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
       {{"USERNAME", NULL, "uSeRNaMe"}, "username1", "John", "Smith"},
       {{"uSeRNaMe", NULL, "USERNAME"}, "username1", "John", "Smith"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     for (size_t nonempty_username_fields = 0; nonempty_username_fields < 2;
          ++nonempty_username_fields) {
       SCOPED_TRACE(testing::Message()
@@ -293,7 +293,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
       {{"", "beta"}, "password1", "", "password2", "beta"},
       {{"alpha", "beta"}, "password1", "alpha", "password2", "beta"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
 
     PasswordFormBuilder builder(kTestFormActionURL);
@@ -350,7 +350,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
       // Note: In all other cases, we give up and consider the form invalid.
       // This is tested in InvalidFormDueToConfusingPasswordFields.
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
 
     PasswordFormBuilder builder(kTestFormActionURL);
@@ -482,7 +482,7 @@ TEST_F(PasswordFormConversionUtilsTest,
       {{NULL, "nEw-PaSsWoRd", NULL},
        "", "", "password2", "beta"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
 
     PasswordFormBuilder builder(kTestFormActionURL);
@@ -556,7 +556,7 @@ TEST_F(PasswordFormConversionUtilsTest,
       {"alpha", "alpha", "alpha"},
       {"alpha", "beta", "alpha"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
 
     PasswordFormBuilder builder(kTestFormActionURL);

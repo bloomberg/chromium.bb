@@ -365,8 +365,7 @@ void DataReductionProxyTamperDetection::GetMD5(
     const std::string& input, std::string* output) {
   base::MD5Digest digest;
   base::MD5Sum(input.c_str(), input.size(), &digest);
-  *output = std::string(
-      reinterpret_cast<char*>(digest.a), ARRAYSIZE_UNSAFE(digest.a));
+  *output = std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
 }
 
 std::vector<std::string> DataReductionProxyTamperDetection::GetHeaderValues(

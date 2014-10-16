@@ -370,7 +370,7 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
 }
 
 TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(url_whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(url_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_->bookmark_bar_node();
     const base::string16 title(
         ASCIIToUTF16(url_whitespace_test_cases[i].input_title));
@@ -457,7 +457,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
 }
 
 TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(title_whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(title_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_->bookmark_bar_node();
     const base::string16 title(
         ASCIIToUTF16(title_whitespace_test_cases[i].input_title));
@@ -554,7 +554,7 @@ TEST_F(BookmarkModelTest, SetTitle) {
 }
 
 TEST_F(BookmarkModelTest, SetTitleWithWhitespace) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(title_whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(title_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_->bookmark_bar_node();
     base::string16 title(ASCIIToUTF16("dummy"));
     const GURL url("http://foo.com");
@@ -969,7 +969,7 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     { "a [ b ]", "" },
     { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     model_ = client_.CreateModel();
 
     TestNode bbn;

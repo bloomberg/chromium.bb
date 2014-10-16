@@ -243,10 +243,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatches) {
     { 1, 0, 399 },
   };
 
-  ASSERT_NO_FATAL_FAILURE(
-      RunCopyOldMatchesTest(last, ARRAYSIZE_UNSAFE(last),
-                            current, ARRAYSIZE_UNSAFE(current),
-                            result, ARRAYSIZE_UNSAFE(result)));
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
+                                                current, arraysize(current),
+                                                result, arraysize(result)));
 }
 
 // Tests that matches are copied correctly from two distinct providers.
@@ -268,10 +267,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatches2) {
     { 3, 1, 300 },
   };
 
-  ASSERT_NO_FATAL_FAILURE(
-      RunCopyOldMatchesTest(last, ARRAYSIZE_UNSAFE(last),
-                            current, ARRAYSIZE_UNSAFE(current),
-                            result, ARRAYSIZE_UNSAFE(result)));
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
+                                                current, arraysize(current),
+                                                result, arraysize(result)));
 }
 
 // Tests that matches with empty destination URLs aren't treated as duplicates

@@ -134,7 +134,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   // Build the forms vector and add the forms to the store.
   std::vector<PasswordForm*> all_forms;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(form_data); ++i) {
+  for (size_t i = 0; i < arraysize(form_data); ++i) {
     PasswordForm* form = CreatePasswordFormFromData(form_data[i]);
     all_forms.push_back(form);
     store->AddLogin(*form);

@@ -410,7 +410,7 @@ TEST(SchemaTest, ValidSchema) {
     { "StringWithPattern",           base::Value::TYPE_STRING },
   };
   Schema::Iterator it = schema.GetPropertiesIterator();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpectedProperties); ++i) {
+  for (size_t i = 0; i < arraysize(kExpectedProperties); ++i) {
     ASSERT_FALSE(it.IsAtEnd());
     EXPECT_STREQ(kExpectedProperties[i].expected_key, it.key());
     ASSERT_TRUE(it.schema().valid());
@@ -473,7 +473,7 @@ TEST(SchemaTest, Lookups) {
     { "abab",   base::Value::TYPE_STRING },
     { "bb",     base::Value::TYPE_NULL },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpectedKeys); ++i) {
+  for (size_t i = 0; i < arraysize(kExpectedKeys); ++i) {
     Schema sub = schema.GetKnownProperty(kExpectedKeys[i].expected_key);
     ASSERT_TRUE(sub.valid());
     EXPECT_EQ(kExpectedKeys[i].expected_type, sub.type());
@@ -559,7 +559,7 @@ TEST(SchemaTest, Wrap) {
   };
 
   Schema::Iterator it = schema.GetPropertiesIterator();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpectedProperties); ++i) {
+  for (size_t i = 0; i < arraysize(kExpectedProperties); ++i) {
     ASSERT_FALSE(it.IsAtEnd());
     EXPECT_STREQ(kExpectedProperties[i].key, it.key());
     Schema sub = it.schema();

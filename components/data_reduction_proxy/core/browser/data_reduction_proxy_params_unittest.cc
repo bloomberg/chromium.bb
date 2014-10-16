@@ -508,7 +508,7 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     int flags = 0;
     if (tests[i].allowed)
       flags |= DataReductionProxyParams::kAllowed;
@@ -696,7 +696,7 @@ TEST_F(DataReductionProxyParamsTest, IsDataReductionProxy) {
         false
       },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     int flags = DataReductionProxyParams::kAllowed |
                 DataReductionProxyParams::kAlternativeAllowed;
     if (tests[i].fallback_allowed)
@@ -1077,7 +1077,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
   std::string ssl_origin = GetRetryMapKeyFromOrigin(
       TestDataReductionProxyParams::DefaultSSLOrigin());
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     int flags = 0;
     if (tests[i].allowed)
       flags |= DataReductionProxyParams::kAllowed;

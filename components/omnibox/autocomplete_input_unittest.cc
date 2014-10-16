@@ -157,7 +157,7 @@ TEST(AutocompleteInputTest, InputType) {
     { base::WideToUTF16(L".\u062A"), metrics::OmniboxInputType::UNKNOWN },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
+  for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             std::string(), GURL(),
@@ -197,7 +197,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
         std::string() },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
+  for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos, "com",
                             GURL(), OmniboxEventProto::INVALID_SPEC, true,
@@ -249,7 +249,7 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
         Component(12, 11), kInvalidComponent }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
+  for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     Component scheme, host;
     AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
@@ -292,7 +292,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     { ASCIIToUTF16("  ?  foo bar"), 6, ASCIIToUTF16("foo bar"), 1 },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
+  for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input,
                             input_cases[i].cursor_position, std::string(),

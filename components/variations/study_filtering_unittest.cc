@@ -138,7 +138,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
     {"", true, true, true},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::vector<std::string> filter_locales;
     Study_Filter filter;
     base::SplitString(test_cases[i].filter_locales, ',', &filter_locales);
@@ -218,7 +218,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
   // Start date not set should result in true.
   EXPECT_TRUE(internal::CheckStudyStartDate(filter, now));
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(start_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(start_test_cases); ++i) {
     filter.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
     const bool result = internal::CheckStudyStartDate(filter, now);
     EXPECT_EQ(start_test_cases[i].expected_result, result)
@@ -273,7 +273,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   // Min/max version not set should result in true.
   EXPECT_TRUE(internal::CheckStudyVersion(filter, base::Version("1.2.3")));
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(min_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(min_test_cases); ++i) {
     filter.set_min_version(min_test_cases[i].min_version);
     const bool result =
         internal::CheckStudyVersion(filter, Version(min_test_cases[i].version));
@@ -282,7 +282,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   }
   filter.clear_min_version();
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(max_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(max_test_cases); ++i) {
     filter.set_max_version(max_test_cases[i].max_version);
     const bool result =
         internal::CheckStudyVersion(filter, Version(max_test_cases[i].version));
@@ -291,8 +291,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
   }
 
   // Check intersection semantics.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(min_test_cases); ++i) {
-    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(max_test_cases); ++j) {
+  for (size_t i = 0; i < arraysize(min_test_cases); ++i) {
+    for (size_t j = 0; j < arraysize(max_test_cases); ++j) {
       filter.set_min_version(min_test_cases[i].min_version);
       filter.set_max_version(max_test_cases[j].max_version);
 
@@ -353,7 +353,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyHardwareClass) {
     // considered undefined.
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     Study_Filter filter;
     std::vector<std::string> hardware_class;
     base::SplitString(test_cases[i].hardware_class, ',', &hardware_class);
@@ -424,7 +424,7 @@ TEST(VariationsStudyFilteringTest, IsStudyExpired) {
   // Expiry date not set should result in false.
   EXPECT_FALSE(internal::IsStudyExpired(study, now));
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expiry_test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(expiry_test_cases); ++i) {
     study.set_expiry_date(TimeToProtoTime(expiry_test_cases[i].expiry_date));
     const bool result = internal::IsStudyExpired(study, now);
     EXPECT_EQ(expiry_test_cases[i].expected_result, result)

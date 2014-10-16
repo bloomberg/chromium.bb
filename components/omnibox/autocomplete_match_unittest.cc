@@ -26,7 +26,7 @@ TEST(AutocompleteMatchTest, MoreRelevant) {
   AutocompleteMatch m2(NULL, 0, false,
                        AutocompleteMatchType::URL_WHAT_YOU_TYPED);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     m1.relevance = cases[i].r1;
     m2.relevance = cases[i].r2;
     EXPECT_EQ(cases[i].expected_result,

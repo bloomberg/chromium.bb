@@ -116,7 +116,7 @@ TEST_F(QueryParserTest, ParseQueryNodesAndMatch) {
     { "\"foo blah\"",  "\"foo blah\"",     true,  1, 9, 0, 0 },
     { "foo blah",      "\"foo bar blah\"", true,  1, 4, 9, 13 },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     QueryParser parser;
     ScopedVector<QueryNode> query_nodes;
     parser.ParseQueryNodes(base::UTF8ToUTF16(data[i].query),
@@ -154,7 +154,7 @@ TEST_F(QueryParserTest, ParseQueryWords) {
     { "\"foo bar\"",   "foo", "bar", "",  2 },
     { "\"foo bar\" a", "foo", "bar", "a", 3 },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+  for (size_t i = 0; i < arraysize(data); ++i) {
     std::vector<base::string16> results;
     QueryParser parser;
     parser.ParseQueryWords(base::UTF8ToUTF16(data[i].text), &results);

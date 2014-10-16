@@ -330,7 +330,7 @@ TEST(URLMatcherFactoryTest, CaseSensitivity) {
                          kIsUrlCaseSensitive, kIsUrlLowerCaseEnforced, url),
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(case_tests); ++i) {
+  for (size_t i = 0; i < arraysize(case_tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Iteration: %" PRIuS, i));
     case_tests[i].Test();
   }

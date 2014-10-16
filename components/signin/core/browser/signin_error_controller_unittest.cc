@@ -164,10 +164,10 @@ TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
   };
-  COMPILE_ASSERT(ARRAYSIZE_UNSAFE(table) == GoogleServiceAuthError::NUM_STATES,
+  COMPILE_ASSERT(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
       kTable_size_does_not_match_number_of_auth_error_types);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(table); ++i) {
+  for (size_t i = 0; i < arraysize(table); ++i) {
     FakeAuthStatusProvider provider(error_controller_.get());
     provider.SetAuthError(kTestAccountId,
                           kTestUsername,
