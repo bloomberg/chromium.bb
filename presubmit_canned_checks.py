@@ -1107,7 +1107,9 @@ def CheckPatchFormatted(input_api, output_api):
   if code == 2:
     return [output_api.PresubmitPromptWarning(
       'The %s directory requires clang-formatting. '
-      'Please run git cl format %s' % (input_api.basename, input_api.basename))]
+      'Please run git cl format %s' %
+      (input_api.basename(input_api.PresubmitLocalPath()),
+       input_api.basename(input_api.PresubmitLocalPath())))]
   # As this is just a warning, ignore all other errors if the user
   # happens to have a broken clang-format, doesn't use git, etc etc.
   return []
