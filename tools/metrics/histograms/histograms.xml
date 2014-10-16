@@ -29846,6 +29846,124 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>How did the user interact with the SessionCrashed Bubble?</summary>
 </histogram>
 
+<histogram name="SessionRestore.AllTabsLoaded" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="SessionRestore.command_size" units="bytes">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The size of the commands written to disk. See SessionBackend for details.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.FirstTabPainted" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="SessionRestore.last_session_file_size" units="KB">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>The size, in k, of the last session file on disk.</summary>
+</histogram>
+
+<histogram name="SessionRestore.NavEntryCommittedLongPeriod">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Like NavEntryCommittedPeriod, but specifically to provide a clearer
+    breakdown of samples in the 10 minutes - 8 hours range.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.NavEntryCommittedPeriod" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Milliseconds between subsequent Save() operations due to a nav entry being
+    committed (new tab created + nav initiated).
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.NavigationListPrunedLongPeriod">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Like NavListPrunedPeriod, but specifically to provide a clearer breakdown of
+    samples in the 10 minutes - 8 hours range.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.NavigationListPrunedPeriod"
+    units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Milliseconds between subsequent Save() operations due to the navigation list
+    being pruned (typically a change in back/forward stacks).
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.ParallelTabLoads">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The number of tabs that were loaded simultaneously when restoring a session.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.read_session_file_time" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Amount of time to read and assemble the commands from the last session.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.SaveLongPeriod">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Like SavePeriod, but specifically to provide a clearer breakdown of samples
+    in the 10 minutes - 8 hours range.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.SavePeriod" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Amount of time between subsequent SessionService Save() operations (aka
+    updates to session data).
+  </summary>
+  <details>
+    Periods longer than 10 minutes are grouped together; see SaveLongPeriod for
+    resolution.
+  </details>
+</histogram>
+
+<histogram name="SessionRestore.TabClosedLongPeriod">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    TabClosedPeriod, but specifically to provide a clearer breakdown of samples
+    in the 10 minutes - 8 hours range.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.TabClosedPeriod" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Milliseconds between subsequent Save() operations due to a tab being closed.
+  </summary>
+</histogram>
+
 <histogram name="SessionStorageDatabase.Open" enum="SessionStorageDatabaseOpen">
   <owner>michaeln@chromium.org</owner>
   <summary>
@@ -56990,6 +57108,31 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SessionRestoreTabCounts">
+  <suffix name="1" label="1 tab present"/>
+  <suffix name="2" label="2 tabs present"/>
+  <suffix name="3" label="3 tabs present"/>
+  <suffix name="4" label="4 tabs present"/>
+  <suffix name="5" label="5 tabs present"/>
+  <suffix name="6" label="6 tabs present"/>
+  <suffix name="7" label="7 tabs present"/>
+  <suffix name="8" label="8 tabs present"/>
+  <suffix name="9" label="9 tabs present"/>
+  <suffix name="10" label="10 tabs present"/>
+  <suffix name="11" label="11 tab present"/>
+  <suffix name="12" label="12 tabs present"/>
+  <suffix name="13" label="13 tabs present"/>
+  <suffix name="14" label="14 tabs present"/>
+  <suffix name="15" label="15 tabs present"/>
+  <suffix name="16" label="16 tabs present"/>
+  <suffix name="17" label="17 tabs present"/>
+  <suffix name="18" label="18 tabs present"/>
+  <suffix name="19" label="19 tabs present"/>
+  <suffix name="20" label="20 tabs present"/>
+  <affected-histogram name="SessionRestore.AllTabsLoaded"/>
+  <affected-histogram name="SessionRestore.FirstTabPainted"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ShillWiFiRememberedNetworkSecurityMode" separator=".">
