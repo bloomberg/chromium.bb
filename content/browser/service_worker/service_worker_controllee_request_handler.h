@@ -44,7 +44,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // Called via custom URLRequestJobFactory.
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) override;
+      net::NetworkDelegate* network_delegate,
+      ResourceContext* resource_context) override;
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,
@@ -78,6 +79,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   RequestContextType request_context_type_;
   RequestContextFrameType frame_type_;
   scoped_refptr<ResourceRequestBody> body_;
+  ResourceContext* resource_context_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);

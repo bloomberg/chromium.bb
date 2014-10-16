@@ -13,6 +13,8 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
@@ -60,7 +62,8 @@ ServiceWorkerControlleeRequestHandler::
 
 net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) {
+    net::NetworkDelegate* network_delegate,
+    ResourceContext* resource_context) {
   if (!context_ || !provider_host_) {
     // We can't do anything other than to fall back to network.
     job_ = NULL;
@@ -93,6 +96,8 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
                                         request_context_type_,
                                         frame_type_,
                                         body_);
+  resource_context_ = resource_context;
+
   if (is_main_resource_load_)
     PrepareForMainResource(request);
   else
@@ -174,6 +179,20 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
   DCHECK(registration.get());
+
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          registration->pattern(),
+          provider_host_->topmost_frame_url(),
+          resource_context_)) {
+    job_->FallbackToNetwork();
+    TRACE_EVENT_ASYNC_END2(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+        job_.get(),
+        "Status", status,
+        "Info", "ServiceWorker is blocked");
+    return;
+  }
 
   // Initiate activation of a waiting version.
   // Usually a register job initiates activation but that

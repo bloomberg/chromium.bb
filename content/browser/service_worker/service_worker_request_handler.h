@@ -29,6 +29,7 @@ class BlobStorageContext;
 
 namespace content {
 
+class ResourceContext;
 class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
@@ -65,14 +66,16 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::URLRequest* request);
 
   // Creates a protocol interceptor for ServiceWorker.
-  static scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
+  static scoped_ptr<net::URLRequestInterceptor> CreateInterceptor(
+      ResourceContext* resource_context);
 
   virtual ~ServiceWorkerRequestHandler();
 
   // Called via custom URLRequestJobFactory.
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) = 0;
+      net::NetworkDelegate* network_delegate,
+      ResourceContext* context) = 0;
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,

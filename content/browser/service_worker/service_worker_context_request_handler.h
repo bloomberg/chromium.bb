@@ -26,7 +26,8 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
   // Called via custom URLRequestJobFactory.
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) override;
+      net::NetworkDelegate* network_delegate,
+      ResourceContext* resource_context) override;
 
   virtual void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,

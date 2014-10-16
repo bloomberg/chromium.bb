@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
+#include "content/public/browser/resource_context.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
@@ -34,7 +35,8 @@ ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
 
 net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) {
+    net::NetworkDelegate* network_delegate,
+    ResourceContext* resource_context) {
   if (!provider_host_ || !version_.get() || !context_)
     return NULL;
 

@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/resource_context.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -28,7 +29,8 @@ int kUserDataKey;  // Key value is not important.
 class ServiceWorkerRequestInterceptor
     : public net::URLRequestInterceptor {
  public:
-  ServiceWorkerRequestInterceptor() {}
+  explicit ServiceWorkerRequestInterceptor(ResourceContext* resource_context)
+      : resource_context_(resource_context) {}
   virtual ~ServiceWorkerRequestInterceptor() {}
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
@@ -37,10 +39,12 @@ class ServiceWorkerRequestInterceptor
         ServiceWorkerRequestHandler::GetHandler(request);
     if (!handler)
       return NULL;
-    return handler->MaybeCreateJob(request, network_delegate);
+    return handler->MaybeCreateJob(
+        request, network_delegate, resource_context_);
   }
 
  private:
+  ResourceContext* resource_context_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestInterceptor);
 };
 
@@ -110,9 +114,10 @@ ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
 }
 
 scoped_ptr<net::URLRequestInterceptor>
-ServiceWorkerRequestHandler::CreateInterceptor() {
+ServiceWorkerRequestHandler::CreateInterceptor(
+    ResourceContext* resource_context) {
   return scoped_ptr<net::URLRequestInterceptor>(
-      new ServiceWorkerRequestInterceptor);
+      new ServiceWorkerRequestInterceptor(resource_context));
 }
 
 ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {

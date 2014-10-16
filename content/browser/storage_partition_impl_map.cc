@@ -435,7 +435,8 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 
   URLRequestInterceptorScopedVector request_interceptors;
   request_interceptors.push_back(
-      ServiceWorkerRequestHandler::CreateInterceptor().release());
+      ServiceWorkerRequestHandler::CreateInterceptor(
+          browser_context_->GetResourceContext()).release());
 
   // These calls must happen after StoragePartitionImpl::Create().
   if (partition_domain.empty()) {
