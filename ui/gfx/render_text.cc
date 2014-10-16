@@ -1260,8 +1260,7 @@ base::string16 RenderText::Elide(const base::string16& text,
   size_t hi = text.length() - 1;
   const base::i18n::TextDirection text_direction = GetTextDirection();
   for (size_t guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
-    // Restore styles and colors. They will be truncated to size by SetText.
-    render_text->styles_ = styles_;
+    // Restore colors. They will be truncated to size by SetText.
     render_text->colors_ = colors_;
     base::string16 new_text =
         slicer.CutString(guess, insert_ellipsis && behavior != ELIDE_TAIL);
@@ -1285,6 +1284,25 @@ base::string16 RenderText::Elide(const base::string16& text,
           new_text += base::i18n::kRightToLeftMark;
       }
       render_text->SetText(new_text);
+    }
+
+    // Restore styles. Make sure style ranges don't break new text graphemes.
+    render_text->styles_ = styles_;
+    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
+      BreakList<bool>& break_list = render_text->styles_[style];
+      break_list.SetMax(render_text->text_.length());
+      Range range;
+      while (range.end() < break_list.max()) {
+        BreakList<bool>::const_iterator current_break =
+            break_list.GetBreak(range.end());
+        range = break_list.GetRange(current_break);
+        if (range.end() < break_list.max() &&
+            !render_text->IsValidCursorIndex(range.end())) {
+          range.set_end(render_text->IndexOfAdjacentGrapheme(range.end(),
+                                                             CURSOR_FORWARD));
+          break_list.ApplyValue(current_break->second, range);
+        }
+      }
     }
 
     // We check the width of the whole desired string at once to ensure we
