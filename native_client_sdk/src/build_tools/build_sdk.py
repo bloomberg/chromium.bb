@@ -138,10 +138,10 @@ def GetOutputToolchainLib(pepperdir, tcname, xarch):
   return GetToolchainNaClLib(tcname, tcpath, xarch)
 
 
-def GetPNaClNativeLib(tcpath, arch):
+def GetPNaClTranslatorLib(tcpath, arch):
   if arch not in ['arm', 'x86-32', 'x86-64']:
     buildbot_common.ErrorExit('Unknown architecture %s.' % arch)
-  return os.path.join(tcpath, 'lib-' + arch)
+  return os.path.join(tcpath, 'translator', arch, 'lib')
 
 
 def BuildStepDownloadToolchains(toolchains):
@@ -613,9 +613,14 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
                                          'gen', 'tc_pnacl_translate',
                                          'lib-' + nacl_arch)
 
+        pnacl_translator_lib_dir = GetPNaClTranslatorLib(pnacldir, nacl_arch)
+        if not os.path.isdir(pnacl_translator_lib_dir):
+          buildbot_common.ErrorExit('Expected %s directory to exist.' %
+                                    pnacl_translator_lib_dir)
+
         buildbot_common.CopyFile(
             os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
-            GetPNaClNativeLib(pnacldir, nacl_arch))
+            pnacl_translator_lib_dir)
 
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
                        'newlib')
