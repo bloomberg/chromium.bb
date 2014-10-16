@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
-#define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
+#define EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
 
 #include <set>
 #include <string>
@@ -116,10 +116,9 @@ class ExtensionDownloaderDelegate {
   // what the source of this forcing is (i.e. what string will be passed
   // in |installsource| as part of the update query parameters). The default
   // implementation always returns |false|.
-  virtual bool ShouldForceUpdate(const std::string& id,
-                                 std::string* source);
+  virtual bool ShouldForceUpdate(const std::string& id, std::string* source);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_DELEGATE_H_

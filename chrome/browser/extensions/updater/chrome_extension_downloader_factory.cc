@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
 
-#include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "components/omaha_query_params/omaha_query_params.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "extensions/browser/updater/extension_downloader.h"
 #include "google_apis/gaia/identity_provider.h"
 
 using extensions::ExtensionDownloader;

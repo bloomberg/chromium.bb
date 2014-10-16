@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_H_
-#define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_H_
+#define EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_H_
 
 #include <deque>
 #include <map>
@@ -18,7 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/browser/updater/request_queue.h"
 #include "extensions/common/extension.h"
@@ -52,15 +52,13 @@ class ExtensionUpdaterTest;
 // the crx file when updates are found. It uses a |ExtensionDownloaderDelegate|
 // that takes ownership of the downloaded crx files, and handles events during
 // the update check.
-class ExtensionDownloader
-    : public net::URLFetcherDelegate,
-      public OAuth2TokenService::Consumer {
+class ExtensionDownloader : public net::URLFetcherDelegate,
+                            public OAuth2TokenService::Consumer {
  public:
   // A closure which constructs a new ExtensionDownloader to be owned by the
   // caller.
-  typedef base::Callback<
-      scoped_ptr<ExtensionDownloader>(ExtensionDownloaderDelegate* delegate)>
-      Factory;
+  typedef base::Callback<scoped_ptr<ExtensionDownloader>(
+      ExtensionDownloaderDelegate* delegate)> Factory;
 
   // |delegate| is stored as a raw pointer and must outlive the
   // ExtensionDownloader.
@@ -151,8 +149,10 @@ class ExtensionDownloader
   // when doing a fetch.
   struct ExtensionFetch {
     ExtensionFetch();
-    ExtensionFetch(const std::string& id, const GURL& url,
-                   const std::string& package_hash, const std::string& version,
+    ExtensionFetch(const std::string& id,
+                   const GURL& url,
+                   const std::string& package_hash,
+                   const std::string& version,
                    const std::set<int>& request_ids);
     ~ExtensionFetch();
 
@@ -280,7 +280,7 @@ class ExtensionDownloader
   // on the length of http GET requests, so there might be multiple
   // ManifestFetchData* objects with the same base_url.
   typedef std::map<std::pair<int, GURL>,
-                   std::vector<linked_ptr<ManifestFetchData> > > FetchMap;
+                   std::vector<linked_ptr<ManifestFetchData>>> FetchMap;
   FetchMap fetches_preparing_;
 
   // Outstanding url fetch requests for manifests and updates.
@@ -331,4 +331,4 @@ class ExtensionDownloader
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_DOWNLOADER_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_H_

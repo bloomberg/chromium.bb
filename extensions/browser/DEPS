@@ -8,6 +8,7 @@ include_rules = [
   "+content/public/browser",
   "+device/bluetooth",
   "+device/usb",
+  "+google_apis/gaia",
   "+grit/extensions_strings.h",
   "+net",
   "+skia/ext/image_operations.h",

@@ -2,24 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 
 #include "base/logging.h"
 #include "base/version.h"
 
 namespace extensions {
 
-ExtensionDownloaderDelegate::PingResult::PingResult() : did_ping(false) {}
+ExtensionDownloaderDelegate::PingResult::PingResult() : did_ping(false) {
+}
 
-ExtensionDownloaderDelegate::PingResult::~PingResult() {}
+ExtensionDownloaderDelegate::PingResult::~PingResult() {
+}
 
-ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {}
+ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {
+}
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
     const std::string& id,
     ExtensionDownloaderDelegate::Error error,
     const ExtensionDownloaderDelegate::PingResult& ping_result,
-    const std::set<int>& request_id) {}
+    const std::set<int>& request_id) {
+}
 
 bool ExtensionDownloaderDelegate::GetPingDataForExtension(
     const std::string& id,
@@ -32,9 +36,8 @@ std::string ExtensionDownloaderDelegate::GetUpdateUrlData(
   return std::string();
 }
 
-bool ExtensionDownloaderDelegate::ShouldForceUpdate(
-    const std::string& id,
-    std::string* source) {
+bool ExtensionDownloaderDelegate::ShouldForceUpdate(const std::string& id,
+                                                    std::string* source) {
   return false;
 }
 

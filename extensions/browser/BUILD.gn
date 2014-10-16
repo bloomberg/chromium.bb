@@ -23,6 +23,7 @@ source_set("browser") {
     "//extensions/common/api",
     "//extensions/common/api:api_registration",
     "//extensions/strings",
+    "//google_apis",
     "//skia",
     "//third_party/leveldatabase",
     "//third_party/re2"
@@ -427,6 +428,10 @@ source_set("browser") {
       "uninstall_reason.h",
       "update_observer.h",
       "updater/extension_cache.h",
+      "updater/extension_downloader.cc",
+      "updater/extension_downloader.h",
+      "updater/extension_downloader_delegate.cc",
+      "updater/extension_downloader_delegate.h",
       "updater/manifest_fetch_data.cc",
       "updater/manifest_fetch_data.h",
       "updater/null_extension_cache.cc",
