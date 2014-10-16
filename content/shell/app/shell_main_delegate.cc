@@ -19,6 +19,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/app/webkit_test_platform_support.h"
+#include "content/shell/browser/layout_test/layout_test_browser_main.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_switches.h"
@@ -251,7 +252,11 @@ int ShellMainDelegate::RunProcess(
 #endif
 
   browser_runner_.reset(BrowserMainRunner::Create());
-  return ShellBrowserMain(main_function_params, browser_runner_);
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kDumpRenderTree) ||
+                 command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)
+             ? LayoutTestBrowserMain(main_function_params, browser_runner_)
+             : ShellBrowserMain(main_function_params, browser_runner_);
 }
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)

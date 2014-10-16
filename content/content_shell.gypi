@@ -94,6 +94,8 @@
         'shell/browser/ipc_echo_message_filter.h',
         'shell/browser/layout_test/layout_test_browser_context.cc',
         'shell/browser/layout_test/layout_test_browser_context.h',
+        'shell/browser/layout_test/layout_test_browser_main.cc',
+        'shell/browser/layout_test/layout_test_browser_main.h',
         'shell/browser/layout_test/layout_test_browser_main_parts.cc',
         'shell/browser/layout_test/layout_test_browser_main_parts.h',
         'shell/browser/layout_test/layout_test_download_manager_delegate.cc',
