@@ -220,13 +220,13 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   // rules on top of the real host resolver. This allows forwarding all requests
   // through a designated test server.
   if (!command_line.HasSwitch(switches::kHostResolverRules))
-    return global_host_resolver.PassAs<net::HostResolver>();
+    return global_host_resolver.Pass();
 
   scoped_ptr<net::MappedHostResolver> remapped_resolver(
       new net::MappedHostResolver(global_host_resolver.Pass()));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-  return remapped_resolver.PassAs<net::HostResolver>();
+  return remapped_resolver.Pass();
 }
 
 // TODO(willchan): Remove proxy script fetcher context since it's not necessary
@@ -710,8 +710,7 @@ void IOThread::InitAsync() {
       new net::FtpProtocolHandler(
           globals_->proxy_script_fetcher_ftp_transaction_factory.get()));
 #endif
-  globals_->proxy_script_fetcher_url_request_job_factory =
-      job_factory.PassAs<net::URLRequestJobFactory>();
+  globals_->proxy_script_fetcher_url_request_job_factory = job_factory.Pass();
 
   globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
   globals_->throttler_manager->set_net_log(net_log_);

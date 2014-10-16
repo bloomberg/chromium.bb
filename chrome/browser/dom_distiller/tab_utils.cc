@@ -122,8 +122,7 @@ void StartDistillation(content::WebContents* web_contents) {
           web_contents->GetBrowserContext());
   scoped_ptr<DistillerPage> distiller_page =
       dom_distiller_service->CreateDefaultDistillerPageWithHandle(
-                                 source_page_handle.PassAs<SourcePageHandle>())
-          .Pass();
+                                 source_page_handle.Pass()).Pass();
 
   const GURL& last_committed_url = web_contents->GetLastCommittedURL();
   scoped_ptr<ViewerHandle> viewer_handle = dom_distiller_service->ViewUrl(

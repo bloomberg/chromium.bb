@@ -166,7 +166,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
   TestingProfile::Builder builder;
   builder.SetPath(
       profile_manager_.profiles_dir().AppendASCII(chrome::kInitialProfile));
-  builder.SetPrefService(login_profile_prefs.PassAs<PrefServiceSyncable>());
+  builder.SetPrefService(login_profile_prefs.Pass());
   TestingProfile* login_profile = builder.BuildIncognito(
       profile_manager_.CreateTestingProfile(chrome::kInitialProfile));
 

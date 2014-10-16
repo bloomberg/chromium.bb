@@ -436,17 +436,17 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
     if (type == chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
       scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails());
       details->changed_urls.swap(rows);
-      BroadcastNotifications(type, details.PassAs<HistoryDetails>());
+      BroadcastNotifications(type, details.Pass());
     } else if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
       for (URLRows::const_iterator it = rows.begin(); it != rows.end(); ++it) {
         scoped_ptr<URLVisitedDetails> details(new URLVisitedDetails());
         details->row = *it;
-        BroadcastNotifications(type, details.PassAs<HistoryDetails>());
+        BroadcastNotifications(type, details.Pass());
       }
     } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
       scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails());
       details->rows = rows;
-      BroadcastNotifications(type, details.PassAs<HistoryDetails>());
+      BroadcastNotifications(type, details.Pass());
     } else {
       NOTREACHED();
     }
@@ -3148,7 +3148,7 @@ TEST_F(InMemoryHistoryBackendTest, OnURLsDeletedEnMasse) {
   scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails());
   details->all_history = true;
   BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                         details.PassAs<HistoryDetails>());
+                         details.Pass());
 
   // Expect that everything goes away.
   EXPECT_EQ(0, mem_backend_->db()->GetRowForURL(row1.url(), NULL));

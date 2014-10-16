@@ -352,7 +352,7 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
   }
 
   if (!modified->changed_urls.empty()) {
-    scoped_ptr<HistoryDetails> details = modified.PassAs<HistoryDetails>();
+    scoped_ptr<HistoryDetails> details = modified.Pass();
     notifications->push_back(
         base::Bind(&HistoryBackend::Delegate::BroadcastNotifications,
                    base::Unretained(delegate_),
@@ -403,7 +403,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
     favicon->insert(url_row.url());
   }
 
-  scoped_ptr<HistoryDetails> details = modified.PassAs<HistoryDetails>();
+  scoped_ptr<HistoryDetails> details = modified.Pass();
   notifications->push_back(
       base::Bind(&HistoryBackend::Delegate::BroadcastNotifications,
                  base::Unretained(delegate_),
@@ -1066,7 +1066,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   modified->changed_urls.push_back(new_url_row);
 
-  scoped_ptr<HistoryDetails> details = deleted_details.PassAs<HistoryDetails>();
+  scoped_ptr<HistoryDetails> details = deleted_details.Pass();
   notifications->push_back(
       base::Bind(&HistoryBackend::Delegate::BroadcastNotifications,
                  base::Unretained(delegate_),
@@ -1077,7 +1077,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
                                         base::Unretained(delegate_),
                                         base::Passed(&favicons)));
   }
-  scoped_ptr<HistoryDetails> other_details = modified.PassAs<HistoryDetails>();
+  scoped_ptr<HistoryDetails> other_details = modified.Pass();
   notifications->push_back(
       base::Bind(&HistoryBackend::Delegate::BroadcastNotifications,
                  base::Unretained(delegate_),
@@ -1146,7 +1146,7 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
         return false;
   }
 
-  scoped_ptr<HistoryDetails> details = deleted_details.PassAs<HistoryDetails>();
+  scoped_ptr<HistoryDetails> details = deleted_details.Pass();
   notifications->push_back(
       base::Bind(&HistoryBackend::Delegate::BroadcastNotifications,
                  base::Unretained(delegate_),

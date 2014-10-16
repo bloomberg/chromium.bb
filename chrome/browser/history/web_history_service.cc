@@ -320,7 +320,7 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
   scoped_ptr<RequestImpl> request(
       new RequestImpl(profile_, url, completion_callback));
   request->Start();
-  return request.PassAs<Request>();
+  return request.Pass();
 }
 
 void WebHistoryService::ExpireHistory(

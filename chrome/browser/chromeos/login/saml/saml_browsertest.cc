@@ -217,7 +217,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
   http_response->AddCustomHeader(
       "Set-cookie",
       base::StringPrintf("saml=%s", cookie_value_.c_str()));
-  return http_response.PassAs<HttpResponse>();
+  return http_response.Pass();
 }
 
 scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
@@ -235,7 +235,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
   http_response->set_content(response_html);
   http_response->set_content_type("text/html");
 
-  return http_response.PassAs<HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace

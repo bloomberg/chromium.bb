@@ -175,9 +175,8 @@ void DownloadUIControllerTest::SetUp() {
 
   scoped_ptr<HistoryAdapter> history_adapter(new HistoryAdapter);
   history_adapter_ = history_adapter.get();
-  scoped_ptr<DownloadHistory> download_history(new DownloadHistory(
-      manager_.get(),
-      history_adapter.PassAs<DownloadHistory::HistoryAdapter>()));
+  scoped_ptr<DownloadHistory> download_history(
+      new DownloadHistory(manager_.get(), history_adapter.Pass()));
   ASSERT_TRUE(download_history_manager_observer_);
 
   EXPECT_CALL(*manager_, AddObserver(_))

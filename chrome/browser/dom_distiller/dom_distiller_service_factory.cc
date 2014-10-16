@@ -63,8 +63,8 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   base::FilePath database_dir(
       profile->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
-  scoped_ptr<DomDistillerStore> dom_distiller_store(new DomDistillerStore(
-      db.PassAs<leveldb_proto::ProtoDatabase<ArticleEntry> >(), database_dir));
+  scoped_ptr<DomDistillerStore> dom_distiller_store(
+      new DomDistillerStore(db.Pass(), database_dir));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(profile));
@@ -82,11 +82,10 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       new DistilledPagePrefs(Profile::FromBrowserContext(profile)->GetPrefs()));
 
   DomDistillerContextKeyedService* service =
-      new DomDistillerContextKeyedService(
-          dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
-          distiller_factory.Pass(),
-          distiller_page_factory.Pass(),
-          distilled_page_prefs.Pass());
+      new DomDistillerContextKeyedService(dom_distiller_store.Pass(),
+                                          distiller_factory.Pass(),
+                                          distiller_page_factory.Pass(),
+                                          distilled_page_prefs.Pass());
 
   return service;
 }

@@ -201,15 +201,14 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
           content::BrowserThread::FILE);
 
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
-      new UserCloudPolicyManagerChromeOS(
-          store.PassAs<CloudPolicyStore>(),
-          external_data_manager.Pass(),
-          component_policy_cache_dir,
-          wait_for_initial_policy,
-          initial_policy_fetch_timeout,
-          base::MessageLoopProxy::current(),
-          file_task_runner,
-          io_task_runner));
+      new UserCloudPolicyManagerChromeOS(store.Pass(),
+                                         external_data_manager.Pass(),
+                                         component_policy_cache_dir,
+                                         wait_for_initial_policy,
+                                         initial_policy_fetch_timeout,
+                                         base::MessageLoopProxy::current(),
+                                         file_task_runner,
+                                         io_task_runner));
 
   bool wildcard_match = false;
   if (connector->IsEnterpriseManaged() &&

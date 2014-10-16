@@ -739,9 +739,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   // Set up the fake delegate that forces the download to be malicious.
   scoped_ptr<TestDownloadManagerDelegate> test_delegate(
       new TestDownloadManagerDelegate(browser()->profile()));
-  DownloadServiceFactory::GetForBrowserContext(browser()->profile())->
-      SetDownloadManagerDelegateForTesting(
-          test_delegate.PassAs<ChromeDownloadManagerDelegate>());
+  DownloadServiceFactory::GetForBrowserContext(browser()->profile())
+      ->SetDownloadManagerDelegateForTesting(test_delegate.Pass());
 
   // Run a dangerous download, but the user doesn't make a decision.
   // This .swf normally would be categorized as DANGEROUS_FILE, but

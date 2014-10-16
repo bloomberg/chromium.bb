@@ -92,7 +92,7 @@ class MockDelegate : public PrivetV3SetupFlow::Delegate {
       const PrivetClientCallback& callback) override {
     scoped_ptr<MockPrivetHTTPClient> privet_client(new MockPrivetHTTPClient());
     privet_client_ptr_ = privet_client.get();
-    callback.Run(privet_client.PassAs<PrivetHTTPClient>());
+    callback.Run(privet_client.Pass());
   }
   MOCK_METHOD2(ConfirmSecurityCode,
                void(const std::string&, const ResultCallback&));
@@ -101,8 +101,7 @@ class MockDelegate : public PrivetV3SetupFlow::Delegate {
   MOCK_METHOD0(OnSetupError, void());
 
   virtual scoped_ptr<GCDApiFlow> CreateApiFlow() override {
-    scoped_ptr<MockGCDApiFlow> mock_gcd(new MockGCDApiFlow(this));
-    return mock_gcd.PassAs<GCDApiFlow>();
+    return make_scoped_ptr(new MockGCDApiFlow(this));
   }
 
   void ReplyWithToken() {

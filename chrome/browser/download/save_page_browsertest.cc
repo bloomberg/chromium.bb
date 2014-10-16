@@ -467,9 +467,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
       new DelayingDownloadManagerDelegate(browser()->profile()));
   delaying_delegate->GetDownloadIdReceiverCallback().Run(
       content::DownloadItem::kInvalidId + 1);
-  DownloadServiceFactory::GetForBrowserContext(browser()->profile())->
-      SetDownloadManagerDelegateForTesting(
-          delaying_delegate.PassAs<ChromeDownloadManagerDelegate>());
+  DownloadServiceFactory::GetForBrowserContext(browser()->profile())
+      ->SetDownloadManagerDelegateForTesting(delaying_delegate.Pass());
   DownloadManager* manager(GetDownloadManager());
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);

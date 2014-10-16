@@ -891,7 +891,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
   // TODO(brettw) bug 1140015: Add an "add page" notification so the history
   // views can keep in sync.
   BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                         modified.PassAs<HistoryDetails>());
+                         modified.Pass());
 
   ScheduleCommit();
 }
@@ -941,7 +941,7 @@ void HistoryBackend::SetPageTitle(const GURL& url,
     if (typed_url_syncable_service_.get())
       typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
     BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                           details.PassAs<HistoryDetails>());
+                           details.Pass());
     ScheduleCommit();
   }
 }
@@ -1027,7 +1027,7 @@ size_t HistoryBackend::UpdateURLs(const history::URLRows& urls) {
     if (typed_url_syncable_service_)
       typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
     BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                           details.PassAs<HistoryDetails>());
+                           details.Pass());
     ScheduleCommit();
   }
   return num_updated_records;
@@ -2611,7 +2611,7 @@ void HistoryBackend::DeleteAllHistory() {
   details->all_history = true;
   NotifySyncURLsDeleted(true, false, NULL);
   BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                         details.PassAs<HistoryDetails>());
+                         details.Pass());
 }
 
 bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {

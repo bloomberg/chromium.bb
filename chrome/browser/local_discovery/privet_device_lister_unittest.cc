@@ -117,9 +117,8 @@ class MockServiceDiscoveryClient : public ServiceDiscoveryClient {
   virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override {
-    scoped_ptr<MockServiceWatcher> mock_service_watcher(
+    return make_scoped_ptr(
         new MockServiceWatcher(service_type, callback, mock_delegate_));
-    return mock_service_watcher.PassAs<ServiceWatcher>();
   }
 
   // Create a service resolver object for getting detailed service information
@@ -127,9 +126,8 @@ class MockServiceDiscoveryClient : public ServiceDiscoveryClient {
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override {
-    scoped_ptr<MockServiceResolver> mock_service_resolver(
+    return make_scoped_ptr(
         new MockServiceResolver(service_name, callback, mock_delegate_));
-    return mock_service_resolver.PassAs<ServiceResolver>();
   }
 
   // Not used in this test.

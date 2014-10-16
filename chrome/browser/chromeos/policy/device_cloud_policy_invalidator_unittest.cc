@@ -65,7 +65,7 @@ KeyedService* BuildProfileInvalidationProvider(
   invalidation_service->SetInvalidatorState(
       syncer::TRANSIENT_INVALIDATION_ERROR);
   return new invalidation::ProfileInvalidationProvider(
-      invalidation_service.PassAs<invalidation::InvalidationService>());
+      invalidation_service.Pass());
 }
 
 }  // namespace
@@ -158,7 +158,7 @@ void DeviceCloudPolicyInvalidatorTest::SetUp() {
   CloudPolicyCore* core = TestingBrowserProcess::GetGlobal()->platform_part()->
       browser_policy_connector_chromeos()->GetDeviceCloudPolicyManager()->
           core();
-  core->Connect(policy_client.PassAs<CloudPolicyClient>());
+  core->Connect(policy_client.Pass());
   core->StartRefreshScheduler();
 
   invalidation::ProfileInvalidationProviderFactory::GetInstance()->

@@ -125,7 +125,7 @@ scoped_ptr<DriveServiceBridge> DriveServiceBridge::Create(Profile* profile) {
   scoped_ptr<DriveServiceBridgeImpl> bridge(
       new DriveServiceBridgeImpl(profile));
   bridge->Initialize();
-  return bridge.PassAs<DriveServiceBridge>();
+  return bridge.Pass();
 }
 
 // static

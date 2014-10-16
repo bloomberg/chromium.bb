@@ -112,11 +112,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
     return net::deprecated::UnixDomainListenSocket::
         CreateAndListenWithAbstractNamespace(
-            *name,
-            "",
-            delegate,
-            auth_callback_)
-        .PassAs<net::StreamListenSocket>();
+            *name, "", delegate, auth_callback_);
   }
 
  private:

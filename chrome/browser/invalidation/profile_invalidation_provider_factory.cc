@@ -133,7 +133,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   service->Init(scoped_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
 
-  return new ProfileInvalidationProvider(service.PassAs<InvalidationService>());
+  return new ProfileInvalidationProvider(service.Pass());
 #endif
 }
 

@@ -529,7 +529,7 @@ class FakeGoogle {
       return scoped_ptr<HttpResponse>();      // Request not understood.
     }
 
-    return http_response.PassAs<HttpResponse>();
+    return http_response.Pass();
   }
 
   // True if we have already served the test page.

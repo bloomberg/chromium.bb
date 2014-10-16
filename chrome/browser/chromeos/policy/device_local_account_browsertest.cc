@@ -314,7 +314,7 @@ scoped_ptr<net::test_server::HttpResponse>
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(content);
   http_response->set_content_type("text/xml");
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 DictionaryPrefValueWaiter::DictionaryPrefValueWaiter(

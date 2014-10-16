@@ -321,8 +321,7 @@ void ExpireHistoryBackend::BroadcastNotifications(DeleteEffects* effects,
     details->changed_urls = effects->modified_urls;
     delegate_->NotifySyncURLsModified(&details->changed_urls);
     delegate_->BroadcastNotifications(
-        chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-        details.PassAs<HistoryDetails>());
+        chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, details.Pass());
   }
   if (!effects->deleted_urls.empty()) {
     scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
@@ -333,7 +332,7 @@ void ExpireHistoryBackend::BroadcastNotifications(DeleteEffects* effects,
     delegate_->NotifySyncURLsDeleted(details->all_history, details->expired,
                                      &details->rows);
     delegate_->BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                                      details.PassAs<HistoryDetails>());
+                                      details.Pass());
   }
 }
 

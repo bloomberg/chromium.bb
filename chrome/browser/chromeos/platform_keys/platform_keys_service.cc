@@ -185,9 +185,8 @@ void PlatformKeysService::RegisterPublicKeyGotPlatformKeys(
          "times.";
   platform_keys->Append(key_value.release());
 
-  state_store_->SetExtensionValue(extension_id,
-                                  kStateStorePlatformKeys,
-                                  platform_keys.PassAs<base::Value>());
+  state_store_->SetExtensionValue(
+      extension_id, kStateStorePlatformKeys, platform_keys.Pass());
   callback.Run(true);
 }
 
@@ -206,9 +205,8 @@ void PlatformKeysService::InvalidateKey(
     return;
   }
 
-  state_store_->SetExtensionValue(extension_id,
-                                  kStateStorePlatformKeys,
-                                  platform_keys.PassAs<base::Value>());
+  state_store_->SetExtensionValue(
+      extension_id, kStateStorePlatformKeys, platform_keys.Pass());
   callback.Run(true);
 }
 

@@ -85,6 +85,5 @@ BrowserListTabContentsProvider::CreateSocketForTethering(
     last_tethering_port_ = kMinTetheringPort;
   int port = ++last_tethering_port_;
   *name = base::IntToString(port);
-  return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate)
-      .PassAs<net::StreamListenSocket>();
+  return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate);
 }

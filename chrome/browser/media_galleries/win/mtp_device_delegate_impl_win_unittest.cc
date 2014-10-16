@@ -88,7 +88,7 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
   TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
   DCHECK(browser_process);
   monitor_ = monitor.get();
-  StorageMonitor::SetStorageMonitorForTesting(monitor.PassAs<StorageMonitor>());
+  StorageMonitor::SetStorageMonitorForTesting(monitor.Pass());
 
   base::RunLoop runloop;
   browser_process->media_file_system_registry()->GetPreferences(profile())->

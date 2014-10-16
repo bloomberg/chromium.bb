@@ -798,7 +798,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
         new FakePWGRasterConverter);
     pwg_converter_ = pwg_converter.get();
     local_print_operation_->SetPWGRasterConverterForTesting(
-        pwg_converter.PassAs<PWGRasterConverter>());
+        pwg_converter.Pass());
   }
 
   scoped_refptr<base::RefCountedBytes> RefCountedBytesFromString(

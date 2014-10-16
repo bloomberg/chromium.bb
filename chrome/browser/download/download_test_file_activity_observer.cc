@@ -72,9 +72,8 @@ DownloadTestFileActivityObserver::DownloadTestFileActivityObserver(
   scoped_ptr<MockDownloadManagerDelegate> mock_delegate(
       new MockDownloadManagerDelegate(profile));
   test_delegate_ = mock_delegate->GetWeakPtr();
-  DownloadServiceFactory::GetForBrowserContext(profile)->
-      SetDownloadManagerDelegateForTesting(
-          mock_delegate.PassAs<ChromeDownloadManagerDelegate>());
+  DownloadServiceFactory::GetForBrowserContext(profile)
+      ->SetDownloadManagerDelegateForTesting(mock_delegate.Pass());
 }
 
 DownloadTestFileActivityObserver::~DownloadTestFileActivityObserver() {

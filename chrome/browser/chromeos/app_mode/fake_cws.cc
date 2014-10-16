@@ -138,7 +138,7 @@ scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/xml");
     http_response->set_content(update_check_content_);
-    return http_response.PassAs<HttpResponse>();
+    return http_response.Pass();
   }
 
   return scoped_ptr<HttpResponse>();
