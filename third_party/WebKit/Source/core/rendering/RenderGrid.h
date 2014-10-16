@@ -134,6 +134,7 @@ private:
 #endif
 
     size_t gridItemSpan(const RenderBox&, GridTrackSizingDirection);
+    bool spanningItemCrossesFlexibleSizedTracks(const GridCoordinate&, GridTrackSizingDirection) const;
 
     size_t gridColumnCount() const
     {
