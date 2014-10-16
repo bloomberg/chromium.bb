@@ -126,6 +126,60 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
 }
 
+TEST(VariationsSeedStoreTest, GetInvalidSignature) {
+  const variations::VariationsSeed seed = CreateTestSeed();
+  std::string seed_hash;
+  const std::string base64_seed = SerializeSeedBase64(seed, &seed_hash);
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  prefs.SetString(prefs::kVariationsSeed, base64_seed);
+
+  // The below seed and signature pair were generated using the server's
+  // private key.
+  const std::string base64_seed_data =
+      "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5p"
+      "Zm9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBAB"
+      "SgwKCGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0"
+      "EAFKDAoIZ3JvdXBfMDUQAUoMCghncm91cF8wNhABSgwKCGdyb3VwXzA3EAFKDAoIZ3JvdXBf"
+      "MDgQAUoMCghncm91cF8wORAB";
+  const std::string base64_seed_signature =
+      "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
+      "96JkMYgzTkHPwbv7K/CmgA==";
+  const std::string base64_seed_signature_invalid =
+      "AEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy"
+      "96JkMYgzTkHPwbv7K/CmgA==";
+
+  // Set seed and valid signature in prefs.
+  prefs.SetString(prefs::kVariationsSeed, base64_seed_data);
+  prefs.SetString(prefs::kVariationsSeedSignature, base64_seed_signature);
+
+  VariationsSeedStore seed_store(&prefs);
+  variations::VariationsSeed loaded_seed;
+  seed_store.LoadSeed(&loaded_seed);
+  std::string invalid_signature = seed_store.GetInvalidSignature();
+  // Valid signature so we get an empty string.
+  EXPECT_EQ(std::string(), invalid_signature);
+
+  prefs.SetString(prefs::kVariationsSeedSignature,
+                  base64_seed_signature_invalid);
+  seed_store.LoadSeed(&loaded_seed);
+  // Invalid signature, so we should get the signature itself, except on mobile
+  // where we should get an empty string because verification is not enabled.
+  invalid_signature = seed_store.GetInvalidSignature();
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  EXPECT_EQ(std::string(), invalid_signature);
+#else
+  EXPECT_EQ(base64_seed_signature_invalid, invalid_signature);
+#endif
+
+  prefs.SetString(prefs::kVariationsSeedSignature, std::string());
+  seed_store.LoadSeed(&loaded_seed);
+  invalid_signature = seed_store.GetInvalidSignature();
+  // Empty signature, not considered invalid.
+  EXPECT_EQ(std::string(), invalid_signature);
+}
+
 TEST(VariationsSeedStoreTest, StoreSeedData) {
   const variations::VariationsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
