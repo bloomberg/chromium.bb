@@ -55,6 +55,13 @@ class RenderFrameHostTester {
   static RenderFrameHost* GetPendingForController(
       NavigationController* controller);
 
+  // This removes the need to expose
+  // RenderFrameHostImpl::is_swapped_out() outside of content.
+  //
+  // This is safe to call on any RenderFrameHost, not just ones
+  // constructed while a RenderViewHostTestEnabler is in play.
+  static bool IsRenderFrameHostSwappedOut(RenderFrameHost* rfh);
+
   virtual ~RenderFrameHostTester() {}
 
   // Gives tests access to RenderFrameHostImpl::OnCreateChild. The returned
@@ -96,13 +103,6 @@ class RenderViewHostTester {
   // RenderViewHost testing was enabled; use a
   // RenderViewHostTestEnabler instance (see below) to do this.
   static RenderViewHostTester* For(RenderViewHost* host);
-
-  // This removes the need to expose
-  // RenderViewHostImpl::is_swapped_out() outside of content.
-  //
-  // This is safe to call on any RenderViewHost, not just ones
-  // constructed while a RenderViewHostTestEnabler is in play.
-  static bool IsRenderViewHostSwappedOut(RenderViewHost* rvh);
 
   // Calls the RenderViewHosts' private OnMessageReceived function with the
   // given message.

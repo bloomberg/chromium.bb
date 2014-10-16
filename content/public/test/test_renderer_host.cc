@@ -46,17 +46,16 @@ RenderFrameHost* RenderFrameHostTester::GetPendingForController(
   return web_contents->GetRenderManagerForTesting()->pending_frame_host();
 }
 
+// static
+bool RenderFrameHostTester::IsRenderFrameHostSwappedOut(RenderFrameHost* rfh) {
+  return static_cast<RenderFrameHostImpl*>(rfh)->is_swapped_out();
+}
+
 // RenderViewHostTester -------------------------------------------------------
 
 // static
 RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
   return static_cast<TestRenderViewHost*>(host);
-}
-
-// static
-bool RenderViewHostTester::IsRenderViewHostSwappedOut(RenderViewHost* rvh) {
-  return static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame())->rfh_state() ==
-         RenderFrameHostImpl::STATE_SWAPPED_OUT;
 }
 
 // static

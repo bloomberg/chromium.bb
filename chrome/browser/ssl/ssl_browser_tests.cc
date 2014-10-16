@@ -560,9 +560,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 
   // Wait until we hear the load failure, and make sure we haven't swapped out
   // the previous page.  Prevents regression of http://crbug.com/82667.
+  // TODO(creis/nick): Move the swapped-out part of this test into content
+  // and remove IsRenderViewHostSwappedOut from the public API.
   load_failed_observer.Wait();
-  EXPECT_FALSE(content::RenderViewHostTester::IsRenderViewHostSwappedOut(
-      tab->GetRenderViewHost()));
+  EXPECT_FALSE(content::RenderFrameHostTester::IsRenderFrameHostSwappedOut(
+      tab->GetMainFrame()));
 
   // We should be back at the original good page.
   EXPECT_FALSE(browser()->tab_strip_model()->GetActiveWebContents()->
