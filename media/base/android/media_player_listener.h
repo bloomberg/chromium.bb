@@ -17,10 +17,10 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-class MediaPlayerBridge;
+class MediaPlayerAndroid;
 
 // Acts as a thread proxy between java MediaPlayerListener object and
-// MediaPlayerBridge so that callbacks are posted onto the UI thread.
+// MediaPlayerAndroid so that callbacks are posted onto the UI thread.
 class MediaPlayerListener {
  public:
   // Construct a native MediaPlayerListener object. Callbacks from the java
@@ -28,7 +28,7 @@ class MediaPlayerListener {
   // |task_runner|.
   MediaPlayerListener(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::WeakPtr<MediaPlayerBridge> media_player);
+      base::WeakPtr<MediaPlayerAndroid> media_player);
  virtual ~MediaPlayerListener();
 
   // Called by the Java MediaPlayerListener and mirrored to corresponding
@@ -42,8 +42,10 @@ class MediaPlayerListener {
   void OnMediaPrepared(JNIEnv* /* env */, jobject /* obj */);
   void OnMediaInterrupted(JNIEnv* /* env */, jobject /* obj */);
 
-  // Create a Java MediaPlayerListener object.
-  void CreateMediaPlayerListener(jobject context, jobject media_player_bridge);
+  // Create a Java MediaPlayerListener object and listens to all the media
+  // related events from system and |media_player|. If |media_player| is NULL,
+  // this class only listens to system events.
+  void CreateMediaPlayerListener(jobject context, jobject media_player);
   void ReleaseMediaPlayerListenerResources();
 
   // Register MediaPlayerListener in the system library loader.
@@ -53,8 +55,8 @@ class MediaPlayerListener {
   // The message loop where |media_player_| lives.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // The MediaPlayerBridge object all the callbacks should be send to.
-  base::WeakPtr<MediaPlayerBridge> media_player_;
+  // The MediaPlayerAndroid object all the callbacks should be sent to.
+  base::WeakPtr<MediaPlayerAndroid> media_player_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_listener_;
 

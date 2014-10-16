@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_player_android.h"
-#include "media/base/android/media_player_listener.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -75,19 +74,11 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual GURL GetUrl() override;
   virtual GURL GetFirstPartyForCookies() override;
 
-  // MediaPlayerListener callbacks.
-  void OnVideoSizeChanged(int width, int height);
-  void OnMediaError(int error_type);
-  void OnBufferingUpdate(int percent);
-  void OnPlaybackComplete();
-  void OnMediaInterrupted();
-  void OnSeekComplete();
   void OnDidSetDataUriDataSource(JNIEnv* env, jobject obj, jboolean success);
 
  protected:
   void SetJavaMediaPlayerBridge(jobject j_media_player_bridge);
   base::android::ScopedJavaLocalRef<jobject> GetJavaMediaPlayerBridge();
-  void SetMediaPlayerListener();
   void SetDuration(base::TimeDelta time);
 
   virtual void PendingSeekInternal(const base::TimeDelta& time);
@@ -96,7 +87,12 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
   // be called with an error type.
   virtual void Prepare();
-  void OnMediaPrepared();
+
+  // MediaPlayerAndroid implementation.
+  virtual void OnVideoSizeChanged(int width, int height) override;
+  virtual void OnPlaybackComplete() override;
+  virtual void OnMediaInterrupted() override;
+  virtual void OnMediaPrepared() override;
 
   // Create the corresponding Java class instance.
   virtual void CreateJavaMediaPlayerBridge();
@@ -105,8 +101,6 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual base::android::ScopedJavaLocalRef<jobject> GetAllowedOperations();
 
  private:
-  friend class MediaPlayerListener;
-
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
 
@@ -180,16 +174,12 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   base::RepeatingTimer<MediaPlayerBridge> time_update_timer_;
 
-  // Listener object that listens to all the media player events.
-  scoped_ptr<MediaPlayerListener> listener_;
-
   // Volume of playback.
   double volume_;
 
   // Whether user credentials are allowed to be passed.
   bool allow_credentials_;
 
-  // Weak pointer passed to |listener_| for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerBridge> weak_factory_;
 

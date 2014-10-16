@@ -194,6 +194,7 @@ void MediaSourcePlayer::Release() {
   playing_ = false;
 
   decoder_starvation_callback_.Cancel();
+  DetachListener();
 }
 
 void MediaSourcePlayer::SetVolume(double volume) {
@@ -226,6 +227,7 @@ void MediaSourcePlayer::StartInternal() {
   // be clear (not encrypted) or encrypted with different keys. So
   // |is_waiting_for_key_| condition may not be true anymore.
   is_waiting_for_key_ = false;
+  AttachListener(NULL);
 
   SetPendingEvent(PREFETCH_REQUEST_EVENT_PENDING);
   ProcessPendingEvents();

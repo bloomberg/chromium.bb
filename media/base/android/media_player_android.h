@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "media/base/android/media_player_listener.h"
 #include "media/base/media_export.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "url/gurl.h"
@@ -83,11 +85,31 @@ class MEDIA_EXPORT MediaPlayerAndroid {
                      const RequestMediaResourcesCB& request_media_resources_cb,
                      const GURL& frame_url);
 
+  // TODO(qinmin): Simplify the MediaPlayerListener class to only listen to
+  // media interrupt events. And have a separate child class to listen to all
+  // the events needed by MediaPlayerBridge. http://crbug.com/422597.
+  // MediaPlayerListener callbacks.
+  virtual void OnVideoSizeChanged(int width, int height);
+  virtual void OnMediaError(int error_type);
+  virtual void OnBufferingUpdate(int percent);
+  virtual void OnPlaybackComplete();
+  virtual void OnMediaInterrupted();
+  virtual void OnSeekComplete();
+  virtual void OnMediaPrepared();
+
+  // Attach/Detaches |listener_| for listening to all the media events. If
+  // |j_media_player| is NULL, |listener_| only listens to the system media
+  // events. Otherwise, it also listens to the events from |j_media_player|.
+  void AttachListener(jobject j_media_player);
+  void DetachListener();
+
   MediaPlayerManager* manager() { return manager_; }
 
   RequestMediaResourcesCB request_media_resources_cb_;
 
  private:
+  friend class MediaPlayerListener;
+
   // Player ID assigned to this player.
   int player_id_;
 
@@ -96,6 +118,13 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   // Url for the frame that contains this player.
   GURL frame_url_;
+
+  // Listener object that listens to all the media player events.
+  scoped_ptr<MediaPlayerListener> listener_;
+
+  // Weak pointer passed to |listener_| for callbacks.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaPlayerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerAndroid);
 };

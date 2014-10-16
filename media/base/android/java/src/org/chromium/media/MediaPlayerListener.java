@@ -125,12 +125,14 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
             Context context, MediaPlayerBridge mediaPlayerBridge) {
         final MediaPlayerListener listener =
                 new MediaPlayerListener(nativeMediaPlayerListener, context);
-        mediaPlayerBridge.setOnBufferingUpdateListener(listener);
-        mediaPlayerBridge.setOnCompletionListener(listener);
-        mediaPlayerBridge.setOnErrorListener(listener);
-        mediaPlayerBridge.setOnPreparedListener(listener);
-        mediaPlayerBridge.setOnSeekCompleteListener(listener);
-        mediaPlayerBridge.setOnVideoSizeChangedListener(listener);
+        if (mediaPlayerBridge != null) {
+            mediaPlayerBridge.setOnBufferingUpdateListener(listener);
+            mediaPlayerBridge.setOnCompletionListener(listener);
+            mediaPlayerBridge.setOnErrorListener(listener);
+            mediaPlayerBridge.setOnPreparedListener(listener);
+            mediaPlayerBridge.setOnSeekCompleteListener(listener);
+            mediaPlayerBridge.setOnVideoSizeChangedListener(listener);
+        }
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         am.requestAudioFocus(
