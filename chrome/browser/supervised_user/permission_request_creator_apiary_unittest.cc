@@ -22,7 +22,9 @@ const char kPermissionRequestApiUrl[] = "https://myapis.com/permissions";
 
 std::string BuildResponse() {
   base::DictionaryValue dict;
-  dict.SetStringWithoutPathExpansion("id", "requestid");
+  base::DictionaryValue* permission_dict = new base::DictionaryValue;
+  permission_dict->SetStringWithoutPathExpansion("id", "requestid");
+  dict.SetWithoutPathExpansion("permissionRequest", permission_dict);
   std::string result;
   base::JSONWriter::Write(&dict, &result);
   return result;

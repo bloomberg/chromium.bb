@@ -29,9 +29,11 @@
 using net::URLFetcher;
 
 const int kNumRetries = 1;
-const char kIdKey[] = "id";
-const char kNamespace[] = "CHROME";
+const char kNamespace[] = "PERMISSION_CHROME_URL";
 const char kState[] = "PENDING";
+
+const char kPermissionRequestKey[] = "permissionRequest";
+const char kIdKey[] = "id";
 
 static const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
@@ -212,8 +214,13 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
     DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
     return;
   }
+  base::DictionaryValue* permission_dict = NULL;
+  if (!dict->GetDictionary(kPermissionRequestKey, &permission_dict)) {
+    DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
+    return;
+  }
   std::string id;
-  if (!dict->GetString(kIdKey, &id)) {
+  if (!permission_dict->GetString(kIdKey, &id)) {
     DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
     return;
   }
