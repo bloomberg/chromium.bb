@@ -280,8 +280,7 @@ VisiblePosition VisiblePosition::left(bool stayInEditableContent) const
     if (!stayInEditableContent)
         return left;
 
-    // FIXME: This may need to do something different from "before".
-    return honorEditingBoundaryAtOrBefore(left);
+    return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left) : honorEditingBoundaryAtOrAfter(left);
 }
 
 Position VisiblePosition::rightVisuallyDistinctCandidate() const
@@ -448,8 +447,7 @@ VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
     if (!stayInEditableContent)
         return right;
 
-    // FIXME: This may need to do something different from "after".
-    return honorEditingBoundaryAtOrAfter(right);
+    return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
 }
 
 VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePosition &pos) const
