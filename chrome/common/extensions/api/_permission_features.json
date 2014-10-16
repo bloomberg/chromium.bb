@@ -378,7 +378,7 @@
     ]
   },
   "experienceSamplingPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
       "0B5B953E53AC1859AC1DD3F67E115D1A5C2D6123"  // https://crbug.com/384635
