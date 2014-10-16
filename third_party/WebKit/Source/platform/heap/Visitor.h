@@ -585,8 +585,8 @@ template<typename T> bool ObjectAliveTrait<T>::isHeapObjectAlive(Visitor* visito
 
 class PLATFORM_EXPORT GarbageCollectedMixin {
 public:
-    virtual void adjustAndMark(Visitor*) const { };
-    virtual bool isHeapObjectAlive(Visitor*) const { return true; };
+    virtual void adjustAndMark(Visitor*) const = 0;
+    virtual bool isHeapObjectAlive(Visitor*) const = 0;
     virtual void trace(Visitor*) { }
 };
 

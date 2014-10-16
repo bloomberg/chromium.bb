@@ -55,6 +55,7 @@ class HTMLImportsController;
 //
 //
 class HTMLImportLoader final : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportLoader>, public ResourceOwner<RawResource>, public DocumentParserClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLImportLoader);
 public:
     enum State {
         StateLoading,

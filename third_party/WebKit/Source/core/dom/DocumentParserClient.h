@@ -14,6 +14,8 @@ public:
     // This callback is called when all data pushed to parser has been consumed.
     virtual void notifyParserStopped() = 0;
 
+    virtual void trace(Visitor*) { }
+
 protected:
     DocumentParserClient() { }
 };

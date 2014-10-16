@@ -15,6 +15,7 @@ class Presentation final
     , public EventTargetWithInlineData
     , public ContextLifecycleObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Presentation>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Presentation);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Presentation* create(ExecutionContext*);

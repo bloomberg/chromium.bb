@@ -233,6 +233,7 @@ void HTMLImportLoader::trace(Visitor* visitor)
     visitor->trace(m_document);
     visitor->trace(m_writer);
     visitor->trace(m_microtaskQueue);
+    DocumentParserClient::trace(visitor);
 }
 
 } // namespace blink

@@ -64,7 +64,8 @@ namespace blink {
     class TreeScope;
     class VisiblePosition;
 
-    class LocalFrame : public Frame, public WillBeHeapSupplementable<LocalFrame>  {
+    class LocalFrame : public Frame, public WillBeHeapSupplementable<LocalFrame> {
+        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
     public:
         static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
