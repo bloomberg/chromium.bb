@@ -5509,7 +5509,7 @@ All users must sign out to continue.
     Are you sure you want to set up this device as a "Shark"?
   </message>
   <message name="IDS_PAIRING_CONTROLLER_WELCOME" desc="Message shown on 'Chromebox for meetings' controller in the beginning of the setup process.">
-    Welcome to Chromebox for meeting
+    Welcome to Chromebox for meetings
   </message>
   <message name="IDS_PAIRING_CONTROLLER_SEARCHING" desc="Message shown on 'Chromebox for meetings' controller when it is searching for host devices.">
     Searching for nearby Chromeboxes...

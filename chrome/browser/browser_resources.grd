@@ -76,6 +76,8 @@
         <!-- TODO(dzhioev): move polymer to chrome://resources when
              http://crbug.com/418199 is fixed. -->
         <part file="polymer_resources.grdp" />
+        <structure name="IDR_CUSTOM_ELEMENTS_HTML" file="resources\chromeos\login\custom_elements.html" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_CUSTOM_ELEMENTS_JS" file="resources\chromeos\login\custom_elements.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_SECURITY_INTERSTITIAL_HTML" file="resources\security_warnings\interstitial_v2.html" flattenhtml="true" type="chrome_html" />

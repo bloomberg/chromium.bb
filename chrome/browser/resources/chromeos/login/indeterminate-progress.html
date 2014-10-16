@@ -1,0 +1,48 @@
+<link rel="import" href="polymer/polymer/polymer.html">
+<link rel="import" href="polymer/paper-progress/paper-progress.html">
+
+<!--
+Progress bar for the cases  when the length of the task is unknown.
+Displays a cyclic animation without an indication of progress.
+Published properties:
+  * backgroundColor
+  * rate - [1 - 10]. Sets the animation's rate.
+  * runnerColor
+  * runnerPortion - [1 - 100]. Portion of runner's width relative to progress
+    bar width (in percents).
+
+TODO(dzhioev): Polymer doesn't provide an indeterminate mode for
+<paper-progress> for now, but it will soon. So this element should be replaced
+with <paper-progress> when it'll have an indeterminate mode.
+http://crbug.com/423363
+-->
+
+<polymer-element name="indeterminate-progress"
+    attributes="backgroundColor rate runnerColor runnerPortion">
+  <template>
+    <style>
+      :host {
+        display: block;
+        height: 4px;
+      }
+
+      paper-progress {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      paper-progress::shadow #secondaryProgress {
+        background-color: {{runnerColor}};
+      }
+
+      paper-progress::shadow #activeProgress,
+      paper-progress::shadow #progressContainer {
+        background-color: {{backgroundColor}};
+      }
+    </style>
+
+    <paper-progress id="progress" value="{{primaryProgress}}"
+        secondaryProgress="{{secondaryProgress}}"></paper-progress>
+  </template>
+</polymer-element>

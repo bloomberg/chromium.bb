@@ -63,23 +63,23 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
   base::ReplaceChars(kJsScreenPath, ".", "_", &prefix);
   prefix += "_";
 
-  builder->Add(prefix + "welcome", IDS_PAIRING_CONTROLLER_WELCOME);
+  builder->Add(prefix + "welcomeTitle", IDS_PAIRING_CONTROLLER_WELCOME);
   builder->Add(prefix + "searching", IDS_PAIRING_CONTROLLER_SEARCHING);
-  builder->Add(prefix + "needHelp", IDS_PAIRING_NEED_HELP);
-  builder->Add(prefix + "troubleConnecting",
+  builder->Add(prefix + "helpBtn", IDS_PAIRING_NEED_HELP);
+  builder->Add(prefix + "troubleConnectingTitle",
                IDS_PAIRING_CONTROLLER_TROUBLE_CONNECTING);
   builder->Add(prefix + "connectingAdvice",
                IDS_PAIRING_CONTROLLER_CONNECTING_ADVICE);
-  builder->Add(prefix + "adviceGotIt", IDS_PAIRING_CONTROLLER_ADVICE_GOT_IT);
+  builder->Add(prefix + "adviceGotItBtn", IDS_PAIRING_CONTROLLER_ADVICE_GOT_IT);
   builder->Add(prefix + "selectTitle", IDS_PAIRING_CONTROLLER_SELECT_TITLE);
-  builder->Add(prefix + "connect", IDS_PAIRING_CONTROLLER_CONNECT);
+  builder->Add(prefix + "connectBtn", IDS_PAIRING_CONTROLLER_CONNECT);
   builder->Add(prefix + "connecting", IDS_PAIRING_CONTROLLER_CONNECTING);
   builder->Add(prefix + "confirmationTitle",
                IDS_PAIRING_CONTROLLER_CONFIRMATION_TITLE);
   builder->Add(prefix + "confirmationQuestion",
                IDS_PAIRING_CONTROLLER_CONFIRMATION_QUESTION);
-  builder->Add(prefix + "rejectCode", IDS_PAIRING_CONTROLLER_REJECT_CODE);
-  builder->Add(prefix + "acceptCode", IDS_PAIRING_CONTROLLER_ACCEPT_CODE);
+  builder->Add(prefix + "rejectCodeBtn", IDS_PAIRING_CONTROLLER_REJECT_CODE);
+  builder->Add(prefix + "acceptCodeBtn", IDS_PAIRING_CONTROLLER_ACCEPT_CODE);
   builder->Add(prefix + "updateTitle", IDS_PAIRING_CONTROLLER_UPDATE_TITLE);
   builder->Add(prefix + "updateText", IDS_PAIRING_CONTROLLER_UPDATE_TEXT);
   builder->Add(prefix + "connectionLostTitle",
@@ -89,7 +89,7 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
   builder->Add(prefix + "enrollTitle", IDS_PAIRING_ENROLL_TITLE);
   builder->Add(prefix + "enrollText1", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1);
   builder->Add(prefix + "enrollText2", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_2);
-  builder->Add(prefix + "continue", IDS_PAIRING_CONTROLLER_CONTINUE);
+  builder->Add(prefix + "continueBtn", IDS_PAIRING_CONTROLLER_CONTINUE);
   builder->Add(prefix + "enrollmentInProgress",
                IDS_PAIRING_ENROLLMENT_IN_PROGRESS);
   builder->Add(prefix + "enrollmentErrorTitle",
@@ -98,7 +98,7 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
                IDS_PAIRING_CONTROLLER_ENROLLMENT_ERROR_HOST_RESTARTS);
   builder->Add(prefix + "successTitle", IDS_PAIRING_CONTROLLER_SUCCESS_TITLE);
   builder->Add(prefix + "successText", IDS_PAIRING_CONTROLLER_SUCCESS_TEXT);
-  builder->Add(prefix + "continueToHangouts",
+  builder->Add(prefix + "continueToHangoutsBtn",
                IDS_PAIRING_CONTROLLER_CONTINUE_TO_HANGOUTS);
 }
 

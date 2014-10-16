@@ -3,26 +3,55 @@
  * found in the LICENSE file.
  */
 
-#controller-pairing {
+/* TODO(dzhioev): support RTL. http://crbug.com/423354 */
+
+:host {
+  -webkit-user-select: none;
   background: white;
-  height: 601px;
-  padding: 20px;
+  display: block;
+  font-family: 'Roboto';
+  height: 600px;
+  position: relative;
   width: 720px;
 }
 
-#controller-pairing .page-name {
-  text-align: center;
+core-animated-pages {
+  height: 100%;
+  width: 100%;
 }
 
-#controller-pairing .device-list {
-  border: 2px solid black;
+.gaia-frame {
+  height: 300px;
+  width: 339px;
+}
+
+controller-pairing-page[name='device-select']::shadow #top,
+controller-pairing-page[name='establishing-connection']::shadow #top {
   height: 200px;
 }
 
-#controller-pairing button {
-  margin: 10px;
+controller-pairing-page[name='code-confirmation']::shadow #top,
+controller-pairing-page[name='host-update']::shadow #top,
+controller-pairing-page[name='host-connection-lost']::shadow #top,
+controller-pairing-page[name='enrollment-introduction']::shadow #top {
+  height: 300px;
 }
 
-#controller-pairing .gaia-frame {
-  height: 300px;
+controller-pairing-page[name='authentication']::shadow #top {
+  height: 100px;
+}
+
+indeterminate-progress {
+  margin-bottom: 28px;
+  margin-top: 28px;
+}
+
+#code {
+  color: #757575;
+  font-size: 55px;
+  font-weight: 300;
+}
+
+pairing-device-list {
+  height: 252px;
 }

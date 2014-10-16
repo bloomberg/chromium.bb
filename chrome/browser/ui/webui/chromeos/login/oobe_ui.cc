@@ -72,6 +72,8 @@ const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
 const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 const char kDemoUserLoginJSPath[] = "demo_user_login.js";
+const char kCustomElementsHTMLPath[] = "custom_elements.html";
+const char kCustomElementsJSPath[] = "custom_elements.js";
 
 // Paths for deferred resource loading.
 const char kEnrollmentHTMLPath[] = "enrollment.html";
@@ -117,8 +119,13 @@ content::WebUIDataSource* CreateOobeUIDataSource(
 
   if (display_type == OobeUI::kOobeDisplay) {
     AddPolymerResourcesPaths(source);
+    source->AddResourcePath(kCustomElementsHTMLPath, IDR_CUSTOM_ELEMENTS_HTML);
+    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_JS);
+
     source->AddResourcePath("Roboto-Thin.ttf", IDR_FONT_ROBOTO_THIN);
     source->AddResourcePath("Roboto-Light.ttf", IDR_FONT_ROBOTO_LIGHT);
+    source->AddResourcePath("Roboto-Regular.ttf", IDR_FONT_ROBOTO_REGULAR);
+    source->AddResourcePath("Roboto-Medium.ttf", IDR_FONT_ROBOTO_MEDIUM);
     source->AddResourcePath("Roboto-Bold.ttf", IDR_FONT_ROBOTO_BOLD);
   }
 

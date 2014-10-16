@@ -51,6 +51,10 @@ Polymer('oobe-screen', (function() {
       }
     },
 
+    userActed: function(_, _, source) {
+      this.send(CALLBACK_USER_ACTED, source.getAttribute('action'));
+    },
+
     i18n: function(args) {
       if (!(args instanceof Array))
         args = [args];
@@ -68,13 +72,6 @@ Polymer('oobe-screen', (function() {
       this.C = this.context.storage_;
       this.contextObservers_ = {};
       var self = this;
-      this.querySelectorAllImpl_('button[action]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
-          var action = this.getAttribute('action');
-          self.send(CALLBACK_USER_ACTED, action);
-          e.stopPropagation();
-        });
-      });
       if (this.ready_) {
         this.initialize();
       } else {

@@ -3,6 +3,10 @@
  * found in the LICENSE file.
  */
 
+/* TODO(dzhioev): get rid of this file, when we have Roboto among system fonts.
+ * http://crbug.com/409047
+ */
+
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
@@ -15,6 +19,20 @@
   font-style: normal;
   font-weight: 300;
   src: url(Roboto-Light.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url(Roboto-Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: url(Roboto-Medium.ttf) format('truetype');
 }
 
 @font-face {

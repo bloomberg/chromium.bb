@@ -165,7 +165,9 @@
   opacity: 1;
 }
 
-#oobe.reset #progress-dots {
+#oobe.reset #progress-dots,
+#oobe.host-pairing #progress-dots,
+#oobe.controller-pairing #progress-dots {
   visibility: hidden;
 }
 

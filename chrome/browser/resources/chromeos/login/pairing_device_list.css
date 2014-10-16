@@ -1,0 +1,57 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* TODO(dzhioev): support RTL. http://crbug.com/423354 */
+
+:host {
+  display: block;
+  overflow: auto;
+}
+
+core-selector {
+  display: block;
+}
+
+:host([connecting]) {
+  pointer-events: none;
+}
+
+core-item {
+  padding-bottom: 22px;
+  padding-top: 22px;
+}
+
+/* [icon] is needed to increase specificity. */
+core-item core-icon[icon] {
+  height: 40px;
+  margin-right: 1em;
+  width: 40px;
+}
+
+/* Items separator. */
+core-item:not(:last-child)::after {
+  background-color: rgba(0, 0, 0, 0.1);
+  bottom: 0;
+  content: '';
+  display: block;
+  height: 1px;
+  left: calc(40px + 1em);
+  position: absolute;
+  right: 0;
+}
+
+.throbber {
+  display: none;
+}
+
+:host([connecting]) core-item.core-selected .throbber {
+  background: url('chrome://resources/images/throbber.svg') no-repeat;
+  background-size: cover;
+  display: inline-block;
+  height: 25px;
+  margin-right: 10px;
+  width: 25px;
+}
+
