@@ -240,7 +240,8 @@ TEST_F(LoggingTest, DcheckReleaseBehavior) {
 // looking in the global namespace.
 namespace nested_test {
   class Streamable {};
-  ALLOW_UNUSED std::ostream& operator<<(std::ostream& out, const Streamable&) {
+  ALLOW_UNUSED_TYPE std::ostream& operator<<(std::ostream& out,
+                                             const Streamable&) {
     return out << "Streamable";
   }
   TEST_F(LoggingTest, StreamingWstringFindsCorrectOperator) {

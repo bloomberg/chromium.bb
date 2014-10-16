@@ -105,14 +105,17 @@ void CompareDrawQuad(DrawQuad* quad,
 #define QUAD_DATA \
     gfx::Rect quad_rect(30, 40, 50, 60); \
     gfx::Rect quad_visible_rect(40, 50, 30, 20); \
-    gfx::Rect ALLOW_UNUSED quad_opaque_rect(60, 55, 10, 10); \
-    bool ALLOW_UNUSED needs_blending = true;
+    gfx::Rect quad_opaque_rect( 60, 55, 10, 10); \
+    ALLOW_UNUSED_LOCAL(quad_opaque_rect); \
+    bool needs_blending = true; \
+    ALLOW_UNUSED_LOCAL(needs_blending);
 
 #define SETUP_AND_COPY_QUAD_NEW(Type, quad)                                \
   DrawQuad* copy_new =                                                     \
       render_pass->CopyFromAndAppendDrawQuad(quad_new, copy_shared_state); \
   CompareDrawQuad(quad_new, copy_new, copy_shared_state);                  \
-  const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new);
+  const Type* copy_quad = Type::MaterialCast(copy_new);                    \
+  ALLOW_UNUSED_LOCAL(copy_quad);
 
 #define SETUP_AND_COPY_QUAD_ALL(Type, quad)                                \
   DrawQuad* copy_all =                                                     \
@@ -124,7 +127,8 @@ void CompareDrawQuad(DrawQuad* quad,
   DrawQuad* copy_new = render_pass->CopyFromAndAppendRenderPassDrawQuad( \
       quad_new, copy_shared_state, a);                                   \
   CompareDrawQuad(quad_new, copy_new, copy_shared_state);                \
-  const Type* ALLOW_UNUSED copy_quad = Type::MaterialCast(copy_new);
+  const Type* copy_quad = Type::MaterialCast(copy_new);                  \
+  ALLOW_UNUSED_LOCAL(copy_quad);
 
 #define SETUP_AND_COPY_QUAD_ALL_RP(Type, quad, a)                        \
   DrawQuad* copy_all = render_pass->CopyFromAndAppendRenderPassDrawQuad( \

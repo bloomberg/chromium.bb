@@ -30,7 +30,8 @@ struct Addz {
 }  // namespace
 
 TEST(TupleTest, Basic) {
-  Tuple0 t0 ALLOW_UNUSED = MakeTuple();
+  Tuple0 t0 = MakeTuple();
+  ALLOW_UNUSED_LOCAL(t0);
   Tuple1<int> t1(1);
   Tuple2<int, const char*> t2 = MakeTuple(1, static_cast<const char*>("wee"));
   Tuple3<int, int, int> t3(1, 2, 3);

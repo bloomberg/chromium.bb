@@ -134,7 +134,7 @@ void DispatchResourceReplyOrDefaultParams(
 // unused variables or other errors if they're used with these macros.
 #define PPAPI_BEGIN_MESSAGE_MAP(class_name, msg) \
   { \
-    typedef class_name _IpcMessageHandlerClass ALLOW_UNUSED; \
+    typedef class_name _IpcMessageHandlerClass ALLOW_UNUSED_TYPE; \
     const IPC::Message& ipc_message__ = msg; \
     switch (ipc_message__.type()) { \
 

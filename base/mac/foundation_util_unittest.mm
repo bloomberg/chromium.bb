@@ -331,12 +331,12 @@ TEST(StringNumberConversionsTest, FormatNSInteger) {
 #endif  // defined(ARCH_CPU_64_BITS)
 
   NSInteger some_nsinteger;
-  FormatNSIntegerAsType* pointer_to_some_nsinteger ALLOW_UNUSED =
-      &some_nsinteger;
+  FormatNSIntegerAsType* pointer_to_some_nsinteger = &some_nsinteger;
+  ALLOW_UNUSED_LOCAL(pointer_to_some_nsinteger);
 
   NSUInteger some_nsuinteger;
-  FormatNSUIntegerAsType* pointer_to_some_nsuinteger ALLOW_UNUSED =
-      &some_nsuinteger;
+  FormatNSUIntegerAsType* pointer_to_some_nsuinteger = &some_nsuinteger;
+  ALLOW_UNUSED_LOCAL(pointer_to_some_nsuinteger);
 
   // Check that format specifier works correctly for NSInteger.
   const struct {

@@ -1521,9 +1521,10 @@ namespace gfx {
   # on the extension string or the GL version.
   file.write("""void Driver%s::InitializeDynamicBindings(GLContext* context) {
   DCHECK(context && context->IsCurrent(NULL));
-  const GLVersionInfo* ver ALLOW_UNUSED = context->GetVersionInfo();
-  std::string extensions ALLOW_UNUSED = context->GetExtensions();
-  extensions += " ";
+  const GLVersionInfo* ver = context->GetVersionInfo();
+  ALLOW_UNUSED_LOCAL(ver);
+  std::string extensions = context->GetExtensions() + " ";
+  ALLOW_UNUSED_LOCAL(extensions);
 
 """ % set_name.upper())
   for extension in sorted(used_extensions):
