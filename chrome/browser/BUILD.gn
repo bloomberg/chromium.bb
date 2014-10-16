@@ -13,6 +13,9 @@ if (is_android) {
 } else {
   import("//tools/grit/grit_rule.gni")
 }
+if (is_desktop_linux) {
+  import("//build/config/linux/pkg_config.gni")
+}
 
 about_credits_file = "$target_gen_dir/about_credits.html"
 additional_modules_list_file =
@@ -23,6 +26,12 @@ gypi_values = exec_script(
     [ rebase_path("../chrome_browser.gypi") ],
     "scope",
     [ "../chrome_browser.gypi" ])
+
+if (is_desktop_linux) {
+  pkg_config("gnome_keyring") {
+    packages = [ "gnome-keyring-1" ]
+  }
+}
 
 static_library("browser") {
   configs += [
@@ -371,7 +380,7 @@ static_library("browser") {
   if (is_desktop_linux) {
     sources += rebase_path(gypi_values.chrome_browser_gnome_keyring_sources,
                            ".", "//chrome")
-    configs += [ "//build/config/linux:gnome_keyring" ]
+    configs += [ ":gnome_keyring" ]
   }
   if (use_aura) {
     sources += rebase_path(gypi_values.chrome_browser_aura_sources,

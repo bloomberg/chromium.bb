@@ -118,23 +118,15 @@ config("libresolv") {
 
 # CrOS doesn't install GTK, gconf or any gnome packages.
 if (!is_chromeos) {
-  pkg_config("gtk") {
-    # Gtk requires gmodule, but it does not list it as a dependency in some
-    # misconfigured systems.
-    packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
-  }
-
-  pkg_config("gtkprint") {
-    packages = [ "gtk+-unix-print-2.0" ]
-  }
-
-  pkg_config("gnome_keyring") {
-    packages = [ "gnome-keyring-1" ]
-  }
-
-  pkg_config("gconf") {
-    packages = [ "gconf-2.0" ]
-    defines = [ "USE_GCONF" ]
+  # These packages should _only_ be expected when building for a target.
+  # If these extra checks are not run, gconf is required when building host
+  # tools for a CrOS build.
+  if (current_toolchain == host_toolchain &&
+      host_toolchain == default_toolchain) {
+    pkg_config("gconf") {
+      packages = [ "gconf-2.0" ]
+      defines = [ "USE_GCONF" ]
+    }
   }
 }
 
