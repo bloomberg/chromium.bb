@@ -1215,9 +1215,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (!content_view_core_)
     return;
 
-  DCHECK(selection_controller_);
-  selection_controller_->OnSelectionBoundsChanged(
-      frame_metadata.selection_start, frame_metadata.selection_end);
+  if (selection_controller_) {
+    selection_controller_->OnSelectionBoundsChanged(
+        frame_metadata.selection_start, frame_metadata.selection_end);
+  }
 
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
