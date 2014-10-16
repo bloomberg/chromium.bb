@@ -35,13 +35,11 @@ static void InjectTestSequence(InputStub* input_stub) {
   static const Point input_sequence[] = {
     {-5, 10}, {0, 10}, {-1, 10}, {15, 40}, {15, 45}, {15, 39}, {15, 25}
   };
-  // arraysize() cannot be used here, becase Point is declared inside of a
-  // function.
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(input_sequence); ++i) {
+  for (unsigned int i = 0; i < arraysize(input_sequence); ++i) {
     const Point& point = input_sequence[i];
     input_stub->InjectMouseEvent(MouseMoveEvent(point.x, point.y));
   }
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(input_sequence); ++i) {
+  for (unsigned int i = 0; i < arraysize(input_sequence); ++i) {
     const Point& point = input_sequence[i];
     input_stub->InjectMouseEvent(MouseMoveEvent(point.y, point.x));
   }

@@ -33,7 +33,7 @@ TEST(GetKeySymsForUnicode, Map) {
     { 0x4444, { 0x01004444, 0 } },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+  for (size_t i = 0; i < arraysize(kTests); ++i) {
     std::vector<uint32_t> keysyms;
     GetKeySymsForUnicode(kTests[i].code_point, &keysyms);
 
