@@ -192,6 +192,10 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     if (!obj.updateBackingStoreAndCheckValidity())
       continue;
 
+    // If it's ignored, find the first ancestor that's not ignored.
+    while (!obj.isDetached() && obj.accessibilityIsIgnored())
+      obj = obj.parentObject();
+
     // Make sure it's a descendant of our root node - exceptions include the
     // scroll area that's the parent of the main document (we ignore it), and
     // possibly nodes attached to a different document.
