@@ -268,6 +268,8 @@ Status ParseWebViewsInfo(const std::string& data,
       type = WebViewInfo::kPage;
     else if (type_as_string == "worker")
       type = WebViewInfo::kWorker;
+    else if (type_as_string == "webview")
+      type = WebViewInfo::kWebView;
     else if (type_as_string == "other")
       type = WebViewInfo::kOther;
     else

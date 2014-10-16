@@ -29,6 +29,7 @@ struct WebViewInfo {
     kBackgroundPage,
     kPage,
     kWorker,
+    kWebView,
     kOther
   };
 

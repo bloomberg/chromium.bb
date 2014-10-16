@@ -55,15 +55,6 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
     if (view.type != WebViewInfo::kPage && view.type != WebViewInfo::kApp)
       continue;
 
-    // Workaround to ignore generated background pages that are
-    // being returned as active windows for some builds of Chrome.
-    // TODO(bustamante): Once Chrome builds < 1755 are no longer
-    //   supported this check can be removed.
-    int kBuildNumber = devtools_http_client_->browser_info()->build_no;
-    if (kBuildNumber < 1755 && view.type == WebViewInfo::kApp &&
-        view.url.find("_generated_background") != std::string::npos)
-      continue;
-
     bool found = false;
     for (WebViewList::const_iterator web_view_iter = web_views_.begin();
          web_view_iter != web_views_.end(); ++web_view_iter) {
