@@ -26,7 +26,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/run_loop.h"
-#include "content/shell/browser/shell_layout_tests_android.h"
+#include "content/shell/browser/layout_test/layout_test_android.h"
 #endif
 
 namespace {

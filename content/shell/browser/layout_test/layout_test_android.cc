@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/shell_layout_tests_android.h"
+#include "content/shell/browser/layout_test/layout_test_android.h"
 
 #include "base/android/fifo_utils.h"
 #include "base/android/jni_android.h"
@@ -57,8 +57,6 @@ bool GetTestUrlForAndroid(std::string& path_or_url, GURL* url) {
 }
 
 void EnsureInitializeForAndroidLayoutTests() {
-  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree));
-
   JNIEnv* env = base::android::AttachCurrentThread();
   content::NestedMessagePumpAndroid::RegisterJni(env);
   content::RegisterNativesImpl(env);
