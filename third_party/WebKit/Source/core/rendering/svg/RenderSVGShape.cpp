@@ -236,14 +236,18 @@ void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
                 if (svgStyle.hasVisibleStroke()) {
                     GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
                     AffineTransform nonScalingTransform;
+                    const AffineTransform* additionalPaintServerTransform = 0;
 
                     if (hasNonScalingStroke()) {
-                        AffineTransform nonScalingTransform = nonScalingStrokeTransform();
+                        nonScalingTransform = nonScalingStrokeTransform();
                         if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
                             return;
+
+                        // Non-scaling stroke needs to reset the transform back to the host transform.
+                        additionalPaintServerTransform = &nonScalingTransform;
                     }
 
-                    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, style(), *this, ApplyToStrokeMode))
+                    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, style(), *this, ApplyToStrokeMode, additionalPaintServerTransform))
                         break;
                     strokeShape(childPaintInfo.context);
                 }

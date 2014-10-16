@@ -37,13 +37,10 @@ enum RenderSVGResourceType {
     ClipperResourceType
 };
 
-// If this enum changes change the unsigned bitfields using it.
 enum RenderSVGResourceMode {
-    ApplyToFillMode    = 1 << 0,
-    ApplyToStrokeMode  = 1 << 1,
-    ApplyToTextMode    = 1 << 2 // used in combination with ApplyTo{Fill|Stroke}Mode
+    ApplyToFillMode,
+    ApplyToStrokeMode,
 };
-typedef unsigned RenderSVGResourceModeFlags;
 
 class GraphicsContext;
 class GraphicsContextStateSaver;

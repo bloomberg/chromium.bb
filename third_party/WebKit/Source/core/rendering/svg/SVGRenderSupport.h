@@ -24,6 +24,8 @@
 #ifndef SVGRenderSupport_h
 #define SVGRenderSupport_h
 
+#include "core/rendering/svg/RenderSVGResource.h"
+
 namespace blink {
 
 class AffineTransform;
@@ -86,9 +88,9 @@ public:
     static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const RenderObject*);
 
     // Update the GC state (on |stateSaver.context()|) for painting |renderer|
-    // using |style|. |resourceModeFlags| is used to decide between fill/stroke.
+    // using |style|. |resourceMode| is used to decide between fill/stroke.
     // Previous state will be saved (if needed) using |stateSaver|.
-    static bool updateGraphicsContext(GraphicsContextStateSaver&, RenderStyle*, RenderObject&, unsigned resourceModeFlags);
+    static bool updateGraphicsContext(GraphicsContextStateSaver&, RenderStyle*, RenderObject&, RenderSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(RenderObject*);

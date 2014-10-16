@@ -273,6 +273,7 @@ void SVGInlineTextBoxPainter::paintDecoration(GraphicsContext* context, TextDeco
             break;
         case PT_STROKE:
             if (svgDecorationStyle.hasVisibleStroke()) {
+                // FIXME: Non-scaling stroke is not applied here.
                 GraphicsContextStateSaver stateSaver(*context, false);
                 if (!SVGRenderSupport::updateGraphicsContext(stateSaver, decorationStyle, *decorationRenderer, ApplyToStrokeMode))
                     break;
@@ -304,6 +305,8 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(GraphicsContext* context, Ren
 
     FloatPoint textOrigin(fragment.x, fragment.y);
     FloatSize textSize(fragment.width, fragment.height);
+    AffineTransform paintServerTransform;
+    const AffineTransform* additionalPaintServerTransform = 0;
 
     GraphicsContextStateSaver stateSaver(*context, false);
     if (scalingFactor != 1) {
@@ -311,9 +314,14 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(GraphicsContext* context, Ren
         textSize.scale(scalingFactor);
         stateSaver.save();
         context->scale(1 / scalingFactor, 1 / scalingFactor);
+        // Adjust the paint-server coordinate space.
+        paintServerTransform.scale(scalingFactor);
+        additionalPaintServerTransform = &paintServerTransform;
     }
 
-    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, style, m_svgInlineTextBox.parent()->renderer(), resourceMode | ApplyToTextMode))
+    // FIXME: Non-scaling stroke is not applied here.
+
+    if (!SVGRenderSupport::updateGraphicsContext(stateSaver, style, m_svgInlineTextBox.parent()->renderer(), resourceMode, additionalPaintServerTransform))
         return;
 
     if (hasShadow) {
