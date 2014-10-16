@@ -148,10 +148,8 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoFullPageMedia:
     case CSSSelector::PseudoResizer:
     case CSSSelector::PseudoScrollbar:
-    case CSSSelector::PseudoScrollbarBack:
     case CSSSelector::PseudoScrollbarButton:
     case CSSSelector::PseudoScrollbarCorner:
-    case CSSSelector::PseudoScrollbarForward:
     case CSSSelector::PseudoScrollbarThumb:
     case CSSSelector::PseudoScrollbarTrack:
     case CSSSelector::PseudoScrollbarTrackPiece:

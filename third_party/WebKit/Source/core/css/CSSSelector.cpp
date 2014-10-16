@@ -226,8 +226,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoNot:
     case PseudoRoot:
     case PseudoScope:
-    case PseudoScrollbarBack:
-    case PseudoScrollbarForward:
     case PseudoWindowInactive:
     case PseudoCornerPresent:
     case PseudoDecrement:
@@ -522,8 +520,6 @@ void CSSSelector::extractPseudoType() const
     case PseudoLang:
     case PseudoNot:
     case PseudoRoot:
-    case PseudoScrollbarBack:
-    case PseudoScrollbarForward:
     case PseudoWindowInactive:
     case PseudoCornerPresent:
     case PseudoDecrement:
