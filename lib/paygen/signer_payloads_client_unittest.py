@@ -32,8 +32,7 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
 
   def setUp(self):
     """Setup for tests, and store off some standard expected values."""
-
-    mox.MoxTestBase.setUp(self)
+    super(SignerPayloadsClientGoogleStorageTest, self).setUp()
 
     self.hash_names = [
         '1.payload.hash',
@@ -45,6 +44,19 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
 
     # To make certain we don't self update while running tests.
     os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
+
+    # Some tests depend on this timeout. Make it smaller, then restore.
+    self.orig_timeout = (
+        signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS)
+    signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS = 0.01
+
+  def tearDown(self):
+    """Teardown after tests, and restore values test might adjust."""
+    # Some tests modify this timeout. Restore the original value.
+    signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS = (
+        self.orig_timeout)
+
+    super(SignerPayloadsClientGoogleStorageTest, self).tearDown()
 
   def createStandardClient(self):
     """Test helper method to create a client with standard arguments."""
@@ -355,7 +367,8 @@ versionrev = foo-version
     uris = ['foo', 'bar', 'is']
 
     client = self.createStandardClient()
-    self.assertFalse(client._WaitForSignatures(uris, timeout=5))
+
+    self.assertFalse(client._WaitForSignatures(uris, timeout=0.02))
 
     self.mox.VerifyAll()
 
