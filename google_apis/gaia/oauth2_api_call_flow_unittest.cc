@@ -33,11 +33,15 @@ using net::TestURLFetcher;
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLFetcherFactory;
+using net::URLRequestContextGetter;
 using net::URLRequestStatus;
 using testing::_;
 using testing::Return;
+using testing::StrictMock;
 
 namespace {
+
+const char kAccessToken[] = "access_token";
 
 static std::string CreateBody() {
   return "some body";
@@ -47,13 +51,8 @@ static GURL CreateApiUrl() {
   return GURL("https://www.googleapis.com/someapi");
 }
 
-static std::vector<std::string> CreateTestScopes() {
-  std::vector<std::string> scopes;
-  scopes.push_back("scope1");
-  scopes.push_back("scope2");
-  return scopes;
-}
-
+// Replaces the global URLFetcher factory so the test can return a custom
+// URLFetcher to complete requests.
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
  public:
@@ -70,27 +69,9 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                    URLFetcherDelegate* d));
 };
 
-class MockAccessTokenFetcher : public OAuth2AccessTokenFetcherImpl {
- public:
-  MockAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                         net::URLRequestContextGetter* getter,
-                         const std::string& refresh_token)
-      : OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token) {}
-  ~MockAccessTokenFetcher() {}
-
-  MOCK_METHOD3(Start,
-               void(const std::string& client_id,
-                    const std::string& client_secret,
-                    const std::vector<std::string>& scopes));
-};
-
 class MockApiCallFlow : public OAuth2ApiCallFlow {
  public:
-  MockApiCallFlow(net::URLRequestContextGetter* context,
-                  const std::string& refresh_token,
-                  const std::string& access_token,
-                  const std::vector<std::string>& scopes)
-      : OAuth2ApiCallFlow(context, refresh_token, access_token, scopes) {}
+  MockApiCallFlow() {}
   ~MockApiCallFlow() {}
 
   MOCK_METHOD0(CreateApiCallUrl, GURL ());
@@ -103,26 +84,20 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
       void (const std::string& access_token));
   MOCK_METHOD1(ProcessMintAccessTokenFailure,
       void (const GoogleServiceAuthError& error));
-  MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher* ());
 };
 
 }  // namespace
 
 class OAuth2ApiCallFlowTest : public testing::Test {
  protected:
-  void SetupAccessTokenFetcher(const std::vector<std::string>& scopes) {
-    EXPECT_CALL(*access_token_fetcher_,
-                Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-                      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-                      scopes)).Times(1);
-    EXPECT_CALL(*flow_, CreateAccessTokenFetcher())
-        .WillOnce(Return(access_token_fetcher_.release()));
-  }
+  OAuth2ApiCallFlowTest()
+      : request_context_getter_(new net::TestURLRequestContextGetter(
+            message_loop_.message_loop_proxy())) {}
 
   TestURLFetcher* CreateURLFetcher(
       const GURL& url, bool fetch_succeeds,
       int response_code, const std::string& body) {
-    TestURLFetcher* url_fetcher = new TestURLFetcher(0, url, flow_.get());
+    TestURLFetcher* url_fetcher = new TestURLFetcher(0, url, &flow_);
     URLRequestStatus::Status status =
         fetch_succeeds ? URLRequestStatus::SUCCESS : URLRequestStatus::FAILED;
     url_fetcher->set_status(URLRequestStatus(status, 0));
@@ -136,23 +111,11 @@ class OAuth2ApiCallFlowTest : public testing::Test {
     return url_fetcher;
   }
 
-  void CreateFlow(const std::string& refresh_token,
-                  const std::string& access_token,
-                  const std::vector<std::string>& scopes) {
-    scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
-        new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy());
-    flow_.reset(new MockApiCallFlow(
-        request_context_getter.get(), refresh_token, access_token, scopes));
-    access_token_fetcher_.reset(new MockAccessTokenFetcher(
-        flow_.get(), request_context_getter.get(), refresh_token));
-  }
-
   TestURLFetcher* SetupApiCall(bool succeeds, net::HttpStatusCode status) {
     std::string body(CreateBody());
     GURL url(CreateApiUrl());
-    EXPECT_CALL(*flow_, CreateApiCallBody()).WillOnce(Return(body));
-    EXPECT_CALL(*flow_, CreateApiCallUrl()).WillOnce(Return(url));
+    EXPECT_CALL(flow_, CreateApiCallBody()).WillOnce(Return(body));
+    EXPECT_CALL(flow_, CreateApiCallUrl()).WillOnce(Return(url));
     TestURLFetcher* url_fetcher =
         CreateURLFetcher(url, succeeds, status, std::string());
     EXPECT_CALL(factory_, CreateURLFetcher(_, url, _, _))
@@ -160,159 +123,39 @@ class OAuth2ApiCallFlowTest : public testing::Test {
     return url_fetcher;
   }
 
-  MockUrlFetcherFactory factory_;
-  scoped_ptr<MockApiCallFlow> flow_;
-  scoped_ptr<MockAccessTokenFetcher> access_token_fetcher_;
   base::MessageLoop message_loop_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  StrictMock<MockApiCallFlow> flow_;
+  MockUrlFetcherFactory factory_;
 };
 
-TEST_F(OAuth2ApiCallFlowTest, FirstApiCallSucceeds) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, at, scopes);
+TEST_F(OAuth2ApiCallFlowTest, ApiCallSucceedsHttpOk) {
   TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
-  EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher));
-  flow_->Start();
-  flow_->OnURLFetchComplete(url_fetcher);
+  EXPECT_CALL(flow_, ProcessApiCallSuccess(url_fetcher));
+  flow_.Start(request_context_getter_.get(), kAccessToken);
+  flow_.OnURLFetchComplete(url_fetcher);
 }
 
-TEST_F(OAuth2ApiCallFlowTest, SecondApiCallSucceeds) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, at, scopes);
-  TestURLFetcher* url_fetcher1 = SetupApiCall(true, net::HTTP_UNAUTHORIZED);
-  flow_->Start();
-  SetupAccessTokenFetcher(scopes);
-  flow_->OnURLFetchComplete(url_fetcher1);
-  TestURLFetcher* url_fetcher2 = SetupApiCall(true, net::HTTP_OK);
-  EXPECT_CALL(*flow_, ProcessNewAccessToken(at));
-  EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher2));
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
-  flow_->OnURLFetchComplete(url_fetcher2);
+TEST_F(OAuth2ApiCallFlowTest, ApiCallSucceedsHttpNoContent) {
+  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_NO_CONTENT);
+  EXPECT_CALL(flow_, ProcessApiCallSuccess(url_fetcher));
+  flow_.Start(request_context_getter_.get(), kAccessToken);
+  flow_.OnURLFetchComplete(url_fetcher);
 }
 
-TEST_F(OAuth2ApiCallFlowTest, SecondApiCallFails) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, at, scopes);
-  TestURLFetcher* url_fetcher1 = SetupApiCall(true, net::HTTP_UNAUTHORIZED);
-  flow_->Start();
-  SetupAccessTokenFetcher(scopes);
-  flow_->OnURLFetchComplete(url_fetcher1);
-  TestURLFetcher* url_fetcher2 = SetupApiCall(false, net::HTTP_UNAUTHORIZED);
-  EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher2));
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
-  flow_->OnURLFetchComplete(url_fetcher2);
-}
-
-TEST_F(OAuth2ApiCallFlowTest, NewTokenGenerationFails) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, at, scopes);
+TEST_F(OAuth2ApiCallFlowTest, ApiCallFailure) {
   TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_UNAUTHORIZED);
-  flow_->Start();
-  SetupAccessTokenFetcher(scopes);
-  flow_->OnURLFetchComplete(url_fetcher);
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_CALL(*flow_, ProcessMintAccessTokenFailure(error));
-  flow_->OnGetTokenFailure(error);
+  EXPECT_CALL(flow_, ProcessApiCallFailure(url_fetcher));
+  flow_.Start(request_context_getter_.get(), kAccessToken);
+  flow_.OnURLFetchComplete(url_fetcher);
 }
 
-TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenFirstApiCallSucceeds) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, std::string(), scopes);
-  SetupAccessTokenFetcher(scopes);
-  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
-  EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher));
-  flow_->Start();
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
-  flow_->OnURLFetchComplete(url_fetcher);
-}
-
-TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenApiCallFails) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, std::string(), scopes);
-  SetupAccessTokenFetcher(scopes);
-  TestURLFetcher* url_fetcher = SetupApiCall(false, net::HTTP_BAD_GATEWAY);
-  EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher));
-  flow_->Start();
-  flow_->OnGetTokenSuccess(
-      at,
-      base::Time::Now() + base::TimeDelta::FromMinutes(3600));
-  flow_->OnURLFetchComplete(url_fetcher);
-}
-
-TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenNewTokenGenerationFails) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, std::string(), scopes);
-  SetupAccessTokenFetcher(scopes);
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_CALL(*flow_, ProcessMintAccessTokenFailure(error));
-  flow_->Start();
-  flow_->OnGetTokenFailure(error);
-}
-
-TEST_F(OAuth2ApiCallFlowTest, EmptyRefreshTokenApiCallSuccess) {
-  std::string rt = "";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, at, scopes);
-  EXPECT_CALL(*flow_, CreateAccessTokenFetcher()).Times(0);
-  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
-  EXPECT_CALL(*flow_, ProcessApiCallSuccess(url_fetcher));
-  flow_->Start();
-  flow_->OnURLFetchComplete(url_fetcher);
-}
-
-TEST_F(OAuth2ApiCallFlowTest, EmptyRefreshTokenApiCallFails) {
-  std::string rt = "";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
-
-  CreateFlow(rt, at, scopes);
-  EXPECT_CALL(*flow_, CreateAccessTokenFetcher()).Times(0);
-  TestURLFetcher* url_fetcher = SetupApiCall(false, net::HTTP_UNAUTHORIZED);
-  EXPECT_CALL(*flow_, ProcessApiCallFailure(url_fetcher));
-  flow_->Start();
-  flow_->OnURLFetchComplete(url_fetcher);
-}
-
-TEST_F(OAuth2ApiCallFlowTest, CreateURLFetcher) {
-  std::string rt = "refresh_token";
-  std::string at = "access_token";
-  std::vector<std::string> scopes(CreateTestScopes());
+TEST_F(OAuth2ApiCallFlowTest, ExpectedHTTPHeaders) {
   std::string body = CreateBody();
   GURL url(CreateApiUrl());
 
-  CreateFlow(rt, at, scopes);
-  scoped_ptr<TestURLFetcher> url_fetcher(SetupApiCall(true, net::HTTP_OK));
-  flow_->CreateURLFetcher();
+  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
+  flow_.Start(request_context_getter_.get(), kAccessToken);
   HttpRequestHeaders headers;
   url_fetcher->GetExtraRequestHeaders(&headers);
   std::string auth_header;

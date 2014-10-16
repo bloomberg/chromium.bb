@@ -75,7 +75,7 @@ TEST(ObfuscatedGaiaIdFetcherTest, ParseResponse) {
 
 TEST(ObfuscatedGaiaIdFetcherTest, ProcessApiCallSuccess) {
   TestDelegate delegate;
-  ObfuscatedGaiaIdFetcher fetcher(NULL, &delegate, std::string());
+  ObfuscatedGaiaIdFetcher fetcher(&delegate);
 
   net::TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
   url_fetcher.set_status(
@@ -89,7 +89,7 @@ TEST(ObfuscatedGaiaIdFetcherTest, ProcessApiCallSuccess) {
 
 TEST(ObfuscatedGaiaIdFetcherTest, ProcessApiCallFailure) {
   TestDelegate delegate;
-  ObfuscatedGaiaIdFetcher fetcher(NULL, &delegate, std::string());
+  ObfuscatedGaiaIdFetcher fetcher(&delegate);
 
   net::TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
   url_fetcher.set_status(

@@ -162,9 +162,10 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
 class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
  public:
   TestHangOAuth2MintTokenFlow()
-      : OAuth2MintTokenFlow(NULL, NULL, OAuth2MintTokenFlow::Parameters()) {}
+      : OAuth2MintTokenFlow(NULL, OAuth2MintTokenFlow::Parameters()) {}
 
-  virtual void Start() override {
+  virtual void Start(net::URLRequestContextGetter* context,
+                     const std::string& access_token) override {
     // Do nothing, simulating a hanging network call.
   }
 };
@@ -181,12 +182,12 @@ class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
 
   TestOAuth2MintTokenFlow(ResultType result,
                           OAuth2MintTokenFlow::Delegate* delegate)
-    : OAuth2MintTokenFlow(NULL, delegate, OAuth2MintTokenFlow::Parameters()),
-      result_(result),
-      delegate_(delegate) {
-  }
+      : OAuth2MintTokenFlow(delegate, OAuth2MintTokenFlow::Parameters()),
+        result_(result),
+        delegate_(delegate) {}
 
-  virtual void Start() override {
+  virtual void Start(net::URLRequestContextGetter* context,
+                     const std::string& access_token) override {
     switch (result_) {
       case ISSUE_ADVICE_SUCCESS: {
         IssueAdviceInfo info;
@@ -357,12 +358,16 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     }
   }
 
-  virtual OAuth2MintTokenFlow* CreateMintTokenFlow(
+  virtual void StartGaiaRequest(
       const std::string& login_access_token) override {
     EXPECT_TRUE(login_access_token_.empty());
-    // Save the login token used to create the flow so tests can see
+    // Save the login token used in the mint token flow so tests can see
     // what account was used.
     login_access_token_ = login_access_token;
+    IdentityGetAuthTokenFunction::StartGaiaRequest(login_access_token);
+  }
+
+  virtual OAuth2MintTokenFlow* CreateMintTokenFlow() override {
     return flow_.release();
   }
 

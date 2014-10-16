@@ -8,6 +8,7 @@
 #include <string>
 
 #include "google_apis/gaia/oauth2_api_call_flow.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 class GoogleServiceAuthError;
 
@@ -39,13 +40,10 @@ class ObfuscatedGaiaIdFetcher : public OAuth2ApiCallFlow {
 
   // TODO(petewil): Someday let's make a profile keyed service to cache
   // the Gaia ID.
-
-  ObfuscatedGaiaIdFetcher(net::URLRequestContextGetter* context,
-                          Delegate* delegate,
-                          const std::string& refresh_token);
+  explicit ObfuscatedGaiaIdFetcher(Delegate* delegate);
   virtual ~ObfuscatedGaiaIdFetcher();
 
-  static std::vector<std::string> GetScopes();
+  static OAuth2TokenService::ScopeSet GetScopes();
 
  protected:
   // OAuth2ApiCallFlow implementation
@@ -55,9 +53,6 @@ class ObfuscatedGaiaIdFetcher : public OAuth2ApiCallFlow {
       const net::URLFetcher* source) override;
   virtual void ProcessApiCallFailure(
       const net::URLFetcher* source) override;
-  virtual void ProcessNewAccessToken(const std::string& access_token) override;
-  virtual void ProcessMintAccessTokenFailure(
-      const GoogleServiceAuthError& error) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedGaiaIdFetcherTest, SetUp);

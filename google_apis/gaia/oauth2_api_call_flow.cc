@@ -11,7 +11,6 @@
 #include "base/profiler/scoped_profile.h"
 #include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -34,107 +33,37 @@ static std::string MakeAuthorizationHeader(const std::string& auth_token) {
 }
 }  // namespace
 
-OAuth2ApiCallFlow::OAuth2ApiCallFlow(
-    net::URLRequestContextGetter* context,
-    const std::string& refresh_token,
-    const std::string& access_token,
-    const std::vector<std::string>& scopes)
-    : context_(context),
-      refresh_token_(refresh_token),
-      access_token_(access_token),
-      scopes_(scopes),
-      state_(INITIAL),
-      tried_mint_access_token_(false) {
+OAuth2ApiCallFlow::OAuth2ApiCallFlow() : state_(INITIAL) {
 }
 
 OAuth2ApiCallFlow::~OAuth2ApiCallFlow() {}
 
-void OAuth2ApiCallFlow::Start() {
-  BeginApiCall();
-}
+void OAuth2ApiCallFlow::Start(net::URLRequestContextGetter* context,
+                              const std::string& access_token) {
+  CHECK(state_ == INITIAL);
+  state_ = API_CALL_STARTED;
 
-void OAuth2ApiCallFlow::BeginApiCall() {
-  CHECK(state_ == INITIAL || state_ == MINT_ACCESS_TOKEN_DONE);
-
-  // If the access token is empty then directly try to mint one.
-  if (access_token_.empty()) {
-    BeginMintAccessToken();
-  } else {
-    state_ = API_CALL_STARTED;
-    url_fetcher_.reset(CreateURLFetcher());
-    url_fetcher_->Start();  // OnURLFetchComplete will be called.
-  }
+  url_fetcher_.reset(CreateURLFetcher(context, access_token));
+  url_fetcher_->Start();  // OnURLFetchComplete will be called.
 }
 
 void OAuth2ApiCallFlow::EndApiCall(const net::URLFetcher* source) {
   CHECK_EQ(API_CALL_STARTED, state_);
-  state_ = API_CALL_DONE;
 
   URLRequestStatus status = source->GetStatus();
-  if (!status.is_success()) {
+  int status_code = source->GetResponseCode();
+  if (!status.is_success() ||
+      (status_code != net::HTTP_OK && status_code != net::HTTP_NO_CONTENT)) {
     state_ = ERROR_STATE;
     ProcessApiCallFailure(source);
-    return;
-  }
-
-  // If the response code is 401 Unauthorized then access token may have
-  // expired. So try generating a new access token.
-  if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
-    // If we already tried minting a new access token or we don't have a
-    // refresh token, don't do it again.
-    if (tried_mint_access_token_ || refresh_token_.empty()) {
-      state_ = ERROR_STATE;
-      ProcessApiCallFailure(source);
-    } else {
-      BeginMintAccessToken();
-    }
-
-    return;
-  }
-
-  if (source->GetResponseCode() != net::HTTP_OK &&
-      source->GetResponseCode() != net::HTTP_NO_CONTENT) {
-    state_ = ERROR_STATE;
-    ProcessApiCallFailure(source);
-    return;
-  }
-
-  ProcessApiCallSuccess(source);
-}
-
-void OAuth2ApiCallFlow::BeginMintAccessToken() {
-  CHECK(state_ == INITIAL || state_ == API_CALL_DONE);
-  CHECK(!tried_mint_access_token_);
-  state_ = MINT_ACCESS_TOKEN_STARTED;
-  tried_mint_access_token_ = true;
-
-  oauth2_access_token_fetcher_.reset(CreateAccessTokenFetcher());
-  oauth2_access_token_fetcher_->Start(
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      scopes_);
-}
-
-void OAuth2ApiCallFlow::EndMintAccessToken(
-    const GoogleServiceAuthError* error) {
-  CHECK_EQ(MINT_ACCESS_TOKEN_STARTED, state_);
-
-  if (!error) {
-    state_ = MINT_ACCESS_TOKEN_DONE;
-    ProcessNewAccessToken(access_token_);
-    BeginApiCall();
   } else {
-    state_ = ERROR_STATE;
-    ProcessMintAccessTokenFailure(*error);
+    state_ = API_CALL_DONE;
+    ProcessApiCallSuccess(source);
   }
 }
 
 std::string OAuth2ApiCallFlow::CreateApiCallBodyContentType() {
   return "application/x-www-form-urlencoded";
-}
-
-OAuth2AccessTokenFetcher* OAuth2ApiCallFlow::CreateAccessTokenFetcher() {
-  return new OAuth2AccessTokenFetcherImpl(this, context_, refresh_token_);
 }
 
 void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -148,18 +77,9 @@ void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   EndApiCall(source);
 }
 
-void OAuth2ApiCallFlow::OnGetTokenSuccess(const std::string& access_token,
-                                          const base::Time& expiration_time) {
-  access_token_ = access_token;
-  EndMintAccessToken(NULL);
-}
-
-void OAuth2ApiCallFlow::OnGetTokenFailure(
-    const GoogleServiceAuthError& error) {
-  EndMintAccessToken(&error);
-}
-
-URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher() {
+URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher(
+    net::URLRequestContextGetter* context,
+    const std::string& access_token) {
   std::string body = CreateApiCallBody();
   bool empty_body = body.empty();
   URLFetcher* result = net::URLFetcher::Create(
@@ -168,10 +88,10 @@ URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher() {
       empty_body ? URLFetcher::GET : URLFetcher::POST,
       this);
 
-  result->SetRequestContext(context_);
+  result->SetRequestContext(context);
   result->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);
-  result->AddExtraRequestHeader(MakeAuthorizationHeader(access_token_));
+  result->AddExtraRequestHeader(MakeAuthorizationHeader(access_token));
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS. Retrying once should
   // be enough in those cases; let the fetcher retry up to 3 times just in case.

@@ -138,8 +138,8 @@ class MockDelegate : public OAuth2MintTokenFlow::Delegate {
 class MockMintTokenFlow : public OAuth2MintTokenFlow {
  public:
   explicit MockMintTokenFlow(MockDelegate* delegate,
-    const OAuth2MintTokenFlow::Parameters& parameters )
-      : OAuth2MintTokenFlow(NULL, delegate, parameters) {}
+                             const OAuth2MintTokenFlow::Parameters& parameters)
+      : OAuth2MintTokenFlow(delegate, parameters) {}
   ~MockMintTokenFlow() {}
 
   MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher*());
@@ -159,13 +159,12 @@ class OAuth2MintTokenFlowTest : public testing::Test {
 
   void CreateFlow(MockDelegate* delegate,
                   OAuth2MintTokenFlow::Mode mode) {
-    std::string rt = "refresh_token";
     std::string ext_id = "ext1";
     std::string client_id = "client1";
     std::vector<std::string> scopes(CreateTestScopes());
     flow_.reset(new MockMintTokenFlow(
         delegate,
-        OAuth2MintTokenFlow::Parameters(rt, ext_id, client_id, scopes, mode)));
+        OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes, mode)));
   }
 
   // Helper to parse the given string to DictionaryValue.
@@ -343,22 +342,5 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure) {
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
     EXPECT_CALL(delegate_, OnMintTokenFailure(_));
     flow_->ProcessApiCallFailure(&url_fetcher);
-  }
-}
-
-TEST_F(OAuth2MintTokenFlowTest, ProcessMintAccessTokenFailure) {
-  {  // Null delegate should work fine.
-    GoogleServiceAuthError error(
-        GoogleServiceAuthError::FromConnectionError(101));
-    CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
-    flow_->ProcessMintAccessTokenFailure(error);
-  }
-
-  {  // Non-null delegate.
-    GoogleServiceAuthError error(
-        GoogleServiceAuthError::FromConnectionError(101));
-    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
-    EXPECT_CALL(delegate_, OnMintTokenFailure(error));
-    flow_->ProcessMintAccessTokenFailure(error);
   }
 }

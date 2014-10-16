@@ -17,16 +17,6 @@ const char kSerializedRequestProto[] = "serialized_request_proto";
 const char kSerializedResponseProto[] = "result_proto";
 const char kRequestUrl[] = "https://googleapis.com/cryptauth/test";
 
-// For the specifications of the mint access token request, see:
-// https://developers.google.com/accounts/docs/OAuth2WebServer
-const char kMintTokenPath[] = "/o/oauth2/token";
-const char kMintTokenResponse[] =
-    "{"
-    "  \"access_token\":\"1/fFAGRNJru1FQd77BzhT3Zg\","
-    "  \"expires_in\":3920,"
-    "  \"token_type\":\"Bearer\""
-    "}";
-
 }  // namespace
 
 class ProximityAuthCryptAuthApiCallFlowTest
@@ -35,26 +25,24 @@ class ProximityAuthCryptAuthApiCallFlowTest
  protected:
   ProximityAuthCryptAuthApiCallFlowTest()
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
-            new base::TestSimpleTaskRunner())) {}
+            new base::TestSimpleTaskRunner())),
+        flow_(GURL(kRequestUrl)) {}
 
   virtual void SetUp() override {
     // The TestURLFetcherFactory will override the global URLFetcherFactory for
     // the entire test.
     url_fetcher_factory_.reset(new net::TestURLFetcherFactory());
     url_fetcher_factory_->SetDelegateForTests(this);
-
-    flow_.reset(new CryptAuthApiCallFlow(url_request_context_getter_.get(),
-                                         "refresh_token",
-                                         "access_token",
-                                         GURL(kRequestUrl)));
   }
 
   void StartApiCallFlow() {
-    flow_->Start(kSerializedRequestProto,
-                 base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnResult,
-                            base::Unretained(this)),
-                 base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnError,
-                            base::Unretained(this)));
+    flow_.Start(url_request_context_getter_.get(),
+                "access_token",
+                kSerializedRequestProto,
+                base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnResult,
+                           base::Unretained(this)),
+                base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnError,
+                           base::Unretained(this)));
     // URLFetcher object for the API request should be created.
     CheckCryptAuthHttpRequest();
   }
@@ -113,7 +101,7 @@ class ProximityAuthCryptAuthApiCallFlowTest
  private:
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   scoped_ptr<net::TestURLFetcherFactory> url_fetcher_factory_;
-  scoped_ptr<CryptAuthApiCallFlow> flow_;
+  CryptAuthApiCallFlow flow_;
 };
 
 TEST_F(ProximityAuthCryptAuthApiCallFlowTest, RequestSuccess) {
@@ -146,55 +134,6 @@ TEST_F(ProximityAuthCryptAuthApiCallFlowTest, ResponseWithNoBody) {
       net::URLRequestStatus::SUCCESS, net::HTTP_OK, std::string());
   EXPECT_FALSE(result_);
   EXPECT_EQ("No response body", *error_message_);
-}
-
-TEST_F(ProximityAuthCryptAuthApiCallFlowTest, MintTokenThenApiSuccess) {
-  StartApiCallFlow();
-
-  // A status code of 401 Unauthorized should cause the flow to mint a new
-  // access token and try again.
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_UNAUTHORIZED, std::string());
-  EXPECT_FALSE(result_);
-  EXPECT_FALSE(error_message_);
-
-  EXPECT_EQ(kMintTokenPath, url_fetcher_->GetOriginalURL().path());
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_OK, kMintTokenResponse);
-
-  // Upon minting the access token, the flow should retry the original request.
-  CheckCryptAuthHttpRequest();
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_OK, kSerializedResponseProto);
-  EXPECT_EQ(kSerializedResponseProto, *result_);
-  EXPECT_FALSE(error_message_);
-}
-
-TEST_F(ProximityAuthCryptAuthApiCallFlowTest, MintTokenApiFailure) {
-  StartApiCallFlow();
-
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_UNAUTHORIZED, std::string());
-
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_OK, kMintTokenResponse);
-
-  CompleteCurrentRequest(net::URLRequestStatus::FAILED, 0, std::string());
-  EXPECT_FALSE(result_);
-  EXPECT_EQ("Request failed", *error_message_);
-}
-
-TEST_F(ProximityAuthCryptAuthApiCallFlowTest, MintTokenFailure) {
-  StartApiCallFlow();
-
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_UNAUTHORIZED, std::string());
-
-  CompleteCurrentRequest(
-      net::URLRequestStatus::SUCCESS, net::HTTP_UNAUTHORIZED, std::string());
-
-  EXPECT_FALSE(result_);
-  EXPECT_EQ("Could not mint access token", *error_message_);
 }
 
 }  // namespace proximity_auth

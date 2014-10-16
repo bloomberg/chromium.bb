@@ -22,42 +22,21 @@ class URLFetcher;
 class URLRequestContextGetter;
 }
 
-// Base class for all classes that implement a flow to call OAuth2
-// enabled APIs.
-//
-// Given a refresh token, an access token, and a list of scopes an OAuth2
-// enabled API is called in the following way:
-// 1. Try the given access token to call the API.
-// 2. If that does not work, use the refresh token and scopes to generate
-//    a new access token.
-// 3. Try the new access token to call the API.
-//
-// This class abstracts the basic steps and exposes template methods
-// for sub-classes to implement for API specific details.
+// Base class for all classes that implement a flow to call OAuth2 enabled APIs,
+// given an access token to the service.  This class abstracts the basic steps
+// and exposes template methods for sub-classes to implement for API specific
+// details.
 class OAuth2ApiCallFlow
     : public net::URLFetcherDelegate,
       public OAuth2AccessTokenConsumer {
  public:
-  // Creates an instance that works with the given data.  Note that
-  // |access_token| xor |refresh_token| can be empty (but not both).  If
-  // |access_token| is empty, the flow will skip the first step (of trying an
-  // existing access token). If |refresh_token| is empty, the flow wlll skip
-  // the second and third steps (only performing the API call).
-  OAuth2ApiCallFlow(
-      net::URLRequestContextGetter* context,
-      const std::string& refresh_token,
-      const std::string& access_token,
-      const std::vector<std::string>& scopes);
+  OAuth2ApiCallFlow();
 
   virtual ~OAuth2ApiCallFlow();
 
   // Start the flow.
-  virtual void Start();
-
-  // OAuth2AccessTokenFetcher implementation.
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
+  virtual void Start(net::URLRequestContextGetter* context,
+                     const std::string& access_token);
 
   // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -65,7 +44,7 @@ class OAuth2ApiCallFlow
  protected:
   // Template methods for sub-classes.
 
-  // Methods to help create HTTP request.
+  // Methods to help create the API request.
   virtual GURL CreateApiCallUrl() = 0;
   virtual std::string CreateApiCallBody() = 0;
   virtual std::string CreateApiCallBodyContentType();
@@ -76,54 +55,29 @@ class OAuth2ApiCallFlow
   virtual void ProcessApiCallSuccess(const net::URLFetcher* source) = 0;
   // Called when the API call failed.
   virtual void ProcessApiCallFailure(const net::URLFetcher* source) = 0;
-  // Called when a new access token is generated.
-  virtual void ProcessNewAccessToken(const std::string& access_token) = 0;
-  virtual void ProcessMintAccessTokenFailure(
-      const GoogleServiceAuthError& error) = 0;
 
  private:
   enum State {
     INITIAL,
     API_CALL_STARTED,
     API_CALL_DONE,
-    MINT_ACCESS_TOKEN_STARTED,
-    MINT_ACCESS_TOKEN_DONE,
     ERROR_STATE
   };
-
-  friend class OAuth2ApiCallFlowTest;
-  FRIEND_TEST_ALL_PREFIXES(OAuth2ApiCallFlowTest, CreateURLFetcher);
-
-  // Helper to create an instance of access token fetcher.
-  // Caller owns the returned instance.
-  // Note that this is virtual since it is mocked during unit testing.
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher();
 
   // Creates an instance of URLFetcher that does not send or save cookies.
   // Template method CreateApiCallUrl is used to get the URL.
   // Template method CreateApiCallBody is used to get the body.
   // The URLFether's method will be GET if body is empty, POST otherwise.
   // Caller owns the returned instance.
-  // Note that this is virtual since it is mocked during unit testing.
-  virtual net::URLFetcher* CreateURLFetcher();
+  net::URLFetcher* CreateURLFetcher(net::URLRequestContextGetter* context,
+                                    const std::string& access_token);
 
   // Helper methods to implement the state machine for the flow.
   void BeginApiCall();
   void EndApiCall(const net::URLFetcher* source);
-  void BeginMintAccessToken();
-  void EndMintAccessToken(const GoogleServiceAuthError* error);
-
-  net::URLRequestContextGetter* context_;
-  std::string refresh_token_;
-  std::string access_token_;
-  std::vector<std::string> scopes_;
 
   State state_;
-  // Whether we have already tried minting an access token once.
-  bool tried_mint_access_token_;
-
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2ApiCallFlow);
 };

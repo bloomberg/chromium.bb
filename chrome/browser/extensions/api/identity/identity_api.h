@@ -217,6 +217,14 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) override;
 
+  // Starts a mint token request to GAIA.
+  // Exposed for testing.
+  virtual void StartGaiaRequest(const std::string& login_access_token);
+
+  // Caller owns the returned instance.
+  // Exposed for testing.
+  virtual OAuth2MintTokenFlow* CreateMintTokenFlow();
+
   scoped_ptr<OAuth2TokenService::Request> login_token_request_;
 
  private:
@@ -261,15 +269,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   virtual void StartDeviceLoginAccessTokenRequest();
 #endif
 
-  // Starts a mint token request to GAIA.
-  void StartGaiaRequest(const std::string& login_access_token);
-
   // Methods for invoking UI. Overridable for testing.
   virtual void ShowLoginPopup();
   virtual void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice);
-  // Caller owns the returned instance.
-  virtual OAuth2MintTokenFlow* CreateMintTokenFlow(
-      const std::string& login_access_token);
 
   // Checks if there is a master login token to mint tokens for the extension.
   bool HasLoginToken() const;

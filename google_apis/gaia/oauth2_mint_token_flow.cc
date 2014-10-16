@@ -98,30 +98,19 @@ bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
 OAuth2MintTokenFlow::Parameters::Parameters() : mode(MODE_ISSUE_ADVICE) {}
 
 OAuth2MintTokenFlow::Parameters::Parameters(
-    const std::string& at,
     const std::string& eid,
     const std::string& cid,
     const std::vector<std::string>& scopes_arg,
     Mode mode_arg)
-    : access_token(at),
-      extension_id(eid),
-      client_id(cid),
-      scopes(scopes_arg),
-      mode(mode_arg) {
+    : extension_id(eid), client_id(cid), scopes(scopes_arg), mode(mode_arg) {
 }
 
 OAuth2MintTokenFlow::Parameters::~Parameters() {}
 
-OAuth2MintTokenFlow::OAuth2MintTokenFlow(URLRequestContextGetter* context,
-                                         Delegate* delegate,
+OAuth2MintTokenFlow::OAuth2MintTokenFlow(Delegate* delegate,
                                          const Parameters& parameters)
-    : OAuth2ApiCallFlow(context,
-                        std::string(),
-                        parameters.access_token,
-                        std::vector<std::string>()),
-      delegate_(delegate),
-      parameters_(parameters),
-      weak_factory_(this) {}
+    : delegate_(delegate), parameters_(parameters), weak_factory_(this) {
+}
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 
@@ -215,16 +204,6 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
 void OAuth2MintTokenFlow::ProcessApiCallFailure(
     const net::URLFetcher* source) {
   ReportFailure(CreateAuthError(source));
-}
-void OAuth2MintTokenFlow::ProcessNewAccessToken(
-    const std::string& access_token) {
-  // We don't currently store new access tokens. We generate one every time.
-  // So we have nothing to do here.
-  return;
-}
-void OAuth2MintTokenFlow::ProcessMintAccessTokenFailure(
-    const GoogleServiceAuthError& error) {
-  ReportFailure(error);
 }
 
 // static

@@ -765,8 +765,9 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
     const std::string& login_access_token) {
   DCHECK(!login_access_token.empty());
-  mint_token_flow_.reset(CreateMintTokenFlow(login_access_token));
-  mint_token_flow_->Start();
+  mint_token_flow_.reset(CreateMintTokenFlow());
+  mint_token_flow_->Start(GetProfile()->GetRequestContext(),
+                          login_access_token);
 }
 
 void IdentityGetAuthTokenFunction::ShowLoginPopup() {
@@ -783,13 +784,10 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
   gaia_web_auth_flow_->Start();
 }
 
-OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
-    const std::string& login_access_token) {
+OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
   OAuth2MintTokenFlow* mint_token_flow = new OAuth2MintTokenFlow(
-      GetProfile()->GetRequestContext(),
       this,
       OAuth2MintTokenFlow::Parameters(
-          login_access_token,
           extension()->id(),
           oauth2_client_id_,
           std::vector<std::string>(token_key_->scopes.begin(),

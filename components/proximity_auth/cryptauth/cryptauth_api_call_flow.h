@@ -22,21 +22,19 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
       ResultCallback;
   typedef base::Callback<void(const std::string& error_message)> ErrorCallback;
 
-  // Creates a flow that can make a CryptAuth request to the URL given by
-  // |request_url|. If the |access_token| is empty or invalid, a new
-  // token will be minted to make the API call using |refresh_token|.
-  // The |context| provided here should outlive this flow.
-  CryptAuthApiCallFlow(net::URLRequestContextGetter* context,
-                       const std::string& refresh_token,
-                       const std::string& access_token,
-                       const GURL& request_url);
+  CryptAuthApiCallFlow(const GURL& request_url);
   virtual ~CryptAuthApiCallFlow();
 
-  // Sends |serialized_request|, which should be a serialized protocol buffer
-  // message. Upon success |result_callback| will be called with the serialized
-  // response protocol buffer message. Upon failure, |error_callback| will be
-  // called.
-  void Start(const std::string& serialized_request,
+  // Starts the API call.
+  //   context: The URL context used to make the request.
+  //   access_token: The access token for whom to make the to make the request.
+  //   serialized_request: A serialized proto containing the request data.
+  //   result_callback: Called when the flow completes successfully with a
+  //       serialized response proto.
+  //   error_callback: Called when the flow completes with an error.
+  void Start(net::URLRequestContextGetter* context,
+             const std::string& access_token,
+             const std::string& serialized_request,
              ResultCallback result_callback,
              ErrorCallback error_callback);
 
@@ -51,9 +49,6 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
   virtual std::string CreateApiCallBodyContentType() override;
   virtual void ProcessApiCallSuccess(const net::URLFetcher* source) override;
   virtual void ProcessApiCallFailure(const net::URLFetcher* source) override;
-  virtual void ProcessNewAccessToken(const std::string& access_token) override;
-  virtual void ProcessMintAccessTokenFailure(
-      const GoogleServiceAuthError& error) override;
 
  private:
   // The URL of the CryptAuth endpoint serving the request.

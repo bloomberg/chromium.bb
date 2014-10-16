@@ -46,21 +46,18 @@ GoogleServiceAuthError CreateAuthError(const URLFetcher* source) {
 
 namespace extensions {
 
-ObfuscatedGaiaIdFetcher::ObfuscatedGaiaIdFetcher(
-    URLRequestContextGetter* context,
-    Delegate* delegate,
-    const std::string& access_token)
-    : OAuth2ApiCallFlow(context, std::string(), access_token, GetScopes()),
-      delegate_(delegate) {
+ObfuscatedGaiaIdFetcher::ObfuscatedGaiaIdFetcher(Delegate* delegate)
+    : delegate_(delegate) {
   DCHECK(delegate);
 }
 
 ObfuscatedGaiaIdFetcher::~ObfuscatedGaiaIdFetcher() { }
 
-// Returns a vector of scopes needed to call the API to get obfuscated Gaia ID.
-std::vector<std::string> ObfuscatedGaiaIdFetcher::GetScopes() {
-  std::vector<std::string> scopes;
-  scopes.push_back("https://www.googleapis.com/auth/gcm_for_chrome.readonly");
+// Returns a set of scopes needed to call the API to get obfuscated Gaia ID.
+// static.
+OAuth2TokenService::ScopeSet ObfuscatedGaiaIdFetcher::GetScopes() {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert("https://www.googleapis.com/auth/gcm_for_chrome.readonly");
   return scopes;
 }
 
@@ -103,20 +100,6 @@ void ObfuscatedGaiaIdFetcher::ProcessApiCallSuccess(
 void ObfuscatedGaiaIdFetcher::ProcessApiCallFailure(
     const net::URLFetcher* source) {
   ReportFailure(CreateAuthError(source));
-}
-
-void ObfuscatedGaiaIdFetcher::ProcessNewAccessToken(
-    const std::string& obfuscated_id)  {
-  // We generate a new access token every time instead of storing the access
-  // token since access tokens expire every hour and we expect to get
-  // obfuscated Gaia ID very infrequently.
-}
-
-void ObfuscatedGaiaIdFetcher::ProcessMintAccessTokenFailure(
-    const GoogleServiceAuthError& error)  {
-  // We failed to generate the token needed to call the API to get
-  // the obfuscated Gaia ID, so report failure to the caller.
-  ReportFailure(error);
 }
 
 // static

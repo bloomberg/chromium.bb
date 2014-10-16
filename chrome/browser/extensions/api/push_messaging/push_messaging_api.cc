@@ -148,8 +148,7 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
   IdentityProvider* identity_provider =
       invalidation_provider->GetInvalidationService()->GetIdentityProvider();
 
-  std::vector<std::string> scope_vector = ObfuscatedGaiaIdFetcher::GetScopes();
-  OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
+  OAuth2TokenService::ScopeSet scopes = ObfuscatedGaiaIdFetcher::GetScopes();
   fetcher_access_token_request_ =
       identity_provider->GetTokenService()->StartRequest(
           identity_provider->GetActiveAccountId(), scopes, this);
@@ -196,8 +195,7 @@ void PushMessagingGetChannelIdFunction::StartGaiaIdFetch(
     const std::string& access_token) {
   // Start the async fetch of the Gaia Id.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::URLRequestContextGetter* context = GetProfile()->GetRequestContext();
-  fetcher_.reset(new ObfuscatedGaiaIdFetcher(context, this, access_token));
+  fetcher_.reset(new ObfuscatedGaiaIdFetcher(this));
 
   // Get the token cache and see if we have already cached a Gaia Id.
   TokenCacheService* token_cache =
@@ -212,7 +210,8 @@ void PushMessagingGetChannelIdFunction::StartGaiaIdFetch(
     return;
   }
 
-  fetcher_->Start();
+  net::URLRequestContextGetter* context = GetProfile()->GetRequestContext();
+  fetcher_->Start(context, access_token);
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(
