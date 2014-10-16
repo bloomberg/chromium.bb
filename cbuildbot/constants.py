@@ -449,6 +449,11 @@ CL_ACTION_PRE_CQ_LAUNCHING = 'pre_cq_launching'
 CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
 CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
 
+# Miscellaneous actions
+CL_ACTION_REQUEUED = 'requeued'           # Recorded for a change when it is
+                                          # noticed that a previously rejected
+                                          # patch is again in the queue.
+
 CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_SUBMITTED,
               CL_ACTION_KICKED_OUT,
@@ -459,7 +464,8 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_PRE_CQ_FAILED,
               CL_ACTION_PRE_CQ_LAUNCHING,
               CL_ACTION_PRE_CQ_WAITING,
-              CL_ACTION_PRE_CQ_READY_TO_SUBMIT]
+              CL_ACTION_PRE_CQ_READY_TO_SUBMIT,
+              CL_ACTION_REQUEUED]
 
 # CQ types.
 CQ = 'cq'
