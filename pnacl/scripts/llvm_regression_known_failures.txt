@@ -43,3 +43,20 @@ Clang::Index/targeted-file-refs.c win
 LLVM::DebugInfo/debuglineinfo.test win
 # Tries to open LLVMHello.dll, but that apparently does not get built.
 LLVM::Feature/load_module.ll win
+
+
+###
+### x86-32-host only failures
+###
+LLVM::ExecutionEngine/MCJIT/stubs-sm-pic.ll x86_32
+LLVM::ExecutionEngine/MCJIT/remote/test-ptr-reloc-sm-pic.ll x86_32
+LLVM::ExecutionEngine/MCJIT/test-ptr-reloc-sm-pic.ll x86_32
+LLVM::ExecutionEngine/MCJIT/hello-sm-pic.ll x86_32
+LLVM::ExecutionEngine/MCJIT/multi-module-sm-pic-a.ll x86_32
+LLVM::ExecutionEngine/MCJIT/remote/multi-module-sm-pic-a.ll x86_32
+Clang::Modules/compiler_builtins.m x86_32
+LLVM::ExecutionEngine/MCJIT/cross-module-sm-pic-a.ll x86_32
+LLVM::ExecutionEngine/MCJIT/remote/cross-module-sm-pic-a.ll x86_32
+LLVM::ExecutionEngine/MCJIT/eh-lg-pic.ll x86_32
+LLVM::ExecutionEngine/MCJIT/remote/test-global-init-nonzero-sm-pic.ll x86_32
+LLVM::ExecutionEngine/MCJIT/test-global-init-nonzero-sm-pic.ll x86_32

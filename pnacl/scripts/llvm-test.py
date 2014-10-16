@@ -29,6 +29,8 @@ import subprocess
 import sys
 import parse_llvm_test_report
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+import pynacl.platform
 
 @contextlib.contextmanager
 def remember_cwd():
@@ -191,9 +193,11 @@ def SetupEnvironment(options):
   env['PNACL_BUILDBOT'] = os.environ.get('PNACL_BUILDBOT', 'false')
   if sys.platform == 'linux2':
     env['BUILD_PLATFORM'] = 'linux'
-    env['BUILD_ARCH'] = os.environ.get('BUILD_ARCH', os.uname()[4])
+    env['BUILD_ARCH'] = os.environ.get(
+        'BUILD_ARCH',
+        'x86_64' if pynacl.platform.IsArch64Bit() else 'i686')
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', env['BUILD_ARCH'])
-    env['HOST_TRIPLE'] = 'x86_64_linux'
+    env['HOST_TRIPLE'] = env['HOST_ARCH'] + '_linux'
   elif sys.platform == 'cygwin':
     env['BUILD_PLATFORM'] = 'win'
     env['HOST_ARCH'] = os.environ.get('HOST_ARCH', 'x86_32')
@@ -318,6 +322,7 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     parse_options['lit'] = True
     parse_options['excludes'].append(env[lit_failures])
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
+    parse_options['attributes'].append(env['HOST_ARCH'])
     print (str(datetime.datetime.now()) + ' ' +
            'Parsing LIT test report output.')
     ret = parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
