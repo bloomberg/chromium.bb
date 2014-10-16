@@ -40,6 +40,7 @@
         "kernel_wrap_bionic.cc",
         "kernel_wrap_dummy.cc",
         "kernel_wrap_glibc.cc",
+        "kernel_wrap_irt_ext.c",
         "kernel_wrap_newlib.cc",
         "kernel_wrap_win.cc",
         "log.c",

@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include <sys/types.h>  // Include something that will define __GLIBC__.
+#include "nacl_io/kernel_wrap.h" // IRT_EXT is turned on in this header.
 
 // The entire file is wrapped in this #if. We do this so this .cc file can be
 // compiled, even on a non-newlib build.
-#if defined(__native_client__) && !defined(__GLIBC__) && !defined(__BIONIC__)
-
-#include "nacl_io/kernel_wrap.h"
+#if !defined(NACL_IO_IRT_EXT) && defined(__native_client__) && \
+    !defined(__GLIBC__) && !defined(__BIONIC__)
 
 #include <dirent.h>
 #include <errno.h>

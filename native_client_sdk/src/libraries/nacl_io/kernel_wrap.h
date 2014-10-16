@@ -13,10 +13,16 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
+#include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
+
+// Curently enable NaCl IO IRT Extension when using newlib
+#if defined(__native_client__) && defined(_NEWLIB_VERSION)
+# define NACL_IO_IRT_EXT 1
+#endif
 
 #if defined(__GLIBC__)
 #include <sys/cdefs.h>
