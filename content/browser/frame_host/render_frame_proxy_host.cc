@@ -101,7 +101,11 @@ bool RenderFrameProxyHost::Send(IPC::Message *msg) {
   // TODO(nasko): For now, RenderFrameHost uses this object to send IPC messages
   // while swapped out. This can be removed once we don't have a swapped out
   // state on RenderFrameHosts. See https://crbug.com/357747.
-  msg->set_routing_id(routing_id_);
+
+  // Don't reset the routing ID for control messages.  See
+  // https://crbug.com/423538
+  if (msg->routing_id() != MSG_ROUTING_CONTROL)
+    msg->set_routing_id(routing_id_);
   return GetProcess()->Send(msg);
 }
 
