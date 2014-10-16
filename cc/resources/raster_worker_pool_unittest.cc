@@ -120,7 +120,7 @@ class RasterWorkerPoolTest
     bool canceled;
   };
 
-  typedef std::vector<scoped_refptr<RasterTask> > RasterTaskVector;
+  typedef std::vector<scoped_refptr<RasterTask>> RasterTaskVector;
 
   enum NamedTaskSet { REQUIRED_FOR_ACTIVATION = 0, ALL = 1 };
 

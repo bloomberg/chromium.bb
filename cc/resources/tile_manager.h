@@ -249,7 +249,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
   bool did_oom_on_last_assign_;
 
-  typedef base::hash_map<uint32_t, scoped_refptr<ImageDecodeTask> >
+  typedef base::hash_map<uint32_t, scoped_refptr<ImageDecodeTask>>
       PixelRefTaskMap;
   typedef base::hash_map<int, PixelRefTaskMap> LayerPixelRefTaskMap;
   LayerPixelRefTaskMap image_decode_tasks_;
@@ -266,7 +266,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   // Queue used when scheduling raster tasks.
   RasterTaskQueue raster_queue_;
 
-  std::vector<scoped_refptr<RasterTask> > orphan_raster_tasks_;
+  std::vector<scoped_refptr<RasterTask>> orphan_raster_tasks_;
 
   UniqueNotifier ready_to_activate_check_notifier_;
 

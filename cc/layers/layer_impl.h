@@ -601,10 +601,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // used. If this pointer turns out to be too heavy, we could have this (and
   // the scroll parent above) be stored in a LayerImpl -> scroll_info
   // map somewhere.
-  scoped_ptr<std::set<LayerImpl*> > scroll_children_;
+  scoped_ptr<std::set<LayerImpl*>> scroll_children_;
 
   LayerImpl* clip_parent_;
-  scoped_ptr<std::set<LayerImpl*> > clip_children_;
+  scoped_ptr<std::set<LayerImpl*>> clip_children_;
 
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one

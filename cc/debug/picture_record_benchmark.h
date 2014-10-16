@@ -31,7 +31,7 @@ class CC_EXPORT PictureRecordBenchmark : public MicroBenchmark {
 
   typedef std::pair<base::TimeDelta, unsigned> TotalTime;
   std::map<std::pair<int, int>, TotalTime> times_;
-  std::vector<std::pair<int, int> > dimensions_;
+  std::vector<std::pair<int, int>> dimensions_;
 };
 
 }  // namespace cc

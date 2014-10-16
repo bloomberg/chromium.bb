@@ -150,6 +150,22 @@ def CheckTodos(input_api, output_api):
       items=errors)]
   return []
 
+def CheckDoubleAngles(input_api, output_api, white_list=CC_SOURCE_FILES,
+                      black_list=None):
+  errors = []
+
+  source_file_filter = lambda x: input_api.FilterSourceFile(x,
+                                                            white_list,
+                                                            black_list)
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    if ('> >') in contents:
+      errors.append(f.LocalPath())
+
+  if errors:
+    return [output_api.PresubmitError('Use >> instead of > >:', items=errors)]
+  return []
+
 def CheckScopedPtr(input_api, output_api,
                    white_list=CC_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
@@ -359,6 +375,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckPassByValue(input_api, output_api)
   results += CheckChangeLintsClean(input_api, output_api)
   results += CheckTodos(input_api, output_api)
+  results += CheckDoubleAngles(input_api, output_api)
   results += CheckScopedPtr(input_api, output_api)
   results += CheckNamespace(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api)

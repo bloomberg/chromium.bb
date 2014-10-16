@@ -158,7 +158,7 @@ class ContextSharedData {
 
   uint32 next_sync_point_;
   unsigned next_mailbox_;
-  typedef base::hash_map<unsigned, scoped_refptr<TestTexture> > TextureMap;
+  typedef base::hash_map<unsigned, scoped_refptr<TestTexture>> TextureMap;
   TextureMap textures_;
   base::hash_map<unsigned, uint32> sync_point_for_mailbox_;
 };

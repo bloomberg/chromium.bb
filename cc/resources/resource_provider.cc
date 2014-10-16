@@ -1440,7 +1440,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
   int child_id = 0;
   ResourceIdArray resources_for_child;
 
-  std::vector<std::pair<ReturnedResource, ResourceMap::iterator> >
+  std::vector<std::pair<ReturnedResource, ResourceMap::iterator>>
       sorted_resources;
 
   for (ReturnedResourceArray::const_iterator it = resources.begin();

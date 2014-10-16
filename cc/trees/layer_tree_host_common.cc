@@ -242,7 +242,7 @@ template <typename LayerType>
 void UpdateAccumulatedSurfaceState(
     LayerType* layer,
     const gfx::Rect& drawable_content_rect,
-    std::vector<AccumulatedSurfaceState<LayerType> >*
+    std::vector<AccumulatedSurfaceState<LayerType>>*
         accumulated_surface_state) {
   if (IsRootLayer(layer))
     return;
@@ -284,7 +284,7 @@ void UpdateAccumulatedSurfaceState(
   // We must have at least one entry in the vector for the root.
   DCHECK_LT(0ul, accumulated_surface_state->size());
 
-  typedef typename std::vector<AccumulatedSurfaceState<LayerType> >
+  typedef typename std::vector<AccumulatedSurfaceState<LayerType>>
       AccumulatedSurfaceStateVector;
   typedef typename AccumulatedSurfaceStateVector::reverse_iterator
       AccumulatedSurfaceStateIterator;
@@ -1451,7 +1451,7 @@ static void CalculateDrawPropertiesInternal(
     const DataForRecursion<LayerType>& data_from_ancestor,
     typename LayerType::RenderSurfaceListType* render_surface_layer_list,
     typename LayerType::LayerListType* layer_list,
-    std::vector<AccumulatedSurfaceState<LayerType> >* accumulated_surface_state,
+    std::vector<AccumulatedSurfaceState<LayerType>>* accumulated_surface_state,
     int current_render_surface_layer_list_id) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
@@ -2398,7 +2398,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
-  std::vector<AccumulatedSurfaceState<Layer> > accumulated_surface_state;
+  std::vector<AccumulatedSurfaceState<Layer>> accumulated_surface_state;
   CalculateDrawPropertiesInternal<Layer>(
       inputs->root_layer,
       globals,
@@ -2427,8 +2427,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
-  std::vector<AccumulatedSurfaceState<LayerImpl> >
-      accumulated_surface_state;
+  std::vector<AccumulatedSurfaceState<LayerImpl>> accumulated_surface_state;
   CalculateDrawPropertiesInternal<LayerImpl>(
       inputs->root_layer,
       globals,

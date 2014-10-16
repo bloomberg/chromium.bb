@@ -22,7 +22,7 @@ static const int kTimeCheckInterval = 10;
 
 class PerfTaskImpl : public Task {
  public:
-  typedef std::vector<scoped_refptr<PerfTaskImpl> > Vector;
+  typedef std::vector<scoped_refptr<PerfTaskImpl>> Vector;
 
   PerfTaskImpl() {}
 

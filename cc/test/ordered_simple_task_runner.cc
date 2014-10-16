@@ -157,13 +157,13 @@ const size_t OrderedSimpleTaskRunner::kAbsoluteMaxTasks =
 
 bool OrderedSimpleTaskRunner::RunTasksWhile(
     base::Callback<bool(void)> condition) {
-  std::vector<base::Callback<bool(void)> > conditions(1);
+  std::vector<base::Callback<bool(void)>> conditions(1);
   conditions[0] = condition;
   return RunTasksWhile(conditions);
 }
 
 bool OrderedSimpleTaskRunner::RunTasksWhile(
-    const std::vector<base::Callback<bool(void)> >& conditions) {
+    const std::vector<base::Callback<bool(void)>>& conditions) {
   TRACE_EVENT2("cc",
                "OrderedSimpleTaskRunner::RunPendingTasks",
                "this",
@@ -179,7 +179,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
                                                       true);
 
   // Make a copy so we can append some extra run checks.
-  std::vector<base::Callback<bool(void)> > modifiable_conditions(conditions);
+  std::vector<base::Callback<bool(void)>> modifiable_conditions(conditions);
 
   // Provide a timeout base on number of tasks run so this doesn't loop
   // forever.
@@ -195,7 +195,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
   while (pending_tasks_.size() > 0) {
     // Check if we should continue to run pending tasks.
     bool condition_success = true;
-    for (std::vector<base::Callback<bool(void)> >::iterator it =
+    for (std::vector<base::Callback<bool(void)>>::iterator it =
              modifiable_conditions.begin();
          it != modifiable_conditions.end();
          it++) {
@@ -231,7 +231,7 @@ bool OrderedSimpleTaskRunner::RunPendingTasks() {
 }
 
 bool OrderedSimpleTaskRunner::RunUntilIdle() {
-  return RunTasksWhile(std::vector<base::Callback<bool(void)> >());
+  return RunTasksWhile(std::vector<base::Callback<bool(void)>>());
 }
 
 bool OrderedSimpleTaskRunner::RunUntilTime(base::TimeTicks time) {

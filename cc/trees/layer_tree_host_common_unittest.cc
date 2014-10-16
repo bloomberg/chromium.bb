@@ -4,6 +4,7 @@
 
 #include "cc/trees/layer_tree_host_common.h"
 
+#include <algorithm>
 #include <set>
 
 #include "cc/animation/layer_animation_controller.h"
@@ -7505,7 +7506,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotClobberSorting) {
   scroll_parent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent.get());
-  scoped_ptr<std::set<LayerImpl*> > scroll_children(new std::set<LayerImpl*>);
+  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
   scroll_children->insert(scroll_child.get());
   scroll_parent->SetScrollChildren(scroll_children.release());
 

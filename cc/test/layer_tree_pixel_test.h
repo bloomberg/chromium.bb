@@ -100,7 +100,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   Layer* readback_target_;
   base::FilePath ref_file_;
   scoped_ptr<SkBitmap> result_bitmap_;
-  std::vector<scoped_refptr<TextureLayer> > texture_layers_;
+  std::vector<scoped_refptr<TextureLayer>> texture_layers_;
   int pending_texture_mailbox_callbacks_;
   bool impl_side_painting_;
 };

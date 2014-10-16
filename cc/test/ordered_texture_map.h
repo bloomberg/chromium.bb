@@ -32,8 +32,7 @@ class OrderedTextureMap {
   GLuint IdAt(size_t index);
 
  private:
-  typedef base::hash_map<GLuint, scoped_refptr<TestTexture> >
-      TextureMap;
+  typedef base::hash_map<GLuint, scoped_refptr<TestTexture>> TextureMap;
   typedef std::vector<GLuint> TextureList;
 
   TextureMap textures_;

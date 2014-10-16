@@ -15,7 +15,7 @@ namespace cc {
 class Layer;
 class LayerImpl;
 
-typedef std::vector<scoped_refptr<Layer> > LayerList;
+typedef std::vector<scoped_refptr<Layer>> LayerList;
 
 typedef ScopedPtrVector<LayerImpl> OwnedLayerImplList;
 typedef std::vector<LayerImpl*> LayerImplList;

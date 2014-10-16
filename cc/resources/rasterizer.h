@@ -30,7 +30,7 @@ class CC_EXPORT RasterizerTaskClient {
 
 class CC_EXPORT RasterizerTask : public Task {
  public:
-  typedef std::vector<scoped_refptr<RasterizerTask> > Vector;
+  typedef std::vector<scoped_refptr<RasterizerTask>> Vector;
 
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) = 0;
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) = 0;
@@ -58,7 +58,7 @@ class CC_EXPORT RasterizerTask : public Task {
 
 class CC_EXPORT ImageDecodeTask : public RasterizerTask {
  public:
-  typedef std::vector<scoped_refptr<ImageDecodeTask> > Vector;
+  typedef std::vector<scoped_refptr<ImageDecodeTask>> Vector;
 
   // Overridden from RasterizerTask:
   virtual ImageDecodeTask* AsImageDecodeTask() override;
@@ -70,7 +70,7 @@ class CC_EXPORT ImageDecodeTask : public RasterizerTask {
 
 class CC_EXPORT RasterTask : public RasterizerTask {
  public:
-  typedef std::vector<scoped_refptr<RasterTask> > Vector;
+  typedef std::vector<scoped_refptr<RasterTask>> Vector;
 
   // Overridden from RasterizerTask:
   virtual RasterTask* AsRasterTask() override;

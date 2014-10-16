@@ -59,7 +59,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   }
 
  private:
-  typedef std::vector<std::pair<gfx::RectF, SkPaint> > RectPaintVector;
+  typedef std::vector<std::pair<gfx::RectF, SkPaint>> RectPaintVector;
   typedef std::vector<BitmapData> BitmapVector;
 
   bool fill_with_nonsolid_color_;

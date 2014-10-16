@@ -182,8 +182,8 @@ class CC_EXPORT PictureLayerTiling {
       UpdateTileAndTwinPriority(it->second.get());
   }
 
-  std::vector<scoped_refptr<Tile> > AllRefTilesForTesting() const {
-    std::vector<scoped_refptr<Tile> > all_tiles;
+  std::vector<scoped_refptr<Tile>> AllRefTilesForTesting() const {
+    std::vector<scoped_refptr<Tile>> all_tiles;
     for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
       all_tiles.push_back(it->second);
     return all_tiles;
@@ -296,7 +296,7 @@ class CC_EXPORT PictureLayerTiling {
   friend class TilingEvictionTileIterator;
 
   typedef std::pair<int, int> TileMapKey;
-  typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
+  typedef base::hash_map<TileMapKey, scoped_refptr<Tile>> TileMap;
 
   PictureLayerTiling(float contents_scale,
                      const gfx::Size& layer_bounds,

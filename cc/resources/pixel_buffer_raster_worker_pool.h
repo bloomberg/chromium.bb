@@ -75,7 +75,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
     TaskSetCollection task_sets;
   };
 
-  typedef std::deque<scoped_refptr<RasterTask> > RasterTaskDeque;
+  typedef std::deque<scoped_refptr<RasterTask>> RasterTaskDeque;
 
   PixelBufferRasterWorkerPool(base::SequencedTaskRunner* task_runner,
                               TaskGraphRunner* task_graph_runner,

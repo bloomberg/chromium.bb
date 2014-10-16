@@ -515,7 +515,7 @@ TEST_F(PictureLayerTilingSetSyncTest, Invalidation) {
   }
 
   std::vector<Tile*> old_tiles = target_->tiling_at(0)->AllTilesForTesting();
-  std::map<gfx::Point, scoped_refptr<Tile> > old_tile_map;
+  std::map<gfx::Point, scoped_refptr<Tile>> old_tile_map;
   for (size_t i = 0; i < old_tiles.size(); ++i)
     old_tile_map[old_tiles[i]->content_rect().origin()] = old_tiles[i];
 
@@ -525,7 +525,7 @@ TEST_F(PictureLayerTilingSetSyncTest, Invalidation) {
   std::vector<Tile*> new_tiles = target_->tiling_at(0)->AllTilesForTesting();
   for (size_t i = 0; i < new_tiles.size(); ++i) {
     const Tile* tile = new_tiles[i];
-    std::map<gfx::Point, scoped_refptr<Tile> >::iterator find =
+    std::map<gfx::Point, scoped_refptr<Tile>>::iterator find =
         old_tile_map.find(tile->content_rect().origin());
     if (content_invalidation.Intersects(tile->content_rect()))
       EXPECT_NE(tile, find->second.get());

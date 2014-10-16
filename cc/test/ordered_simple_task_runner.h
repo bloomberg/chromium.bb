@@ -87,8 +87,7 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   // calling all remaining conditions. Conditions can have side effects,
   // including modifying the task queue.
   // Returns true if there are still pending tasks left.
-  bool RunTasksWhile(
-      const std::vector<base::Callback<bool(void)> >& conditions);
+  bool RunTasksWhile(const std::vector<base::Callback<bool(void)>>& conditions);
 
   // Convenience functions to run tasks with common conditions.
 

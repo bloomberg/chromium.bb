@@ -510,7 +510,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
                  IsActiveTree(),
                  "SourceFrameNumber",
                  source_frame_number_);
-    scoped_ptr<OcclusionTracker<LayerImpl> > occlusion_tracker;
+    scoped_ptr<OcclusionTracker<LayerImpl>> occlusion_tracker;
     if (settings().use_occlusion_for_tile_prioritization) {
       occlusion_tracker.reset(new OcclusionTracker<LayerImpl>(
           root_layer()->render_surface()->content_rect()));

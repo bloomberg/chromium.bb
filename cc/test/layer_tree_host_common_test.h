@@ -122,7 +122,7 @@ class LayerTreeHostCommonTestBase {
 
  private:
   scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
-  scoped_ptr<std::vector<LayerImpl*> > render_surface_layer_list_impl_;
+  scoped_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
 
   FakeLayerTreeHostClient client_;
   int render_surface_layer_list_count_;

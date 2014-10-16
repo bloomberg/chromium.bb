@@ -47,7 +47,7 @@ void FakePaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   ++push_properties_count_;
 }
 
-scoped_ptr<base::AutoReset<bool> >
+scoped_ptr<base::AutoReset<bool>>
 FakePaintedScrollbarLayer::IgnoreSetNeedsCommit() {
   return make_scoped_ptr(
       new base::AutoReset<bool>(&ignore_set_needs_commit_, true));

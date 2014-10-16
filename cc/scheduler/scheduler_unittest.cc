@@ -256,7 +256,7 @@ class FakeSchedulerClient : public SchedulerClient {
   bool redraw_will_happen_if_update_visible_tiles_happens_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
-  std::vector<scoped_refptr<base::debug::ConvertableToTraceFormat> > states_;
+  std::vector<scoped_refptr<base::debug::ConvertableToTraceFormat>> states_;
   scoped_ptr<TestScheduler> scheduler_;
   scoped_refptr<TestNowSource> now_src_;
   FakeBeginFrameSourceForFakeSchedulerClient fake_frame_source_;

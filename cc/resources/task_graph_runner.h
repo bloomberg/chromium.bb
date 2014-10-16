@@ -17,7 +17,7 @@ namespace cc {
 
 class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
  public:
-  typedef std::vector<scoped_refptr<Task> > Vector;
+  typedef std::vector<scoped_refptr<Task>> Vector;
 
   virtual void RunOnWorkerThread() = 0;
 

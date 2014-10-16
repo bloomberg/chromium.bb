@@ -584,7 +584,7 @@ class LayerTreeHostOcclusionTestManySurfaces
   virtual void SetupTree() override {
     // We create enough RenderSurfaces that it will trigger Vector reallocation
     // while computing occlusion.
-    std::vector<scoped_refptr<TestLayer> > layers;
+    std::vector<scoped_refptr<TestLayer>> layers;
     int num_surfaces = 200;
     int root_width = 400;
     int root_height = 400;
