@@ -161,6 +161,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 namespace {
 
 class PromiseRejectMessage {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     PromiseRejectMessage(const ScriptValue& promise, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
         : m_promise(promise)
@@ -170,6 +171,11 @@ public:
 
     const ScriptValue m_promise;
     const RefPtrWillBeMember<ScriptCallStack> m_callStack;
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_callStack);
+    }
 };
 
 } // namespace
