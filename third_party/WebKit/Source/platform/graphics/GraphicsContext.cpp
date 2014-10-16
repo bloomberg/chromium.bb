@@ -59,6 +59,16 @@
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
+namespace {
+
+// Tolerance value use for comparing scale factor to 1..
+// Numerical error should not reach 6th decimal except for highly degenerate cases,
+// and effect of 6th decimal on scale is negligible over max span of a skia canvas
+// which is 32k pixels.
+const float cPictureScaleEpsilon = 0.000001;
+
+}
+
 namespace blink {
 
 struct GraphicsContext::RecordingState {
@@ -1125,6 +1135,11 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
     image->draw(this, dest, src, op, blendMode);
 }
 
+static inline bool pictureScaleIsApproximatelyOne(float x)
+{
+    return fabsf(x - 1.0f) < cPictureScaleEpsilon;
+}
+
 void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
 {
     ASSERT(m_canvas);
@@ -1134,22 +1149,35 @@ void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect
     SkMatrix ctm = m_canvas->getTotalMatrix();
     SkRect deviceDest;
     ctm.mapRect(&deviceDest, dest);
-    SkRect sourceBounds = WebCoreFloatRectToSKRect(src);
+    float scaleX = deviceDest.width() / src.width();
+    float scaleY = deviceDest.height() / src.height();
 
-    RefPtr<SkPictureImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::Create(picture.get(), sourceBounds));
-    SkMatrix layerScale;
-    layerScale.setScale(deviceDest.width() / src.width(), deviceDest.height() / src.height());
-    RefPtr<SkMatrixImageFilter> matrixFilter = adoptRef(SkMatrixImageFilter::Create(layerScale, SkPaint::kLow_FilterLevel, pictureFilter.get()));
     SkPaint picturePaint;
     picturePaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, blendMode));
-    picturePaint.setImageFilter(matrixFilter.get());
-    SkRect layerBounds = SkRect::MakeWH(std::max(deviceDest.width(), sourceBounds.width()), std::max(deviceDest.height(), sourceBounds.height()));
-    m_canvas->save();
-    m_canvas->resetMatrix();
-    m_canvas->translate(deviceDest.x(), deviceDest.y());
-    m_canvas->saveLayer(&layerBounds, &picturePaint);
-    m_canvas->restore();
-    m_canvas->restore();
+    SkRect sourceBounds = WebCoreFloatRectToSKRect(src);
+    if (pictureScaleIsApproximatelyOne(scaleX * m_deviceScaleFactor) && pictureScaleIsApproximatelyOne(scaleY * m_deviceScaleFactor)) {
+        // Fast path for canvases that are rasterized at screen resolution
+        SkRect skBounds = WebCoreFloatRectToSKRect(dest);
+        m_canvas->saveLayer(&skBounds, &picturePaint);
+        SkMatrix pictureTransform;
+        pictureTransform.setRectToRect(sourceBounds, skBounds, SkMatrix::kFill_ScaleToFit);
+        m_canvas->concat(pictureTransform);
+        m_canvas->drawPicture(picture.get());
+        m_canvas->restore();
+    } else {
+        RefPtr<SkPictureImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::Create(picture.get(), sourceBounds));
+        SkMatrix layerScale;
+        layerScale.setScale(scaleX, scaleY);
+        RefPtr<SkMatrixImageFilter> matrixFilter = adoptRef(SkMatrixImageFilter::Create(layerScale, SkPaint::kLow_FilterLevel, pictureFilter.get()));
+        picturePaint.setImageFilter(matrixFilter.get());
+        SkRect layerBounds = SkRect::MakeWH(std::max(deviceDest.width(), sourceBounds.width()), std::max(deviceDest.height(), sourceBounds.height()));
+        m_canvas->save();
+        m_canvas->resetMatrix();
+        m_canvas->translate(deviceDest.x(), deviceDest.y());
+        m_canvas->saveLayer(&layerBounds, &picturePaint);
+        m_canvas->restore();
+        m_canvas->restore();
+    }
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
