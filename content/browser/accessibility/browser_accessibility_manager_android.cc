@@ -415,7 +415,7 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
 
   BrowserAccessibilityAndroid* ancestor =
       static_cast<BrowserAccessibilityAndroid*>(node->GetParent());
-  while (ancestor) {
+  while (ancestor && ancestor != GetRoot()) {
     if (ancestor->PlatformIsLeaf() ||
         (ancestor->IsFocusable() && !ancestor->HasFocusableChild())) {
       node = ancestor;
