@@ -107,7 +107,8 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 #else
 #define MAYBE_DataDrivenHeuristics(n) DataDrivenHeuristics##n
 #endif
-IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, DataDrivenHeuristics00) {
+IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
+    MAYBE_DataDrivenHeuristics(00)) {
   const base::FilePath::CharType kFileNamePattern[] =
       FILE_PATH_LITERAL("00_*.html");
   RunDataDrivenTest(GetInputDirectory(kTestName),
