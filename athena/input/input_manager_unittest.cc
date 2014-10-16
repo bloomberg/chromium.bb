@@ -72,7 +72,9 @@ class ScopedPowerButtonTimeoutShortener {
 
 typedef test::AthenaTestBase InputManagerTest;
 
-TEST_F(InputManagerTest, PowerButton) {
+// This fails on bots. crbug.com/424109.
+// Investigate once crbug.com/424093 is fixed.
+TEST_F(InputManagerTest, DISABLED_PowerButton) {
   test::ScopedPowerButtonTimeoutShortener shortener;
   TestPowerButtonObserver observer;
 
