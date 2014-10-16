@@ -133,13 +133,9 @@
         '<(_sanitizer_type)-atk1.0',
         '<(_sanitizer_type)-libunity9',
         '<(_sanitizer_type)-dee',
+        '<(_sanitizer_type)-libpixman-1-0',
       ],
       'conditions': [
-        ['asan==1', {
-          'dependencies': [
-            '<(_sanitizer_type)-libpixman-1-0',
-          ],
-        }],
         ['msan==1', {
           'dependencies': [
             '<(_sanitizer_type)-libcups2',
@@ -293,6 +289,11 @@
     {
       'package_name': 'libpixman-1-0',
       'dependencies=': [],
+      'extra_configure_flags': [
+        # From debian/rules.
+        '--disable-gtk',
+        '--disable-silent-rules',
+      ],
       'patch': 'patches/libpixman-1-0.diff',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
