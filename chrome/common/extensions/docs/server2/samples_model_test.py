@@ -7,6 +7,7 @@ import json
 import os
 import unittest
 
+from future import Future
 from server_instance import ServerInstance
 from test_file_system import TestFileSystem
 from test_util import Server2Path
@@ -23,9 +24,7 @@ class _FakeCache(object):
     self._cache = obj
 
   def GetFromFileListing(self, _):
-    getter = lambda: 0
-    getter.Get = lambda: self._cache
-    return getter
+    return Future(value=self._cache)
 
 
 class SamplesModelSourceTest(unittest.TestCase):
@@ -38,7 +37,7 @@ class SamplesModelSourceTest(unittest.TestCase):
 
   def testFilterSamples(self):
     self.assertEquals(json.loads(_ReadLocalFile('expected.json')),
-                      self._samples_model.FilterSamples('bobaloo'))
+                      self._samples_model.FilterSamples('bobaloo').Get())
 
 if __name__ == '__main__':
   unittest.main()

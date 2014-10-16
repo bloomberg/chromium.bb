@@ -9,9 +9,8 @@ from docs_server_utils import StringIdentity
 from environment import IsPreviewServer
 from file_system import FileNotFoundError
 from future import Future, All
-from jsc_view import JSCView, GetEventByNameFromEvents
+from jsc_view import CreateJSCView, GetEventByNameFromEvents
 from platform_util import GetPlatforms
-from samples_data_source import CreateSamplesView
 
 
 class APIDataSource(DataSource):
@@ -51,10 +50,18 @@ class APIDataSource(DataSource):
     jsc_view_future = self._view_cache.Get(object_store_key)
     model_future = api_models.GetModel(api_name)
     content_script_apis_future = api_models.GetContentScriptAPIs()
+
+    # Parsing samples on the preview server takes forever, so disable it.
+    if IsPreviewServer():
+      samples_futures = Future(value=[])
+    else:
+      samples_future = (self._platform_bundle.GetSamplesModel(platform)
+          .FilterSamples(api_name))
+
     def resolve():
       jsc_view = jsc_view_future.Get()
       if jsc_view is None:
-        jsc_view = JSCView(
+        jsc_view = CreateJSCView(
             content_script_apis_future.Get(),
             model_future.Get(),
             self._platform_bundle.GetAvailabilityFinder(platform),
@@ -62,24 +69,10 @@ class APIDataSource(DataSource):
             self._template_cache,
             self._platform_bundle.GetFeaturesBundle(platform),
             self._LoadEventByName(platform),
-            platform).ToDict()
+            platform,
+            samples_future.Get(),
+            self._request)
         self._view_cache.Set(object_store_key, jsc_view)
-      return jsc_view
-    return Future(callback=resolve)
-
-  def _GetImpl(self, platform, api_name):
-    jsc_view_future = self._GetSchemaView(platform, api_name)
-    def resolve():
-      jsc_view = jsc_view_future.Get()
-      # Parsing samples on the preview server takes seconds and doesn't add
-      # anything. Don't do it.
-      if not IsPreviewServer():
-        samples_model = self._platform_bundle.GetSamplesModel(platform)
-        # Creates an object that lazily gets samples.
-        jsc_view['samples'] = type('getter', (object,), {
-          'get': lambda _, platform: CreateSamplesView(
-              samples_model.FilterSamples(jsc_view['name']), self._request)
-          })()
       return jsc_view
     return Future(callback=resolve)
 
@@ -88,7 +81,7 @@ class APIDataSource(DataSource):
     as apis.extensions.runtime.
     '''
     getter = lambda: 0
-    getter.get = lambda api_name: self._GetImpl(platform, api_name).Get()
+    getter.get = lambda api_name: self._GetSchemaView(platform, api_name).Get()
     return getter
 
   def GetRefreshPaths(self):
@@ -102,5 +95,5 @@ class APIDataSource(DataSource):
   def Refresh(self, path):
     platform, api = path.split('/')
     logging.info('Refreshing %s/%s' % (platform, api))
-    future = self._GetImpl(platform, api)
+    future = self._GetSchemaView(platform, api)
     return All([future], except_pass=FileNotFoundError)

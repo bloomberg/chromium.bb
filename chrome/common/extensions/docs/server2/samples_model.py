@@ -58,22 +58,22 @@ class SamplesModel(object):
 
   def FilterSamples(self, api_name):
     '''Fetches and filters the list of samples for this platform, returning
-    only the samples that use the API |api_name|.
+    a Future to the only the samples that use the API |api_name|.
     '''
-    try:
+    def filter_samples(samples_list):
+      return [sample for sample in samples_list
+          if any(call['name'].startswith(api_name + '.')
+          for call in sample['api_calls'])]
+    def handle_error(_):
       # TODO(rockot): This cache is probably not working as intended, since
       # it can still lead to underlying filesystem (e.g. gitiles) access
       # while processing live requests. Because this can fail, we at least
       # trap and log exceptions to prevent 500s from being thrown.
-      samples_list = self._samples_cache.GetFromFileListing(
-          '' if self._platform == 'apps' else EXAMPLES).Get()
-    except Exception as e:
       logging.warning('Unable to get samples listing. Skipping.')
-      samples_list = []
-
-    return [sample for sample in samples_list if any(
-        call['name'].startswith(api_name + '.')
-        for call in sample['api_calls'])]
+      return []
+    platform_for_samples = '' if self._platform == 'apps' else EXAMPLES
+    return (self._samples_cache.GetFromFileListing(platform_for_samples)
+            .Then(filter_samples, error_handler=handle_error))
 
   def _GetDataFromManifest(self, path, file_system):
     manifest = self._text_cache.GetFromFile(path + '/manifest.json').Get()

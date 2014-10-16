@@ -18,9 +18,10 @@ from fake_url_fetcher import FakeUrlFetcher
 from features_bundle import FeaturesBundle
 from future import Future
 from host_file_system_iterator import HostFileSystemIterator
-from jsc_view import JSCView, _FormatValue
+from jsc_view import CreateJSCView, _JSCViewBuilder, _FormatValue
 from object_store_creator import ObjectStoreCreator
 from schema_processor import SchemaProcessorFactoryForTest
+from servlet import Request
 from server_instance import ServerInstance
 from test_data.api_data_source.canned_master_fs import CANNED_MASTER_FS_DATA
 from test_data.canned_data import CANNED_API_FILE_SYSTEM_DATA
@@ -118,14 +119,17 @@ class JSCViewTest(unittest.TestCase):
 
   def testCreateId(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
-    dict_ = JSCView(self._api_models.GetContentScriptAPIs().Get(),
-                    self._api_models.GetModel('tester').Get(),
-                    fake_avail_finder,
-                    self._json_cache,
-                    _FakeTemplateCache(),
-                    self._features_bundle,
-                    None,
-                    'extensions').ToDict()
+    dict_ = CreateJSCView(
+        self._api_models.GetContentScriptAPIs().Get(),
+        self._api_models.GetModel('tester').Get(),
+        fake_avail_finder,
+        self._json_cache,
+        _FakeTemplateCache(),
+        self._features_bundle,
+        None,
+        'extensions',
+        [],
+        Request.ForTest(''))
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
                       dict_['types'][0]['properties'][0]['id'])
@@ -136,26 +140,32 @@ class JSCViewTest(unittest.TestCase):
   def DISABLED_testToDict(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     expected_json = self._LoadJSON('expected_tester.json')
-    dict_ = JSCView(self._api_models.GetContentScriptAPIs().Get(),
-                    self._api_models.GetModel('tester').Get(),
-                    fake_avail_finder,
-                    self._json_cache,
-                    _FakeTemplateCache(),
-                    self._features_bundle,
-                    None,
-                    'extensions').ToDict()
+    dict_ = CreateJSCView(
+        self._api_models.GetContentScriptAPIs().Get(),
+        self._api_models.GetModel('tester').Get(),
+        fake_avail_finder,
+        self._json_cache,
+        _FakeTemplateCache(),
+        self._features_bundle,
+        None,
+        'extensions',
+        [],
+        Request.ForTest(''))
     self.assertEquals(expected_json, dict_)
 
   def testAddRules(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
-    dict_ = JSCView(self._api_models.GetContentScriptAPIs().Get(),
-                    self._api_models.GetModel('add_rules_tester').Get(),
-                    fake_avail_finder,
-                    self._json_cache,
-                    _FakeTemplateCache(),
-                    self._features_bundle,
-                    self._FakeLoadAddRulesSchema(),
-                    'extensions').ToDict()
+    dict_ = CreateJSCView(
+        self._api_models.GetContentScriptAPIs().Get(),
+        self._api_models.GetModel('add_rules_tester').Get(),
+        fake_avail_finder,
+        self._json_cache,
+        _FakeTemplateCache(),
+        self._features_bundle,
+        self._FakeLoadAddRulesSchema(),
+        'extensions',
+        [],
+        Request.ForTest(''))
 
     # Check that the first event has the addRulesFunction defined.
     self.assertEquals('add_rules_tester', dict_['name'])
@@ -174,14 +184,16 @@ class JSCViewTest(unittest.TestCase):
 
   def testGetIntroList(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
-    model = JSCView(self._api_models.GetContentScriptAPIs().Get(),
-                    self._api_models.GetModel('tester').Get(),
-                    fake_avail_finder,
-                    self._json_cache,
-                    _FakeTemplateCache(),
-                    self._features_bundle,
-                    None,
-                    'extensions')
+    model = _JSCViewBuilder(
+        self._api_models.GetContentScriptAPIs().Get(),
+        self._api_models.GetModel('tester').Get(),
+        fake_avail_finder,
+        self._json_cache,
+        _FakeTemplateCache(),
+        self._features_bundle,
+        None,
+        'extensions',
+        [])
     expected_list = [
       { 'title': 'Description',
         'content': [
@@ -237,14 +249,16 @@ class JSCViewTest(unittest.TestCase):
     # Tests the same data with a scheduled availability.
     fake_avail_finder = _FakeAvailabilityFinder(
         AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28))
-    model = JSCView(self._api_models.GetContentScriptAPIs().Get(),
-                    self._api_models.GetModel('tester').Get(),
-                    fake_avail_finder,
-                    self._json_cache,
-                    _FakeTemplateCache(),
-                    self._features_bundle,
-                    None,
-                    'extensions')
+    model = _JSCViewBuilder(
+        self._api_models.GetContentScriptAPIs().Get(),
+        self._api_models.GetModel('tester').Get(),
+        fake_avail_finder,
+        self._json_cache,
+        _FakeTemplateCache(),
+        self._features_bundle,
+        None,
+        'extensions',
+        [])
     expected_list[1] = {
       'title': 'Availability',
       'content': [
@@ -281,7 +295,7 @@ class JSCViewWithoutNodeAvailabilityTest(unittest.TestCase):
       'tabs': 18
     }
     for api_name, availability in api_availabilities.iteritems():
-      model_dict = JSCView(
+      model_dict = CreateJSCView(
           self._api_models.GetContentScriptAPIs().Get(),
           self._api_models.GetModel(api_name).Get(),
           self._avail_finder,
@@ -289,7 +303,9 @@ class JSCViewWithoutNodeAvailabilityTest(unittest.TestCase):
           _FakeTemplateCache(),
           _FakeFeaturesBundle(),
           None,
-          'extensions').ToDict()
+          'extensions',
+          [],
+          Request.ForTest(''))
       self.assertEquals(availability,
                         model_dict['introList'][1]['content'][0]['version'])
 
@@ -357,7 +373,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
       }
       self.assertEquals(node_availabilities[node], actual)
 
-    model_dict = JSCView(
+    model_dict = CreateJSCView(
         self._api_models.GetContentScriptAPIs().Get(),
         self._api_models.GetModel('tabs').Get(),
         self._avail_finder,
@@ -365,7 +381,9 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
         _FakeTemplateCache(),
         _FakeFeaturesBundle(),
         None,
-        'extensions').ToDict()
+        'extensions',
+        [],
+        Request.ForTest(''))
 
     # Test nodes that have the same availability as their parent.
 
