@@ -650,11 +650,9 @@ bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType ty
     case WebCryptoAlgorithmParamsTypeRsaOaepParams:
         context.add("RsaOaepParams");
         return parseRsaOaepParams(raw, params, context, error);
-        break;
     case WebCryptoAlgorithmParamsTypeRsaPssParams:
         context.add("RsaPssParams");
         return parseRsaPssParams(raw, params, context, error);
-        break;
     }
     ASSERT_NOT_REACHED();
     return false;
