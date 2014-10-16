@@ -52,6 +52,10 @@ struct RenderingHelperParams {
   // The rendering FPS.
   int rendering_fps;
 
+  // The number of empty frames rendered when the rendering helper is
+  // initialized.
+  int warm_up_iterations;
+
   // The desired size of each window. We play each stream in its own window
   // on the screen.
   std::vector<gfx::Size> window_sizes;
@@ -148,6 +152,8 @@ class RenderingHelper {
   void Clear();
 
   void RenderContent();
+
+  void WarmUpRendering(int warm_up_iterations);
 
   void LayoutRenderingAreas(const std::vector<gfx::Size>& window_sizes);
 

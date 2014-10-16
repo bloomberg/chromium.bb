@@ -58,7 +58,9 @@ static void CreateShader(GLuint program,
 
 namespace content {
 
-RenderingHelperParams::RenderingHelperParams() {}
+RenderingHelperParams::RenderingHelperParams()
+    : rendering_fps(0), warm_up_iterations(0), render_as_thumbnails(false) {
+}
 
 RenderingHelperParams::~RenderingHelperParams() {}
 
@@ -302,7 +304,34 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
 
+  if (frame_duration_ != base::TimeDelta())
+    WarmUpRendering(params.warm_up_iterations);
+
   done->Signal();
+}
+
+// The rendering for the first few frames is slow (e.g., 100ms on Peach Pit).
+// This affects the numbers measured in the performance test. We try to render
+// several frames here to warm up the rendering.
+void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
+  unsigned int texture_id;
+  scoped_ptr<GLubyte[]> emptyData(new GLubyte[screen_size_.GetArea() * 2]);
+  glGenTextures(1, &texture_id);
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGB,
+               screen_size_.width(),
+               screen_size_.height(),
+               0,
+               GL_RGB,
+               GL_UNSIGNED_SHORT_5_6_5,
+               emptyData.get());
+  for (int i = 0; i < warm_up_iterations; ++i) {
+    RenderTexture(GL_TEXTURE_2D, texture_id);
+    gl_surface_->SwapBuffers();
+  }
+  glDeleteTextures(1, &texture_id);
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
