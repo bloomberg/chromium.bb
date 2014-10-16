@@ -634,10 +634,13 @@ popf, data16 0x9d, norexw att-show-name-suffix-w nacl-forbidden
 popf, 0x9d, ia32 nacl-forbidden
 popf, 0x9d, norexw amd64 att-show-name-suffix-q nacl-forbidden
 popf, data16 rexw 0x9d, amd64 att-show-name-suffix-q nacl-forbidden
-######## PREFETCH/PREFETCHW ####################################################
+######## PREFETCH/PREFETCHW /PREFETCHWT1#########################################
 prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
 prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
-prefetch Mb, 0x0f 0x0d /2, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
+# Note: that prefetchwt1 will have its own cpuid bit with AVX512.
+# TODO(shyamsundarr): Add a seperate cpu feature bit for prefetchwt1
+# if we ever consider enabling it (to match new processor CPUID bit for AVX512).
+prefetchwt1 Mb, 0x0f 0x0d /2, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
 # AMD manual desribes this opcode as "reserved" in one place (and clarifies that
 # it's aliased to prefetch for the compatibility) and as "invalid" in another
 # place.  It's textbook definition as per AMD manual looks like this:

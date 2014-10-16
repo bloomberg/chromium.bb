@@ -29,9 +29,18 @@ def IsRexPrefix(byte):
   return 0x40 <= byte < 0x50
 
 
-def RoughlyEqual(s1, s2):
-  """Check whether lines are equal up to whitespaces."""
-  return s1.split() == s2.split()
+def LineRoughlyEqual(s1, s2):
+  """Check whether disasms lines are equal ignoring whitespaces and comments."""
+  # strip comments.
+  # These are mainly used by objdump to print out the absolute address
+  # for rip relative jumps.
+  # e.g.
+  # 0x400408: ff 35 e2 0b 20 00     pushq  0x200be2(%rip)        # 0x600ff0
+  s1, _, _ = s1.partition('#')
+  s2, _, _ = s2.partition('#')
+  # compare ignoring whitespace.
+  result = s1.split() == s2.split()
+  return result
 
 
 class WorkerState(object):
@@ -81,6 +90,7 @@ class WorkerState(object):
       subprocess.check_call([
           options.gas,
           '--%s' % options.bits,
+          '--strip-local-absolute',
           self._asm_file.name,
           '-o', object_file.name])
 
@@ -97,7 +107,7 @@ class WorkerState(object):
           decoder_proc.stdout,
           fillvalue=None):
 
-        if not RoughlyEqual(line1, line2):
+        if not LineRoughlyEqual(line1, line2):
           print 'objdump: %r' % line1
           print 'decoder: %r' % line2
           raise AssertionError('%r != %r' % (line1, line2))
