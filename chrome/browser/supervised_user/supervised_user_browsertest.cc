@@ -235,8 +235,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
       SupervisedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
   supervised_user_settings_service->SetLocalSettingForTesting(
-      supervised_users::kContentPackManualBehaviorHosts,
-      dict.PassAs<base::Value>());
+      supervised_users::kContentPackManualBehaviorHosts, dict.Pass());
   EXPECT_EQ(
       SupervisedUserService::MANUAL_ALLOW,
       supervised_user_service_->GetManualBehaviorForHost(allowed_url.host()));
@@ -302,8 +301,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, Unblock) {
       SupervisedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
   supervised_user_settings_service->SetLocalSettingForTesting(
-      supervised_users::kContentPackManualBehaviorHosts,
-      dict.PassAs<base::Value>());
+      supervised_users::kContentPackManualBehaviorHosts, dict.Pass());
   EXPECT_EQ(
       SupervisedUserService::MANUAL_ALLOW,
       supervised_user_service_->GetManualBehaviorForHost(test_url.host()));

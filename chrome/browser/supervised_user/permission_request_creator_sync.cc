@@ -74,7 +74,7 @@ void PermissionRequestCreatorSync::CreatePermissionRequest(
   }
   dict->SetBoolean(kNotificationSetting, notifications_enabled);
 
-  settings_service_->UploadItem(key, dict.PassAs<base::Value>());
+  settings_service_->UploadItem(key, dict.Pass());
 
   callback.Run(true);
 }

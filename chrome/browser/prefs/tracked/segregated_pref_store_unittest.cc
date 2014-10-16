@@ -84,8 +84,7 @@ class SegregatedPrefStoreTest : public testing::Test {
  protected:
   scoped_ptr<PersistentPrefStore::ReadErrorDelegate> GetReadErrorDelegate() {
     EXPECT_TRUE(read_error_delegate_);
-    return read_error_delegate_
-        .PassAs<PersistentPrefStore::ReadErrorDelegate>();
+    return read_error_delegate_.Pass();
   }
 
   PrefStoreObserverMock observer_;

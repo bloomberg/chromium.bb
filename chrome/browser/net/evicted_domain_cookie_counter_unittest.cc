@@ -127,10 +127,7 @@ void EvictedDomainCookieCounterTest::InitCounter(size_t max_size,
                                                  size_t purge_count) {
   scoped_ptr<MockDelegate> cookie_counter_delegate(new MockDelegate(this));
   cookie_counter_ = new EvictedDomainCookieCounter(
-      NULL,
-      cookie_counter_delegate.PassAs<EvictedDomainCookieCounter::Delegate>(),
-      max_size,
-      purge_count);
+      NULL, cookie_counter_delegate.Pass(), max_size, purge_count);
 }
 
 void EvictedDomainCookieCounterTest::CreateNewCookie(
@@ -203,10 +200,7 @@ TEST_F(EvictedDomainCookieCounterTest, TestChain) {
 
   scoped_ptr<MockDelegate> cookie_counter_delegate(new MockDelegate(this));
   cookie_counter_ = new EvictedDomainCookieCounter(
-      new ChangedDelegateDummy(&result),
-      cookie_counter_delegate.PassAs<EvictedDomainCookieCounter::Delegate>(),
-      10,
-      5);
+      new ChangedDelegateDummy(&result), cookie_counter_delegate.Pass(), 10, 5);
   InitStockCookies();
   // Perform 6 cookie transactions.
   for (int i = 0; i < 6; ++i) {

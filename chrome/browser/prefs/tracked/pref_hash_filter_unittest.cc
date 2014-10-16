@@ -390,7 +390,7 @@ class PrefHashFilterTest
         new MockPrefHashStore);
     mock_pref_hash_store_ = temp_mock_pref_hash_store.get();
     pref_hash_filter_.reset(new PrefHashFilter(
-        temp_mock_pref_hash_store.PassAs<PrefHashStore>(),
+        temp_mock_pref_hash_store.Pass(),
         configuration,
         base::Bind(&PrefHashFilterTest::RecordReset, base::Unretained(this)),
         &mock_validation_delegate_,

@@ -28,8 +28,7 @@ void DataReductionProxyInfoBarDelegate::Create(
 // static
 scoped_ptr<infobars::InfoBar> DataReductionProxyInfoBarDelegate::CreateInfoBar(
     scoped_ptr<DataReductionProxyInfoBarDelegate> delegate) {
-  return ConfirmInfoBarDelegate::CreateInfoBar(
-      delegate.PassAs<ConfirmInfoBarDelegate>());
+  return ConfirmInfoBarDelegate::CreateInfoBar(delegate.Pass());
 }
 #endif
 

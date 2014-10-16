@@ -85,8 +85,7 @@ void TestUndoService::Redo() {
 }
 
 void TestUndoService::TriggerOperation() {
-  scoped_ptr<TestUndoOperation> op(new TestUndoOperation(this));
-  undo_manager_.AddUndoOperation(op.PassAs<UndoOperation>());
+  undo_manager_.AddUndoOperation(make_scoped_ptr(new TestUndoOperation(this)));
 }
 
 void TestUndoService::RecordUndoCall() {

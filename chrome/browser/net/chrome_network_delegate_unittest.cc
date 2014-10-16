@@ -114,7 +114,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     scoped_ptr<ChromeNetworkDelegate> network_delegate(
         new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
-    return network_delegate.PassAs<net::NetworkDelegate>();
+    return network_delegate.Pass();
   }
 
   void SetSafeSearch(bool value) {

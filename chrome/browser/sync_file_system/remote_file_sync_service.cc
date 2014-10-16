@@ -12,8 +12,8 @@ scoped_ptr<RemoteFileSyncService>
 RemoteFileSyncService::CreateForBrowserContext(
     content::BrowserContext* context,
     TaskLogger* task_logger) {
-  return drive_backend::SyncEngine::CreateForBrowserContext(
-      context, task_logger).PassAs<RemoteFileSyncService>();
+  return drive_backend::SyncEngine::CreateForBrowserContext(context,
+                                                            task_logger);
 }
 
 void RemoteFileSyncService::AppendDependsOnFactories(

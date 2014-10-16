@@ -133,14 +133,14 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   scoped_refptr<JsonPrefStore> unprotected_pref_store(
       new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
                         io_task_runner.get(),
-                        unprotected_pref_hash_filter.PassAs<PrefFilter>()));
+                        unprotected_pref_hash_filter.Pass()));
   // TODO(gab): Remove kDeprecatedProtectedPreferencesFilename as an alternate
   // file in M40+.
   scoped_refptr<JsonPrefStore> protected_pref_store(new JsonPrefStore(
       profile_path_.Append(chrome::kSecurePreferencesFilename),
       profile_path_.Append(chrome::kProtectedPreferencesFilenameDeprecated),
       io_task_runner.get(),
-      protected_pref_hash_filter.PassAs<PrefFilter>()));
+      protected_pref_hash_filter.Pass()));
 
   SetupTrackedPreferencesMigration(
       unprotected_pref_names,
@@ -211,13 +211,12 @@ ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
     pref_hash_store_impl->set_legacy_hash_store_contents(
         scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
             profile_path_.AsUTF8Unsafe(), local_state_)));
-    pref_filter.reset(
-        new PrefHashFilter(pref_hash_store_impl.PassAs<PrefHashStore>(),
-                           tracking_configuration_,
-                           base::Closure(),
-                           NULL,
-                           reporting_ids_count_,
-                           false));
+    pref_filter.reset(new PrefHashFilter(pref_hash_store_impl.Pass(),
+                                         tracking_configuration_,
+                                         base::Closure(),
+                                         NULL,
+                                         reporting_ids_count_,
+                                         false));
   }
   return new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
                            io_task_runner.get(),

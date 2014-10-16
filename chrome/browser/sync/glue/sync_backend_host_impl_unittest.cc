@@ -216,9 +216,8 @@ class SyncBackendHostTest : public testing::Test {
         GURL(std::string()),
         credentials_,
         true,
-        fake_manager_factory_.PassAs<syncer::SyncManagerFactory>(),
-        scoped_ptr<syncer::UnrecoverableErrorHandler>(
-            new syncer::TestUnrecoverableErrorHandler).Pass(),
+        fake_manager_factory_.Pass(),
+        make_scoped_ptr(new syncer::TestUnrecoverableErrorHandler),
         NULL,
         network_resources_.get());
     base::RunLoop run_loop;

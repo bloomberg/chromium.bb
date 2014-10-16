@@ -144,7 +144,7 @@ class LastDownloadFinderTest : public testing::Test {
 
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
         profile_name,
-        prefs.PassAs<PrefServiceSyncable>(),
+        prefs.Pass(),
         base::UTF8ToUTF16(profile_name),  // user_name
         0,                                // avatar_id
         std::string(),                    // supervised_user_id

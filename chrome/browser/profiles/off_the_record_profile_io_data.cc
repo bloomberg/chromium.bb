@@ -354,8 +354,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   scoped_ptr<net::HttpCache> app_http_cache =
       CreateHttpFactory(main_network_session, app_backend);
 
-  context->SetHttpTransactionFactory(
-      app_http_cache.PassAs<net::HttpTransactionFactory>());
+  context->SetHttpTransactionFactory(app_http_cache.Pass());
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());

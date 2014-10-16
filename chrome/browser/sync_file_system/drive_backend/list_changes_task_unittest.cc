@@ -62,12 +62,11 @@ class ListChangesTaskTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get()));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
 
-    context_.reset(new SyncEngineContext(
-        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
-        drive_uploader.Pass(),
-        nullptr,
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get()));
+    context_.reset(new SyncEngineContext(fake_drive_service.Pass(),
+                                         drive_uploader.Pass(),
+                                         nullptr,
+                                         base::ThreadTaskRunnerHandle::Get(),
+                                         base::ThreadTaskRunnerHandle::Get()));
 
     SetUpRemoteFolders();
 

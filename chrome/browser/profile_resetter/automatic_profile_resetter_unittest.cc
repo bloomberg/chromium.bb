@@ -557,8 +557,7 @@ class AutomaticProfileResetterTestBase : public testing::Test {
           variation_params));
     }
     resetter_->Initialize();
-    resetter_->SetDelegateForTesting(
-        mock_delegate_owned_.PassAs<AutomaticProfileResetterDelegate>());
+    resetter_->SetDelegateForTesting(mock_delegate_owned_.Pass());
     resetter_->SetTaskRunnerForWaitingForTesting(waiting_task_runner_);
     if (!inject_data_through_variation_params_) {
       resetter_->SetProgramForTesting(testing_program_);

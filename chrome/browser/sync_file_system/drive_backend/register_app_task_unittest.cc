@@ -58,13 +58,11 @@ class RegisterAppTaskTest : public testing::Test {
         fake_drive_service.get(), drive_uploader.get(),
         kSyncRootFolderTitle));
 
-    context_.reset(
-        new SyncEngineContext(
-            fake_drive_service.PassAs<drive::DriveServiceInterface>(),
-            drive_uploader.Pass(),
-            nullptr,
-            base::ThreadTaskRunnerHandle::Get(),
-            base::ThreadTaskRunnerHandle::Get()));
+    context_.reset(new SyncEngineContext(fake_drive_service.Pass(),
+                                         drive_uploader.Pass(),
+                                         nullptr,
+                                         base::ThreadTaskRunnerHandle::Get(),
+                                         base::ThreadTaskRunnerHandle::Get()));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,
               fake_drive_service_helper_->AddOrphanedFolder(

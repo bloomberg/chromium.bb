@@ -205,7 +205,7 @@ class IncidentReportingServiceTest : public testing::Test {
     // Boom (or fizzle).
     return profile_manager_.CreateTestingProfile(
         profile_name,
-        prefs.PassAs<PrefServiceSyncable>(),
+        prefs.Pass(),
         base::ASCIIToUTF16(profile_name),
         0,              // avatar_id (unused)
         std::string(),  // supervised_user_id (unused)

@@ -95,10 +95,7 @@ void SyncWorker::RegisterOrigin(
   }
 
   task_manager_->ScheduleSyncTask(
-      FROM_HERE,
-      task.PassAs<SyncTask>(),
-      SyncTaskManager::PRIORITY_HIGH,
-      callback);
+      FROM_HERE, task.Pass(), SyncTaskManager::PRIORITY_HIGH, callback);
 }
 
 void SyncWorker::EnableOrigin(

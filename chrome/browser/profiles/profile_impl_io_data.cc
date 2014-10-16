@@ -717,9 +717,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
   context->SetCookieStore(cookie_store.get());
-  context->SetHttpTransactionFactory(
-      scoped_ptr<net::HttpTransactionFactory>(
-          app_http_cache.PassAs<net::HttpTransactionFactory>()));
+  context->SetHttpTransactionFactory(app_http_cache.Pass());
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
@@ -775,8 +773,7 @@ ProfileImplIOData::InitializeMediaRequestContext(
       CreateHttpFactory(main_network_session, media_backend);
 
   // Transfer ownership of the cache to MediaRequestContext.
-  context->SetHttpTransactionFactory(
-      media_http_cache.PassAs<net::HttpTransactionFactory>());
+  context->SetHttpTransactionFactory(media_http_cache.Pass());
 
   // Note that we do not create a new URLRequestJobFactory because
   // the media context should behave exactly like its parent context

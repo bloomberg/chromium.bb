@@ -126,13 +126,13 @@ class PreferenceValidationDelegateValues
         scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
         value->SetInteger("twenty-two", 22);
         value->SetInteger("forty-seven", 47);
-        return value.PassAs<Value>();
+        return value.Pass();
       }
       case Value::TYPE_LIST: {
         scoped_ptr<base::ListValue> value(new base::ListValue());
         value->AppendInteger(22);
         value->AppendInteger(47);
-        return value.PassAs<Value>();
+        return value.Pass();
       }
       default:
         ADD_FAILURE() << "unsupported value type " << value_type;

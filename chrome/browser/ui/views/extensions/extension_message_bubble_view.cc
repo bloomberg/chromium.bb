@@ -359,9 +359,7 @@ bool ExtensionMessageBubbleFactory::MaybeShowStartupOverrideExtensionsBubble(
     return false;
 
   shown_startup_override_extensions_bubble_ = true;
-  PrepareToHighlightExtensions(
-      settings_api_bubble.PassAs<ExtensionMessageBubbleController>(),
-      anchor_view);
+  PrepareToHighlightExtensions(settings_api_bubble.Pass(), anchor_view);
   return true;
 #endif
 }
@@ -383,8 +381,7 @@ bool ExtensionMessageBubbleFactory::MaybeShowProxyOverrideExtensionsBubble(
     return false;
 
   shown_proxy_override_extensions_bubble_ = true;
-  PrepareToHighlightExtensions(
-      proxy_bubble.PassAs<ExtensionMessageBubbleController>(), anchor_view);
+  PrepareToHighlightExtensions(proxy_bubble.Pass(), anchor_view);
   return true;
 #endif
 }
@@ -402,9 +399,7 @@ bool ExtensionMessageBubbleFactory::MaybeShowDevModeExtensionsBubble(
     return false;
 
   shown_dev_mode_extensions_bubble_ = true;
-  PrepareToHighlightExtensions(
-      dev_mode_extensions.PassAs<ExtensionMessageBubbleController>(),
-      anchor_view);
+  PrepareToHighlightExtensions(dev_mode_extensions.Pass(), anchor_view);
   return true;
 }
 

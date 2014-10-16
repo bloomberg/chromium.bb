@@ -108,7 +108,7 @@ class ProxyPolicyTest : public testing::Test {
     scoped_ptr<PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
     chrome::RegisterUserProfilePrefs(registry.get());
-    return prefs.PassAs<PrefService>();
+    return prefs.Pass();
   }
 
   base::MessageLoop loop_;

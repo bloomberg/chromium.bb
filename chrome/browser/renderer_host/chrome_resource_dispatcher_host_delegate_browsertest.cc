@@ -40,13 +40,13 @@ scoped_ptr<net::test_server::HttpResponse> HandleTestRequest(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target);
-    return http_response.PassAs<net::test_server::HttpResponse>();
+    return http_response.Pass();
   } else {
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("Success");
-    return http_response.PassAs<net::test_server::HttpResponse>();
+    return http_response.Pass();
   }
 }
 

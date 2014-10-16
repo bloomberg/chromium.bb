@@ -669,7 +669,7 @@ class PolicyTest : public InProcessBrowserTest {
     // is tied to the test instead.
     screenshot_taker->AddObserver(&observer_);
     ash::Shell::GetInstance()->accelerator_controller()->SetScreenshotDelegate(
-        screenshot_taker.PassAs<ash::ScreenshotDelegate>());
+        screenshot_taker.Pass());
 
     SetScreenshotPolicy(enabled);
     ash::Shell::GetInstance()->accelerator_controller()->PerformAction(

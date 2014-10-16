@@ -225,7 +225,7 @@ class SdchResponseHandler {
          it != callbacks.end(); ++it) {
       it->Run();
     }
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   void WaitAndGetRequestVector(int num_requests,

@@ -940,8 +940,7 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
       new ChromeNSSCryptoModuleDelegate(chrome::kCryptoModulePasswordKeygen,
                                         net::HostPortPair::FromURL(url)));
   ChromeNSSCryptoModuleDelegate* delegate_ptr = delegate.get();
-  keygen_handler->set_crypto_module_delegate(
-      delegate.PassAs<crypto::NSSCryptoModuleDelegate>());
+  keygen_handler->set_crypto_module_delegate(delegate.Pass());
 
   base::Closure bound_callback =
       base::Bind(callback, base::Passed(&keygen_handler));
@@ -1160,8 +1159,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
 #endif
 
   // Set up interceptors in the reverse order.
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory =
-      job_factory.PassAs<net::URLRequestJobFactory>();
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory = job_factory.Pass();
   for (content::URLRequestInterceptorScopedVector::reverse_iterator i =
            request_interceptors.rbegin();
        i != request_interceptors.rend();
@@ -1173,7 +1171,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
 
   if (protocol_handler_interceptor) {
     protocol_handler_interceptor->Chain(top_job_factory.Pass());
-    return protocol_handler_interceptor.PassAs<net::URLRequestJobFactory>();
+    return protocol_handler_interceptor.Pass();
   } else {
     return top_job_factory.Pass();
   }
