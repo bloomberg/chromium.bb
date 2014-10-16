@@ -356,6 +356,12 @@ class AthenaWebView : public views::WebView {
     layer->SetOpacity(0.f);
   }
 
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
+      override {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+
   virtual content::ColorChooser* OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,

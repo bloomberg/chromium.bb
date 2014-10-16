@@ -28,6 +28,7 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
 
   virtual content::WebDragDestDelegate* GetDragDestDelegate() override {
     // TODO(oshima): crbug.com/401610
+    NOTIMPLEMENTED();
     return NULL;
   }
 
@@ -57,10 +58,10 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
       const gfx::NativeView content,
       const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
       const base::Callback<void(ui::MouseEvent*)>& mouse_cb) override {
+    NOTIMPLEMENTED();
   }
 
-  virtual void HideDisambiguationPopup() override {
-  }
+  virtual void HideDisambiguationPopup() override { NOTIMPLEMENTED(); }
 
   scoped_ptr<RenderViewContextMenuImpl> BuildMenu(
       content::WebContents* web_contents,
