@@ -232,6 +232,21 @@ private:
     const WebVector<unsigned char> m_optionalLabel;
 };
 
+class WebCryptoRsaPssParams : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoRsaPssParams(unsigned saltLengthBytes)
+        : m_saltLengthBytes(saltLengthBytes)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaPssParams; }
+
+    unsigned saltLengthBytes() const { return m_saltLengthBytes; }
+
+private:
+    const unsigned m_saltLengthBytes;
+};
+
 } // namespace blink
 
 #endif

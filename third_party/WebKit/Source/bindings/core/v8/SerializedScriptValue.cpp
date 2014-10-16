@@ -275,6 +275,7 @@ enum CryptoKeyAlgorithmTag {
     RsaOaepTag = 10,
     AesCtrTag = 11,
     AesKwTag = 12,
+    RsaPssTag = 13,
     // Maximum allowed value is 2^32-1
 };
 
@@ -779,6 +780,8 @@ private:
             return doWriteUint32(AesCtrTag);
         case blink::WebCryptoAlgorithmIdAesKw:
             return doWriteUint32(AesKwTag);
+        case blink::WebCryptoAlgorithmIdRsaPss:
+            return doWriteUint32(RsaPssTag);
         }
         ASSERT_NOT_REACHED();
     }
@@ -2501,6 +2504,9 @@ private:
             return true;
         case AesKwTag:
             id = blink::WebCryptoAlgorithmIdAesKw;
+            return true;
+        case RsaPssTag:
+            id = blink::WebCryptoAlgorithmIdRsaPss;
             return true;
         }
 

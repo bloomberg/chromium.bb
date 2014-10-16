@@ -607,6 +607,21 @@ bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>&
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//     dictionary RsaPssParams : Algorithm {
+//       [EnforceRange] required unsigned long saltLength;
+//     };
+bool parseRsaPssParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    uint32_t saltLengthBytes;
+    if (!getUint32(raw, "saltLength", saltLengthBytes, context, error))
+        return false;
+
+    params = adoptPtr(new WebCryptoRsaPssParams(saltLengthBytes));
+    return true;
+}
+
 bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType type, OwnPtr<WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
 {
     switch (type) {
@@ -639,6 +654,10 @@ bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType ty
     case WebCryptoAlgorithmParamsTypeRsaOaepParams:
         context.add("RsaOaepParams");
         return parseRsaOaepParams(raw, params, context, error);
+        break;
+    case WebCryptoAlgorithmParamsTypeRsaPssParams:
+        context.add("RsaPssParams");
+        return parseRsaPssParams(raw, params, context, error);
         break;
     }
     ASSERT_NOT_REACHED();

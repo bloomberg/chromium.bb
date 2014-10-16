@@ -197,6 +197,20 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey
         }
+    }, { // Index 11
+        "RSA-PSS", {
+            WebCryptoAlgorithmInfo::Undefined, // Encrypt
+            WebCryptoAlgorithmInfo::Undefined, // Decrypt
+            WebCryptoAlgorithmParamsTypeRsaPssParams, // Sign
+            WebCryptoAlgorithmParamsTypeRsaPssParams, // Verify
+            WebCryptoAlgorithmInfo::Undefined, // Digest
+            WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams, // GenerateKey
+            WebCryptoAlgorithmParamsTypeRsaHashedImportParams, // ImportKey
+            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // DeriveBits
+            WebCryptoAlgorithmParamsTypeNone, // WrapKey
+            WebCryptoAlgorithmParamsTypeNone // UnwrapKey
+        }
     },
 };
 
@@ -214,7 +228,8 @@ COMPILE_ASSERT(WebCryptoAlgorithmIdAesGcm == 7, AesGcm_idDoesntMatch);
 COMPILE_ASSERT(WebCryptoAlgorithmIdRsaOaep == 8, RsaOaep_idDoesntMatch);
 COMPILE_ASSERT(WebCryptoAlgorithmIdAesCtr == 9, AesCtr_idDoesntMatch);
 COMPILE_ASSERT(WebCryptoAlgorithmIdAesKw == 10, AesKw_idDoesntMatch);
-COMPILE_ASSERT(WebCryptoAlgorithmIdLast == 10, Last_idDoesntMatch);
+COMPILE_ASSERT(WebCryptoAlgorithmIdRsaPss == 11, RsaPss_idDoesntMatch);
+COMPILE_ASSERT(WebCryptoAlgorithmIdLast == 11, Last_idDoesntMatch);
 COMPILE_ASSERT(10 == WebCryptoOperationLast, UpdateParamsMapping);
 
 } // namespace
@@ -344,6 +359,14 @@ const WebCryptoRsaHashedKeyGenParams* WebCryptoAlgorithm::rsaHashedKeyGenParams(
     return 0;
 }
 
+const WebCryptoRsaPssParams* WebCryptoAlgorithm::rsaPssParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeRsaPssParams)
+        return static_cast<WebCryptoRsaPssParams*>(m_private->params.get());
+    return 0;
+}
+
 bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
 {
     switch (id) {
@@ -359,6 +382,7 @@ bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
     case WebCryptoAlgorithmIdRsaOaep:
     case WebCryptoAlgorithmIdAesCtr:
     case WebCryptoAlgorithmIdAesKw:
+    case WebCryptoAlgorithmIdRsaPss:
         break;
     }
     return false;
