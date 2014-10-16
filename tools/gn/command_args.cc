@@ -196,8 +196,9 @@ bool RunEditor(const base::FilePath& file_to_edit) {
 #else  // POSIX
 
 bool RunEditor(const base::FilePath& file_to_edit) {
-  // Prefer $VISUAL, then $EDITOR, then vi.
   const char* editor_ptr = getenv("VISUAL");
+  if (!editor_ptr)
+    editor_ptr = getenv("GN_EDITOR");
   if (!editor_ptr)
     editor_ptr = getenv("EDITOR");
   if (!editor_ptr)
