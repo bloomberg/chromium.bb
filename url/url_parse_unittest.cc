@@ -498,8 +498,13 @@ TEST(URLParser, ExtractFileName) {
     {"http://www.google.com/foo/bar.html#ref", "bar.html"},
     {"http://www.google.com/search/;param", ""},
     {"http://www.google.com/foo/bar.html;param#ref", "bar.html"},
-    {"http://www.google.com/foo/bar.html;foo;param#ref", "bar.html;foo"},
+    {"http://www.google.com/foo/bar.html;foo;param#ref", "bar.html"},
     {"http://www.google.com/foo/bar.html?query#ref", "bar.html"},
+    {"http://www.google.com/foo;/bar.html", "bar.html"},
+    {"http://www.google.com/foo;/", ""},
+    {"http://www.google.com/foo;", "foo"},
+    {"http://www.google.com/;", ""},
+    {"http://www.google.com/foo;bar;html", "foo"},
   };
 
   for (size_t i = 0; i < arraysize(file_cases); i++) {
