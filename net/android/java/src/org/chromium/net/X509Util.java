@@ -332,15 +332,14 @@ public class X509Util {
     private static boolean isKnownRoot(X509Certificate root)
             throws NoSuchAlgorithmException, KeyStoreException {
         // Could not find the system key store. Conservatively report false.
-        if (sSystemKeyStore == null)
-            return false;
+        if (sSystemKeyStore == null) return false;
 
         // Check the in-memory cache first; avoid decoding the anchor from disk
         // if it has been seen before.
-        Pair<X500Principal, PublicKey> key =
-            new Pair<X500Principal, PublicKey>(root.getSubjectX500Principal(), root.getPublicKey());
-        if (sSystemTrustAnchorCache.contains(key))
-            return true;
+        Pair<X500Principal, PublicKey> key = new Pair<X500Principal, PublicKey>(
+                root.getSubjectX500Principal(), root.getPublicKey());
+
+        if (sSystemTrustAnchorCache.contains(key)) return true;
 
         // Note: It is not sufficient to call sSystemKeyStore.getCertificiateAlias. If the server
         // supplies a copy of a trust anchor, X509TrustManagerExtensions returns the server's
@@ -355,16 +354,14 @@ public class X509Util {
         String hash = hashPrincipal(root.getSubjectX500Principal());
         for (int i = 0; true; i++) {
             String alias = hash + '.' + i;
-            if (!new File(sSystemCertificateDirectory, alias).exists())
-                break;
+            if (!new File(sSystemCertificateDirectory, alias).exists()) break;
 
             Certificate anchor = sSystemKeyStore.getCertificate("system:" + alias);
             // It is possible for this to return null if the user deleted a trust anchor. In
             // that case, the certificate remains in the system directory but is also added to
             // another file. Continue iterating as there may be further collisions after the
             // deleted anchor.
-            if (anchor == null)
-                continue;
+            if (anchor == null) continue;
 
             if (!(anchor instanceof X509Certificate)) {
                 // This should never happen.
@@ -376,7 +373,7 @@ public class X509Util {
             // If the subject and public key match, this is a system root.
             X509Certificate anchorX509 = (X509Certificate) anchor;
             if (root.getSubjectX500Principal().equals(anchorX509.getSubjectX500Principal()) &&
-                root.getPublicKey().equals(anchorX509.getPublicKey())) {
+                    root.getPublicKey().equals(anchorX509.getPublicKey())) {
                 sSystemTrustAnchorCache.add(key);
                 return true;
             }
@@ -405,14 +402,13 @@ public class X509Util {
             // See http://crbug.com/233610
             return false;
         }
-        if (ekuOids == null)
-            return true;
+        if (ekuOids == null) return true;
 
         for (String ekuOid : ekuOids) {
             if (ekuOid.equals(OID_TLS_SERVER_AUTH) ||
-                ekuOid.equals(OID_ANY_EKU) ||
-                ekuOid.equals(OID_SERVER_GATED_NETSCAPE) ||
-                ekuOid.equals(OID_SERVER_GATED_MICROSOFT)) {
+                    ekuOid.equals(OID_ANY_EKU) ||
+                    ekuOid.equals(OID_SERVER_GATED_NETSCAPE) ||
+                    ekuOid.equals(OID_SERVER_GATED_MICROSOFT)) {
                 return true;
             }
         }
@@ -509,7 +505,7 @@ public class X509Util {
      * Record histograms on the platform's certificate verification capabilities.
      */
     private static native void nativeRecordCertVerifyCapabilitiesHistogram(
-        boolean foundSystemTrustRoots);
+            boolean foundSystemTrustRoots);
 
     /**
      * Returns the application context.

@@ -129,7 +129,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
 
     @Override
     public boolean hasPrintingFinished() {
-      return mPrintingState == PRINTING_STATE_FINISHED;
+        return mPrintingState == PRINTING_STATE_FINISHED;
     }
 
     @Override

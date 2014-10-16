@@ -40,7 +40,7 @@ public class InvalidationClientNameProviderTest extends InstrumentationTestCase 
         // nothing will blow up if someone accidentally violates that constraint.)
         byte[] id3 = mProvider.getInvalidatorClientName();
         assertTrue("Changing generators should not affect returned ID consistency",
-            Arrays.equals(id2, id3));
+                Arrays.equals(id2, id3));
     }
 
     @SmallTest
@@ -56,11 +56,11 @@ public class InvalidationClientNameProviderTest extends InstrumentationTestCase 
     }
 
     private static void registerHardCodedGenerator(InvalidationClientNameProvider provider) {
-        provider.setPreferredClientNameGenerator(
-            new InvalidationClientNameGenerator() {
-                public byte[] generateInvalidatorClientName() {
-                    return "Testable ID".getBytes();
-                }
-            });
+        provider.setPreferredClientNameGenerator(new InvalidationClientNameGenerator() {
+            @Override
+            public byte[] generateInvalidatorClientName() {
+                return "Testable ID".getBytes();
+            }
+        });
     }
 }

@@ -100,12 +100,12 @@ public enum ModelType {
     }
 
     private boolean isNonInvalidationType() {
-      if ((this == SESSION || this == FAVICON_TRACKING) && LibraryLoader.isInitialized()) {
-        return FieldTrialList
-            .findFullName("AndroidSessionNotifications")
-            .equals("Disabled");
-      }
-      return mNonInvalidationType;
+        if ((this == SESSION || this == FAVICON_TRACKING) && LibraryLoader.isInitialized()) {
+            return FieldTrialList
+                    .findFullName("AndroidSessionNotifications")
+                    .equals("Disabled");
+        }
+        return mNonInvalidationType;
     }
 
     /**

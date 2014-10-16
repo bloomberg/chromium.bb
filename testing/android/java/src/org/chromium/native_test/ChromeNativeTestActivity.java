@@ -54,11 +54,11 @@ public class ChromeNativeTestActivity extends Activity {
             // Post a task to run the tests. This allows us to not block
             // onCreate and still run tests on the main thread.
             new Handler().postDelayed(new Runnable() {
-                  @Override
-                  public void run() {
-                      runTests();
-                  }
-              }, RUN_TESTS_DELAY_IN_MS);
+                @Override
+                public void run() {
+                    runTests();
+                }
+            }, RUN_TESTS_DELAY_IN_MS);
         }
     }
 

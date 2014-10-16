@@ -239,7 +239,7 @@ public class WindowAndroid {
 
     @CalledByNative
     private void requestVSyncUpdate() {
-       mVSyncMonitor.requestUpdate();
+        mVSyncMonitor.requestUpdate();
     }
 
     /**

@@ -70,10 +70,8 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
 
     @Override
     protected void onPause() {
-      if (isFinishing()) {
-        mActivityLifecycleListener.onActivityPaused(this);
-      }
-      super.onPause();
+        if (isFinishing()) mActivityLifecycleListener.onActivityPaused(this);
+        super.onPause();
     }
 
     @Override
@@ -252,7 +250,7 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
                                !event.isCtrlPressed() && !event.isMetaPressed();
 
         if (event.getDeviceId() == KeyCharacterMap.VIRTUAL_KEYBOARD &&
-            pressed && unicode != 0 && no_modifiers) {
+                pressed && unicode != 0 && no_modifiers) {
             mPressedTextKeys.add(keyCode);
             int[] codePoints = { unicode };
             JniInterface.sendTextEvent(new String(codePoints, 0, 1));

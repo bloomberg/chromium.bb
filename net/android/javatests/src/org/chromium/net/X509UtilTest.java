@@ -22,7 +22,7 @@ import java.util.Arrays;
  */
 public class X509UtilTest extends InstrumentationTestCase {
     private static final String CERTS_DIRECTORY =
-        PathUtils.getExternalStorageDirectory() + "/net/data/ssl/certificates/";
+            PathUtils.getExternalStorageDirectory() + "/net/data/ssl/certificates/";
     private static final String BAD_EKU_TEST_ROOT = "eku-test-root.pem";
     private static final String CRITICAL_CODE_SIGNING_EE = "crit-codeSigning-chain.pem";
     private static final String NON_CRITICAL_CODE_SIGNING_EE = "non-crit-codeSigning-chain.pem";
@@ -74,20 +74,20 @@ public class X509UtilTest extends InstrumentationTestCase {
         X509Util.addTestRootCertificate(pemToDer(CERTS_DIRECTORY + GOOD_ROOT_CA));
 
         assertFalse(X509Util.verifyKeyUsage(
-            X509Util.createCertificateFromBytes(
-                pemToDer(CERTS_DIRECTORY + CRITICAL_CODE_SIGNING_EE))));
+                X509Util.createCertificateFromBytes(
+                        pemToDer(CERTS_DIRECTORY + CRITICAL_CODE_SIGNING_EE))));
 
         assertFalse(X509Util.verifyKeyUsage(
-            X509Util.createCertificateFromBytes(
-                pemToDer(CERTS_DIRECTORY + NON_CRITICAL_CODE_SIGNING_EE))));
+                X509Util.createCertificateFromBytes(
+                        pemToDer(CERTS_DIRECTORY + NON_CRITICAL_CODE_SIGNING_EE))));
 
         assertFalse(X509Util.verifyKeyUsage(
-            X509Util.createCertificateFromBytes(
-                readFileBytes(CERTS_DIRECTORY + WEB_CLIENT_AUTH_EE))));
+                X509Util.createCertificateFromBytes(
+                        readFileBytes(CERTS_DIRECTORY + WEB_CLIENT_AUTH_EE))));
 
         assertTrue(X509Util.verifyKeyUsage(
-            X509Util.createCertificateFromBytes(
-                pemToDer(CERTS_DIRECTORY + OK_CERT))));
+                X509Util.createCertificateFromBytes(
+                        pemToDer(CERTS_DIRECTORY + OK_CERT))));
 
         try {
             X509Util.clearTestRootCertificates();

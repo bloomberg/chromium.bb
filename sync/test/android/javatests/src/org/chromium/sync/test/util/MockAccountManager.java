@@ -188,18 +188,20 @@ public class MockAccountManager implements AccountManagerDelegate {
         }
         final AccountHolder accountHolder = getAccountHolder(account);
         final boolean correctPassword = password.equals(accountHolder.getPassword());
-        return runTask(mExecutor,
-                new AccountManagerTask<Bundle>(handler, callback, new Callable<Bundle>() {
-            @Override
-            public Bundle call() throws Exception {
-                Bundle result = new Bundle();
-                result.putString(AccountManager.KEY_ACCOUNT_NAME, accountHolder.getAccount().name);
-                result.putString(
-                        AccountManager.KEY_ACCOUNT_TYPE, AccountManagerHelper.GOOGLE_ACCOUNT_TYPE);
-                result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, correctPassword);
-                return result;
-            }
-        }));
+        return runTask(mExecutor, new AccountManagerTask<Bundle>(handler, callback,
+                new Callable<Bundle>() {
+                    @Override
+                    public Bundle call() throws Exception {
+                        Bundle result = new Bundle();
+                        result.putString(AccountManager.KEY_ACCOUNT_NAME,
+                                accountHolder.getAccount().name);
+                        result.putString(
+                                AccountManager.KEY_ACCOUNT_TYPE,
+                                AccountManagerHelper.GOOGLE_ACCOUNT_TYPE);
+                        result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, correctPassword);
+                        return result;
+                    }
+                }));
     }
 
     @Override

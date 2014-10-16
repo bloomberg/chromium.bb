@@ -105,7 +105,7 @@ public class ColorSuggestionListAdapter extends BaseAdapter implements View.OnCl
             layout.setOrientation(LinearLayout.HORIZONTAL);
             layout.setBackgroundColor(Color.WHITE);
             int buttonHeight =
-                mContext.getResources().getDimensionPixelOffset(R.dimen.color_button_height);
+                    mContext.getResources().getDimensionPixelOffset(R.dimen.color_button_height);
             for (int i = 0; i < COLORS_PER_ROW; ++i) {
                 View button = new View(mContext);
                 LinearLayout.LayoutParams layoutParams =

@@ -146,7 +146,7 @@ public class MultiFieldTimePickerDialog
             if (minMinute == maxMinute) {
                 // Set this otherwise the box is empty until you stroke it.
                 mMinuteSpinner.setDisplayedValues(
-                    new String[] { twoDigitPaddingFormatter.format(minMinute) });
+                        new String[] { twoDigitPaddingFormatter.format(minMinute) });
                 mMinuteSpinner.setEnabled(false);
                 minute = minMinute;
             }
@@ -179,7 +179,7 @@ public class MultiFieldTimePickerDialog
             if (minSecond == maxSecond) {
                 // Set this otherwise the box is empty until you stroke it.
                 mSecSpinner.setDisplayedValues(
-                    new String[] { twoDigitPaddingFormatter.format(minSecond) });
+                        new String[] { twoDigitPaddingFormatter.format(minSecond) });
                 mSecSpinner.setEnabled(false);
                 second = minSecond;
             }
@@ -200,8 +200,7 @@ public class MultiFieldTimePickerDialog
         // Round to the nearest step.
         milli = ((milli + step / 2) / step) * step;
         if (step == 1 || step == 10 || step == 100) {
-            if (minHour == maxHour && minMinute == maxMinute &&
-                minSecond == maxSecond) {
+            if (minHour == maxHour && minMinute == maxMinute && minSecond == maxSecond) {
                 mMilliSpinner.setMinValue(min / step);
                 mMilliSpinner.setMaxValue(max / step);
 
@@ -232,8 +231,7 @@ public class MultiFieldTimePickerDialog
             mMilliSpinner.setMinValue(0);
             mMilliSpinner.setMaxValue(strValue.size() - 1);
             mMilliSpinner.setValue((milli - min) / step);
-            mMilliSpinner.setDisplayedValues(
-                strValue.toArray(new String[strValue.size()]));
+            mMilliSpinner.setDisplayedValues(strValue.toArray(new String[strValue.size()]));
             mBaseMilli = min;
         } else {
             mBaseMilli = 0;

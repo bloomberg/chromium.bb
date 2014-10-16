@@ -83,7 +83,7 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
         return null;
     }
 
-   @Override
+    @Override
     public byte[] getPrivateKeyEncodedBytes(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
         return javaKey.getEncoded();

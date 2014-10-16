@@ -52,7 +52,7 @@ public class RemoteAndroidKeyStore implements AndroidKeyStore {
             e.printStackTrace();
             return null;
         }
-     }
+    }
 
     @Override
     public byte[] getDSAKeyParamQ(AndroidPrivateKey key) {

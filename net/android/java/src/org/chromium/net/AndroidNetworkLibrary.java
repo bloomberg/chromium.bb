@@ -245,12 +245,10 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     private static String getNetworkCountryIso(Context context) {
-      TelephonyManager telephonyManager =
-          (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-      if (telephonyManager != null) {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (telephonyManager == null) return "";
         return telephonyManager.getNetworkCountryIso();
-      }
-      return "";
     }
 
     /**
@@ -259,12 +257,10 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     private static String getNetworkOperator(Context context) {
-      TelephonyManager telephonyManager =
-          (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-      if (telephonyManager != null) {
+        TelephonyManager telephonyManager =
+                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (telephonyManager == null) return "";
         return telephonyManager.getNetworkOperator();
-      }
-      return "";
     }
 
 }

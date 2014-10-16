@@ -283,15 +283,19 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     /** Called when the user taps on a host entry. */
     public void connectToHost(HostInfo host) {
-        mProgressIndicator = ProgressDialog.show(this,
-              host.name, getString(R.string.footer_connecting), true, true,
-              new DialogInterface.OnCancelListener() {
-                  @Override
-                  public void onCancel(DialogInterface dialog) {
-                      JniInterface.disconnectFromHost();
-                      mTokenFetcher = null;
-                  }
-              });
+        mProgressIndicator = ProgressDialog.show(
+                this,
+                host.name,
+                getString(R.string.footer_connecting),
+                true,
+                true,
+                new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        JniInterface.disconnectFromHost();
+                        mTokenFetcher = null;
+                    }
+                });
         SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
         assert mTokenFetcher == null;
         mTokenFetcher = createTokenFetcher(host);

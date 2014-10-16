@@ -142,18 +142,16 @@ public class ProxyChangeListener {
                 }
                 // TODO(xunjieli): rewrite this once the API is public.
                 if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-                    Method getPacFileUrlMethod =
-                        cls.getDeclaredMethod(getPacFileUrl);
+                    Method getPacFileUrlMethod = cls.getDeclaredMethod(getPacFileUrl);
                     String pacFileUrl = (String) getPacFileUrlMethod.invoke(props);
                     if (!TextUtils.isEmpty(pacFileUrl)) {
-                       return new ProxyConfig(host, port, pacFileUrl, exclusionList);
+                        return new ProxyConfig(host, port, pacFileUrl, exclusionList);
                     }
                 } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-                    Method getPacFileUrlMethod =
-                        cls.getDeclaredMethod(getPacFileUrl);
+                    Method getPacFileUrlMethod = cls.getDeclaredMethod(getPacFileUrl);
                     Uri pacFileUrl = (Uri) getPacFileUrlMethod.invoke(props);
                     if (!Uri.EMPTY.equals(pacFileUrl)) {
-                      return new ProxyConfig(host, port, pacFileUrl.toString(), exclusionList);
+                        return new ProxyConfig(host, port, pacFileUrl.toString(), exclusionList);
                     }
                 }
                 return new ProxyConfig(host, port, null, exclusionList);

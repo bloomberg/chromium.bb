@@ -342,7 +342,7 @@ public class AccountManagerHelper {
         AtomicInteger numTries = new AtomicInteger(0);
         AtomicBoolean errorEncountered = new AtomicBoolean(false);
         getAuthTokenAsynchronously(
-            null, account, authTokenType, callback, numTries, errorEncountered, null);
+                null, account, authTokenType, callback, numTries, errorEncountered, null);
     }
 
     /**

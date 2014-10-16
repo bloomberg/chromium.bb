@@ -160,8 +160,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
     private int measureContentWidth() {
         int maxWidth = 0;
         View itemView = null;
-        if (mAdapter == null)
-          return 0;
+        if (mAdapter == null) return 0;
         final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         final int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         for (int i = 0; i < mAdapter.getCount(); i++) {
