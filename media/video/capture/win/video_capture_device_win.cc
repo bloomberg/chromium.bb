@@ -160,7 +160,7 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
     { MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB },
     { kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(pixel_formats); ++i) {
+  for (size_t i = 0; i < arraysize(pixel_formats); ++i) {
     if (sub_type == pixel_formats[i].sub_type)
       return pixel_formats[i].format;
   }

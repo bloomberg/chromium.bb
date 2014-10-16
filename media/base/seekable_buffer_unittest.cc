@@ -333,7 +333,7 @@ TEST_F(SeekableBufferTest, GetTime) {
 
   scoped_refptr<DataBuffer> buffer = DataBuffer::CopyFrom(data_, kWriteSize);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     buffer->set_timestamp(base::TimeDelta::FromMicroseconds(
         tests[i].first_time_useconds));
     buffer->set_duration(base::TimeDelta::FromMicroseconds(
