@@ -5,10 +5,10 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::String>, const
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if constant.deprecate_as %}
-    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
     {% endif %}
     {% if constant.measure_as %}
-    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as}});
     {% endif %}
     {% if constant.idl_type in ('Double', 'Float') %}
     v8SetReturnValue(info, {{constant.value}});

@@ -280,7 +280,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructorConstructor::domTempl
 void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
-    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     if (!info.IsConstructCall()) {
         V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor"), info.GetIsolate());
         return;

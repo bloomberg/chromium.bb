@@ -181,7 +181,7 @@ void V8Element::animateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
         // [MeasureAs=ElementAnimateKeyframeListEffectNoTiming]
         // AnimationPlayer animate(sequence<Dictionary> effect);
         if (info[0]->IsArray()) {
-            UseCounter::count(callingExecutionContext(isolate), UseCounter::ElementAnimateKeyframeListEffectNoTiming);
+            UseCounter::countIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::ElementAnimateKeyframeListEffectNoTiming);
             animate2Method(info);
             return;
         }
@@ -212,14 +212,14 @@ void V8Element::animateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
         // [MeasureAs=ElementAnimateKeyframeListEffectObjectTiming]
         // AnimationPlayer animate(sequence<Dictionary> effect, Dictionary timing);
         if (info[0]->IsArray() && info[1]->IsObject()) {
-            UseCounter::count(callingExecutionContext(isolate), UseCounter::ElementAnimateKeyframeListEffectObjectTiming);
+            UseCounter::countIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::ElementAnimateKeyframeListEffectObjectTiming);
             animate6Method(info);
             return;
         }
         // [MeasureAs=ElementAnimateKeyframeListEffectDoubleTiming]
         // AnimationPlayer animate(sequence<Dictionary> effect, double timing);
         if (info[0]->IsArray()) {
-            UseCounter::count(callingExecutionContext(isolate), UseCounter::ElementAnimateKeyframeListEffectDoubleTiming);
+            UseCounter::countIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::ElementAnimateKeyframeListEffectDoubleTiming);
             animate5Method(info);
             return;
         }

@@ -98,7 +98,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
     Node& ownerNode = impl->ownerNode();
 
-    UseCounter::count(ownerNode.document(), UseCounter::DocumentAllLegacyCall);
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), ownerNode.document(), UseCounter::DocumentAllLegacyCall);
 
     if (info.Length() == 1) {
         v8SetReturnValue(info, getItem(impl, info[0], info));

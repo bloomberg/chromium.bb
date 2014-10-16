@@ -201,19 +201,19 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
 void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     invokeOnScriptableObject<V8HTMLAppletElement>(info);
-    UseCounter::count(V8HTMLAppletElement::toImpl(info.Holder())->document(), UseCounter::HTMLAppletElementLegacyCall);
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), V8HTMLAppletElement::toImpl(info.Holder())->document(), UseCounter::HTMLAppletElementLegacyCall);
 }
 
 void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     invokeOnScriptableObject<V8HTMLEmbedElement>(info);
-    UseCounter::count(V8HTMLEmbedElement::toImpl(info.Holder())->document(), UseCounter::HTMLEmbedElementLegacyCall);
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), V8HTMLEmbedElement::toImpl(info.Holder())->document(), UseCounter::HTMLEmbedElementLegacyCall);
 }
 
 void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     invokeOnScriptableObject<V8HTMLObjectElement>(info);
-    UseCounter::count(V8HTMLObjectElement::toImpl(info.Holder())->document(), UseCounter::HTMLObjectElementLegacyCall);
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), V8HTMLObjectElement::toImpl(info.Holder())->document(), UseCounter::HTMLObjectElementLegacyCall);
 }
 
 } // namespace blink

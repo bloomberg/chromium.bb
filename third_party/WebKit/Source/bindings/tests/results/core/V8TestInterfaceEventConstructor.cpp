@@ -193,7 +193,7 @@ static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttrib
 static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     TestInterfaceEventConstructorV8Internal::deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -222,7 +222,7 @@ static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAt
 static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+    UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     TestInterfaceEventConstructorV8Internal::deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -301,7 +301,7 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
         return false;
     if (DictionaryHelper::convert(options, conversionContext.setConversionType("DOMString", false), "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
         if (options.hasProperty("deprecatedInitializedByEventConstructorReadonlyStringAttribute"))
-            UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+            UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {
         return false;
     }
@@ -309,7 +309,7 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
         return false;
     if (DictionaryHelper::convert(options, conversionContext.setConversionType("DOMString", false), "deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedImplementedAsName)) {
         if (options.hasProperty("deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute"))
-            UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+            UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {
         return false;
     }

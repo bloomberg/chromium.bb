@@ -632,7 +632,7 @@ bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& opt
     {% if attribute.deprecate_as %}
     if (DictionaryHelper::convert(options, conversionContext.setConversionType("{{attribute.idl_type}}", {{is_nullable}}), "{{attribute.name}}", eventInit.{{attribute.cpp_name}})) {
         if (options.hasProperty("{{attribute.name}}"))
-            UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+            UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     } else {
         return false;
     }
@@ -655,7 +655,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     {% if measure_as %}
-    UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{measure_as}});
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{measure_as}});
     {% endif %}
     if (!info.IsConstructCall()) {
         V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{interface_name}}"), info.GetIsolate());

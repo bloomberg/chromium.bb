@@ -32,6 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace blink {
 
@@ -547,6 +548,12 @@ public:
     // This doesn't count for ExecutionContexts for shared workers and service
     // workers.
     static void count(const ExecutionContext*, Feature);
+    // Use countIfNotPrivateScript() instead of count() if you don't want
+    // to count metrics in private scripts. You should use
+    // countIfNotPrivateScript() in a binding layer.
+    static void countIfNotPrivateScript(v8::Isolate*, const Document&, Feature);
+    static void countIfNotPrivateScript(v8::Isolate*, const ExecutionContext*, Feature);
+
     void count(CSSParserContext, CSSPropertyID);
     void count(Feature);
 
@@ -562,6 +569,10 @@ public:
     static void countDeprecation(const LocalDOMWindow*, Feature);
     static void countDeprecation(ExecutionContext*, Feature);
     static void countDeprecation(const Document&, Feature);
+    // Use countDeprecationIfNotPrivateScript() instead of countDeprecation()
+    // if you don't want to count metrics in private scripts. You should use
+    // countDeprecationIfNotPrivateScript() in a binding layer.
+    static void countDeprecationIfNotPrivateScript(v8::Isolate*, ExecutionContext*, Feature);
     String deprecationMessage(Feature);
 
     void didCommitLoad();

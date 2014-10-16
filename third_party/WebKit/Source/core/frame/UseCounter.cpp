@@ -605,6 +605,20 @@ void UseCounter::count(const ExecutionContext* context, Feature feature)
         toWorkerGlobalScope(context)->countFeature(feature);
 }
 
+void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const Document& document, Feature feature)
+{
+    if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
+        return;
+    UseCounter::count(document, feature);
+}
+
+void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const ExecutionContext* context, Feature feature)
+{
+    if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
+        return;
+    UseCounter::count(context, feature);
+}
+
 void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)
 {
     if (!context)
@@ -635,6 +649,13 @@ void UseCounter::countDeprecation(const Document& document, Feature feature)
         ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
         frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature)));
     }
+}
+
+void UseCounter::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, ExecutionContext* context, Feature feature)
+{
+    if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
+        return;
+    UseCounter::countDeprecation(context, feature);
 }
 
 // FIXME: Update other UseCounter::deprecationMessage() cases to use this.
