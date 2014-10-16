@@ -1122,6 +1122,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableV8IdleNotificationAfterCommit,
     switches::kDisableZeroCopy,
     switches::kDomAutomationController,
+    switches::kEnableAcceleratedJpegDecoding,
     switches::kEnableBeginFrameScheduling,
     switches::kEnableBleedingEdgeRenderingFastPaths,
     switches::kEnableBrowserSideNavigation,
