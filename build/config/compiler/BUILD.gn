@@ -168,6 +168,16 @@ config("compiler") {
     } else if (cpu_arch == "x86") {
       cflags += [ "-m32" ]
       ldflags += [ "-m32" ]
+      if (is_clang) {
+        cflags += [
+          # Else building libyuv gives clang's register allocator issues,
+          # see llvm.org/PR15798 / crbug.com/233709
+          "-momit-leaf-frame-pointer",
+          # Align the stack on 16-byte boundaries, http://crbug.com/418554.
+          "-mstack-alignment=16",
+          "-mstackrealign",
+        ]
+      }
     } else if (cpu_arch == "arm") {
       # Don't set the compiler flags for the WebView build. These will come
       # from the Android build system.
@@ -253,12 +263,8 @@ config("compiler") {
       # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
       "-fuse-ld=gold",
 
-      # There seems to be a conflict of --icf and -pie in gold which can
-      # generate crashy binaries. As a security measure, -pie takes
-      # precedence for now.
       # TODO(brettw) common.gypi has this only for target toolset.
-      #"-Wl,--icf=safe",
-      "-Wl,--icf=none",
+      "-Wl,--icf=safe",
 
       # Experimentation found that using four linking threads
       # saved ~20% of link time.
