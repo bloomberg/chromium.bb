@@ -245,7 +245,7 @@ def _RunPerformanceTest(config):
   bisect_utils.OutputAnnotationStepStart('Building With Patch')
 
   opts = _CreateBisectOptionsFromConfig(config)
-  b = bisect_perf_regression.BisectPerformanceMetrics(None, opts)
+  b = bisect_perf_regression.BisectPerformanceMetrics(opts)
 
   if bisect_utils.RunGClient(['runhooks']):
     raise RuntimeError('Failed to run gclient runhooks')
