@@ -70,9 +70,9 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                              session_expiration_update_cb);
   if (proxy_media_keys)
     *cdm_id = proxy_media_keys->GetCdmId();
-  return proxy_media_keys.PassAs<media::MediaKeys>();
+  return proxy_media_keys.Pass();
 #else
-  return scoped_ptr<media::MediaKeys>();
+  return nullptr;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 }
 

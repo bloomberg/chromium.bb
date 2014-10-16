@@ -68,9 +68,8 @@ class TypedArraySerializerImpl : public TypedArraySerializer {
  public:
   static scoped_ptr<TypedArraySerializer> Create(
       v8::Handle<v8::TypedArray> typed_array) {
-    scoped_ptr<TypedArraySerializerImpl<ElementType, ListType> > result(
+    return make_scoped_ptr(
         new TypedArraySerializerImpl<ElementType, ListType>(typed_array));
-    return result.template PassAs<TypedArraySerializer>();
   }
 
   virtual void serializeTo(char* data,

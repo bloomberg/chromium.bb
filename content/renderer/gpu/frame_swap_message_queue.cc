@@ -183,8 +183,7 @@ void FrameSwapMessageQueue::DrainMessages(
 
 scoped_ptr<FrameSwapMessageQueue::SendMessageScope>
 FrameSwapMessageQueue::AcquireSendMessageScope() {
-  return make_scoped_ptr(new SendMessageScopeImpl(&lock_))
-      .PassAs<SendMessageScope>();
+  return make_scoped_ptr(new SendMessageScopeImpl(&lock_));
 }
 
 // static

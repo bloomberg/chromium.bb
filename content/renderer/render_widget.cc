@@ -1281,7 +1281,7 @@ scoped_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
       // don't have any now, no other thread will add any.
       frame_swap_message_queue->Empty()) {
     sync_message_filter->Send(msg);
-    return scoped_ptr<cc::SwapPromise>();
+    return nullptr;
   }
 
   bool first_message_for_frame = false;
@@ -1292,9 +1292,9 @@ scoped_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
   if (first_message_for_frame) {
     scoped_ptr<cc::SwapPromise> promise(new QueueMessageSwapPromise(
         sync_message_filter, frame_swap_message_queue, source_frame_number));
-    return promise.PassAs<cc::SwapPromise>();
+    return promise;
   }
-  return scoped_ptr<cc::SwapPromise>();
+  return nullptr;
 }
 
 void RenderWidget::QueueMessage(IPC::Message* msg,

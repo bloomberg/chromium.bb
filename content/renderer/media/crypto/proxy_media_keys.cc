@@ -84,7 +84,7 @@ void ProxyMediaKeys::CreateSession(
   }
 
   uint32 session_id = CreateSessionId();
-  SavePromise(session_id, promise.PassAs<media::CdmPromise>());
+  SavePromise(session_id, promise.Pass());
   manager_->CreateSession(
       cdm_id_,
       session_id,
@@ -112,7 +112,7 @@ void ProxyMediaKeys::UpdateSession(
     return;
   }
 
-  SavePromise(session_id, promise.PassAs<media::CdmPromise>());
+  SavePromise(session_id, promise.Pass());
   manager_->UpdateSession(
       cdm_id_,
       session_id,
@@ -127,7 +127,7 @@ void ProxyMediaKeys::CloseSession(const std::string& web_session_id,
     return;
   }
 
-  SavePromise(session_id, promise.PassAs<media::CdmPromise>());
+  SavePromise(session_id, promise.Pass());
   manager_->ReleaseSession(cdm_id_, session_id);
 }
 

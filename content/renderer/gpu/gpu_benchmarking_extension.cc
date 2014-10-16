@@ -546,9 +546,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
     context.render_view_impl()->QueueSyntheticGesture(
-        gesture_params.PassAs<SyntheticGestureParams>(),
-        base::Bind(&OnSyntheticGestureCompleted,
-                   callback_and_context));
+        gesture_params.Pass(),
+        base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
     args.GetReturnValue().Set(true);
   }
@@ -640,9 +639,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
     context.render_view_impl()->QueueSyntheticGesture(
-        gesture_params.PassAs<SyntheticGestureParams>(),
-        base::Bind(&OnSyntheticGestureCompleted,
-                   callback_and_context));
+        gesture_params.Pass(),
+        base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
     args.GetReturnValue().Set(true);
   }
@@ -690,9 +688,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
     context.render_view_impl()->QueueSyntheticGesture(
-        gesture_params.PassAs<SyntheticGestureParams>(),
-        base::Bind(&OnSyntheticGestureCompleted,
-                   callback_and_context));
+        gesture_params.Pass(),
+        base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
     args.GetReturnValue().Set(true);
   }
@@ -748,9 +745,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
     context.render_view_impl()->QueueSyntheticGesture(
-        gesture_params.PassAs<SyntheticGestureParams>(),
-        base::Bind(&OnSyntheticGestureCompleted,
-                   callback_and_context));
+        gesture_params.Pass(),
+        base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
     args.GetReturnValue().Set(true);
   }

@@ -209,9 +209,7 @@ void PpapiDecryptor::LoadSession(
                                base::Bind(&PpapiDecryptor::ResumePlayback,
                                           weak_ptr_factory_.GetWeakPtr())));
 
-  CdmDelegate()->LoadSession(
-      web_session_id,
-      session_loaded_promise.PassAs<media::NewSessionCdmPromise>());
+  CdmDelegate()->LoadSession(web_session_id, session_loaded_promise.Pass());
 }
 
 void PpapiDecryptor::UpdateSession(
@@ -232,11 +230,10 @@ void PpapiDecryptor::UpdateSession(
       new SessionUpdatedPromise(promise.Pass(),
                                 base::Bind(&PpapiDecryptor::ResumePlayback,
                                            weak_ptr_factory_.GetWeakPtr())));
-  CdmDelegate()->UpdateSession(
-      web_session_id,
-      response,
-      response_length,
-      session_updated_promise.PassAs<media::SimpleCdmPromise>());
+  CdmDelegate()->UpdateSession(web_session_id,
+                               response,
+                               response_length,
+                               session_updated_promise.Pass());
 }
 
 void PpapiDecryptor::CloseSession(const std::string& web_session_id,

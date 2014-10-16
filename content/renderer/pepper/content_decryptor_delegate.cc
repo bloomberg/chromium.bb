@@ -363,7 +363,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   PP_Var certificate_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           certificate_length, certificate);
@@ -377,7 +377,7 @@ void ContentDecryptorDelegate::CreateSession(
     int init_data_length,
     MediaKeys::SessionType session_type,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
@@ -392,7 +392,7 @@ void ContentDecryptorDelegate::CreateSession(
 void ContentDecryptorDelegate::LoadSession(
     const std::string& web_session_id,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   plugin_decryption_interface_->LoadSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
@@ -402,7 +402,7 @@ void ContentDecryptorDelegate::UpdateSession(
     const uint8* response,
     int response_length,
     scoped_ptr<SimpleCdmPromise> promise) {
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           response_length, response);
@@ -422,7 +422,7 @@ void ContentDecryptorDelegate::CloseSession(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   plugin_decryption_interface_->CloseSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
@@ -436,7 +436,7 @@ void ContentDecryptorDelegate::RemoveSession(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   plugin_decryption_interface_->RemoveSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
@@ -450,7 +450,7 @@ void ContentDecryptorDelegate::GetUsableKeyIds(
     return;
   }
 
-  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  uint32_t promise_id = SavePromise(promise.Pass());
   plugin_decryption_interface_->GetUsableKeyIds(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }

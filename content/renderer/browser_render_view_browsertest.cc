@@ -88,8 +88,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
       new net::FailingHttpTransactionFactory(cache->GetSession(), error));
   // Throw away old version; since this is a browser test, there is no
   // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(
-      factory.PassAs<net::HttpTransactionFactory>());
+  cache->SetHttpNetworkTransactionFactoryForTesting(factory.Pass());
 }
 
 void CallOnUIThreadValidatingReturn(const base::Closure& callback,
