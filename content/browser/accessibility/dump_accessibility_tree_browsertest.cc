@@ -803,9 +803,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySub) {
   RunTest(FILE_PATH_LITERAL("sub.html"));
 }
 
-// TODO(dmazzoni): Rebaseline this test after Blink rolls past r155083.
-// See http://crbug.com/265619
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilitySvg) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySvg) {
   RunTest(FILE_PATH_LITERAL("svg.html"));
 }
 

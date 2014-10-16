@@ -240,6 +240,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
       break;
     case ui::AX_ROLE_CANVAS:
     case ui::AX_ROLE_IMAGE:
+    case ui::AX_ROLE_SVG_ROOT:
       class_name = "android.widget.Image";
       break;
     case ui::AX_ROLE_PROGRESS_INDICATOR:
