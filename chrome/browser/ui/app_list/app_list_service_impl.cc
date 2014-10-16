@@ -331,6 +331,11 @@ void AppListServiceImpl::Show() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void AppListServiceImpl::ShowForVoiceSearch(Profile* profile) {
+  ShowForProfile(profile);
+  view_delegate_->ToggleSpeechRecognition();
+}
+
 void AppListServiceImpl::ShowForAppInstall(Profile* profile,
                                            const std::string& extension_id,
                                            bool start_discovery_tracking) {

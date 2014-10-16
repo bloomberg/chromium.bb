@@ -72,6 +72,9 @@ class HotwordService : public content::NotificationObserver,
   // is opted in, false otherwise..
   bool IsOptedIntoAudioLogging();
 
+  // Returns whether always-on hotwording is enabled.
+  bool IsAlwaysOnEnabled();
+
   // Control the state of the hotword extension.
   void EnableHotwordExtension(ExtensionService* extension_service);
   void DisableHotwordExtension(ExtensionService* extension_service);

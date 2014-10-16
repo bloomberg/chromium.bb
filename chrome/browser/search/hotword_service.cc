@@ -438,6 +438,12 @@ bool HotwordService::IsOptedIntoAudioLogging() {
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioLoggingEnabled);
 }
 
+bool HotwordService::IsAlwaysOnEnabled() {
+  return
+      profile_->GetPrefs()->HasPrefPath(prefs::kHotwordAlwaysOnSearchEnabled) &&
+      profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled);
+}
+
 void HotwordService::EnableHotwordExtension(
     ExtensionService* extension_service) {
   if (extension_service)
@@ -501,6 +507,9 @@ void HotwordService::StopHotwordSession(HotwordClient* client) {
   if (!IsServiceAvailable())
     return;
 
+  // Do nothing if there's no client.
+  if (!client_)
+    return;
   DCHECK(client_ == client);
 
   client_ = NULL;

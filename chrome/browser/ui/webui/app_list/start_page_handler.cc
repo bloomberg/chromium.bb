@@ -160,6 +160,8 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   if (!service)
     return;
 
+  service->WebUILoaded();
+
   recommended_apps_ = service->recommended_apps();
   recommended_apps_->AddObserver(this);
 

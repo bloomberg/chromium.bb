@@ -77,6 +77,9 @@ class AppListService {
   // profile to local prefs as the default app list profile.
   virtual void ShowForProfile(Profile* requested_profile) = 0;
 
+  // Shows the app list, and jump to voice search. Used by always-on hotwording.
+  virtual void ShowForVoiceSearch(Profile* profile) = 0;
+
   // Shows the app list, and reveals the page that contains |extension_id|. This
   // should only be called for things that show in the app list, and only when
   // they begin or complete installing. If |start_discovery_tracking| is set,

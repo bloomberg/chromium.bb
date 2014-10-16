@@ -54,6 +54,7 @@ class AppListServiceImpl : public AppListService,
       const base::FilePath& user_data_dir) override;
   virtual void SetProfilePath(const base::FilePath& profile_path) override;
   virtual void Show() override;
+  virtual void ShowForVoiceSearch(Profile* profile) override;
   virtual void ShowForAppInstall(Profile* profile,
                                  const std::string& extension_id,
                                  bool start_discovery_tracking) override;

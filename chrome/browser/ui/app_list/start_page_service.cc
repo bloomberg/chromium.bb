@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
@@ -111,7 +112,8 @@ StartPageService::StartPageService(Profile* profile)
       recommended_apps_(new RecommendedApps(profile)),
       state_(app_list::SPEECH_RECOGNITION_OFF),
       speech_button_toggled_manually_(false),
-      speech_result_obtained_(false) {
+      speech_result_obtained_(false),
+      webui_finished_loading_(false) {
   // If experimental hotwording is enabled, then we're always "ready".
   // Transitioning into the "hotword recognizing" state is handled by the
   // hotword extension.
@@ -154,9 +156,16 @@ void StartPageService::AppListHidden() {
 }
 
 void StartPageService::ToggleSpeechRecognition() {
+  DCHECK(contents_);
   speech_button_toggled_manually_ = true;
-  contents_->GetWebUI()->CallJavascriptFunction(
-      "appList.startPage.toggleSpeechRecognition");
+  if (webui_finished_loading_) {
+    contents_->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.toggleSpeechRecognition");
+  } else {
+    pending_webui_callbacks_.push_back(
+        base::Bind(&StartPageService::ToggleSpeechRecognition,
+                   base::Unretained(this)));
+  }
 }
 
 bool StartPageService::HotwordEnabled() {
@@ -228,6 +237,18 @@ void StartPageService::Shutdown() {
   UnloadContents();
 }
 
+void StartPageService::WebUILoaded() {
+  // There's a race condition between the WebUI loading, and calling its JS
+  // functions. Specifically, calling LoadContents() doesn't mean that the page
+  // has loaded, but several code paths make this assumption. This function
+  // allows us to defer calling JS functions until after the page has finished
+  // loading.
+  webui_finished_loading_ = true;
+  for (const auto& cb : pending_webui_callbacks_)
+    cb.Run();
+  pending_webui_callbacks_.clear();
+}
+
 void StartPageService::LoadContents() {
   contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(profile_)));
@@ -250,6 +271,7 @@ void StartPageService::LoadContents() {
 
 void StartPageService::UnloadContents() {
   contents_.reset();
+  webui_finished_loading_ = false;
 }
 
 }  // namespace app_list

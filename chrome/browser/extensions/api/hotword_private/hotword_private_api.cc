@@ -11,6 +11,8 @@
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/event_router.h"
@@ -157,8 +159,20 @@ bool HotwordPrivateSetHotwordSessionStateFunction::RunSync() {
 bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
   HotwordService* hotword_service =
       HotwordServiceFactory::GetForProfile(GetProfile());
-  if (hotword_service && hotword_service->client())
-    hotword_service->client()->OnHotwordRecognized();
+  if (hotword_service) {
+    if (hotword_service->client()) {
+      hotword_service->client()->OnHotwordRecognized();
+    } else if (HotwordService::IsExperimentalHotwordingEnabled() &&
+               hotword_service->IsAlwaysOnEnabled()) {
+      Browser* browser = GetCurrentBrowser();
+      // If a Browser does not exist, fall back to the universally available,
+      // but not recommended, way.
+      AppListService* app_list_service = AppListService::Get(
+          browser ? browser->host_desktop_type() : chrome::GetActiveDesktop());
+      CHECK(app_list_service);
+      app_list_service->ShowForVoiceSearch(GetProfile());
+    }
+  }
   return true;
 }
 

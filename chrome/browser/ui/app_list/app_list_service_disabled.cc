@@ -33,6 +33,7 @@ class AppListServiceDisabled : public AppListService {
 
   virtual void Show() override {}
   virtual void ShowForProfile(Profile* profile) override {}
+  virtual void ShowForVoiceSearch(Profile* profile) override {}
   virtual void ShowForAppInstall(Profile* profile,
                                  const std::string& extension_id,
                                  bool start_discovery_tracking) override {}
