@@ -1593,11 +1593,6 @@
           'uk', 'vi', 'zh-CN', 'zh-TW',
         ],
 
-        # The Mac SDK is set for iOS builds and passed through to Mac
-        # sub-builds. This allows the Mac sub-build SDK in an iOS build to be
-        # overridden from the command line the same way it is for a Mac build.
-        'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py 10.6)',
-
         # iOS SDK and deployment target support.  The |ios_sdk| value is left
         # blank so that when it is set in the project files it will be the
         # "current" iOS SDK.  Forcing a specific SDK even if it is "current"
@@ -1838,7 +1833,13 @@
           # someplace that Xcode doesn't know about, set mac_sdk_path to the
           # path to the SDK; when set to a non-empty string, SDK detection
           # based on mac_sdk_min will be bypassed entirely.
-          'mac_sdk_min%': '10.6',
+          'conditions': [
+            ['OS=="ios"', {
+              'mac_sdk_min%': '10.8',
+            }, {  # else OS!="ios"
+              'mac_sdk_min%': '10.6',
+            }],
+          ],
           'mac_sdk_path%': '',
 
           'mac_deployment_target%': '10.6',
@@ -1862,9 +1863,14 @@
           }, { # else: branding!="Chrome"
             'mac_product_name%': 'Chromium',
           }],
-
-          ['branding=="Chrome" and buildtype=="Official"', {
+          # Official mac builds require a specific OS X SDK, but iOS and
+          # non-official mac builds do not.
+          ['branding=="Chrome" and buildtype=="Official" and OS==mac', {
             'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py --verify <(mac_sdk_min) --sdk_path=<(mac_sdk_path))',
+          }, {
+            'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py <(mac_sdk_min))',
+          }],
+          ['branding=="Chrome" and buildtype=="Official"', {
             # Enable uploading crash dumps.
             'mac_breakpad_uploads%': 1,
             # Enable dumping symbols at build time for use by Mac Breakpad.
@@ -1872,7 +1878,6 @@
             # Enable Keystone auto-update support.
             'mac_keystone%': 1,
           }, { # else: branding!="Chrome" or buildtype!="Official"
-            'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py <(mac_sdk_min))',
             'mac_breakpad_uploads%': 0,
             'mac_breakpad%': 0,
             'mac_keystone%': 0,
