@@ -372,9 +372,4 @@ def GetPreferredTryMasters(project, change):
     'tryserver.blink': {
       'linux_blink_rel': set(['defaulttests']),
     },
-    'tryserver.chromium.gpu': {
-      'linux_gpu': set(['defaulttests']),
-      'mac_gpu': set(['defaulttests']),
-      'win_gpu': set(['defaulttests']),
-    },
   }
