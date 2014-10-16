@@ -42,6 +42,7 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
 
  private:
   gfx::AcceleratedWidget window_;
+  gfx::AcceleratedWidget child_window_;
   HDC device_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceWGL);

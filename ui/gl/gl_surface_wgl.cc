@@ -99,16 +99,18 @@ class DisplayWGL {
       return false;
     }
 
-    window_handle_ = CreateWindow(
-        reinterpret_cast<wchar_t*>(window_class_),
-        L"",
-        WS_OVERLAPPEDWINDOW,
-        0, 0,
-        100, 100,
-        NULL,
-        NULL,
-        NULL,
-        NULL);
+    window_handle_ = CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+                                    reinterpret_cast<wchar_t*>(window_class_),
+                                    L"",
+                                    WS_OVERLAPPEDWINDOW,
+                                    0,
+                                    0,
+                                    100,
+                                    100,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    NULL);
     if (!window_handle_) {
       LOG(ERROR) << "CreateWindow failed.";
       return false;
@@ -175,8 +177,7 @@ HDC GLSurfaceWGL::GetDisplayDC() {
 }
 
 NativeViewGLSurfaceWGL::NativeViewGLSurfaceWGL(gfx::AcceleratedWidget window)
-    : window_(window),
-      device_context_(NULL) {
+    : window_(window), child_window_(NULL), device_context_(NULL) {
   DCHECK(window);
 }
 
@@ -187,16 +188,36 @@ NativeViewGLSurfaceWGL::~NativeViewGLSurfaceWGL() {
 bool NativeViewGLSurfaceWGL::Initialize() {
   DCHECK(!device_context_);
 
-  DWORD process_id;
-  GetWindowThreadProcessId(window_, &process_id);
-  if (process_id != GetCurrentProcessId()) {
-    LOG(ERROR) << "Can't use window created in " << process_id
-               << " with wgl in " << GetCurrentProcessId();
+  RECT rect;
+  if (!GetClientRect(window_, &rect)) {
+    LOG(ERROR) << "GetClientRect failed.\n";
     Destroy();
     return false;
   }
 
-  device_context_ = GetDC(window_);
+  // Create a child window. WGL has problems using a window handle owned by
+  // another process.
+  child_window_ =
+      CreateWindowEx(WS_EX_NOPARENTNOTIFY,
+                     reinterpret_cast<wchar_t*>(g_display->window_class()),
+                     L"",
+                     WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE,
+                     0,
+                     0,
+                     rect.right - rect.left,
+                     rect.bottom - rect.top,
+                     window_,
+                     NULL,
+                     NULL,
+                     NULL);
+  if (!child_window_) {
+    LOG(ERROR) << "CreateWindow failed.\n";
+    Destroy();
+    return false;
+  }
+
+  // The GL context will render to this window.
+  device_context_ = GetDC(child_window_);
   if (!device_context_) {
     LOG(ERROR) << "Unable to get device context for window.";
     Destroy();
@@ -215,9 +236,13 @@ bool NativeViewGLSurfaceWGL::Initialize() {
 }
 
 void NativeViewGLSurfaceWGL::Destroy() {
-  if (window_ && device_context_)
-    ReleaseDC(window_, device_context_);
+  if (child_window_ && device_context_)
+    ReleaseDC(child_window_, device_context_);
 
+  if (child_window_)
+    DestroyWindow(child_window_);
+
+  child_window_ = NULL;
   device_context_ = NULL;
 }
 
@@ -230,13 +255,27 @@ bool NativeViewGLSurfaceWGL::SwapBuffers() {
       "width", GetSize().width(),
       "height", GetSize().height());
 
+  // Resize the child window to match the parent before swapping. Do not repaint
+  // it as it moves.
+  RECT rect;
+  if (!GetClientRect(window_, &rect))
+    return false;
+  if (!MoveWindow(child_window_,
+                  0,
+                  0,
+                  rect.right - rect.left,
+                  rect.bottom - rect.top,
+                  FALSE)) {
+    return false;
+  }
+
   DCHECK(device_context_);
   return ::SwapBuffers(device_context_) == TRUE;
 }
 
 gfx::Size NativeViewGLSurfaceWGL::GetSize() {
   RECT rect;
-  BOOL result = GetClientRect(window_, &rect);
+  BOOL result = GetClientRect(child_window_, &rect);
   DCHECK(result);
   return gfx::Size(rect.right - rect.left, rect.bottom - rect.top);
 }
