@@ -82,7 +82,7 @@ define(function() {
     aStack.push(a);
     bStack.push(b);
     var size = 0, result = true;
-    // Recursively compare objects and arrays.
+    // Recursively compare Maps, objects and arrays.
     if (className == '[object Array]' || isArrayBufferClass(className)) {
       // Compare array lengths to determine if a deep comparison is necessary.
       size = a.length;
@@ -92,6 +92,16 @@ define(function() {
         while (size--) {
           if (!(result = eq(a[size], b[size], aStack, bStack)))
             break;
+        }
+      }
+    } else if (className == '[object Map]') {
+      result = a.size == b.size;
+      if (result) {
+        var entries = a.entries();
+        for (var e = entries.next(); result && !e.done; e = entries.next()) {
+          var key = e.value[0];
+          var value = e.value[1];
+          result = b.has(key) && eq(value, b.get(key), aStack, bStack);
         }
       }
     } else {

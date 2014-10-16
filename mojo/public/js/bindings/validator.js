@@ -19,7 +19,9 @@ define("mojo/public/js/bindings/validator", [
     MESSAGE_HEADER_INVALID_FLAG_COMBINATION:
         'VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION',
     MESSAGE_HEADER_MISSING_REQUEST_ID:
-        'VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID'
+        'VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID',
+    DIFFERENT_SIZED_ARRAYS_IN_MAP:
+        'VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP',
   };
 
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
@@ -177,7 +179,7 @@ define("mojo/public/js/bindings/validator", [
   }
 
   Validator.prototype.validateStructPointer = function(
-        offset, structClass, nullable) {
+      offset, structClass, nullable) {
     var structOffset = this.decodePointer(offset);
     if (structOffset === null)
       return validationError.ILLEGAL_POINTER;
@@ -187,6 +189,62 @@ define("mojo/public/js/bindings/validator", [
           validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
 
     return structClass.validate(this, structOffset);
+  }
+
+  // This method assumes that the array at arrayPointerOffset has
+  // been validated.
+
+  Validator.prototype.arrayLength = function(arrayPointerOffset) {
+    var arrayOffset = this.decodePointer(arrayPointerOffset);
+    return this.message.buffer.getUint32(arrayOffset + 4);
+  }
+
+  Validator.prototype.validateMapPointer = function(
+      offset, mapIsNullable, keyClass, valueClass, valueIsNullable) {
+    // Validate the implicit map struct:
+    // struct {array<keyClass> keys; array<valueClass> values};
+    var structOffset = this.decodePointer(offset);
+    if (structOffset === null)
+      return validationError.ILLEGAL_POINTER;
+
+    if (structOffset === NULL_MOJO_POINTER)
+      return mapIsNullable ?
+          validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
+
+    var mapEncodedSize = codec.kStructHeaderSize + codec.kMapStructPayloadSize;
+    var err = this.validateStructHeader(structOffset, mapEncodedSize, 2);
+    if (err !== validationError.NONE)
+        return err;
+
+    // Validate the keys array.
+    var keysArrayPointerOffset = structOffset + codec.kStructHeaderSize;
+    err = this.validateArrayPointer(
+        keysArrayPointerOffset, keyClass.encodedSize, keyClass, false, [0], 0);
+    if (err !== validationError.NONE)
+        return err;
+
+    // Validate the values array.
+    var valuesArrayPointerOffset = keysArrayPointerOffset + 8;
+    var valuesArrayDimensions = [0]; // Validate the actual length below.
+    if (valueClass instanceof codec.ArrayOf)
+      valuesArrayDimensions =
+          valuesArrayDimensions.concat(valueClass.dimensions());
+    var err = this.validateArrayPointer(valuesArrayPointerOffset,
+                                        valueClass.encodedSize,
+                                        valueClass,
+                                        valueIsNullable,
+                                        valuesArrayDimensions,
+                                        0);
+    if (err !== validationError.NONE)
+        return err;
+
+    // Validate the lengths of the keys and values arrays.
+    var keysArrayLength = this.arrayLength(keysArrayPointerOffset);
+    var valuesArrayLength = this.arrayLength(valuesArrayPointerOffset);
+    if (keysArrayLength != valuesArrayLength)
+      return validationError.DIFFERENT_SIZED_ARRAYS_IN_MAP;
+
+    return validationError.NONE;
   }
 
   Validator.prototype.validateStringPointer = function(offset, nullable) {
@@ -234,8 +292,7 @@ define("mojo/public/js/bindings/validator", [
       return this.validateHandleElements(elementsOffset, numElements, nullable);
     if (isStringClass(elementType))
       return this.validateArrayElements(
-          elementsOffset, numElements, codec.Uint8, nullable,
-          expectedDimensionSizes, currentDimension + 1)
+          elementsOffset, numElements, codec.Uint8, nullable, [0], 0);
     if (elementType instanceof codec.PointerTo)
       return this.validateStructElements(
           elementsOffset, numElements, elementType.cls, nullable);

@@ -27,6 +27,7 @@ define("mojo/public/js/bindings/codec", [
   var kStructHeaderSize = 8;
   var kMessageHeaderSize = 16;
   var kMessageWithRequestIDHeaderSize = 24;
+  var kMapStructPayloadSize = 16;
 
   var kStructHeaderNumBytesOffset = 0;
   var kStructHeaderNumFieldsOffset = 4;
@@ -178,6 +179,26 @@ define("mojo/public/js/bindings/codec", [
       return null;
     }
     return this.decodeAndCreateDecoder(pointer).decodeString();
+  };
+
+  Decoder.prototype.decodeMap = function(keyClass, valueClass) {
+    this.skip(4); // numberOfBytes
+    this.skip(4); // numberOfFields
+    var keys = this.decodeArrayPointer(keyClass);
+    var values = this.decodeArrayPointer(valueClass);
+    var val = new Map();
+    for (var i = 0; i < keys.length; i++)
+      val.set(keys[i], values[i]);
+    return val;
+  };
+
+  Decoder.prototype.decodeMapPointer = function(keyClass, valueClass) {
+    var pointer = this.decodePointer();
+    if (!pointer) {
+      return null;
+    }
+    var decoder = this.decodeAndCreateDecoder(pointer);
+    return decoder.decodeMap(keyClass, valueClass);
   };
 
   // Encoder ------------------------------------------------------------------
@@ -347,6 +368,31 @@ define("mojo/public/js/bindings/codec", [
     var encodedSize = kArrayHeaderSize + unicode.utf8Length(val);
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeString(val);
+  };
+
+  Encoder.prototype.encodeMap = function(keyClass, valueClass, val) {
+    var keys = new Array(val.size);
+    var values = new Array(val.size);
+    var i = 0;
+    val.forEach(function(value, key) {
+      values[i] = value;
+      keys[i++] = key;
+    });
+    this.writeUint32(kStructHeaderSize + kMapStructPayloadSize);
+    this.writeUint32(2); // two fields: keys, values
+    this.encodeArrayPointer(keyClass, keys);
+    this.encodeArrayPointer(valueClass, values);
+  }
+
+  Encoder.prototype.encodeMapPointer = function(keyClass, valueClass, val) {
+    if (val == null) {
+      // Also handles undefined, since undefined == null.
+      this.encodePointer(val);
+      return;
+    }
+    var encodedSize = kStructHeaderSize + kMapStructPayloadSize;
+    var encoder = this.createAndEncodeEncoder(encodedSize);
+    encoder.encodeMap(keyClass, valueClass, val);
   };
 
   // Message ------------------------------------------------------------------
@@ -660,11 +706,17 @@ define("mojo/public/js/bindings/codec", [
 
   NullablePointerTo.prototype = Object.create(PointerTo.prototype);
 
-  function ArrayOf(cls) {
+  function ArrayOf(cls, length) {
     this.cls = cls;
+    this.length = length || 0;
   }
 
   ArrayOf.prototype.encodedSize = 8;
+
+  ArrayOf.prototype.dimensions = function() {
+    return [this.length].concat(
+      (this.cls instanceof ArrayOf) ? this.cls.dimensions() : []);
+  }
 
   ArrayOf.prototype.decode = function(decoder) {
     return decoder.decodeArrayPointer(this.cls);
@@ -710,6 +762,7 @@ define("mojo/public/js/bindings/codec", [
   exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
   exports.MessageReader = MessageReader;
   exports.kArrayHeaderSize = kArrayHeaderSize;
+  exports.kMapStructPayloadSize = kMapStructPayloadSize;
   exports.kStructHeaderSize = kStructHeaderSize;
   exports.kEncodedInvalidHandleValue = kEncodedInvalidHandleValue;
   exports.kMessageHeaderSize = kMessageHeaderSize;

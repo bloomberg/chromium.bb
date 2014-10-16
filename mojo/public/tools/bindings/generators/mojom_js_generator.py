@@ -54,6 +54,8 @@ def JavaScriptDefaultValue(field):
     return "null"
   if mojom.IsArrayKind(field.kind):
     return "null"
+  if mojom.IsMapKind(field.kind):
+    return "null"
   if mojom.IsInterfaceKind(field.kind) or \
      mojom.IsInterfaceRequestKind(field.kind):
     return _kind_to_javascript_default_value[mojom.MSGPIPE]
@@ -107,21 +109,27 @@ def CodecType(kind):
     return "new codec.%s(%s)" % (pointer_type, JavaScriptType(kind))
   if mojom.IsArrayKind(kind):
     array_type = "NullableArrayOf" if mojom.IsNullableKind(kind) else "ArrayOf"
+    array_length = "" if kind.length is None else ", %d" % kind.length
     element_type = "codec.PackedBool" if mojom.IsBoolKind(kind.kind) \
         else CodecType(kind.kind)
-    return "new codec.%s(%s)" % (array_type, element_type)
+    return "new codec.%s(%s%s)" % (array_type, element_type, array_length)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return CodecType(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
     return _kind_to_codec_type[mojom.INT32]
   return kind
 
+def MapCodecType(kind):
+  return "codec.PackedBool" if mojom.IsBoolKind(kind) else CodecType(kind)
 
 def JavaScriptDecodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
     return "decodeStruct(%s)" % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "decodeStructPointer(%s)" % JavaScriptType(kind)
+  if mojom.IsMapKind(kind):
+    return "decodeMapPointer(%s, %s)" % \
+        (MapCodecType(kind.key_kind), MapCodecType(kind.value_kind))
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "decodeArrayPointer(codec.PackedBool)"
   if mojom.IsArrayKind(kind):
@@ -137,6 +145,9 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeStruct(%s, " % CodecType(kind)
   if mojom.IsStructKind(kind):
     return "encodeStructPointer(%s, " % JavaScriptType(kind)
+  if mojom.IsMapKind(kind):
+    return "encodeMapPointer(%s, %s, " % \
+        (MapCodecType(kind.key_kind), MapCodecType(kind.value_kind))
   if mojom.IsArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "encodeArrayPointer(codec.PackedBool, ";
   if mojom.IsArrayKind(kind):
@@ -185,6 +196,17 @@ def JavaScriptValidateStructParams(packed_field):
   field_offset = JavaScriptFieldOffset(packed_field)
   struct_type = JavaScriptType(packed_field.field.kind)
   return "%s, %s, %s" % (field_offset, struct_type, nullable)
+
+
+def JavaScriptValidateMapParams(packed_field):
+  nullable = JavaScriptNullableParam(packed_field)
+  field_offset = JavaScriptFieldOffset(packed_field)
+  keys_type = MapCodecType(packed_field.field.kind.key_kind)
+  values_kind = packed_field.field.kind.value_kind;
+  values_type = MapCodecType(values_kind)
+  values_nullable = "true" if mojom.IsNullableKind(values_kind) else "false"
+  return "%s, %s, %s, %s, %s" % \
+      (field_offset, nullable, keys_type, values_type, values_nullable)
 
 
 def JavaScriptValidateStringParams(packed_field):
@@ -237,6 +259,9 @@ def IsStringPointerField(field):
 def IsStructPointerField(field):
   return mojom.IsStructKind(field.kind)
 
+def IsMapPointerField(field):
+  return mojom.IsMapKind(field.kind)
+
 def IsHandleField(field):
   return mojom.IsAnyHandleKind(field.kind)
 
@@ -252,6 +277,7 @@ class Generator(generator.Generator):
     "field_offset": JavaScriptFieldOffset,
     "has_callbacks": mojom.HasCallbacks,
     "is_array_pointer_field": IsArrayPointerField,
+    "is_map_pointer_field": IsMapPointerField,
     "is_struct_pointer_field": IsStructPointerField,
     "is_string_pointer_field": IsStringPointerField,
     "is_handle_field": IsHandleField,
@@ -259,6 +285,7 @@ class Generator(generator.Generator):
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
     "validate_handle_params": JavaScriptValidateHandleParams,
+    "validate_map_params": JavaScriptValidateMapParams,
     "validate_string_params": JavaScriptValidateStringParams,
     "validate_struct_params": JavaScriptValidateStructParams,
   }

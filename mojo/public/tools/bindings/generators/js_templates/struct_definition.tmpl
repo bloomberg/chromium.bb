@@ -55,6 +55,10 @@
     // validate {{struct.name}}.{{field_name}}
     err = messageValidator.validateStructPointer({{packed_field|validate_struct_params}});
     {{check_err()}}
+{%-   elif packed_field.field|is_map_pointer_field %}
+    // validate {{struct.name}}.{{field_name}}
+    err = messageValidator.validateMapPointer({{packed_field|validate_map_params}});
+    {{check_err()}}
 {%-   elif packed_field.field|is_handle_field %}
     // validate {{struct.name}}.{{field_name}}
     err = messageValidator.validateHandle({{packed_field|validate_handle_params}})

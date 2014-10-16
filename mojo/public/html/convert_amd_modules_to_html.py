@@ -70,7 +70,7 @@ def Parse(amd_module):
         AddImportNames(module, m.group(1))
         state = "body"
         continue
-      raise Exception, "Unknown import declaration"
+      raise Exception, "Unknown import declaration:" + line
     if state == "body":
       if end_body_regexp.search(line):
         module.body = "\n".join(body_lines)

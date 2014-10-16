@@ -108,4 +108,34 @@ struct ScopedConstants {
   int32 f6 = ALSO_TEN;
 };
 
+// Used to verify that all possible Map key field types can be encoded and
+// decoded successfully.
+
+struct MapKeyTypes {
+  map<bool, bool> f0;
+  map<int8, int8> f1;
+  map<uint8, uint8> f2;
+  map<int16, int16> f3;
+  map<uint16, uint16> f4;
+  map<int32, int32> f5;
+  map<uint32, uint32> f6;
+  map<int64, int64> f7;
+  map<uint64, uint64> f8;
+  map<float, float> f9;
+  map<double, double> f10;
+  map<string, string> f11;
+};
+
+// Used to verify that some common or difficult value types can be encoded and
+// decoded successfully.
+
+struct MapValueTypes {
+  map<string, array<string>> f0;
+  map<string, array<string>?> f1;
+  map<string, array<string?>> f2;
+  map<string, array<string, 2>> f3;
+  map<string, array<array<string, 2>?>> f4;
+  map<string, array<array<string, 2>, 1>> f5;
+};
+
 }
