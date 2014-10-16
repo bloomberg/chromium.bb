@@ -140,7 +140,7 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
 
     public void showActionBar() {
         mOverlayButton.setVisibility(View.INVISIBLE);
-        getActionBar().show();
+        getSupportActionBar().show();
 
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
@@ -149,7 +149,7 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
     @SuppressLint("InlinedApi")
     public void hideActionBar() {
         mOverlayButton.setVisibility(View.VISIBLE);
-        getActionBar().hide();
+        getSupportActionBar().hide();
 
         View decorView = getWindow().getDecorView();
 
