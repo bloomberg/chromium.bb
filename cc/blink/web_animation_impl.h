@@ -30,6 +30,7 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
 
   // blink::WebCompositorAnimation implementation
   virtual int id();
+  virtual int group();
   virtual TargetProperty targetProperty() const;
   virtual double iterations() const;
   virtual void setIterations(double iterations);

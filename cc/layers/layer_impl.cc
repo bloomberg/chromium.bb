@@ -1580,7 +1580,8 @@ int LayerImpl::NumDescendantsThatDrawContent() const {
 
 void LayerImpl::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
-    Animation::TargetProperty target_property) {
+    Animation::TargetProperty target_property,
+    int group) {
   if (target_property == Animation::ScrollOffset)
     layer_tree_impl_->InputScrollAnimationFinished();
 }

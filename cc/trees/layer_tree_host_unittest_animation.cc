@@ -146,9 +146,9 @@ class LayerTreeHostAnimationTestAddAnimation
     }
   }
 
-  virtual void NotifyAnimationStarted(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) override {
     received_animation_started_notification_ = true;
     start_time_ = monotonic_time;
     if (num_begin_frames_) {
@@ -241,7 +241,8 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
 
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+      Animation::TargetProperty target_property,
+      int group) override {
     // Animations on the impl-side controller only get deleted during a commit,
     // so we need to schedule a commit.
     layer_tree_host()->SetNeedsCommit();
@@ -368,7 +369,8 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
 
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+      Animation::TargetProperty target_property,
+      int group) override {
     // Replace animated commits with an empty tree.
     layer_tree_host()->SetRootLayer(make_scoped_refptr<Layer>(NULL));
   }
@@ -560,9 +562,9 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     PostAddAnimationToMainThread(content_.get());
   }
 
-  virtual void NotifyAnimationStarted(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) override {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->children()[0]->
         layer_animation_controller();
@@ -621,7 +623,8 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
 
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+      Animation::TargetProperty target_property,
+      int group) override {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
     Animation* animation =
@@ -858,15 +861,16 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
     PostAddAnimationToMainThread(content_.get());
   }
 
-  virtual void NotifyAnimationStarted(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) override {
     started_times_++;
   }
 
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+      Animation::TargetProperty target_property,
+      int group) override {
     EndTest();
   }
 
@@ -908,16 +912,17 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotVisible
     layer_tree_host()->SetVisible(false);
   }
 
-  virtual void NotifyAnimationStarted(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) override {
     EXPECT_FALSE(visible_);
     started_times_++;
   }
 
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+      Animation::TargetProperty target_property,
+      int group) override {
     EXPECT_FALSE(visible_);
     EXPECT_EQ(1, started_times_);
     EndTest();
@@ -991,9 +996,9 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     }
   }
 
-  virtual void NotifyAnimationStarted(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) override {
     if (TestEnded())
       return;
     started_times_++;

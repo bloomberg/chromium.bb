@@ -94,8 +94,15 @@ WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
 WebCompositorAnimation* WebCompositorSupportImpl::createAnimation(
     const blink::WebCompositorAnimationCurve& curve,
     blink::WebCompositorAnimation::TargetProperty target,
+#ifdef WEB_COMPOSITOR_SUPPORT_CREATE_ANIMATION_SUPPORTS_GROUP
+    int group_id,
+#endif
     int animation_id) {
+#ifdef WEB_COMPOSITOR_SUPPORT_CREATE_ANIMATION_SUPPORTS_GROUP
+  return new WebCompositorAnimationImpl(curve, target, animation_id, group_id);
+#else
   return new WebCompositorAnimationImpl(curve, target, animation_id, 0);
+#endif
 }
 
 WebFilterAnimationCurve*

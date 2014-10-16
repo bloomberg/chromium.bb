@@ -91,11 +91,12 @@ class TestHooks : public AnimationDelegate {
 
   // Implementation of AnimationDelegate:
   virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                                      Animation::TargetProperty target_property)
-      override {}
+                                      Animation::TargetProperty target_property,
+                                      int group) override {}
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override {}
+      Animation::TargetProperty target_property,
+      int group) override {}
 
   virtual void RequestNewOutputSurface(bool fallback) = 0;
 };

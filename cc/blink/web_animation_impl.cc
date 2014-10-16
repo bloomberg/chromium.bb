@@ -73,6 +73,10 @@ int WebCompositorAnimationImpl::id() {
   return animation_->id();
 }
 
+int WebCompositorAnimationImpl::group() {
+  return animation_->group();
+}
+
 blink::WebCompositorAnimation::TargetProperty
 WebCompositorAnimationImpl::targetProperty() const {
   return static_cast<WebCompositorAnimationImpl::TargetProperty>(

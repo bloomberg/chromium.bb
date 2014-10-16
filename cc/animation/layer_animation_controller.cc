@@ -315,8 +315,8 @@ void LayerAnimationController::NotifyAnimationStarted(
     FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                       OnAnimationStarted(event));
     if (layer_animation_delegate_)
-      layer_animation_delegate_->NotifyAnimationStarted(event.monotonic_time,
-                                                        event.target_property);
+      layer_animation_delegate_->NotifyAnimationStarted(
+          event.monotonic_time, event.target_property, event.group_id);
     return;
   }
 
@@ -332,7 +332,7 @@ void LayerAnimationController::NotifyAnimationStarted(
                         OnAnimationStarted(event));
       if (layer_animation_delegate_)
         layer_animation_delegate_->NotifyAnimationStarted(
-            event.monotonic_time, event.target_property);
+            event.monotonic_time, event.target_property, event.group_id);
 
       return;
     }
@@ -343,8 +343,8 @@ void LayerAnimationController::NotifyAnimationFinished(
     const AnimationEvent& event) {
   if (event.is_impl_only) {
     if (layer_animation_delegate_)
-      layer_animation_delegate_->NotifyAnimationFinished(event.monotonic_time,
-                                                         event.target_property);
+      layer_animation_delegate_->NotifyAnimationFinished(
+          event.monotonic_time, event.target_property, event.group_id);
     return;
   }
 
@@ -354,7 +354,7 @@ void LayerAnimationController::NotifyAnimationFinished(
       animations_[i]->set_received_finished_event(true);
       if (layer_animation_delegate_)
         layer_animation_delegate_->NotifyAnimationFinished(
-            event.monotonic_time, event.target_property);
+            event.monotonic_time, event.target_property, event.group_id);
 
       return;
     }

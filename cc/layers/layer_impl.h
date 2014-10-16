@@ -111,12 +111,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual bool IsActive() const override;
 
   // AnimationDelegate implementation.
-  virtual void NotifyAnimationStarted(
-      base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override{};
+  virtual void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) override{};
   virtual void NotifyAnimationFinished(
       base::TimeTicks monotonic_time,
-      Animation::TargetProperty target_property) override;
+      Animation::TargetProperty target_property,
+      int group) override;
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
