@@ -1865,7 +1865,7 @@
           }],
           # Official mac builds require a specific OS X SDK, but iOS and
           # non-official mac builds do not.
-          ['branding=="Chrome" and buildtype=="Official" and OS==mac', {
+          ['branding=="Chrome" and buildtype=="Official" and OS=="mac"', {
             'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py --verify <(mac_sdk_min) --sdk_path=<(mac_sdk_path))',
           }, {
             'mac_sdk%': '<!(python <(DEPTH)/build/mac/find_sdk.py <(mac_sdk_min))',
