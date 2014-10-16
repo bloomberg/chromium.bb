@@ -820,7 +820,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
   base::FilePath src_local_disk_file_path;
   base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
-  int data_size = ARRAYSIZE_UNSAFE(test_data);
+  int data_size = arraysize(test_data);
   base::WriteFile(src_local_disk_file_path, test_data, data_size);
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -851,8 +851,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileFailureByQuota) {
   base::FilePath src_local_disk_file_path;
   base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
-  base::WriteFile(src_local_disk_file_path, test_data,
-                       ARRAYSIZE_UNSAFE(test_data));
+  base::WriteFile(src_local_disk_file_path, test_data, arraysize(test_data));
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
 

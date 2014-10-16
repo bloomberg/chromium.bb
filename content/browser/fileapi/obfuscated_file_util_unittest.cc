@@ -1784,7 +1784,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   const FileSystemURL empty_path = CreateURL(base::FilePath());
   scoped_ptr<FileSystemOperationContext> context;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPath); ++i) {
+  for (size_t i = 0; i < arraysize(kPath); ++i) {
     bool created = false;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::File::FILE_OK,
@@ -1807,7 +1807,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   EXPECT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), empty_path, &entries));
-  EXPECT_EQ(ARRAYSIZE_UNSAFE(kPath) - 1, entries.size());
+  EXPECT_EQ(arraysize(kPath) - 1, entries.size());
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {

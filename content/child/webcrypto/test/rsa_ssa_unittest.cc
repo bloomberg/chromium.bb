@@ -1103,8 +1103,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
       {blink::WebCryptoAlgorithmIdSha512, blink::WebCryptoKeyUsageVerify,
        "RS512"}};
 
-  for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
-       ++test_index) {
+  for (size_t test_index = 0; test_index < arraysize(kTests); ++test_index) {
     SCOPED_TRACE(test_index);
     const TestCase& test = kTests[test_index];
 
@@ -1181,7 +1180,7 @@ TEST(WebCryptoRsaSsaTest, ImportJwkRsaFailures) {
 
   // Fail if either "n" or "e" is not present or malformed.
   const std::string kKtyParmName[] = {"n", "e"};
-  for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(kKtyParmName); ++idx) {
+  for (size_t idx = 0; idx < arraysize(kKtyParmName); ++idx) {
     // Fail on missing parameter.
     dict.Remove(kKtyParmName[idx], NULL);
     EXPECT_NE(Status::Success(),

@@ -104,7 +104,7 @@ int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
     { MockKeyboard::RIGHT_ALT, ui::EF_ALT_DOWN },
   };
   int flags = 0;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kModifierMap); ++i) {
+  for (size_t i = 0; i < arraysize(kModifierMap); ++i) {
     if (kModifierMap[i].src & modifiers) {
       flags |= kModifierMap[i].dst;
     }
@@ -1003,7 +1003,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     input_mode = params.b;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInputModeTestCases); i++) {
+    for (size_t i = 0; i < arraysize(kInputModeTestCases); i++) {
       const InputModeTestCase* test_case = &kInputModeTestCases[i];
       std::string javascript =
           base::StringPrintf("document.getElementById('%s').focus();",
@@ -1098,7 +1098,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
     {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\xC548\xB155"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kImeMessages); i++) {
+  for (size_t i = 0; i < arraysize(kImeMessages); i++) {
     const ImeMessage* ime_message = &kImeMessages[i];
     switch (ime_message->command) {
       case IME_INITIALIZE:
@@ -1192,7 +1192,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     { blink::WebTextDirectionRightToLeft, L"\x000A" L"rtl,rtl" },
     { blink::WebTextDirectionLeftToRight, L"\x000A" L"ltr,ltr" },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTextDirection); ++i) {
+  for (size_t i = 0; i < arraysize(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.
     ExecuteJavaScript("document.getElementById('test').focus();");
     view()->OnSetTextDirection(kTextDirection[i].direction);
@@ -1280,7 +1280,7 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
     MockKeyboard::LAYOUT_UNITED_STATES,
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLayouts); ++i) {
+  for (size_t i = 0; i < arraysize(kLayouts); ++i) {
     // For each key code, we send three keyboard events.
     //  * we press only the key;
     //  * we press the key and a left-shift key, and;
@@ -1299,7 +1299,7 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
     };
 
     MockKeyboard::Layout layout = kLayouts[i];
-    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(kModifierData); ++j) {
+    for (size_t j = 0; j < arraysize(kModifierData); ++j) {
       // Virtual key codes used for this test.
       static const int kKeyCodes[] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
@@ -1325,7 +1325,7 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
       };
 
       MockKeyboard::Modifiers modifiers = kModifierData[j].modifiers;
-      for (size_t k = 0; k < ARRAYSIZE_UNSAFE(kKeyCodes); ++k) {
+      for (size_t k = 0; k < arraysize(kKeyCodes); ++k) {
         // Send a keyboard event to the RenderView object.
         // We should test a keyboard event only when the given keyboard-layout
         // driver is installed in a PC and the driver can assign a Unicode
@@ -1515,7 +1515,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLayouts); ++i) {
+  for (size_t i = 0; i < arraysize(kLayouts); ++i) {
     // Load an HTML page consisting of one <div> element.
     // This <div> element is used by the EditorClientImpl class to insert
     // characters received through the RenderWidget::OnHandleInputEvent()
@@ -1546,7 +1546,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
     };
 
     MockKeyboard::Layout layout = kLayouts[i].layout;
-    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(kModifiers); ++j) {
+    for (size_t j = 0; j < arraysize(kModifiers); ++j) {
       // Virtual key codes used for this test.
       static const int kKeyCodes[] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
@@ -1572,7 +1572,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
       };
 
       MockKeyboard::Modifiers modifiers = kModifiers[j];
-      for (size_t k = 0; k < ARRAYSIZE_UNSAFE(kKeyCodes); ++k) {
+      for (size_t k = 0; k < arraysize(kKeyCodes); ++k) {
         // Send a keyboard event to the RenderView object.
         // We should test a keyboard event only when the given keyboard-layout
         // driver is installed in a PC and the driver can assign a Unicode

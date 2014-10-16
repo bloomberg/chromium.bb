@@ -106,7 +106,7 @@ TEST(ExternalMountPointsTest, AddMountPoint) {
   };
 
   // Test adding mount points.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     EXPECT_EQ(
         kTestCases[i].success,
         mount_points->RegisterFileSystem(kTestCases[i].name,
@@ -118,7 +118,7 @@ TEST(ExternalMountPointsTest, AddMountPoint) {
   }
 
   // Test that final mount point presence state is as expected.
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     base::FilePath found_path;
     EXPECT_EQ(kTestCases[i].registered_path != NULL,
               mount_points->GetRegisteredPath(kTestCases[i].name, &found_path))
@@ -214,7 +214,7 @@ TEST(ExternalMountPointsTest, GetVirtualPath) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     // Initialize virtual path with a value.
     base::FilePath virtual_path(DRIVE FPL("/mount"));
     base::FilePath local_path(kTestCases[i].local_path);
@@ -345,7 +345,7 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     FileSystemURL cracked = mount_points->CreateCrackedFileSystemURL(
         kTestOrigin,
         storage::kFileSystemTypeExternal,
@@ -439,7 +439,7 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     std::string cracked_name;
     storage::FileSystemType cracked_type;
     std::string cracked_id;

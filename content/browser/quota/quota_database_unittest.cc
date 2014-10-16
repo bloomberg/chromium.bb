@@ -55,14 +55,14 @@ class QuotaDatabaseTest : public testing::Test {
       QuotaTableEntry("c", kStorageTypePersistent, 3),
     };
 
-    CreateV2Database(kDbFile, entries, ARRAYSIZE_UNSAFE(entries));
+    CreateV2Database(kDbFile, entries, arraysize(entries));
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
     EXPECT_TRUE(db.db_.get());
 
     typedef EntryVerifier<QuotaTableEntry> Verifier;
-    Verifier verifier(entries, entries + ARRAYSIZE_UNSAFE(entries));
+    Verifier verifier(entries, entries + arraysize(entries));
     EXPECT_TRUE(db.DumpQuotaTable(
         base::Bind(&Verifier::Run, base::Unretained(&verifier))));
     EXPECT_TRUE(verifier.table.empty());
@@ -287,7 +287,7 @@ class QuotaDatabaseTest : public testing::Test {
       GURL("http://a/"),
       GURL("http://b/"),
       GURL("http://c/") };
-    std::set<GURL> origins(kOrigins, kOrigins + ARRAYSIZE_UNSAFE(kOrigins));
+    std::set<GURL> origins(kOrigins, kOrigins + arraysize(kOrigins));
 
     EXPECT_TRUE(db.RegisterInitialOriginInfo(origins, kStorageTypeTemporary));
 
@@ -336,7 +336,7 @@ class QuotaDatabaseTest : public testing::Test {
       QuotaTableEntry("http://gle/", kStorageTypePersistent, 3)
     };
     QuotaTableEntry* begin = kTableEntries;
-    QuotaTableEntry* end = kTableEntries + ARRAYSIZE_UNSAFE(kTableEntries);
+    QuotaTableEntry* end = kTableEntries + arraysize(kTableEntries);
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
@@ -359,7 +359,7 @@ class QuotaDatabaseTest : public testing::Test {
       Entry(GURL("http://gle/"), kStorageTypeTemporary, 1, now, now),
     };
     Entry* begin = kTableEntries;
-    Entry* end = kTableEntries + ARRAYSIZE_UNSAFE(kTableEntries);
+    Entry* end = kTableEntries + arraysize(kTableEntries);
 
     QuotaDatabase db(kDbFile);
     EXPECT_TRUE(db.LazyOpen(true));
@@ -467,8 +467,8 @@ class QuotaDatabaseTest : public testing::Test {
     EXPECT_TRUE(QuotaDatabase::CreateSchema(
             db.get(), meta_table.get(),
             kCurrentVersion, kCompatibleVersion,
-            kTables, ARRAYSIZE_UNSAFE(kTables),
-            kIndexes, ARRAYSIZE_UNSAFE(kIndexes)));
+            kTables, arraysize(kTables),
+            kIndexes, arraysize(kIndexes)));
 
     // V2 and V3 QuotaTable are compatible, so we can simply use
     // AssignQuotaTable to poplulate v2 database here.

@@ -195,7 +195,7 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
   };
 
   for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
-    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
+    for (size_t j = 0; j < arraysize(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
       base::FilePath virtual_path =
@@ -245,7 +245,7 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
   };
 
   for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
-    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(relatives); ++j) {
+    for (size_t j = 0; j < arraysize(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
       base::FilePath virtual_path =

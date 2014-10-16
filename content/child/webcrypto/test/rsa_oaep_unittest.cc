@@ -152,7 +152,7 @@ TEST(WebCryptoRsaOaepTest, ExportPublicJwk) {
                    {blink::WebCryptoAlgorithmIdSha256, "RSA-OAEP-256"},
                    {blink::WebCryptoAlgorithmIdSha384, "RSA-OAEP-384"},
                    {blink::WebCryptoAlgorithmIdSha512, "RSA-OAEP-512"}};
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestData); ++i) {
+  for (size_t i = 0; i < arraysize(kTestData); ++i) {
     const TestData& test_data = kTestData[i];
     SCOPED_TRACE(test_data.expected_jwk_alg);
 
@@ -589,8 +589,7 @@ TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
                              {blink::WebCryptoAlgorithmIdSha512,
                               blink::WebCryptoKeyUsageEncrypt, "RSA-OAEP-512"}};
 
-  for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
-       ++test_index) {
+  for (size_t test_index = 0; test_index < arraysize(kTests); ++test_index) {
     SCOPED_TRACE(test_index);
     const TestCase& test = kTests[test_index];
 

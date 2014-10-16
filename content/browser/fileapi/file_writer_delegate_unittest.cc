@@ -39,7 +39,7 @@ const GURL kOrigin("http://example.com");
 const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
-const int kDataSize = ARRAYSIZE_UNSAFE(kData) - 1;
+const int kDataSize = arraysize(kData) - 1;
 
 class Result {
  public:

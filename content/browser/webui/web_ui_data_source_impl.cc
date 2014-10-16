@@ -39,7 +39,7 @@ WebUIDataSource* WebUIDataSource::AddMojoDataSource(
     { mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS },
     { mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i)
+  for (size_t i = 0; i < arraysize(resources); ++i)
     mojo_source->AddResourcePath(resources[i].path, resources[i].id);
 
   URLDataManager::AddWebUIDataSource(browser_context, mojo_source);

@@ -35,7 +35,7 @@ TEST(DatabaseIdentifierTest, CreateIdentifierFromOrigin) {
     {"non-standard://foobar.com", "__0"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     GURL origin(cases[i].origin);
     DatabaseIdentifier identifier =
         DatabaseIdentifier::CreateFromOrigin(origin);
@@ -152,7 +152,7 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars) {
     {"x\x80x", "__0", false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     GURL origin("http://" + cases[i].hostname);
     DatabaseIdentifier identifier =
         DatabaseIdentifier::CreateFromOrigin(origin);
@@ -203,7 +203,7 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
       GURL("http://escaped%3dfun.com"), false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(valid_cases); ++i) {
+  for (size_t i = 0; i < arraysize(valid_cases); ++i) {
     DatabaseIdentifier identifier =
         DatabaseIdentifier::Parse(valid_cases[i].str);
     EXPECT_EQ(valid_cases[i].expected_scheme, identifier.scheme())
@@ -231,7 +231,7 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
     "http_bytes_after_port_0abcd",
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(bogus_components); ++i) {
+  for (size_t i = 0; i < arraysize(bogus_components); ++i) {
     DatabaseIdentifier identifier =
         DatabaseIdentifier::Parse(bogus_components[i]);
     EXPECT_EQ("__0", identifier.ToString())

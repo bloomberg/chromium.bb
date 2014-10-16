@@ -69,7 +69,7 @@ TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
     { FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("bar") },
     { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL("bar") }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
     base::FilePath base_name = VirtualPath::BaseName(input);
     EXPECT_EQ(test_cases[i].base_name, base_name.value());
@@ -109,7 +109,7 @@ TEST_F(FileSystemUtilTest, VirtualPathDirName) {
     { FILE_PATH_LITERAL("\\\\\\\\bar"), FILE_PATH_LITERAL("\\") },
 #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
     base::FilePath dir_name = VirtualPath::DirName(input);
     EXPECT_EQ(test_cases[i].dir_name, dir_name.value());
@@ -129,7 +129,7 @@ TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
     { FILE_PATH_LITERAL("\\foo"), FILE_PATH_LITERAL("/foo") },
 #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
     base::FilePath::StringType normalized_path_string =
         VirtualPath::GetNormalizedFilePath(input);
@@ -194,7 +194,7 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
       { FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar") } },
 #endif
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
     std::vector<base::FilePath::StringType> components;
     VirtualPath::GetComponents(input, &components);
@@ -202,7 +202,7 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
     for (size_t j = 0; j < components.size(); ++j)
       EXPECT_EQ(test_cases[i].components[j], components[j]);
   }
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
     std::vector<std::string> components;
     VirtualPath::GetComponentsUTF8Unsafe(input, &components);

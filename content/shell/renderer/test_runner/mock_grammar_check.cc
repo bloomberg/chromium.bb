@@ -44,7 +44,7 @@ bool MockGrammarCheck::CheckGrammarOfString(
         {"the the adlj adaasj sdklj. there there", 33, 5},
         {"zz apple orange.", 0, 16},
     };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGrammarErrors); ++i) {
+  for (size_t i = 0; i < arraysize(kGrammarErrors); ++i) {
     size_t offset = 0;
     base::string16 error(
         kGrammarErrors[i].text,

@@ -252,7 +252,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
   // Check key generation for each allowed key length.
   std::vector<blink::WebCryptoAlgorithm> algorithm;
   const unsigned short kKeyLength[] = {128, 256};
-  for (size_t key_length_i = 0; key_length_i < ARRAYSIZE_UNSAFE(kKeyLength);
+  for (size_t key_length_i = 0; key_length_i < arraysize(kKeyLength);
        ++key_length_i) {
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
 
@@ -284,7 +284,7 @@ TEST(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
 TEST(WebCryptoAesCbcTest, GenerateKeyBadLength) {
   const unsigned short kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kKeyLen); ++i) {
+  for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateKeyLength(),
               GenerateSecretKey(

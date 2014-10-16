@@ -867,8 +867,8 @@ TEST(AppCacheDatabaseTest, UpgradeSchema3to5) {
         true },
     };
 
-    const int kTableCount3 = ARRAYSIZE_UNSAFE(kTables3);
-    const int kIndexCount3 = ARRAYSIZE_UNSAFE(kIndexes3);
+    const int kTableCount3 = arraysize(kTables3);
+    const int kIndexCount3 = arraysize(kIndexes3);
 
     sql::Connection connection;
     EXPECT_TRUE(connection.Open(kDbFile));
@@ -1097,8 +1097,8 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
         true },
     };
 
-    const int kTableCount4 = ARRAYSIZE_UNSAFE(kTables4);
-    const int kIndexCount4 = ARRAYSIZE_UNSAFE(kIndexes4);
+    const int kTableCount4 = arraysize(kTables4);
+    const int kIndexCount4 = arraysize(kIndexes4);
 
     sql::Connection connection;
     EXPECT_TRUE(connection.Open(kDbFile));

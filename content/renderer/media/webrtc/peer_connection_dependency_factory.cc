@@ -75,7 +75,7 @@ struct {
 void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
                                     int* effects) {
   if (*effects != media::AudioParameters::NO_EFFECTS) {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConstraintEffectMap); ++i) {
+    for (size_t i = 0; i < arraysize(kConstraintEffectMap); ++i) {
       bool value;
       size_t is_mandatory = 0;
       if (!webrtc::FindConstraint(constraints,

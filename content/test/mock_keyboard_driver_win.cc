@@ -100,7 +100,7 @@ bool MockKeyboardDriverWin::SetLayout(int layout) {
     {L"00001009", MockKeyboard::LAYOUT_CANADIAN_FRENCH},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kLanguageIDs); ++i) {
+  for (size_t i = 0; i < arraysize(kLanguageIDs); ++i) {
     if (layout == kLanguageIDs[i].keyboard_layout) {
       HKL new_keyboard_layout = LoadKeyboardLayout(kLanguageIDs[i].language,
                                                    KLF_ACTIVATE);
@@ -140,7 +140,7 @@ bool MockKeyboardDriverWin::SetModifiers(int modifiers) {
     {VK_RCONTROL, MockKeyboard::RIGHT_CONTROL},
     {VK_RMENU,    MockKeyboard::RIGHT_ALT},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kModifierMasks); ++i) {
+  for (size_t i = 0; i < arraysize(kModifierMasks); ++i) {
     const int kKeyDownMask = 0x80;
     if (modifiers & kModifierMasks[i].mask)
       keyboard_states_[kModifierMasks[i].key_code] = kKeyDownMask;

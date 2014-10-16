@@ -224,8 +224,8 @@ void MockWebUserMediaClient::requestMediaDevices(
     },
   };
 
-  WebVector<WebMediaDeviceInfo> devices(ARRAYSIZE_UNSAFE(test_devices));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_devices); ++i) {
+  WebVector<WebMediaDeviceInfo> devices(arraysize(test_devices));
+  for (size_t i = 0; i < arraysize(test_devices); ++i) {
     devices[i].initialize(WebString::fromUTF8(test_devices[i].device_id),
                           test_devices[i].kind,
                           WebString::fromUTF8(test_devices[i].label),
@@ -261,8 +261,8 @@ void MockWebUserMediaClient::requestSources(
     },
   };
 
-  WebVector<WebSourceInfo> sources(ARRAYSIZE_UNSAFE(test_sources));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_sources); ++i) {
+  WebVector<WebSourceInfo> sources(arraysize(test_sources));
+  for (size_t i = 0; i < arraysize(test_sources); ++i) {
   sources[i].initialize(WebString::fromUTF8(test_sources[i].id),
                         test_sources[i].kind,
                         WebString::fromUTF8(test_sources[i].label),

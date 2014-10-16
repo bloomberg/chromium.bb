@@ -1084,7 +1084,7 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request) {
   // Start enumeration for devices of all requested device types.
   const MediaStreamType streams[] = { request->audio_type(),
                                       request->video_type() };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(streams); ++i) {
+  for (size_t i = 0; i < arraysize(streams); ++i) {
     if (streams[i] == MEDIA_NO_SERVICE)
       continue;
     request->SetState(streams[i], MEDIA_REQUEST_STATE_REQUESTED);

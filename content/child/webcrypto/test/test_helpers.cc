@@ -234,7 +234,7 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
         {"sha-512", blink::WebCryptoAlgorithmIdSha512},
     };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDigestNameToId); ++i) {
+  for (size_t i = 0; i < arraysize(kDigestNameToId); ++i) {
     if (kDigestNameToId[i].name == algorithm_name)
       return CreateAlgorithm(kDigestNameToId[i].id);
   }

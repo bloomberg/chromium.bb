@@ -38,7 +38,7 @@ std::string EffectsToString(int effects) {
   };
 
   std::string ret;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(flags); ++i) {
+  for (size_t i = 0; i < arraysize(flags); ++i) {
     if (effects & flags[i].flag) {
       if (!ret.empty())
         ret += " | ";

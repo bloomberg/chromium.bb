@@ -153,8 +153,8 @@ const IndexInfo kIndexes[] = {
     true },
 };
 
-const int kTableCount = ARRAYSIZE_UNSAFE(kTables);
-const int kIndexCount = ARRAYSIZE_UNSAFE(kIndexes);
+const int kTableCount = arraysize(kTables);
+const int kIndexCount = arraysize(kIndexes);
 
 bool CreateTable(sql::Connection* db, const TableInfo& info) {
   std::string sql("CREATE TABLE ");

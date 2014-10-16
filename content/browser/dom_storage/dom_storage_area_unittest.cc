@@ -443,7 +443,7 @@ TEST_F(DOMStorageAreaTest, DatabaseFileNames) {
       "file__0.localstorage-journal" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCases); ++i) {
+  for (size_t i = 0; i < arraysize(kCases); ++i) {
     GURL origin = GURL(kCases[i].origin).GetOrigin();
     base::FilePath file_name =
         base::FilePath().AppendASCII(kCases[i].file_name);

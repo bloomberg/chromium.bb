@@ -61,7 +61,7 @@ TEST_F(MacDirAccessSandboxTest, StringEscape) {
     {"^\u2135.\u2136$", "^\\u2135.\\u2136$"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(string_escape_cases); ++i) {
+  for (size_t i = 0; i < arraysize(string_escape_cases); ++i) {
     std::string out;
     std::string in(string_escape_cases[i].to_escape);
     EXPECT_TRUE(Sandbox::QuotePlainString(in, &out));
@@ -103,7 +103,7 @@ TEST_F(MacDirAccessSandboxTest, RegexEscape) {
   }
 
   {
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(regex_cases); ++i) {
+    for (size_t i = 0; i < arraysize(regex_cases); ++i) {
       std::string out;
       std::string in = base::WideToUTF8(regex_cases[i].to_escape);
       EXPECT_TRUE(Sandbox::QuoteStringForRegex(in, &out));
@@ -159,7 +159,7 @@ TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
     "\\^.$|()[]*+?{}",  // All regex characters.
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(sandbox_dir_cases); ++i) {
+  for (size_t i = 0; i < arraysize(sandbox_dir_cases); ++i) {
     const char* sandbox_dir_name = sandbox_dir_cases[i];
     base::FilePath sandbox_dir = tmp_dir.Append(sandbox_dir_name);
     ASSERT_TRUE(CreateDirectory(sandbox_dir));

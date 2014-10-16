@@ -175,7 +175,7 @@ static const struct {
 };
 
 TEST_F(SavePackageTest, TestSuccessfullyGenerateSavePackageFilename) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGeneratedFiles); ++i) {
+  for (size_t i = 0; i < arraysize(kGeneratedFiles); ++i) {
     base::FilePath::StringType file_name;
     bool ok = GetGeneratedFilename(true,
                                    kGeneratedFiles[i].disposition,
@@ -188,7 +188,7 @@ TEST_F(SavePackageTest, TestSuccessfullyGenerateSavePackageFilename) {
 }
 
 TEST_F(SavePackageTest, TestUnSuccessfullyGenerateSavePackageFilename) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGeneratedFiles); ++i) {
+  for (size_t i = 0; i < arraysize(kGeneratedFiles); ++i) {
     base::FilePath::StringType file_name;
     bool ok = GetGeneratedFilename(false,
                                    kGeneratedFiles[i].disposition,
@@ -281,7 +281,7 @@ static const struct {
 #define MAYBE_TestEnsureHtmlExtension TestEnsureHtmlExtension
 #endif
 TEST_F(SavePackageTest, MAYBE_TestEnsureHtmlExtension) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExtensionTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kExtensionTestCases); ++i) {
     base::FilePath original = base::FilePath(kExtensionTestCases[i].page_title);
     base::FilePath expected =
         base::FilePath(kExtensionTestCases[i].expected_name);
@@ -326,7 +326,7 @@ TEST_F(SavePackageTest, MAYBE_TestEnsureMimeExtension) {
     { FPL("filename.abc"), FPL("filename.abc"), "unknown/unknown" },
     { FPL("filename"), FPL("filename"), "unknown/unknown" },
   };
-  for (uint32 i = 0; i < ARRAYSIZE_UNSAFE(kExtensionTests); ++i) {
+  for (uint32 i = 0; i < arraysize(kExtensionTests); ++i) {
     base::FilePath original = base::FilePath(kExtensionTests[i].page_title);
     base::FilePath expected = base::FilePath(kExtensionTests[i].expected_name);
     std::string mime_type(kExtensionTests[i].contents_mime_type);
