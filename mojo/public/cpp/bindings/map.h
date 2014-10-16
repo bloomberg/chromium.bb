@@ -88,6 +88,11 @@ class Map {
     return Traits::at(&map_, key);
   }
 
+  ValueRefType operator[](KeyForwardType key) {
+    is_null_ = false;
+    return Traits::GetOrInsert(&map_, key);
+  }
+
   void Swap(Map<Key, Value>* other) {
     std::swap(is_null_, other->is_null_);
     map_.swap(other->map_);

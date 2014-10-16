@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,11 +89,8 @@ class ClipboardStandaloneTest : public testing::Test {
   }
 
   void SetStringText(const std::string& data) {
-    Array<MimeTypePairPtr> mime_data;
-    MimeTypePairPtr text_data(MimeTypePair::New());
-    text_data->mime_type = mojo::Clipboard::MIME_TYPE_TEXT;
-    text_data->data = Array<uint8_t>::From(data).Pass();
-    mime_data.push_back(text_data.Pass());
+    Map<String, Array<uint8_t>> mime_data;
+    mime_data[mojo::Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(data);
     clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE,
                                    mime_data.Pass());
   }
@@ -127,16 +124,11 @@ TEST_F(ClipboardStandaloneTest, CanReadBackText) {
 }
 
 TEST_F(ClipboardStandaloneTest, CanSetMultipleDataTypesAtOnce) {
-  Array<MimeTypePairPtr> mime_data;
-  MimeTypePairPtr text_data(MimeTypePair::New());
-  text_data->mime_type = mojo::Clipboard::MIME_TYPE_TEXT;
-  text_data->data = Array<uint8_t>::From(std::string(kPlainTextData)).Pass();
-  mime_data.push_back(text_data.Pass());
-
-  MimeTypePairPtr html_data(MimeTypePair::New());
-  html_data->mime_type = mojo::Clipboard::MIME_TYPE_HTML;
-  html_data->data = Array<uint8_t>::From(std::string(kHtmlData)).Pass();
-  mime_data.push_back(html_data.Pass());
+  Map<String, Array<uint8_t>> mime_data;
+  mime_data[mojo::Clipboard::MIME_TYPE_TEXT] =
+      Array<uint8_t>::From(std::string(kPlainTextData));
+  mime_data[mojo::Clipboard::MIME_TYPE_HTML] =
+      Array<uint8_t>::From(std::string(kHtmlData));
 
   clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE,
                                  mime_data.Pass());
@@ -150,22 +142,6 @@ TEST_F(ClipboardStandaloneTest, CanSetMultipleDataTypesAtOnce) {
   EXPECT_EQ(kHtmlData, data);
 }
 
-TEST_F(ClipboardStandaloneTest, CanClearClipboardWithNull) {
-  std::string data;
-  SetStringText(kPlainTextData);
-  EXPECT_EQ(1ul, GetSequenceNumber());
-
-  EXPECT_TRUE(GetDataOfType(mojo::Clipboard::MIME_TYPE_TEXT, &data));
-  EXPECT_EQ(kPlainTextData, data);
-
-  Array<MimeTypePairPtr> mime_data;
-  clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE,
-                                 mime_data.Pass());
-
-  EXPECT_EQ(2ul, GetSequenceNumber());
-  EXPECT_FALSE(GetDataOfType(mojo::Clipboard::MIME_TYPE_TEXT, &data));
-}
-
 TEST_F(ClipboardStandaloneTest, CanClearClipboardWithZeroArray) {
   std::string data;
   SetStringText(kPlainTextData);
@@ -174,7 +150,7 @@ TEST_F(ClipboardStandaloneTest, CanClearClipboardWithZeroArray) {
   EXPECT_TRUE(GetDataOfType(mojo::Clipboard::MIME_TYPE_TEXT, &data));
   EXPECT_EQ(kPlainTextData, data);
 
-  Array<MimeTypePairPtr> mime_data(0);
+  Map<String, Array<uint8_t>> mime_data;
   clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE,
                                  mime_data.Pass());
 

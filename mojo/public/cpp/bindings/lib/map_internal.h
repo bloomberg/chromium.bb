@@ -57,7 +57,7 @@ struct MapTraits<Key, Value, false> {
   static inline ValueRefType at(std::map<KeyStorageType, ValueStorageType>* m,
                                 KeyForwardType key) {
     // We don't have C++11 library support yet, so we have to emulate the crash
-    // on a non-existant key.
+    // on a non-existent key.
     auto it = m->find(key);
     MOJO_CHECK(it != m->end());
     return it->second;
@@ -66,10 +66,16 @@ struct MapTraits<Key, Value, false> {
       const std::map<KeyStorageType, ValueStorageType>* m,
       KeyForwardType key) {
     // We don't have C++11 library support yet, so we have to emulate the crash
-    // on a non-existant key.
+    // on a non-existent key.
     auto it = m->find(key);
     MOJO_CHECK(it != m->end());
     return it->second;
+  }
+  static inline ValueRefType GetOrInsert(
+      std::map<KeyStorageType, ValueStorageType>* m,
+      KeyForwardType key) {
+    // This is the backing for the index operator (operator[]).
+    return (*m)[key];
   }
   static inline void Insert(std::map<KeyStorageType, ValueStorageType>* m,
                             KeyForwardType key,
@@ -146,7 +152,7 @@ struct MapTraits<Key, Value, true> {
   static inline ValueRefType at(std::map<KeyStorageType, ValueStorageType>* m,
                                 KeyForwardType key) {
     // We don't have C++11 library support yet, so we have to emulate the crash
-    // on a non-existant key.
+    // on a non-existent key.
     auto it = m->find(key);
     MOJO_CHECK(it != m->end());
     return GetValue(it);
@@ -155,9 +161,21 @@ struct MapTraits<Key, Value, true> {
       const std::map<KeyStorageType, ValueStorageType>* m,
       KeyForwardType key) {
     // We don't have C++11 library support yet, so we have to emulate the crash
-    // on a non-existant key.
+    // on a non-existent key.
     auto it = m->find(key);
     MOJO_CHECK(it != m->end());
+    return GetValue(it);
+  }
+  static inline ValueRefType GetOrInsert(
+      std::map<KeyStorageType, ValueStorageType>* m,
+      KeyForwardType key) {
+    // This is the backing for the index operator (operator[]).
+    auto it = m->find(key);
+    if (it == m->end()) {
+      it = m->insert(std::make_pair(key, ValueStorageType())).first;
+      new (it->second.buf) Value();
+    }
+
     return GetValue(it);
   }
   static inline void Insert(std::map<KeyStorageType, ValueStorageType>* m,

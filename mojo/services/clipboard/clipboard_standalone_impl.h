@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,9 @@ class ClipboardStandaloneImpl : public InterfaceImpl<mojo::Clipboard> {
       Clipboard::Type clipboard_type,
       const mojo::String& mime_type,
       const mojo::Callback<void(mojo::Array<uint8_t>)>& callback) override;
-  virtual void WriteClipboardData(Clipboard::Type clipboard_type,
-                                  mojo::Array<MimeTypePairPtr> data) override;
+  virtual void WriteClipboardData(
+      Clipboard::Type clipboard_type,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> data) override;
 
  private:
   uint64_t sequence_number_[kNumClipboards];

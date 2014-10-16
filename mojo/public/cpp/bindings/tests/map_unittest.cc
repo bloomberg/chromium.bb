@@ -50,6 +50,49 @@ TEST_F(MapTest, InsertWorks) {
   }
 }
 
+TEST_F(MapTest, TestIndexOperator) {
+  Map<String, int> map;
+  for (size_t i = 0; i < kStringIntDataSize; ++i)
+    map[kStringIntData[i].string_data] = kStringIntData[i].int_data;
+
+  for (size_t i = 0; i < kStringIntDataSize; ++i) {
+    EXPECT_EQ(kStringIntData[i].int_data,
+              map.at(kStringIntData[i].string_data));
+  }
+}
+
+TEST_F(MapTest, TestIndexOperatorAsRValue) {
+  Map<String, int> map;
+  for (size_t i = 0; i < kStringIntDataSize; ++i)
+    map.insert(kStringIntData[i].string_data, kStringIntData[i].int_data);
+
+  for (size_t i = 0; i < kStringIntDataSize; ++i) {
+    EXPECT_EQ(kStringIntData[i].int_data, map[kStringIntData[i].string_data]);
+  }
+}
+
+TEST_F(MapTest, TestIndexOperatorMoveOnly) {
+  ASSERT_EQ(0u, MoveOnlyType::num_instances());
+  mojo::Map<mojo::String, mojo::Array<int32_t>> map;
+  std::vector<MoveOnlyType*> value_ptrs;
+
+  for (size_t i = 0; i < kStringIntDataSize; ++i) {
+    const char* key = kStringIntData[i].string_data;
+    Array<int32_t> array(1);
+    array[0] = kStringIntData[i].int_data;
+    map[key] = array.Pass();
+    EXPECT_TRUE(map);
+  }
+
+  // We now read back that data, to test the behavior of operator[].
+  for (size_t i = 0; i < kStringIntDataSize; ++i) {
+    auto it = map.find(kStringIntData[i].string_data);
+    ASSERT_TRUE(it != map.end());
+    ASSERT_EQ(1u, it.GetValue().size());
+    EXPECT_EQ(kStringIntData[i].int_data, it.GetValue()[0]);
+  }
+}
+
 TEST_F(MapTest, ConstructedFromArray) {
   Array<String> keys(kStringIntDataSize);
   Array<int> values(kStringIntDataSize);
@@ -153,7 +196,33 @@ TEST_F(MapTest, Insert_MoveOnly) {
   // a lot more boring.
 
   map.reset();
-  EXPECT_EQ(0u, CopyableType::num_instances());
+  EXPECT_EQ(0u, MoveOnlyType::num_instances());
+}
+
+TEST_F(MapTest, IndexOperator_MoveOnly) {
+  ASSERT_EQ(0u, MoveOnlyType::num_instances());
+  mojo::Map<mojo::String, MoveOnlyType> map;
+  std::vector<MoveOnlyType*> value_ptrs;
+
+  for (size_t i = 0; i < kStringIntDataSize; ++i) {
+    const char* key = kStringIntData[i].string_data;
+    MoveOnlyType value;
+    value_ptrs.push_back(value.ptr());
+    map[key] = value.Pass();
+    ASSERT_EQ(i + 1, map.size());
+    ASSERT_EQ(i + 1, value_ptrs.size());
+    EXPECT_EQ(map.size() + 1, MoveOnlyType::num_instances());
+    EXPECT_TRUE(map.at(key).moved());
+    EXPECT_EQ(value_ptrs[i], map.at(key).ptr());
+    map.at(key).ResetMoved();
+    EXPECT_TRUE(map);
+  }
+
+  // std::map doesn't have a capacity() method like std::vector so this test is
+  // a lot more boring.
+
+  map.reset();
+  EXPECT_EQ(0u, MoveOnlyType::num_instances());
 }
 
 TEST_F(MapTest, STLToMojo) {

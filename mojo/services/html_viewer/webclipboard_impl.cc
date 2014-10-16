@@ -168,11 +168,8 @@ blink::WebString WebClipboardImpl::readCustomData(
 }
 
 void WebClipboardImpl::writePlainText(const blink::WebString& text) {
-  Array<MimeTypePairPtr> data;
-  MimeTypePairPtr text_data(MimeTypePair::New());
-  text_data->mime_type = mojo::Clipboard::MIME_TYPE_TEXT;
-  text_data->data = Array<uint8_t>::From(text).Pass();
-  data.push_back(text_data.Pass());
+  Map<String, Array<uint8_t>> data;
+  data[mojo::Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(text);
 
   clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE, data.Pass());
 }
@@ -181,28 +178,13 @@ void WebClipboardImpl::writeHTML(const blink::WebString& htmlText,
                                  const blink::WebURL& url,
                                  const blink::WebString& plainText,
                                  bool writeSmartPaste) {
-  Array<MimeTypePairPtr> data;
-  MimeTypePairPtr text_data(MimeTypePair::New());
-  text_data->mime_type = mojo::Clipboard::MIME_TYPE_TEXT;
-  text_data->data = Array<uint8_t>::From(plainText).Pass();
-  data.push_back(text_data.Pass());
+  Map<String, Array<uint8_t>> data;
+  data[mojo::Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plainText);
+  data[mojo::Clipboard::MIME_TYPE_HTML] = Array<uint8_t>::From(htmlText);
+  data[mojo::Clipboard::MIME_TYPE_URL] = Array<uint8_t>::From(url.string());
 
-  MimeTypePairPtr html_data(MimeTypePair::New());
-  text_data->mime_type = mojo::Clipboard::MIME_TYPE_HTML;
-  text_data->data = Array<uint8_t>::From(htmlText).Pass();
-  data.push_back(html_data.Pass());
-
-  MimeTypePairPtr url_data(MimeTypePair::New());
-  url_data->mime_type = mojo::Clipboard::MIME_TYPE_URL;
-  url_data->data = Array<uint8_t>::From(url.string()).Pass();
-  data.push_back(url_data.Pass());
-
-  if (writeSmartPaste) {
-    MimeTypePairPtr smart_paste(MimeTypePair::New());
-    url_data->mime_type = kMimeTypeWebkitSmartPaste;
-    url_data->data = Array<uint8_t>::From(blink::WebString()).Pass();
-    data.push_back(smart_paste.Pass());
-  }
+  if (writeSmartPaste)
+    data[kMimeTypeWebkitSmartPaste] = Array<uint8_t>::From(blink::WebString());
 
   clipboard_->WriteClipboardData(mojo::Clipboard::TYPE_COPY_PASTE, data.Pass());
 }

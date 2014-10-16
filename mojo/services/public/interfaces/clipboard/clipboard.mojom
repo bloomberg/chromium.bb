@@ -4,13 +4,6 @@
 
 module mojo {
 
-// A wrapper type which is just a Key/Value pair. Workaround until we get
-// proper maps in mojom.
-struct MimeTypePair {
-  string mime_type;
-  array<uint8> data;
-};
-
 interface Clipboard {
   enum Type {
     COPY_PASTE = 0,
@@ -44,9 +37,9 @@ interface Clipboard {
   ReadMimeType(Type clipboard_type, string mime_type) => (array<uint8>? data);
 
   // Writes a set of mime types to the clipboard. This will increment the
-  // sequence number. In the case of an empty or NULL list, this will just
+  // sequence number. In the case of an empty or null map, this will just
   // clear the clipboard.
-  WriteClipboardData(Type clipboard_type, array<MimeTypePair>? data);
+  WriteClipboardData(Type clipboard_type, map<string, array<uint8>>? data);
 };
 
 }  // module mojo
