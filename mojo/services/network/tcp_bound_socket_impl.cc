@@ -19,10 +19,7 @@ TCPBoundSocketImpl::~TCPBoundSocketImpl() {
 }
 
 int TCPBoundSocketImpl::Bind(NetAddressPtr local_address) {
-  // The local address might be null to match any port.
-  net::IPEndPoint end_point;
-  if (!local_address.is_null())
-    end_point = local_address.To<net::IPEndPoint>();
+  net::IPEndPoint end_point = local_address.To<net::IPEndPoint>();
 
   socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
   int result = socket_->Open(end_point.GetFamily());
@@ -50,7 +47,7 @@ NetAddressPtr TCPBoundSocketImpl::GetLocalAddress() const {
 void TCPBoundSocketImpl::StartListening(
     InterfaceRequest<TCPServerSocket> server,
     const Callback<void(NetworkErrorPtr)>& callback) {
-  if (!socket_) {
+  if (!socket_ || pending_connect_socket_.is_pending()) {
     // A bound socket will only be returned to the caller after binding
     // succeeds, so if the socket doesn't exist, that means ownership was
     // already passed to a server socket or client socket.
@@ -76,7 +73,49 @@ void TCPBoundSocketImpl::Connect(
     ScopedDataPipeProducerHandle receive_stream,
     InterfaceRequest<TCPConnectedSocket> client_socket,
     const Callback<void(NetworkErrorPtr)>& callback) {
-  // TODO(brettw) write this.
+  if (!socket_ || pending_connect_socket_.is_pending()) {
+    // A bound socket will only be returned to the caller after binding
+    // succeeds, so if the socket doesn't exist, that means ownership was
+    // already passed to a server socket or client socket.
+    callback.Run(MakeNetworkError(net::ERR_FAILED));
+    return;
+  }
+
+  net::IPEndPoint end_point = remote_address.To<net::IPEndPoint>();
+
+  pending_connect_send_stream_ = send_stream.Pass();
+  pending_connect_receive_stream_ = receive_stream.Pass();
+  pending_connect_socket_ = client_socket.Pass();
+  pending_connect_callback_ = callback;
+  int result = socket_->Connect(
+      end_point,
+      base::Bind(&TCPBoundSocketImpl::OnConnected, base::Unretained(this)));
+  if (result == net::OK) {
+    OnConnected(result);
+  } else if (result != net::ERR_IO_PENDING) {
+    // Error occurred.
+    pending_connect_send_stream_.reset();
+    pending_connect_receive_stream_.reset();
+    pending_connect_socket_ = InterfaceRequest<TCPConnectedSocket>();
+    pending_connect_callback_ = Callback<void(NetworkErrorPtr)>();
+    callback.Run(MakeNetworkError(result));
+  }
+}
+
+void TCPBoundSocketImpl::OnConnected(int result) {
+  if (result == net::OK) {
+    BindToRequest(new TCPConnectedSocketImpl(
+                      socket_.Pass(),
+                      pending_connect_send_stream_.Pass(),
+                      pending_connect_receive_stream_.Pass()),
+                  &pending_connect_socket_);
+  } else {
+    pending_connect_send_stream_.reset();
+    pending_connect_receive_stream_.reset();
+    pending_connect_socket_ = InterfaceRequest<TCPConnectedSocket>();
+  }
+  pending_connect_callback_.Run(MakeNetworkError(result));
+  pending_connect_callback_ = Callback<void(NetworkErrorPtr)>();
 }
 
 }  // namespace mojo

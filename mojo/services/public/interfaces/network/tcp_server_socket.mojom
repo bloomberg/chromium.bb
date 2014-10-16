@@ -14,6 +14,10 @@ interface TCPServerSocket {
   // for connecting with the remote host. Only one Accept call can be pending
   // at a time.
   //
+  // Once a connection has been established (indicated by a successful
+  // callback), the TCPConnectedSocket may outlive the TCPServerSocket that
+  // created it.
+  //
   // On success, the address of the remote host will be provided.
   Accept(handle<data_pipe_consumer> send_stream,
          handle<data_pipe_producer> receive_stream,

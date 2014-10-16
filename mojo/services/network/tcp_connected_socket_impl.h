@@ -6,11 +6,16 @@
 #define MOJO_SERVICES_NETWORK_TCP_CONNECTED_SOCKET_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "mojo/common/handle_watcher.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/services/public/interfaces/network/tcp_connected_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
 
 namespace mojo {
+
+class MojoToNetPendingBuffer;
+class NetToMojoPendingBuffer;
 
 class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
  public:
@@ -20,9 +25,35 @@ class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
   virtual ~TCPConnectedSocketImpl();
 
  private:
+  // "Receiving" in this context means reading from TCPSocket and writing to
+  // the Mojo receive_stream.
+  void ReceiveMore();
+  void OnReceiveStreamReady(MojoResult result);
+  void DidReceive(bool completed_synchronously, int result);
+
+  // "Writing" is reading from the Mojo send_stream and writing to the
+  // TCPSocket.
+  void SendMore();
+  void OnSendStreamReady(MojoResult result);
+  void DidSend(bool completed_asynchronously, int result);
+
   scoped_ptr<net::TCPSocket> socket_;
+
+  // The *stream handles will be null while there is an in-progress transation
+  // between net and mojo. During this time, the handle will be owned by the
+  // *PendingBuffer.
+
+  // For reading from the network and writing to Mojo pipe.
   ScopedDataPipeConsumerHandle send_stream_;
+  common::HandleWatcher receive_handle_watcher_;
+  scoped_refptr<NetToMojoPendingBuffer> pending_receive_;
+
+  // For reading from the Mojo pipe and writing to the network.
   ScopedDataPipeProducerHandle receive_stream_;
+  common::HandleWatcher send_handle_watcher_;
+  scoped_refptr<MojoToNetPendingBuffer> pending_send_;
+
+  base::WeakPtrFactory<TCPConnectedSocketImpl> weak_ptr_factory_;
 };
 
 }  // namespace mojo

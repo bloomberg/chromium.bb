@@ -45,6 +45,11 @@ interface NetworkService {
   //
   // If you want control over the local address and port, instead use
   // CreateTCPBoundSocket.
+  //
+  // IMPORTANT: This does not work yet! We need to add a new parameter to
+  // indicate the protocol type (IPv4 or IPv6) actually be able to create the
+  // right type of socket. We also need to figure out how the client is supposed
+  // to decide between IPv4 and IPv6 on a given system.
   CreateTCPConnectedSocket(NetAddress remote_address,
                            handle<data_pipe_consumer> send_stream,
                            handle<data_pipe_producer> receive_stream,

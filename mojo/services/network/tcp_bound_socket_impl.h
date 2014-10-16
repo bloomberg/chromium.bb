@@ -17,6 +17,9 @@ class TCPBoundSocketImpl : public InterfaceImpl<TCPBoundSocket> {
   TCPBoundSocketImpl();
   virtual ~TCPBoundSocketImpl();
 
+  // Does the actual binding. Returns a net error code. On net::OK, the bound
+  // socket will be ready to use and send back to the client. On failure, this
+  // object should be destroyed and no longer used.
   int Bind(NetAddressPtr local_address);
 
   // Returns the local address associated with this socket. This should only
@@ -35,7 +38,15 @@ class TCPBoundSocketImpl : public InterfaceImpl<TCPBoundSocket> {
       const Callback<void(NetworkErrorPtr)>& callback) override;
 
  private:
+  void OnConnected(int result);
+
   scoped_ptr<net::TCPSocket> socket_;
+
+  // Valid when waiting for a connect callback.
+  ScopedDataPipeConsumerHandle pending_connect_send_stream_;
+  ScopedDataPipeProducerHandle pending_connect_receive_stream_;
+  InterfaceRequest<TCPConnectedSocket> pending_connect_socket_;
+  Callback<void(NetworkErrorPtr)> pending_connect_callback_;
 };
 
 }  // namespace mojo

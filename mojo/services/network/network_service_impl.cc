@@ -14,19 +14,6 @@
 
 namespace mojo {
 
-namespace {
-
-// Allows a Callback<NetworkErrorPtr, NetAddressPtr> to be called by a
-// Callback<NetworkErrorPtr> when the address is already known.
-void BoundAddressCallbackAdapter(
-    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback,
-    NetAddressPtr address,
-    NetworkErrorPtr err) {
-  callback.Run(err.Pass(), address.Pass());
-}
-
-}  // namespace
-
 NetworkServiceImpl::NetworkServiceImpl(ApplicationConnection* connection,
                                        NetworkContext* context)
     : context_(context),
@@ -70,19 +57,10 @@ void NetworkServiceImpl::CreateTCPConnectedSocket(
     ScopedDataPipeProducerHandle receive_stream,
     InterfaceRequest<TCPConnectedSocket> client_socket,
     const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
-  TCPBoundSocketImpl bound_socket;
-  int net_error = bound_socket.Bind(NetAddressPtr());
-  if (net_error != net::OK) {
-    callback.Run(MakeNetworkError(net_error), NetAddressPtr());
-    return;
-  }
-
-  bound_socket.Connect(
-      remote_address.Pass(), send_stream.Pass(), receive_stream.Pass(),
-      client_socket.Pass(),
-      base::Bind(&BoundAddressCallbackAdapter,
-                 callback,
-                 base::Passed(bound_socket.GetLocalAddress().Pass())));
+  // TODO(brettw) implement this. We need to know what type of socket to use
+  // so we can create the right one (i.e. to pass to TCPSocket::Open) before
+  // doing the connect.
+  callback.Run(MakeNetworkError(net::ERR_NOT_IMPLEMENTED), NetAddressPtr());
 }
 
 void NetworkServiceImpl::CreateUDPSocket(InterfaceRequest<UDPSocket> socket) {

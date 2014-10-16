@@ -11,6 +11,7 @@ shared_library("http_server") {
 
   deps = [
     "//base",
+    "//mojo/common",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/bindings",
