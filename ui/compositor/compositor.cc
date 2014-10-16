@@ -127,6 +127,9 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
 #if defined(OS_CHROMEOS)
   settings.per_tile_painting_enabled = true;
 #endif
+#if defined(OS_WIN)
+  settings.disable_hi_res_timer_tasks_on_battery = true;
+#endif
 
   // These flags should be mirrored by renderer versions in content/renderer/.
   settings.initial_debug_state.show_debug_borders =

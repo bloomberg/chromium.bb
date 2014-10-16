@@ -127,14 +127,15 @@ TestScheduler::TestScheduler(
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
     const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
+    base::PowerMonitor* power_monitor,
     TestSchedulerFrameSourcesConstructor* frame_sources_constructor)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,
                 test_task_runner,
+                power_monitor,
                 frame_sources_constructor),
-      now_src_(now_src),
-      test_task_runner_(test_task_runner.get()) {
+      now_src_(now_src) {
 }
 
 base::TimeTicks TestScheduler::Now() const {

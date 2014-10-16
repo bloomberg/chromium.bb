@@ -161,19 +161,17 @@ class TestScheduler : public Scheduler {
       scoped_refptr<TestNowSource> now_src,
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
-      int layer_tree_host_id) {
-    // A bunch of tests require Now() to be > BeginFrameArgs::DefaultInterval()
-    now_src->AdvanceNow(base::TimeDelta::FromMilliseconds(100));
-
-    scoped_refptr<OrderedSimpleTaskRunner> test_task_runner =
-        new OrderedSimpleTaskRunner(now_src, true);
+      int layer_tree_host_id,
+      const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+      base::PowerMonitor* power_monitor) {
     TestSchedulerFrameSourcesConstructor frame_sources_constructor(
-        test_task_runner.get(), now_src.get());
+        task_runner.get(), now_src.get());
     return make_scoped_ptr(new TestScheduler(now_src,
                                              client,
                                              scheduler_settings,
                                              layer_tree_host_id,
-                                             test_task_runner,
+                                             task_runner,
+                                             power_monitor,
                                              &frame_sources_constructor));
   }
 
@@ -183,7 +181,6 @@ class TestScheduler : public Scheduler {
   }
 
   BeginFrameSource& frame_source() { return *frame_source_; }
-  OrderedSimpleTaskRunner& task_runner() { return *test_task_runner_; }
 
   virtual ~TestScheduler();
 
@@ -198,10 +195,10 @@ class TestScheduler : public Scheduler {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
+      base::PowerMonitor* power_monitor,
       TestSchedulerFrameSourcesConstructor* frame_sources_constructor);
 
   scoped_refptr<TestNowSource> now_src_;
-  OrderedSimpleTaskRunner* test_task_runner_;
 };
 
 }  // namespace cc

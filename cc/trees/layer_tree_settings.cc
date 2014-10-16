@@ -20,6 +20,7 @@ LayerTreeSettings::LayerTreeSettings()
       begin_frame_scheduling_enabled(false),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
+      disable_hi_res_timer_tasks_on_battery(false),
       report_overscroll_only_for_scrollable_axes(false),
       per_tile_painting_enabled(false),
       partial_swap_enabled(false),

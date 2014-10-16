@@ -25,6 +25,7 @@ class CC_EXPORT LayerTreeSettings {
   bool begin_frame_scheduling_enabled;
   bool main_frame_before_activation_enabled;
   bool using_synchronous_renderer_compositor;
+  bool disable_hi_res_timer_tasks_on_battery;
   bool report_overscroll_only_for_scrollable_axes;
   bool per_tile_painting_enabled;
   bool partial_swap_enabled;

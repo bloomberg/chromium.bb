@@ -238,6 +238,12 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool CouldSendBeginMainFrame() const;
 
+  void SetImplLatencyTakesPriorityOnBattery(
+      bool impl_latency_takes_priority_on_battery) {
+    impl_latency_takes_priority_on_battery_ =
+        impl_latency_takes_priority_on_battery;
+  }
+
   // TODO(zmo): This is temporary for debugging crbug.com/393331.
   // We should remove it afterwards.
   std::string GetStatesForDebugging() const;
@@ -312,6 +318,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;
+  bool impl_latency_takes_priority_on_battery_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

@@ -31,6 +31,7 @@ class CC_EXPORT SchedulerSettings {
   int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
+  bool disable_hi_res_timer_tasks_on_battery;
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
 };

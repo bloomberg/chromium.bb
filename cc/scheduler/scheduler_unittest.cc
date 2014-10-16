@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -63,12 +65,38 @@ class FakeSchedulerClient : public SchedulerClient {
     }
   };
 
+  class FakePowerMonitorSource : public base::PowerMonitorSource {
+   public:
+    FakePowerMonitorSource() {}
+    virtual ~FakePowerMonitorSource() {}
+    void GeneratePowerStateEvent(bool on_battery_power) {
+      on_battery_power_impl_ = on_battery_power;
+      ProcessPowerEvent(POWER_STATE_EVENT);
+      base::MessageLoop::current()->RunUntilIdle();
+    }
+    virtual bool IsOnBatteryPowerImpl() override {
+      return on_battery_power_impl_;
+    }
+
+   private:
+    bool on_battery_power_impl_;
+  };
+
   FakeSchedulerClient()
       : automatic_swap_ack_(true),
         swap_contains_incomplete_tile_(false),
         redraw_will_happen_if_update_visible_tiles_happens_(false),
         now_src_(TestNowSource::Create()),
-        fake_frame_source_(this) {
+        task_runner_(new OrderedSimpleTaskRunner(now_src_, true)),
+        fake_frame_source_(this),
+        fake_power_monitor_source_(new FakePowerMonitorSource),
+        power_monitor_(make_scoped_ptr<base::PowerMonitorSource>(
+            fake_power_monitor_source_)),
+        scheduler_(nullptr) {
+    // A bunch of tests require Now() to be > BeginFrameArgs::DefaultInterval()
+    now_src_->AdvanceNow(base::TimeDelta::FromMilliseconds(100));
+    // Fail if we need to run 100 tasks in a row.
+    task_runner_->SetRunTaskLimit(100);
     Reset();
   }
 
@@ -82,10 +110,9 @@ class FakeSchedulerClient : public SchedulerClient {
   }
 
   TestScheduler* CreateScheduler(const SchedulerSettings& settings) {
-    scheduler_ = TestScheduler::Create(now_src_, this, settings, 0);
+    scheduler_ = TestScheduler::Create(
+        now_src_, this, settings, 0, task_runner_, &power_monitor_);
     DCHECK(scheduler_);
-    // Fail if we need to run 100 tasks in a row.
-    task_runner().SetRunTaskLimit(100);
     return scheduler_.get();
   }
 
@@ -111,6 +138,12 @@ class FakeSchedulerClient : public SchedulerClient {
     return &fake_frame_source_;
   }
 
+  base::PowerMonitor* PowerMonitor() { return &power_monitor_; }
+
+  FakePowerMonitorSource* PowerMonitorSource() {
+    return fake_power_monitor_source_;
+  }
+
   void AdvanceFrame() {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
                  "FakeSchedulerClient::AdvanceFrame");
@@ -128,7 +161,7 @@ class FakeSchedulerClient : public SchedulerClient {
     EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   }
 
-  OrderedSimpleTaskRunner& task_runner() { return scheduler_->task_runner(); }
+  OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
   TestNowSource* now_src() { return now_src_.get(); }
 
   int ActionIndex(const char* action) const {
@@ -257,9 +290,12 @@ class FakeSchedulerClient : public SchedulerClient {
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
   std::vector<scoped_refptr<base::debug::ConvertableToTraceFormat>> states_;
-  scoped_ptr<TestScheduler> scheduler_;
   scoped_refptr<TestNowSource> now_src_;
+  scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   FakeBeginFrameSourceForFakeSchedulerClient fake_frame_source_;
+  FakePowerMonitorSource* fake_power_monitor_source_;
+  base::PowerMonitor power_monitor_;
+  scoped_ptr<TestScheduler> scheduler_;
 };
 
 void InitializeOutputSurfaceAndFirstCommit(Scheduler* scheduler,
@@ -1965,6 +2001,153 @@ TEST(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
   // Sync tree should be forced to activate.
   EXPECT_ACTION("SetNeedsBeginFrames(false)", client, 0, 2);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client, 1, 2);
+}
+
+TEST(SchedulerTest, SchedulerPowerMonitoring) {
+  FakeSchedulerClient client;
+  SchedulerSettings settings;
+  settings.disable_hi_res_timer_tasks_on_battery = true;
+  TestScheduler* scheduler = client.CreateScheduler(settings);
+
+  base::TimeTicks before_deadline, after_deadline;
+
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  scheduler->SetNeedsCommit();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  // On non-battery power
+  EXPECT_FALSE(client.PowerMonitor()->IsOnBatteryPower());
+
+  client.AdvanceFrame();
+  client.Reset();
+
+  before_deadline = client.now_src()->Now();
+  EXPECT_TRUE(client.task_runner().RunTasksWhile(
+      client.ImplFrameDeadlinePending(true)));
+  after_deadline = client.now_src()->Now();
+
+  // We post a non-zero deadline task when not on battery
+  EXPECT_LT(before_deadline, after_deadline);
+
+  // Switch to battery power
+  client.PowerMonitorSource()->GeneratePowerStateEvent(true);
+  EXPECT_TRUE(client.PowerMonitor()->IsOnBatteryPower());
+
+  client.AdvanceFrame();
+  scheduler->SetNeedsCommit();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  before_deadline = client.now_src()->Now();
+  EXPECT_TRUE(client.task_runner().RunTasksWhile(
+      client.ImplFrameDeadlinePending(true)));
+  after_deadline = client.now_src()->Now();
+
+  // We post a zero deadline task when on battery
+  EXPECT_EQ(before_deadline, after_deadline);
+
+  // Switch to non-battery power
+  client.PowerMonitorSource()->GeneratePowerStateEvent(false);
+  EXPECT_FALSE(client.PowerMonitor()->IsOnBatteryPower());
+
+  client.AdvanceFrame();
+  scheduler->SetNeedsCommit();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  // Same as before
+  before_deadline = client.now_src()->Now();
+  EXPECT_TRUE(client.task_runner().RunTasksWhile(
+      client.ImplFrameDeadlinePending(true)));
+  after_deadline = client.now_src()->Now();
+}
+
+TEST(SchedulerTest,
+     SimulateWindowsLowResolutionTimerOnBattery_PrioritizeImplLatencyOff) {
+  FakeSchedulerClient client;
+  SchedulerSettings settings;
+  TestScheduler* scheduler = client.CreateScheduler(settings);
+
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  // Set needs commit so that the scheduler tries to wait for the main thread
+  scheduler->SetNeedsCommit();
+  // Set needs redraw so that the scheduler doesn't wait too long
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  // Switch to battery power
+  client.PowerMonitorSource()->GeneratePowerStateEvent(true);
+  EXPECT_TRUE(client.PowerMonitor()->IsOnBatteryPower());
+
+  client.AdvanceFrame();
+  scheduler->SetNeedsCommit();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  // Disable auto-advancing of now_src
+  client.task_runner().SetAutoAdvanceNowToPendingTasks(false);
+
+  // Deadline task is pending
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  client.task_runner().RunPendingTasks();
+  // Deadline task is still pending
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+
+  // Advance now by 15 ms - same as windows low res timer
+  client.now_src()->AdvanceNowMicroseconds(15000);
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  client.task_runner().RunPendingTasks();
+  // Deadline task finally completes
+  EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
+}
+
+TEST(SchedulerTest,
+     SimulateWindowsLowResolutionTimerOnBattery_PrioritizeImplLatencyOn) {
+  FakeSchedulerClient client;
+  SchedulerSettings settings;
+  settings.disable_hi_res_timer_tasks_on_battery = true;
+  TestScheduler* scheduler = client.CreateScheduler(settings);
+
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
+
+  // Set needs commit so that the scheduler tries to wait for the main thread
+  scheduler->SetNeedsCommit();
+  // Set needs redraw so that the scheduler doesn't wait too long
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  // Switch to battery power
+  client.PowerMonitorSource()->GeneratePowerStateEvent(true);
+  EXPECT_TRUE(client.PowerMonitor()->IsOnBatteryPower());
+
+  client.AdvanceFrame();
+  scheduler->SetNeedsCommit();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+
+  // Disable auto-advancing of now_src
+  client.task_runner().SetAutoAdvanceNowToPendingTasks(false);
+
+  // Deadline task is pending
+  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
+  client.task_runner().RunPendingTasks();
+  // Deadline task runs immediately
+  EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
 }
 
 }  // namespace

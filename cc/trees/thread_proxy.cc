@@ -1183,7 +1183,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   impl().scheduler = Scheduler::Create(this,
                                        scheduler_settings,
                                        impl().layer_tree_host_id,
-                                       ImplThreadTaskRunner());
+                                       ImplThreadTaskRunner(),
+                                       base::PowerMonitor::Get());
   impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
 
   impl_thread_weak_ptr_ = impl().weak_factory.GetWeakPtr();

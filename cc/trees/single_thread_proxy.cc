@@ -86,7 +86,8 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
     scheduler_on_impl_thread_ = Scheduler::Create(this,
                                                   scheduler_settings,
                                                   layer_tree_host_->id(),
-                                                  MainThreadTaskRunner());
+                                                  MainThreadTaskRunner(),
+                                                  base::PowerMonitor::Get());
     scheduler_on_impl_thread_->SetCanStart();
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
   }
