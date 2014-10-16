@@ -72,6 +72,7 @@ SharedRendererState::SharedRendererState(
     BrowserViewRendererClient* client)
     : ui_loop_(ui_loop),
       client_on_ui_(client),
+      force_commit_(false),
       inside_hardware_release_(false),
       needs_force_invalidate_on_next_draw_gl_(false),
       weak_factory_on_ui_thread_(this) {
@@ -145,15 +146,21 @@ bool SharedRendererState::HasCompositorFrame() const {
 }
 
 void SharedRendererState::SetCompositorFrame(
-    scoped_ptr<cc::CompositorFrame> frame) {
+    scoped_ptr<cc::CompositorFrame> frame, bool force_commit) {
   base::AutoLock lock(lock_);
   DCHECK(!compositor_frame_.get());
   compositor_frame_ = frame.Pass();
+  force_commit_ = force_commit;
 }
 
 scoped_ptr<cc::CompositorFrame> SharedRendererState::PassCompositorFrame() {
   base::AutoLock lock(lock_);
   return compositor_frame_.Pass();
+}
+
+bool SharedRendererState::ForceCommit() const {
+  base::AutoLock lock(lock_);
+  return force_commit_;
 }
 
 bool SharedRendererState::UpdateDrawConstraints(

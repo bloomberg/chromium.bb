@@ -206,6 +206,11 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     DLOG(WARNING) << "EGLContextChanged";
 
   SetFrameData();
+  if (shared_renderer_state_->ForceCommit()) {
+    CommitFrame();
+    SetFrameData();
+  }
+
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());

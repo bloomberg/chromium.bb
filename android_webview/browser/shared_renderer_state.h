@@ -38,8 +38,10 @@ class SharedRendererState {
   gfx::Vector2d GetScrollOffset();
 
   bool HasCompositorFrame() const;
-  void SetCompositorFrame(scoped_ptr<cc::CompositorFrame> frame);
+  void SetCompositorFrame(scoped_ptr<cc::CompositorFrame> frame,
+                          bool force_commit);
   scoped_ptr<cc::CompositorFrame> PassCompositorFrame();
+  bool ForceCommit() const;
 
   bool IsInsideHardwareRelease() const;
   // Returns true if the draw constraints are updated.
@@ -76,6 +78,7 @@ class SharedRendererState {
   mutable base::Lock lock_;
   gfx::Vector2d scroll_offset_;
   scoped_ptr<cc::CompositorFrame> compositor_frame_;
+  bool force_commit_;
   bool inside_hardware_release_;
   bool needs_force_invalidate_on_next_draw_gl_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
