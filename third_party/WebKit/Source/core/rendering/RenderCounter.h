@@ -48,7 +48,7 @@ protected:
 
 private:
     virtual const char* renderName() const override;
-    virtual bool isCounter() const override;
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectCounter || RenderText::isOfType(type); }
     virtual PassRefPtr<StringImpl> originalText() const override;
 
     // Removes the reference to the CounterNode associated with this renderer.

@@ -60,7 +60,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderSVGText"; }
-    virtual bool isSVGText() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGText || RenderSVGBlock::isOfType(type); }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;

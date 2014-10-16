@@ -36,7 +36,7 @@ class RenderHTMLCanvas final : public RenderReplaced {
 public:
     explicit RenderHTMLCanvas(HTMLCanvasElement*);
 
-    virtual bool isCanvas() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectCanvas || RenderReplaced::isOfType(type); }
     virtual LayerType layerTypeRequired() const override;
 
     void canvasSizeChanged();

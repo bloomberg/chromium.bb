@@ -58,7 +58,7 @@ public:
 private:
     virtual const char* renderName() const override { return "RenderListItem"; }
 
-    virtual bool isListItem() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectListItem || RenderBlockFlow::isOfType(type); }
 
     virtual void willBeDestroyed() override;
 

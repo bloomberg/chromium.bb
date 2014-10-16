@@ -285,7 +285,7 @@ protected:
 private:
     virtual const char* renderName() const override { return "RenderTable"; }
 
-    virtual bool isTable() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTable || RenderBlock::isOfType(type); }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
     virtual void paintObject(PaintInfo&, const LayoutPoint&) override;

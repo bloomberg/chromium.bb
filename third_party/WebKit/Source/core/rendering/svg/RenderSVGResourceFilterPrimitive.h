@@ -43,7 +43,7 @@ public:
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
 
     virtual const char* renderName() const override { return "RenderSVGResourceFilterPrimitive"; }
-    virtual bool isSVGResourceFilterPrimitive() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceFilterPrimitive || RenderSVGHiddenContainer::isOfType(type); }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)
     {

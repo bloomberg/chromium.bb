@@ -44,7 +44,7 @@ public:
     int lineHeight(bool firstLine) const;
 
     // overrides
-    virtual bool isBR() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectBr || RenderText::isOfType(type); }
 
     virtual int caretMinOffset() const override;
     virtual int caretMaxOffset() const override;

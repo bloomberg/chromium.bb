@@ -62,7 +62,7 @@ public:
 
     SVGElement* element() const { return toSVGElement(RenderObject::node()); }
 
-    virtual bool isSVG() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || RenderObject::isOfType(type); }
 
 protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override final;

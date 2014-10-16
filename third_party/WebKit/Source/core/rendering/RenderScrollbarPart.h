@@ -51,7 +51,7 @@ public:
     virtual LayoutUnit marginLeft() const override { ASSERT(isIntegerValue(m_marginBox.left())); return m_marginBox.left(); }
     virtual LayoutUnit marginRight() const override { ASSERT(isIntegerValue(m_marginBox.right())); return m_marginBox.right(); }
 
-    virtual bool isRenderScrollbarPart() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderScrollbarPart || RenderBlock::isOfType(type); }
     RenderObject* rendererOwningScrollbar() const;
 
 protected:

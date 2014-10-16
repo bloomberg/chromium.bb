@@ -57,7 +57,7 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
-    virtual bool isMenuList() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectMenuList || RenderFlexibleBox::isOfType(type); }
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;

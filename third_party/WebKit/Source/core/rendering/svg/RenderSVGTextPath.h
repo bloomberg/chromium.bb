@@ -34,7 +34,7 @@ public:
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
-    virtual bool isSVGTextPath() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGTextPath || RenderSVGInline::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderSVGTextPath"; }

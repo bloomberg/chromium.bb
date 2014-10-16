@@ -50,7 +50,7 @@ public:
 private:
     RenderReplica();
 
-    virtual bool isReplica() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectReplica || RenderBox::isOfType(type); }
     virtual void computePreferredLogicalWidths() override;
 
 };

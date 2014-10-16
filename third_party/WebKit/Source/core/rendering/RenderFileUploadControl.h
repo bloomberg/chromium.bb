@@ -36,7 +36,7 @@ public:
     RenderFileUploadControl(HTMLInputElement*);
     virtual ~RenderFileUploadControl();
 
-    virtual bool isFileUploadControl() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFileUploadControl || RenderBlockFlow::isOfType(type); }
 
     String buttonValue();
     String fileTextValue() const;

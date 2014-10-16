@@ -74,8 +74,7 @@ private:
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "RenderSVGRoot"; }
-    virtual bool isSVGRoot() const override { return true; }
-    virtual bool isSVG() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGRoot || RenderReplaced::isOfType(type); }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
     virtual LayoutUnit computeReplacedLogicalHeight() const override;

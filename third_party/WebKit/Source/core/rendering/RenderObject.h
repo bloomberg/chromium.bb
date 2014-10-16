@@ -333,59 +333,62 @@ public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
     virtual bool isBoxModelObject() const { return false; }
-    virtual bool isBR() const { return false; }
-    virtual bool isCanvas() const { return false; }
-    virtual bool isCounter() const { return false; }
-    virtual bool isDetailsMarker() const { return false; }
-    virtual bool isEmbeddedObject() const { return false; }
-    virtual bool isFieldset() const { return false; }
-    virtual bool isFileUploadControl() const { return false; }
-    virtual bool isFrame() const { return false; }
-    virtual bool isFrameSet() const { return false; }
+    bool isBR() const { return isOfType(RenderObjectBr); }
+    bool isCanvas() const { return isOfType(RenderObjectCanvas); }
+    bool isCounter() const { return isOfType(RenderObjectCounter); }
+    bool isDetailsMarker() const { return isOfType(RenderObjectDetailsMarker); }
+    bool isEmbeddedObject() const { return isOfType(RenderObjectEmbeddedObject); }
+    bool isFieldset() const { return isOfType(RenderObjectFieldset); }
+    bool isFileUploadControl() const { return isOfType(RenderObjectFileUploadControl); }
+    bool isFrame() const { return isOfType(RenderObjectFrame); }
+    bool isFrameSet() const { return isOfType(RenderObjectFrameSet); }
+    bool isListBox() const { return isOfType(RenderObjectListBox); }
+    bool isListItem() const { return isOfType(RenderObjectListItem); }
+    bool isListMarker() const { return isOfType(RenderObjectListMarker); }
+    bool isMarquee() const { return isOfType(RenderObjectMarquee); }
+    bool isMedia() const { return isOfType(RenderObjectMedia); }
+    bool isMenuList() const { return isOfType(RenderObjectMenuList); }
+    bool isMeter() const { return isOfType(RenderObjectMeter); }
+    bool isProgress() const { return isOfType(RenderObjectProgress); }
+    bool isQuote() const { return isOfType(RenderObjectQuote); }
+    bool isRenderButton() const { return isOfType(RenderObjectRenderButton); }
+    bool isRenderFullScreen() const { return isOfType(RenderObjectRenderFullScreen); }
+    bool isRenderFullScreenPlaceholder() const { return isOfType(RenderObjectRenderFullScreenPlaceholder); }
+    bool isRenderGrid() const { return isOfType(RenderObjectRenderGrid); }
+    bool isRenderIFrame() const { return isOfType(RenderObjectRenderIFrame); }
+    bool isRenderImage() const { return isOfType(RenderObjectRenderImage); }
+    bool isRenderMultiColumnSet() const { return isOfType(RenderObjectRenderMultiColumnSet); }
+    bool isRenderRegion() const { return isOfType(RenderObjectRenderRegion); }
+    bool isRenderScrollbarPart() const { return isOfType(RenderObjectRenderScrollbarPart); }
+    bool isRenderTableCol() const { return isOfType(RenderObjectRenderTableCol); }
+    bool isRenderView() const { return isOfType(RenderObjectRenderView); }
+    bool isReplica() const { return isOfType(RenderObjectReplica); }
+    bool isRuby() const { return isOfType(RenderObjectRuby); }
+    bool isRubyBase() const { return isOfType(RenderObjectRubyBase); }
+    bool isRubyRun() const { return isOfType(RenderObjectRubyRun); }
+    bool isRubyText() const { return isOfType(RenderObjectRubyText); }
+    bool isSlider() const { return isOfType(RenderObjectSlider); }
+    bool isSliderThumb() const { return isOfType(RenderObjectSliderThumb); }
+    bool isTable() const { return isOfType(RenderObjectTable); }
+    bool isTableCaption() const { return isOfType(RenderObjectTableCaption); }
+    bool isTableCell() const { return isOfType(RenderObjectTableCell); }
+    bool isTableRow() const { return isOfType(RenderObjectTableRow); }
+    bool isTableSection() const { return isOfType(RenderObjectTableSection); }
+    bool isTextArea() const { return isOfType(RenderObjectTextArea); }
+    bool isTextControl() const { return isOfType(RenderObjectTextControl); }
+    bool isTextField() const { return isOfType(RenderObjectTextField); }
+    bool isVideo() const { return isOfType(RenderObjectVideo); }
+    bool isWidget() const { return isOfType(RenderObjectWidget); }
+
     virtual bool isImage() const { return false; }
+
     virtual bool isInlineBlockOrInlineTable() const { return false; }
     virtual bool isLayerModelObject() const { return false; }
-    virtual bool isListBox() const { return false; }
-    virtual bool isListItem() const { return false; }
-    virtual bool isListMarker() const { return false; }
-    virtual bool isMarquee() const { return false; }
-    virtual bool isMedia() const { return false; }
-    virtual bool isMenuList() const { return false; }
-    virtual bool isMeter() const { return false; }
-    virtual bool isProgress() const { return false; }
-    virtual bool isQuote() const { return false; }
     virtual bool isRenderBlock() const { return false; }
     virtual bool isRenderBlockFlow() const { return false; }
-    virtual bool isRenderButton() const { return false; }
     virtual bool isRenderFlowThread() const { return false; }
-    virtual bool isRenderFullScreen() const { return false; }
-    virtual bool isRenderFullScreenPlaceholder() const { return false; }
-    virtual bool isRenderGrid() const { return false; }
-    virtual bool isRenderIFrame() const { return false; }
-    virtual bool isRenderImage() const { return false; }
     virtual bool isRenderInline() const { return false; }
-    virtual bool isRenderMultiColumnSet() const { return false; }
     virtual bool isRenderPart() const { return false; }
-    virtual bool isRenderRegion() const { return false; }
-    virtual bool isRenderScrollbarPart() const { return false; }
-    virtual bool isRenderTableCol() const { return false; }
-    virtual bool isRenderView() const { return false; }
-    virtual bool isReplica() const { return false; }
-    virtual bool isRuby() const { return false; }
-    virtual bool isRubyBase() const { return false; }
-    virtual bool isRubyRun() const { return false; }
-    virtual bool isRubyText() const { return false; }
-    virtual bool isSlider() const { return false; }
-    virtual bool isSliderThumb() const { return false; }
-    virtual bool isTable() const { return false; }
-    virtual bool isTableCaption() const { return false; }
-    virtual bool isTableCell() const { return false; }
-    virtual bool isTableRow() const { return false; }
-    virtual bool isTableSection() const { return false; }
-    virtual bool isTextArea() const { return false; }
-    virtual bool isTextControl() const { return false; }
-    virtual bool isTextField() const { return false; }
-    virtual bool isVideo() const { return false; }
 
     bool isDocumentElement() const { return document().documentElement() == m_node; }
     // isBody is called from RenderBox::styleWillChange and is thus quite hot.
@@ -441,23 +444,23 @@ public:
 
     // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
     // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
-    virtual bool isSVG() const { return false; }
-    virtual bool isSVGRoot() const { return false; }
-    virtual bool isSVGContainer() const { return false; }
-    virtual bool isSVGTransformableContainer() const { return false; }
-    virtual bool isSVGViewportContainer() const { return false; }
-    virtual bool isSVGGradientStop() const { return false; }
-    virtual bool isSVGHiddenContainer() const { return false; }
-    virtual bool isSVGShape() const { return false; }
-    virtual bool isSVGText() const { return false; }
-    virtual bool isSVGTextPath() const { return false; }
-    virtual bool isSVGInline() const { return false; }
-    virtual bool isSVGInlineText() const { return false; }
-    virtual bool isSVGImage() const { return false; }
-    virtual bool isSVGForeignObject() const { return false; }
-    virtual bool isSVGResourceContainer() const { return false; }
-    virtual bool isSVGResourceFilter() const { return false; }
-    virtual bool isSVGResourceFilterPrimitive() const { return false; }
+    bool isSVG() const { return isOfType(RenderObjectSVG); }
+    bool isSVGRoot() const { return isOfType(RenderObjectSVGRoot); }
+    bool isSVGContainer() const { return isOfType(RenderObjectSVGContainer); }
+    bool isSVGTransformableContainer() const { return isOfType(RenderObjectSVGTransformableContainer); }
+    bool isSVGViewportContainer() const { return isOfType(RenderObjectSVGViewportContainer); }
+    bool isSVGGradientStop() const { return isOfType(RenderObjectSVGGradientStop); }
+    bool isSVGHiddenContainer() const { return isOfType(RenderObjectSVGHiddenContainer); }
+    bool isSVGShape() const { return isOfType(RenderObjectSVGShape); }
+    bool isSVGText() const { return isOfType(RenderObjectSVGText); }
+    bool isSVGTextPath() const { return isOfType(RenderObjectSVGTextPath); }
+    bool isSVGInline() const { return isOfType(RenderObjectSVGInline); }
+    bool isSVGInlineText() const { return isOfType(RenderObjectSVGInlineText); }
+    bool isSVGImage() const { return isOfType(RenderObjectSVGImage); }
+    bool isSVGForeignObject() const { return isOfType(RenderObjectSVGForeignObject); }
+    bool isSVGResourceContainer() const { return isOfType(RenderObjectSVGResourceContainer); }
+    bool isSVGResourceFilter() const { return isOfType(RenderObjectSVGResourceFilter); }
+    bool isSVGResourceFilterPrimitive() const { return isOfType(RenderObjectSVGResourceFilterPrimitive); }
 
     // FIXME: Those belong into a SVG specific base-class for all renderers (see above)
     // Unfortunately we don't have such a class yet, because it's not possible for all renderers
@@ -1049,6 +1052,77 @@ public:
     virtual LayoutRect viewRect() const;
 
 protected:
+    enum RenderObjectType {
+        RenderObjectBr,
+        RenderObjectCanvas,
+        RenderObjectFieldset,
+        RenderObjectCounter,
+        RenderObjectDetailsMarker,
+        RenderObjectEmbeddedObject,
+        RenderObjectFileUploadControl,
+        RenderObjectFrame,
+        RenderObjectFrameSet,
+        RenderObjectListBox,
+        RenderObjectListItem,
+        RenderObjectListMarker,
+        RenderObjectMarquee,
+        RenderObjectMedia,
+        RenderObjectMenuList,
+        RenderObjectMeter,
+        RenderObjectProgress,
+        RenderObjectQuote,
+        RenderObjectRenderButton,
+        RenderObjectRenderFlowThread,
+        RenderObjectRenderFullScreen,
+        RenderObjectRenderFullScreenPlaceholder,
+        RenderObjectRenderGrid,
+        RenderObjectRenderIFrame,
+        RenderObjectRenderImage,
+        RenderObjectRenderInline,
+        RenderObjectRenderMultiColumnSet,
+        RenderObjectRenderPart,
+        RenderObjectRenderRegion,
+        RenderObjectRenderScrollbarPart,
+        RenderObjectRenderTableCol,
+        RenderObjectRenderView,
+        RenderObjectReplica,
+        RenderObjectRuby,
+        RenderObjectRubyBase,
+        RenderObjectRubyRun,
+        RenderObjectRubyText,
+        RenderObjectSlider,
+        RenderObjectSliderThumb,
+        RenderObjectTable,
+        RenderObjectTableCaption,
+        RenderObjectTableCell,
+        RenderObjectTableRow,
+        RenderObjectTableSection,
+        RenderObjectTextArea,
+        RenderObjectTextControl,
+        RenderObjectTextField,
+        RenderObjectVideo,
+        RenderObjectWidget,
+
+        RenderObjectSVG, /* Keep by itself? */
+        RenderObjectSVGRoot,
+        RenderObjectSVGContainer,
+        RenderObjectSVGTransformableContainer,
+        RenderObjectSVGViewportContainer,
+        RenderObjectSVGHiddenContainer,
+        RenderObjectSVGGradientStop,
+        RenderObjectSVGShape,
+        RenderObjectSVGText,
+        RenderObjectSVGTextPath,
+        RenderObjectSVGInline,
+        RenderObjectSVGInlineText,
+        RenderObjectSVGImage,
+        RenderObjectSVGForeignObject,
+        RenderObjectSVGResourceContainer,
+        RenderObjectSVGResourceFilter,
+        RenderObjectSVGResourceFilterPrimitive,
+    };
+    virtual bool isOfType(RenderObjectType type) const { return false; }
+
     inline bool layerCreationAllowedForSubtree() const;
 
     // Overrides should call the superclass at the end. m_style will be 0 the first time

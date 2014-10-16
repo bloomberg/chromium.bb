@@ -54,7 +54,7 @@ protected:
     virtual RenderObjectChildList* virtualChildren() override final { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override final { return children(); }
 
-    virtual bool isSVGContainer() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGContainer || RenderSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGContainer"; }
 
     virtual void layout() override;

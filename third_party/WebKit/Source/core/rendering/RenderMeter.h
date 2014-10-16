@@ -40,7 +40,7 @@ private:
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
     virtual const char* renderName() const override { return "RenderMeter"; }
-    virtual bool isMeter() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectMeter || RenderBlockFlow::isOfType(type); }
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMeter, isMeter());

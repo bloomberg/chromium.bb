@@ -378,11 +378,6 @@ const char* RenderCounter::renderName() const
     return "RenderCounter";
 }
 
-bool RenderCounter::isCounter() const
-{
-    return true;
-}
-
 PassRefPtr<StringImpl> RenderCounter::originalText() const
 {
     if (!m_counterNode) {

@@ -49,10 +49,10 @@ public:
 
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
     virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGImage || RenderSVGModelObject::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "RenderSVGImage"; }
-    virtual bool isSVGImage() const override { return true; }
 
     virtual FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 

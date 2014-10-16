@@ -56,7 +56,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderView"; }
 
-    virtual bool isRenderView() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderView || RenderBlockFlow::isOfType(type); }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 

@@ -63,7 +63,7 @@ private:
     virtual const char* renderName() const override { return "RenderListMarker"; }
     virtual void computePreferredLogicalWidths() override;
 
-    virtual bool isListMarker() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectListMarker || RenderBox::isOfType(type); }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 

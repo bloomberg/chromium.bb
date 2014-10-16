@@ -68,7 +68,7 @@ protected:
 private:
     RenderRubyRun();
 
-    virtual bool isRubyRun() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyRun || RenderBlockFlow::isOfType(type); }
     virtual const char* renderName() const override { return "RenderRubyRun (anonymous)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { }

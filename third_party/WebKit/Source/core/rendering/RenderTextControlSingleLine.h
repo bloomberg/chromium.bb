@@ -49,7 +49,7 @@ protected:
 private:
     virtual bool hasControlClip() const override final;
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override final;
-    virtual bool isTextField() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextField || RenderTextControl::isOfType(type); }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
     virtual void layout() override;

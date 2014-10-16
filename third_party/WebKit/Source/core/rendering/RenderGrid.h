@@ -61,7 +61,7 @@ public:
     bool gridIsDirty() const { return m_gridIsDirty; }
 
 private:
-    virtual bool isRenderGrid() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderGrid || RenderBlock::isOfType(type); }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
 

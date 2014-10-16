@@ -43,7 +43,7 @@ public:
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
 private:
-    virtual bool isSVGViewportContainer() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGViewportContainer || RenderSVGContainer::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;

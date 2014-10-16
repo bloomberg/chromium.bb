@@ -63,7 +63,7 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
 private:
-    virtual bool isRuby() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRuby || RenderInline::isOfType(type); }
     virtual const char* renderName() const override { return "RenderRuby (inline)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
 };
@@ -81,7 +81,7 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 
 private:
-    virtual bool isRuby() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRuby || RenderBlockFlow::isOfType(type); }
     virtual const char* renderName() const override { return "RenderRuby (block)"; }
     virtual bool createsAnonymousWrapper() const override { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override { ASSERT_NOT_REACHED(); }

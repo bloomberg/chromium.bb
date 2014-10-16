@@ -85,7 +85,7 @@ private:
     virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform; }
     virtual AffineTransform localTransform() const override final { return m_localTransform; }
 
-    virtual bool isSVGShape() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGShape || RenderSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGShape"; }
 
     virtual void layout() override final;

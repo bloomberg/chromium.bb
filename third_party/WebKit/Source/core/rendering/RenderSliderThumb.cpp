@@ -58,9 +58,4 @@ void RenderSliderThumb::updateAppearance(RenderStyle* parentStyle)
         RenderTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
 }
 
-bool RenderSliderThumb::isSliderThumb() const
-{
-    return true;
-}
-
 } // namespace blink

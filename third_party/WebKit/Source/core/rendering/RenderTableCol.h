@@ -84,7 +84,7 @@ private:
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "RenderTableCol"; }
-    virtual bool isRenderTableCol() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderTableCol || RenderBox::isOfType(type); }
     virtual void updateFromElement() override;
     virtual void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 

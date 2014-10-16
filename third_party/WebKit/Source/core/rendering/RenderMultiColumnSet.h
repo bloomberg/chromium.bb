@@ -56,7 +56,7 @@ public:
 
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread*, RenderStyle* parentStyle);
 
-    virtual bool isRenderMultiColumnSet() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderMultiColumnSet || RenderRegion::isOfType(type); }
 
     virtual LayoutUnit pageLogicalWidth() const override final { return flowThread()->logicalWidth(); }
     virtual LayoutUnit pageLogicalHeight() const override final { return m_columnHeight; }

@@ -32,7 +32,7 @@ public:
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
-    virtual bool isSVGTransformableContainer() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGTransformableContainer || RenderSVGContainer::isOfType(type); }
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
     virtual bool didTransformToRootUpdate() override { return m_didTransformToRootUpdate; }

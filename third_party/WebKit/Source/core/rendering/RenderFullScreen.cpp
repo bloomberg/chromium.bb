@@ -45,7 +45,7 @@ public:
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isRenderFullScreenPlaceholder() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderFullScreenPlaceholder || RenderBlockFlow::isOfType(type); }
     virtual void willBeDestroyed() override;
     RenderFullScreen* m_owner;
 };

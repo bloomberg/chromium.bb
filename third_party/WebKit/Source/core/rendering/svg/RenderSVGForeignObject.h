@@ -46,7 +46,7 @@ public:
 
     virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
-    virtual bool isSVGForeignObject() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGForeignObject || RenderSVGBlock::isOfType(type); }
 
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 

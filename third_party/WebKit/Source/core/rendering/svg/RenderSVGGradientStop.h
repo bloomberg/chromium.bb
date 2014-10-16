@@ -35,8 +35,7 @@ public:
     virtual ~RenderSVGGradientStop();
 
     virtual const char* renderName() const override { return "RenderSVGGradientStop"; }
-    virtual bool isSVGGradientStop() const override { return true; }
-    virtual bool isSVG() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGGradientStop || RenderObject::isOfType(type); }
 
     virtual void layout() override;
 

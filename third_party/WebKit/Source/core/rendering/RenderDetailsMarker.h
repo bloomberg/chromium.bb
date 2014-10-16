@@ -35,7 +35,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderDetailsMarker"; }
-    virtual bool isDetailsMarker() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectDetailsMarker || RenderBlockFlow::isOfType(type); }
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
     bool isOpen() const;

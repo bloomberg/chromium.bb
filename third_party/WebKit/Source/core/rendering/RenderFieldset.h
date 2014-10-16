@@ -37,7 +37,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderFieldSet"; }
-    virtual bool isFieldset() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFieldset || RenderBlockFlow::isOfType(type); }
 
     virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 

@@ -226,7 +226,7 @@ protected:
 private:
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
 
-    virtual bool isTableCell() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableCell || RenderBlockFlow::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 

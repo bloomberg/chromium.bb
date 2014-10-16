@@ -39,8 +39,7 @@ public:
 
     virtual void layout() override;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
-
-    virtual bool isSVGResourceContainer() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceContainer || RenderSVGHiddenContainer::isOfType(type); }
 
     void idChanged();
     void addClientRenderLayer(Node*);

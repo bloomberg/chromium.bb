@@ -45,7 +45,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderRubyBase (anonymous)"; }
 
-    virtual bool isRubyBase() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyBase || RenderBlockFlow::isOfType(type); }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 

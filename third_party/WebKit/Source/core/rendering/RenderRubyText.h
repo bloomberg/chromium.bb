@@ -42,7 +42,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderRubyText"; }
 
-    virtual bool isRubyText() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRubyText || RenderBlockFlow::isOfType(type); }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 

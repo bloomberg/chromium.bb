@@ -43,7 +43,7 @@ private:
 
     virtual void willBeDestroyed() override;
     virtual const char* renderName() const override { return "RenderQuote"; };
-    virtual bool isQuote() const override { return true; };
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectQuote || RenderInline::isOfType(type); }
     virtual void styleDidChange(StyleDifference, const RenderStyle*) override;
     virtual void willBeRemovedFromTree() override;
 

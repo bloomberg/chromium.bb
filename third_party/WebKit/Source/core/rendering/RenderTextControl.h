@@ -69,9 +69,10 @@ protected:
     // element as an implementation detail which would normally be affected by this.
     virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextControl || RenderBlockFlow::isOfType(type); }
+
 private:
     virtual const char* renderName() const override { return "RenderTextControl"; }
-    virtual bool isTextControl() const override final { return true; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
     virtual void computePreferredLogicalWidths() override final;
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) override final { }

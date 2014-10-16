@@ -45,7 +45,7 @@ public:
     void updateAppearance(RenderStyle* parentStyle);
 
 private:
-    virtual bool isSliderThumb() const override;
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSliderThumb || RenderBlockFlow::isOfType(type); }
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSliderThumb, isSliderThumb());

@@ -49,7 +49,7 @@ private:
 
     virtual const char* renderName() const override { return "RenderListBox"; }
 
-    virtual bool isListBox() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectListBox || RenderBlockFlow::isOfType(type); }
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;

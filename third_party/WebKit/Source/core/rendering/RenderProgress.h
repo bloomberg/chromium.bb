@@ -43,7 +43,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderProgress"; }
-    virtual bool isProgress() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectProgress || RenderBlockFlow::isOfType(type); }
 
     void animationTimerFired(Timer<RenderProgress>*);
     void updateAnimationState();

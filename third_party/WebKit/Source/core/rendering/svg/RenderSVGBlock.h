@@ -49,10 +49,9 @@ protected:
 
     AffineTransform m_localTransform;
 
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || RenderBlockFlow::isOfType(type); }
 private:
     virtual void updateFromStyle() override final;
-
-    virtual bool isSVG() const override final { return true; }
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override final;
 

@@ -39,7 +39,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderSlider"; }
-    virtual bool isSlider() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSlider || RenderFlexibleBox::isOfType(type); }
 
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;

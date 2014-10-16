@@ -84,11 +84,12 @@ protected:
     virtual void layout() override;
     virtual bool updateImageLoadingPriorities() override final;
 
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderImage || RenderReplaced::isOfType(type); }
+
 private:
     virtual const char* renderName() const override { return "RenderImage"; }
 
     virtual bool isImage() const override { return true; }
-    virtual bool isRenderImage() const override final { return true; }
 
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override;
 

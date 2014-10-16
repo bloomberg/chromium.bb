@@ -245,7 +245,7 @@ private:
 
     virtual const char* renderName() const override { return (isAnonymous() || isPseudoElement()) ? "RenderTableSection (anonymous)" : "RenderTableSection"; }
 
-    virtual bool isTableSection() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableSection || RenderBox::isOfType(type); }
 
     virtual void willBeRemovedFromTree() override;
 

@@ -40,7 +40,7 @@ private:
 
     virtual void layout() override;
 
-    virtual bool isRenderIFrame() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderIFrame || RenderPart::isOfType(type); }
 
     virtual const char* renderName() const override { return "RenderPartObject"; } // Lying for now to avoid breaking tests
 

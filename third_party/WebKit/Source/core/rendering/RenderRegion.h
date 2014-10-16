@@ -43,7 +43,7 @@ class RenderRegion : public RenderBlockFlow {
 public:
     explicit RenderRegion(Element*, RenderFlowThread*);
 
-    virtual bool isRenderRegion() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderRegion || RenderBlockFlow::isOfType(type); }
 
     void setFlowThreadPortionRect(const LayoutRect& rect) { m_flowThreadPortionRect = rect; }
     LayoutRect flowThreadPortionRect() const { return m_flowThreadPortionRect; }

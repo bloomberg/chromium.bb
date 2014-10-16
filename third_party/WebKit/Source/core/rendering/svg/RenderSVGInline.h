@@ -31,8 +31,7 @@ public:
 
     virtual const char* renderName() const override { return "RenderSVGInline"; }
     virtual LayerType layerTypeRequired() const override final { return NoLayer; }
-    virtual bool isSVGInline() const override final { return true; }
-    virtual bool isSVG() const override final { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVG || type == RenderObjectSVGInline || RenderInline::isOfType(type); }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 

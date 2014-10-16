@@ -58,7 +58,7 @@ private:
 
     virtual const char* renderName() const override { return "RenderVideo"; }
 
-    virtual bool isVideo() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectVideo || RenderMedia::isOfType(type); }
 
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override;
 

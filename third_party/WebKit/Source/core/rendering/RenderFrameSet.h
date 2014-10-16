@@ -99,7 +99,7 @@ private:
     virtual const RenderObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "RenderFrameSet"; }
-    virtual bool isFrameSet() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFrameSet || RenderBox::isOfType(type); }
 
     virtual void layout() override;
     virtual void paint(PaintInfo&, const LayoutPoint&) override;

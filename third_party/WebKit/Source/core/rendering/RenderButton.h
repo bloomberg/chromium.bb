@@ -35,7 +35,7 @@ public:
     virtual ~RenderButton();
 
     virtual const char* renderName() const override { return "RenderButton"; }
-    virtual bool isRenderButton() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderButton || RenderFlexibleBox::isOfType(type); }
 
     virtual bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
     virtual bool canCollapseAnonymousBlockChild() const override { return true; }

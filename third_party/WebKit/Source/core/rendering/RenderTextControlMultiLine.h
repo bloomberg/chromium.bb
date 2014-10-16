@@ -34,7 +34,7 @@ public:
     virtual ~RenderTextControlMultiLine();
 
 private:
-    virtual bool isTextArea() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTextArea || RenderTextControl::isOfType(type); }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 

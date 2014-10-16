@@ -33,7 +33,7 @@ public:
     virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
 
 private:
-    virtual bool isTableCaption() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectTableCaption || RenderBlockFlow::isOfType(type); }
 
     virtual void insertedIntoTree() override;
     virtual void willBeRemovedFromTree() override;

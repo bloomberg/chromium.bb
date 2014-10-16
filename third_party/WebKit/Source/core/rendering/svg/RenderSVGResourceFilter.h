@@ -59,7 +59,7 @@ public:
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const override;
 
     virtual const char* renderName() const override { return "RenderSVGResourceFilter"; }
-    virtual bool isSVGResourceFilter() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGResourceFilter || RenderSVGResourceContainer::isOfType(type); }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;

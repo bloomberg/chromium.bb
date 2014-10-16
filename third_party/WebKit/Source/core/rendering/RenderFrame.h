@@ -38,7 +38,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderFrame"; }
-    virtual bool isFrame() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectFrame || RenderPart::isOfType(type); }
 
     virtual void updateFromElement() override;
 };

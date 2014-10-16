@@ -53,6 +53,8 @@ public:
 protected:
     virtual void layout() override;
 
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectMedia || RenderImage::isOfType(type); }
+
 private:
     virtual RenderObjectChildList* virtualChildren() override final { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const override final { return children(); }
@@ -65,7 +67,6 @@ private:
     virtual bool canHaveChildren() const override final { return true; }
 
     virtual const char* renderName() const override { return "RenderMedia"; }
-    virtual bool isMedia() const override final { return true; }
     virtual bool isImage() const override final { return false; }
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) override;
 

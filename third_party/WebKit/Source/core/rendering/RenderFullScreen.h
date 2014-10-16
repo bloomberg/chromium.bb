@@ -35,7 +35,7 @@ public:
     static RenderFullScreen* createAnonymous(Document*);
     virtual void trace(Visitor*) override;
 
-    virtual bool isRenderFullScreen() const override { return true; }
+    virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectRenderFullScreen || RenderFlexibleBox::isOfType(type); }
     virtual const char* renderName() const override { return "RenderFullScreen"; }
 
     void setPlaceholder(RenderBlock*);
