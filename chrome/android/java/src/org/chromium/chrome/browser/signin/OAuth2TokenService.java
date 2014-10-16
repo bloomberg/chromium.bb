@@ -138,13 +138,12 @@ public final class OAuth2TokenService {
 
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(context);
         accountManagerHelper.getAuthTokenFromForeground(
-            null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
-                @Override
-                public void tokenAvailable(String token) {
-                    nativeOAuth2TokenFetched(
-                        token, token != null, nativeCallback);
-                }
-            });
+                null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
+                    @Override
+                    public void tokenAvailable(String token) {
+                        nativeOAuth2TokenFetched(token, token != null, nativeCallback);
+                    }
+                });
     }
 
     /**
@@ -155,9 +154,9 @@ public final class OAuth2TokenService {
      * @param scope The scope to get an auth token for (without Android-style 'oauth2:' prefix).
      * @param callback called on successful and unsuccessful fetching of auth token.
      */
-    public static void getOAuth2AccessToken(Context context, @Nullable Activity activity,
-                                            Account account, String scope,
-                                            AccountManagerHelper.GetAuthTokenCallback callback) {
+    public static void getOAuth2AccessToken(
+            Context context, @Nullable Activity activity, Account account, String scope,
+            AccountManagerHelper.GetAuthTokenCallback callback) {
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
         AccountManagerHelper.get(context).getAuthTokenFromForeground(
                 activity, account, oauth2Scope, callback);

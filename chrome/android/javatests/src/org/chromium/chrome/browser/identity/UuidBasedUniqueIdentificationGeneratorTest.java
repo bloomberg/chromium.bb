@@ -67,7 +67,7 @@ public class UuidBasedUniqueIdentificationGeneratorTest extends InstrumentationT
         mContext.clearFlag(FLAG_UUID);
         Assert.assertEquals(expectedUniqueId2, generator2.getUniqueId(null));
         assertFalse(mContext.isFlagSet(FLAG_UUID));
-   }
+    }
 
     private static class TestGenerator extends UuidBasedUniqueIdentificationGenerator {
         private final AdvancedMockContext mContext;

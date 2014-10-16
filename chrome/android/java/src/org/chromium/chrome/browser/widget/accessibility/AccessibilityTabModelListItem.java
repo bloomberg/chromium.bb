@@ -337,8 +337,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         @Override
         public void onTitleUpdated(Tab tab) {
-          updateTabTitle();
-          notifyTabUpdated(tab);
+            updateTabTitle();
+            notifyTabUpdated(tab);
         }
 
         @Override

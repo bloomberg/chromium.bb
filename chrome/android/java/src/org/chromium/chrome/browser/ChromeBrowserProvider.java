@@ -75,15 +75,15 @@ public class ChromeBrowserProvider extends ContentProvider {
     private static final String API_AUTHORITY_SUFFIX = ".browser";
 
     private static final String BROWSER_CONTRACT_API_AUTHORITY =
-        "com.google.android.apps.chrome.browser-contract";
+            "com.google.android.apps.chrome.browser-contract";
 
     // These values are taken from android.provider.BrowserContract.java since
     // that class is hidden from the SDK.
     private static final String BROWSER_CONTRACT_AUTHORITY = "com.android.browser";
     private static final String BROWSER_CONTRACT_HISTORY_CONTENT_TYPE =
-        "vnd.android.cursor.dir/browser-history";
+            "vnd.android.cursor.dir/browser-history";
     private static final String BROWSER_CONTRACT_HISTORY_CONTENT_ITEM_TYPE =
-        "vnd.android.cursor.item/browser-history";
+            "vnd.android.cursor.item/browser-history";
     private static final String BROWSER_CONTRACT_BOOKMARK_CONTENT_TYPE =
         "vnd.android.cursor.dir/bookmark";
     private static final String BROWSER_CONTRACT_BOOKMARK_CONTENT_ITEM_TYPE =

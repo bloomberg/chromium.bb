@@ -67,7 +67,7 @@ public class AutofillTestHelper {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-               PersonalDataManager.getInstance().deleteProfile(guid);
+                PersonalDataManager.getInstance().deleteProfile(guid);
             }
         });
         waitForDataChanged();
@@ -106,7 +106,7 @@ public class AutofillTestHelper {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-               PersonalDataManager.getInstance().deleteCreditCard(guid);
+                PersonalDataManager.getInstance().deleteCreditCard(guid);
             }
         });
         waitForDataChanged();

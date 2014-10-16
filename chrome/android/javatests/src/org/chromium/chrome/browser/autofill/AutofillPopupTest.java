@@ -124,11 +124,12 @@ public class AutofillPopupTest extends ChromeShellTestBase {
         clearAppData();
         mAutofillLoggedEntries = new ArrayList<AutofillLogger.LogEntry>();
         AutofillLogger.setLogger(
-            new AutofillLogger.Logger() {
-                @Override
-                public void didFillField(AutofillLogger.LogEntry logEntry) {
-                    mAutofillLoggedEntries.add(logEntry);
-                }}
+                new AutofillLogger.Logger() {
+                    @Override
+                    public void didFillField(AutofillLogger.LogEntry logEntry) {
+                        mAutofillLoggedEntries.add(logEntry);
+                    }
+                }
         );
     }
 
@@ -345,7 +346,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
     private void assertLogged(String autofilledValue, String profileFullName) {
         for (AutofillLogger.LogEntry entry : mAutofillLoggedEntries) {
             if (entry.getAutofilledValue().equals(autofilledValue) &&
-                entry.getProfileFullName().equals(profileFullName)) {
+                    entry.getProfileFullName().equals(profileFullName)) {
                 return;
             }
         }

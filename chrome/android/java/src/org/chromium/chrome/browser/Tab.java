@@ -1054,7 +1054,7 @@ public class Tab implements NavigationClient {
      */
     @CalledByNative
     private void onWebContentsInstantSupportDisabled() {
-      for (TabObserver observer : mObservers) observer.onWebContentsInstantSupportDisabled();
+        for (TabObserver observer : mObservers) observer.onWebContentsInstantSupportDisabled();
     }
 
     /**

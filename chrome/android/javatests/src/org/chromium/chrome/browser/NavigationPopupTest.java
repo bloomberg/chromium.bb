@@ -94,24 +94,26 @@ public class NavigationPopupTest extends ChromeShellTestBase {
 
         assertTrue("All favicons did not get updated.",
                 CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            NavigationHistory history = client.mHistory;
-                            for (int i = 0; i < history.getEntryCount(); i++) {
-                                if (history.getEntryAtIndex(i).getFavicon() == null) return false;
-                            }
-                            return true;
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                                @Override
+                                public Boolean call() throws Exception {
+                                    NavigationHistory history = client.mHistory;
+                                    for (int i = 0; i < history.getEntryCount(); i++) {
+                                        if (history.getEntryAtIndex(i).getFavicon() == null) {
+                                            return false;
+                                        }
+                                    }
+                                    return true;
+                                }
+                            });
+                        } catch (ExecutionException e) {
+                            return false;
                         }
-                    });
-                } catch (ExecutionException e) {
-                    return false;
-                }
-            }
-        }));
+                    }
+                }));
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

@@ -206,7 +206,7 @@ public class DistilledPagePrefsView extends LinearLayout
 
     @Override
     public void onChangeFontFamily(FontFamily fontFamily) {
-         mFontFamilySpinner.setSelection(fontFamily.ordinal());
+        mFontFamilySpinner.setSelection(fontFamily.ordinal());
     }
 
     /**

@@ -112,7 +112,7 @@ public class TemplateUrlServiceTest extends ChromeShellTestBase {
                     public boolean isSatisfied() {
                         return observerNotified.get();
                     }
-        }));
+                }));
         return templateUrlService.get();
     }
 }

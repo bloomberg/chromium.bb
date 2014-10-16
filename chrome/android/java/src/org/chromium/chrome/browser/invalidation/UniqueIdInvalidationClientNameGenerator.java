@@ -28,10 +28,9 @@ public class UniqueIdInvalidationClientNameGenerator implements InvalidationClie
      */
     public static void doInitializeAndInstallGenerator(Context context) {
         UniqueIdentificationGenerator idGenerator =
-            new UuidBasedUniqueIdentificationGenerator(
-                context, INVALIDATIONS_UUID_PREF_KEY);
+                new UuidBasedUniqueIdentificationGenerator(context, INVALIDATIONS_UUID_PREF_KEY);
         InvalidationClientNameGenerator clientNameGenerator =
-            new UniqueIdInvalidationClientNameGenerator(idGenerator);
+                new UniqueIdInvalidationClientNameGenerator(idGenerator);
         InvalidationClientNameProvider.get().setPreferredClientNameGenerator(clientNameGenerator);
     }
 

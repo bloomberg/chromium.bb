@@ -144,13 +144,13 @@ public class PrintingControllerTest extends ChromeShellTestBase {
         try {
             final FutureTask<PrintingControllerImpl> task =
                     new FutureTask<PrintingControllerImpl>(new Callable<PrintingControllerImpl>() {
-                @Override
-                public PrintingControllerImpl call() throws Exception {
-                    return (PrintingControllerImpl) PrintingControllerImpl.create(
-                            new PrintDocumentAdapterWrapper(),
-                            PRINT_JOB_NAME);
-                }
-            });
+                        @Override
+                        public PrintingControllerImpl call() throws Exception {
+                            return (PrintingControllerImpl) PrintingControllerImpl.create(
+                                    new PrintDocumentAdapterWrapper(),
+                                    PRINT_JOB_NAME);
+                        }
+                    });
 
             runTestOnUiThread(task);
             PrintingControllerImpl result = task.get(TEST_TIMEOUT, TimeUnit.MILLISECONDS);

@@ -233,7 +233,7 @@ public class TemplateUrlService {
      *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
      *              search and prefetch parameters set.
      */
-     public String getUrlForContextualSearchQuery(String query, String alternateTerm) {
+    public String getUrlForContextualSearchQuery(String query, String alternateTerm) {
         return nativeGetUrlForContextualSearchQuery(
             mNativeTemplateUrlServiceAndroid, query, alternateTerm, true);
     }
@@ -248,7 +248,7 @@ public class TemplateUrlService {
      *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
      *              search and prefetch parameters conditionally set.
      */
-     public String getUrlForContextualSearchQuery(String query, String alternateTerm,
+    public String getUrlForContextualSearchQuery(String query, String alternateTerm,
             boolean shouldPrefetch) {
         return nativeGetUrlForContextualSearchQuery(
             mNativeTemplateUrlServiceAndroid, query, alternateTerm, shouldPrefetch);

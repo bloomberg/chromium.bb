@@ -21,7 +21,7 @@ import java.util.HashMap;
 public class DomDistillerServiceFactory {
 
     private static final HashMap<Profile, DomDistillerService> sServiceMap =
-        new HashMap<Profile, DomDistillerService>();
+            new HashMap<Profile, DomDistillerService>();
 
     /**
      * Returns Java DomDistillerService for given Profile.

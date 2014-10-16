@@ -95,52 +95,47 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
 
     private static class MockAuthenticationAccountManager extends MockAccountManager {
 
-       private final String mAccountType;
+        private final String mAccountType;
 
-       public MockAuthenticationAccountManager(Context localContext,
-                                               Context testContext,
-                                               String accountType,
-                                               Account... accounts) {
-           super(localContext, testContext, accounts);
-           mAccountType = accountType;
-       }
+        public MockAuthenticationAccountManager(Context localContext, Context testContext,
+                String accountType, Account... accounts) {
+            super(localContext, testContext, accounts);
+            mAccountType = accountType;
+        }
 
-       @Override
-       public Account[] getAccountsByType(String accountType) {
-           if (accountType.equals(mAccountType)) {
-               // Calling function uses length of array to determine if
-               // accounts of the requested type are available, so return
-               // a non-empty array to indicate the account type is correct.
-               return new Account[] {
-                       AccountManagerHelper.createAccountFromName("Dummy")
-               };
-           }
+        @Override
+        public Account[] getAccountsByType(String accountType) {
+            if (accountType.equals(mAccountType)) {
+                // Calling function uses length of array to determine if
+                // accounts of the requested type are available, so return
+                // a non-empty array to indicate the account type is correct.
+                return new Account[] { AccountManagerHelper.createAccountFromName("Dummy") };
+            }
 
-           return new Account[0];
-       }
+            return new Account[0];
+        }
 
-       @Override
-       public AuthenticatorDescription[] getAuthenticatorTypes() {
-           AuthenticatorDescription googleAuthenticator =
-                   new AuthenticatorDescription(mAccountType, "p1", 0, 0, 0, 0);
+        @Override
+        public AuthenticatorDescription[] getAuthenticatorTypes() {
+            AuthenticatorDescription googleAuthenticator =
+                    new AuthenticatorDescription(mAccountType, "p1", 0, 0, 0, 0);
 
-           return new AuthenticatorDescription[] { googleAuthenticator };
-       }
+            return new AuthenticatorDescription[] { googleAuthenticator };
+        }
     }
 
     private static boolean isRecognitionIntentPresent(
-        final IntentTestMockContext context,
-        final boolean useCachedResult) {
+            final IntentTestMockContext context, final boolean useCachedResult) {
         // Context can only be queried on a UI Thread.
         return ThreadUtils.runOnUiThreadBlockingNoException(
             new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return FeatureUtilities.isRecognitionIntentPresent(
-                        context,
-                        useCachedResult);
-            }
-        });
+                @Override
+                public Boolean call() {
+                    return FeatureUtilities.isRecognitionIntentPresent(
+                            context,
+                            useCachedResult);
+                }
+            });
     }
 
     private void setUpAccount(final String accountType) {

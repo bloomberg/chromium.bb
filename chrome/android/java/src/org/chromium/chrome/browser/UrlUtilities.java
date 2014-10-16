@@ -22,13 +22,13 @@ public class UrlUtilities {
      * URI schemes that ContentView can handle.
      */
     private static final HashSet<String> ACCEPTED_SCHEMES = CollectionUtil.newHashSet(
-        "about", "data", "file", "http", "https", "inline", "javascript");
+            "about", "data", "file", "http", "https", "inline", "javascript");
 
     /**
      * URI schemes that Chrome can download.
      */
     private static final HashSet<String> DOWNLOADABLE_SCHEMES = CollectionUtil.newHashSet(
-        "data", "filesystem", "http", "https");
+            "data", "filesystem", "http", "https");
 
     /**
      * @param uri A URI.

@@ -97,12 +97,12 @@ public class ProfileSyncService {
 
         // When the application gets paused, tell sync to flush the directory to disk.
         ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
-          @Override
-          public void onActivityStateChange(Activity activity, int newState) {
-            if (newState == ActivityState.PAUSED) {
-              flushDirectory();
+            @Override
+            public void onActivityStateChange(Activity activity, int newState) {
+                if (newState == ActivityState.PAUSED) {
+                    flushDirectory();
+                }
             }
-          }
         });
     }
 
@@ -602,8 +602,7 @@ public class ProfileSyncService {
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncKeystoreMigrationDone(long nativeProfileSyncServiceAndroid);
-    private native long nativeGetEnabledDataTypes(
-        long nativeProfileSyncServiceAndroid);
+    private native long nativeGetEnabledDataTypes(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPreferredDataTypes(
             long nativeProfileSyncServiceAndroid, boolean syncEverything, long modelTypeSelection);
     private native void nativeSetSetupInProgress(

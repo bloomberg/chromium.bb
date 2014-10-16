@@ -24,7 +24,7 @@ import java.util.Map;
 public final class InvalidationServiceFactory {
 
     private static final Map<Profile, InvalidationService> sServiceMap =
-        new HashMap<Profile, InvalidationService>();
+            new HashMap<Profile, InvalidationService>();
 
     private InvalidationServiceFactory() {}
 
@@ -42,7 +42,7 @@ public final class InvalidationServiceFactory {
     }
 
     public static InvalidationService getForTest(Context context) {
-      return nativeGetForTest(context);
+        return nativeGetForTest(context);
     }
 
     private static native InvalidationService nativeGetForProfile(Profile profile);

@@ -58,7 +58,7 @@ public class TranslateOptions {
     }
 
     public TranslateOptions(int sourceLanguageCode, int targetLanguageCode, String[] allLanguages,
-           boolean alwaysTranslate, boolean triggeredFromMenu) {
+            boolean alwaysTranslate, boolean triggeredFromMenu) {
         this(sourceLanguageCode, targetLanguageCode, allLanguages, false, false, alwaysTranslate,
                 triggeredFromMenu, null);
     }

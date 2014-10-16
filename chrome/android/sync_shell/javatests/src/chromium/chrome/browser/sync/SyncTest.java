@@ -126,7 +126,7 @@ public class SyncTest extends ChromeShellTestBase {
 
         loadUrlWithSanitization("chrome://sync");
         SyncTestUtil.AboutSyncInfoGetter aboutInfoGetter =
-               new SyncTestUtil.AboutSyncInfoGetter(getActivity());
+                new SyncTestUtil.AboutSyncInfoGetter(getActivity());
         try {
             runTestOnUiThread(aboutInfoGetter);
         } catch (Throwable t) {

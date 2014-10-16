@@ -109,22 +109,22 @@ public class InfoBarTest extends ChromeShellTestBase {
 
         // Navigate back and ensure the InfoBar has been removed.
         getInstrumentation().runOnMainSync(
-            new Runnable() {
-                @Override
-                public void run() {
-                    getActivity().getActiveTab().goBack();
-                }
-            });
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        getActivity().getActiveTab().goBack();
+                    }
+                });
         CriteriaHelper.pollForCriteria(
-            new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    List<InfoBar> infoBars =
-                            getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
-                    return infoBars.isEmpty();
-                }
-            },
-            MAX_TIMEOUT, CHECK_INTERVAL);
+                new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        List<InfoBar> infoBars =
+                                getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
+                        return infoBars.isEmpty();
+                    }
+                },
+                MAX_TIMEOUT, CHECK_INTERVAL);
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
     }
 }

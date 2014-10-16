@@ -104,13 +104,13 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
     @MediumTest
     @Feature({"Sync"})
     public void testRequestSyncSpecificDataType() {
-      testRequestSyncSpecificDataType(true /* withObjectSource */);
+        testRequestSyncSpecificDataType(true /* withObjectSource */);
     }
 
     @MediumTest
     @Feature({"Sync"})
     public void testRequestSyncSpecificDataType_withoutObjectSource() {
-      testRequestSyncSpecificDataType(false /* withObjectSource */);
+        testRequestSyncSpecificDataType(false /* withObjectSource */);
     }
 
     @MediumTest
