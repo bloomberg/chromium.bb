@@ -347,7 +347,7 @@ void OriginChipView::SetBorderImages(const int images[3][9]) {
   pressed_text_color_ = host_label_->enabled_color();
   host_label_->SetBackgroundColor(background_colors_[state()]);
 
-  SetBorder(border.PassAs<views::Border>());
+  SetBorder(border.Pass());
 }
 
 void OriginChipView::AnimationProgressed(const gfx::Animation* animation) {

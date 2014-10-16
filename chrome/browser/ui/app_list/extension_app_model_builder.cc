@@ -285,10 +285,10 @@ void ExtensionAppModelBuilder::PopulateApps() {
 
 void ExtensionAppModelBuilder::InsertApp(scoped_ptr<ExtensionAppItem> app) {
   if (service_) {
-    service_->AddItem(app.PassAs<app_list::AppListItem>());
+    service_->AddItem(app.Pass());
     return;
   }
-  model_->AddItem(app.PassAs<app_list::AppListItem>());
+  model_->AddItem(app.Pass());
 }
 
 ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(

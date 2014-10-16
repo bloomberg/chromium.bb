@@ -50,7 +50,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
                         NULL,
                         app_name,
                         app_name,
-                        media_list.PassAs<DesktopMediaList>(),
+                        media_list.Pass(),
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
   }

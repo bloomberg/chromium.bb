@@ -31,8 +31,7 @@ bool DataReductionProxyInfoBar::Register(JNIEnv* env) {
 
 DataReductionProxyInfoBar::DataReductionProxyInfoBar(
     scoped_ptr<DataReductionProxyInfoBarDelegate> delegate)
-    : ConfirmInfoBar(delegate.PassAs<ConfirmInfoBarDelegate>()),
-      java_data_reduction_proxy_delegate_() {
+    : ConfirmInfoBar(delegate.Pass()), java_data_reduction_proxy_delegate_() {
 }
 
 DataReductionProxyInfoBar::~DataReductionProxyInfoBar() {

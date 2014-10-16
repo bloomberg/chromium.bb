@@ -156,9 +156,9 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(chrome::IsInstantExtendedAPIEnabled()),
       web_contents_(web_contents),
-      ipc_router_(web_contents, this,
-                  make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))
-                      .PassAs<SearchIPCRouter::Policy>()),
+      ipc_router_(web_contents,
+                  this,
+                  make_scoped_ptr(new SearchIPCRouterPolicyImpl(web_contents))),
       instant_service_(NULL),
       delegate_(NULL),
       omnibox_has_focus_fn_(&OmniboxHasFocus) {

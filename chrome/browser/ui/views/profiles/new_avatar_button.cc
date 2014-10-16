@@ -37,7 +37,7 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
   border->set_insets(gfx::Insets(kTopInset, kLeftRightInset,
                                  kBottomInset, kLeftRightInset));
 
-  return border.PassAs<views::Border>();
+  return border.Pass();
 }
 
 }  // namespace

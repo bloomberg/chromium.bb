@@ -16,7 +16,7 @@
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  return scoped_ptr<infobars::InfoBar>(new TranslateInfoBar(delegate.Pass()));
+  return make_scoped_ptr(new TranslateInfoBar(delegate.Pass()));
 }
 
 
@@ -24,8 +24,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
 TranslateInfoBar::TranslateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.PassAs<infobars::InfoBarDelegate>()),
-      java_translate_delegate_() {
+    : InfoBarAndroid(delegate.Pass()), java_translate_delegate_() {
 }
 
 TranslateInfoBar::~TranslateInfoBar() {

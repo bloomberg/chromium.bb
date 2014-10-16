@@ -109,8 +109,7 @@ namespace extensions {
 scoped_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
-  scoped_ptr<ExtensionViewMac> view(new ExtensionViewMac(host, browser));
-  return view.PassAs<ExtensionView>();
+  return make_scoped_ptr(new ExtensionViewMac(host, browser));
 }
 
 }  // namespace extensions

@@ -207,8 +207,7 @@ void GetWindowBoundsAndShowState(
   scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(
       new TestTargetDisplayProvider);
 
-  WindowSizer sizer(sp.PassAs<WindowSizer::StateProvider>(),
-                    tdp.Pass(), &test_screen, browser);
+  WindowSizer sizer(sp.Pass(), tdp.Pass(), &test_screen, browser);
   sizer.DetermineWindowBoundsAndShowState(passed_in,
                                           out_bounds,
                                           out_show_state);
@@ -247,8 +246,7 @@ ui::WindowShowState GetWindowShowState(
   scoped_ptr<WindowSizer::TargetDisplayProvider> tdp(
       new TestTargetDisplayProvider);
 
-  WindowSizer sizer(sp.PassAs<WindowSizer::StateProvider>(),
-                    tdp.Pass(), &test_screen, browser);
+  WindowSizer sizer(sp.Pass(), tdp.Pass(), &test_screen, browser);
 
   ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
   gfx::Rect out_bounds;

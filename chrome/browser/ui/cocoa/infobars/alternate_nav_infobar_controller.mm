@@ -60,10 +60,9 @@
 // static
 scoped_ptr<infobars::InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
     scoped_ptr<AlternateNavInfoBarDelegate> delegate) {
-  scoped_ptr<InfoBarCocoa> infobar(
-      new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(delegate.Pass()));
   base::scoped_nsobject<AlternateNavInfoBarController> controller(
       [[AlternateNavInfoBarController alloc] initWithInfoBar:infobar.get()]);
   infobar->set_controller(controller);
-  return infobar.PassAs<infobars::InfoBar>();
+  return infobar.Pass();
 }

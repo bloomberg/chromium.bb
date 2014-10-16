@@ -229,7 +229,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
     response->set_code(net::HTTP_OK);
     response->set_content(mock_server_response_);
 
-    return response.PassAs<HttpResponse>();
+    return response.Pass();
   }
 
   void OnSearchResultsFetched() {

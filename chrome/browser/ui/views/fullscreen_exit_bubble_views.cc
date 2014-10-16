@@ -138,7 +138,7 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
                               views::BubbleBorder::BIG_SHADOW,
                               SK_ColorWHITE));
   set_background(new views::BubbleBackground(bubble_border.get()));
-  SetBorder(bubble_border.PassAs<views::Border>());
+  SetBorder(bubble_border.Pass());
   SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

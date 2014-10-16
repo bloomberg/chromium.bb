@@ -140,10 +140,9 @@
 // static
 scoped_ptr<infobars::InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  scoped_ptr<InfoBarCocoa> infobar(
-      new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(delegate.Pass()));
   base::scoped_nsobject<ConfirmInfoBarController> controller(
       [[ConfirmInfoBarController alloc] initWithInfoBar:infobar.get()]);
   infobar->set_controller(controller);
-  return infobar.PassAs<infobars::InfoBar>();
+  return infobar.Pass();
 }

@@ -42,9 +42,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   }
 
   // Windowing system takes ownership.
-  new ExternalProtocolDialog(delegate.PassAs<const ProtocolDialogDelegate>(),
-                             render_process_host_id,
-                             routing_id);
+  new ExternalProtocolDialog(
+      delegate.Pass(), render_process_host_id, routing_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

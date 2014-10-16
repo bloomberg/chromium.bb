@@ -919,8 +919,8 @@ std::string AppListSyncableService::FindOrCreateOemFolder() {
   if (!oem_folder) {
     scoped_ptr<AppListFolderItem> new_folder(new AppListFolderItem(
         kOemFolderId, AppListFolderItem::FOLDER_TYPE_OEM));
-    oem_folder = static_cast<AppListFolderItem*>(
-        model_->AddItem(new_folder.PassAs<app_list::AppListItem>()));
+    oem_folder =
+        static_cast<AppListFolderItem*>(model_->AddItem(new_folder.Pass()));
     SyncItem* oem_sync_item = FindSyncItem(kOemFolderId);
     if (oem_sync_item) {
       VLOG(1) << "Creating OEM folder from existing sync item: "

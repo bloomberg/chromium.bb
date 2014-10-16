@@ -30,8 +30,7 @@ using InfoBarUtilities::AddMenuItem;
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  scoped_ptr<InfoBarCocoa> infobar(
-      new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(delegate.Pass()));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
   switch (infobar->delegate()->AsTranslateInfoBarDelegate()->translate_step()) {
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
@@ -51,7 +50,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
       NOTREACHED();
   }
   infobar->set_controller(infobar_controller);
-  return infobar.PassAs<infobars::InfoBar>();
+  return infobar.Pass();
 }
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)

@@ -34,12 +34,8 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
     return;
 
   SettingsApiBubbleController* controller = settings_api_bubble.get();
-  ExtensionMessageBubbleView* bubble_delegate =
-      new ExtensionMessageBubbleView(
-          anchor_view,
-          arrow,
-          settings_api_bubble.PassAs<
-              ExtensionMessageBubbleController>());
+  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+      anchor_view, arrow, settings_api_bubble.Pass());
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   controller->Show(bubble_delegate);
 }
@@ -119,12 +115,10 @@ void MaybeShowExtensionControlledNewTabPage(
     return;
 
   NtpOverriddenBubbleController* controller = ntp_overridden_bubble.get();
-  ExtensionMessageBubbleView* bubble_delegate =
-      new ExtensionMessageBubbleView(
-          BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu(),
-          views::BubbleBorder::TOP_RIGHT,
-          ntp_overridden_bubble.PassAs<
-              ExtensionMessageBubbleController>());
+  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
+      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu(),
+      views::BubbleBorder::TOP_RIGHT,
+      ntp_overridden_bubble.Pass());
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   controller->Show(bubble_delegate);
 }

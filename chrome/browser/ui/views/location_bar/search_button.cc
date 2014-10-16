@@ -38,7 +38,7 @@ SearchButton::SearchButton(views::ButtonListener* listener)
   border->SetPainter(true, views::Button::STATE_HOVERED, NULL);
   border->SetPainter(true, views::Button::STATE_PRESSED, NULL);
   border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
-  SetBorder(border.PassAs<views::Border>());
+  SetBorder(border.Pass());
   const int kSearchButtonWidth = 56;
   SetMinSize(gfx::Size(kSearchButtonWidth, 0));
 }

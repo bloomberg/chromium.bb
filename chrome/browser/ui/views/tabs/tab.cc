@@ -518,8 +518,7 @@ void Tab::SetData(const TabRendererData& data) {
     GetMediaIndicatorButton()->TransitionToMediaState(data_.media_state);
 
   if (old.mini != data_.mini) {
-    StopAndDeleteAnimation(
-        mini_title_change_animation_.PassAs<gfx::Animation>());
+    StopAndDeleteAnimation(mini_title_change_animation_.Pass());
   }
 
   DataChanged(old);
@@ -550,7 +549,7 @@ void Tab::StartPulse() {
 }
 
 void Tab::StopPulse() {
-  StopAndDeleteAnimation(pulse_animation_.PassAs<gfx::Animation>());
+  StopAndDeleteAnimation(pulse_animation_.Pass());
 }
 
 void Tab::StartMiniTabTitleAnimation() {
@@ -582,7 +581,7 @@ void Tab::StartMiniTabTitleAnimation() {
 }
 
 void Tab::StopMiniTabTitleAnimation() {
-  StopAndDeleteAnimation(mini_title_change_animation_.PassAs<gfx::Animation>());
+  StopAndDeleteAnimation(mini_title_change_animation_.Pass());
 }
 
 // static

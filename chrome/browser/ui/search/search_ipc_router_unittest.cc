@@ -140,8 +140,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
     search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
     search_tab_helper->ipc_router().set_policy_for_testing(
-        make_scoped_ptr(new MockSearchIPCRouterPolicy)
-            .PassAs<SearchIPCRouter::Policy>());
+        make_scoped_ptr(new MockSearchIPCRouterPolicy));
   }
 
   bool MessageWasSent(uint32 id) {

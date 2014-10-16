@@ -206,7 +206,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
       }
     }
 
-    return response.PassAs<HttpResponse>();
+    return response.Pass();
   }
 
   void OnSearchResultsFetched() {

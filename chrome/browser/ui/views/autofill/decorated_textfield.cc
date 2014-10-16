@@ -162,7 +162,7 @@ void DecoratedTextfield::UpdateBorder() {
     border->SetInsets(insets.top(), left, insets.bottom(), right);
   }
 
-  SetBorder(border.PassAs<views::Border>());
+  SetBorder(border.Pass());
 }
 
 void DecoratedTextfield::IconChanged() {

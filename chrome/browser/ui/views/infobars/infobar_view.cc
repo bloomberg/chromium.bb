@@ -126,7 +126,7 @@ views::LabelButton* InfoBarView::CreateLabelButton(
       views::Painter::CreateImageGridPainter(kPressedImageSet));
 
   views::LabelButton* label_button = new views::LabelButton(listener, text);
-  label_button->SetBorder(label_button_border.PassAs<views::Border>());
+  label_button->SetBorder(label_button_border.Pass());
   label_button->set_animate_on_state_change(false);
   label_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
   label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);

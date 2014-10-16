@@ -17,10 +17,9 @@ class AlternateNavInfoBarView : public InfoBarView,
  public:
   explicit AlternateNavInfoBarView(
       scoped_ptr<AlternateNavInfoBarDelegate> delegate);
-
- private:
   virtual ~AlternateNavInfoBarView();
 
+ private:
   // Treating |labels| as pieces of one continuous string, elides to fit
   // |available_width| so as to guarantee that a trailing ellipsis is always
   // displayed when the string is elided and there is at least room to display

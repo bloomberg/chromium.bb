@@ -220,7 +220,7 @@ scoped_ptr<base::StringValue> DictionaryToJSONString(
 scoped_ptr<base::Value> CopyAndConvert(const base::Value* value) {
   const base::DictionaryValue* dict = NULL;
   if (value->GetAsDictionary(&dict))
-    return DictionaryToJSONString(dict).PassAs<base::Value>();
+    return DictionaryToJSONString(dict);
 
   scoped_ptr<base::Value> copy(value->DeepCopy());
   base::ListValue* list = NULL;

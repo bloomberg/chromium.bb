@@ -78,7 +78,7 @@ scoped_ptr<RenderViewContextMenu> ChromeWebContentsViewDelegateMac::BuildMenu(
     menu->Init();
   }
 
-  return menu.PassAs<RenderViewContextMenu>();
+  return menu.Pass();
 }
 
 content::RenderWidgetHostView*

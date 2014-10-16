@@ -85,7 +85,7 @@ class MenuImageSource: public gfx::CanvasImageSource {
 ExtensionInfoBar::ExtensionInfoBar(
     scoped_ptr<ExtensionInfoBarDelegate> delegate,
     Browser* browser)
-    : InfoBarView(delegate.PassAs<infobars::InfoBarDelegate>()),
+    : InfoBarView(delegate.Pass()),
       browser_(browser),
       infobar_icon_(NULL),
       icon_as_menu_(NULL),

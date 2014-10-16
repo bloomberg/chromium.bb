@@ -90,7 +90,7 @@ void AppSearchProvider::StartImpl(const base::Time& current_time,
 
       result->UpdateFromMatch((*app_it)->indexed_name(), match);
     }
-    Add(result.PassAs<SearchResult>());
+    Add(result.Pass());
   }
 }
 

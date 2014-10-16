@@ -624,10 +624,9 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     views::LabelButton* owning_button,
     scoped_ptr<views::LabelButtonBorder> border) {
   if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
-    return border.PassAs<views::Border>();
+    return border.Pass();
 
-  return scoped_ptr<views::Border>(
-      new Gtk2Border(this, owning_button, border.Pass()));
+  return make_scoped_ptr(new Gtk2Border(this, owning_button, border.Pass()));
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(

@@ -24,10 +24,9 @@ class ConfirmInfoBar : public InfoBarView,
                        public views::LinkListener {
  public:
   explicit ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate);
-
- private:
   virtual ~ConfirmInfoBar();
 
+ private:
   // InfoBarView:
   virtual void Layout() override;
   virtual void ViewHierarchyChanged(

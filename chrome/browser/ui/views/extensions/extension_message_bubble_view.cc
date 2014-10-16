@@ -330,10 +330,10 @@ bool ExtensionMessageBubbleFactory::MaybeShowSuspiciousExtensionsBubble(
   shown_suspicious_extensions_bubble_ = true;
   SuspiciousExtensionBubbleController* weak_controller =
       suspicious_extensions.get();
-  ExtensionMessageBubbleView* bubble_delegate = new ExtensionMessageBubbleView(
-      anchor_view,
-      views::BubbleBorder::TOP_RIGHT,
-      suspicious_extensions.PassAs<ExtensionMessageBubbleController>());
+  ExtensionMessageBubbleView* bubble_delegate =
+      new ExtensionMessageBubbleView(anchor_view,
+                                     views::BubbleBorder::TOP_RIGHT,
+                                     suspicious_extensions.Pass());
 
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   weak_controller->Show(bubble_delegate);

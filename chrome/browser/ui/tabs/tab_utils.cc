@@ -183,7 +183,7 @@ scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(
     TabMediaState media_state) {
   if (media_state == TAB_MEDIA_STATE_RECORDING ||
       media_state == TAB_MEDIA_STATE_CAPTURING) {
-    return TabRecordingIndicatorAnimation::Create().PassAs<gfx::Animation>();
+    return TabRecordingIndicatorAnimation::Create();
   }
 
   // Note: While it seems silly to use a one-part MultiAnimation, it's the only
@@ -198,7 +198,7 @@ scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(
   scoped_ptr<gfx::MultiAnimation> animation(
       new gfx::MultiAnimation(parts, interval));
   animation->set_continuous(false);
-  return animation.PassAs<gfx::Animation>();
+  return animation.Pass();
 }
 
 base::string16 AssembleTabTooltipText(const base::string16& title,
