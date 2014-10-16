@@ -1987,8 +1987,6 @@ class ValidationPool(object):
           'current stack of patches; if this stack fails, they will be tried '
           'in the next run.  Inflight failed changes: %s',
           ' '.join([c.patch.id for c in failed_inflight]))
-      for x in failed_inflight:
-        self._HandleFailedToApplyDueToInflightConflict(x)
 
     self.changes_that_failed_to_apply_earlier.extend(failed_inflight)
     self.changes = applied
@@ -2453,21 +2451,6 @@ class ValidationPool(object):
            'marking your commit as ready.')
     self.SendNotification(change, msg)
     self.RemoveCommitReady(change)
-
-  def _HandleFailedToApplyDueToInflightConflict(self, change):
-    """Handler for when a patch conflicts with another patch in the CQ run.
-
-    This handler simply comments on the affected change, explaining why it
-    is being skipped in the current CQ run.
-
-    Args:
-      change: GerritPatch instance to operate upon.
-    """
-    msg = ('%(queue)s could not apply your change because it conflicts with '
-           'other change(s) that it is testing. If those changes do not pass '
-           'your change will be retried. Otherwise it will be rejected at '
-           'the end of this CQ run.')
-    self.SendNotification(change, msg)
 
   def HandleValidationTimeout(self, changes=None, sanity=True):
     """Handles changes that timed out.
