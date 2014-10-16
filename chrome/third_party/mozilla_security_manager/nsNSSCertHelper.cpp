@@ -807,7 +807,7 @@ std::string ProcessCrlDistPoints(SECItem* extension_data) {
     if (point->reasons.len) {
       rv += ' ';
       comma = false;
-      for (size_t i = 0; i < ARRAYSIZE_UNSAFE(reason_string_map); ++i) {
+      for (size_t i = 0; i < arraysize(reason_string_map); ++i) {
         if (point->reasons.data[0] & reason_string_map[i].reason) {
           if (comma)
             rv += ',';
@@ -935,7 +935,7 @@ std::string ProcessNSCertTypeExtension(SECItem* extension_data) {
     {NS_CERT_TYPE_OBJECT_SIGNING_CA, IDS_CERT_USAGE_OBJECT_SIGNER},
   };
   return ProcessBitStringExtension(extension_data, usage_string_map,
-                                   ARRAYSIZE_UNSAFE(usage_string_map), '\n');
+                                   arraysize(usage_string_map), '\n');
 }
 
 static const MaskIdPair key_usage_string_map[] = {

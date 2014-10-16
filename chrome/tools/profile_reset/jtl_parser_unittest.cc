@@ -153,7 +153,7 @@ TEST(JtlParser, HandlingCommentsAndStringLiterals) {
        "\"literal // \"notaliteralnoracomment"}
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].source_code);
     scoped_ptr<JtlParser> parser(
         CreateParserFromVerboseText(cases[i].source_code));
@@ -186,7 +186,7 @@ TEST(JtlParser, MismatchedDoubleQuotesBeforeEndOfLine) {
       {"foo(\n\"bar\", \"mismatched);\ngood(\"bar\")", 1}
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].source_code);
     std::string compacted_source_code;
     std::vector<size_t> newline_indices;
@@ -225,7 +225,7 @@ TEST(JtlParser, ParsingOneWellFormedOperation) {
       {"foo9(\"bar\", \" b a r \");", "foo9", "[\"bar\",\" b a r \"]", true}
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].expected_name);
     scoped_ptr<JtlParser> parser(
         CreateParserFromVerboseText(cases[i].source_code));
@@ -267,7 +267,7 @@ TEST(JtlParser, ParsingTrickyStringLiterals) {
       {"prev().foo8(\".\",true).next(true);", "foo8", "[\".\",true]", false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].expected_name);
     scoped_ptr<JtlParser> parser(
         CreateParserFromVerboseText(cases[i].source_code));
@@ -305,7 +305,7 @@ TEST(JtlParser, FirstOperationIsIllFormed) {
       {"bad_parenthesis3).good();", "bad_parenthesis3"}
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].operation_name);
     scoped_ptr<JtlParser> parser(
         CreateParserFromVerboseText(cases[i].source_code));
@@ -334,7 +334,7 @@ TEST(JtlParser, SecondOperationIsIllFormed) {
       {"\ngood(true,false)\n.bad_parens3).good();", "bad_parens3"}
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].bad_operation_name);
     scoped_ptr<JtlParser> parser(
         CreateParserFromVerboseText(cases[i].source_code));

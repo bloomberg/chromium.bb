@@ -471,7 +471,7 @@ std::string ProcessNSCertTypeExtension(X509_EXTENSION* ex) {
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
   return ProcessBitField(value.get(),
                          usage_string_map,
-                         ARRAYSIZE_UNSAFE(usage_string_map),
+                         arraysize(usage_string_map),
                          '\n');
 }
 
@@ -494,7 +494,7 @@ std::string ProcessKeyUsageExtension(X509_EXTENSION* ex) {
     return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
   return ProcessBitField(value.get(),
                          key_usage_string_map,
-                         ARRAYSIZE_UNSAFE(key_usage_string_map),
+                         arraysize(key_usage_string_map),
                          '\n');
 }
 
@@ -847,7 +847,7 @@ std::string ProcessCrlDistPoints(X509_EXTENSION* ex) {
       rv += ' ';
       rv += ProcessBitField(point->reasons,
                             reason_string_map,
-                            ARRAYSIZE_UNSAFE(reason_string_map),
+                            arraysize(reason_string_map),
                             ',');
       rv += '\n';
     }

@@ -605,7 +605,7 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
     { "sockets3", true },  // tcp:a.com:80 -> tcp:*:*
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+  for (size_t i = 0; i < arraysize(kTests); ++i) {
     scoped_refptr<Extension> old_extension(
         LoadManifest("allow_silent_upgrade",
                      std::string(kTests[i].base_name) + "_old.json"));

@@ -76,7 +76,7 @@ TEST(JtlCompiler, CompileSingleInstructions) {
         {"break.", OP_STOP_EXECUTING_SENTENCE},
         {"break;", OP_STOP_EXECUTING_SENTENCE + OP_END_OF_SENTENCE}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].source_code);
     std::string bytecode;
     EXPECT_TRUE(JtlCompiler::Compile(
@@ -124,7 +124,7 @@ TEST(JtlCompiler, InvalidArgumentsCount) {
       "any().\nstore_bool(\"name\", true, \"superfluous argument\");\n",
       "any().\nstore_bool(\"name\");"};  // missing argument
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSourceCodes); ++i) {
+  for (size_t i = 0; i < arraysize(kSourceCodes); ++i) {
     SCOPED_TRACE(kSourceCodes[i]);
     std::string bytecode;
     JtlCompiler::CompileError error;
@@ -155,7 +155,7 @@ TEST(JtlCompiler, InvalidArgumentType) {
         {"compare_substring_hashed",
          "any()\n.\ncompare_substring_hashed(true);"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].source_code);
     std::string bytecode;
     JtlCompiler::CompileError error;
@@ -176,7 +176,7 @@ TEST(JtlCompiler, InvalidArgumentValue) {
   } cases[] = {
         {"compare_substring_hashed", "compare_substring_hashed(\"\");"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(cases[i].source_code);
     std::string bytecode;
     JtlCompiler::CompileError error;

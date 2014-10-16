@@ -324,7 +324,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
 
   std::vector<APIPermissionInfo*> permissions;
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(permissions_to_register); ++i)
+  for (size_t i = 0; i < arraysize(permissions_to_register); ++i)
     permissions.push_back(new APIPermissionInfo(permissions_to_register[i]));
   return permissions;
 }

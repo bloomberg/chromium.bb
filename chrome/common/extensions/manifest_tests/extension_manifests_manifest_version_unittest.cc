@@ -37,7 +37,7 @@ TEST_F(ChromeManifestTest, ManifestVersionError) {
     { "dont_require_modern_with_v2", false, manifest3.get(), false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     int create_flags = Extension::NO_FLAGS;
     if (test_data[i].require_modern_manifest_version)
       create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;

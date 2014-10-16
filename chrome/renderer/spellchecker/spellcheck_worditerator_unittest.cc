@@ -207,7 +207,7 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
     },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestCases[%" PRIuS "]: language=%s", i,
                                     kTestCases[i].language));
 

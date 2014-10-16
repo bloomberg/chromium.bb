@@ -57,7 +57,7 @@ TEST(ExtensionAPITest, Creation) {
     { &empty_instance, false }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     EXPECT_EQ(test_data[i].expect_populated,
               test_data[i].api->GetSchema("bookmarks.create") != NULL);
   }
@@ -75,7 +75,7 @@ TEST(ExtensionAPITest, SplitDependencyName) {
                    {"foo:bar", "foo", "bar"},
                    {"foo:bar.baz", "foo", "bar.baz"}};
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     std::string feature_type;
     std::string feature_name;
     ExtensionAPI::SplitDependencyName(
@@ -170,7 +170,7 @@ TEST(ExtensionAPITest, IsAvailableInUntrustedContextFeatures) {
   scoped_refptr<Extension> extension =
       BuildExtension(ExtensionBuilder().Pass()).Build();
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
     EXPECT_EQ(test_data[i].expect_is_available,
@@ -268,7 +268,7 @@ TEST(ExtensionAPITest, APIFeatures) {
       base::JSONReader::Read(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
     for (base::DictionaryValue::Iterator iter(*value); !iter.IsAtEnd();
@@ -348,7 +348,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
       base::JSONReader::Read(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
     for (base::DictionaryValue::Iterator iter(*value); !iter.IsAtEnd();
@@ -711,7 +711,7 @@ TEST(ExtensionAPITest, GetAPINameFromFullName) {
   };
 
   scoped_ptr<ExtensionAPI> api(ExtensionAPI::CreateWithDefaultConfiguration());
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     std::string child_name;
     std::string api_name = api->GetAPINameFromFullName(test_data[i].input,
                                                        &child_name);
@@ -736,7 +736,7 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
     { bookmarks_create }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     SimpleFeature* feature = test_data[i].feature;
     ASSERT_TRUE(feature) << i;
 
@@ -772,8 +772,7 @@ TEST(ExtensionAPITest, FeaturesRequireContexts) {
     { api_features2.get(), false }
   };
 
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
     BaseFeatureProvider api_feature_provider(*test_data[i].api_features,
                                              CreateAPIFeature);
     Feature* feature = api_feature_provider.GetFeature("test");
@@ -901,7 +900,7 @@ TEST(ExtensionAPITest, NoPermissions) {
   scoped_refptr<Extension> extension =
       BuildExtension(ExtensionBuilder().Pass()).Build();
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+  for (size_t i = 0; i < arraysize(kTests); ++i) {
     EXPECT_EQ(kTests[i].expect_success,
               extension_api->IsAvailable(kTests[i].permission_name,
                                          extension.get(),

@@ -54,7 +54,7 @@ TEST(SearchBoxUtilTest, GetInstantRestrictedIDFromTransientURL) {
   };
 
   InstantRestrictedID rid = 0;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     bool return_val = GetRestrictedIDFromThumbnailUrl(
         test_cases[i].render_view_id, test_cases[i].transient_url, &rid);
     EXPECT_EQ(test_cases[i].expected_return_val, return_val);
@@ -216,7 +216,7 @@ TEST(SearchBoxUtilTest, ParseRestrictedFaviconTransientUrl) {
 
   std::string favicon_params = "";
   InstantRestrictedID rid = 0;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     bool return_val = GetRestrictedIDFromFaviconUrl(
         test_cases[i].render_view_id,
         test_cases[i].transient_url,

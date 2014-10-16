@@ -54,7 +54,7 @@ TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
   AssociateGoogleVariationID(variations::GOOGLE_UPDATE_SERVICE, "FieldTrialD",
                              "Default", TEST_VALUE_D);  // Not actually used.
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     // Parse the input groups.
     base::FieldTrial::ActiveGroups groups;
     std::vector<std::string> group_data;
@@ -126,7 +126,7 @@ TEST(ExperimentLabelsTest, CombineExperimentLabels) {
      ""},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::string result = base::UTF16ToUTF8(CombineExperimentLabels(
         base::ASCIIToUTF16(test_cases[i].variations_labels),
         base::ASCIIToUTF16(test_cases[i].other_labels)));
@@ -182,7 +182,7 @@ TEST(ExperimentLabelsTest, ExtractNonVariationLabels) {
     {";;;;", ""},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     std::string non_variation_labels = base::UTF16ToUTF8(
         ExtractNonVariationLabels(
             base::ASCIIToUTF16(test_cases[i].input_label)));

@@ -36,7 +36,7 @@ TEST(BookmarksFileImporterTest, CanImportURL) {
     { "about:moon", false },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
     EXPECT_EQ(test_cases[i].can_be_imported,
               internal::CanImportURL(GURL(test_cases[i].url)));
   }

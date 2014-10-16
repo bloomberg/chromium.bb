@@ -137,7 +137,7 @@ TEST_F(SafariImporterTest, BookmarkImport) {
   std::vector<ImportedBookmarkEntry> bookmarks;
   importer->ParseBookmarks(ASCIIToUTF16("Toolbar"), &bookmarks);
   size_t num_bookmarks = bookmarks.size();
-  ASSERT_EQ(ARRAYSIZE_UNSAFE(kImportedBookmarksData), num_bookmarks);
+  ASSERT_EQ(arraysize(kImportedBookmarksData), num_bookmarks);
 
   for (size_t i = 0; i < num_bookmarks; ++i) {
     ImportedBookmarkEntry& entry = bookmarks[i];
@@ -201,7 +201,7 @@ TEST_F(SafariImporterTest, BookmarkImportWithEmptyBookmarksMenu) {
   std::vector<ImportedBookmarkEntry> bookmarks;
   importer->ParseBookmarks(ASCIIToUTF16("Toolbar"), &bookmarks);
   size_t num_bookmarks = bookmarks.size();
-  ASSERT_EQ(ARRAYSIZE_UNSAFE(kImportedBookmarksData), num_bookmarks);
+  ASSERT_EQ(arraysize(kImportedBookmarksData), num_bookmarks);
 
   for (size_t i = 0; i < num_bookmarks; ++i) {
     ImportedBookmarkEntry& entry = bookmarks[i];
