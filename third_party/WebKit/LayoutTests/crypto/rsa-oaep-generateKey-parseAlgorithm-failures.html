@@ -13,7 +13,7 @@ description("Tests generateKey() with bad RSA-OAEP parameters.");
 jsTestIsAsync = true;
 
 extractable = true;
-keyUsages = ['sign', 'verify'];
+keyUsages = ['encrypt', 'decrypt'];
 
 Promise.resolve(null).then(function() {
     return crypto.subtle.generateKey({name: 'RSA-OAEP', hash: {name: 'sha-1'}, modulusLength: -30}, extractable , keyUsages);

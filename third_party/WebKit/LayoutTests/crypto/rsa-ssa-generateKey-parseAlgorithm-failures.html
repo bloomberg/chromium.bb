@@ -40,6 +40,14 @@ Promise.resolve(null).then(function() {
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
 
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: 10, publicExponent: new Uint8Array(0)}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}, modulusLength: 1024, publicExponent: new Uint8Array(0)}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
     return crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', hash: {name: 'NOT-A-HASH'}, modulusLength: 10, publicExponent: new Uint8Array(3)}, extractable , keyUsages);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);

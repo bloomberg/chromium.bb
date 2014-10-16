@@ -317,14 +317,10 @@ bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<Uint8
         return false;
 
     if (!array->byteLength()) {
-        setSyntaxError(context.toString(propertyName, "BigInteger should not be empty"), error);
-        return false;
+        // Empty BigIntegers represent 0 according to the spec
+        array = Uint8Array::create(1);
     }
 
-    if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
-        setSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
-        return false;
-    }
     return true;
 }
 

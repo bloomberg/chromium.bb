@@ -9,6 +9,8 @@ error is: SyntaxError: RsaHashedKeyGenParams: modulusLength: Missing required pr
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 error is: SyntaxError: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
+error is: NotSupportedError: The modulus length must be a multiple of 8 bits and >= 256 and <= 16384
+error is: DataError: The "publicExponent" must be either 3 or 65537
 error is: NotSupportedError: RsaHashedKeyGenParams: hash: Algorithm: Unrecognized name
 error is: SyntaxError: RsaHashedKeyGenParams: hash: Missing or not a dictionary
 PASS successfullyParsed is true
