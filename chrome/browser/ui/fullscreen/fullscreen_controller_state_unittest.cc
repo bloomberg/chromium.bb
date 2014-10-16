@@ -50,6 +50,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
 #endif
 #if defined(OS_MACOSX)
   virtual void EnterFullscreenWithChrome() override;
+  virtual void EnterFullscreenWithoutChrome() override;
   virtual bool IsFullscreenWithChrome() override;
   virtual bool IsFullscreenWithoutChrome() override;
 #endif
@@ -125,6 +126,10 @@ bool FullscreenControllerTestWindow::IsInMetroSnapMode() const {
 #if defined(OS_MACOSX)
 void FullscreenControllerTestWindow::EnterFullscreenWithChrome() {
   EnterFullscreen(true);
+}
+
+void FullscreenControllerTestWindow::EnterFullscreenWithoutChrome() {
+  EnterFullscreen(false);
 }
 
 bool FullscreenControllerTestWindow::IsFullscreenWithChrome() {

@@ -142,6 +142,7 @@ class BrowserWindowCocoa :
   virtual void Copy() override;
   virtual void Paste() override;
   virtual void EnterFullscreenWithChrome() override;
+  virtual void EnterFullscreenWithoutChrome() override;
   virtual bool IsFullscreenWithChrome() override;
   virtual bool IsFullscreenWithoutChrome() override;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(

@@ -136,6 +136,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void Paste() override {}
 #if defined(OS_MACOSX)
   virtual void EnterFullscreenWithChrome() override {}
+  virtual void EnterFullscreenWithoutChrome() override {}
   virtual bool IsFullscreenWithChrome() override;
   virtual bool IsFullscreenWithoutChrome() override;
 #endif
