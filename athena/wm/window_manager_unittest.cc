@@ -308,6 +308,23 @@ TEST_F(WindowManagerTest, NewWindowBounds) {
   EXPECT_EQ(left_bounds.ToString(), third->bounds().ToString());
 }
 
+TEST_F(WindowManagerTest, OverviewModeAccelerators) {
+  ui::test::EventGenerator generator(root_window());
+
+  // F6 toggles overview mode
+  ASSERT_FALSE(WindowManager::Get()->IsOverviewModeActive());
+  generator.PressKey(ui::VKEY_F6, ui::EF_NONE);
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  generator.PressKey(ui::VKEY_F6, ui::EF_NONE);
+  EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
+
+  // ESC exits overview mode
+  generator.PressKey(ui::VKEY_F6, ui::EF_NONE);
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
+}
+
 TEST_F(WindowManagerTest, SplitModeActivationByShortcut) {
   test::WindowManagerImplTestApi wm_api;
 

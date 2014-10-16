@@ -213,6 +213,7 @@ void WindowManagerImpl::EnterOverview() {
   overview_ = WindowOverviewMode::Create(
       container_.get(), window_list_provider_.get(),
       split_view_controller_.get(), this);
+  AcceleratorManager::Get()->RegisterAccelerator(kEscAcceleratorData, this);
 }
 
 void WindowManagerImpl::ExitOverview() {
@@ -244,6 +245,7 @@ void WindowManagerImpl::ExitOverviewNoActivate() {
   bezel_controller_->set_left_right_delegate(split_view_controller_.get());
   overview_.reset();
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeExit());
+  AcceleratorManager::Get()->UnregisterAccelerator(kEscAcceleratorData, this);
 }
 
 void WindowManagerImpl::InstallAccelerators() {
@@ -342,6 +344,9 @@ bool WindowManagerImpl::IsCommandEnabled(int command_id) const {
 bool WindowManagerImpl::OnAcceleratorFired(int command_id,
                                            const ui::Accelerator& accelerator) {
   switch (command_id) {
+    case CMD_EXIT_OVERVIEW:
+      ExitOverview();
+      break;
     case CMD_TOGGLE_OVERVIEW:
       if (IsOverviewModeActive())
         ExitOverview();

@@ -63,14 +63,15 @@ class AcceleratorManagerImpl : public AcceleratorManager,
   virtual void RegisterAccelerators(const AcceleratorData accelerators[],
                                     size_t num_accelerators,
                                     AcceleratorHandler* handler) override;
+  virtual void RegisterAccelerator(const AcceleratorData& accelerator_data,
+                                   AcceleratorHandler* handler) override;
+  virtual void UnregisterAccelerator(const AcceleratorData& accelerator_data,
+                                     AcceleratorHandler* handler) override;
   virtual void SetDebugAcceleratorsEnabled(bool enabled) override;
 
   // ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   virtual bool CanHandleAccelerators() const override;
-
-  void RegisterAccelerator(const AcceleratorData& accelerator,
-                           AcceleratorHandler* handler);
 
   std::map<ui::Accelerator, InternalData> accelerators_;
   scoped_ptr<AcceleratorWrapper> accelerator_wrapper_;

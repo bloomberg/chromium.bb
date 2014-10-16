@@ -359,10 +359,13 @@ bool HomeCardImpl::OnAcceleratorFired(int command_id,
                                       const ui::Accelerator& accelerator) {
   DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
 
-  if (state_ == VISIBLE_CENTERED && original_state_ != VISIBLE_BOTTOM)
+  if (state_ == VISIBLE_CENTERED && original_state_ != VISIBLE_BOTTOM) {
     SetState(VISIBLE_MINIMIZED);
-  else if (state_ == VISIBLE_MINIMIZED)
+    WindowManager::Get()->ExitOverview();
+  } else if (state_ == VISIBLE_MINIMIZED) {
     SetState(VISIBLE_CENTERED);
+    WindowManager::Get()->EnterOverview();
+  }
   return true;
 }
 

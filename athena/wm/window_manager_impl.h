@@ -52,9 +52,16 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
   friend class AthenaContainerLayoutManager;
 
   enum Command {
+    CMD_EXIT_OVERVIEW,
     CMD_TOGGLE_OVERVIEW,
     CMD_TOGGLE_SPLIT_VIEW,
   };
+
+  const AcceleratorData kEscAcceleratorData = {TRIGGER_ON_PRESS,
+                                               ui::VKEY_ESCAPE,
+                                               ui::EF_NONE,
+                                               CMD_EXIT_OVERVIEW,
+                                               AF_NONE};
 
   // Exits overview mode without changing activation.  The caller should
   // ensure that a window is active after exiting overview mode.

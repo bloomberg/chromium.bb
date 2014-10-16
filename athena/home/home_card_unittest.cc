@@ -115,23 +115,44 @@ TEST_F(HomeCardTest, Accelerators) {
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 
   ui::test::EventGenerator generator(root_window());
+
+  // CTRL+L toggles centered home card, check that overview mode follows
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
-
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
 
-  // Do nothing for BOTTOM
+  // ESC key hides centered home card
+  generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
+
+  // Do nothing with bottom home card with CTRL+L, hide with ESC key
   WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
 
   // Do nothing if the centered state is a temporary state.
+  WindowManager::Get()->EnterOverview();
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
   HomeCard::Get()->UpdateVirtualKeyboardBounds(gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
 }
 
 TEST_F(HomeCardTest, MouseClick) {

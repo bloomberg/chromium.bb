@@ -82,6 +82,11 @@ class ATHENA_EXPORT AcceleratorManager {
                                     size_t num_accelerators,
                                     AcceleratorHandler* handler) = 0;
 
+  virtual void RegisterAccelerator(const AcceleratorData& accelerator_data,
+                                   AcceleratorHandler* handler) = 0;
+  virtual void UnregisterAccelerator(const AcceleratorData& accelerator_data,
+                                     AcceleratorHandler* handler) = 0;
+
   // Enables/Disables accelerators that has a AF_DEBUG flag.
   virtual void SetDebugAcceleratorsEnabled(bool enabled) = 0;
 };

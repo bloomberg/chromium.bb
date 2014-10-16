@@ -29,6 +29,8 @@ class AcceleratorManagerImpl::AcceleratorWrapper {
   virtual ~AcceleratorWrapper() {}
   virtual void Register(const ui::Accelerator& accelerator,
                         ui::AcceleratorTarget* target) = 0;
+  virtual void Unregister(const ui::Accelerator& accelerator,
+                          ui::AcceleratorTarget* target) = 0;
   virtual bool Process(const ui::Accelerator& accelerator) = 0;
   virtual ui::AcceleratorTarget* GetCurrentTarget(
       const ui::Accelerator& accelertor) const = 0;
@@ -142,8 +144,13 @@ class UIAcceleratorManagerWrapper
 
   virtual void Register(const ui::Accelerator& accelerator,
                         ui::AcceleratorTarget* target) override {
-    return ui_accelerator_manager_->Register(
+    ui_accelerator_manager_->Register(
         accelerator, ui::AcceleratorManager::kNormalPriority, target);
+  }
+
+  virtual void Unregister(const ui::Accelerator& accelerator,
+                          ui::AcceleratorTarget* target) override {
+    ui_accelerator_manager_->Unregister(accelerator, target);
   }
 
   virtual bool Process(const ui::Accelerator& accelerator) override {
@@ -171,6 +178,11 @@ class FocusManagerWrapper : public AcceleratorManagerImpl::AcceleratorWrapper {
                         ui::AcceleratorTarget* target) override {
     return focus_manager_->RegisterAccelerator(
         accelerator, ui::AcceleratorManager::kNormalPriority, target);
+  }
+
+  virtual void Unregister(const ui::Accelerator& accelerator,
+                          ui::AcceleratorTarget* target) override {
+    focus_manager_->UnregisterAccelerator(accelerator, target);
   }
 
   virtual bool Process(const ui::Accelerator& accelerator) override {
@@ -322,6 +334,18 @@ void AcceleratorManagerImpl::RegisterAccelerator(
                      InternalData(accelerator_data.command_id,
                                   handler,
                                   accelerator_data.accelerator_flags)));
+}
+
+void AcceleratorManagerImpl::UnregisterAccelerator(
+    const AcceleratorData& accelerator_data,
+    AcceleratorHandler* handler) {
+  ui::Accelerator accelerator(accelerator_data.keycode,
+                              accelerator_data.keyevent_flags);
+  accelerator.set_type(accelerator_data.trigger_event == TRIGGER_ON_PRESS
+                           ? ui::ET_KEY_PRESSED
+                           : ui::ET_KEY_RELEASED);
+  accelerator_wrapper_->Unregister(accelerator, this);
+  accelerators_.erase(accelerator);
 }
 
 // static
