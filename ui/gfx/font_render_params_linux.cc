@@ -29,12 +29,24 @@ namespace {
 float device_scale_factor_for_internal_display = 1.0f;
 #endif
 
-// Keyed by hashes of FontRenderParamQuery structs from
-// HashFontRenderParamsQuery().
-typedef base::MRUCache<uint32, FontRenderParams> Cache;
-
 // Number of recent GetFontRenderParams() results to cache.
 const size_t kCacheSize = 20;
+
+// Cached result from a call to GetFontRenderParams().
+struct QueryResult {
+  QueryResult(const FontRenderParams& params, const std::string& family)
+      : params(params),
+        family(family) {
+  }
+  ~QueryResult() {}
+
+  FontRenderParams params;
+  std::string family;
+};
+
+// Keyed by hashes of FontRenderParamQuery structs from
+// HashFontRenderParamsQuery().
+typedef base::MRUCache<uint32, QueryResult> Cache;
 
 // A cache and the lock that must be held while accessing it.
 // GetFontRenderParams() is called by both the UI thread and the sandbox IPC
@@ -168,21 +180,24 @@ uint32 HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
   const uint32 hash = HashFontRenderParamsQuery(query);
-  if (!family_out) {
-    // The family returned by Fontconfig isn't part of FontRenderParams, so we
-    // can only return a value from the cache if it wasn't requested.
-    SynchronizedCache* synchronized_cache = g_synchronized_cache.Pointer();
+  SynchronizedCache* synchronized_cache = g_synchronized_cache.Pointer();
+
+  {
+    // Try to find a cached result so Fontconfig doesn't need to be queried.
     base::AutoLock lock(synchronized_cache->lock);
     Cache::const_iterator it = synchronized_cache->cache.Get(hash);
     if (it != synchronized_cache->cache.end()) {
       DVLOG(1) << "Returning cached params for " << hash;
-      return it->second;
+      const QueryResult& result = it->second;
+      if (family_out)
+        *family_out = result.family;
+      return result.params;
     }
-  } else {
-    family_out->clear();
   }
-  DVLOG(1) << "Computing params for " << hash
-           << (family_out ? " (family requested)" : "");
+
+  DVLOG(1) << "Computing params for " << hash;
+  if (family_out)
+    family_out->clear();
 
   // Start with the delegate's settings, but let Fontconfig have the final say.
   FontRenderParams params;
@@ -215,12 +230,13 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
   if (family_out && family_out->empty() && !query.families.empty())
     *family_out = query.families[0];
 
-  // Store the computed struct. It's fine if this overwrites a struct that was
-  // cached by a different thread in the meantime; the values should be
-  // identical.
-  SynchronizedCache* synchronized_cache = g_synchronized_cache.Pointer();
-  base::AutoLock lock(synchronized_cache->lock);
-  synchronized_cache->cache.Put(hash, params);
+  {
+    // Store the result. It's fine if this overwrites a result that was cached
+    // by a different thread in the meantime; the values should be identical.
+    base::AutoLock lock(synchronized_cache->lock);
+    synchronized_cache->cache.Put(hash,
+        QueryResult(params, family_out ? *family_out : std::string()));
+  }
 
   return params;
 }
