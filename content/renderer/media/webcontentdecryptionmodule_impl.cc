@@ -12,12 +12,12 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/cdm_result_promise.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
+#include "media/blink/cdm_result_promise.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "url/gurl.h"
@@ -109,7 +109,7 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
       server_certificate,
       server_certificate_length,
       scoped_ptr<media::SimpleCdmPromise>(
-          new CdmResultPromise<>(result, std::string())));
+          new media::CdmResultPromise<>(result, std::string())));
 }
 
 media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {

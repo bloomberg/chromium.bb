@@ -9,9 +9,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/cdm_result_promise.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/media_keys.h"
+#include "media/blink/cdm_result_promise.h"
+#include "media/blink/new_session_cdm_result_promise.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
@@ -91,12 +93,13 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
       init_data,
       init_data_length,
       media::MediaKeys::TEMPORARY_SESSION,
-      scoped_ptr<media::NewSessionCdmPromise>(new NewSessionCdmResultPromise(
-          result,
-          adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName,
-          base::Bind(
-              &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
-              base::Unretained(this)))));
+      scoped_ptr<media::NewSessionCdmPromise>(
+          new media::NewSessionCdmResultPromise(
+              result,
+              adapter_->GetKeySystemUMAPrefix() + kCreateSessionUMAName,
+              base::Bind(
+                  &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
+                  base::Unretained(this)))));
 }
 
 void WebContentDecryptionModuleSessionImpl::load(
@@ -107,12 +110,13 @@ void WebContentDecryptionModuleSessionImpl::load(
 
   adapter_->LoadSession(
       base::UTF16ToASCII(session_id),
-      scoped_ptr<media::NewSessionCdmPromise>(new NewSessionCdmResultPromise(
-          result,
-          adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
-          base::Bind(
-              &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
-              base::Unretained(this)))));
+      scoped_ptr<media::NewSessionCdmPromise>(
+          new media::NewSessionCdmResultPromise(
+              result,
+              adapter_->GetKeySystemUMAPrefix() + kLoadSessionUMAName,
+              base::Bind(
+                  &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
+                  base::Unretained(this)))));
 }
 
 void WebContentDecryptionModuleSessionImpl::update(
@@ -121,27 +125,30 @@ void WebContentDecryptionModuleSessionImpl::update(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
   DCHECK(!web_session_id_.empty());
-  adapter_->UpdateSession(web_session_id_,
-                          response,
-                          response_length,
-                          scoped_ptr<media::SimpleCdmPromise>(
-                              new CdmResultPromise<>(result, std::string())));
+  adapter_->UpdateSession(
+      web_session_id_,
+      response,
+      response_length,
+      scoped_ptr<media::SimpleCdmPromise>(
+          new media::CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!web_session_id_.empty());
-  adapter_->CloseSession(web_session_id_,
-                         scoped_ptr<media::SimpleCdmPromise>(
-                             new CdmResultPromise<>(result, std::string())));
+  adapter_->CloseSession(
+      web_session_id_,
+      scoped_ptr<media::SimpleCdmPromise>(
+          new media::CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::remove(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!web_session_id_.empty());
-  adapter_->RemoveSession(web_session_id_,
-                          scoped_ptr<media::SimpleCdmPromise>(
-                              new CdmResultPromise<>(result, std::string())));
+  adapter_->RemoveSession(
+      web_session_id_,
+      scoped_ptr<media::SimpleCdmPromise>(
+          new media::CdmResultPromise<>(result, std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::getUsableKeyIds(
@@ -150,7 +157,8 @@ void WebContentDecryptionModuleSessionImpl::getUsableKeyIds(
   adapter_->GetUsableKeyIds(
       web_session_id_,
       scoped_ptr<media::KeyIdsPromise>(
-          new CdmResultPromise<media::KeyIdsVector>(result, std::string())));
+          new media::CdmResultPromise<media::KeyIdsVector>(result,
+                                                           std::string())));
 }
 
 void WebContentDecryptionModuleSessionImpl::release(
@@ -181,10 +189,11 @@ void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
-  if (!is_closed_) {
-    is_closed_ = true;
-    client_->close();
-  }
+  if (is_closed_)
+    return;
+
+  is_closed_ = true;
+  client_->close();
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionError(
