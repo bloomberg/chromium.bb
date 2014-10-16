@@ -93,15 +93,20 @@ bool GCMChannelStatusRequest::ParseResponse(const net::URLFetcher* source) {
   }
 
   std::string response_string;
-  if (!source->GetResponseAsString(&response_string) ||
-      response_string.empty()) {
+  if (!source->GetResponseAsString(&response_string)) {
     LOG(ERROR) << "GCM channel response failed to be retrieved.";
     return false;
   }
 
+  // Empty response means to keep the existing values.
+  if (response_string.empty()) {
+    callback_.Run(false, false, 0);
+    return true;
+  }
+
   sync_pb::ExperimentStatusResponse response_proto;
   if (!response_proto.ParseFromString(response_string)) {
-    LOG(ERROR) << "GCM channel response failed to be parse as proto.";
+    LOG(ERROR) << "GCM channel response failed to be parsed as proto.";
     return false;
   }
 
@@ -120,7 +125,7 @@ bool GCMChannelStatusRequest::ParseResponse(const net::URLFetcher* source) {
   if (poll_interval_seconds < kMinPollIntervalSeconds)
     poll_interval_seconds = kMinPollIntervalSeconds;
 
-  callback_.Run(enabled, poll_interval_seconds);
+  callback_.Run(true, enabled, poll_interval_seconds);
 
   return true;
 }

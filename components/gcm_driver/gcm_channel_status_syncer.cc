@@ -5,12 +5,14 @@
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/gcm_driver/gcm_channel_status_request.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -35,7 +37,20 @@ const int kFirstTimeDelaySeconds = 1 * 60;  // 1 minute.
 // The fuzzing variation added to the polling delay.
 const int kGCMChannelRequestTimeJitterSeconds = 15 * 60;  // 15 minues.
 
+// The minimum poll interval that can be overridden to.
+const int kMinCustomPollIntervalMinutes = 2;
+
+// Custom poll interval could not be used more than the limit below.
+const int kMaxNumberToUseCustomPollInterval = 10;
+
 }  // namespace
+
+namespace switches {
+
+// Override the default poll interval for testing purpose.
+const char kCustomPollIntervalMinutes[] = "gcm-channel-poll-interval";
+
+}  // namepsace switches
 
 // static
 void GCMChannelStatusSyncer::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -79,9 +94,11 @@ GCMChannelStatusSyncer::GCMChannelStatusSyncer(
       channel_status_request_url_(channel_status_request_url),
       user_agent_(user_agent),
       request_context_(request_context),
+      started_(false),
       gcm_enabled_(true),
       poll_interval_seconds_(
           GCMChannelStatusRequest::default_poll_interval_seconds()),
+      custom_poll_interval_use_count_(0),
       delay_removed_for_testing_(false),
       weak_ptr_factory_(this) {
   gcm_enabled_ = prefs_->GetBoolean(kGCMChannelStatus);
@@ -90,6 +107,19 @@ GCMChannelStatusSyncer::GCMChannelStatusSyncer(
       GCMChannelStatusRequest::min_poll_interval_seconds()) {
     poll_interval_seconds_ =
         GCMChannelStatusRequest::min_poll_interval_seconds();
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCustomPollIntervalMinutes)) {
+    std::string value(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kCustomPollIntervalMinutes));
+    int minutes = 0;
+    if (base::StringToInt(value, &minutes)) {
+      DCHECK_GE(minutes, kMinCustomPollIntervalMinutes);
+      if (minutes >= kMinCustomPollIntervalMinutes) {
+        poll_interval_seconds_ = minutes * 60;
+        custom_poll_interval_use_count_ = kMaxNumberToUseCustomPollInterval;
+      }
+    }
   }
   last_check_time_ = base::Time::FromInternalValue(
       prefs_->GetInt64(kGCMChannelLastCheckTime));
@@ -100,18 +130,21 @@ GCMChannelStatusSyncer::~GCMChannelStatusSyncer() {
 
 void GCMChannelStatusSyncer::EnsureStarted() {
   // Bail out if the request is already scheduled or started.
-  if (weak_ptr_factory_.HasWeakPtrs() || request_)
+  if (started_)
     return;
+  started_ = true;
 
   ScheduleRequest();
 }
 
 void GCMChannelStatusSyncer::Stop() {
+  started_ = false;
   request_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void GCMChannelStatusSyncer::OnRequestCompleted(bool enabled,
+void GCMChannelStatusSyncer::OnRequestCompleted(bool update_received,
+                                                bool enabled,
                                                 int poll_interval_seconds) {
   DCHECK(request_);
   request_.reset();
@@ -121,23 +154,31 @@ void GCMChannelStatusSyncer::OnRequestCompleted(bool enabled,
   prefs_->SetInt64(kGCMChannelLastCheckTime,
                    last_check_time_.ToInternalValue());
 
-  if (gcm_enabled_ != enabled) {
-    gcm_enabled_ = enabled;
-    prefs_->SetBoolean(kGCMChannelStatus, enabled);
-    if (gcm_enabled_)
-      driver_->Enable();
-    else
-      driver_->Disable();
+  if (update_received) {
+    if (gcm_enabled_ != enabled) {
+      gcm_enabled_ = enabled;
+      prefs_->SetBoolean(kGCMChannelStatus, enabled);
+      if (gcm_enabled_)
+        driver_->Enable();
+      else
+        driver_->Disable();
+    }
+
+    // Skip updating poll interval if the custom one is still in effect.
+    if (!custom_poll_interval_use_count_) {
+      DCHECK_GE(poll_interval_seconds,
+                GCMChannelStatusRequest::min_poll_interval_seconds());
+      if (poll_interval_seconds_ != poll_interval_seconds) {
+        poll_interval_seconds_ = poll_interval_seconds;
+        prefs_->SetInteger(kGCMChannelPollIntervalSeconds,
+                           poll_interval_seconds_);
+      }
+    }
   }
 
-  DCHECK_GE(poll_interval_seconds,
-            GCMChannelStatusRequest::min_poll_interval_seconds());
-  if (poll_interval_seconds_ != poll_interval_seconds) {
-    poll_interval_seconds_ = poll_interval_seconds;
-    prefs_->SetInteger(kGCMChannelPollIntervalSeconds, poll_interval_seconds_);
-  }
-
-  ScheduleRequest();
+  // Do not schedule next request if syncer is stopped.
+  if (started_)
+    ScheduleRequest();
 }
 
 void GCMChannelStatusSyncer::ScheduleRequest() {
@@ -147,6 +188,9 @@ void GCMChannelStatusSyncer::ScheduleRequest() {
       base::Bind(&GCMChannelStatusSyncer::StartRequest,
                  weak_ptr_factory_.GetWeakPtr()),
       current_request_delay_interval_);
+
+  if (custom_poll_interval_use_count_)
+    custom_poll_interval_use_count_--;
 }
 
 void GCMChannelStatusSyncer::StartRequest() {
@@ -180,7 +224,9 @@ base::TimeDelta GCMChannelStatusSyncer::GetRequestDelayInterval() const {
     delay_seconds = kFirstTimeDelaySeconds;
   } else {
     // Otherwise, add a fuzzing variation to the delay.
-    delay_seconds += base::RandInt(0, kGCMChannelRequestTimeJitterSeconds);
+    // The fuzzing variation is off when the custom interval is used.
+    if (!custom_poll_interval_use_count_)
+      delay_seconds += base::RandInt(0, kGCMChannelRequestTimeJitterSeconds);
   }
 
   return base::TimeDelta::FromSeconds(delay_seconds);

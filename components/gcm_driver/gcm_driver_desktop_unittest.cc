@@ -1017,6 +1017,8 @@ GCMChannelStatusSyncerTest::~GCMChannelStatusSyncerTest() {
 void GCMChannelStatusSyncerTest::SetUp() {
   GCMDriverTest::SetUp();
 
+  url_fetcher_factory_.set_remove_fetcher_on_delete(true);
+
   // Turn on all-user support.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("GCM", "Enabled"));
 }
@@ -1091,7 +1093,7 @@ TEST_F(GCMChannelStatusSyncerTest, DisableAndEnable) {
   EXPECT_TRUE(driver()->IsStarted());
 }
 
-TEST_F(GCMChannelStatusSyncerTest, DisableAndRestart) {
+TEST_F(GCMChannelStatusSyncerTest, DisableRestartAndEnable) {
   // Create GCMDriver first. GCM is not started.
   CreateDriver(FakeGCMClient::NO_DELAY_START);
   EXPECT_FALSE(driver()->IsStarted());
@@ -1124,6 +1126,9 @@ TEST_F(GCMChannelStatusSyncerTest, DisableAndRestart) {
   ShutdownDriver();
   CreateDriver(FakeGCMClient::NO_DELAY_START);
 
+  // Remove delay such that the request could be executed immediately.
+  syncer()->set_delay_removed_for_testing(true);
+
   // GCM is still disabled.
   EXPECT_FALSE(driver()->gcm_enabled());
   EXPECT_FALSE(syncer()->gcm_enabled());
@@ -1133,6 +1138,15 @@ TEST_F(GCMChannelStatusSyncerTest, DisableAndRestart) {
   EXPECT_FALSE(driver()->gcm_enabled());
   EXPECT_FALSE(syncer()->gcm_enabled());
   EXPECT_FALSE(driver()->IsStarted());
+
+  // Wait until the GCM channel status request gets triggered.
+  PumpUILoop();
+
+  // Complete the request that re-enables the GCM.
+  CompleteGCMChannelStatusRequest(true, 0);
+  EXPECT_TRUE(driver()->gcm_enabled());
+  EXPECT_TRUE(syncer()->gcm_enabled());
+  EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMChannelStatusSyncerTest, FirstTimePolling) {

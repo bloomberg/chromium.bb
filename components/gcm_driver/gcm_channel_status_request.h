@@ -26,7 +26,14 @@ namespace gcm {
 class GCMChannelStatusRequest : public net::URLFetcherDelegate {
  public:
   // Callback completing the channel status request.
-  typedef base::Callback<void(bool enabled, int poll_interval_seconds)>
+  // |update_received|: use the existing values if it is false which means no
+  //                    update is received.
+  // |enabled|: indicates if GCM is enabled (allowed to run) or not.
+  // |poll_interval_seconds|: the interval in seconds to start next poll
+  //                          request.
+  typedef base::Callback<void(bool update_received,
+                              bool enabled,
+                              int poll_interval_seconds)>
       GCMChannelStatusRequestCallback;
 
   GCMChannelStatusRequest(
