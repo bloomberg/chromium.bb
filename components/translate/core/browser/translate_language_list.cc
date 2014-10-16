@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -228,6 +229,11 @@ void TranslateLanguageList::OnLanguageListFetchComplete(
     int id,
     bool success,
     const std::string& data) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422577 TranslateLanguageList::OnLanguageListFetchComplete"));
+
   if (!success) {
     // Since it fails just now, omit to schedule resource requests if
     // ResourceRequestAllowedNotifier think it's ready. Otherwise, a callback
