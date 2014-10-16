@@ -79,7 +79,7 @@
 // Example:
 //   dbus::PropertySet* CreateProperties(dbus::ObjectProxy* object_proxy,
 //                                       const std::string& interface_name)
-//       OVERRIDE {
+//       override {
 //     Properties* properties = new Properties(
 //           object_proxy, interface_name,
 //           base::Bind(&PropertyChanged,
