@@ -3419,3 +3419,23 @@
    ...
    fun:_ZNK6SkDraw10drawBitmapERK8SkBitmapRK8SkMatrixRK7SkPaint
 }
+{
+   bug_424056a
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF13CStringBuffer19createUninitializedEm
+   fun:_ZN3WTF7CString16newUninitializedEmRPc
+   fun:_ZN3WTF15TextCodecLatin112encodeCommonIhEENS_7CStringEPKT_mNS_19UnencodableHandlingE
+   fun:_ZN3WTF15TextCodecLatin16encodeEPKhmNS_19UnencodableHandlingE
+}
+{
+   bug_424056b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF13CStringBuffer19createUninitializedEm
+   fun:_ZN3WTF7CString4initEPKcm
+   fun:_ZN3WTF7CStringC1EPKcm
+   fun:_ZN3WTF13TextCodecUTF812encodeCommonIhEENS_7CStringEPKT_m
+   fun:_ZN3WTF13TextCodecUTF86encodeEPKhmNS_19UnencodableHandlingE
+   fun:_ZNK3WTF12TextEncoding6encodeERKNS_6StringENS_19UnencodableHandlingE
+}
