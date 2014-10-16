@@ -115,7 +115,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
 
 void LayerPainter::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
 {
-    bool createTransparencyLayerForBlendMode = m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasDescendantWithBlendMode();
+    bool createTransparencyLayerForBlendMode = m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
     if ((m_renderLayer.paintsWithTransparency(paintBehavior) || m_renderLayer.paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_renderLayer.usedTransparency())
         return;
 
@@ -247,7 +247,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
 
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to create a transparency layer if we're painting the root.
-    bool createTransparencyLayerForBlendMode = !m_renderLayer.renderer()->isDocumentElement() && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasDescendantWithBlendMode();
+    bool createTransparencyLayerForBlendMode = !m_renderLayer.renderer()->isDocumentElement() && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
 
     if (createTransparencyLayerForBlendMode)
         beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);

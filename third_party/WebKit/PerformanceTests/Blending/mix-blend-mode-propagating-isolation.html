@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .box {
+      width: 100px;
+      height: 100px;
+      position: relative;
+      z-index: 1;
+      top: 10px;
+      background-color: red;
+      border: 1px black solid;
+    }
+    .blending {
+      mix-blend-mode: difference;
+    }
+    #container {
+      position: absolute;
+      left: 0px;
+      z-index: 0;
+    }
+  </style>
+  <script src="../resources/runner.js"></script>
+  <script src="resources/framerate.js"></script>
+  <script>
+    window.onload = function () {
+      PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+
+      // The leaf element has blending
+      var lastElement = document.createElement("div");
+      lastElement.setAttribute("class", "blending box");
+      
+      for (var i = 0; i < 100; i++) {
+        var el = document.createElement("div");
+        el.setAttribute("class", "box");
+        el.appendChild(lastElement);
+        lastElement = el;
+      }
+      var container = document.getElementById("container");
+      container.appendChild(lastElement);
+      startTrackingFrameRate({run: softwareAnimationStep});
+    }
+
+    function onCompletedRun() {
+      stopTrackingFrameRate();    
+    }
+    function softwareAnimationStep() {
+      var leftVal = parseInt(container.style.left) || 0;
+      container.style.left = (leftVal + 1) + "px";
+    }
+  </script>
+</head>
+<body>
+  <pre id="log"> </pre>
+  <div id="container"> </div>
+</body>
+</html>

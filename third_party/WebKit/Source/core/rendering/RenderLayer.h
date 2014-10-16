@@ -445,11 +445,11 @@ public:
     public:
         DescendantDependentCompositingInputs()
             : hasDescendantWithClipPath(false)
-            , hasDescendantWithBlendMode(false)
+            , hasNonIsolatedDescendantWithBlendMode(false)
         { }
 
         unsigned hasDescendantWithClipPath : 1;
-        unsigned hasDescendantWithBlendMode : 1;
+        unsigned hasNonIsolatedDescendantWithBlendMode : 1;
     };
 
     void setNeedsCompositingInputsUpdate();
@@ -480,7 +480,7 @@ public:
     bool isUnclippedDescendant() const { return ancestorDependentCompositingInputs().isUnclippedDescendant; }
     bool hasAncestorWithClipPath() const { return ancestorDependentCompositingInputs().hasAncestorWithClipPath; }
     bool hasDescendantWithClipPath() const { return descendantDependentCompositingInputs().hasDescendantWithClipPath; }
-    bool hasDescendantWithBlendMode() const { return descendantDependentCompositingInputs().hasDescendantWithBlendMode; }
+    bool hasNonIsolatedDescendantWithBlendMode() const { return descendantDependentCompositingInputs().hasNonIsolatedDescendantWithBlendMode; }
 
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
