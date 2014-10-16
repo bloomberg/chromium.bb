@@ -20,7 +20,7 @@ CHROME_PROXY_VIA_HEADER_DEPRECATED = '1.1 Chrome Compression Proxy'
 
 PROXY_SETTING_HTTPS = 'proxy.googlezip.net:443'
 PROXY_SETTING_HTTPS_WITH_SCHEME = 'https://' + PROXY_SETTING_HTTPS
-PROXY_DEV_SETTING_HTTPS_WITH_SCHEME = 'http://proxy-dev.googlezip.net:80'
+PROXY_DEV_SETTING_HTTP = 'proxy-dev.googlezip.net:80'
 PROXY_SETTING_HTTP = 'compress.googlezip.net:80'
 PROXY_SETTING_DIRECT = 'direct://'
 
@@ -98,7 +98,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     self.compute_data_saving = True
     self.effective_proxies = {
         "proxy": PROXY_SETTING_HTTPS_WITH_SCHEME,
-        "proxy-dev": PROXY_DEV_SETTING_HTTPS_WITH_SCHEME,
+        "proxy-dev": PROXY_DEV_SETTING_HTTP,
         "fallback": PROXY_SETTING_HTTP,
         "direct": PROXY_SETTING_DIRECT,
         }
@@ -352,14 +352,19 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
           'Safebrowsing failed (count=%d, safebrowsing_count=%d)\n' % (
               count, safebrowsing_count))
 
+  def ProxyListForDev(self, proxies):
+    return [self.effective_proxies['proxy-dev']
+            if proxy == self.effective_proxies['proxy']
+            else proxy for proxy in proxies]
+
   def VerifyProxyInfo(self, tab, expected_proxies, expected_bad_proxies):
     info = GetProxyInfoFromNetworkInternals(tab)
     if not 'enabled' in info or not info['enabled']:
       raise ChromeProxyMetricException, (
           'Chrome proxy should be enabled. proxy info: %s' % info)
-
     proxies = info['proxies']
-    if proxies != expected_proxies:
+    if (proxies != expected_proxies and
+        proxies != self.ProxyListForDev(expected_proxies)):
       raise ChromeProxyMetricException, (
           'Wrong effective proxies (%s). Expect: "%s"' % (
           str(proxies), str(expected_proxies)))
@@ -368,7 +373,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     if 'badProxies' in info and info['badProxies']:
       bad_proxies = [p['proxy'] for p in info['badProxies']
                      if 'proxy' in p and p['proxy']]
-    if bad_proxies != expected_bad_proxies:
+    if (bad_proxies != expected_bad_proxies and
+        bad_proxies != self.ProxyListForDev(expected_bad_proxies)):
       raise ChromeProxyMetricException, (
           'Wrong bad proxies (%s). Expect: "%s"' % (
           str(bad_proxies), str(expected_bad_proxies)))
