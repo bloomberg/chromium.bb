@@ -88,4 +88,5 @@ html[dir=rtl] #login-header-bar #guest-user-button {
 
 html[dir=rtl] #logo {
   left: 16px;
+  right: auto;
 }
