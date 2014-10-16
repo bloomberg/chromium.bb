@@ -39078,6 +39078,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="Network Error"/>
   <int value="7" label="Server Error"/>
   <int value="8" label="Cancelled"/>
+  <int value="9" label="Security Error"/>
 </enum>
 
 <enum name="AppInfoDialogLaunchOrigin" type="int">

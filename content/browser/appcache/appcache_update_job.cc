@@ -160,46 +160,49 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
     response_code = request->GetResponseCode();
     job_->MadeProgress();
   }
-  if ((response_code / 100) == 2) {
 
-    // See http://code.google.com/p/chromium/issues/detail?id=69594
-    // We willfully violate the HTML5 spec at this point in order
-    // to support the appcaching of cross-origin HTTPS resources.
-    // We've opted for a milder constraint and allow caching unless
-    // the resource has a "no-store" header. A spec change has been
-    // requested on the whatwg list.
-    // TODO(michaeln): Consider doing this for cross-origin HTTP resources too.
-    if (url_.SchemeIsSecure() &&
-        url_.GetOrigin() != job_->manifest_url_.GetOrigin()) {
-      if (request->response_headers()->
-              HasHeaderValue("cache-control", "no-store")) {
-        DCHECK_EQ(-1, redirect_response_code_);
-        request->Cancel();
-        result_ = SERVER_ERROR;  // Not the best match?
-        OnResponseCompleted();
-        return;
-      }
-    }
-
-    // Write response info to storage for URL fetches. Wait for async write
-    // completion before reading any response data.
-    if (fetch_type_ == URL_FETCH || fetch_type_ == MASTER_ENTRY_FETCH) {
-      response_writer_.reset(job_->CreateResponseWriter());
-      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-          new HttpResponseInfoIOBuffer(
-              new net::HttpResponseInfo(request->response_info())));
-      response_writer_->WriteInfo(
-          io_buffer.get(),
-          base::Bind(&URLFetcher::OnWriteComplete, base::Unretained(this)));
-    } else {
-      ReadResponseData();
-    }
-  } else {
+  if ((response_code / 100) != 2) {
     if (response_code > 0)
       result_ = SERVER_ERROR;
     else
       result_ = NETWORK_ERROR;
     OnResponseCompleted();
+    return;
+  }
+
+  if (url_.SchemeIsSecure()) {
+    // Do not cache content with cert errors.
+    // Also, we willfully violate the HTML5 spec at this point in order
+    // to support the appcaching of cross-origin HTTPS resources.
+    // We've opted for a milder constraint and allow caching unless
+    // the resource has a "no-store" header. A spec change has been
+    // requested on the whatwg list.
+    // See http://code.google.com/p/chromium/issues/detail?id=69594
+    // TODO(michaeln): Consider doing this for cross-origin HTTP too.
+    if (net::IsCertStatusError(request->ssl_info().cert_status) ||
+        (url_.GetOrigin() != job_->manifest_url_.GetOrigin() &&
+            request->response_headers()->
+                HasHeaderValue("cache-control", "no-store"))) {
+      DCHECK_EQ(-1, redirect_response_code_);
+      request->Cancel();
+      result_ = SECURITY_ERROR;
+      OnResponseCompleted();
+      return;
+    }
+  }
+
+  // Write response info to storage for URL fetches. Wait for async write
+  // completion before reading any response data.
+  if (fetch_type_ == URL_FETCH || fetch_type_ == MASTER_ENTRY_FETCH) {
+    response_writer_.reset(job_->CreateResponseWriter());
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(
+            new net::HttpResponseInfo(request->response_info())));
+    response_writer_->WriteInfo(
+        io_buffer.get(),
+        base::Bind(&URLFetcher::OnWriteComplete, base::Unretained(this)));
+  } else {
+    ReadResponseData();
   }
 }
 
