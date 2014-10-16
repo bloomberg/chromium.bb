@@ -27,7 +27,7 @@ TEST(NumberFormattingTest, FormatNumber) {
     {-42, "-42", "-42"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     i18n::SetICUDefaultLocale("en");
     testing::ResetFormatters();
     EXPECT_EQ(cases[i].expected_english,
@@ -72,7 +72,7 @@ TEST(NumberFormattingTest, FormatDouble) {
     {-42.7, 3, "-42.700", "-42,700"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     i18n::SetICUDefaultLocale("en");
     testing::ResetFormatters();
     EXPECT_EQ(cases[i].expected_english,

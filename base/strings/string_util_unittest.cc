@@ -539,7 +539,7 @@ TEST(StringUtilTest, LowerCaseEqualsASCII) {
     { "FOO", "foo" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(lowercase_cases); ++i) {
+  for (size_t i = 0; i < arraysize(lowercase_cases); ++i) {
     EXPECT_TRUE(LowerCaseEqualsASCII(ASCIIToUTF16(lowercase_cases[i].src_a),
                                      lowercase_cases[i].dst));
     EXPECT_TRUE(LowerCaseEqualsASCII(lowercase_cases[i].src_a,
@@ -576,7 +576,7 @@ TEST(StringUtilTest, FormatBytesUnlocalized) {
     {100LL*1024*1024*1024, "100 GB"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_EQ(ASCIIToUTF16(cases[i].expected),
               FormatBytesUnlocalized(cases[i].bytes));
   }
@@ -603,7 +603,7 @@ TEST(StringUtilTest, ReplaceSubstringsAfterOffset) {
     {"abababab", 2, "ab", "c", "abccc"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+  for (size_t i = 0; i < arraysize(cases); i++) {
     string16 str = ASCIIToUTF16(cases[i].str);
     ReplaceSubstringsAfterOffset(&str, cases[i].start_offset,
                                  ASCIIToUTF16(cases[i].find_this),
@@ -633,7 +633,7 @@ TEST(StringUtilTest, ReplaceFirstSubstringAfterOffset) {
     {"abababab", 2, "ab", "c", "abcabab"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+  for (size_t i = 0; i < arraysize(cases); i++) {
     string16 str = ASCIIToUTF16(cases[i].str);
     ReplaceFirstSubstringAfterOffset(&str, cases[i].start_offset,
                                      ASCIIToUTF16(cases[i].find_this),
@@ -1148,7 +1148,7 @@ TEST(StringUtilTest, WprintfFormatPortabilityTest) {
     { L"% 10s", false },
     { L"% 10ls", true }
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].portable, base::IsWprintfFormatPortable(cases[i].input));
 }
 
@@ -1191,7 +1191,7 @@ TEST(StringUtilTest, ReplaceChars) {
     { "test", "t", "test", "testestest", true },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::string output;
     bool result = ReplaceChars(cases[i].input,
                                cases[i].replace_chars,

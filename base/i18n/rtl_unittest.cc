@@ -96,7 +96,7 @@ TEST_F(RTLTest, GetFirstStrongCharacterDirection) {
       LEFT_TO_RIGHT },
    };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].direction,
               GetFirstStrongCharacterDirection(WideToUTF16(cases[i].text)));
 }
@@ -158,7 +158,7 @@ TEST_F(RTLTest, GetLastStrongCharacterDirection) {
       LEFT_TO_RIGHT },
    };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].direction,
               GetLastStrongCharacterDirection(WideToUTF16(cases[i].text)));
 }
@@ -236,7 +236,7 @@ TEST_F(RTLTest, GetStringDirection) {
       LEFT_TO_RIGHT },
    };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].direction,
               GetStringDirection(WideToUTF16(cases[i].text)));
 }
@@ -355,7 +355,7 @@ TEST_F(RTLTest, GetDisplayStringInLTRDirectionality) {
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
     SetRTL(!IsRTL());
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    for (size_t i = 0; i < arraysize(cases); ++i) {
       string16 input = WideToUTF16(cases[i].path);
       string16 output = GetDisplayStringInLTRDirectionality(input);
       // Test the expected wrapping behavior for the current UI directionality.

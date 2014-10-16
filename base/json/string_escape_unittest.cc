@@ -23,7 +23,7 @@ TEST(JSONStringEscapeTest, EscapeUTF8) {
     {"c<>d", "c\\u003C>d"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     const char* in_ptr = cases[i].to_escape;
     std::string in_str = in_ptr;
 
@@ -81,7 +81,7 @@ TEST(JSONStringEscapeTest, EscapeUTF16) {
     {L"c<>d", "c\\u003C>d"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     string16 in = WideToUTF16(cases[i].to_escape);
 
     std::string out;
@@ -162,7 +162,7 @@ TEST(JSONStringEscapeTest, EscapeBytes) {
     {"\xe5\xc4\x4f\x05\xb6\xfd\0", "\\u00E5\\u00C4O\\u0005\\u00B6\\u00FD"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::string in = std::string(cases[i].to_escape);
     EXPECT_FALSE(IsStringUTF8(in));
 
@@ -173,7 +173,7 @@ TEST(JSONStringEscapeTest, EscapeBytes) {
   }
 
   const char kEmbedNull[] = { '\xab', '\x39', '\0', '\x9f', '\xab' };
-  std::string in(kEmbedNull, ARRAYSIZE_UNSAFE(kEmbedNull));
+  std::string in(kEmbedNull, arraysize(kEmbedNull));
   EXPECT_FALSE(IsStringUTF8(in));
   EXPECT_EQ(std::string("\\u00AB9\\u0000\\u009F\\u00AB"),
             EscapeBytesAsInvalidJSONString(in, false));

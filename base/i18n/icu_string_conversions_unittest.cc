@@ -234,7 +234,7 @@ static const struct {
 };
 
 TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndWide) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConvertCodepageCases); ++i) {
+  for (size_t i = 0; i < arraysize(kConvertCodepageCases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
                      "Test[%" PRIuS "]: <encoded: %s> <codepage: %s>", i,
                      kConvertCodepageCases[i].encoded,
@@ -301,7 +301,7 @@ TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndWide) {
 }
 
 TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndUTF16) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConvertCodepageCases); ++i) {
+  for (size_t i = 0; i < arraysize(kConvertCodepageCases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
                      "Test[%" PRIuS "]: <encoded: %s> <codepage: %s>", i,
                      kConvertCodepageCases[i].encoded,
@@ -355,7 +355,7 @@ static const struct {
 };
 TEST(ICUStringConversionsTest, ConvertToUtf8AndNormalize) {
   std::string result;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConvertAndNormalizeCases); ++i) {
+  for (size_t i = 0; i < arraysize(kConvertAndNormalizeCases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
                      "Test[%" PRIuS "]: <encoded: %s> <codepage: %s>", i,
                      kConvertAndNormalizeCases[i].encoded,

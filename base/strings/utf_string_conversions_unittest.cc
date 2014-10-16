@@ -94,7 +94,7 @@ TEST(UTFStringConversionsTest, ConvertUTF8ToWide) {
 #endif
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(convert_cases); i++) {
+  for (size_t i = 0; i < arraysize(convert_cases); i++) {
     std::wstring converted;
     EXPECT_EQ(convert_cases[i].success,
               UTF8ToWide(convert_cases[i].utf8,
@@ -172,7 +172,7 @@ TEST(UTFStringConversionsTest, ConvertUTF32ToUTF8) {
     {L"\xdc01Hello", "\xef\xbf\xbdHello", false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(convert_cases); i++) {
+  for (size_t i = 0; i < arraysize(convert_cases); i++) {
     std::string converted;
     EXPECT_EQ(convert_cases[i].success,
               WideToUTF8(convert_cases[i].utf32,

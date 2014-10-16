@@ -73,7 +73,7 @@ TEST(StringNumberConversionsTest, Uint64ToString) {
     {kuint64max, "18446744073709551615"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].output, Uint64ToString(cases[i].input));
 }
 
@@ -96,7 +96,7 @@ TEST(StringNumberConversionsTest, SizeTToString) {
     {size_t_max, size_t_max_string},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+  for (size_t i = 0; i < arraysize(cases); ++i)
     EXPECT_EQ(cases[i].output, Uint64ToString(cases[i].input));
 }
 
@@ -132,7 +132,7 @@ TEST(StringNumberConversionsTest, StringToInt) {
     {"99999999999", INT_MAX, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     int output = 0;
     EXPECT_EQ(cases[i].success, StringToInt(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -196,7 +196,7 @@ TEST(StringNumberConversionsTest, StringToUint) {
     {"99999999999", UINT_MAX, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     unsigned output = 0;
     EXPECT_EQ(cases[i].success, StringToUint(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -266,7 +266,7 @@ TEST(StringNumberConversionsTest, StringToInt64) {
     {"99999999999999999999", kint64max, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     int64 output = 0;
     EXPECT_EQ(cases[i].success, StringToInt64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -333,7 +333,7 @@ TEST(StringNumberConversionsTest, StringToUint64) {
     {"18446744073709551616", kuint64max, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     uint64 output = 0;
     EXPECT_EQ(cases[i].success, StringToUint64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -402,7 +402,7 @@ TEST(StringNumberConversionsTest, StringToSizeT) {
     {size_t_max_string, size_t_max, true},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     size_t output = 0;
     EXPECT_EQ(cases[i].success, StringToSizeT(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -465,7 +465,7 @@ TEST(StringNumberConversionsTest, HexStringToInt) {
     {"0x", 0, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     int output = 0;
     EXPECT_EQ(cases[i].success, HexStringToInt(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -525,7 +525,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt) {
     {"0x", 0, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     uint32 output = 0;
     EXPECT_EQ(cases[i].success, HexStringToUInt(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -582,7 +582,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
     {"0x", 0, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     int64 output = 0;
     EXPECT_EQ(cases[i].success, HexStringToInt64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -644,7 +644,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
     {"0x", 0, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     uint64 output = 0;
     EXPECT_EQ(cases[i].success, HexStringToUInt64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
@@ -686,7 +686,7 @@ TEST(StringNumberConversionsTest, HexStringToBytes) {
   };
 
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     std::vector<uint8> output;
     std::vector<uint8> compare;
     EXPECT_EQ(cases[i].success, HexStringToBytes(cases[i].input, &output)) <<
@@ -735,7 +735,7 @@ TEST(StringNumberConversionsTest, StringToDouble) {
     {"", 0.0, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     double output;
     errno = 1;
     EXPECT_EQ(cases[i].success, StringToDouble(cases[i].input, &output));
@@ -768,7 +768,7 @@ TEST(StringNumberConversionsTest, DoubleToString) {
     {1.33503e+009, "1335030000"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_EQ(cases[i].expected, DoubleToString(cases[i].input));
   }
 

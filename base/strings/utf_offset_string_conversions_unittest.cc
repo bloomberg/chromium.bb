@@ -34,7 +34,7 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffset) {
     {"A\xF0\x90\x8C\x80z", 6, 4},
     {"A\xF0\x90\x8C\x80z", kNpos, kNpos},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(utf8_to_utf16_cases); ++i) {
+  for (size_t i = 0; i < arraysize(utf8_to_utf16_cases); ++i) {
     const size_t offset = utf8_to_utf16_cases[i].input_offset;
     std::vector<size_t> offsets;
     offsets.push_back(offset);
@@ -64,7 +64,7 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffset) {
       {{'A', 0xd800, 0xdf00, 'z'}, 3, 5},
       {{'A', 0xd800, 0xdf00, 'z'}, 4, 6},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(utf16_to_utf8_cases); ++i) {
+  for (size_t i = 0; i < arraysize(utf16_to_utf8_cases); ++i) {
     size_t offset = utf16_to_utf8_cases[i].input_offset;
     std::vector<size_t> offsets;
     offsets.push_back(offset);

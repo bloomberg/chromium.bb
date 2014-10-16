@@ -53,7 +53,7 @@ TEST(VersionTest, GetVersionFromString) {
     {"f.1", 0, false},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     Version version(cases[i].input);
     EXPECT_EQ(cases[i].success, version.IsValid());
     if (cases[i].success)
@@ -78,7 +78,7 @@ TEST(VersionTest, Compare) {
     {"1.0.0", "1.0", 0},
     {"1.0.3", "1.0.20", -1},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     Version lhs(cases[i].lhs);
     Version rhs(cases[i].rhs);
     EXPECT_EQ(lhs.CompareTo(rhs), cases[i].expected) <<
@@ -108,7 +108,7 @@ TEST(VersionTest, CompareToWildcardString) {
     {"1.3.9", "1.3.*", 0},
     {"1.2.0.0.0.0", "1.2.*", 0},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     const Version version(cases[i].lhs);
     const int result = version.CompareToWildcardString(cases[i].rhs);
     EXPECT_EQ(result, cases[i].expected) << cases[i].lhs << "?" << cases[i].rhs;
@@ -132,7 +132,7 @@ TEST(VersionTest, IsValidWildcardString) {
     {"*", false},
     {"*.2", false},
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+  for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_EQ(Version::IsValidWildcardString(cases[i].version),
         cases[i].expected) << cases[i].version << "?" << cases[i].expected;
   }

@@ -150,7 +150,7 @@ size_t CancelableFileOperation(Function operation,
       if (::GetLastError() == ERROR_IO_PENDING) {
         HANDLE events[] = { io_event->handle(), cancel_event->handle() };
         const int wait_result = WaitForMultipleObjects(
-            ARRAYSIZE_UNSAFE(events), events, FALSE,
+            arraysize(events), events, FALSE,
             timeout_in_ms == INFINITE ?
                 timeout_in_ms :
                 static_cast<DWORD>(

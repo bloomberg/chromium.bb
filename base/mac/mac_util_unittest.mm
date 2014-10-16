@@ -92,7 +92,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     { "/Applications/Google Foo.app/bar/Foo Helper.app/quux/Foo Helper",
         "/Applications/Google Foo.app" },
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(valid_inputs); i++) {
+  for (size_t i = 0; i < arraysize(valid_inputs); i++) {
     out = GetAppBundlePath(FilePath(valid_inputs[i].in));
     EXPECT_FALSE(out.empty()) << "loop: " << i;
     EXPECT_STREQ(valid_inputs[i].expected_out,
