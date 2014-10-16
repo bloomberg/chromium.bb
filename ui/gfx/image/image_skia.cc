@@ -56,8 +56,7 @@ class Matcher {
 };
 
 ImageSkiaRep ScaleImageSkiaRep(const ImageSkiaRep& rep, float target_scale) {
-  DCHECK_NE(rep.scale(), target_scale);
-  if (rep.is_null())
+  if (rep.is_null() || rep.scale() == target_scale)
     return rep;
 
   gfx::Size scaled_size = ToCeiledSize(
