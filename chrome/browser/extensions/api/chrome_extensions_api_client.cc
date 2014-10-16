@@ -58,9 +58,7 @@ ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
 scoped_ptr<MimeHandlerViewGuestDelegate>
 ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
-  return scoped_ptr<ChromeMimeHandlerViewGuestDelegate>(
-             new ChromeMimeHandlerViewGuestDelegate(guest))
-      .PassAs<MimeHandlerViewGuestDelegate>();
+  return make_scoped_ptr(new ChromeMimeHandlerViewGuestDelegate(guest));
 }
 
 WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(

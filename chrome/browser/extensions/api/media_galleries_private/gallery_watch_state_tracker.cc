@@ -224,10 +224,9 @@ void GalleryWatchStateTracker::WriteToStorage(const std::string& extension_id) {
     return;
   MediaGalleryPrefIdSet gallery_ids =
       GetAllWatchedGalleryIDsForExtension(extension_id);
-  storage->SetExtensionValue(
-      extension_id,
-      kRegisteredGalleryWatchers,
-      WatchedGalleryIdsToValue(gallery_ids).PassAs<base::Value>());
+  storage->SetExtensionValue(extension_id,
+                             kRegisteredGalleryWatchers,
+                             WatchedGalleryIdsToValue(gallery_ids));
 }
 
 void GalleryWatchStateTracker::ReadFromStorage(

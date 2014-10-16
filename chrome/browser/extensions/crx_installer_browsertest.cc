@@ -134,7 +134,7 @@ scoped_ptr<ExtensionInstallPrompt> MockPromptProxy::CreatePrompt() {
       new MockInstallPrompt(web_contents_, this));
   if (record_oauth2_grant_.get())
     prompt->set_record_oauth2_grant(*record_oauth2_grant_.get());
-  return prompt.PassAs<ExtensionInstallPrompt>();
+  return prompt.Pass();
 }
 
 

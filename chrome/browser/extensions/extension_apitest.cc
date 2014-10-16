@@ -37,7 +37,7 @@ const char kSpawnedTestServerPort[] = "spawnedTestServer.port";
 scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/server-redirect?", true))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return nullptr;
 
   size_t query_string_pos = request.relative_url.find('?');
   std::string redirect_target =
@@ -47,13 +47,13 @@ scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target);
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/echoheader?", true))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return nullptr;
 
   size_t query_string_pos = request.relative_url.find('?');
   std::string header_name =
@@ -69,13 +69,13 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(header_value);
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/set-cookie?", true))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return nullptr;
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -91,13 +91,13 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
   for (size_t i = 0; i < cookies.size(); i++)
     http_response->AddCustomHeader("Set-Cookie", cookies[i]);
 
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/set-header?", true))
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return nullptr;
 
   size_t query_string_pos = request.relative_url.find('?');
   std::string escaped_header =
@@ -121,7 +121,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->AddCustomHeader(header_name, header_value);
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 };  // namespace

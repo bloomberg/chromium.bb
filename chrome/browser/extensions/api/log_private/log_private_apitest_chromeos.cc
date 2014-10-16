@@ -82,7 +82,7 @@ class LogPrivateApiTest : public ExtensionApiTest {
     response->set_content(
         "<html><head><title>LogPrivateTest</title>"
         "</head><body>Hello!</body></html>");
-    return response.PassAs<HttpResponse>();
+    return response.Pass();
   }
 };
 

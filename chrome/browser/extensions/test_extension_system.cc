@@ -96,8 +96,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   // but we keep a naked pointer to the TestingValueStore.
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
   value_store_ = value_store.get();
-  state_store_.reset(
-      new StateStore(profile_, value_store.PassAs<ValueStore>()));
+  state_store_.reset(new StateStore(profile_, value_store.Pass()));
   blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProvider(

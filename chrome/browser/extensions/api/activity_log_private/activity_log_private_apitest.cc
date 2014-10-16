@@ -39,7 +39,7 @@ class ActivityLogApiTest : public ExtensionApiTest {
     response->set_code(net::HTTP_OK);
     response->set_content("<html><head><title>ActivityLogTest</title>"
                           "</head><body>Hello World</body></html>");
-    return response.PassAs<HttpResponse>();
+    return response.Pass();
   }
 
  private:

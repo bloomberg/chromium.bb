@@ -95,8 +95,7 @@ class WebstoreInlineInstallerForTest : public WebstoreInlineInstaller {
 
   virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() override {
     programmable_prompt_ = new ProgrammableInstallPrompt(web_contents());
-    return make_scoped_ptr(programmable_prompt_).
-        PassAs<ExtensionInstallPrompt>();
+    return make_scoped_ptr(programmable_prompt_);
   }
 
  private:

@@ -85,7 +85,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
     } else if (key == "set") {
       cookies_to_set.push_back(value);
     } else {
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return nullptr;
     }
   }
 
@@ -94,7 +94,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
       http_response->AddCustomHeader("Set-Cookie", cookies_to_set[i]);
   }
 
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 class IsolatedAppTest : public ExtensionBrowserTest {

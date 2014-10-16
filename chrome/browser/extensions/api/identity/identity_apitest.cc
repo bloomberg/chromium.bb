@@ -294,9 +294,8 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   }
 
   void set_mint_token_result(TestOAuth2MintTokenFlow::ResultType result_type) {
-    set_mint_token_flow(scoped_ptr<TestOAuth2MintTokenFlow>(
-                            new TestOAuth2MintTokenFlow(result_type, this))
-                            .PassAs<OAuth2MintTokenFlow>());
+    set_mint_token_flow(
+        make_scoped_ptr(new TestOAuth2MintTokenFlow(result_type, this)));
   }
 
   void set_scope_ui_failure(GaiaWebAuthFlow::Failure failure) {
@@ -1221,9 +1220,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(extension.get());
 
-  scoped_ptr<TestHangOAuth2MintTokenFlow> flow(
-      new TestHangOAuth2MintTokenFlow());
-  func->set_mint_token_flow(flow.PassAs<OAuth2MintTokenFlow>());
+  func->set_mint_token_flow(make_scoped_ptr(new TestHangOAuth2MintTokenFlow()));
   RunFunctionAsync(func.get(), "[{\"interactive\": false}]");
 
   // After the request is canceled, the function will complete.

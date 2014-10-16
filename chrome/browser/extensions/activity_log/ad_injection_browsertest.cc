@@ -163,7 +163,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequest(
   scoped_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse());
   response->set_code(net::HTTP_OK);
-  return response.PassAs<net::test_server::HttpResponse>();
+  return response.Pass();
 }
 
 }  // namespace

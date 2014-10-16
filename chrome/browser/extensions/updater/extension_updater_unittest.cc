@@ -376,8 +376,7 @@ class MockService : public TestExtensionService {
 
     scoped_ptr<ExtensionDownloader> downloader(
         CreateExtensionDownloader(delegate));
-    downloader->SetWebstoreIdentityProvider(
-        fake_identity_provider.PassAs<IdentityProvider>());
+    downloader->SetWebstoreIdentityProvider(fake_identity_provider.Pass());
     return downloader.Pass();
   }
 

@@ -39,7 +39,7 @@ class FakeDriveServiceFactory
     scoped_ptr<drive::FakeDriveService> drive_service(
         new drive::FakeDriveService);
     drive_service->AddChangeObserver(change_observer_);
-    return drive_service.PassAs<drive::DriveServiceInterface>();
+    return drive_service.Pass();
   }
 
  private:

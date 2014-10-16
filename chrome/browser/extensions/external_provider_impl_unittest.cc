@@ -126,7 +126,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
           extension_misc::kInAppPaymentsSupportAppId,
           test_server_->GetURL(kAppPath).spec().c_str()));
       response->set_content_type("text/xml");
-      return response.PassAs<HttpResponse>();
+      return response.Pass();
     }
     if (url.path() == kAppPath) {
       base::FilePath test_data_dir;
@@ -138,10 +138,10 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
       scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
       response->set_code(net::HTTP_OK);
       response->set_content(contents);
-      return response.PassAs<HttpResponse>();
+      return response.Pass();
     }
 
-    return scoped_ptr<HttpResponse>();
+    return nullptr;
   }
 
   scoped_ptr<EmbeddedTestServer> test_server_;

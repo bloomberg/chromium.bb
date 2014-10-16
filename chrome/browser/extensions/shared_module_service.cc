@@ -129,7 +129,7 @@ scoped_ptr<ExtensionSet> SharedModuleService::GetDependentExtensions(
       }
     }
   }
-  return dependents.PassAs<ExtensionSet>();
+  return dependents.Pass();
 }
 
 void SharedModuleService::PruneSharedModules() {

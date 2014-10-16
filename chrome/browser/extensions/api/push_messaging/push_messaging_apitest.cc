@@ -158,8 +158,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
       new StrictMock<MockInvalidationMapper>);
   StrictMock<MockInvalidationMapper>* unsafe_mapper = mapper.get();
   // PushMessagingEventRouter owns the mapper now.
-  GetAPI()->SetMapperForTest(
-      mapper.PassAs<PushMessagingInvalidationMapper>());
+  GetAPI()->SetMapperForTest(mapper.Pass());
 
   std::string extension_id1;
   std::string extension_id2;

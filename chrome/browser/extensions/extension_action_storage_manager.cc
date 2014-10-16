@@ -244,7 +244,7 @@ void ExtensionActionStorageManager::WriteToStorage(
         DefaultsToValue(extension_action);
     store->SetExtensionValue(extension_action->extension_id(),
                              kBrowserActionStorageKey,
-                             defaults.PassAs<base::Value>());
+                             defaults.Pass());
   }
 }
 
