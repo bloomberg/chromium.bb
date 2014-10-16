@@ -22,6 +22,7 @@ class Clock;
 namespace gcm {
 
 class GCMDriver;
+extern const char kGCMAccountMapperAppId[];
 
 // Class for mapping signed-in GAIA accounts to the GCM Device ID.
 class GCMAccountMapper : public GCMAppHandler {

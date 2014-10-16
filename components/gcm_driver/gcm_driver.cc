@@ -152,6 +152,7 @@ void GCMDriver::SendFinished(const std::string& app_id,
 void GCMDriver::Shutdown() {
   for (GCMAppHandlerMap::const_iterator iter = app_handlers_.begin();
        iter != app_handlers_.end(); ++iter) {
+    DVLOG(1) << "Calling ShutdownHandler for: " << iter->first;
     iter->second->ShutdownHandler();
   }
   app_handlers_.clear();
@@ -163,11 +164,13 @@ void GCMDriver::AddAppHandler(const std::string& app_id,
   DCHECK(handler);
   DCHECK_EQ(app_handlers_.count(app_id), 0u);
   app_handlers_[app_id] = handler;
+  DVLOG(1) << "App handler added for: " << app_id;
 }
 
 void GCMDriver::RemoveAppHandler(const std::string& app_id) {
   DCHECK(!app_id.empty());
   app_handlers_.erase(app_id);
+  DVLOG(1) << "App handler removed for: " << app_id;
 }
 
 GCMAppHandler* GCMDriver::GetAppHandler(const std::string& app_id) {

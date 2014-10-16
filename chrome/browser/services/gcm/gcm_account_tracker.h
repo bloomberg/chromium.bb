@@ -10,15 +10,19 @@
 
 #include "base/memory/scoped_vector.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/gcm_connection_observer.h"
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace gcm {
 
+class GCMDriver;
+
 // Class for reporting back which accounts are signed into. It is only meant to
 // be used when the user is signed into sync.
 class GCMAccountTracker : public gaia::AccountTracker::Observer,
-                          public OAuth2TokenService::Consumer {
+                          public OAuth2TokenService::Consumer,
+                          public GCMConnectionObserver {
  public:
   // State of the account.
   // Allowed transitions:
@@ -46,23 +50,16 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
     std::string email;
     // OAuth2 access token, when |state| is TOKEN_PRESENT.
     std::string access_token;
+    // Expiration time of the access tokens.
+    base::Time expiration_time;
     // Status of the token fetching.
     AccountState state;
   };
 
-  // Callback for the GetAccountsForCheckin call. |account_tokens|: list of
-  // email addresses, account ids and OAuth2 access tokens.
-  typedef base::Callback<void(const std::vector<GCMClient::AccountTokenInfo>&
-                                  account_tokens)> UpdateAccountsCallback;
-
-  // Creates an instance of GCMAccountTracker. |account_tracker| is used to
-  // deliver information about the account, while |callback| will be called
-  // once all of the accounts have been fetched a necessary OAuth2 token, as
-  // many times as the list of accounts is stable, meaning that all accounts
-  // are known and there is no related activity in progress for them, like
-  // fetching OAuth2 tokens.
+  // |account_tracker| is used to deliver information about the accounts present
+  // in the browser context to |driver|.
   GCMAccountTracker(scoped_ptr<gaia::AccountTracker> account_tracker,
-                    const UpdateAccountsCallback& callback);
+                    GCMDriver* driver);
   virtual ~GCMAccountTracker();
 
   // Shuts down the tracker ensuring a proper clean up. After Shutdown() is
@@ -72,8 +69,11 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
 
   // Starts tracking accounts.
   void Start();
-  // Stops tracking accounts. Cancels all of the pending token requests.
-  void Stop();
+
+  // Gets the number of pending token requests. Only used for testing.
+  size_t get_pending_token_request_count() const {
+    return pending_token_requests_.size();
+  }
 
  private:
   // Maps account keys to account states. Keyed by account_ids as used by
@@ -93,9 +93,17 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) override;
 
+  // GCMConnectionObserver overrides.
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  virtual void OnDisconnected() override;
+
   // Report the list of accounts with OAuth2 tokens back using the |callback_|
   // function. If there are token requests in progress, do nothing.
   void CompleteCollectingTokens();
+  // Verify that all of the tokens are ready to be passed down to the GCM
+  // Driver, e.g. none of them has expired or is missing. Returns true if not
+  // all tokens are valid and a fetching yet more tokens is required.
+  bool SanitizeTokens();
   // Deletes a token request. Should be called from OnGetTokenSuccess(..) or
   // OnGetTokenFailure(..).
   void DeleteTokenRequest(const OAuth2TokenService::Request* request);
@@ -114,9 +122,8 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   // Account tracker.
   scoped_ptr<gaia::AccountTracker> account_tracker_;
 
-  // Callback to be called after all of the account and OAuth2 tokens are
-  // collected.
-  UpdateAccountsCallback callback_;
+  // GCM Driver. Not owned.
+  GCMDriver* driver_;
 
   // State of the account.
   AccountInfos account_infos_;

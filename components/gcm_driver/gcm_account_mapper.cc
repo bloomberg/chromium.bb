@@ -16,7 +16,6 @@ namespace gcm {
 namespace {
 
 const char kGCMAccountMapperSenderId[] = "745476177629";
-const char kGCMAccountMapperAppId[] = "com.google.android.gms";
 const int kGCMAddMappingMessageTTL = 30 * 60;  // 0.5 hours in seconds.
 const int kGCMRemoveMappingMessageTTL = 24 * 60 * 60;  // 1 day in seconds.
 const int kGCMUpdateIntervalHours = 24;
@@ -36,6 +35,8 @@ std::string GenerateMessageID() {
 
 }  // namespace
 
+const char kGCMAccountMapperAppId[] = "com.google.android.gms";
+
 GCMAccountMapper::GCMAccountMapper(GCMDriver* gcm_driver)
     : gcm_driver_(gcm_driver),
       clock_(new base::DefaultClock),
@@ -51,19 +52,21 @@ void GCMAccountMapper::Initialize(
   DCHECK(!initialized_);
   initialized_ = true;
   accounts_ = account_mappings;
-  gcm_driver_->AddAppHandler(kGCMAccountMapperAppId, this);
   GetRegistration();
 }
 
 void GCMAccountMapper::SetAccountTokens(
     const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
+  DVLOG(1) << "GCMAccountMapper::SetAccountTokens called with "
+           << account_tokens.size() << " accounts.";
+
   // If account mapper is not ready to handle tasks yet, save the latest
   // account tokens and return.
   if (!IsReady()) {
     pending_account_tokens_ = account_tokens;
     // If mapper is initialized, but still does not have registration ID,
     // maybe the registration gave up. Retrying in case.
-    if (initialized_)
+    if (initialized_ && gcm_driver_->IsStarted())
       GetRegistration();
     return;
   }
@@ -134,7 +137,9 @@ void GCMAccountMapper::SetAccountTokens(
 }
 
 void GCMAccountMapper::ShutdownHandler() {
-  gcm_driver_->RemoveAppHandler(kGCMAccountMapperAppId);
+  initialized_ = false;
+  accounts_.clear();
+  registration_id_.clear();
 }
 
 void GCMAccountMapper::OnMessage(const std::string& app_id,
@@ -219,7 +224,7 @@ bool GCMAccountMapper::CanHandle(const std::string& app_id) const {
 }
 
 bool GCMAccountMapper::IsReady() {
-  return initialized_ && !registration_id_.empty();
+  return initialized_ && gcm_driver_->IsStarted() && !registration_id_.empty();
 }
 
 void GCMAccountMapper::SendAddMappingMessage(AccountMapping& account_mapping) {

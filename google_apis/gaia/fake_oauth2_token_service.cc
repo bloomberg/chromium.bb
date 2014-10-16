@@ -66,10 +66,13 @@ void FakeOAuth2TokenService::IssueAllTokensForAccount(
     const std::string& account_id,
     const std::string& access_token,
     const base::Time& expiration) {
-
   // Walk the requests and notify the callbacks.
-  for (std::vector<PendingRequest>::iterator it = pending_requests_.begin();
-       it != pending_requests_.end(); ++it) {
+  // Using a copy of pending requests to make sure a new token request triggered
+  // from the handling code does not invalidate the iterator.
+  std::vector<PendingRequest> pending_requests_copy = pending_requests_;
+  for (std::vector<PendingRequest>::iterator it = pending_requests_copy.begin();
+       it != pending_requests_copy.end();
+       ++it) {
     if (it->request && (account_id == it->account_id)) {
       it->request->InformConsumer(
           GoogleServiceAuthError::AuthErrorNone(), access_token, expiration);
@@ -81,8 +84,11 @@ void FakeOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error) {
   // Walk the requests and notify the callbacks.
-  for (std::vector<PendingRequest>::iterator it = pending_requests_.begin();
-       it != pending_requests_.end();
+  // Using a copy of pending requests to make sure retrying a request in
+  // response to the error does not invalidate the iterator.
+  std::vector<PendingRequest> pending_requests_copy = pending_requests_;
+  for (std::vector<PendingRequest>::iterator it = pending_requests_copy.begin();
+       it != pending_requests_copy.end();
        ++it) {
     if (it->request && (account_id == it->account_id)) {
       it->request->InformConsumer(auth_error, std::string(), base::Time());

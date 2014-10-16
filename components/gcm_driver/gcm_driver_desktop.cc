@@ -353,6 +353,7 @@ GCMDriverDesktop::GCMDriverDesktop(
       gcm_started_(false),
       gcm_enabled_(true),
       connected_(false),
+      account_mapper_(new GCMAccountMapper(this)),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
       weak_ptr_factory_(this) {
@@ -399,8 +400,9 @@ void GCMDriverDesktop::OnSignedOut() {
 
   // When sign-in enforcement is not dropped, we will stop the GCM connection
   // when the user signs out.
-  if (!GCMDriver::IsAllowedForAllUsers())
+  if (!GCMDriver::IsAllowedForAllUsers()) {
     Stop();
+  }
 }
 
 void GCMDriverDesktop::Purge() {
@@ -426,9 +428,11 @@ void GCMDriverDesktop::RemoveAppHandler(const std::string& app_id) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
   GCMDriver::RemoveAppHandler(app_id);
 
-  // Stops the GCM service when no app intends to consume it.
-  if (app_handlers().empty())
+  // Stops the GCM service when no app intends to consume it. Stop function will
+  // remove the last app handler - account mapper.
+  if (app_handlers().size() == 1) {
     Stop();
+  }
 }
 
 void GCMDriverDesktop::AddConnectionObserver(GCMConnectionObserver* observer) {
@@ -468,6 +472,9 @@ void GCMDriverDesktop::Stop() {
     return;
 
   gcm_channel_status_syncer_->Stop();
+
+  account_mapper_->ShutdownHandler();
+  GCMDriver::RemoveAppHandler(kGCMAccountMapperAppId);
 
   RemoveCachedData();
 
@@ -628,6 +635,8 @@ void GCMDriverDesktop::SetAccountTokens(
     const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
+  account_mapper_->SetAccountTokens(account_tokens);
+
   io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::SetAccountTokens,
@@ -733,6 +742,9 @@ void GCMDriverDesktop::SendAcknowledged(const std::string& app_id,
 void GCMDriverDesktop::GCMClientReady(
     const std::vector<AccountMapping>& account_mappings) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  GCMDriver::AddAppHandler(kGCMAccountMapperAppId, account_mapper_.get());
+  account_mapper_->Initialize(account_mappings);
 
   delayed_task_controller_->SetReady();
 }

@@ -705,6 +705,8 @@
       'browser/search_engines/search_provider_install_data_unittest.cc',
       'browser/search_engines/template_url_scraper_unittest.cc',
       'browser/service_process/service_process_control_mac_unittest.mm',
+      'browser/services/gcm/fake_gcm_profile_service.cc',
+      'browser/services/gcm/fake_gcm_profile_service.h',
       'browser/services/gcm/fake_signin_manager.cc',
       'browser/services/gcm/fake_signin_manager.h',
       'browser/services/gcm/gcm_account_tracker_unittest.cc',

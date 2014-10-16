@@ -13,6 +13,8 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_account_tracker_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -43,6 +45,8 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 
     AccountTrackerServiceFactory::GetInstance()->SetTestingFactory(
         browser()->profile(), FakeAccountTrackerService::Build);
+    gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
+        browser()->profile(), gcm::FakeGCMProfileService::Build);
 
     TestingProfile::TestingFactories factories;
     factories.push_back(
