@@ -23,6 +23,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -249,6 +250,10 @@ void URLRequestFileJob::DidFetchMetaInfo(const FileMetaInfo* meta_info) {
 }
 
 void URLRequestFileJob::DidOpen(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequestFileJob::DidOpen"));
+
   if (result != OK) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
     return;

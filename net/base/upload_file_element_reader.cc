@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/task_runner_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -103,6 +104,11 @@ void UploadFileElementReader::Reset() {
 void UploadFileElementReader::OnOpenCompleted(
     const CompletionCallback& callback,
     int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 UploadFileElementReader::OnOpenCompleted"));
+
   DCHECK(!callback.is_null());
 
   if (result < 0) {
