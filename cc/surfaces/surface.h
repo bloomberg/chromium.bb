@@ -5,6 +5,7 @@
 #ifndef CC_SURFACES_SURFACE_H_
 #define CC_SURFACES_SURFACE_H_
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -14,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "ui/gfx/size.h"
@@ -40,8 +42,10 @@ class CC_SURFACES_EXPORT Surface {
   void QueueFrame(scoped_ptr<CompositorFrame> frame,
                   const base::Closure& draw_callback);
   void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request);
+  // Adds each CopyOutputRequest in the current frame to copy_requests. The
+  // caller takes ownership of them.
   void TakeCopyOutputRequests(
-      ScopedPtrVector<CopyOutputRequest>* copy_requests);
+      std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests);
   // Returns the most recent frame that is eligible to be rendered.
   const CompositorFrame* GetEligibleFrame();
 
@@ -54,13 +58,14 @@ class CC_SURFACES_EXPORT Surface {
   base::WeakPtr<SurfaceFactory> factory() { return factory_; }
 
  private:
+  void ClearCopyRequests();
+
   SurfaceId surface_id_;
   gfx::Size size_;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
   int frame_index_;
-  ScopedPtrVector<CopyOutputRequest> copy_requests_;
 
   base::Closure draw_callback_;
 

@@ -23,12 +23,7 @@ Surface::Surface(SurfaceId id, const gfx::Size& size, SurfaceFactory* factory)
 }
 
 Surface::~Surface() {
-  for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
-       it != copy_requests_.end();
-       ++it) {
-    (*it)->SendEmptyResult();
-  }
-  copy_requests_.clear();
+  ClearCopyRequests();
   if (current_frame_ && factory_) {
     ReturnedResourceArray current_resources;
     TransferableResource::ReturnResources(
@@ -41,13 +36,7 @@ Surface::~Surface() {
 void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
                          const base::Closure& callback) {
   DCHECK(factory_);
-  for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
-       it != copy_requests_.end();
-       ++it) {
-    (*it)->SendEmptyResult();
-  }
-  copy_requests_.clear();
-
+  ClearCopyRequests();
   TakeLatencyInfo(&frame->metadata.latency_info);
   scoped_ptr<CompositorFrame> previous_frame = current_frame_.Pass();
   current_frame_ = frame.Pass();
@@ -70,13 +59,29 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
 }
 
 void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
-  copy_requests_.push_back(copy_request.Pass());
+  if (current_frame_ &&
+      !current_frame_->delegated_frame_data->render_pass_list.empty())
+    current_frame_->delegated_frame_data->render_pass_list.back()
+        ->copy_requests.push_back(copy_request.Pass());
+  else
+    copy_request->SendEmptyResult();
 }
 
 void Surface::TakeCopyOutputRequests(
-    ScopedPtrVector<CopyOutputRequest>* copy_requests) {
+    std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests) {
   DCHECK(copy_requests->empty());
-  copy_requests->swap(copy_requests_);
+  if (current_frame_) {
+    for (auto* render_pass :
+         current_frame_->delegated_frame_data->render_pass_list) {
+      while (!render_pass->copy_requests.empty()) {
+        scoped_ptr<CopyOutputRequest> request =
+            render_pass->copy_requests.take_back();
+        render_pass->copy_requests.pop_back();
+        copy_requests->insert(
+            std::make_pair(render_pass->id, request.release()));
+      }
+    }
+  }
 }
 
 const CompositorFrame* Surface::GetEligibleFrame() {
@@ -101,6 +106,16 @@ void Surface::RunDrawCallbacks() {
     base::Closure callback = draw_callback_;
     draw_callback_ = base::Closure();
     callback.Run();
+  }
+}
+
+void Surface::ClearCopyRequests() {
+  if (current_frame_) {
+    for (auto* render_pass :
+         current_frame_->delegated_frame_data->render_pass_list) {
+      for (auto* copy_request : render_pass->copy_requests)
+        copy_request->SendEmptyResult();
+    }
   }
 }
 

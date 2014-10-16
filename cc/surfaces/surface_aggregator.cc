@@ -21,6 +21,22 @@
 #include "cc/trees/blocking_task_runner.h"
 
 namespace cc {
+namespace {
+
+void MoveMatchingRequests(
+    RenderPassId id,
+    std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests,
+    ScopedPtrVector<CopyOutputRequest>* output_requests) {
+  auto request_range = copy_requests->equal_range(id);
+  for (auto it = request_range.first; it != request_range.second; ++it) {
+    DCHECK(it->second);
+    output_requests->push_back(scoped_ptr<CopyOutputRequest>(it->second));
+    it->second = nullptr;
+  }
+  copy_requests->erase(request_range.first, request_range.second);
+}
+
+}  // namespace
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      ResourceProvider* provider)
@@ -165,15 +181,20 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
   if (!frame_data)
     return;
 
+  std::multimap<RenderPassId, CopyOutputRequest*> copy_requests;
+  surface->TakeCopyOutputRequests(&copy_requests);
+
   RenderPassList render_pass_list;
   bool invalid_frame = TakeResources(surface, frame_data, &render_pass_list);
-  if (invalid_frame)
+  if (invalid_frame) {
+    for (auto& request : copy_requests) {
+      request.second->SendEmptyResult();
+      delete request.second;
+    }
     return;
+  }
 
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
-
-  ScopedPtrVector<CopyOutputRequest> copy_requests;
-  surface->TakeCopyOutputRequests(&copy_requests);
 
   bool merge_pass = copy_requests.empty();
 
@@ -194,6 +215,8 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                       source.damage_rect,
                       source.transform_to_root_target,
                       source.has_transparent_background);
+
+    MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
     // Contributing passes aggregated in to the pass list need to take the
     // transform of the surface quad into account to update their transform to
@@ -225,8 +248,6 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                     surface_id);
   } else {
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
-
-    dest_pass_list_->back()->copy_requests.swap(copy_requests);
 
     SharedQuadState* shared_quad_state =
         dest_pass->CreateAndAppendSharedQuadState();
@@ -319,14 +340,26 @@ void SurfaceAggregator::CopyQuadsToPass(
   }
 }
 
-void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
-                                   const Surface* surface) {
+void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
+                                   Surface* surface) {
+  RenderPassList source_pass_list;
+
+  // The root surface is allowed to have copy output requests, so grab them
+  // off its render passes.
+  std::multimap<RenderPassId, CopyOutputRequest*> copy_requests;
+  surface->TakeCopyOutputRequests(&copy_requests);
+
+  bool invalid_frame = TakeResources(surface, frame_data, &source_pass_list);
+  DCHECK(!invalid_frame);
+
   for (size_t i = 0; i < source_pass_list.size(); ++i) {
     const RenderPass& source = *source_pass_list[i];
 
     size_t sqs_size = source.shared_quad_state_list.size();
     size_t dq_size = source.quad_list.size();
     scoped_ptr<RenderPass> copy_pass(RenderPass::Create(sqs_size, dq_size));
+
+    MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
     RenderPassId remapped_pass_id =
         RemapPassId(source.id, surface->surface_id());
@@ -361,20 +394,12 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
 
   DCHECK(root_surface_frame->delegated_frame_data);
 
-  RenderPassList source_pass_list;
-
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
 
   dest_resource_list_ = &frame->delegated_frame_data->resource_list;
   dest_pass_list_ = &frame->delegated_frame_data->render_pass_list;
 
-  bool invalid_frame =
-      TakeResources(surface,
-                    root_surface_frame->delegated_frame_data.get(),
-                    &source_pass_list);
-  DCHECK(!invalid_frame);
-
-  CopyPasses(source_pass_list, surface);
+  CopyPasses(root_surface_frame->delegated_frame_data.get(), surface);
 
   referenced_surfaces_.erase(it);
   DCHECK(referenced_surfaces_.empty());
