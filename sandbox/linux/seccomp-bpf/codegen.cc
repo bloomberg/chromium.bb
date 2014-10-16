@@ -13,6 +13,7 @@
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
+#include "sandbox/linux/seccomp-bpf/trap.h"
 
 namespace sandbox {
 
@@ -31,9 +32,8 @@ CodeGen::~CodeGen() {
   }
 }
 
-void CodeGen::PrintProgram(const SandboxBPF::Program& program) {
-  for (SandboxBPF::Program::const_iterator iter = program.begin();
-       iter != program.end();
+void CodeGen::PrintProgram(const Program& program) {
+  for (Program::const_iterator iter = program.begin(); iter != program.end();
        ++iter) {
     int ip = (int)(iter - program.begin());
     fprintf(stderr, "%3d) ", ip);
@@ -654,7 +654,7 @@ void CodeGen::ComputeRelativeJumps(BasicBlocks* basic_blocks,
 }
 
 void CodeGen::ConcatenateBasicBlocks(const BasicBlocks& basic_blocks,
-                                     SandboxBPF::Program* program) {
+                                     Program* program) {
   // Our basic blocks have been sorted and relative jump offsets have been
   // computed. The last remaining step is for all the instructions in our
   // basic blocks to be concatenated into a BPF program.
@@ -674,7 +674,7 @@ void CodeGen::ConcatenateBasicBlocks(const BasicBlocks& basic_blocks,
   return;
 }
 
-void CodeGen::Compile(Instruction* instructions, SandboxBPF::Program* program) {
+void CodeGen::Compile(Instruction* instructions, Program* program) {
   if (compiled_) {
     SANDBOX_DIE(
         "Cannot call Compile() multiple times. Create a new code "

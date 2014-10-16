@@ -11,17 +11,10 @@
 #include <map>
 
 #include "base/macros.h"
+#include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
-
-// This must match the kernel's seccomp_data structure.
-struct arch_seccomp_data {
-  int nr;
-  uint32_t arch;
-  uint64_t instruction_pointer;
-  uint64_t args[6];
-};
 
 // The Trap class allows a BPF filter program to branch out to user space by
 // raising a SIGSYS signal.
@@ -31,27 +24,21 @@ struct arch_seccomp_data {
 //   Preferably, that means that no other threads should be running at that
 //   time. For the purposes of our sandbox, this assertion should always be
 //   true. Threads are incompatible with the seccomp sandbox anyway.
-class SANDBOX_EXPORT Trap {
+class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
  public:
-  // TrapFnc is a pointer to a function that handles Seccomp traps in
-  // user-space. The seccomp policy can request that a trap handler gets
-  // installed; it does so by returning a suitable ErrorCode() from the
-  // syscallEvaluator. See the ErrorCode() constructor for how to pass in
-  // the function pointer.
-  // Please note that TrapFnc is executed from signal context and must be
-  // async-signal safe:
-  // http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_04.html
-  // Also note that it follows the calling convention of native system calls.
-  // In other words, it reports an error by returning an exit code in the
-  // range -1..-4096. It should not set errno when reporting errors; on the
-  // other hand, accidentally modifying errno is harmless and the changes will
-  // be undone afterwards.
-  typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void* aux);
+  virtual uint16_t Add(TrapFnc fnc, const void* aux, bool safe) override;
+
+  virtual bool EnableUnsafeTraps() override;
+
+  // Registry returns the trap registry used by Trap's SIGSYS handler,
+  // creating it if necessary.
+  static bpf_dsl::TrapRegistry* Registry();
 
   // Registers a new trap handler and sets up the appropriate SIGSYS handler
   // as needed.
   // N.B.: This makes a permanent state change. Traps cannot be unregistered,
   //   as that would break existing BPF filters that are still active.
+  // TODO(mdempsky): Deprecated; remove.
   static uint16_t MakeTrap(TrapFnc fnc, const void* aux, bool safe);
 
   // Enables support for unsafe traps in the SIGSYS signal handler. This is a
@@ -62,6 +49,7 @@ class SANDBOX_EXPORT Trap {
   // But this is still a very useful feature for debugging purposes. Use with
   // care. This feature is availably only if enabled by the user (see above).
   // Returns "true", if unsafe traps were turned on.
+  // TODO(mdempsky): Deprecated; remove.
   static bool EnableUnsafeTrapsInSigSysHandler();
 
  private:
@@ -83,21 +71,12 @@ class SANDBOX_EXPORT Trap {
   // object. It'll break subsequent system calls that trigger a SIGSYS.
   ~Trap();
 
-  // We only have a very small number of methods. We opt to make them static
-  // and have them internally call GetInstance(). This is a little more
-  // convenient than having each caller obtain short-lived reference to the
-  // singleton.
-  // It also gracefully deals with methods that should check for the singleton,
-  // but avoid instantiating it, if it doesn't exist yet
-  // (e.g. ErrorCodeFromTrapId()).
-  static Trap* GetInstance();
   static void SigSysAction(int nr, siginfo_t* info, void* void_context);
 
   // Make sure that SigSys is not inlined in order to get slightly better crash
   // dumps.
   void SigSys(int nr, siginfo_t* info, void* void_context)
       __attribute__((noinline));
-  uint16_t MakeTrapImpl(TrapFnc fnc, const void* aux, bool safe);
   bool SandboxDebuggingAllowedByUser() const;
 
   // We have a global singleton that handles all of our SIGSYS traps. This

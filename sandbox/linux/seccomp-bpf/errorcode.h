@@ -9,6 +9,9 @@
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
+namespace bpf_dsl {
+class PolicyCompiler;
+}
 
 // This class holds all the possible values that can be returned by a sandbox
 // policy.
@@ -145,6 +148,7 @@ class SANDBOX_EXPORT ErrorCode {
   };
 
  private:
+  friend bpf_dsl::PolicyCompiler;
   friend class CodeGen;
   friend class SandboxBPF;
   friend class Trap;
@@ -152,7 +156,7 @@ class SANDBOX_EXPORT ErrorCode {
   // If we are wrapping a callback, we must assign a unique id. This id is
   // how the kernel tells us which one of our different SECCOMP_RET_TRAP
   // cases has been triggered.
-  ErrorCode(Trap::TrapFnc fnc, const void* aux, bool safe);
+  ErrorCode(uint16_t trap_id, Trap::TrapFnc fnc, const void* aux, bool safe);
 
   // Some system calls require inspection of arguments. This constructor
   // allows us to specify additional constraints.

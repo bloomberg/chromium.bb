@@ -9,6 +9,8 @@
 #include <limits>
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/policy_compiler.h"
+#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
@@ -35,7 +37,7 @@ struct State {
   DISALLOW_IMPLICIT_CONSTRUCTORS(State);
 };
 
-uint32_t EvaluateErrorCode(SandboxBPF* sandbox,
+uint32_t EvaluateErrorCode(bpf_dsl::PolicyCompiler* compiler,
                            const ErrorCode& code,
                            const struct arch_seccomp_data& data) {
   if (code.error_type() == ErrorCode::ET_SIMPLE ||
@@ -46,17 +48,17 @@ uint32_t EvaluateErrorCode(SandboxBPF* sandbox,
         (data.args[code.argno()] >> 32) &&
         (data.args[code.argno()] & 0xFFFFFFFF80000000ull) !=
             0xFFFFFFFF80000000ull) {
-      return sandbox->Unexpected64bitArgument().err();
+      return compiler->Unexpected64bitArgument().err();
     }
     bool equal = (data.args[code.argno()] & code.mask()) == code.value();
     return EvaluateErrorCode(
-        sandbox, equal ? *code.passed() : *code.failed(), data);
+        compiler, equal ? *code.passed() : *code.failed(), data);
   } else {
     return SECCOMP_RET_INVALID;
   }
 }
 
-bool VerifyErrorCode(SandboxBPF* sandbox,
+bool VerifyErrorCode(bpf_dsl::PolicyCompiler* compiler,
                      const std::vector<struct sock_filter>& program,
                      struct arch_seccomp_data* data,
                      const ErrorCode& root_code,
@@ -67,7 +69,7 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
     uint32_t computed_ret = Verifier::EvaluateBPF(program, *data, err);
     if (*err) {
       return false;
-    } else if (computed_ret != EvaluateErrorCode(sandbox, root_code, *data)) {
+    } else if (computed_ret != EvaluateErrorCode(compiler, root_code, *data)) {
       // For efficiency's sake, we'd much rather compare "computed_ret"
       // against "code.err()". This works most of the time, but it doesn't
       // always work for nested conditional expressions. The test values
@@ -93,7 +95,7 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
     // Verify that we can check a value for simple equality.
     data->args[code.argno()] = code.value();
     if (!VerifyErrorCode(
-            sandbox, program, data, root_code, *code.passed(), err)) {
+            compiler, program, data, root_code, *code.passed(), err)) {
       return false;
     }
 
@@ -106,14 +108,14 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
     if ((ignored_bits & kLower32Bits) != 0) {
       data->args[code.argno()] = code.value() | (ignored_bits & kLower32Bits);
       if (!VerifyErrorCode(
-              sandbox, program, data, root_code, *code.passed(), err)) {
+              compiler, program, data, root_code, *code.passed(), err)) {
         return false;
       }
     }
     if ((ignored_bits & kUpper32Bits) != 0) {
       data->args[code.argno()] = code.value() | (ignored_bits & kUpper32Bits);
       if (!VerifyErrorCode(
-              sandbox, program, data, root_code, *code.passed(), err)) {
+              compiler, program, data, root_code, *code.passed(), err)) {
         return false;
       }
     }
@@ -122,14 +124,14 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
     if ((code.mask() & kLower32Bits) != 0) {
       data->args[code.argno()] = code.value() ^ (code.mask() & kLower32Bits);
       if (!VerifyErrorCode(
-              sandbox, program, data, root_code, *code.failed(), err)) {
+              compiler, program, data, root_code, *code.failed(), err)) {
         return false;
       }
     }
     if ((code.mask() & kUpper32Bits) != 0) {
       data->args[code.argno()] = code.value() ^ (code.mask() & kUpper32Bits);
       if (!VerifyErrorCode(
-              sandbox, program, data, root_code, *code.failed(), err)) {
+              compiler, program, data, root_code, *code.failed(), err)) {
         return false;
       }
     }
@@ -140,11 +142,11 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
 
       // Arbitrary 64-bit values should be rejected.
       data->args[code.argno()] = 1ULL << 32;
-      if (!VerifyErrorCode(sandbox,
+      if (!VerifyErrorCode(compiler,
                            program,
                            data,
                            root_code,
-                           sandbox->Unexpected64bitArgument(),
+                           compiler->Unexpected64bitArgument(),
                            err)) {
         return false;
       }
@@ -152,11 +154,11 @@ bool VerifyErrorCode(SandboxBPF* sandbox,
       // Upper 32-bits set without the MSB of the lower 32-bits set should be
       // rejected too.
       data->args[code.argno()] = kUpper32Bits;
-      if (!VerifyErrorCode(sandbox,
+      if (!VerifyErrorCode(compiler,
                            program,
                            data,
                            root_code,
-                           sandbox->Unexpected64bitArgument(),
+                           compiler->Unexpected64bitArgument(),
                            err)) {
         return false;
       }
@@ -310,7 +312,7 @@ void Alu(State* state, const struct sock_filter& insn, const char** err) {
 
 }  // namespace
 
-bool Verifier::VerifyBPF(SandboxBPF* sandbox,
+bool Verifier::VerifyBPF(bpf_dsl::PolicyCompiler* compiler,
                          const std::vector<struct sock_filter>& program,
                          const bpf_dsl::SandboxBPFDSLPolicy& policy,
                          const char** err) {
@@ -338,9 +340,9 @@ bool Verifier::VerifyBPF(SandboxBPF* sandbox,
 #endif
 #endif
     ErrorCode code = iter.IsValid(sysnum)
-                         ? policy.EvaluateSyscall(sandbox, sysnum)
-                         : policy.InvalidSyscall(sandbox);
-    if (!VerifyErrorCode(sandbox, program, &data, code, code, err)) {
+                         ? policy.EvaluateSyscall(compiler, sysnum)
+                         : policy.InvalidSyscall(compiler);
+    if (!VerifyErrorCode(compiler, program, &data, code, code, err)) {
       return false;
     }
   }

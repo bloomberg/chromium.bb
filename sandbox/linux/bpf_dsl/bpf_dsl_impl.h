@@ -20,7 +20,7 @@ namespace internal {
 class BoolExprImpl : public base::RefCounted<BoolExprImpl> {
  public:
   BoolExprImpl() {}
-  virtual ErrorCode Compile(SandboxBPF* sb,
+  virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const = 0;
 
@@ -36,7 +36,7 @@ class BoolExprImpl : public base::RefCounted<BoolExprImpl> {
 class ResultExprImpl : public base::RefCounted<ResultExprImpl> {
  public:
   ResultExprImpl() {}
-  virtual ErrorCode Compile(SandboxBPF* sb) const = 0;
+  virtual ErrorCode Compile(PolicyCompiler* pc) const = 0;
   virtual bool HasUnsafeTraps() const;
 
  protected:

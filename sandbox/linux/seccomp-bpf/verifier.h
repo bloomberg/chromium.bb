@@ -14,11 +14,11 @@
 struct sock_filter;
 
 namespace sandbox {
+struct arch_seccomp_data;
 namespace bpf_dsl {
 class SandboxBPFDSLPolicy;
+class PolicyCompiler;
 }
-struct arch_seccomp_data;
-class SandboxBPF;
 
 class Verifier {
  public:
@@ -29,7 +29,7 @@ class Verifier {
   // set by the "evaluators".
   // Upon success, "err" is set to NULL. Upon failure, it contains a static
   // error message that does not need to be free()'d.
-  static bool VerifyBPF(SandboxBPF* sandbox,
+  static bool VerifyBPF(bpf_dsl::PolicyCompiler* compiler,
                         const std::vector<struct sock_filter>& program,
                         const bpf_dsl::SandboxBPFDSLPolicy& policy,
                         const char** err);

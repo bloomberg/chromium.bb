@@ -60,9 +60,7 @@ void SandboxBPFTestRunner::Run() {
     // if we don't have kernel support.
     sandbox::SandboxBPF sandbox;
     sandbox.SetSandboxPolicy(policy.release());
-    sandbox::SandboxBPF::Program* program =
-        sandbox.AssembleFilter(true /* force_verification */);
-    delete program;
+    sandbox.AssembleFilter(true /* force_verification */);
     sandbox::UnitTests::IgnoreThisTest();
   }
 }

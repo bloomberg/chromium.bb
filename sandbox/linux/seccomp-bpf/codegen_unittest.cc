@@ -19,11 +19,6 @@
 
 namespace sandbox {
 
-class SandboxUnittestHelper : public SandboxBPF {
- public:
-  typedef SandboxBPF::Program Program;
-};
-
 // We want to access some of the private methods in the code generator. We
 // do so by defining a "friend" that makes these methods public for us.
 class CodeGenUnittestHelper : public CodeGen {
@@ -497,7 +492,7 @@ void CompileAndCompare(CodeGenUnittestHelper* codegen, Instruction* prg, int) {
   }
 
   // Compile the program
-  SandboxUnittestHelper::Program bpf;
+  CodeGen::Program bpf;
   codegen->Compile(prg, &bpf);
 
   // Serialize the resulting BPF instructions.

@@ -13,13 +13,15 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/bpf_dsl/cons.h"
-#include "sandbox/linux/seccomp-bpf/trap.h"
+#include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 class ErrorCode;
-class SandboxBPF;
 class Verifier;
+namespace bpf_dsl {
+class PolicyCompiler;
+}
 }
 
 // The sandbox::bpf_dsl namespace provides a domain-specific language
@@ -122,15 +124,15 @@ class SANDBOX_EXPORT SandboxBPFDSLPolicy {
   virtual ResultExpr InvalidSyscall() const;
 
   // Helper method so policies can just write Trap(func, aux).
-  static ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
+  static ResultExpr Trap(TrapRegistry::TrapFnc trap_func, const void* aux);
 
  private:
-  friend SandboxBPF;
+  friend PolicyCompiler;
   friend Verifier;
 
   // Private methods used for compiling and verifying policies.
-  ErrorCode EvaluateSyscall(SandboxBPF* sb, int sysno) const;
-  ErrorCode InvalidSyscall(SandboxBPF* sb) const;
+  ErrorCode EvaluateSyscall(PolicyCompiler* pc, int sysno) const;
+  ErrorCode InvalidSyscall(PolicyCompiler* pc) const;
   bool HasUnsafeTraps() const;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFDSLPolicy);
@@ -157,7 +159,8 @@ SANDBOX_EXPORT ResultExpr Trace(uint16_t aux);
 // Trap specifies a result that the system call should be handled by
 // trapping back into userspace and invoking |trap_func|, passing
 // |aux| as the second parameter.
-SANDBOX_EXPORT ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
+SANDBOX_EXPORT ResultExpr
+    Trap(TrapRegistry::TrapFnc trap_func, const void* aux);
 
 // UnsafeTrap is like Trap, except the policy is marked as "unsafe"
 // and allowed to use SandboxSyscall to invoke any system call.
@@ -167,7 +170,8 @@ SANDBOX_EXPORT ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux);
 //   very useful to diagnose code that is incompatible with the sandbox.
 //   If even a single system call returns "UnsafeTrap", the security of
 //   entire sandbox should be considered compromised.
-SANDBOX_EXPORT ResultExpr UnsafeTrap(Trap::TrapFnc trap_func, const void* aux);
+SANDBOX_EXPORT ResultExpr
+    UnsafeTrap(TrapRegistry::TrapFnc trap_func, const void* aux);
 
 // BoolConst converts a bool value into a BoolExpr.
 SANDBOX_EXPORT BoolExpr BoolConst(bool value);

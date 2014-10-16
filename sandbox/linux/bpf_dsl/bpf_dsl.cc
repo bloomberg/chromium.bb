@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
+#include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
 namespace sandbox {
@@ -23,7 +23,7 @@ class AllowResultExprImpl : public internal::ResultExprImpl {
  public:
   AllowResultExprImpl() {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 
@@ -39,8 +39,8 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
     CHECK(err_ >= ErrorCode::ERR_MIN_ERRNO && err_ <= ErrorCode::ERR_MAX_ERRNO);
   }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
-    return sb->Error(err_);
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+    return pc->Error(err_);
   }
 
  private:
@@ -55,8 +55,8 @@ class KillResultExprImpl : public internal::ResultExprImpl {
  public:
   explicit KillResultExprImpl(const char* msg) : msg_(msg) { DCHECK(msg_); }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
-    return sb->Kill(msg_);
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+    return pc->Kill(msg_);
   }
 
  private:
@@ -71,7 +71,7 @@ class TraceResultExprImpl : public internal::ResultExprImpl {
  public:
   TraceResultExprImpl(uint16_t aux) : aux_(aux) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
     return ErrorCode(ErrorCode::ERR_TRACE + aux_);
   }
 
@@ -85,19 +85,19 @@ class TraceResultExprImpl : public internal::ResultExprImpl {
 
 class TrapResultExprImpl : public internal::ResultExprImpl {
  public:
-  TrapResultExprImpl(Trap::TrapFnc func, const void* arg)
+  TrapResultExprImpl(TrapRegistry::TrapFnc func, const void* arg)
       : func_(func), arg_(arg) {
     DCHECK(func_);
   }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
-    return sb->Trap(func_, arg_);
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+    return pc->Trap(func_, arg_);
   }
 
  private:
   virtual ~TrapResultExprImpl() {}
 
-  Trap::TrapFnc func_;
+  TrapRegistry::TrapFnc func_;
   const void* arg_;
 
   DISALLOW_COPY_AND_ASSIGN(TrapResultExprImpl);
@@ -105,13 +105,13 @@ class TrapResultExprImpl : public internal::ResultExprImpl {
 
 class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
  public:
-  UnsafeTrapResultExprImpl(Trap::TrapFnc func, const void* arg)
+  UnsafeTrapResultExprImpl(TrapRegistry::TrapFnc func, const void* arg)
       : func_(func), arg_(arg) {
     DCHECK(func_);
   }
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
-    return sb->UnsafeTrap(func_, arg_);
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+    return pc->UnsafeTrap(func_, arg_);
   }
 
   virtual bool HasUnsafeTraps() const override { return true; }
@@ -119,7 +119,7 @@ class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
  private:
   virtual ~UnsafeTrapResultExprImpl() {}
 
-  Trap::TrapFnc func_;
+  TrapRegistry::TrapFnc func_;
   const void* arg_;
 
   DISALLOW_COPY_AND_ASSIGN(UnsafeTrapResultExprImpl);
@@ -132,9 +132,9 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
                        const ResultExpr& else_result)
       : cond_(cond), then_result_(then_result), else_result_(else_result) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb) const override {
+  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
     return cond_->Compile(
-        sb, then_result_->Compile(sb), else_result_->Compile(sb));
+        pc, then_result_->Compile(pc), else_result_->Compile(pc));
   }
 
   virtual bool HasUnsafeTraps() const override {
@@ -155,7 +155,7 @@ class ConstBoolExprImpl : public internal::BoolExprImpl {
  public:
   ConstBoolExprImpl(bool value) : value_(value) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb,
+  virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const override {
     return value_ ? true_ec : false_ec;
@@ -177,10 +177,10 @@ class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
                         uint64_t value)
       : argno_(argno), is_32bit_(is_32bit), mask_(mask), value_(value) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb,
+  virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const override {
-    return sb->CondMaskedEqual(
+    return pc->CondMaskedEqual(
         argno_, is_32bit_, mask_, value_, true_ec, false_ec);
   }
 
@@ -199,10 +199,10 @@ class NegateBoolExprImpl : public internal::BoolExprImpl {
  public:
   explicit NegateBoolExprImpl(const BoolExpr& cond) : cond_(cond) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb,
+  virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const override {
-    return cond_->Compile(sb, false_ec, true_ec);
+    return cond_->Compile(pc, false_ec, true_ec);
   }
 
  private:
@@ -218,10 +218,10 @@ class AndBoolExprImpl : public internal::BoolExprImpl {
   AndBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
       : lhs_(lhs), rhs_(rhs) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb,
+  virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const override {
-    return lhs_->Compile(sb, rhs_->Compile(sb, true_ec, false_ec), false_ec);
+    return lhs_->Compile(pc, rhs_->Compile(pc, true_ec, false_ec), false_ec);
   }
 
  private:
@@ -238,10 +238,10 @@ class OrBoolExprImpl : public internal::BoolExprImpl {
   OrBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
       : lhs_(lhs), rhs_(rhs) {}
 
-  virtual ErrorCode Compile(SandboxBPF* sb,
+  virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const override {
-    return lhs_->Compile(sb, true_ec, rhs_->Compile(sb, true_ec, false_ec));
+    return lhs_->Compile(pc, true_ec, rhs_->Compile(pc, true_ec, false_ec));
   }
 
  private:
@@ -301,11 +301,11 @@ ResultExpr Trace(uint16_t aux) {
   return ResultExpr(new const TraceResultExprImpl(aux));
 }
 
-ResultExpr Trap(Trap::TrapFnc trap_func, const void* aux) {
+ResultExpr Trap(TrapRegistry::TrapFnc trap_func, const void* aux) {
   return ResultExpr(new const TrapResultExprImpl(trap_func, aux));
 }
 
-ResultExpr UnsafeTrap(Trap::TrapFnc trap_func, const void* aux) {
+ResultExpr UnsafeTrap(TrapRegistry::TrapFnc trap_func, const void* aux) {
   return ResultExpr(new const UnsafeTrapResultExprImpl(trap_func, aux));
 }
 
@@ -377,13 +377,13 @@ ResultExpr SandboxBPFDSLPolicy::InvalidSyscall() const {
   return Error(ENOSYS);
 }
 
-ErrorCode SandboxBPFDSLPolicy::EvaluateSyscall(SandboxBPF* sb,
+ErrorCode SandboxBPFDSLPolicy::EvaluateSyscall(PolicyCompiler* pc,
                                                int sysno) const {
-  return EvaluateSyscall(sysno)->Compile(sb);
+  return EvaluateSyscall(sysno)->Compile(pc);
 }
 
-ErrorCode SandboxBPFDSLPolicy::InvalidSyscall(SandboxBPF* sb) const {
-  return InvalidSyscall()->Compile(sb);
+ErrorCode SandboxBPFDSLPolicy::InvalidSyscall(PolicyCompiler* pc) const {
+  return InvalidSyscall()->Compile(pc);
 }
 
 bool SandboxBPFDSLPolicy::HasUnsafeTraps() const {
@@ -397,7 +397,8 @@ bool SandboxBPFDSLPolicy::HasUnsafeTraps() const {
   return InvalidSyscall()->HasUnsafeTraps();
 }
 
-ResultExpr SandboxBPFDSLPolicy::Trap(Trap::TrapFnc trap_func, const void* aux) {
+ResultExpr SandboxBPFDSLPolicy::Trap(TrapRegistry::TrapFnc trap_func,
+                                     const void* aux) {
   return bpf_dsl::Trap(trap_func, aux);
 }
 

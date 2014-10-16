@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
+#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
