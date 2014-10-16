@@ -927,16 +927,6 @@ TEST(TransformOperationTest, BlendedBoundsForRotationPointOnAxis) {
   EXPECT_EQ(box.ToString(), bounds.ToString());
 }
 
-// This would have been best as anonymous structs, but |arraysize| does not get
-// along with anonymous structs (and using ARRAYSIZE_UNSAFE seemed like a worse
-// option).
-struct ProblematicAxisTest {
-  float x;
-  float y;
-  float z;
-  gfx::BoxF expected;
-};
-
 TEST(TransformOperationTest, BlendedBoundsForRotationProblematicAxes) {
   // Zeros in the components of the axis of rotation turned out to be tricky to
   // deal with in practice. This function tests some potentially problematic
@@ -947,15 +937,18 @@ TEST(TransformOperationTest, BlendedBoundsForRotationProblematicAxes) {
   float dim2 = sqrt(2.f);
   float dim3 = 2.f * dim2;
 
-  ProblematicAxisTest tests[] = {
-    { 0.f, 0.f, 0.f, gfx::BoxF(1.f, 1.f, 1.f, 0.f, 0.f, 0.f) },
-    { 1.f, 0.f, 0.f, gfx::BoxF(1.f, -dim2, -dim2, 0.f, dim3, dim3) },
-    { 0.f, 1.f, 0.f, gfx::BoxF(-dim2, 1.f, -dim2, dim3, 0.f, dim3) },
-    { 0.f, 0.f, 1.f, gfx::BoxF(-dim2, -dim2, 1.f, dim3, dim3, 0.f) },
-    { 1.f, 1.f, 0.f, gfx::BoxF(dim1, dim1, -1.f, dim2, dim2, 2.f) },
-    { 0.f, 1.f, 1.f, gfx::BoxF(-1.f, dim1, dim1, 2.f, dim2, dim2) },
-    { 1.f, 0.f, 1.f, gfx::BoxF(dim1, -1.f, dim1, dim2, 2.f, dim2) }
-  };
+  struct {
+    float x;
+    float y;
+    float z;
+    gfx::BoxF expected;
+  } tests[] = {{0.f, 0.f, 0.f, gfx::BoxF(1.f, 1.f, 1.f, 0.f, 0.f, 0.f)},
+               {1.f, 0.f, 0.f, gfx::BoxF(1.f, -dim2, -dim2, 0.f, dim3, dim3)},
+               {0.f, 1.f, 0.f, gfx::BoxF(-dim2, 1.f, -dim2, dim3, 0.f, dim3)},
+               {0.f, 0.f, 1.f, gfx::BoxF(-dim2, -dim2, 1.f, dim3, dim3, 0.f)},
+               {1.f, 1.f, 0.f, gfx::BoxF(dim1, dim1, -1.f, dim2, dim2, 2.f)},
+               {0.f, 1.f, 1.f, gfx::BoxF(-1.f, dim1, dim1, 2.f, dim2, dim2)},
+               {1.f, 0.f, 1.f, gfx::BoxF(dim1, -1.f, dim1, dim2, 2.f, dim2)}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     float x = tests[i].x;
@@ -973,25 +966,6 @@ TEST(TransformOperationTest, BlendedBoundsForRotationProblematicAxes) {
     EXPECT_EQ(tests[i].expected.ToString(), bounds.ToString());
   }
 }
-
-// These would have been best as anonymous structs, but |arraysize| does not get
-// along with anonymous structs (and using ARRAYSIZE_UNSAFE seemed like a worse
-// option).
-struct TestAxis {
-  float x;
-  float y;
-  float z;
-};
-
-struct TestAngles {
-  float theta_from;
-  float theta_to;
-};
-
-struct TestProgress {
-  float min_progress;
-  float max_progress;
-};
 
 static void ExpectBoxesApproximatelyEqual(const gfx::BoxF& lhs,
                                           const gfx::BoxF& rhs,
@@ -1071,44 +1045,49 @@ TEST(TransformOperationTest, BlendedBoundsForRotationEmpiricalTests) {
   // empirically tests that the transformed bounds are indeed contained by the
   // computed bounding box.
 
-  TestAxis axes[] = {
-    { 1.f, 1.f, 1.f },
-    { -1.f, -1.f, -1.f },
-    { -1.f, 2.f, 3.f },
-    { 1.f, -2.f, 3.f },
-    { 1.f, 2.f, -3.f },
-    { 0.f, 0.f, 0.f },
-    { 1.f, 0.f, 0.f },
-    { 0.f, 1.f, 0.f },
-    { 0.f, 0.f, 1.f },
-    { 1.f, 1.f, 0.f },
-    { 0.f, 1.f, 1.f },
-    { 1.f, 0.f, 1.f },
-    { -1.f, 0.f, 0.f },
-    { 0.f, -1.f, 0.f },
-    { 0.f, 0.f, -1.f },
-    { -1.f, -1.f, 0.f },
-    { 0.f, -1.f, -1.f },
-    { -1.f, 0.f, -1.f }
-  };
+  struct {
+    float x;
+    float y;
+    float z;
+  } axes[] = {{1.f, 1.f, 1.f},
+              {-1.f, -1.f, -1.f},
+              {-1.f, 2.f, 3.f},
+              {1.f, -2.f, 3.f},
+              {1.f, 2.f, -3.f},
+              {0.f, 0.f, 0.f},
+              {1.f, 0.f, 0.f},
+              {0.f, 1.f, 0.f},
+              {0.f, 0.f, 1.f},
+              {1.f, 1.f, 0.f},
+              {0.f, 1.f, 1.f},
+              {1.f, 0.f, 1.f},
+              {-1.f, 0.f, 0.f},
+              {0.f, -1.f, 0.f},
+              {0.f, 0.f, -1.f},
+              {-1.f, -1.f, 0.f},
+              {0.f, -1.f, -1.f},
+              {-1.f, 0.f, -1.f}};
 
-  TestAngles angles[] = {
-    { 5.f, 10.f },
-    { 10.f, 5.f },
-    { 0.f, 360.f },
-    { 20.f, 180.f },
-    { -20.f, -180.f },
-    { 180.f, -220.f },
-    { 220.f, 320.f }
-  };
+  struct {
+    float theta_from;
+    float theta_to;
+  } angles[] = {{5.f, 10.f},
+                {10.f, 5.f},
+                {0.f, 360.f},
+                {20.f, 180.f},
+                {-20.f, -180.f},
+                {180.f, -220.f},
+                {220.f, 320.f}};
 
   // We can go beyond the range [0, 1] (the bezier might slide out of this range
   // at either end), but since the first and last knots are at (0, 0) and (1, 1)
   // we will never go within it, so these tests are sufficient.
-  TestProgress progress[] = {
-    { 0.f, 1.f },
-    { -.25f, 1.25f },
-  };
+  struct {
+    float min_progress;
+    float max_progress;
+  } progress[] = {
+        {0.f, 1.f}, {-.25f, 1.25f},
+    };
 
   for (size_t i = 0; i < arraysize(axes); ++i) {
     for (size_t j = 0; j < arraysize(angles); ++j) {
@@ -1156,22 +1135,22 @@ TEST(TransformOperationTest, PerspectiveMatrixAndTransformBlendingEquivalency) {
     }
 }
 
-struct TestPerspectiveDepths {
-  float from_depth;
-  float to_depth;
-};
-
 TEST(TransformOperationTest, BlendedBoundsForPerspective) {
-  TestPerspectiveDepths perspective_depths[] = {
-    { 600.f, 400.f },
-    { 800.f, 1000.f },
-    { 800.f, std::numeric_limits<float>::infinity() },
-  };
+  struct {
+    float from_depth;
+    float to_depth;
+  } perspective_depths[] = {
+        {600.f, 400.f},
+        {800.f, 1000.f},
+        {800.f, std::numeric_limits<float>::infinity()},
+    };
 
-  TestProgress progress[] = {
-    { 0.f, 1.f },
-    { -0.1f, 1.1f },
-  };
+  struct {
+    float min_progress;
+    float max_progress;
+  } progress[] = {
+        {0.f, 1.f}, {-0.1f, 1.1f},
+    };
 
   for (size_t i = 0; i < arraysize(perspective_depths); ++i) {
     for (size_t j = 0; j < arraysize(progress); ++j) {
@@ -1187,23 +1166,22 @@ TEST(TransformOperationTest, BlendedBoundsForPerspective) {
   }
 }
 
-struct TestSkews {
-  float from_x;
-  float from_y;
-  float to_x;
-  float to_y;
-};
-
 TEST(TransformOperationTest, BlendedBoundsForSkew) {
-  TestSkews skews[] = {
-    { 1.f, 0.5f, 0.5f, 1.f },
-    { 2.f, 1.f, 0.5f, 0.5f },
-  };
+  struct {
+    float from_x;
+    float from_y;
+    float to_x;
+    float to_y;
+  } skews[] = {
+        {1.f, 0.5f, 0.5f, 1.f}, {2.f, 1.f, 0.5f, 0.5f},
+    };
 
-  TestProgress progress[] = {
-    { 0.f, 1.f },
-    { -0.1f, 1.1f },
-  };
+  struct {
+    float min_progress;
+    float max_progress;
+  } progress[] = {
+        {0.f, 1.f}, {-0.1f, 1.1f},
+    };
 
   for (size_t i = 0; i < arraysize(skews); ++i) {
     for (size_t j = 0; j < arraysize(progress); ++j) {
