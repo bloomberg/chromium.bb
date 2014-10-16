@@ -303,13 +303,13 @@
   "Site Isolation Linux": {
     "gtest_tests": [
       { "test": "content_unittests", "args": ["--site-per-process"] },
-      { "test": "content_browsertests", "args": ["--site-per-process"] }
+      { "test": "content_browsertests", "args": ["--site-per-process --gtest_filter=-RenderFrameHostManagerTest.AllowTargetedNavigationsAfterSwap:-RenderFrameHostManagerTest.SupportCrossProcessPostMessage:-SiteIsolationPolicyBrowserTest.CrossSiteDocumentBlockingForDifferentTargets:-RenderFrameHostManagerTest.DontSwapProcessWithOnlyTargetBlank:-RenderFrameHostManagerTest.DisownOpener:-FrameTreeBrowserTest.NavigateWithLeftoverFrames:-RenderFrameHostManagerTest.DontPreemptNavigationWithFrameTreeUpdate:-RenderFrameHostManagerTest.ProcessExitWithSwappedOutViews:-RenderFrameHostManagerTest.SupportCrossProcessPostMessageWithMessagePort:-RenderFrameHostManagerTest.AllowTargetedNavigationsInOpenerAfterSwap"] }
     ]
   },
   "Site Isolation Win": {
     "gtest_tests": [
       { "test": "content_unittests", "args": ["--site-per-process"] },
-      { "test": "content_browsertests", "args": ["--site-per-process"] }
+      { "test": "content_browsertests", "args": ["--site-per-process --gtest_filter=-RenderFrameHostManagerTest.AllowTargetedNavigationsAfterSwap:-RenderFrameHostManagerTest.SupportCrossProcessPostMessage:-SiteIsolationPolicyBrowserTest.CrossSiteDocumentBlockingForDifferentTargets:-RenderFrameHostManagerTest.DontSwapProcessWithOnlyTargetBlank:-RenderFrameHostManagerTest.DisownOpener:-FrameTreeBrowserTest.NavigateWithLeftoverFrames:-RenderFrameHostManagerTest.DontPreemptNavigationWithFrameTreeUpdate:-RenderFrameHostManagerTest.ProcessExitWithSwappedOutViews:-RenderFrameHostManagerTest.SupportCrossProcessPostMessageWithMessagePort:-RenderFrameHostManagerTest.AllowTargetedNavigationsInOpenerAfterSwap"] }
     ]
   },
   "Linux ChromeOS MSan Tests": {
