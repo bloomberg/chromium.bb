@@ -501,6 +501,36 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(call));
 }
 
+// This test makes two getUserMedia requests, one with impossible constraints
+// that should trigger an error, and one with valid constraints. The test
+// verifies getUserMedia can succeed after being given impossible constraints.
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaAndCheckCallbackAfterFailure) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  int large_value = 99999;
+  const std::string gum_with_impossible_constraints =
+    GenerateGetUserMediaCall(kGetUserMediaAndExpectFailure,
+                             large_value,
+                             large_value,
+                             large_value,
+                             large_value,
+                             large_value,
+                             large_value);
+  const std::string gum_with_vga_constraints =
+    GenerateGetUserMediaCall(kGetUserMediaAndAnalyseAndStop,
+                             640, 640, 480, 480, 10, 30);
+
+  ASSERT_EQ("ConstraintNotSatisfiedError",
+            ExecuteJavascriptAndReturnResult(gum_with_impossible_constraints));
+
+  ASSERT_EQ("w=640:h=480",
+            ExecuteJavascriptAndReturnResult(gum_with_vga_constraints));
+}
+
 // This test will make a simple getUserMedia page, verify that video is playing
 // in a simple local <video>, and for a couple of seconds, collect some
 // performance traces from VideoCaptureController colorspace conversion and
