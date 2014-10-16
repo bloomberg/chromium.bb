@@ -173,13 +173,16 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     // listed in WHATWG Encoding Living Standard (http://encoding.spec.whatwg.org/ ).
 
     // Additional aliases present in the WHATWG Encoding Standard
-    // and Firefox (24), but not in ICU 4.6.
+    // and Firefox (as of Oct 2014), but not in the upstream ICU.
+    // Three entries for windows-1252 need not be listed here because
+    // TextCodecLatin1 registers them.
+    // FIXME: We may introduce SYSTEM_ICU and enclose this block
+    // with |#if SYSTEM_ICU| because Chromium's ICU has them all.
     registrar("csiso58gb231280", "GBK");
     registrar("csiso88596e", "ISO-8859-6");
     registrar("csiso88596i", "ISO-8859-6");
     registrar("csiso88598e", "ISO-8859-8");
     registrar("gb_2312", "GBK");
-    registrar("iso88591", "windows-1252");
     registrar("iso88592", "ISO-8859-2");
     registrar("iso88593", "ISO-8859-3");
     registrar("iso88594", "ISO-8859-4");
@@ -193,7 +196,6 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("iso885913", "ISO-8859-13");
     registrar("iso885914", "ISO-8859-14");
     registrar("iso885915", "ISO-8859-15");
-    registrar("iso_8859-1", "windows-1252");
     registrar("iso_8859-2", "ISO-8859-2");
     registrar("iso_8859-3", "ISO-8859-3");
     registrar("iso_8859-4", "ISO-8859-4");
@@ -204,7 +206,6 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("iso_8859-9", "windows-1254");
     registrar("iso_8859-15", "ISO-8859-15");
     registrar("koi8_r", "KOI8-R");
-    registrar("x-cp1252", "windows-1252");
     registrar("x-cp1253", "windows-1253");
     registrar("x-cp1254", "windows-1254");
     registrar("x-cp1255", "windows-1255");
