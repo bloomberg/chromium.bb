@@ -1817,6 +1817,13 @@ def GetPerfEnvDescription(env):
   This function attempts to gather a string that might inform why a performance
   change has occurred.
   """
+  if env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+    # Trusted tests do not depend on the untrusted toolchain, untrusted libc,
+    # whether or not the IRT is used, etc.
+    description_list = ['trusted',
+                        env['TARGET_PLATFORM'].lower(),
+                        env['TARGET_FULLARCH']]
+    return ARGUMENTS.get('perf_prefix', '') + '_'.join(description_list)
   description_list = [env['TARGET_FULLARCH']]
   # Using a list to keep the order consistent.
   bit_to_description = [ ('tests_use_irt', ('with_irt', '')),
