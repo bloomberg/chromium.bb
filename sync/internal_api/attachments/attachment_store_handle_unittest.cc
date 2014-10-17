@@ -79,17 +79,13 @@ class AttachmentStoreHandleTest : public testing::Test {
         backend.Pass(), base::ThreadTaskRunnerHandle::Get());
   }
 
+  static void DoneWithResult(const AttachmentStore::Result& result) {
+    NOTREACHED();
+  }
+
   static void ReadDone(const AttachmentStore::Result& result,
                        scoped_ptr<AttachmentMap> attachments,
                        scoped_ptr<AttachmentIdList> unavailable_attachments) {
-    NOTREACHED();
-  }
-
-  static void WriteDone(const AttachmentStore::Result& result) {
-    NOTREACHED();
-  }
-
-  static void DropDone(const AttachmentStore::Result& result) {
     NOTREACHED();
   }
 
@@ -126,13 +122,13 @@ TEST_F(AttachmentStoreHandleTest, MethodsCalled) {
   EXPECT_EQ(read_call_count_, 1);
 
   attachment_store_handle_->Write(
-      attachments, base::Bind(&AttachmentStoreHandleTest::WriteDone));
+      attachments, base::Bind(&AttachmentStoreHandleTest::DoneWithResult));
   EXPECT_EQ(write_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(write_call_count_, 1);
 
   attachment_store_handle_->Drop(
-      ids, base::Bind(&AttachmentStoreHandleTest::DropDone));
+      ids, base::Bind(&AttachmentStoreHandleTest::DoneWithResult));
   EXPECT_EQ(drop_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(drop_call_count_, 1);

@@ -13,7 +13,9 @@
 #include "sync/base/sync_export.h"
 
 namespace base {
+class FilePath;
 class RefCountedMemory;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace syncer {
@@ -90,15 +92,42 @@ class SYNC_EXPORT AttachmentStore
     : public AttachmentStoreBase,
       public base::RefCountedThreadSafe<AttachmentStore> {
  public:
+  typedef base::Callback<void(const Result&,
+                              const scoped_refptr<AttachmentStore>&)>
+      CreateCallback;
+
   AttachmentStore();
 
   // Creates an AttachmentStoreHandle backed by in-memory implementation of
   // attachment store. For now frontend lives on the same thread as backend.
   static scoped_refptr<AttachmentStore> CreateInMemoryStore();
 
+  // Creates an AttachmentStoreHandle backed by on-disk implementation of
+  // attachment store. Opens corresponding leveldb database located at |path|.
+  // All backend operations are scheduled to |backend_task_runner|. Opening
+  // attachment store is asynchronous, once it finishes |callback| will be
+  // called on the thread that called CreateOnDiskStore. |store| parameter of
+  // callback is only valid when |result| is SUCCESS.
+  static void CreateOnDiskStore(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
+      const CreateCallback& callback);
+
  protected:
   friend class base::RefCountedThreadSafe<AttachmentStore>;
   virtual ~AttachmentStore();
+
+ private:
+  static void CreateOnDiskStoreOnBackendThread(
+      const base::FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& frontend_task_runner,
+      const CreateCallback& callback);
+
+  static void CreateBackendDone(
+      const Result& result,
+      scoped_ptr<AttachmentStoreBase> backend,
+      const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner,
+      const CreateCallback& callback);
 };
 
 }  // namespace syncer
