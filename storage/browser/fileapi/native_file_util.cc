@@ -206,9 +206,9 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
     NativeFileUtil::CreateFileEnumerator(const base::FilePath& root_path,
                                          bool recursive) {
   return make_scoped_ptr(new NativeFileEnumerator(
-      root_path, recursive,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES))
-      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+      root_path,
+      recursive,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES));
 }
 
 base::File::Error NativeFileUtil::Touch(

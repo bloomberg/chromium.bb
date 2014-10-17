@@ -139,13 +139,12 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
   base::FilePath file_path;
   if (GetLocalFilePath(context, root_url, &file_path) !=
       base::File::FILE_OK) {
-    return make_scoped_ptr(new EmptyFileEnumerator)
-        .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+    return make_scoped_ptr(new EmptyFileEnumerator);
   }
   return make_scoped_ptr(new LocalFileEnumerator(
-      file_path, root_url.path(),
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES))
-      .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
+      file_path,
+      root_url.path(),
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES));
 }
 
 base::File::Error LocalFileUtil::GetLocalFilePath(
