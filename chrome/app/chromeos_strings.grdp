@@ -361,15 +361,6 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_TOO_BIG_ERROR" desc="In the Gallery, message informing that the image is too big to be displayed.">
     This file is too large to be opened.
   </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_ERROR" desc="In the Gallery, message informing that the video could not be played.">
-    This file could not be played.
-  </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_DECODING_ERROR" desc="In the Gallery, message informing that an error occured while playing the movie.">
-    An error occurred. Click to restart from the beginning.
-  </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_LOOPED_MODE" desc="In the Gallery, message informing that the movie will be played in a loop.">
-    This video will keep playing until the cows come home.
-  </message>
   <message name="IDS_FILE_BROWSER_AUDIO_ERROR" desc="In the Audio Player, message informing that the file could not be played.">
     This file could not be played.
   </message>
@@ -945,17 +936,26 @@ Press any key to continue exploring.
   </message>
 
 <!-- Video Player -->
-  <message name="IDS_VIDEO_PLAYER_PLAY_THIS_COMPUTER" desc="Message of menu item which is shown at the top of the list of Chromecasts. This menuitem is to play the video on this computer (locally), intead of on TVs with Chromecast.">
+  <message name="IDS_VIDEO_PLAYER_PLAY_THIS_COMPUTER" desc="In the video player app, message of menu item which is shown at the top of the list of Chromecasts. This menuitem is to play the video on this computer (locally), intead of on TVs with Chromecast.">
     This computer
   </message>
-  <message name="IDS_VIDEO_PLAYER_PLAYING_ON" desc="Message is shown ahead of the name of the current chromecast which plays the video now. For example, if this message is 'Playing on' and the Chromecast name is 'Foocast', 'Playing on Foocast' is shown.">
+  <message name="IDS_VIDEO_PLAYER_PLAYING_ON" desc="In the video player app, message is shown ahead of the name of the current chromecast which plays the video now. For example, if this message is 'Playing on' and the Chromecast name is 'Foocast', 'Playing on Foocast' is shown.">
     Playing on
   </message>
-  <message name="IDS_VIDEO_PLAYER_PLAY_ON" desc="Message is shown above the list of cast devices. The user will select one of them to play the current video on selected device.">
+  <message name="IDS_VIDEO_PLAYER_PLAY_ON" desc="In the video player app, message is shown above the list of cast devices. The user will select one of them to play the current video on selected device.">
     Play on
+  </message>
+  <message name="IDS_VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED" desc="In the video player app, message informing that the video could not be played.">
+    This file could not be played.
   </message>
   <message name="IDS_VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED_FOR_CAST" desc="Error message which is shown when the video which an user tried to play is not supported by the current cast device.">
     Sorry, this video is not supported by your cast device.
+  </message>
+  <message name="IDS_VIDEO_PLAYER_PLAYBACK_ERROR" desc="In the video player app, message informing that an error occured while playing the movie.">
+    An error occurred. Click to restart from the beginning.
+  </message>
+  <message name="IDS_VIDEO_PLAYER_LOOPED_MODE" desc="In the video player app, message informing that the movie will be played in a loop.">
+    This video will keep playing until the cows come home.
   </message>
 
 <!-- Imageburn Strings -->

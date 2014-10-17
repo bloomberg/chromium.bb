@@ -1095,7 +1095,7 @@ VideoControls.prototype.toggleLoopedModeWithFeedback = function(on) {
   this.toggleLoopedMode(on);
   if (on) {
     // TODO(mtomasz): Simplify, crbug.com/254318.
-    this.showTextBanner_('GALLERY_VIDEO_LOOPED_MODE');
+    this.showTextBanner_('VIDEO_PLAYER_LOOPED_MODE');
   }
 };
 

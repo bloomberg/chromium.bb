@@ -111,10 +111,10 @@ FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
     if (this.casting)
       this.showErrorMessage('VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED_FOR_CAST');
     else
-      this.showErrorMessage('GALLERY_VIDEO_ERROR');
+      this.showErrorMessage('VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED');
     this.decodeErrorOccured = false;
   } else {
-    this.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
+    this.showErrorMessage('VIDEO_PLAYER_PLAYBACK_ERROR');
     this.decodeErrorOccured = true;
   }
 
@@ -395,7 +395,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           videoPlayerElement.removeAttribute('loading');
           console.error('Failed to initialize the video element.',
                         error.stack || error);
-          this.controls_.showErrorMessage('GALLERY_VIDEO_ERROR');
+          this.controls_.showErrorMessage(
+              'VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED');
           callback();
         }.bind(this));
   }.wrap(this));
@@ -613,7 +614,7 @@ VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
     this.currentSession_.removeUpdateListener(this.onCastSessionUpdateBound_);
     this.currentSession_ = null;
   }
-  this.controls.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
+  this.controls.showErrorMessage('VIDEO_PLAYER_PLAYBACK_ERROR');
   this.unloadVideo();
 };
 
