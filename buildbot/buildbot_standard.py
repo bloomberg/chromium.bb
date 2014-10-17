@@ -183,6 +183,7 @@ def BuildScript(status, context):
     with Step('gn_compile', status):
       Command(context,
               cmd=[gn_path, '--dotfile=../native_client/.gn',
+                   '--args=is_debug=%s' % context['gn_is_debug'],
                    '--root=..', 'gen', '../out'])
       Command(context, cmd=['ninja', '-C', '../out', '-j10'] + targets)
 

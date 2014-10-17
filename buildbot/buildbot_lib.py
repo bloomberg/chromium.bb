@@ -220,6 +220,10 @@ def ParseStandardCommandLine(context):
       'opt': 'Release',
       'dbg': 'Debug',
       'coverage': 'Debug'}[mode]
+  context['gn_is_debug'] = {
+      'opt': 'false',
+      'dbg': 'true',
+      'coverage': 'true'}[mode]
   context['gyp_arch'] = ARCH_MAP[arch]['gyp_arch']
   context['gyp_vars'] = []
   if context['clang']:
