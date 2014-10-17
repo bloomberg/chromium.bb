@@ -789,6 +789,8 @@ def type_node_inner_to_type(node):
         return sequence_node_to_type(node)
     elif node_class == 'UnionType':
         return union_type_node_to_idl_union_type(node)
+    elif node_class == 'Promise':
+        return IdlType('Promise')
     raise ValueError('Unrecognized node class: %s' % node_class)
 
 
