@@ -71,29 +71,49 @@ class DevToolsAndroidBridge
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
-  class RemotePage {
+  typedef std::pair<std::string, std::string> BrowserId;
+
+  class RemotePage : public base::RefCounted<RemotePage> {
    public:
-    virtual ~RemotePage() {}
-    virtual DevToolsTargetImpl* GetTarget() = 0;
-    virtual std::string GetFrontendURL() = 0;
+    const std::string& serial() { return browser_id_.first; }
+    const std::string& socket() { return browser_id_.second; }
+    const std::string& frontend_url() { return frontend_url_; }
+    bool is_web_view() { return is_web_view_; }
+
+   private:
+    friend class base::RefCounted<RemotePage>;
+    friend class DevToolsAndroidBridge;
+
+    RemotePage(const BrowserId& browser_id,
+               const base::DictionaryValue& dict,
+               bool is_web_view);
+
+    virtual ~RemotePage();
+
+    BrowserId browser_id_;
+    std::string frontend_url_;
+    bool is_web_view_;
+    scoped_ptr<base::DictionaryValue> dict_;
+
+    DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };
 
+  typedef std::vector<scoped_refptr<RemotePage> > RemotePages;
   typedef base::Callback<void(int, const std::string&)> JsonRequestCallback;
 
   class RemoteBrowser : public base::RefCounted<RemoteBrowser> {
    public:
-    const std::string& serial() { return serial_; }
-    const std::string& socket() { return socket_; }
+    const std::string& serial() { return browser_id_.first; }
+    const std::string& socket() { return browser_id_.second; }
     const std::string& display_name() { return display_name_; }
     const std::string& version() { return version_; }
+    const RemotePages& pages() { return pages_; }
 
     bool IsChrome();
     bool IsWebView();
 
     typedef std::vector<int> ParsedVersion;
     ParsedVersion GetParsedVersion();
-
-    const base::ListValue& page_descriptors();
 
    private:
     friend class base::RefCounted<RemoteBrowser>;
@@ -104,12 +124,11 @@ class DevToolsAndroidBridge
 
     virtual ~RemoteBrowser();
 
-    std::string serial_;
-    const std::string socket_;
+    BrowserId browser_id_;
     std::string display_name_;
-    const AndroidDeviceManager::BrowserInfo::Type type_;
+    AndroidDeviceManager::BrowserInfo::Type type_;
     std::string version_;
-    scoped_ptr<base::ListValue> page_descriptors_;
+    RemotePages pages_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteBrowser);
   };
@@ -197,9 +216,10 @@ class DevToolsAndroidBridge
 
   bool HasDevToolsWindow(const std::string& agent_id);
 
-  std::vector<RemotePage*> CreatePages(scoped_refptr<RemoteBrowser> browser);
+  // Creates new target instance owned by caller.
+  DevToolsTargetImpl* CreatePageTarget(scoped_refptr<RemotePage> browser);
 
-  typedef base::Callback<void(RemotePage*)> RemotePageCallback;
+  typedef base::Callback<void(scoped_refptr<RemotePage>)> RemotePageCallback;
   void OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
                       const std::string& url,
                       const RemotePageCallback& callback);
@@ -240,18 +260,18 @@ class DevToolsAndroidBridge
 
   void CreateDeviceProviders();
 
-  void SendJsonRequest(scoped_refptr<RemoteBrowser> browser,
+  void SendJsonRequest(const BrowserId& browser_id,
                        const std::string& url,
                        const JsonRequestCallback& callback);
 
-  void SendProtocolCommand(scoped_refptr<RemoteBrowser> browser,
+  void SendProtocolCommand(const BrowserId& browser_id,
                            const std::string& debug_url,
                            const std::string& method,
                            base::DictionaryValue* params,
                            const base::Closure callback);
 
   AndroidDeviceManager::AndroidWebSocket* CreateWebSocket(
-      scoped_refptr<RemoteBrowser> browser,
+      const BrowserId& browser_id,
       const std::string& url,
       AndroidDeviceManager::AndroidWebSocket::Delegate* delegate);
 

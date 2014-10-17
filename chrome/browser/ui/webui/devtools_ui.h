@@ -28,7 +28,7 @@ class DevToolsUI : public content::WebUIController,
 
  private:
   void RemotePageOpened(const GURL& virtual_url,
-                        DevToolsAndroidBridge::RemotePage* page);
+                        scoped_refptr<DevToolsAndroidBridge::RemotePage> page);
 
   DevToolsUIBindings bindings_;
   GURL remote_frontend_loading_url_;

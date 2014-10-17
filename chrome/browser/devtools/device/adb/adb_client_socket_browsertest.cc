@@ -93,31 +93,36 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     ASSERT_EQ("31.0.1599.0", chrome_beta->version());
     ASSERT_EQ("4.0", webview->version());
 
-    std::vector<DevToolsAndroidBridge::RemotePage*> chrome_pages =
-        android_bridge_->CreatePages(chrome);
-    std::vector<DevToolsAndroidBridge::RemotePage*> chrome_beta_pages =
-        android_bridge_->CreatePages(chrome_beta);
-    std::vector<DevToolsAndroidBridge::RemotePage*> webview_pages =
-        android_bridge_->CreatePages(webview);
+    DevToolsAndroidBridge::RemotePages chrome_pages =
+        chrome->pages();
+    DevToolsAndroidBridge::RemotePages chrome_beta_pages =
+        chrome_beta->pages();
+    DevToolsAndroidBridge::RemotePages webview_pages =
+        webview->pages();
 
     ASSERT_EQ(1U, chrome_pages.size());
     ASSERT_EQ(1U, chrome_beta_pages.size());
     ASSERT_EQ(2U, webview_pages.size());
 
+    scoped_ptr<DevToolsTargetImpl> chrome_target(
+        android_bridge_->CreatePageTarget(chrome_pages[0]));
+    scoped_ptr<DevToolsTargetImpl> chrome_beta_target(
+        android_bridge_->CreatePageTarget(chrome_beta_pages[0]));
+    scoped_ptr<DevToolsTargetImpl> webview_target_0(
+        android_bridge_->CreatePageTarget(webview_pages[0]));
+    scoped_ptr<DevToolsTargetImpl> webview_target_1(
+        android_bridge_->CreatePageTarget(webview_pages[1]));
+
     // Check that we have non-empty description for webview pages.
-    ASSERT_EQ(0U, chrome_pages[0]->GetTarget()->GetDescription().size());
-    ASSERT_EQ(0U, chrome_beta_pages[0]->GetTarget()->GetDescription().size());
-    ASSERT_NE(0U, webview_pages[0]->GetTarget()->GetDescription().size());
-    ASSERT_NE(0U, webview_pages[1]->GetTarget()->GetDescription().size());
+    ASSERT_EQ(0U, chrome_target->GetDescription().size());
+    ASSERT_EQ(0U, chrome_beta_target->GetDescription().size());
+    ASSERT_NE(0U, webview_target_0->GetDescription().size());
+    ASSERT_NE(0U, webview_target_1->GetDescription().size());
 
     ASSERT_EQ(GURL("http://www.chromium.org/"),
-                   chrome_pages[0]->GetTarget()->GetURL());
+                   chrome_target->GetURL());
     ASSERT_EQ("The Chromium Projects",
-              chrome_pages[0]->GetTarget()->GetTitle());
-
-    STLDeleteElements(&chrome_pages);
-    STLDeleteElements(&chrome_beta_pages);
-    STLDeleteElements(&webview_pages);
+              chrome_target->GetTitle());
   }
 
  private:

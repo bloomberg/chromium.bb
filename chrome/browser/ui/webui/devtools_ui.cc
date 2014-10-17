@@ -269,8 +269,9 @@ class OpenRemotePageRequest : public DevToolsAndroidBridge::DeviceListListener {
   virtual void DeviceListChanged(
       const DevToolsAndroidBridge::RemoteDevices& devices) override;
 
-  bool OpenInBrowser(DevToolsAndroidBridge::RemoteBrowser* browser);
-  void RemotePageOpened(DevToolsAndroidBridge::RemotePage* page);
+  bool OpenInBrowser(
+      scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser);
+  void RemotePageOpened(scoped_refptr<DevToolsAndroidBridge::RemotePage> page);
 
   std::string url_;
   DevToolsAndroidBridge::RemotePageCallback callback_;
@@ -315,7 +316,7 @@ void OpenRemotePageRequest::DeviceListChanged(
 }
 
 bool OpenRemotePageRequest::OpenInBrowser(
-    DevToolsAndroidBridge::RemoteBrowser* browser) {
+    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser) {
   if (!browser->IsChrome())
     return false;
 #if defined(DEBUG_DEVTOOLS)
@@ -331,7 +332,7 @@ bool OpenRemotePageRequest::OpenInBrowser(
 }
 
 void OpenRemotePageRequest::RemotePageOpened(
-    DevToolsAndroidBridge::RemotePage* page) {
+    scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
   callback_.Run(page);
   android_bridge_->RemoveDeviceListListener(this);
   delete this;
@@ -395,17 +396,17 @@ void DevToolsUI::NavigationEntryCommitted(
 }
 
 void DevToolsUI::RemotePageOpened(
-    const GURL& virtual_url, DevToolsAndroidBridge::RemotePage* page) {
+    const GURL& virtual_url,
+    scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
   // Already navigated away while connecting to remote device.
   if (remote_page_opening_url_ != virtual_url)
     return;
 
-  scoped_ptr<DevToolsAndroidBridge::RemotePage> my_page(page);
   remote_page_opening_url_ = GURL();
 
   Profile* profile = Profile::FromWebUI(web_ui());
   GURL url = DevToolsUIBindings::ApplyThemeToURL(profile,
-      DevToolsUI::GetProxyURL(page->GetFrontendURL()));
+      DevToolsUI::GetProxyURL(page->frontend_url()));
 
   content::NavigationController& navigation_controller =
       web_ui()->GetWebContents()->GetController();
@@ -415,5 +416,8 @@ void DevToolsUI::RemotePageOpened(
   navigation_controller.LoadURLWithParams(params);
   navigation_controller.GetPendingEntry()->SetVirtualURL(virtual_url);
 
-  bindings_.AttachTo(page->GetTarget()->GetAgentHost());
+  DevToolsAndroidBridge* bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile);
+  scoped_ptr<DevToolsTargetImpl> target(bridge->CreatePageTarget(page));
+  bindings_.AttachTo(target->GetAgentHost());
 }
