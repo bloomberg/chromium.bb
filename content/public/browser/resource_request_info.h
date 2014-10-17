@@ -98,6 +98,13 @@ class ResourceRequestInfo {
 
   // True if the request was initiated by a user action (like a tap to follow
   // a link).
+  //
+  // Note that a false value does not mean the request was not initiated by a
+  // user gesture. Also note that the fact that a user gesture was active
+  // while the request was created does not imply that the user consciously
+  // wanted this request to happen nor is aware of it.
+  //
+  // DO NOT BASE SECURITY DECISIONS ON THIS FLAG!
   virtual bool HasUserGesture() const = 0;
 
   // True if ResourceController::CancelAndIgnore() was called.  For example,
