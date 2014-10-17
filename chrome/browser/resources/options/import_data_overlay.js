@@ -40,8 +40,10 @@ cr.define('options', function() {
       var checkboxes =
           document.querySelectorAll('#import-checkboxes input[type=checkbox]');
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].onchange = function() {
+        checkboxes[i].customPrefChangeHandler = function(e) {
+          options.PrefCheckbox.prototype.defaultPrefChangeHandler.call(this, e);
           self.validateCommitButton_();
+          return true;
         };
       }
 

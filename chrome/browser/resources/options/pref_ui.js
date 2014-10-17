@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
   var Preferences = options.Preferences;
 
   /**
@@ -16,14 +15,16 @@ cr.define('options', function() {
    * @param {boolean} disabled Whether the element should be disabled or enabled
    * for the given |reason|.
    */
-  function updateDisabledState_(el, reason, disabled) {
+  function updateDisabledState(el, reason, disabled) {
     if (!el.disabledReasons)
       el.disabledReasons = {};
+
     if (el.disabled && (Object.keys(el.disabledReasons).length == 0)) {
       // The element has been previously disabled without a reason, so we add
       // one to keep it disabled.
       el.disabledReasons.other = true;
     }
+
     if (!el.disabled) {
       // If the element is not disabled, there should be no reason, except for
       // 'other'.
@@ -31,11 +32,12 @@ cr.define('options', function() {
       if (Object.keys(el.disabledReasons).length > 0)
         console.error('Element is not disabled but should be');
     }
-    if (disabled) {
+
+    if (disabled)
       el.disabledReasons[reason] = true;
-    } else {
+    else
       delete el.disabledReasons[reason];
-    }
+
     el.disabled = Object.keys(el.disabledReasons).length > 0;
   }
 
@@ -60,14 +62,14 @@ cr.define('options', function() {
       var self = this;
 
       // Listen for user events.
-      this.addEventListener('change', this.handleChange_.bind(this));
+      this.addEventListener('change', this.handleChange.bind(this));
 
       // Listen for pref changes.
       Preferences.getInstance().addEventListener(this.pref, function(event) {
         if (event.value.uncommitted && !self.dialogPref)
           return;
-        self.updateStateFromPref_(event);
-        updateDisabledState_(self, 'notUserModifiable', event.value.disabled);
+        self.updateStateFromPref(event);
+        updateDisabledState(self, 'notUserModifiable', event.value.disabled);
         self.controlledBy = event.value.controlledBy;
       });
     },
@@ -77,29 +79,29 @@ cr.define('options', function() {
      * change handler does not suppress it, a default handler is invoked that
      * updates the associated pref.
      * @param {Event} event Change event.
-     * @private
+     * @protected
      */
-    handleChange_: function(event) {
+    handleChange: function(event) {
       if (!this.customChangeHandler(event))
-        this.updatePrefFromState_();
+        this.updatePrefFromState();
     },
 
     /**
      * Handles changes to the pref. If a custom change handler does not suppress
-     * it, a default handler is invoked that update the input element's state.
+     * it, a default handler is invoked that updates the input element's state.
      * @param {Event} event Pref change event.
-     * @private
+     * @protected
      */
-    updateStateFromPref_: function(event) {
+    updateStateFromPref: function(event) {
       if (!this.customPrefChangeHandler(event))
         this.value = event.value.value;
     },
 
     /**
-     * See |updateDisabledState_| above.
+     * See |updateDisabledState| above.
      */
     setDisabled: function(reason, disabled) {
-      updateDisabledState_(this, reason, disabled);
+      updateDisabledState(this, reason, disabled);
     },
 
     /**
@@ -180,28 +182,30 @@ cr.define('options', function() {
       // Consider a checked dialog checkbox as a 'suggestion' which is committed
       // once the user confirms the dialog.
       if (this.dialogPref && this.checked)
-        this.updatePrefFromState_();
+        this.updatePrefFromState();
     },
 
     /**
      * Update the associated pref when when the user makes changes to the
      * checkbox state.
-     * @private
+     * @override
      */
-    updatePrefFromState_: function() {
+    updatePrefFromState: function() {
       var value = this.inverted_pref ? !this.checked : this.checked;
       Preferences.setBooleanPref(this.pref, value,
                                  !this.dialogPref, this.metric);
     },
 
+    /** @override */
+    updateStateFromPref: function(event) {
+      if (!this.customPrefChangeHandler(event))
+        this.defaultPrefChangeHandler(event);
+    },
+
     /**
-     * Update the checkbox state when the associated pref changes.
-     * @param {Event} event Pref change event.
-     * @private
+     * @param {Event} event A pref change event.
      */
-    updateStateFromPref_: function(event) {
-      if (this.customPrefChangeHandler(event))
-        return;
+    defaultPrefChangeHandler: function(event) {
       var value = Boolean(event.value.value);
       this.checked = this.inverted_pref ? !value : value;
     },
@@ -231,10 +235,10 @@ cr.define('options', function() {
     },
 
     /**
-     * Update the associated pref when when the user inputs a number.
-     * @private
+     * Update the associated pref when the user inputs a number.
+     * @override
      */
-    updatePrefFromState_: function() {
+    updatePrefFromState: function() {
       if (this.validity.valid) {
         Preferences.setIntegerPref(this.pref, this.value,
                                    !this.dialogPref, this.metric);
@@ -262,9 +266,9 @@ cr.define('options', function() {
 
     /**
      * Update the associated pref when when the user selects the radio button.
-     * @private
+     * @override
      */
-    updatePrefFromState_: function() {
+    updatePrefFromState: function() {
       if (this.value == 'true' || this.value == 'false') {
         Preferences.setBooleanPref(this.pref,
                                    this.value == String(this.checked),
@@ -275,12 +279,8 @@ cr.define('options', function() {
       }
     },
 
-    /**
-     * Update the radio button state when the associated pref changes.
-     * @param {Event} event Pref change event.
-     * @private
-     */
-    updateStateFromPref_: function(event) {
+    /** @override */
+    updateStateFromPref: function(event) {
       if (!this.customPrefChangeHandler(event))
         this.checked = this.value == String(event.value.value);
     },
@@ -324,9 +324,9 @@ cr.define('options', function() {
 
     /**
      * Update the associated pref when when the user releases the slider.
-     * @private
+     * @override
      */
-    updatePrefFromState_: function() {
+    updatePrefFromState: function() {
       Preferences.setIntegerPref(
           this.pref,
           this.mapPositionToPref(parseInt(this.value, 10)),
@@ -334,12 +334,10 @@ cr.define('options', function() {
           this.metric);
     },
 
-    /**
-     * Ignore changes to the slider position made by the user while the slider
-     * has not been released.
-     * @private
-     */
-    handleChange_: function() {
+    /** @override */
+    handleChange: function() {
+      // Ignore changes to the slider position made by the user while the slider
+      // has not been released.
     },
 
     /**
@@ -351,17 +349,16 @@ cr.define('options', function() {
      */
     handleRelease_: function(event) {
       if (!this.customChangeHandler(event))
-        this.updatePrefFromState_();
+        this.updatePrefFromState();
     },
 
     /**
      * Handles changes to the pref associated with the slider. If a custom
      * change handler does not suppress it, a default handler is invoked that
      * updates the slider position.
-     * @param {Event} event Pref change event.
-     * @private
+     * @override.
      */
-    updateStateFromPref_: function(event) {
+    updateStateFromPref: function(event) {
       if (this.customPrefChangeHandler(event))
         return;
       var value = event.value.value;
@@ -390,9 +387,9 @@ cr.define('options', function() {
 
     /**
      * Update the associated pref when when the user selects an item.
-     * @private
+     * @override
      */
-    updatePrefFromState_: function() {
+    updatePrefFromState: function() {
       var value = this.options[this.selectedIndex].value;
       switch (this.dataType) {
         case 'number':
@@ -417,12 +414,8 @@ cr.define('options', function() {
       }
     },
 
-    /**
-     * Update the selected item when the associated pref changes.
-     * @param {Event} event Pref change event.
-     * @private
-     */
-    updateStateFromPref_: function(event) {
+    /** @override */
+    updateStateFromPref: function(event) {
       if (this.customPrefChangeHandler(event))
         return;
 
@@ -477,9 +470,9 @@ cr.define('options', function() {
 
     /**
      * Update the associated pref when when the user inputs text.
-     * @private
+     * @override
      */
-    updatePrefFromState_: function(event) {
+    updatePrefFromState: function(event) {
       switch (this.dataType) {
         case 'number':
           Preferences.setIntegerPref(this.pref, this.value,
@@ -554,17 +547,17 @@ cr.define('options', function() {
       // be disabled when the underlying Boolean preference is set to false by a
       // policy or extension.
       Preferences.getInstance().addEventListener(this.pref, function(event) {
-        updateDisabledState_(self, 'notUserModifiable',
-                             event.value.disabled && !event.value.value);
+        updateDisabledState(self, 'notUserModifiable',
+                            event.value.disabled && !event.value.value);
         self.controlledBy = event.value.controlledBy;
       });
     },
 
     /**
-     * See |updateDisabledState_| above.
+     * See |updateDisabledState| above.
      */
     setDisabled: function(reason, disabled) {
-      updateDisabledState_(this, reason, disabled);
+      updateDisabledState(this, reason, disabled);
     },
   };
 
@@ -591,5 +584,4 @@ cr.define('options', function() {
     PrefPortNumber: PrefPortNumber,
     PrefButton: PrefButton
   };
-
 });
