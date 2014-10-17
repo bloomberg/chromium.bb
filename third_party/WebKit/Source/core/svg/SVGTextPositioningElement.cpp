@@ -60,27 +60,7 @@ bool SVGTextPositioningElement::isSupportedAttribute(const QualifiedName& attrNa
 
 void SVGTextPositioningElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGTextContentElement::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::xAttr)
-        m_x->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::yAttr)
-        m_y->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::dxAttr)
-        m_dx->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::dyAttr)
-        m_dy->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::rotateAttr)
-        m_rotate->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -104,14 +84,11 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     if (!renderer)
         return;
 
-    if (updateRelativeLengths || attrName == SVGNames::rotateAttr) {
-        if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(renderer))
-            textRenderer->setNeedsPositioningValuesUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
+    ASSERT(updateRelativeLengths || attrName == SVGNames::rotateAttr);
 
-    ASSERT_NOT_REACHED();
+    if (RenderSVGText* textRenderer = RenderSVGText::locateRenderSVGTextAncestor(renderer))
+        textRenderer->setNeedsPositioningValuesUpdate();
+    RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
 }
 
 SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(RenderObject* renderer)

@@ -210,8 +210,6 @@ void SVGSVGElement::updateCurrentTranslate()
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
     if (!nearestViewportElement()) {
         bool setListener = true;
 
@@ -235,21 +233,10 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
         document().setWindowAttributeEventListener(EventTypeNames::abort, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     } else if (name == HTMLNames::onerrorAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-    } else if (name == SVGNames::xAttr) {
-        m_x->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::yAttr) {
-        m_y->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::widthAttr) {
-        m_width->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::heightAttr) {
-        m_height->setBaseValueAsString(value, parseError);
-    } else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
     } else if (SVGZoomAndPan::parseAttribute(name, value)) {
     } else {
-        SVGGraphicsElement::parseAttribute(name, value);
+        parseAttributeNew(name, value);
     }
-
-    reportAttributeParsingError(parseError, name, value);
 }
 
 bool SVGSVGElement::isPresentationAttribute(const QualifiedName& name) const

@@ -86,27 +86,7 @@ bool SVGMarkerElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGMarkerElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    SVGParsingError parseError = NoError;
-
-    if (!isSupportedAttribute(name))
-        SVGElement::parseAttribute(name, value);
-    else if (name == SVGNames::markerUnitsAttr)
-        m_markerUnits->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::refXAttr)
-        m_refX->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::refYAttr)
-        m_refY->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::markerWidthAttr)
-        m_markerWidth->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::markerHeightAttr)
-        m_markerHeight->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::orientAttr)
-        m_orientAngle->setBaseValueAsString(value, parseError);
-    else if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
-    } else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 void SVGMarkerElement::svgAttributeChanged(const QualifiedName& attrName)

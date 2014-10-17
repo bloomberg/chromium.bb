@@ -34,35 +34,12 @@ inline SVGViewElement::SVGViewElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGViewElement)
 
-bool SVGViewElement::isSupportedAttribute(const QualifiedName& attrName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
-        SVGZoomAndPan::addSupportedAttributes(supportedAttributes);
-        supportedAttributes.add(SVGNames::viewTargetAttr);
-    }
-    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
-}
-
 void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGElement::parseAttribute(name, value);
+    if (SVGZoomAndPan::parseAttribute(name, value))
         return;
-    }
 
-    SVGParsingError parseError = NoError;
-
-    if (SVGFitToViewBox::parseAttribute(name, value, document(), parseError)) {
-    } else if (SVGZoomAndPan::parseAttribute(name, value)) {
-    } else if (name == SVGNames::viewTargetAttr) {
-        m_viewTarget->setBaseValueAsString(value, parseError);
-    } else {
-        ASSERT_NOT_REACHED();
-    }
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 } // namespace blink
