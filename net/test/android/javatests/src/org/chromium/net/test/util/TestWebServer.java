@@ -72,6 +72,7 @@ public class TestWebServer {
     private final ServerThread mServerThread;
     private String mServerUri;
     private final boolean mSsl;
+    private final int mPort;
 
     private static class Response {
         final byte[] mResponseData;
@@ -100,10 +101,13 @@ public class TestWebServer {
 
     /**
      * Create and start a local HTTP server instance.
+     * @param port Port number the server must use, or 0 to automatically choose a free port.
      * @param ssl True if the server should be using secure sockets.
      * @throws Exception
      */
-    private TestWebServer(boolean ssl) throws Exception {
+    private TestWebServer(int port, boolean ssl) throws Exception {
+        mPort = port;
+
         mSsl = ssl;
         if (mSsl) {
             mServerUri = "https:";
@@ -117,30 +121,38 @@ public class TestWebServer {
             }
         }
 
-        mServerThread = new ServerThread(this, mSsl);
+        mServerThread = new ServerThread(this, mPort, mSsl);
         mServerUri += "//localhost:" + mServerThread.mSocket.getLocalPort();
     }
 
-    public static TestWebServer start() throws Exception {
+    public static TestWebServer start(int port) throws Exception {
         if (sInstance != null) {
             throw new IllegalStateException("Tried to start multiple TestWebServers");
         }
 
-        TestWebServer server = new TestWebServer(false);
+        TestWebServer server = new TestWebServer(port, false);
         server.mServerThread.start();
         setInstance(server);
         return server;
     }
 
-    public static TestWebServer startSsl() throws Exception {
+    public static TestWebServer start() throws Exception {
+        return start(0);
+    }
+
+    public static TestWebServer startSsl(int port) throws Exception {
         if (sSecureInstance != null) {
             throw new IllegalStateException("Tried to start multiple SSL TestWebServers");
         }
 
-        TestWebServer server = new TestWebServer(true);
+        TestWebServer server = new TestWebServer(port, true);
         server.mServerThread.start();
         setSecureInstance(server);
         return server;
+    }
+
+    public static TestWebServer startSsl() throws Exception {
+        return startSsl(0);
     }
 
     /**
@@ -569,7 +581,7 @@ public class TestWebServer {
         }
 
 
-        public ServerThread(TestWebServer server, boolean ssl) throws Exception {
+        public ServerThread(TestWebServer server, int port, boolean ssl) throws Exception {
             super("ServerThread");
             mServer = server;
             mIsSsl = ssl;
@@ -579,9 +591,9 @@ public class TestWebServer {
                     if (mIsSsl) {
                         mSslContext = SSLContext.getInstance("TLS");
                         mSslContext.init(getKeyManagers(), null, null);
-                        mSocket = mSslContext.getServerSocketFactory().createServerSocket(0);
+                        mSocket = mSslContext.getServerSocketFactory().createServerSocket(port);
                     } else {
-                        mSocket = new ServerSocket(0);
+                        mSocket = new ServerSocket(port);
                     }
                     return;
                 } catch (IOException e) {
