@@ -16,7 +16,7 @@ PASS coneOuterAngle default value is 360.
 PASS coneOuterAngle value is set to 166.66.
 PASS coneOuterGain default value is 0.
 PASS coneOuterGain value is set to 0.35.
-PASS PannerNode defaults to 'HRTF' panningModel.
+PASS PannerNode defaults to 'equalpower' panningModel.
 PASS PannerNode defaults to 'inverse' distanceModel.
 PASS panningModel: 'equalpower' is settable.
 PASS panningModel: 'HRTF' is settable.

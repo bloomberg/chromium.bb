@@ -48,7 +48,7 @@ static void fixNANs(double &x)
 
 PannerNode::PannerNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
-    , m_panningModel(Panner::PanningModelHRTF)
+    , m_panningModel(Panner::PanningModelEqualPower)
     , m_distanceModel(DistanceEffect::ModelInverse)
     , m_position(0, 0, 0)
     , m_orientation(1, 0, 0)
@@ -198,7 +198,7 @@ String PannerNode::panningModel() const
         return "HRTF";
     default:
         ASSERT_NOT_REACHED();
-        return "HRTF";
+        return "equalpower";
     }
 }
 

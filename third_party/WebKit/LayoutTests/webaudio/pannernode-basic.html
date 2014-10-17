@@ -20,18 +20,18 @@ function runTest() {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-    
+
     window.jsTestIsAsync = true;
 
     context = new AudioContext();
     var panner = context.createPanner();
-   
-    if (panner.numberOfInputs === 1) 
+
+    if (panner.numberOfInputs === 1)
         testPassed("PannerNode has one input.");
     else
         testFailed("PannerNode should have one input.");
-    
-    if (panner.numberOfOutputs === 1) 
+
+    if (panner.numberOfOutputs === 1)
         testPassed("PannerNode has one output.");
     else
         testFailed("PannerNode should have one output.");
@@ -40,57 +40,57 @@ function runTest() {
         testPassed("refDistance default value is 1.");
     else
         testFailed("refDistance default value should be 1.");
-    
+
     panner.refDistance = 270.52
     if (panner.refDistance === 270.52)
         testPassed("refDistance value is set to 270.52.");
     else
         testFailed("refDistance value should be set to 270.52.");
-    
+
     if (panner.maxDistance === 10000)
         testPassed("maxDistance default value is 10000.");
     else
         testFailed("maxDistance default value should be 10000.");
-    
+
     panner.maxDistance = 100.55
     if (panner.maxDistance === 100.55)
         testPassed("maxDistance value is set to 100.55.");
     else
         testFailed("maxDistance value should be set to 100.55.");
-    
+
     if (panner.rolloffFactor === 1)
         testPassed("rolloffFactor default value is 1.");
     else
         testFailed("rolloffFactor default value should be 1.");
-    
+
     panner.rolloffFactor = 0.83
     if (panner.rolloffFactor === 0.83)
         testPassed("rolloffFactor value is set to 0.83.");
     else
         testFailed("rolloffFactor value should be set to 0.83.");
-    
+
     if (panner.coneInnerAngle === 360)
         testPassed("coneInnerAngle default value is 360.");
     else
         testFailed("coneInnerAngle default value should be 360.");
-    
+
     panner.coneInnerAngle = 240.45
     if (panner.coneInnerAngle === 240.45)
         testPassed("coneInnerAngle value is set to 240.45.");
     else
         testFailed("coneInnerAngle value should be set to 240.45.");
-    
+
     if (panner.coneOuterAngle === 360)
         testPassed("coneOuterAngle default value is 360.");
     else
         testFailed("coneOuterAngle default value should be 360.");
-    
+
     panner.coneOuterAngle = 166.66
     if (panner.coneOuterAngle === 166.66)
         testPassed("coneOuterAngle value is set to 166.66.");
     else
         testFailed("coneOuterAngle value should be set to 166.66.");
-    
+
     if (panner.coneOuterGain === 0)
         testPassed("coneOuterGain default value is 0.");
     else
@@ -102,11 +102,11 @@ function runTest() {
     else
         testFailed("coneOuterGain value should be set to 0.35.");
 
-    if (panner.panningModel === "HRTF")
-        testPassed("PannerNode defaults to 'HRTF' panningModel.");
+    if (panner.panningModel === "equalpower")
+        testPassed("PannerNode defaults to 'equalpower' panningModel.");
     else
-        testFailed("PannerNode should default to 'HRTF' panningModel.");
-    
+        testFailed("PannerNode should default to 'equalpower' panningModel.");
+
     if (panner.distanceModel === "inverse")
         testPassed("PannerNode defaults to 'inverse' distanceModel.");
     else
