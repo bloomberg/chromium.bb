@@ -315,7 +315,7 @@ void ChildThread::Init(const Options& options) {
     channel_->AddFilter(power_monitor_source->GetMessageFilter());
 
     power_monitor_.reset(new base::PowerMonitor(
-        power_monitor_source.PassAs<base::PowerMonitorSource>()));
+        power_monitor_source.Pass()));
   }
 
 #if defined(OS_POSIX)

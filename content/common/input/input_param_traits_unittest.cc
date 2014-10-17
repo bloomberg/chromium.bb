@@ -199,7 +199,7 @@ TEST_F(InputParamTraitsTest, SyntheticSmoothScrollGestureParams) {
   ASSERT_EQ(SyntheticGestureParams::SMOOTH_SCROLL_GESTURE,
             gesture_params->GetGestureType());
   SyntheticGesturePacket packet_in;
-  packet_in.set_gesture_params(gesture_params.PassAs<SyntheticGestureParams>());
+  packet_in.set_gesture_params(gesture_params.Pass());
 
   Verify(packet_in);
 }
@@ -214,7 +214,7 @@ TEST_F(InputParamTraitsTest, SyntheticPinchGestureParams) {
   ASSERT_EQ(SyntheticGestureParams::PINCH_GESTURE,
             gesture_params->GetGestureType());
   SyntheticGesturePacket packet_in;
-  packet_in.set_gesture_params(gesture_params.PassAs<SyntheticGestureParams>());
+  packet_in.set_gesture_params(gesture_params.Pass());
 
   Verify(packet_in);
 }
@@ -228,7 +228,7 @@ TEST_F(InputParamTraitsTest, SyntheticTapGestureParams) {
   ASSERT_EQ(SyntheticGestureParams::TAP_GESTURE,
             gesture_params->GetGestureType());
   SyntheticGesturePacket packet_in;
-  packet_in.set_gesture_params(gesture_params.PassAs<SyntheticGestureParams>());
+  packet_in.set_gesture_params(gesture_params.Pass());
 
   Verify(packet_in);
 }

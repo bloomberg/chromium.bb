@@ -33,9 +33,9 @@ scoped_ptr<ui::GestureCurve> CreateDefaultPlatformCurve(
                   INT_MIN,
                   INT_MAX,
                   base::TimeTicks());
-  return scroller.PassAs<ui::GestureCurve>();
+  return scroller.Pass();
 #else
-  return scoped_ptr<ui::GestureCurve>(
+  return make_scoped_ptr(
       new ui::FlingCurve(initial_velocity, base::TimeTicks()));
 #endif
 }

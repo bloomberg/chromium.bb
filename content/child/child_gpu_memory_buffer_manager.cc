@@ -60,7 +60,7 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     return scoped_ptr<gfx::GpuMemoryBuffer>();
   }
 
-  return buffer.PassAs<gfx::GpuMemoryBuffer>();
+  return buffer.Pass();
 }
 
 gfx::GpuMemoryBuffer*

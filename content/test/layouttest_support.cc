@@ -113,7 +113,7 @@ void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider) {
       ->blink_platform_impl()
       ->SetPlatformEventObserverForTesting(
           blink::WebPlatformEventGamepad,
-          provider.PassAs<PlatformEventObserverBase>());
+          provider.Pass());
 }
 
 void SetMockDeviceLightData(const double data) {

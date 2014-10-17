@@ -18,11 +18,11 @@ scoped_ptr<V4L2Device> V4L2Device::Create(Type type) {
 
   scoped_ptr<ExynosV4L2Device> exynos_device(new ExynosV4L2Device(type));
   if (exynos_device->Initialize())
-    return exynos_device.PassAs<V4L2Device>();
+    return exynos_device.Pass();
 
   scoped_ptr<TegraV4L2Device> tegra_device(new TegraV4L2Device(type));
   if (tegra_device->Initialize())
-    return tegra_device.PassAs<V4L2Device>();
+    return tegra_device.Pass();
 
   LOG(ERROR) << "Failed to create V4L2Device";
   return scoped_ptr<V4L2Device>();

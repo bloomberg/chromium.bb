@@ -254,7 +254,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
 
   capture_device_->AllocateAndStart(
-      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+      capture_params, client.Pass());
 
   // Capture at least three frames, to ensure that the source frame size has
   // changed at least twice while capturing.

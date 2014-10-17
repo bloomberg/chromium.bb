@@ -21,7 +21,7 @@ scoped_ptr<content::SyntheticGestureParams> ReadGestureParams(
   if (!ReadParam(m, iter, gesture_params.get()))
     return scoped_ptr<content::SyntheticGestureParams>();
 
-  return gesture_params.template PassAs<content::SyntheticGestureParams>();
+  return gesture_params.Pass();
 }
 }  // namespace
 

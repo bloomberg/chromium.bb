@@ -30,8 +30,7 @@ TestRenderFrameHostFactory::CreateRenderFrameHost(
   return make_scoped_ptr(
       new TestRenderFrameHost(
           render_view_host, delegate, frame_tree, frame_tree_node, routing_id,
-          is_swapped_out))
-      .PassAs<RenderFrameHostImpl>();
+          is_swapped_out));
 }
 
 }  // namespace content
