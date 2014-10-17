@@ -114,7 +114,7 @@ static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
 }
 
 static bool IsDeviceBlackListed(const std::string& name) {
-  DCHECK_EQ(BLACKLISTED_CAMERA_MAX,
+  DCHECK_EQ(BLACKLISTED_CAMERA_MAX + 1,
             static_cast<int>(arraysize(kBlacklistedCameraNames)));
   for (size_t i = 0; i < arraysize(kBlacklistedCameraNames); ++i) {
     if (StartsWithASCII(name, kBlacklistedCameraNames[i], false)) {
