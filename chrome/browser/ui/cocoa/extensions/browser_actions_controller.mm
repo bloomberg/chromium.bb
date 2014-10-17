@@ -637,7 +637,9 @@ class ExtensionServiceObserverBridge
 - (void)containerDragStart:(NSNotification*)notification {
   [self setChevronHidden:YES inFrame:[containerView_ frame] animate:YES];
   while([hiddenButtons_ count] > 0) {
-    [containerView_ addSubview:[hiddenButtons_ objectAtIndex:0]];
+    BrowserActionButton* button = [hiddenButtons_ objectAtIndex:0];
+    [button setAlphaValue:1.0];
+    [containerView_ addSubview:button];
     [hiddenButtons_ removeObjectAtIndex:0];
   }
 }
