@@ -6,12 +6,23 @@
 #define CHROME_BROWSER_CHROME_NOTIFICATION_TYPES_H_
 
 #include "build/build_config.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/notification_types.h"
+#else
+#include "content/public/browser/notification_types.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#define PREVIOUS_END extensions::NOTIFICATION_EXTENSIONS_END
+#else
+#define PREVIOUS_END content::NOTIFICATION_CONTENT_END
+#endif
 
 namespace chrome {
 
 enum NotificationType {
-  NOTIFICATION_CHROME_START = extensions::NOTIFICATION_EXTENSIONS_END,
+  NOTIFICATION_CHROME_START = PREVIOUS_END,
 
   // Browser-window ----------------------------------------------------------
 
@@ -137,10 +148,12 @@ enum NotificationType {
   // MetricEventDurationDetails.
   NOTIFICATION_METRIC_EVENT_DURATION,
 
+#if defined(ENABLE_EXTENSIONS)
   // This notification is sent when extensions::TabHelper::SetExtensionApp is
   // invoked. The source is the extensions::TabHelper SetExtensionApp was
   // invoked on.
   NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+#endif
 
   // Tabs --------------------------------------------------------------------
 

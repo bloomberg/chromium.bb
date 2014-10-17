@@ -14,6 +14,10 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 
+#if !defined(ENABLE_EXTENSIONS)
+#error "Extensions must be enabled"
+#endif
+
 namespace content {
 class BrowserContext;
 }

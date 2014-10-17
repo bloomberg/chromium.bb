@@ -30,8 +30,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
+#endif
 
 using content::BrowserThread;
 
@@ -83,10 +86,12 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
   }
   // |profile| can be NULL in tests.
   if (profile) {
+#if defined(ENABLE_EXTENSIONS)
     notification_registrar_.Add(
         this,
         extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
         content::Source<Profile>(profile));
+#endif
     notification_registrar_.Add(
         this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
         content::Source<Profile>(profile));
@@ -177,6 +182,7 @@ void ShortcutsBackend::Observe(int type,
   if (!initialized())
     return;
 
+#if defined(ENABLE_EXTENSIONS)
   if (type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     // When an extension is unloaded, we want to remove any Shortcuts associated
     // with it.
@@ -184,6 +190,7 @@ void ShortcutsBackend::Observe(int type,
         details)->extension->url(), false);
     return;
   }
+#endif
 
   DCHECK_EQ(chrome::NOTIFICATION_HISTORY_URLS_DELETED, type);
   const history::URLsDeletedDetails* deleted_details =

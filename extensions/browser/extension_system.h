@@ -11,6 +11,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/extension.h"
 
+#if !defined(ENABLE_EXTENSIONS)
+#error "Extensions must be enabled"
+#endif
+
 class ExtensionService;
 
 #if defined(OS_CHROMEOS)

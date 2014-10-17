@@ -46,7 +46,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
-#include "extensions/browser/notification_types.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 
@@ -59,6 +58,7 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #endif
 

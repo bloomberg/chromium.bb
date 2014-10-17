@@ -7,12 +7,17 @@
 
 #include "content/public/browser/notification_types.h"
 
+#if !defined(ENABLE_EXTENSIONS)
+#error "Extensions must be enabled"
+#endif
+
 namespace extensions {
 
 // Only notifications fired by the extensions module should be here. The
 // extensions module should not listen to notifications fired by the
 // embedder.
 enum NotificationType {
+  // WARNING: This need to match chrome/browser/chrome_notification_types.h.
   NOTIFICATION_EXTENSIONS_START = content::NOTIFICATION_CONTENT_END,
 
   // Sent when a CrxInstaller finishes. Source is the CrxInstaller that

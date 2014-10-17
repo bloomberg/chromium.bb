@@ -31,6 +31,10 @@
 #include "extensions/common/manifest.h"
 #include "sync/api/string_ordinal.h"
 
+#if !defined(ENABLE_EXTENSIONS)
+#error "Extensions must be enabled"
+#endif
+
 class ExtensionSyncService;
 class GURL;
 class HostContentSettingsMap;

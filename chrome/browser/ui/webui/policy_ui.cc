@@ -276,6 +276,7 @@ class CloudPolicyCoreStatusProvider
   // CloudPolicyRefreshScheduler hosted by this |core_|.
   policy::CloudPolicyCore* core_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyCoreStatusProvider);
 };
 
@@ -398,7 +399,9 @@ class PolicyUIHandler : public content::NotificationObserver,
   scoped_ptr<CloudPolicyStatusProvider> user_status_provider_;
   scoped_ptr<CloudPolicyStatusProvider> device_status_provider_;
 
+#if defined(ENABLE_EXTENSIONS)
   content::NotificationRegistrar registrar_;
+#endif
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 
@@ -576,12 +579,14 @@ void PolicyUIHandler::RegisterMessages() {
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
+#if defined(ENABLE_EXTENSIONS)
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
+#endif
 
   web_ui()->RegisterMessageCallback(
       "initialized",
@@ -595,10 +600,12 @@ void PolicyUIHandler::RegisterMessages() {
 void PolicyUIHandler::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
+#if defined(ENABLE_EXTENSIONS)
   DCHECK(type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
          type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
   SendPolicyNames();
   SendPolicyValues();
+#endif
 }
 
 void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,

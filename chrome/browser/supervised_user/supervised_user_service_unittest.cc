@@ -7,9 +7,6 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service_test_base.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -21,15 +18,21 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#endif
 
 using content::MessageLoopRunner;
 
@@ -325,7 +328,7 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
   }
 }
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
 class SupervisedUserServiceExtensionTestBase
     : public extensions::ExtensionServiceTestBase {
  public:
@@ -577,4 +580,4 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(ENABLE_EXTENSIONS)

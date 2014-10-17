@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +25,10 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/tab_helper.h"
+#endif
+
 using content::NavigationController;
 using content::WebContents;
 
@@ -37,7 +40,6 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
           profile_(profile),
           flare_(flare),
           weak_ptr_factory_(this) {
-
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -48,9 +50,11 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
       content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
+#if defined(ENABLE_EXTENSIONS)
   registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       content::NotificationService::AllSources());
+#endif
   registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllBrowserContextsAndSources());
@@ -109,6 +113,7 @@ void NotificationServiceSessionsRouter::Observe(
         return;
       break;
     }
+#if defined(ENABLE_EXTENSIONS)
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       extensions::TabHelper* extension_tab_helper =
           content::Source<extensions::TabHelper>(source).ptr();
@@ -127,6 +132,7 @@ void NotificationServiceSessionsRouter::Observe(
       }
       return;
     }
+#endif
     default:
       LOG(ERROR) << "Received unexpected notification of type " << type;
       return;
