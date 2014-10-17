@@ -103,6 +103,22 @@ TEST_P(DiscardableMemoryTest, UnlockedMemoryAccessCrashesInDebugMode) {
 }
 #endif
 
+// Test behavior when creating enough instances that could use up a 32-bit
+// address space.
+TEST_P(DiscardableMemoryTest, AddressSpace) {
+  const size_t kLargeSize = 4 * 1024 * 1024;  // 4MiB.
+  const size_t kNumberOfInstances = 1024 + 1;  // >4GiB total.
+
+  scoped_ptr<DiscardableMemory> instances[kNumberOfInstances];
+  for (auto& memory : instances) {
+    memory = CreateLockedMemory(kLargeSize);
+    ASSERT_TRUE(memory);
+    void* addr = memory->Memory();
+    ASSERT_NE(nullptr, addr);
+    memory->Unlock();
+  }
+}
+
 std::vector<DiscardableMemoryType> GetSupportedDiscardableMemoryTypes() {
   std::vector<DiscardableMemoryType> supported_types;
   DiscardableMemory::GetSupportedTypes(&supported_types);
