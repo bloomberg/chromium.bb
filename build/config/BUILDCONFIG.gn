@@ -71,6 +71,16 @@ declare_args() {
     # toolchains.
     cros_use_custom_toolchain = false
   }
+
+  # TODO(cjhopman): Make target_arch work for all platforms.
+
+  # Architecture of the target device. For Android builds, this will be equal to
+  # the cpu_arch of the default toolchain. When checking the CPU architecture
+  # for source files and build dependencies you should almost alway use cpu_arch
+  # instead. cpu_arch is the architecture of the current toolchain and allows
+  # cross-compiles (compiling the same target for multiple toolchains in the
+  # same build) to work.
+  target_arch = "arm"
 }
 
 # =============================================================================
@@ -172,6 +182,14 @@ if (is_win) {
   } else {
     cpu_arch = "x86"
   }
+}
+
+if (is_android) {
+  # TODO(cjhopman): enable this assert once bots are updated to not set
+  # cpu_arch.
+  #assert(cpu_arch == build_cpu_arch, "Android device target architecture should
+  #    be set with 'target_arch', not 'cpu_arch'")
+  cpu_arch = target_arch
 }
 
 # =============================================================================
