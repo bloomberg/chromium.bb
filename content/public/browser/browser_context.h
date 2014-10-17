@@ -94,7 +94,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       const GURL& origin,
       int64 service_worker_registration_id,
       const std::string& data,
-      const base::Callback<void(PushMessagingStatus)>& callback);
+      const base::Callback<void(PushDeliveryStatus)>& callback);
 
   // Ensures that the corresponding ResourceContext is initialized. Normally the
   // BrowserContext initializs the corresponding getters when its objects are

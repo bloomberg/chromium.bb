@@ -11,8 +11,8 @@
 
 #define IPC_MESSAGE_START PushMessagingMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::PushMessagingStatus,
-                          content::PUSH_MESSAGING_STATUS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::PushRegistrationStatus,
+                          content::PUSH_REGISTRATION_STATUS_LAST)
 
 // Messages sent from the browser to the renderer.
 
@@ -23,7 +23,7 @@ IPC_MESSAGE_ROUTED3(PushMessagingMsg_RegisterSuccess,
 
 IPC_MESSAGE_ROUTED2(PushMessagingMsg_RegisterError,
                     int32 /* callbacks_id */,
-                    content::PushMessagingStatus /* status */)
+                    content::PushRegistrationStatus /* status */)
 
 // Messages sent from the renderer to the browser.
 

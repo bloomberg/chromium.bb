@@ -20,7 +20,7 @@ class CONTENT_EXPORT PushMessagingService {
  public:
   typedef base::Callback<void(const GURL& /* endpoint */,
                               const std::string& /* registration_id */,
-                              PushMessagingStatus /* status */)>
+                              PushRegistrationStatus /* status */)>
       RegisterCallback;
 
   virtual ~PushMessagingService() {}

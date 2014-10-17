@@ -8,34 +8,25 @@
 
 namespace content {
 
-const char* PushMessagingStatusToString(PushMessagingStatus status) {
+const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
   switch (status) {
-    case PUSH_MESSAGING_STATUS_OK:
-      return "Operation has succeeded";
+    case PUSH_REGISTRATION_STATUS_SUCCESS:
+      return "Registration successful";
 
-    case PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_NO_SERVICE_WORKER:
+    case PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER:
       return "Registration failed - no Service Worker";
 
-    case PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_NOT_AVAILABLE:
+    case PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
       return "Registration failed - push service not available";
 
-    case PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_LIMIT_REACHED:
+    case PUSH_REGISTRATION_STATUS_LIMIT_REACHED:
       return "Registration failed - registration limit has been reached";
 
-    case PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_PERMISSION_DENIED:
+    case PUSH_REGISTRATION_STATUS_PERMISSION_DENIED:
       return "Registration failed - permission denied";
 
-    case PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_ERROR:
+    case PUSH_REGISTRATION_STATUS_SERVICE_ERROR:
       return "Registration failed - push service error";
-
-    case PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_NO_SERVICE_WORKER:
-      return "Message delivery failed - no Service Worker";
-
-    case PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_SERVICE_WORKER_ERROR:
-      return "Message delivery failed - Service Worker error";
-
-    case PUSH_MESSAGING_STATUS_ERROR:
-      return "Operation has failed (unspecified reason)";
   }
   NOTREACHED();
   return "";

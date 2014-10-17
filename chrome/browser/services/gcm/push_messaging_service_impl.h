@@ -61,12 +61,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
  private:
   void DeliverMessageCallback(const PushMessagingApplicationId& application_id,
                               const GCMClient::IncomingMessage& message,
-                              content::PushMessagingStatus status);
+                              content::PushDeliveryStatus status);
 
   void RegisterEnd(
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
-      content::PushMessagingStatus status);
+      content::PushRegistrationStatus status);
 
   void DidRegister(
       const content::PushMessagingService::RegisterCallback& callback,

@@ -47,7 +47,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                    int callbacks_id,
                    const GURL& push_endpoint,
                    const std::string& push_registration_id,
-                   PushMessagingStatus status);
+                   PushRegistrationStatus status);
 
   PushMessagingService* service();
 

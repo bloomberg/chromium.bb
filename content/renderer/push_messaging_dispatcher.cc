@@ -85,14 +85,14 @@ void PushMessagingDispatcher::OnRegisterSuccess(
 }
 
 void PushMessagingDispatcher::OnRegisterError(int32 callbacks_id,
-                                              PushMessagingStatus status) {
+                                              PushRegistrationStatus status) {
   blink::WebPushRegistrationCallbacks* callbacks =
       registration_callbacks_.Lookup(callbacks_id);
   CHECK(callbacks);
 
   scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
       blink::WebPushError::ErrorTypeAbort,
-      WebString::fromUTF8(PushMessagingStatusToString(status))));
+      WebString::fromUTF8(PushRegistrationStatusToString(status))));
   callbacks->onError(error.release());
   registration_callbacks_.Remove(callbacks_id);
 }

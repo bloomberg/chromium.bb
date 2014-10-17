@@ -53,7 +53,7 @@ void PushMessagingMessageFilter::OnRegister(int render_frame_id,
     Send(new PushMessagingMsg_RegisterError(
         render_frame_id,
         callbacks_id,
-        PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_NO_SERVICE_WORKER));
+        PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER));
     return;
   }
   BrowserThread::PostTask(
@@ -81,7 +81,7 @@ void PushMessagingMessageFilter::DoRegister(
     Send(new PushMessagingMsg_RegisterError(
         render_frame_id,
         callbacks_id,
-        PUSH_MESSAGING_STATUS_REGISTRATION_FAILED_SERVICE_NOT_AVAILABLE));
+        PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
     return;
   }
   service()->Register(origin,
@@ -101,9 +101,9 @@ void PushMessagingMessageFilter::DidRegister(
     int callbacks_id,
     const GURL& push_endpoint,
     const std::string& push_registration_id,
-    PushMessagingStatus status) {
+    PushRegistrationStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (status == PUSH_MESSAGING_STATUS_OK) {
+  if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
     Send(new PushMessagingMsg_RegisterSuccess(
         render_frame_id, callbacks_id, push_endpoint, push_registration_id));
   } else {

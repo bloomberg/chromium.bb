@@ -77,12 +77,10 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
         dispatch_event_callback, data);
   } else {
     // TODO(mvanouwerkerk): UMA logging.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
-            deliver_message_callback,
-            PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_NO_SERVICE_WORKER));
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(deliver_message_callback,
+                                       PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER));
   }
 }
 
@@ -93,14 +91,14 @@ void PushMessagingRouter::DeliverMessageEnd(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(mvanouwerkerk): UMA logging.
-  PushMessagingStatus push_messaging_status =
+  PushDeliveryStatus delivery_status =
       service_worker_status == SERVICE_WORKER_OK
-          ? PUSH_MESSAGING_STATUS_OK
-          : PUSH_MESSAGING_STATUS_MESSAGE_DELIVERY_FAILED_SERVICE_WORKER_ERROR;
+          ? PUSH_DELIVERY_STATUS_SUCCESS
+          : PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(deliver_message_callback, push_messaging_status));
+      base::Bind(deliver_message_callback, delivery_status));
 }
 
 }  // namespace content

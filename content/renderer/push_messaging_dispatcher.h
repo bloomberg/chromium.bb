@@ -52,7 +52,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
                          const GURL& endpoint,
                          const std::string& registration_id);
 
-  void OnRegisterError(int32 callbacks_id, PushMessagingStatus status);
+  void OnRegisterError(int32 callbacks_id, PushRegistrationStatus status);
 
   IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
       registration_callbacks_;

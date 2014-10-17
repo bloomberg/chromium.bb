@@ -19,7 +19,7 @@ class ServiceWorkerRegistration;
 
 class PushMessagingRouter {
  public:
-  typedef base::Callback<void(PushMessagingStatus /* push_messaging_status */)>
+  typedef base::Callback<void(PushDeliveryStatus)>
       DeliverMessageCallback;
 
   // Delivers a push message with |data| to the Service Worker identified by

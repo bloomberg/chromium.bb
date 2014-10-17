@@ -219,7 +219,7 @@ void BrowserContext::DeliverPushMessage(
     const GURL& origin,
     int64 service_worker_registration_id,
     const std::string& data,
-    const base::Callback<void(PushMessagingStatus)>& callback) {
+    const base::Callback<void(PushDeliveryStatus)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PushMessagingRouter::DeliverMessage(
       browser_context, origin, service_worker_registration_id, data, callback);
