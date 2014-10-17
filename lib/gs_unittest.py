@@ -427,6 +427,41 @@ class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
     self.assertRaises(ValueError, self._Copy, self.ctx, path,
                       self.GIVEN_REMOTE, auto_compress=True)
 
+  def testGeneration(self):
+    """Test generation return value."""
+    exp_gen = 1413571271901000
+    error = (
+        'Copying file:///dev/null [Content-Type=application/octet-stream]...\n'
+        'Uploading   %(uri)s:               0 B    \r'
+        'Uploading   %(uri)s:               0 B    \r'
+        'Created: %(uri)s#%(gen)s'
+    ) % {'uri': self.GIVEN_REMOTE, 'gen': exp_gen}
+    self.gs_mock.AddCmdResult(partial_mock.In('cp'), returncode=0, error=error)
+    gen = self.Copy()
+    self.assertEqual(gen, exp_gen)
+
+  def testGeneration404(self):
+    """Test behavior when we get weird output."""
+    error = (
+        # This is a bit verbose, but it's from real output, so should be fine.
+        'Copying file:///tmp/tmpyUUPg1 [Content-Type=application/octet-stream]'
+          '...\n'
+        'Uploading   ...recovery-R38-6158.66.0-mccloud.instructions.lock:'
+          ' 0 B/38 B    \r'
+        'Uploading   ...recovery-R38-6158.66.0-mccloud.instructions.lock:'
+          ' 38 B/38 B    \r'
+        'NotFoundException: 404 Attempt to get key for "gs://chromeos-releases'
+          '/tobesigned/50,beta-\n'
+        'channel,mccloud,6158.66.0,ChromeOS-\n'
+        'recovery-R38-6158.66.0-mccloud.instructions.lock" failed. This can '
+          'happen if the\n'
+        'URI refers to a non-existent object or if you meant to operate on a '
+          'directory\n'
+        '(e.g., leaving off -R option on gsutil cp, mv, or ls of a bucket)\n'
+    )
+    self.gs_mock.AddCmdResult(partial_mock.In('cp'), returncode=1, error=error)
+    self.assertEqual(self.Copy(), None)
+
 
 class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
   """Tests Copy functionality w/out mocks."""
@@ -450,6 +485,7 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
       # Verify the generation is sane.  All we can assume is that it's a valid
       # whole number greater than 0.
       self.assertNotEqual(gen, None)
+      self.assertIn(type(gen), (int, long))
       self.assertGreater(gen, 0)
 
       # Verify the size is what we expect.

@@ -715,13 +715,12 @@ class GSContext(object):
           return int(m.group(1))
         else:
           return None
-      except GSNoSuchKey as e:
+      except GSNoSuchKey:
         # If the source was a local file, the error is a quirk of gsutil 4.5
         # and should be ignored. If the source was remote, there might
         # legitimately be no such file. See crbug.com/393419.
         if os.path.isfile(src_path):
-          # pylint: disable=E1101
-          return e.args[0].result
+          return None
         raise
 
   # TODO: Merge LS() and List()?
