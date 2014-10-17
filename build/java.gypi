@@ -19,6 +19,8 @@
 #  java_in_dir - The top-level java directory. The src should be in
 #    <java_in_dir>/src.
 # Optional/automatic variables:
+#  add_to_dependents_classpaths - Set to 0 if the resulting jar file should not
+#    be added to its dependents' classpaths.
 #  additional_input_paths - These paths will be included in the 'inputs' list to
 #    ensure that this target is rebuilt when one of these paths changes.
 #  additional_src_dirs - Additional directories with .java files to be compiled
@@ -49,6 +51,7 @@
     '<(DEPTH)/build/android/setup.gyp:build_output_dirs'
   ],
   'variables': {
+    'add_to_dependents_classpaths%': 1,
     'android_jar': '<(android_sdk)/android.jar',
     'input_jars_paths': [ '<(android_jar)' ],
     'additional_src_dirs': [],
@@ -97,15 +100,17 @@
     'emma_instrument': '<(emma_instrument)',
     'javac_jar_path': '<(javac_jar_path)',
   },
-  # This all_dependent_settings is used for java targets only. This will add the
-  # jar path to the classpath of dependent java targets.
-  'all_dependent_settings': {
-    'variables': {
-      'input_jars_paths': ['<(jar_final_path)'],
-      'library_dexed_jars_paths': ['<(dex_path)'],
-    },
-  },
   'conditions': [
+    ['add_to_dependents_classpaths == 1', {
+      # This all_dependent_settings is used for java targets only. This will add the
+      # jar path to the classpath of dependent java targets.
+      'all_dependent_settings': {
+        'variables': {
+          'input_jars_paths': ['<(jar_final_path)'],
+          'library_dexed_jars_paths': ['<(dex_path)'],
+        },
+      },
+    }],
     ['has_java_resources == 1', {
       'variables': {
         'res_dir': '<(java_in_dir)/res',

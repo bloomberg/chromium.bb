@@ -8,6 +8,7 @@
       'target_name': 'chromium_commands',
       'type': 'none',
       'variables': {
+        'add_to_dependents_classpaths': 0,
         'java_in_dir': ['java'],
       },
       'includes': [
