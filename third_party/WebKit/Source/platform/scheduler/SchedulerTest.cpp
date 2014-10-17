@@ -5,6 +5,7 @@
 #include "config.h"
 #include "platform/scheduler/Scheduler.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TestingPlatformSupport.h"
 #include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
@@ -162,6 +163,7 @@ public:
         : m_reentrantCount(0)
         , m_maxRecursion(4)
     {
+        blink::RuntimeEnabledFeatures::setBlinkSchedulerEnabled(true);
         SchedulerForTest::initializeOnMainThread();
         m_scheduler = static_cast<SchedulerForTest*>(Scheduler::shared());
     }
