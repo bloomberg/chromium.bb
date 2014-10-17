@@ -1,6 +1,6 @@
 {
   "intl": {
-    "charset_default": "ISO-8859-1"
+    "charset_default": "windows-1251"
   },
   "webkit": {
     "webprefs": {

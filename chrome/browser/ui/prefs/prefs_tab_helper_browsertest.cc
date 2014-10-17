@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, WebPrefs) {
   EXPECT_TRUE(prefs->FindPreference(
       prefs::kWebKitSerifFontFamilyJapanese)->IsDefaultValue());
 
-  EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
+  EXPECT_EQ("windows-1251", prefs->GetString(prefs::kDefaultCharset));
   EXPECT_EQ(16, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
   EXPECT_EQ("Nanum Gothic",
             prefs->GetString(prefs::kWebKitStandardFontFamilyKorean));

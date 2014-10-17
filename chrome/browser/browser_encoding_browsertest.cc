@@ -36,7 +36,11 @@ const EncodingTestData kEncodingTestDatas[] = {
   { "Big5.html", "Big5" },
   { "EUC-JP.html", "EUC-JP" },
   { "gb18030.html", "gb18030" },
-  { "iso-8859-1.html", "ISO-8859-1" },
+#if 0
+  // Disable temporarily until Blink CL
+  // (https://codereview.chromium.org/655083002/) is relanded.
+  { "iso-8859-1.html", "windows-1252" },
+#endif
   { "ISO-8859-2.html", "ISO-8859-2" },
   { "ISO-8859-4.html", "ISO-8859-4" },
   { "ISO-8859-5.html", "ISO-8859-5" },
@@ -49,7 +53,10 @@ const EncodingTestData kEncodingTestDatas[] = {
   { "KOI8-U.html", "KOI8-U" },
   { "macintosh.html", "macintosh" },
   { "Shift-JIS.html", "Shift_JIS" },
-  { "US-ASCII.html", "ISO-8859-1" },  // http://crbug.com/15801
+#if 0
+  // See the above.
+  { "US-ASCII.html", "windows-1252" },  // http://crbug.com/15801
+#endif
   { "UTF-8.html", "UTF-8" },
   { "UTF-16LE.html", "UTF-16LE" },
   { "windows-874.html", "windows-874" },
@@ -189,7 +196,10 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ("ISO-8859-1", web_contents->GetEncoding());
+#if 0
+  // Temporarily disable until the Blink CL to use windows-1252 is relanded.
+  EXPECT_EQ("windows-1252", web_contents->GetEncoding());
+#endif
 
   // Override the encoding to "gb18030".
   const std::string selected_encoding =
@@ -241,9 +251,12 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
       { "gb18030_with_no_encoding_specified.html",
         "expected_gb18030_saved_from_no_encoding_specified.html",
         "gb18030" },
+#if 0
+      // Disable until the Blink CL to use 'windows-1252' is relanded.
       { "iso-8859-1_with_no_encoding_specified.html",
         "expected_iso-8859-1_saved_from_no_encoding_specified.html",
-        "ISO-8859-1" },
+        "windows-1252" },
+#endif
       { "ISO-8859-5_with_no_encoding_specified.html",
         "expected_ISO-8859-5_saved_from_no_encoding_specified.html",
         "ISO-8859-5" },
