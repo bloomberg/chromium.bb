@@ -465,8 +465,6 @@ crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
 
-crbug.com/422812 fast/repaint/crbug-371640-4.html [ NeedsRebaseline ]
-
 # Pixel captures are currently totally broken on Android Nexus4's at the moment.
 crbug.com/293932 [ Android ] css1/formatting_model/horizontal_formatting.html [ Failure ]
 crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailure ]
