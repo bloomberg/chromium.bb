@@ -420,7 +420,7 @@ bool ScrollManager::StationaryFingerPressureChangingSignificantly(
                     (current.position_x - prev->position_x) +
                     (current.position_y - prev->position_y) *
                     (current.position_y - prev->position_y);
-    float dist_sq_thresh = duration *
+    float dist_sq_thresh = duration * duration *
         max_stationary_speed_.val_ * max_stationary_speed_.val_;
     if (dist_sq > dist_sq_thresh)
       return false;
