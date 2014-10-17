@@ -2290,7 +2290,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     }
   }
 
-  Send(new FrameHostMsg_DidAssignPageId(routing_id_, render_view_->page_id_));
+  bool sent = Send(
+      new FrameHostMsg_DidAssignPageId(routing_id_, render_view_->page_id_));
+  CHECK(sent);  // http://crbug.com/407376
 
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
                     DidCommitProvisionalLoad(frame, is_new_navigation));
