@@ -16,6 +16,7 @@ PNACL_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
 PNACL_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=ar)
 PNACL_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=strip)
 PNACL_FINALIZE := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=finalize)
+PNACL_TRANSLATE := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=translate)
 
 #
 # Compile Macro
@@ -100,6 +101,15 @@ $(1).pexe: $(1).bc
 
 $(1).bc: $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(PNACL_LINK) -o $$@ $(2) $(PNACL_LDFLAGS) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
+
+$(1)_x86_32.nexe: $(1).bc
+	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch x86-32 $$^ -o $$@)
+
+$(1)_x86_64.nexe: $(1).bc
+	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch x86-64 $$^ -o $$@)
+
+$(1)_arm.nexe: $(1).bc
+	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch arm $$^ -o $$@)
 endef
 
 
@@ -130,6 +140,15 @@ endef
 define STRIP_RULE
 all: $(OUTDIR)/$(1).pexe
 $(OUTDIR)/$(1).pexe: $(OUTDIR)/$(2).pexe
+	$(call LOG,STRIP,$$@,$(PNACL_STRIP) $$^ -o $$@)
+
+$(OUTDIR)/$(1)_x86_32.nexe: $(OUTDIR)/$(2)_x86_32.nexe
+	$(call LOG,STRIP,$$@,$(PNACL_STRIP) $$^ -o $$@)
+
+$(OUTDIR)/$(1)_x86_64.nexe: $(OUTDIR)/$(2)_x86_64.nexe
+	$(call LOG,STRIP,$$@,$(PNACL_STRIP) $$^ -o $$@)
+
+$(OUTDIR)/$(1)_arm.nexe: $(OUTDIR)/$(2)_arm.nexe
 	$(call LOG,STRIP,$$@,$(PNACL_STRIP) $$^ -o $$@)
 endef
 
@@ -165,3 +184,18 @@ all: $(OUTDIR)/$(1).html
 $(OUTDIR)/$(1).html: $(EXECUTABLES)
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef
+
+
+ifdef STANDALONE
+run: $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+ifndef NACL_ARCH
+	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
+endif
+	$(SEL_LDR_PATH) $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(EXE_ARGS)
+
+debug: $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+ifndef NACL_ARCH
+	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
+endif
+	$(SEL_LDR_PATH) -d $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(EXE_ARGS)
+endif

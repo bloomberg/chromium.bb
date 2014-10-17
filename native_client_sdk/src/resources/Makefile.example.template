@@ -34,6 +34,8 @@ NACL_SDK_ROOT ?= $(abspath $(CURDIR)/{{rel_sdk}})
 EXTRA_INC_PATHS={{' '.join(targets[0]['INCLUDES'])}}
 [[]]
 
+TARGET = {{targets[0]['NAME']}}
+
 [[if multi_platform:]]
 # Build with platform-specific subdirectories, to reduce the download size of
 # the app.
@@ -46,7 +48,6 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 CHROME_ARGS += --allow-nacl-socket-api=localhost
 [[]]
 
-TARGET = {{targets[0]['NAME']}}
 [[ExpandDict('DEPS', targets[0].get('DEPS', []))]]
 [[ExpandDict('LIBS', targets[0].get('LIBS', []))]]
 

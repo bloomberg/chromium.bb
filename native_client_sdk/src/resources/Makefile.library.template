@@ -33,9 +33,10 @@ NACL_SDK_ROOT ?= $(abspath $(CURDIR)/../..)
 EXTRA_INC_PATHS={{' '.join(target['INCLUDES'])}}
 [[]]
 
+TARGET = {{target['NAME']}}
+
 include $(NACL_SDK_ROOT)/tools/common.mk
 
-TARGET = {{target['NAME']}}
 [[ExpandDict('DEPS', targets[0].get('DEPS', []))]]
 [[ExpandDict('LIBS', targets[0].get('LIBS', []), pre_list=['$(DEPS)'])]]
 [[flags = target.get('CFLAGS', [])]]

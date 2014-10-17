@@ -132,7 +132,7 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
       if sanitizer:
         continue
 
-      for toolchain in ('newlib', 'glibc'):
+      for toolchain in ('newlib', 'glibc', 'pnacl'):
         for arch in archs:
           for config in configs:
             RunTest(location, toolchain, config, arch)
