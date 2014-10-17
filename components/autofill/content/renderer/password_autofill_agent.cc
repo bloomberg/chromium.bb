@@ -1217,7 +1217,14 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     blink::WebLocalFrame* frame,
     const blink::WebFormElement& form,
     ProvisionallySaveRestriction restriction) {
-  DCHECK(frame);
+  // TODO(vabr): This is just to stop getting a NULL frame in
+  // |provisionally_saved_forms_|. Cases where we try to save password for a
+  // form in a NULL frame should not happen, and it's currently unclear how they
+  // happen (http://crbug.com/420519). This thing will be hopefully solved by
+  // migrating the PasswordAutofillAgent to observe frames directly
+  // (http://crbug.com/400186).
+  if (!frame)
+    return;
   scoped_ptr<PasswordForm> password_form(CreatePasswordForm(form));
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&
