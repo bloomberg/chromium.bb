@@ -200,10 +200,11 @@ struct ShowLoginWizardSwitchLanguageCallbackData {
 
 void OnLanguageSwitchedCallback(
     scoped_ptr<ShowLoginWizardSwitchLanguageCallbackData> self,
-    const chromeos::locale_util::LanguageSwitchResult& result) {
-  if (!result.success)
-    LOG(WARNING) << "Locale could not be found for '" << result.requested_locale
-                 << "'";
+    const std::string& locale,
+    const std::string& loaded_locale,
+    const bool success) {
+  if (!success)
+    LOG(WARNING) << "Locale could not be found for '" << locale << "'";
 
   ShowLoginWizardFinish(
       self->first_screen_name, self->startup_manifest, self->display_host);
@@ -1292,12 +1293,13 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       new ShowLoginWizardSwitchLanguageCallbackData(
           first_screen_name, startup_manifest, display_host));
 
-  locale_util::SwitchLanguageCallback callback(
-      base::Bind(&OnLanguageSwitchedCallback, base::Passed(data.Pass())));
+  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
+      new locale_util::SwitchLanguageCallback(
+          base::Bind(&OnLanguageSwitchedCallback, base::Passed(data.Pass()))));
 
   // Load locale keyboards here. Hardware layout would be automatically enabled.
   locale_util::SwitchLanguage(
-      locale, true, true /* login_layouts_only */, callback);
+      locale, true, true /* login_layouts_only */, callback.Pass());
 }
 
 }  // namespace chromeos

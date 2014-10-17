@@ -21,24 +21,14 @@ class Callback;
 namespace chromeos {
 namespace locale_util {
 
-struct LanguageSwitchResult {
-  LanguageSwitchResult(const std::string& requested_locale,
-                       const std::string& loaded_locale,
-                       bool success);
-
-  std::string requested_locale;
-  std::string loaded_locale;
-  bool success;
-};
-
 // This callback is called on UI thread, when ReloadLocaleResources() is
 // completed on BlockingPool.
-// |result| contains:
+// Arguments:
 //   locale - (copy of) locale argument to SwitchLanguage(). Expected locale.
 //   loaded_locale - actual locale name loaded.
 //   success - if locale load succeeded.
 // (const std::string* locale, const std::string* loaded_locale, bool success)
-typedef base::Callback<void(const LanguageSwitchResult& result)>
+typedef base::Callback<void(const std::string&, const std::string&, bool)>
     SwitchLanguageCallback;
 
 // This function updates input methods only if requested. In general, you want
@@ -51,7 +41,7 @@ typedef base::Callback<void(const LanguageSwitchResult& result)>
 void SwitchLanguage(const std::string& locale,
                     const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
-                    const SwitchLanguageCallback& callback);
+                    scoped_ptr<SwitchLanguageCallback> callback);
 
 }  // namespace locale_util
 }  // namespace chromeos
