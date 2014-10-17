@@ -39,10 +39,11 @@ def _GetFilesNotInCloud(input_api):
 
   cloud_storage = LoadSupport(input_api)
 
-  # Look in both buckets, in case the user uploaded the file manually. But this
+  # Look in all buckets, in case the user uploaded the file manually. But this
   # script focuses on WPR archives, so it only uploads to the internal bucket.
   hashes_in_cloud_storage = cloud_storage.List(cloud_storage.PUBLIC_BUCKET)
   try:
+    hashes_in_cloud_storage += cloud_storage.List(cloud_storage.PARTNER_BUCKET)
     hashes_in_cloud_storage += cloud_storage.List(cloud_storage.INTERNAL_BUCKET)
   except (cloud_storage.PermissionError, cloud_storage.CredentialsError):
     pass
