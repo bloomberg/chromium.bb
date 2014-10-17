@@ -400,10 +400,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Whether the folder drag-and-drop UI should be enabled.
   bool EnableFolderDragDropUI();
 
-  // Whether target specified by |drap_target| can accept more items to be
-  // dropped into it.
-  bool CanDropIntoTarget(const Index& drop_target) const;
-
   // Returns the size of the entire tile grid.
   gfx::Size GetTileGridSize() const;
 

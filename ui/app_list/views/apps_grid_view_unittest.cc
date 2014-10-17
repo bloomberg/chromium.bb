@@ -485,14 +485,14 @@ TEST_F(AppsGridViewTest, MouseDragItemReorder) {
   int tile_height = GetItemTileRectAt(1, 0).y() - GetItemTileRectAt(0, 0).y();
 
   // Drag left but stop before the folder dropping circle.
-  drag_vector.set_x(-half_tile_width - 5);
+  drag_vector.set_x(-half_tile_width - 4);
   SimulateDrag(AppsGridView::MOUSE, top_right, top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
 
   // Drag left, past the folder dropping circle.
-  drag_vector.set_x(-3 * half_tile_width + 5);
+  drag_vector.set_x(-3 * half_tile_width + 4);
   SimulateDrag(AppsGridView::MOUSE, top_right, top_right + drag_vector);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 0,Item 2,Item 3"),

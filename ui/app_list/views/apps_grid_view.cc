@@ -212,7 +212,7 @@ class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ItemMoveAnimationDelegate);
 };
 
-// Returns true if the |item| is an folder item.
+// Returns true if the |item| is a folder item.
 bool IsFolderItem(AppListItem* item) {
   return (item->GetItemType() == AppListFolderItem::kItemType);
 }
@@ -1388,20 +1388,42 @@ void AppsGridView::CalculateDropTarget() {
 
 bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
                                              Index* drop_target) const {
+  // Folders can't be dropped into other folders.
+  if (IsFolderItem(drag_view_->item()))
+    return false;
+
+  // A folder drop shouldn't happen on the reorder placeholder since that would
+  // be merging an item with itself.
   Index nearest_tile_index(GetNearestTileIndexForPoint(point));
+  if (!IsValidIndex(nearest_tile_index) ||
+      nearest_tile_index == reorder_placeholder_) {
+    return false;
+  }
+
   int distance_to_tile_center =
       (point - GetExpectedTileBounds(nearest_tile_index.slot).CenterPoint())
           .Length();
-  if (nearest_tile_index != reorder_placeholder_ &&
-      distance_to_tile_center < kFolderDroppingCircleRadius &&
-      !IsFolderItem(drag_view_->item()) &&
-      CanDropIntoTarget(nearest_tile_index)) {
-    *drop_target = nearest_tile_index;
-    DCHECK(IsValidIndex(*drop_target));
-    return true;
+  if (distance_to_tile_center > kFolderDroppingCircleRadius)
+    return false;
+
+  AppListItemView* target_view =
+      GetViewDisplayedAtSlotOnCurrentPage(nearest_tile_index.slot);
+  if (!target_view)
+    return false;
+
+  AppListItem* target_item = target_view->item();
+
+  // Items can only be dropped into non-folders (which have no children) or
+  // folders that have fewer than the max allowed items.
+  // The OEM folder does not allow drag/drop of other items into it.
+  if (target_item->ChildItemCount() >= kMaxFolderItems ||
+      IsOEMFolderItem(target_item)) {
+    return false;
   }
 
-  return false;
+  *drop_target = nearest_tile_index;
+  DCHECK(IsValidIndex(*drop_target));
+  return true;
 }
 
 void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
@@ -2084,20 +2106,6 @@ bool AppsGridView::EnableFolderDragDropUI() {
   // Enable drag and drop folder UI only if it is at the app list root level
   // and the switch is on.
   return model_->folders_enabled() && !folder_delegate_;
-}
-
-bool AppsGridView::CanDropIntoTarget(const Index& drop_target) const {
-  AppListItemView* target_view =
-      GetViewDisplayedAtSlotOnCurrentPage(drop_target.slot);
-  if (!target_view)
-    return false;
-
-  AppListItem* target_item = target_view->item();
-  // Items can be dropped into non-folders (which have no children) or folders
-  // that have fewer than the max allowed items.
-  // OEM folder does not allow to drag/drop other items in it.
-  return target_item->ChildItemCount() < kMaxFolderItems &&
-         !IsOEMFolderItem(target_item);
 }
 
 AppsGridView::Index AppsGridView::GetNearestTileIndexForPoint(
