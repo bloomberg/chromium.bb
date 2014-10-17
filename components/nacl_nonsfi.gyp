@@ -40,20 +40,17 @@
             'conditions': [
               ['target_arch=="ia32" or target_arch=="x64"', {
                 'extra_deps_newlib32_nonsfi': [
+                  '>(tc_lib_dir_nonsfi_helper32)/libbase_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libevent_nacl_nonsfi.a',
                 ],
               }],
             ],
           },
           'dependencies': [
+            '<(DEPTH)/base/base_nacl.gyp:base_nacl_nonsfi',
             '<(DEPTH)/native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
             '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-
-            # TODO(hidehiko): Remove this when we introduce base/.
-            # This dependency is introduced to make sure the library is
-            # actually built successfully.
-            '<(DEPTH)/third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
           ],
         },
         # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.

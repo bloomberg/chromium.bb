@@ -2562,9 +2562,6 @@
       ['use_cras==1', {
         'defines': ['USE_CRAS=1'],
       }],
-      ['use_glib==1', {
-        'defines': ['USE_GLIB=1'],
-      }],
       ['use_ozone==1', {
         'defines': ['USE_OZONE=1'],
       }],
@@ -2922,6 +2919,9 @@
           'USE_OPENSSL=1',
           'USE_OPENSSL_CERTS=1',
         ],
+      }],
+      ['<(use_glib)==1 and >(nacl_untrusted_build)==0', {
+        'defines': ['USE_GLIB=1'],
       }],
       ['<(use_nss)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['USE_NSS=1'],

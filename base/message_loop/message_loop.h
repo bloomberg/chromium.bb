@@ -596,7 +596,7 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
     return loop && loop->type() == MessageLoop::TYPE_IO;
   }
 
-#if !defined(OS_NACL)
+#if !defined(OS_NACL) || defined(__native_client_nonsfi__)
 
 #if defined(OS_WIN)
   typedef MessagePumpForIO::IOHandler IOHandler;
@@ -642,7 +642,7 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
                            FileDescriptorWatcher *controller,
                            Watcher *delegate);
 #endif  // defined(OS_IOS) || defined(OS_POSIX)
-#endif  // !defined(OS_NACL)
+#endif  // !defined(OS_NACL) || defined(__native_client_nonsfi__)
 };
 
 // Do not add any member variables to MessageLoopForIO!  This is important b/c

@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <sys/socket.h>
-#include <sys/uio.h>
 #include <unistd.h>
 
 #include <vector>
@@ -18,8 +17,13 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 
+#if !defined(__native_client_nonsfi__)
+#include <sys/uio.h>
+#endif
+
 const size_t UnixDomainSocket::kMaxFileDescriptors = 16;
 
+#if !defined(__native_client_nonsfi__)
 // Creates a connected pair of UNIX-domain SOCK_SEQPACKET sockets, and passes
 // ownership of the newly allocated file descriptors to |one| and |two|.
 // Returns true on success.
@@ -37,6 +41,7 @@ bool UnixDomainSocket::EnableReceiveProcessId(int fd) {
   const int enable = 1;
   return setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &enable, sizeof(enable)) == 0;
 }
+#endif  // !defined(__native_client_nonsfi__)
 
 // static
 bool UnixDomainSocket::SendMsg(int fd,
@@ -106,8 +111,14 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
-  char control_buffer[CMSG_SPACE(sizeof(int) * kMaxFileDescriptors) +
-                      CMSG_SPACE(sizeof(struct ucred))];
+  const size_t kControlBufferSize =
+      CMSG_SPACE(sizeof(int) * kMaxFileDescriptors)
+#if !defined(__native_client_nonsfi__)
+      // The PNaCl toolchain for Non-SFI binary build does not support ucred.
+      + CMSG_SPACE(sizeof(struct ucred))
+#endif
+      ;
+  char control_buffer[kControlBufferSize];
   msg.msg_control = control_buffer;
   msg.msg_controllen = sizeof(control_buffer);
 
@@ -130,21 +141,29 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
         wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
         wire_fds_len = payload_len / sizeof(int);
       }
+#if !defined(__native_client_nonsfi__)
+      // The PNaCl toolchain for Non-SFI binary build does not support
+      // SCM_CREDENTIALS.
       if (cmsg->cmsg_level == SOL_SOCKET &&
           cmsg->cmsg_type == SCM_CREDENTIALS) {
         DCHECK(payload_len == sizeof(struct ucred));
         DCHECK(pid == -1);
         pid = reinterpret_cast<struct ucred*>(CMSG_DATA(cmsg))->pid;
       }
+#endif
     }
   }
 
+#if !defined(__native_client_nonsfi__)
+  // The PNaCl toolchain for Non-SFI binary build does not support
+  // MSG_TRUNC or MSG_CTRUNC.
   if (msg.msg_flags & MSG_TRUNC || msg.msg_flags & MSG_CTRUNC) {
     for (unsigned i = 0; i < wire_fds_len; ++i)
       close(wire_fds[i]);
     errno = EMSGSIZE;
     return -1;
   }
+#endif
 
   if (wire_fds) {
     for (unsigned i = 0; i < wire_fds_len; ++i)
@@ -165,6 +184,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   return r;
 }
 
+#if !defined(__native_client_nonsfi__)
 // static
 ssize_t UnixDomainSocket::SendRecvMsg(int fd,
                                       uint8_t* reply,
@@ -222,3 +242,4 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
 
   return reply_len;
 }
+#endif  // !defined(__native_client_nonsfi__)

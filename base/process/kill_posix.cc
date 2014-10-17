@@ -22,6 +22,7 @@ namespace base {
 
 namespace {
 
+#if !defined(__native_client_nonsfi__)
 bool WaitpidWithTimeout(ProcessHandle handle,
                         int* status,
                         base::TimeDelta wait) {
@@ -83,6 +84,7 @@ bool WaitpidWithTimeout(ProcessHandle handle,
 
   return ret_pid > 0;
 }
+#endif  // !defined(__native_client_nonsfi__)
 
 TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
                                            bool can_block,
@@ -130,6 +132,7 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
 
 }  // namespace
 
+#if !defined(__native_client_nonsfi__)
 // Attempts to kill the process identified by the given process
 // entry structure.  Ignores specified exit_code; posix can't force that.
 // Returns true if this is successful, false otherwise.
@@ -191,6 +194,7 @@ bool KillProcessGroup(ProcessHandle process_group_id) {
     DPLOG(ERROR) << "Unable to terminate process group " << process_group_id;
   return result;
 }
+#endif  // !defined(__native_client_nonsfi__)
 
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   return GetTerminationStatusImpl(handle, false /* can_block */, exit_code);
@@ -206,6 +210,7 @@ TerminationStatus GetKnownDeadTerminationStatus(ProcessHandle handle,
   return GetTerminationStatusImpl(handle, true /* can_block */, exit_code);
 }
 
+#if !defined(__native_client_nonsfi__)
 bool WaitForExitCode(ProcessHandle handle, int* exit_code) {
   int status;
   if (HANDLE_EINTR(waitpid(handle, &status, 0)) == -1) {
@@ -478,5 +483,6 @@ void EnsureProcessGetsReaped(ProcessHandle process) {
 }
 
 #endif  // !defined(OS_MACOSX)
+#endif  // !defined(__native_client_nonsfi__)
 
 }  // namespace base
