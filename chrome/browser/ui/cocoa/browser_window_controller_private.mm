@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -682,6 +683,8 @@ willPositionSheet:(NSWindow*)sheet
   BOOL mode = enteringPresentationMode_ ||
        browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
   enteringAppKitFullscreen_ = YES;
+  enteringAppKitFullscreenOnPrimaryScreen_ =
+      [[[self window] screen] isEqual:[[NSScreen screens] objectAtIndex:0]];
 
   fullscreen_mac::SlidingStyle style =
       mode ? fullscreen_mac::OMNIBOX_TABS_HIDDEN
@@ -702,6 +705,32 @@ willPositionSheet:(NSWindow*)sheet
         [[window contentView] setHidden:YES];
       }
     }
+  }
+
+  if ([self shouldUseMavericksAppKitFullscreenHack]) {
+    // Apply a hack to fix the size of the window. This is the last run of the
+    // MessageLoop where the hack will not work, so dispatch the hack to the
+    // top of the MessageLoop.
+    base::Callback<void(void)> callback = base::BindBlock(^{
+        if (![self isInAppKitFullscreen])
+          return;
+
+        // The window's frame should be exactly 22 points too short.
+        CGFloat kExpectedHeightDifference = 22;
+        NSRect currentFrame = [[self window] frame];
+        NSRect expectedFrame = [[[self window] screen] frame];
+        if (!NSEqualPoints(currentFrame.origin, expectedFrame.origin))
+          return;
+        if (currentFrame.size.width != expectedFrame.size.width)
+          return;
+        CGFloat heightDelta =
+            expectedFrame.size.height - currentFrame.size.height;
+        if (fabs(heightDelta - kExpectedHeightDifference) > 0.01)
+          return;
+
+        [[self window] setFrame:expectedFrame display:YES];
+    });
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   if (notification)  // For System Fullscreen when non-nil.
@@ -1047,6 +1076,21 @@ willPositionSheet:(NSWindow*)sheet
   } else {
     hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = NO;
   }
+}
+
+- (BOOL)shouldUseMavericksAppKitFullscreenHack {
+  if (!base::mac::IsOSMavericks())
+    return NO;
+  if (![NSScreen respondsToSelector:@selector(screensHaveSeparateSpaces)] ||
+      ![NSScreen screensHaveSeparateSpaces]) {
+    return NO;
+  }
+  if (!enteringAppKitFullscreen_)
+    return NO;
+  if (enteringAppKitFullscreenOnPrimaryScreen_)
+    return NO;
+
+  return YES;
 }
 
 @end  // @implementation BrowserWindowController(Private)

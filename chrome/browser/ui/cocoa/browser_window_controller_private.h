@@ -157,6 +157,15 @@
 // implementation for more details.
 - (void)updateSubviewZOrderHack;
 
+// There is a bug in Mavericks for applications linked against OSX 10.8 and
+// earlier. The bug requires Screens Have Separate Spaces to be enabled, and
+// for the window to be on a secondary screen. When AppKit Fullscreen is
+// invoked on the window, its final frame is 22pt too short. This method
+// detects when the relevant conditions have been met so that a hack can be
+// applied to fix the size of the window.
+// http://crbug.com/396980
+- (BOOL)shouldUseMavericksAppKitFullscreenHack;
+
 @end  // @interface BrowserWindowController(Private)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
