@@ -80,14 +80,21 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
         return visibleTypes;
     }
 
-    public Set<SyncDecryptionPassphraseType> getAllowedTypes() {
+    /**
+     * Get the types that are allowed to be enabled from the current type.
+     *
+     * @param encryptEverythingAllowed Whether encrypting all data is allowed.
+     */
+    public Set<SyncDecryptionPassphraseType> getAllowedTypes(boolean encryptEverythingAllowed) {
         Set<SyncDecryptionPassphraseType> allowedTypes = new HashSet<>();
         switch (this) {
             case NONE:  // Intentional fall through.
             case IMPLICIT_PASSPHRASE:  // Intentional fall through.
             case KEYSTORE_PASSPHRASE:
                 allowedTypes.add(this);
-                allowedTypes.add(CUSTOM_PASSPHRASE);
+                if (encryptEverythingAllowed) {
+                    allowedTypes.add(CUSTOM_PASSPHRASE);
+                }
                 break;
             case FROZEN_IMPLICIT_PASSPHRASE:  // Intentional fall through.
             case CUSTOM_PASSPHRASE:  // Intentional fall through.
@@ -96,6 +103,14 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
                 break;
         }
         return allowedTypes;
+    }
+
+    /**
+     * TODO(maxbogue): Remove when no longer used in Clank; see http://crbug.com/424187.
+     */
+    @Deprecated
+    public Set<SyncDecryptionPassphraseType> getAllowedTypes() {
+        return getAllowedTypes(true);
     }
 
     public int internalValue() {
