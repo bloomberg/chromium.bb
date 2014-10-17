@@ -65,13 +65,6 @@ static bool fullscreenIsSupported(const Document& document)
     return !document.settings() || document.settings()->fullscreenSupported();
 }
 
-static bool fullscreenIsSupported(const Document& document, const Element& element)
-{
-    if (!document.settings() || (document.settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element)))
-        return false;
-    return fullscreenIsSupported(document);
-}
-
 static bool fullscreenElementReady(const Element& element, Fullscreen::RequestType requestType)
 {
     // A fullscreen element ready check for an element |element| returns true if all of the
@@ -240,7 +233,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         }
 
         // Fullscreen is not supported.
-        if (!fullscreenIsSupported(element.document(), element))
+        if (!fullscreenIsSupported(element.document()))
             break;
 
         // 2. Let doc be element's node document. (i.e. "this")

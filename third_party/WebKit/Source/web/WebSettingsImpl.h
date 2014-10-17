@@ -87,7 +87,6 @@ public:
     // new APIs (e.g. setPrimaryPointerType) on the chromium side
     virtual void setDeviceSupportsTouch(bool) override;
 
-    virtual void setDisallowFullscreenForNonMediaElements(bool) override;
     virtual void setDoubleTapToZoomEnabled(bool) override;
     virtual void setDownloadableBinaryFontsEnabled(bool) override;
     virtual void setEditingBehavior(EditingBehavior) override;
