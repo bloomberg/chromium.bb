@@ -30,6 +30,7 @@ public:
     // Base agent methods.
     virtual void restore() override;
     virtual void setFrontend(InspectorFrontend*) override;
+    virtual void clearFrontend() override;
 
     // Protocol method implementations.
     virtual void start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback>) override;
@@ -42,6 +43,7 @@ private:
     InspectorTracingAgent(InspectorClient*, InspectorWorkerAgent*);
 
     void emitMetadataEvents();
+    void resetSessionId();
     String sessionId();
 
     int m_layerTreeId;

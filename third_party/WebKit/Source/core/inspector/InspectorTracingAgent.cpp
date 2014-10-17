@@ -40,6 +40,7 @@ void InspectorTracingAgent::restore()
 
 void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, const String&, const double*, PassRefPtrWillBeRawPtr<StartCallback> callback)
 {
+    ASSERT(m_state->getString(TracingAgentState::sessionId).isEmpty());
     m_state->setString(TracingAgentState::sessionId, IdentifiersFactory::createIdentifier());
     m_client->enableTracing(categoryFilter);
     emitMetadataEvents();
@@ -49,7 +50,7 @@ void InspectorTracingAgent::start(ErrorString*, const String& categoryFilter, co
 void InspectorTracingAgent::end(ErrorString* errorString, PassRefPtrWillBeRawPtr<EndCallback> callback)
 {
     m_client->disableTracing();
-    m_workerAgent->setTracingSessionId(String());
+    resetSessionId();
     callback->sendSuccess();
 }
 
@@ -75,6 +76,17 @@ void InspectorTracingAgent::setLayerTreeId(int layerTreeId)
 void InspectorTracingAgent::setFrontend(InspectorFrontend* frontend)
 {
     m_frontend = frontend->tracing();
+}
+
+void InspectorTracingAgent::clearFrontend()
+{
+    resetSessionId();
+}
+
+void InspectorTracingAgent::resetSessionId()
+{
+    m_state->remove(TracingAgentState::sessionId);
+    m_workerAgent->setTracingSessionId(sessionId());
 }
 
 }
