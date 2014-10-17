@@ -152,9 +152,6 @@ ResultExpr CrosArmGpuProcessPolicy::EvaluateSyscall(int sysno) const {
     }
 #endif  // defined(__arm__)
     default:
-      if (SyscallSets::IsAdvancedScheduler(sysno))
-        return Allow();
-
       // Default to the generic GPU policy.
       return GpuProcessPolicy::EvaluateSyscall(sysno);
   }
