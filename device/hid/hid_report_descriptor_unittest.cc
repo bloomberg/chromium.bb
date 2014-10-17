@@ -356,7 +356,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Digitizer) {
   digitizer.report_ids.insert(3);
   HidCollectionInfo expected[] = {digitizer};
   ValidateDetails(std::vector<HidCollectionInfo>(
-                      expected, expected + ARRAYSIZE_UNSAFE(expected)),
+                      expected, expected + arraysize(expected)),
                   true,
                   6,
                   0,
@@ -370,7 +370,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Keyboard) {
   keyboard.usage = HidUsageAndPage(0x06, HidUsageAndPage::kPageGenericDesktop);
   HidCollectionInfo expected[] = {keyboard};
   ValidateDetails(std::vector<HidCollectionInfo>(
-                      expected, expected + ARRAYSIZE_UNSAFE(expected)),
+                      expected, expected + arraysize(expected)),
                   false,
                   8,
                   1,
@@ -389,7 +389,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Monitor) {
   monitor.report_ids.insert(5);
   HidCollectionInfo expected[] = {monitor};
   ValidateDetails(std::vector<HidCollectionInfo>(
-                      expected, expected + ARRAYSIZE_UNSAFE(expected)),
+                      expected, expected + arraysize(expected)),
                   true,
                   0,
                   0,
@@ -403,7 +403,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Mouse) {
   mouse.usage = HidUsageAndPage(0x02, HidUsageAndPage::kPageGenericDesktop);
   HidCollectionInfo expected[] = {mouse};
   ValidateDetails(std::vector<HidCollectionInfo>(
-                      expected, expected + ARRAYSIZE_UNSAFE(expected)),
+                      expected, expected + arraysize(expected)),
                   false,
                   3,
                   0,
@@ -426,7 +426,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_LogitechUnifyingReceiver) {
 
   HidCollectionInfo expected[] = {hidpp_short, hidpp_long, hidpp_dj};
   ValidateDetails(std::vector<HidCollectionInfo>(
-                      expected, expected + ARRAYSIZE_UNSAFE(expected)),
+                      expected, expected + arraysize(expected)),
                   true,
                   31,
                   31,

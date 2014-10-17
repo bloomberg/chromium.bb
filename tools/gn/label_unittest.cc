@@ -63,7 +63,7 @@ TEST(Label, Resolve) {
 
   Label default_toolchain(SourceDir("//t/"), "d");
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+  for (size_t i = 0; i < arraysize(cases); i++) {
     const ParseDepStringCase& cur = cases[i];
 
     std::string location, name;

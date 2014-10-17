@@ -99,7 +99,7 @@ void DebugPanel::Layout(views::View* view) {
     navigation_target_new_,
     navigation_target_source_,
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(radios); ++i) {
+  for (size_t i = 0; i < arraysize(radios); ++i) {
     radios[i]->SetBounds(kControlBorderInset, y, w,
                          radios[i]->GetPreferredSize().height());
     y += radios[i]->height();
@@ -111,7 +111,7 @@ void DebugPanel::Layout(views::View* view) {
     close_last_,
     cross_app_,
   };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(buttons); ++i) {
+  for (size_t i = 0; i < arraysize(buttons); ++i) {
     buttons[i]->SetBounds(kControlBorderInset, y, w,
                           buttons[i]->GetPreferredSize().height());
     y += buttons[i]->height();

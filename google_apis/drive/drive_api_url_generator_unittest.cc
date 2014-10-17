@@ -97,7 +97,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
     { true, false, "?setModifiedDate=true&updateViewedDate=false" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
+  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     EXPECT_EQ(
         "https://www.googleapis.com/drive/v2/files/0ADK06pfg" +
             kTestPatterns[i].expected_query,
@@ -188,7 +188,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
     { 10, "token", "query", "?maxResults=10&pageToken=token&q=query" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
+  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     EXPECT_EQ(
         "https://www.googleapis.com/drive/v2/files" +
             kTestPatterns[i].expected_query,
@@ -288,7 +288,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
       "&startChangeId=12345" },
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestPatterns); ++i) {
+  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     EXPECT_EQ(
         "https://www.googleapis.com/drive/v2/changes" +
             kTestPatterns[i].expected_query,

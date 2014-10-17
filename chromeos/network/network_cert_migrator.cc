@@ -210,7 +210,7 @@ class NetworkCertMigrator::MigrationTask
          shill::kOpenVPNCaCertPemProperty, UMA_NETWORK_TYPE_OPENVPN },
     };
 
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNssPemMap); ++i) {
+    for (size_t i = 0; i < arraysize(kNssPemMap); ++i) {
       const base::DictionaryValue* dict = &shill_properties;
       if (kNssPemMap[i].read_prefix) {
         shill_properties.GetDictionaryWithoutPathExpansion(
