@@ -110,6 +110,12 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoNot:
     case CSSSelector::PseudoRoot:
     case CSSSelector::PseudoScope:
+    case CSSSelector::PseudoScrollbar:
+    case CSSSelector::PseudoScrollbarButton:
+    case CSSSelector::PseudoScrollbarCorner:
+    case CSSSelector::PseudoScrollbarThumb:
+    case CSSSelector::PseudoScrollbarTrack:
+    case CSSSelector::PseudoScrollbarTrackPiece:
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoUnresolved:
@@ -148,12 +154,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoAutofill:
     case CSSSelector::PseudoFullPageMedia:
     case CSSSelector::PseudoResizer:
-    case CSSSelector::PseudoScrollbar:
-    case CSSSelector::PseudoScrollbarButton:
-    case CSSSelector::PseudoScrollbarCorner:
-    case CSSSelector::PseudoScrollbarThumb:
-    case CSSSelector::PseudoScrollbarTrack:
-    case CSSSelector::PseudoScrollbarTrackPiece:
     case CSSSelector::PseudoWindowInactive:
     case CSSSelector::PseudoCornerPresent:
     case CSSSelector::PseudoDecrement:
