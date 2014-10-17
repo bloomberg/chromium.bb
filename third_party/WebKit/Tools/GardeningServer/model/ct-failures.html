@@ -134,7 +134,7 @@ CTFailures.prototype.update = function() {
     }.bind(this));
 
     this.failures = updateUtil.updateLeft(this.failures, newFailures);
-    this._processTrooperFailures(trooper_data);
+    this._processTrooperFailures(newFailures, trooper_data);
   }.bind(this));
 };
 
@@ -150,13 +150,23 @@ CTFailures.prototype._failureComparator = function(a, b) {
   return 0;
 };
 
-CTFailures.prototype._processTrooperFailures = function(data) {
+CTFailures.prototype._processTrooperFailures = function(all_failures,
+                                                        trooper_data) {
   var trooper_failures = [];
-  Object.keys(data, function(failureType, failuresByTree) {
+  Object.keys(trooper_data, function(failureType, failuresByTree) {
     Object.keys(failuresByTree, function(tree, failure) {
       if (failure.should_alert) {
         trooper_failures.push(new CTFailureGroup('trooper',
-            new CTTrooperFailureGroupData(failure.details, failure.url, failure, failureType, tree)));
+            new CTTrooperFailureGroupData(failure.details, failure.url, failure,
+                                          failureType, tree)));
+      }
+    });
+  });
+
+  Object.keys(all_failures, function(tree, failuresByTree) {
+    failuresByTree.forEach(function(failure) {
+      if (failure.category == 'builder' || failure.category == 'master') {
+        trooper_failures.push(failure);
       }
     });
   });

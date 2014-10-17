@@ -466,13 +466,32 @@ describe('ct-failures', function() {
     it('should filter out updates that are not alerts', function() {
       var analyzer = new CTFailures(new CTCommitList(undefined, []));
       analyzer.failures = {};
-      analyzer._processTrooperFailures(
+      analyzer._processTrooperFailures({},
           {'key_1': {'tree_1': {should_alert: true, should_appear: true},
                      'tree_2': {should_alert: false, should_appear: false}},
            'key_2': {'tree_3': {should_alert: false, should_appear: false},
                      'tree_4': {should_alert: true, should_appear: true}}});
       analyzer.failures['trooper'].forEach(function(failure) {
         assert(failure.data.data.should_appear);
+      });
+      assert(analyzer.failures['trooper'].length == 2);
+    });
+  });
+
+  describe('processTrooperFailures', function() {
+    it('should list all failures with category builder and master', function() {
+      var emptyCommit = new CTCommitList(undefined, []);
+      var emptyGroupData = new CTStepFailureGroupData([], emptyCommit);
+      var group1 = new CTFailureGroup('', emptyGroupData, 'builder');
+      var group2 = new CTFailureGroup('', emptyGroupData, 'failedOnce');
+      var group3 = new CTFailureGroup('', emptyGroupData, 'master');
+
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
+      analyzer.failures = {};
+      analyzer._processTrooperFailures(
+          {'tree_1': [group1], 'tree_2': [group2, group3]}, {});
+      analyzer.failures['trooper'].forEach(function(failure) {
+        assert(failure.category == 'builder' || failure.category == 'master');
       });
       assert(analyzer.failures['trooper'].length == 2);
     });
