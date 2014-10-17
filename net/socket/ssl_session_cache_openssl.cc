@@ -87,8 +87,9 @@ struct SessionId {
   // this one is just simple enough to do the job.
   size_t ComputeHash(const unsigned char* id, unsigned id_len) {
     size_t result = 0;
-    for (unsigned n = 0; n < id_len; ++n)
-      result += 131 * id[n];
+    for (unsigned n = 0; n < id_len; ++n) {
+      result = (result * 131) + id[n];
+    }
     return result;
   }
 };
