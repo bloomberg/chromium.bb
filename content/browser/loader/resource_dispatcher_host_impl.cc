@@ -745,8 +745,10 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
   // Make a copy of the response headers so it is safe to pass across threads;
   // the old handler (AsyncResourceHandler) may modify it in parallel via the
   // ResourceDispatcherHostDelegate.
-  stream_info->response_headers =
-      new net::HttpResponseHeaders(response->head.headers->raw_headers());
+  if (response->head.headers.get()) {
+    stream_info->response_headers =
+        new net::HttpResponseHeaders(response->head.headers->raw_headers());
+  }
   delegate_->OnStreamCreated(request, stream_info.Pass());
   return handler.Pass();
 }

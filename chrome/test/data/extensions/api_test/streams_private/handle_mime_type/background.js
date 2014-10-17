@@ -12,7 +12,8 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
   // the MIME type 'application/msword' means the test has succeeded.
   if (params.mimeType == 'application/msword') {
     var headers = params.responseHeaders;
-    if (headers['Content-Type'] != 'application/msword') {
+    if (params.originalUrl.substring(0, 5) != 'file:' &&
+        headers['Content-Type'] != 'application/msword') {
       chrome.test.notifyFail(
           'HTTP request header did not contain expected attributes.');
       hasFailed = true;

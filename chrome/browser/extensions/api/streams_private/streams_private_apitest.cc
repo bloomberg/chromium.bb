@@ -269,6 +269,34 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
+// Tests that navigating to a file URL also intercepts despite there being no
+// HTTP headers. This is a regression test for https://crbug.com/416433.
+IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, FileURL) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  ASSERT_TRUE(LoadTestExtension()) << message_;
+
+  ResultCatcher catcher;
+
+  ui_test_utils::NavigateToURL(browser(), ui_test_utils::GetTestUrl(
+      base::FilePath(FILE_PATH_LITERAL("downloads")),
+      base::FilePath(FILE_PATH_LITERAL("Picture_1.doc"))));
+
+  // There should be no downloads started by the navigation.
+  DownloadManager* download_manager = GetDownloadManager();
+  std::vector<DownloadItem*> downloads;
+  download_manager->GetAllDownloads(&downloads);
+  ASSERT_EQ(0u, downloads.size());
+
+  // The test extension should receive onExecuteContentHandler event with MIME
+  // type 'application/msword' (and call chrome.test.notifySuccess).
+  EXPECT_TRUE(catcher.GetNextResult());
+}
+
 // Tests that navigating cross-site to a resource with a MIME type handleable by
 // an installed, white-listed extension invokes the extension's
 // onExecuteContentHandler event (and does not start a download).
