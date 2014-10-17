@@ -37,7 +37,9 @@ node = env.CommandSelLdrTestNacl('irt_ext_libc_test.out',
                                  irt_ext_libc_test_nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'],
-                       'run_irt_ext_libc_test')
+                       'run_irt_ext_libc_test',
+                       # The thread related tests are flaky on mac asan.
+                       is_broken=(env.Bit('asan') and env.Bit('host_mac')))
 
 irt_ext_no_pthread_nexe = env.ComponentProgram(
     'irt_ext_no_pthread_test',
