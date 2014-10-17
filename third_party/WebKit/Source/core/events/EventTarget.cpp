@@ -153,8 +153,8 @@ bool EventTarget::setAttributeEventListener(const AtomicString& eventType, PassR
 EventListener* EventTarget::getAttributeEventListener(const AtomicString& eventType)
 {
     const EventListenerVector& entry = getEventListeners(eventType);
-    for (size_t i = 0; i < entry.size(); ++i) {
-        EventListener* listener = entry[i].listener.get();
+    for (const auto& eventListener : entry) {
+        EventListener* listener = eventListener.listener.get();
         if (listener->isAttribute() && listener->belongsToTheCurrentWorld())
             return listener;
     }

@@ -76,7 +76,7 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
     // This persistent vector doesn't cause leaks, because added Nodes are removed
     // before dispatchSimulatedClick() returns. This vector is here just to prevent
     // the code from running into an infinite recursion of dispatchSimulatedClick().
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<Node> > >, nodesDispatchingSimulatedClicks, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<Node> >())));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<Node>>>, nodesDispatchingSimulatedClicks, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<Node>>())));
 
     if (isDisabledFormControl(node))
         return;

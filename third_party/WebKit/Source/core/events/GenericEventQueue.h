@@ -55,7 +55,7 @@ private:
     void timerFired(Timer<GenericEventQueue>*);
 
     RawPtrWillBeMember<EventTarget> m_owner;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_pendingEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_pendingEvents;
     Timer<GenericEventQueue> m_timer;
 
     bool m_isClosed;

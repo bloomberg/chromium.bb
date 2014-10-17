@@ -111,8 +111,7 @@ void EventPath::calculatePath()
         WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
         collectDestinationInsertionPoints(*current, insertionPoints);
         if (!insertionPoints.isEmpty()) {
-            for (size_t i = 0; i < insertionPoints.size(); ++i) {
-                InsertionPoint* insertionPoint = insertionPoints[i];
+            for (const auto& insertionPoint : insertionPoints) {
                 if (insertionPoint->isShadowInsertionPoint()) {
                     ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
                     ASSERT(containingShadowRoot);
@@ -142,22 +141,21 @@ void EventPath::calculateTreeScopePrePostOrderNumbers()
     // Precondition:
     //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same tree of trees.
     //   - The root tree must be included.
-    WillBeHeapHashMap<RawPtrWillBeMember<const TreeScope>, RawPtrWillBeMember<TreeScopeEventContext> > treeScopeEventContextMap;
-    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i)
-        treeScopeEventContextMap.add(&m_treeScopeEventContexts[i]->treeScope(), m_treeScopeEventContexts[i].get());
+    WillBeHeapHashMap<RawPtrWillBeMember<const TreeScope>, RawPtrWillBeMember<TreeScopeEventContext>> treeScopeEventContextMap;
+    for (const auto& treeScopeEventContext : m_treeScopeEventContexts)
+        treeScopeEventContextMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext.get());
     TreeScopeEventContext* rootTree = 0;
-    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
-        TreeScopeEventContext* treeScopeEventContext = m_treeScopeEventContexts[i].get();
+    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
         // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
         // See the definition of trees of trees in the Shado DOM spec: http://w3c.github.io/webcomponents/spec/shadow/
-        TreeScope* parent = treeScopeEventContext->treeScope().olderShadowRootOrParentTreeScope();
+        TreeScope* parent = treeScopeEventContext.get()->treeScope().olderShadowRootOrParentTreeScope();
         if (!parent) {
             ASSERT(!rootTree);
-            rootTree = treeScopeEventContext;
+            rootTree = treeScopeEventContext.get();
             continue;
         }
         ASSERT(treeScopeEventContextMap.find(parent) != treeScopeEventContextMap.end());
-        treeScopeEventContextMap.find(parent)->value->addChild(*treeScopeEventContext);
+        treeScopeEventContextMap.find(parent)->value->addChild(*treeScopeEventContext.get());
     }
     ASSERT(rootTree);
     rootTree->calculatePrePostOrderNumber(0);
@@ -254,11 +252,10 @@ void EventPath::adjustForRelatedTarget(Node* target, EventTarget* relatedTarget)
     RelatedTargetMap relatedNodeMap;
     buildRelatedNodeMap(relatedNode, relatedNodeMap);
 
-    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
-        TreeScopeEventContext* treeScopeEventContext = m_treeScopeEventContexts[i].get();
-        EventTarget* adjustedRelatedTarget = findRelatedNode(&treeScopeEventContext->treeScope(), relatedNodeMap);
+    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+        EventTarget* adjustedRelatedTarget = findRelatedNode(&treeScopeEventContext.get()->treeScope(), relatedNodeMap);
         ASSERT(adjustedRelatedTarget);
-        treeScopeEventContext->setRelatedTarget(adjustedRelatedTarget);
+        treeScopeEventContext.get()->setRelatedTarget(adjustedRelatedTarget);
     }
 
     shrinkIfNeeded(target, relatedTarget);
@@ -285,17 +282,17 @@ void EventPath::shrinkIfNeeded(const Node* target, const EventTarget* relatedTar
 
 void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
 {
-    WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTouches;
-    WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTargetTouches;
-    WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedChangedTouches;
-    WillBeHeapVector<RawPtrWillBeMember<TreeScope> > treeScopes;
+    WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouches;
+    WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTargetTouches;
+    WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedChangedTouches;
+    WillBeHeapVector<RawPtrWillBeMember<TreeScope>> treeScopes;
 
-    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
-        TouchEventContext* touchEventContext = m_treeScopeEventContexts[i]->ensureTouchEventContext();
+    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+        TouchEventContext* touchEventContext = treeScopeEventContext->ensureTouchEventContext();
         adjustedTouches.append(&touchEventContext->touches());
         adjustedTargetTouches.append(&touchEventContext->targetTouches());
         adjustedChangedTouches.append(&touchEventContext->changedTouches());
-        treeScopes.append(&m_treeScopeEventContexts[i]->treeScope());
+        treeScopes.append(&treeScopeEventContext->treeScope());
     }
 
     adjustTouchList(node, touchEvent.touches(), adjustedTouches, treeScopes);
@@ -303,9 +300,9 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
     adjustTouchList(node, touchEvent.changedTouches(), adjustedChangedTouches, treeScopes);
 
 #if ENABLE(ASSERT)
-    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
-        TreeScope& treeScope = m_treeScopeEventContexts[i]->treeScope();
-        TouchEventContext* touchEventContext = m_treeScopeEventContexts[i]->touchEventContext();
+    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+        TreeScope& treeScope = treeScopeEventContext->treeScope();
+        TouchEventContext* touchEventContext = treeScopeEventContext->touchEventContext();
         checkReachability(treeScope, touchEventContext->touches());
         checkReachability(treeScope, touchEventContext->targetTouches());
         checkReachability(treeScope, touchEventContext->changedTouches());
@@ -313,7 +310,7 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
 #endif
 }
 
-void EventPath::adjustTouchList(const Node* node, const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope> >& treeScopes)
+void EventPath::adjustTouchList(const Node* node, const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes)
 {
     if (!touchList)
         return;

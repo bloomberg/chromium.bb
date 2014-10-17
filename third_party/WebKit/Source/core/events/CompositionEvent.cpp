@@ -83,16 +83,16 @@ void CompositionEvent::initializeSegments(const Vector<CompositionUnderline>* un
         return;
     }
 
-    for (size_t i = 0; i < underlines->size(); ++i) {
-        if (underlines->at(i).thick) {
-            m_activeSegmentStart = underlines->at(i).startOffset;
-            m_activeSegmentEnd = underlines->at(i).endOffset;
+    for (const auto& underline : *underlines) {
+        if (underline.thick) {
+            m_activeSegmentStart = underline.startOffset;
+            m_activeSegmentEnd = underline.endOffset;
             break;
         }
     }
 
-    for (size_t i = 0; i < underlines->size(); ++i)
-        m_segments.append(underlines->at(i).startOffset);
+    for (const auto& underline : *underlines)
+        m_segments.append(underline.startOffset);
 }
 
 const AtomicString& CompositionEvent::interfaceName() const

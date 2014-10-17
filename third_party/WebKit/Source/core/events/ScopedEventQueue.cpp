@@ -69,7 +69,7 @@ void ScopedEventQueue::enqueueEventDispatchMediator(PassRefPtrWillBeRawPtr<Event
 
 void ScopedEventQueue::dispatchAllEvents()
 {
-    WillBeHeapVector<RefPtrWillBeMember<EventDispatchMediator> > queuedEventDispatchMediators;
+    WillBeHeapVector<RefPtrWillBeMember<EventDispatchMediator>> queuedEventDispatchMediators;
     queuedEventDispatchMediators.swap(m_queuedEventDispatchMediators);
 
     for (size_t i = 0; i < queuedEventDispatchMediators.size(); i++)

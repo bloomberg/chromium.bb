@@ -95,16 +95,16 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     ASSERT(!m_timer.isActive());
     ASSERT(!m_pendingEvents.isEmpty());
 
-    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> pendingEvents;
     m_pendingEvents.swap(pendingEvents);
 
     RefPtrWillBeRawPtr<EventTarget> protect(m_owner.get());
-    for (size_t i = 0; i < pendingEvents.size(); ++i) {
-        Event* event = pendingEvents[i].get();
+    for (const auto& pendingEvent : pendingEvents) {
+        Event* event = pendingEvent.get();
         EventTarget* target = event->target() ? event->target() : m_owner.get();
         CString type(event->type().ascii());
         TRACE_EVENT_ASYNC_STEP_INTO1("event", "GenericEventQueue:enqueueEvent", event, "dispatch", "type", type);
-        target->dispatchEvent(pendingEvents[i]);
+        target->dispatchEvent(pendingEvent);
         TRACE_EVENT_ASYNC_END1("event", "GenericEventQueue:enqueueEvent", event, "type", type);
         InspectorInstrumentation::didRemoveEvent(target, event);
     }
@@ -120,8 +120,8 @@ void GenericEventQueue::cancelAllEvents()
 {
     m_timer.stop();
 
-    for (size_t i = 0; i < m_pendingEvents.size(); ++i) {
-        Event* event = m_pendingEvents[i].get();
+    for (const auto& pendingEvent : m_pendingEvents) {
+        Event* event = pendingEvent.get();
         TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event, "type", event->type().ascii(), "status", "cancelled");
         InspectorInstrumentation::didRemoveEvent(event->target() ? event->target() : m_owner.get(), event);
     }

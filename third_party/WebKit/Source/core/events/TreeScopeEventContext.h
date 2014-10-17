@@ -83,7 +83,7 @@ private:
     RefPtrWillBeMember<StaticNodeList> m_eventPath;
     RefPtrWillBeMember<TouchEventContext> m_touchEventContext;
 
-    WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext> > m_children;
+    WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext>> m_children;
     int m_preOrder;
     int m_postOrder;
 };

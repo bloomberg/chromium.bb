@@ -50,12 +50,12 @@ public:
 #endif
 
 private:
-    void timerFired(Timer<EventSender<T> >*) { dispatchPendingEvents(); }
+    void timerFired(Timer<EventSender<T>>*) { dispatchPendingEvents(); }
 
     AtomicString m_eventType;
-    Timer<EventSender<T> > m_timer;
-    WillBePersistentHeapVector<RawPtrWillBeMember<T> > m_dispatchSoonList;
-    WillBePersistentHeapVector<RawPtrWillBeMember<T> > m_dispatchingList;
+    Timer<EventSender<T>> m_timer;
+    WillBePersistentHeapVector<RawPtrWillBeMember<T>> m_dispatchSoonList;
+    WillBePersistentHeapVector<RawPtrWillBeMember<T>> m_dispatchingList;
 };
 
 template<typename T> EventSender<T>::EventSender(const AtomicString& eventType)

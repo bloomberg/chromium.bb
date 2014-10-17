@@ -76,12 +76,12 @@ private:
     void shrink(size_t newSize) { m_nodeEventContexts.shrink(newSize); }
     void shrinkIfNeeded(const Node* target, const EventTarget* relatedTarget);
 
-    void adjustTouchList(const Node*, const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList> > adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope> >& treeScopes);
+    void adjustTouchList(const Node*, const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes);
 
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RefPtrWillBeMember<TreeScopeEventContext> > TreeScopeEventContextMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RefPtrWillBeMember<TreeScopeEventContext>> TreeScopeEventContextMap;
     TreeScopeEventContext* ensureTreeScopeEventContext(Node* currentTarget, TreeScope*, TreeScopeEventContextMap&);
 
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RawPtrWillBeMember<EventTarget> > RelatedTargetMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RawPtrWillBeMember<EventTarget>> RelatedTargetMap;
 
     static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);
     static EventTarget* findRelatedNode(TreeScope*, RelatedTargetMap&);
@@ -93,7 +93,7 @@ private:
     WillBeHeapVector<NodeEventContext, 64> m_nodeEventContexts;
     RawPtrWillBeMember<Node> m_node;
     RawPtrWillBeMember<Event> m_event;
-    WillBeHeapVector<RefPtrWillBeMember<TreeScopeEventContext> > m_treeScopeEventContexts;
+    WillBeHeapVector<RefPtrWillBeMember<TreeScopeEventContext>> m_treeScopeEventContexts;
 };
 
 } // namespace
