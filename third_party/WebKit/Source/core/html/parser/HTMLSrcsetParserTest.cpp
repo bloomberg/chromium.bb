@@ -103,6 +103,7 @@ TEST(HTMLSrcsetParserTest, Basic)
         {1.0, -1, "", "data:,a +1x", "", 1.0, -1},
         {1.0, -1, "", "data:,a   +1x", "", 1.0, -1},
         {1.0, -1, "", "data:,a 1.0x", "data:,a", 1.0, -1},
+        {1.0, -1, "", "1%20and%202.gif 1x", "1%20and%202.gif", 1.0, -1},
         {0, 0, 0, 0, 0, 0} // Do not remove the terminator line.
     };
 
