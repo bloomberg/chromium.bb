@@ -98,9 +98,6 @@ public:
     void disableDestructionChecks() { m_disableDestructionChecks = true; }
 #endif
 
-    void saveLayer(const SkRect* bounds, const SkPaint*);
-    void restoreLayer();
-
     bool hasStroke() const { return strokeStyle() != NoStroke && strokeThickness() > 0; }
 
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
@@ -325,7 +322,10 @@ public:
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
+    // beginLayer()/endLayer() behaves like save()/restore() for only CTM and clip states.
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
+    // Apply CompositeOperator when the layer is composited on the backdrop (i.e. endLayer()).
+    // Don't change the current CompositeOperator state.
     void beginLayer(float opacity, CompositeOperator, const FloatRect* = 0, ColorFilter = ColorFilterNone, ImageFilter* = 0);
     void endLayer();
 
@@ -435,6 +435,9 @@ private:
     static void draw1xMarker(SkBitmap*, int);
     static void draw2xMarker(SkBitmap*, int);
 #endif
+
+    void saveLayer(const SkRect* bounds, const SkPaint*);
+    void restoreLayer();
 
     // Helpers for drawing a focus ring (drawFocusRing)
     float prepareFocusRingPaint(SkPaint&, const Color&, int width) const;

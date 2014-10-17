@@ -185,7 +185,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
             //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
             // Then we should be able to replace this mess with a single, top-level GCSS.
             maskContentSaver.restore();
-            context->restoreLayer();
+            context->endLayer();
             return false;
         }
 
