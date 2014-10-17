@@ -28,6 +28,7 @@
 #include "core/html/shadow/MediaControls.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/ClientRect.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
@@ -380,6 +381,11 @@ void MediaControls::refreshCastButtonVisibility()
         } else if (mediaElement().shouldShowControls()) {
             m_overlayCastButton->hide();
             m_castButton->show();
+            // Check that the cast button actually fits on the bar.
+            if (m_fullScreenButton->getBoundingClientRect()->right() > m_panel->getBoundingClientRect()->right()) {
+                m_castButton->hide();
+                m_overlayCastButton->show();
+            }
         }
     } else {
         m_castButton->hide();
@@ -449,6 +455,7 @@ void MediaControls::defaultEventHandler(Event* event)
         // When we get a mouse move, show the media controls, and start a timer
         // that will hide the media controls after a 3 seconds without a mouse move.
         makeOpaque();
+        refreshCastButtonVisibility();
         if (shouldHideMediaControls(IgnoreVideoHover))
             startHideMediaControlsTimer();
         return;
