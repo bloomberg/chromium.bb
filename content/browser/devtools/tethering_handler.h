@@ -33,6 +33,11 @@ class TetheringHandler : public DevToolsProtocol::Handler {
   scoped_refptr<DevToolsProtocol::Response> OnUnbind(
       scoped_refptr<DevToolsProtocol::Command>  command);
 
+  void SendBindSuccess(scoped_refptr<DevToolsProtocol::Command> command);
+  void SendUnbindSuccess(scoped_refptr<DevToolsProtocol::Command> command);
+  void SendInternalError(scoped_refptr<DevToolsProtocol::Command> command,
+                         const std::string& message);
+
   DevToolsHttpHandlerDelegate* delegate_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   bool is_active_;
