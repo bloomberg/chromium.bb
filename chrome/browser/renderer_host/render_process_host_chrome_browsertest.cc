@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/process/process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/search/search.h"
@@ -58,6 +59,22 @@ WebContents* FindFirstDevToolsContents() {
   return NULL;
 }
 
+// TODO(rvargas) crbug.com/417532: Remove this code.
+base::Process ProcessFromHandle(base::ProcessHandle handle) {
+#if defined(OS_WIN)
+  if (handle == GetCurrentProcess())
+    return base::Process::Current();
+
+  base::ProcessHandle out_handle;
+  if (!::DuplicateHandle(GetCurrentProcess(), handle, GetCurrentProcess(),
+                          &out_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+    return base::Process();
+  }
+  handle = out_handle;
+#endif  // defined(OS_WIN)
+  return base::Process(handle);
+}
+
 }  // namespace
 
 class ChromeRenderProcessHostTest : public InProcessBrowserTest {
@@ -67,19 +84,19 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
   // Show a tab, activating the current one if there is one, and wait for
   // the renderer process to be created or foregrounded, returning the process
   // handle.
-  base::ProcessHandle ShowSingletonTab(const GURL& page) {
+  base::Process ShowSingletonTab(const GURL& page) {
     chrome::ShowSingletonTab(browser(), page);
     WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
     CHECK(wc->GetURL() == page);
 
     WaitForLauncherThread();
     WaitForMessageProcessing(wc);
-    return wc->GetRenderProcessHost()->GetHandle();
+    return ProcessFromHandle(wc->GetRenderProcessHost()->GetHandle());
   }
 
   // Loads the given url in a new background tab and returns the handle of its
   // renderer.
-  base::ProcessHandle OpenBackgroundTab(const GURL& page) {
+  base::Process OpenBackgroundTab(const GURL& page) {
     ui_test_utils::NavigateToURLWithDisposition(browser(), page,
         NEW_BACKGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
@@ -90,7 +107,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
 
     WaitForLauncherThread();
     WaitForMessageProcessing(wc);
-    return wc->GetRenderProcessHost()->GetHandle();
+    return ProcessFromHandle(wc->GetRenderProcessHost()->GetHandle());
   }
 
   // Ensures that the backgrounding / foregrounding gets a chance to run.
@@ -286,33 +303,36 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
 
   // Create a new tab. It should be foreground.
   GURL page1("data:text/html,hello world1");
-  base::ProcessHandle pid1 = ShowSingletonTab(page1);
-  EXPECT_FALSE(base::Process(pid1).IsProcessBackgrounded());
+  base::Process process1 = ShowSingletonTab(page1);
+  ASSERT_TRUE(process1.IsValid());
+  EXPECT_FALSE(process1.IsProcessBackgrounded());
 
   // Create another tab. It should be foreground, and the first tab should
   // now be background.
   GURL page2("data:text/html,hello world2");
-  base::ProcessHandle pid2 = ShowSingletonTab(page2);
-  EXPECT_NE(pid1, pid2);
-  EXPECT_TRUE(base::Process(pid1).IsProcessBackgrounded());
-  EXPECT_FALSE(base::Process(pid2).IsProcessBackgrounded());
+  base::Process process2 = ShowSingletonTab(page2);
+  ASSERT_TRUE(process2.IsValid());
+  EXPECT_NE(process1.pid(), process2.pid());
+  EXPECT_TRUE(process1.IsProcessBackgrounded());
+  EXPECT_FALSE(process2.IsProcessBackgrounded());
 
   // Load another tab in background. The renderer of the new tab should be
   // backgrounded, while visibility of the other renderers should not change.
   GURL page3("data:text/html,hello world3");
-  base::ProcessHandle pid3 = OpenBackgroundTab(page3);
-  EXPECT_NE(pid3, pid1);
-  EXPECT_NE(pid3, pid2);
-  EXPECT_TRUE(base::Process(pid1).IsProcessBackgrounded());
-  EXPECT_FALSE(base::Process(pid2).IsProcessBackgrounded());
-  EXPECT_TRUE(base::Process(pid3).IsProcessBackgrounded());
+  base::Process process3 = OpenBackgroundTab(page3);
+  ASSERT_TRUE(process3.IsValid());
+  EXPECT_NE(process3.pid(), process1.pid());
+  EXPECT_NE(process3.pid(), process2.pid());
+  EXPECT_TRUE(process1.IsProcessBackgrounded());
+  EXPECT_FALSE(process2.IsProcessBackgrounded());
+  EXPECT_TRUE(process3.IsProcessBackgrounded());
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
-  EXPECT_EQ(pid1, ShowSingletonTab(page1));
-  EXPECT_FALSE(base::Process(pid1).IsProcessBackgrounded());
-  EXPECT_TRUE(base::Process(pid2).IsProcessBackgrounded());
-  EXPECT_TRUE(base::Process(pid3).IsProcessBackgrounded());
+  EXPECT_EQ(process1.pid(), ShowSingletonTab(page1).pid());
+  EXPECT_FALSE(process1.IsProcessBackgrounded());
+  EXPECT_TRUE(process2.IsProcessBackgrounded());
+  EXPECT_TRUE(process3.IsProcessBackgrounded());
 }
 #endif
 

@@ -9,7 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
@@ -134,7 +134,7 @@ void DevToolsAgent::sendMessageToInspectorFrontend(
 }
 
 long DevToolsAgent::processId() {
-  return base::Process::Current().pid();
+  return base::GetCurrentProcId();
 }
 
 int DevToolsAgent::debuggerId() {

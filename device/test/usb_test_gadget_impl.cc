@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -149,7 +149,7 @@ UsbTestGadgetImpl::UsbTestGadgetImpl() {
   context_builder.set_proxy_service(net::ProxyService::CreateDirect());
   request_context_.reset(context_builder.Build());
 
-  base::ProcessId process_id = base::Process::Current().pid();
+  base::ProcessId process_id = base::GetCurrentProcId();
   session_id_ = base::StringPrintf(
       "%s:%p", base::HexEncode(&process_id, sizeof(process_id)).c_str(), this);
 

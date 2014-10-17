@@ -17,6 +17,10 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host_delegate.h"
 
+#if defined(OS_WIN)
+#include "base/win/object_watcher.h"
+#endif
+
 namespace base {
 class CommandLine;
 }
@@ -33,6 +37,9 @@ class BrowserMessageFilter;
 class CONTENT_EXPORT BrowserChildProcessHostImpl
     : public BrowserChildProcessHost,
       public NON_EXPORTED_BASE(ChildProcessHostDelegate),
+#if defined(OS_WIN)
+      public base::win::ObjectWatcher::Delegate,
+#endif
       public ChildProcessLauncher::Client {
  public:
   BrowserChildProcessHostImpl(
@@ -100,8 +107,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   virtual void OnProcessLaunchFailed() override;
 
 #if defined(OS_WIN)
-  void DeleteProcessWaitableEvent(base::WaitableEvent* event);
-  void OnProcessExitedEarly(base::WaitableEvent* event);
+  // ObjectWatcher::Delegate implementation.
+  void OnObjectSignaled(HANDLE object) override;
 #endif
 
   ChildProcessData data_;
@@ -116,7 +123,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Watches to see if the child process exits before the IPC channel has
   // been connected. Thereafter, its exit is determined by an error on the
   // IPC channel.
-  base::WaitableEventWatcher early_exit_watcher_;
+  base::win::ObjectWatcher early_exit_watcher_;
 #endif
 };
 

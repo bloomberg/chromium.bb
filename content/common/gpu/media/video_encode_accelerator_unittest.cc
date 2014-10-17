@@ -9,7 +9,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_vector.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
@@ -943,7 +943,7 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
     return;
 
   base::SharedMemoryHandle dup_handle;
-  CHECK(shm->ShareToProcess(base::Process::Current().handle(), &dup_handle));
+  CHECK(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
 
   media::BitstreamBuffer bitstream_buffer(
       next_output_buffer_id_++, dup_handle, output_buffer_size_);

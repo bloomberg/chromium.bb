@@ -35,7 +35,7 @@
 #include "base/format_macros.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -778,7 +778,7 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   CHECK(shm.CreateAndMapAnonymous(next_fragment_size));
   memcpy(shm.memory(), next_fragment_bytes.data(), next_fragment_size);
   base::SharedMemoryHandle dup_handle;
-  CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
+  CHECK(shm.ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
   media::BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_, dup_handle, next_fragment_size);
   decode_start_time_[next_bitstream_buffer_id_] = base::TimeTicks::Now();

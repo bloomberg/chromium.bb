@@ -564,6 +564,7 @@
         'process/memory_unittest_mac.mm',
         'process/process_metrics_unittest.cc',
         'process/process_metrics_unittest_ios.cc',
+        'process/process_unittest.cc',
         'process/process_util_unittest.cc',
         'profiler/tracked_time_unittest.cc',
         'rand_util_unittest.cc',
@@ -683,6 +684,7 @@
           'sources/': [
             # Only test the iOS-meaningful portion of process_utils.
             ['exclude', '^process/memory_unittest'],
+            ['exclude', '^process/process_unittest\\.cc$'],
             ['exclude', '^process/process_util_unittest\\.cc$'],
             ['include', '^process/process_util_unittest_ios\\.cc$'],
             # Requires spawning processes.

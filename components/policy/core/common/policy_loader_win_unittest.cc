@@ -20,7 +20,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -297,8 +297,7 @@ ScopedGroupPolicyRegistrySandbox::ScopedGroupPolicyRegistrySandbox() {
   // makes sure that tests executing in parallel won't delete each other's
   // key, at DeleteKeys().
   key_name_ = base::ASCIIToWide(base::StringPrintf(
-        "SOFTWARE\\chromium unittest %d",
-        base::Process::Current().pid()));
+        "SOFTWARE\\chromium unittest %d", base::GetCurrentProcId()));
   std::wstring hklm_key_name = key_name_ + L"\\HKLM";
   std::wstring hkcu_key_name = key_name_ + L"\\HKCU";
 

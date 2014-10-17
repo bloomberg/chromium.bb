@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -124,7 +125,7 @@ base::ProcessHandle MockRenderProcessHost::GetHandle() const {
   // function.
   if (process_handle)
     return *process_handle;
-  return base::Process::Current().handle();
+  return base::GetCurrentProcessHandle();
 }
 
 bool MockRenderProcessHost::Send(IPC::Message* msg) {

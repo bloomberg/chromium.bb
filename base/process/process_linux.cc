@@ -17,6 +17,7 @@
 namespace base {
 
 namespace {
+
 const int kForegroundPriority = 0;
 
 #if defined(OS_CHROMEOS)
@@ -62,10 +63,37 @@ base::LazyInstance<CGroups> cgroups = LAZY_INSTANCE_INITIALIZER;
 #else
 const int kBackgroundPriority = 5;
 #endif
+
+struct CheckForNicePermission {
+  CheckForNicePermission() : can_reraise_priority(false) {
+    // We won't be able to raise the priority if we don't have the right rlimit.
+    // The limit may be adjusted in /etc/security/limits.conf for PAM systems.
+    struct rlimit rlim;
+    if ((getrlimit(RLIMIT_NICE, &rlim) == 0) &&
+        (20 - kForegroundPriority) <= static_cast<int>(rlim.rlim_cur)) {
+        can_reraise_priority = true;
+    }
+  };
+
+  bool can_reraise_priority;
+};
+
+}  // namespace
+
+// static
+bool Process::CanBackgroundProcesses() {
+#if defined(OS_CHROMEOS)
+  if (cgroups.Get().enabled)
+    return true;
+#endif
+
+  static LazyInstance<CheckForNicePermission> check_for_nice_permission =
+      LAZY_INSTANCE_INITIALIZER;
+  return check_for_nice_permission.Get().can_reraise_priority;
 }
 
 bool Process::IsProcessBackgrounded() const {
-  DCHECK(process_);
+  DCHECK(IsValid());
 
 #if defined(OS_CHROMEOS)
   if (cgroups.Get().enabled) {
@@ -87,7 +115,7 @@ bool Process::IsProcessBackgrounded() const {
 }
 
 bool Process::SetProcessBackgrounded(bool background) {
-  DCHECK(process_);
+  DCHECK(IsValid());
 
 #if defined(OS_CHROMEOS)
   if (cgroups.Get().enabled) {
@@ -106,32 +134,6 @@ bool Process::SetProcessBackgrounded(bool background) {
   int result = setpriority(PRIO_PROCESS, process_, priority);
   DPCHECK(result == 0);
   return result == 0;
-}
-
-struct CheckForNicePermission {
-  CheckForNicePermission() : can_reraise_priority(false) {
-    // We won't be able to raise the priority if we don't have the right rlimit.
-    // The limit may be adjusted in /etc/security/limits.conf for PAM systems.
-    struct rlimit rlim;
-    if ((getrlimit(RLIMIT_NICE, &rlim) == 0) &&
-        (20 - kForegroundPriority) <= static_cast<int>(rlim.rlim_cur)) {
-        can_reraise_priority = true;
-    }
-  };
-
-  bool can_reraise_priority;
-};
-
-// static
-bool Process::CanBackgroundProcesses() {
-#if defined(OS_CHROMEOS)
-  if (cgroups.Get().enabled)
-    return true;
-#endif
-
-  static LazyInstance<CheckForNicePermission> check_for_nice_permission =
-      LAZY_INSTANCE_INITIALIZER;
-  return check_for_nice_permission.Get().can_reraise_priority;
 }
 
 }  // namespace base

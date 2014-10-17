@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -1197,7 +1197,7 @@ int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
 void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   // Measure the amount of IO during the filter build.
   base::IoCounters io_before, io_after;
-  base::ProcessHandle handle = base::Process::Current().handle();
+  base::ProcessHandle handle = base::GetCurrentProcessHandle();
   scoped_ptr<base::ProcessMetrics> metric(
 #if !defined(OS_MACOSX)
       base::ProcessMetrics::CreateProcessMetrics(handle)

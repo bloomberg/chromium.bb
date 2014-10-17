@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -50,8 +51,8 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // True if the process is being launched and so the handle isn't available.
   bool IsStarting();
 
-  // Getter for the process handle.  Only call after the process has started.
-  base::ProcessHandle GetHandle();
+  // Getter for the process.  Only call after the process has started.
+  const base::Process& GetProcess() const;
 
   // Call this when the child process exits to know what happened to it.
   // |known_dead| can be true if we already know the process is dead as it can

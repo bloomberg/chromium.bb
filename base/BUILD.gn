@@ -1227,6 +1227,7 @@ test("base_unittests") {
     "process/memory_unittest_mac.mm",
     "process/process_metrics_unittest.cc",
     "process/process_metrics_unittest_ios.cc",
+    "process/process_unittest.cc",
     "process/process_util_unittest.cc",
     "process/process_util_unittest_ios.cc",
     "profiler/tracked_time_unittest.cc",
@@ -1338,6 +1339,7 @@ test("base_unittests") {
       "process/memory_unittest.cc",
       "process/memory_unittest_mac.h",
       "process/memory_unittest_mac.mm",
+      "process/process_unittest.cc",
       "process/process_util_unittest.cc",
     ]
 

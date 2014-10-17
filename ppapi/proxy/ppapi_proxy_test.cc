@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
@@ -253,7 +254,7 @@ PluginProxyTestHarness::PluginDelegateMock::ShareHandleWithRemote(
     base::ProcessId /* remote_pid */,
     bool should_close_source) {
   return IPC::GetFileHandleForProcess(handle,
-                                      base::Process::Current().handle(),
+                                      base::GetCurrentProcessHandle(),
                                       should_close_source);
 }
 
@@ -489,7 +490,7 @@ HostProxyTestHarness::DelegateMock::ShareHandleWithRemote(
     base::ProcessId /* remote_pid */,
     bool should_close_source) {
   return IPC::GetFileHandleForProcess(handle,
-                                      base::Process::Current().handle(),
+                                      base::GetCurrentProcessHandle(),
                                       should_close_source);
 }
 

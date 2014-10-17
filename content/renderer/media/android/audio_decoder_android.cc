@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/process_handle.h"
 #include "content/common/view_messages.h"
 #include "media/base/android/webaudio_media_codec_info.h"
 #include "media/base/audio_bus.h"
@@ -89,9 +90,8 @@ bool AudioDecoderIO::IsValid() const {
 }
 
 bool AudioDecoderIO::ShareEncodedToProcess(base::SharedMemoryHandle* handle) {
-  return encoded_shared_memory_.ShareToProcess(
-      base::Process::Current().handle(),
-      handle);
+  return encoded_shared_memory_.ShareToProcess(base::GetCurrentProcessHandle(),
+                                               handle);
 }
 
 static float ConvertSampleToFloat(int16_t sample) {

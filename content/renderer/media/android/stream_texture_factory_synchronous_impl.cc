@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "content/common/android/surface_texture_peer.h"
@@ -185,7 +185,7 @@ void StreamTextureFactorySynchronousImpl::EstablishPeer(int32 stream_id,
       context_provider_->GetSurfaceTexture(stream_id);
   if (surface_texture.get()) {
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
-        base::Process::Current().handle(),
+        base::GetCurrentProcessHandle(),
         surface_texture,
         frame_id_,
         player_id);

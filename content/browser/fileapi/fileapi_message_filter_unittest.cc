@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -236,7 +236,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   // OnAppendSharedMemoryToStream passes the peer process's handle to
   // SharedMemory's constructor. If it's incorrect, DuplicateHandle won't work
   // correctly.
-  filter_->set_peer_pid_for_testing(base::Process::Current().pid());
+  filter_->set_peer_pid_for_testing(base::GetCurrentProcId());
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
   EXPECT_TRUE(filter_->OnMessageReceived(start_message));

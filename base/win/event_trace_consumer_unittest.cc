@@ -14,7 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_provider.h"
@@ -79,8 +79,7 @@ EventQueue TestConsumer::events_;
 class EtwTraceConsumerBaseTest: public testing::Test {
  public:
   EtwTraceConsumerBaseTest()
-      : session_name_(StringPrintf(L"TestSession-%d",
-                                   Process::Current().pid())) {
+      : session_name_(StringPrintf(L"TestSession-%d", GetCurrentProcId())) {
   }
 
   virtual void SetUp() {

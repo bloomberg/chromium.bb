@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/win/event_trace_controller.h"
@@ -110,8 +110,7 @@ namespace {
 class EtwTraceControllerTest : public testing::Test {
  public:
   EtwTraceControllerTest()
-      : session_name_(
-            StringPrintf(L"TestSession-%d", Process::Current().pid())) {
+      : session_name_(StringPrintf(L"TestSession-%d", GetCurrentProcId())) {
   }
 
   virtual void SetUp() {

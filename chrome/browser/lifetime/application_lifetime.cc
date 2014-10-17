@@ -14,7 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
-#include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -311,7 +311,7 @@ void SessionEnding() {
     // termination as soon as it hides or destroys its windows. Since any
     // execution past that point will be non-deterministically cut short, we
     // might as well put ourselves out of that misery deterministically.
-    base::KillProcess(base::Process::Current().handle(), 0, false);
+    base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
   }
 }
 

@@ -112,10 +112,6 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   g_child_process_list.Get().remove(this);
-
-#if defined(OS_WIN)
-  DeleteProcessWaitableEvent(early_exit_watcher_.GetWatchedEvent());
-#endif
 }
 
 // static
@@ -173,9 +169,9 @@ base::ProcessHandle BrowserChildProcessHostImpl::GetHandle() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(child_process_.get())
       << "Requesting a child process handle before launching.";
-  DCHECK(child_process_->GetHandle())
+  DCHECK(child_process_->GetProcess().IsValid())
       << "Requesting a child process handle before launch has completed OK.";
-  return child_process_->GetHandle();
+  return child_process_->GetProcess().Handle();
 }
 
 void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
@@ -239,7 +235,6 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 #if defined(OS_WIN)
   // From this point onward, the exit of the child process is detected by an
   // error on the IPC channel.
-  DeleteProcessWaitableEvent(early_exit_watcher_.GetWatchedEvent());
   early_exit_watcher_.StopWatching();
 #endif
 
@@ -321,45 +316,26 @@ void BrowserChildProcessHostImpl::OnProcessLaunchFailed() {
 }
 
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
-  base::ProcessHandle handle = child_process_->GetHandle();
-  if (!handle) {
-    delete delegate_;  // Will delete us
-    return;
-  }
+  const base::Process& process = child_process_->GetProcess();
+  DCHECK(process.IsValid());
 
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the
   // child process exits. This watcher is stopped once the IPC channel is
   // connected and the exit of the child process is detecter by an error on the
   // IPC channel thereafter.
-  DCHECK(!early_exit_watcher_.GetWatchedEvent());
-  early_exit_watcher_.StartWatching(
-      new base::WaitableEvent(handle),
-      base::Bind(&BrowserChildProcessHostImpl::OnProcessExitedEarly,
-                 base::Unretained(this)));
+  DCHECK(!early_exit_watcher_.GetWatchedObject());
+  early_exit_watcher_.StartWatching(process.Handle(), this);
 #endif
 
-  data_.handle = handle;
+  // TODO(rvargas) crbug.com/417532: Don't store a handle.
+  data_.handle = process.Handle();
   delegate_->OnProcessLaunched();
 }
 
 #if defined(OS_WIN)
 
-void BrowserChildProcessHostImpl::DeleteProcessWaitableEvent(
-    base::WaitableEvent* event) {
-  if (!event)
-    return;
-
-  // The WaitableEvent does not own the process handle so ensure it does not
-  // close it.
-  event->Release();
-
-  delete event;
-}
-
-void BrowserChildProcessHostImpl::OnProcessExitedEarly(
-    base::WaitableEvent* event) {
-  DeleteProcessWaitableEvent(event);
+void BrowserChildProcessHostImpl::OnObjectSignaled(HANDLE object) {
   OnChildDisconnected();
 }
 

@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -276,8 +275,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(buffer_size));
 
     base::SharedMemoryHandle duplicate_handle;
-    EXPECT_TRUE(shared_memory->ShareToProcess(
-        base::Process::Current().handle(), &duplicate_handle));
+    EXPECT_TRUE(shared_memory->ShareToProcess(base::GetCurrentProcessHandle(),
+                                              &duplicate_handle));
     EXPECT_TRUE(dispatcher_.OnMessageReceived(
         ResourceMsg_SetDataBuffer(request_id, duplicate_handle,
                                   shared_memory->requested_size(), 0)));

@@ -359,7 +359,7 @@ static bool WaitForSingleNonChildProcess(ProcessHandle handle,
 
 bool WaitForSingleProcess(ProcessHandle handle, base::TimeDelta wait) {
   ProcessHandle parent_pid = GetParentProcessId(handle);
-  ProcessHandle our_pid = Process::Current().handle();
+  ProcessHandle our_pid = GetCurrentProcessHandle();
   if (parent_pid != our_pid) {
 #if defined(OS_MACOSX)
     // On Mac we can wait on non child processes.

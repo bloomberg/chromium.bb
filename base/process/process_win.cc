@@ -10,20 +10,83 @@
 
 namespace base {
 
+Process::Process(ProcessHandle handle)
+    : is_current_process_(false),
+      process_(handle) {
+  CHECK_NE(handle, ::GetCurrentProcess());
+}
+
+Process::Process(RValue other)
+    : is_current_process_(other.object->is_current_process_),
+      process_(other.object->process_.Take()) {
+  other.object->Close();
+}
+
+Process& Process::operator=(RValue other) {
+  if (this != other.object) {
+    process_.Set(other.object->process_.Take());
+    is_current_process_ = other.object->is_current_process_;
+    other.object->Close();
+  }
+  return *this;
+}
+
+// static
+Process Process::Current() {
+  Process process;
+  process.is_current_process_ = true;
+  return process.Pass();
+}
+
+// static
+bool Process::CanBackgroundProcesses() {
+  return true;
+}
+
+bool Process::IsValid() const {
+  return process_.IsValid() || is_current();
+}
+
+ProcessHandle Process::Handle() const {
+  return is_current_process_ ? GetCurrentProcess() : process_.Get();
+}
+
+Process Process::Duplicate() const {
+  if (is_current())
+    return Current();
+
+  ProcessHandle out_handle;
+  if (!IsValid() || !::DuplicateHandle(GetCurrentProcess(),
+                                       Handle(),
+                                       GetCurrentProcess(),
+                                       &out_handle,
+                                       0,
+                                       FALSE,
+                                       DUPLICATE_SAME_ACCESS)) {
+    return Process();
+  }
+  return Process(out_handle);
+}
+
+ProcessId Process::pid() const {
+  DCHECK(IsValid());
+  return GetProcId(Handle());
+}
+
+bool Process::is_current() const {
+  return is_current_process_;
+}
+
 void Process::Close() {
-  if (!process_)
+  is_current_process_ = false;
+  if (!process_.IsValid())
     return;
 
-  // Don't call CloseHandle on a pseudo-handle.
-  if (process_ != ::GetCurrentProcess())
-    ::CloseHandle(process_);
-
-  process_ = NULL;
+  process_.Close();
 }
 
 void Process::Terminate(int result_code) {
-  if (!process_)
-    return;
+  DCHECK(IsValid());
 
   // Call NtTerminateProcess directly, without going through the import table,
   // which might have been hooked with a buggy replacement by third party
@@ -32,12 +95,11 @@ void Process::Terminate(int result_code) {
   typedef UINT (WINAPI *TerminateProcessPtr)(HANDLE handle, UINT code);
   TerminateProcessPtr terminate_process = reinterpret_cast<TerminateProcessPtr>(
       GetProcAddress(module, "NtTerminateProcess"));
-  terminate_process(process_, result_code);
+  terminate_process(Handle(), result_code);
 }
 
 bool Process::IsProcessBackgrounded() const {
-  if (!process_)
-    return false;  // Failure case.
+  DCHECK(IsValid());
   DWORD priority = GetPriority();
   if (priority == 0)
     return false;  // Failure case.
@@ -46,47 +108,24 @@ bool Process::IsProcessBackgrounded() const {
 }
 
 bool Process::SetProcessBackgrounded(bool value) {
-  if (!process_)
-    return false;
+  DCHECK(IsValid());
   // Vista and above introduce a real background mode, which not only
   // sets the priority class on the threads but also on the IO generated
   // by it. Unfortunately it can only be set for the calling process.
   DWORD priority;
-  if ((base::win::GetVersion() >= base::win::VERSION_VISTA) &&
-      (process_ == ::GetCurrentProcess())) {
+  if ((base::win::GetVersion() >= base::win::VERSION_VISTA) && (is_current())) {
     priority = value ? PROCESS_MODE_BACKGROUND_BEGIN :
                        PROCESS_MODE_BACKGROUND_END;
   } else {
     priority = value ? BELOW_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS;
   }
 
-  return (::SetPriorityClass(process_, priority) != 0);
-}
-
-ProcessId Process::pid() const {
-  if (process_ == 0)
-    return 0;
-
-  return GetProcId(process_);
-}
-
-bool Process::is_current() const {
-  return process_ == GetCurrentProcess();
-}
-
-// static
-Process Process::Current() {
-  return Process(::GetCurrentProcess());
-}
-
-// static
-bool Process::CanBackgroundProcesses() {
-  return true;
+  return (::SetPriorityClass(Handle(), priority) != 0);
 }
 
 int Process::GetPriority() const {
-  DCHECK(process_);
-  return ::GetPriorityClass(process_);
+  DCHECK(IsValid());
+  return ::GetPriorityClass(Handle());
 }
 
 }  // namespace base
