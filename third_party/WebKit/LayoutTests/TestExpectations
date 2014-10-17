@@ -1466,3 +1466,6 @@ crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pa
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
+
+crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
+
