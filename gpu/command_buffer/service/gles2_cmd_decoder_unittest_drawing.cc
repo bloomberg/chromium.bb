@@ -314,7 +314,12 @@ TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   const GLsizei kWidth = 1;
   const GLsizei kHeight = 1;
   const GLenum kFormat = GL_RGB;
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  // Use a different texture for framebuffer to avoid drawing feedback loops.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  GenHelper<cmds::GenTexturesImmediate>(kNewClientId);
+  DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
   // Pass some data so the texture will be marked as cleared.
   DoTexImage2D(GL_TEXTURE_2D,
                0,
@@ -331,10 +336,11 @@ TEST_P(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
   DoFramebufferTexture2D(GL_FRAMEBUFFER,
                          GL_COLOR_ATTACHMENT0,
                          GL_TEXTURE_2D,
-                         client_texture_id_,
-                         kServiceTextureId,
+                         kNewClientId,
+                         kNewServiceId,
                          0,
                          GL_NO_ERROR);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
