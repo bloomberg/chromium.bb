@@ -704,7 +704,7 @@ def decorate_shard_output(swarming, shard_index, result, shard_exit_code):
   url = '%s/user/task/%s' % (swarming, result['id'])
   duration = sum(i for i in result['durations'] if i)
   tag_header = 'Shard %d  %s' % (shard_index, url)
-  tag_footer = 'End of shard %d  Duration: %.1fs  Bot: %s  Exit code %d' % (
+  tag_footer = 'End of shard %d  Duration: %.1fs  Bot: %s  Exit code %s' % (
       shard_index, duration, result['bot_id'], shard_exit_code)
 
   tag_len = max(len(tag_header), len(tag_footer))
@@ -734,8 +734,12 @@ def collect(
         output_collector):
       seen_shards.add(index)
 
-      # Grab first non-zero exit code as an overall shard exit code.
-      shard_exit_code = sorted(output['exit_codes'], key=lambda x: not x)[0]
+      # Grab first non-zero exit code as an overall shard exit code. Default to
+      # failure if there was no process that even started.
+      shard_exit_code = 1
+      shard_exit_codes = sorted(output['exit_codes'], key=lambda x: not x)
+      if shard_exit_codes:
+        shard_exit_code = shard_exit_codes[0]
       if shard_exit_code:
         exit_code = shard_exit_code
 
