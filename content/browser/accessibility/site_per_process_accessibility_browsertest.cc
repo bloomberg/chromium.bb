@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
   NavigateFrameToURL(root->child_at(0), cross_site_url);
 
   // Ensure that we have created a new process for the subframe.
-  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, root->child_count());
   SiteInstance* site_instance = child->current_frame_host()->GetSiteInstance();
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site_instance);
 
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
 
   BrowserAccessibility* ax_group = ax_root->PlatformGetChild(0);
   ASSERT_EQ(ui::AX_ROLE_GROUP, ax_group->GetRole());
-  ASSERT_EQ(1U, ax_group->PlatformChildCount());
+  ASSERT_EQ(2U, ax_group->PlatformChildCount());
 
   BrowserAccessibility* ax_iframe = ax_group->PlatformGetChild(0);
   ASSERT_EQ(ui::AX_ROLE_IFRAME, ax_iframe->GetRole());
