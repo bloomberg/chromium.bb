@@ -1174,10 +1174,10 @@ static bool invalidateRect(PluginObject* obj,
     return false;
 
   NPRect rect;
-  rect.left = static_cast<int>(NPVARIANT_TO_DOUBLE(args[0]));
-  rect.top = static_cast<int>(NPVARIANT_TO_DOUBLE(args[1]));
-  rect.right = static_cast<int>(NPVARIANT_TO_DOUBLE(args[2]));
-  rect.bottom = static_cast<int>(NPVARIANT_TO_DOUBLE(args[3]));
+  rect.left = static_cast<uint16_t>(NPVARIANT_TO_DOUBLE(args[0]));
+  rect.top = static_cast<uint16_t>(NPVARIANT_TO_DOUBLE(args[1]));
+  rect.right = static_cast<uint16_t>(NPVARIANT_TO_DOUBLE(args[2]));
+  rect.bottom = static_cast<uint16_t>(NPVARIANT_TO_DOUBLE(args[3]));
 
   browser->invalidaterect(obj->npp, &rect);
   return true;

@@ -91,11 +91,10 @@ int32 PluginRequestReadTest::Write(NPStream* stream, int32 offset, int32 len,
   if (it->length == 0)
     requested_ranges_.erase(it);
 
-  // Verify that data, which we got, is right.
+  // Verify the data we got is right.  We expect a string like "01234...".
   const char* data = static_cast<const char*>(buffer);
   for (int32 i = 0; i < len; ++i) {
-    int cur_offset = offset + i;
-    char expected = '0' + cur_offset;
+    char expected = '0' + static_cast<char>(offset + i);
     if (data[i] != expected) {
       SetError("Content mismatch between data and source!");
       break;

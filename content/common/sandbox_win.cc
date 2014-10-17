@@ -193,8 +193,8 @@ void BlacklistAddOneDll(const wchar_t* module_name,
     DCHECK_LE(3U, (name.size() - period));
     if (period <= 8)
       return;
-    for (int ix = 0; ix < 3; ++ix) {
-      const wchar_t suffix[] = {'~', ('1' + ix), 0};
+    for (wchar_t ix = '1'; ix <= '3'; ++ix) {
+      const wchar_t suffix[] = {'~', ix, 0};
       std::wstring alt_name = name.substr(0, 6) + suffix;
       alt_name += name.substr(period, name.size());
       if (check_in_browser) {
