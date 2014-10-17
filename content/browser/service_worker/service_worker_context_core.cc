@@ -124,7 +124,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
                                             special_storage_policy)),
       cache_manager_(
           ServiceWorkerCacheStorageManager::Create(path,
-                                                   cache_task_runner.get())),
+                                                   cache_task_runner.get(),
+                                                   quota_manager_proxy)),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
