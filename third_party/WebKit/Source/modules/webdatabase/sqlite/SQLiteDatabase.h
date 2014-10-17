@@ -42,7 +42,6 @@ struct sqlite3;
 namespace blink {
 
 class DatabaseAuthorizer;
-class SQLiteStatement;
 class SQLiteTransaction;
 
 extern const int SQLResultDone;

@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 
 class SpeechRecognitionAlternative final : public GarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

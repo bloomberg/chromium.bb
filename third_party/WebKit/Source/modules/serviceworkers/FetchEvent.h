@@ -13,7 +13,6 @@
 namespace blink {
 
 class ExceptionState;
-class ExecutionContext;
 class Request;
 class RespondWithObserver;
 

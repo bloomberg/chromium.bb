@@ -15,9 +15,7 @@
 
 namespace blink {
 
-class MIDIAccess;
 class MIDIOptions;
-class Navigator;
 class ScriptState;
 
 class MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {

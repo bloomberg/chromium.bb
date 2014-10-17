@@ -39,7 +39,6 @@ namespace blink {
 class ChangeVersionData;
 class DatabaseAuthorizer;
 class DatabaseContext;
-class DatabaseServer;
 class ExecutionContext;
 class SQLTransaction;
 class SQLTransactionBackend;

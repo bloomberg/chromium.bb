@@ -33,7 +33,6 @@
 namespace blink {
 
 class KURL;
-class MediaStream;
 class MediaStreamDescriptor;
 
 class MediaStreamRegistry final : public URLRegistry {

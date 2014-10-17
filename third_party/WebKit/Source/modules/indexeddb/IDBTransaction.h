@@ -43,7 +43,6 @@ namespace blink {
 
 class DOMError;
 class ExceptionState;
-class IDBCursor;
 class IDBDatabase;
 class IDBObjectStore;
 class IDBOpenDBRequest;

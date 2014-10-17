@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class ScriptState;
 class ScriptPromiseResolver;
 
 class ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {

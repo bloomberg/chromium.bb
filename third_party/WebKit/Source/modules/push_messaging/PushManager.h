@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
 

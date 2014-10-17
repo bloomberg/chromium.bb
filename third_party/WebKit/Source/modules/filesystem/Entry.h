@@ -40,7 +40,6 @@ namespace blink {
 
 class DirectoryEntry;
 class EntryCallback;
-class EntrySync;
 class ErrorCallback;
 class MetadataCallback;
 class VoidCallback;

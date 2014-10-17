@@ -11,7 +11,6 @@
 namespace blink {
 
 class ExecutionContext;
-class Page;
 class WebContentDecryptionModule;
 
 class MediaKeysClient {

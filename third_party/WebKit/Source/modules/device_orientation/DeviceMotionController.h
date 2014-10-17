@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class DeviceMotionData;
 class Event;
 
 class DeviceMotionController final : public DeviceSingleWindowEventController, public DocumentSupplement {

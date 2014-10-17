@@ -41,9 +41,6 @@ namespace blink {
 
 class Database;
 class DatabaseTask;
-class Document;
-class MessageLoopInterruptor;
-class PendingGCRunner;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
 class TaskSynchronizer;

@@ -33,7 +33,6 @@
 namespace blink {
 
 class NotificationClient;
-class NotificationPermissionClient;
 
 class NotificationController final : public NoBaseWillBeGarbageCollectedFinalized<NotificationController>, public WillBeHeapSupplement<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NotificationController);

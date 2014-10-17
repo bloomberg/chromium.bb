@@ -14,7 +14,6 @@ namespace blink {
 class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
-class ResourceRequest;
 
 class FetchManager {
 public:

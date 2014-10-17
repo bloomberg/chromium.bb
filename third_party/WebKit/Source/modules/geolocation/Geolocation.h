@@ -44,9 +44,7 @@ namespace blink {
 class Dictionary;
 class Document;
 class LocalFrame;
-class GeolocationController;
 class GeolocationError;
-class GeolocationPosition;
 class ExecutionContext;
 
 class Geolocation final

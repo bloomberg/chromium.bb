@@ -42,7 +42,6 @@ class ScriptState;
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
-class WebContentDecryptionModule;
 class WebString;
 
 // References are held by JS only. However, even if all JS references are

@@ -46,7 +46,6 @@ using blink::WebData;
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseError;
-using blink::WebIDBIndex;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
 using blink::WebIDBMetadata;

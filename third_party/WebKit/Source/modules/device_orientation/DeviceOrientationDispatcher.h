@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class DeviceOrientationController;
 class DeviceOrientationData;
 class WebDeviceOrientationData;
 

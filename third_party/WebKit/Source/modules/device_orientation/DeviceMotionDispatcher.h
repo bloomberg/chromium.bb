@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class DeviceMotionController;
 class DeviceMotionData;
 class WebDeviceMotionData;
 

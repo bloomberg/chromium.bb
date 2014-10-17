@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class ExecutionContext;
-
 class InstallEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:

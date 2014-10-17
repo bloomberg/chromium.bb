@@ -8,14 +8,11 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class Response;
 class ScriptState;
 class ScriptValue;
 

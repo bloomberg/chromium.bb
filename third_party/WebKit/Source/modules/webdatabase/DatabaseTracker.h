@@ -41,7 +41,6 @@ namespace blink {
 
 class Database;
 class DatabaseContext;
-class OriginLock;
 class SecurityOrigin;
 
 class DatabaseTracker {

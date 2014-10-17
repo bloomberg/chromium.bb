@@ -39,11 +39,8 @@
 namespace blink {
 
 class Database;
-class DocumentLoader;
-class LocalFrame;
 class InspectorDatabaseResource;
 class InspectorFrontend;
-class InstrumentingAgents;
 
 typedef String ErrorString;
 

@@ -40,7 +40,6 @@ class Database;
 class SQLErrorData;
 class SQLResultSet;
 class SQLStatement;
-class SQLTransactionBackend;
 
 class SQLStatementBackend final : public GarbageCollectedFinalized<SQLStatementBackend> {
 public:

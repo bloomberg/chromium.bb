@@ -32,8 +32,6 @@
 namespace blink {
 
 class IDBFactory;
-class IndexedDBClient;
-class ExecutionContext;
 class WorkerGlobalScope;
 
 class WorkerGlobalScopeIndexedDatabase final : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeIndexedDatabase>, public WillBeHeapSupplement<WorkerGlobalScope> {

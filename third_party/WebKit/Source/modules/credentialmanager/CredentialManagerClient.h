@@ -12,7 +12,6 @@
 namespace blink {
 
 class ExecutionContext;
-class KURL;
 class Page;
 class WebCredential;
 class WebURL;

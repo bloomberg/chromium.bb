@@ -38,8 +38,6 @@ struct sqlite3;
 
 namespace blink {
 
-class SQLiteDatabase;
-
 // A class that abstracts the file system related operations required
 // by the WebKit database code.
 class SQLiteFileSystem {

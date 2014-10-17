@@ -11,19 +11,8 @@
 
 namespace blink {
 
-class AudioContext;
-class FileWriter;
-class IDBDatabase;
 class IDBRequest;
-class IDBTransaction;
-class MIDIAccess;
-class MIDIInput;
-class MIDIPort;
 class MediaStream;
-class Notification;
-class ExecutionContext;
-class ScriptProcessorNode;
-class DOMWebSocket;
 
 } // namespace blink
 

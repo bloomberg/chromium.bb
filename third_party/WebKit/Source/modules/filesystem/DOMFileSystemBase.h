@@ -43,7 +43,6 @@ class WebFileSystem;
 
 namespace blink {
 
-class DirectoryEntry;
 class DirectoryReaderBase;
 class EntriesCallback;
 class EntryBase;

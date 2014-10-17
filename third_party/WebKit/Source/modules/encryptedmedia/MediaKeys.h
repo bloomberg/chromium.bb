@@ -35,9 +35,7 @@
 
 namespace blink {
 
-class ExceptionState;
 class ExecutionContext;
-class HTMLMediaElement;
 class MediaKeySession;
 class ScriptState;
 class WebContentDecryptionModule;

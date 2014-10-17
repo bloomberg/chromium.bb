@@ -36,7 +36,6 @@ namespace blink {
 
 class AudioBuffer;
 class AudioContext;
-class AudioProcessingEvent;
 
 // ScriptProcessorNode is an AudioNode which allows for arbitrary synthesis or processing directly using JavaScript.
 // The API allows for a variable number of inputs and outputs, although it must have at least one input or output.

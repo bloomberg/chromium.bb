@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class Entry;
 class HTMLInputElement;
 class ExecutionContext;
 

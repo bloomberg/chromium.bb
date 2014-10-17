@@ -36,7 +36,6 @@
 namespace blink {
 
 class Database;
-class SQLError;
 class SQLStatementBackend;
 class SQLStatementCallback;
 class SQLStatementErrorCallback;

@@ -41,7 +41,7 @@ namespace blink {
 class ExceptionState;
 class IDBAny;
 class IDBTransaction;
-class ExecutionContext;
+class ScriptState;
 class SharedBuffer;
 class WebBlobInfo;
 

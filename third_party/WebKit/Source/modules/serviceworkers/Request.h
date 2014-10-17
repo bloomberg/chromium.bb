@@ -18,9 +18,6 @@
 namespace blink {
 
 class RequestInit;
-struct ResourceLoaderOptions;
-class ResourceRequest;
-struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
 class Request final : public Body {

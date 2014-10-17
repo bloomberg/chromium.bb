@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class NavigatorGamepad;
 class WebGamepads;
 
 class GamepadDispatcher final : public GarbageCollectedFinalized<GamepadDispatcher>, public PlatformEventDispatcher, public WebGamepadListener {

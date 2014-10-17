@@ -29,8 +29,6 @@
 #include "modules/mediastream/SourceInfo.h"
 namespace blink {
 
-class MediaStreamTrackSourcesResponse;
-
 class MediaStreamTrackSourcesCallback : public GarbageCollectedFinalized<MediaStreamTrackSourcesCallback> {
 public:
     virtual ~MediaStreamTrackSourcesCallback() { }

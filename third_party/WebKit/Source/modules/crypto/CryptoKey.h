@@ -41,7 +41,6 @@
 namespace blink {
 
 class CryptoResult;
-class KeyAlgorithm;
 
 class CryptoKey : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

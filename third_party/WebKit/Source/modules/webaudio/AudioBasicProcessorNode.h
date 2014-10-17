@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class AudioBus;
 class AudioNodeInput;
 class AudioProcessor;
 

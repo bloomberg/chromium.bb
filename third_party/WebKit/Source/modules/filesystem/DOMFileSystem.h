@@ -42,7 +42,6 @@
 namespace blink {
 
 class DirectoryEntry;
-class File;
 class FileCallback;
 class FileEntry;
 class FileWriterCallback;

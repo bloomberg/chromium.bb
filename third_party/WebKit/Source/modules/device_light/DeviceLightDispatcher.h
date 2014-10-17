@@ -8,11 +8,8 @@
 #include "core/frame/PlatformEventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDeviceLightListener.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
-
-class DeviceLightController;
 
 // This class listens to device light data and notifies all registered controllers.
 class DeviceLightDispatcher final : public GarbageCollectedFinalized<DeviceLightDispatcher>, public PlatformEventDispatcher, public WebDeviceLightListener {

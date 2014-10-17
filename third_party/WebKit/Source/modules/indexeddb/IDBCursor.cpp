@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/IDBBindingUtilities.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBAny.h"

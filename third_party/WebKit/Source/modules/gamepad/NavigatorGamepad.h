@@ -38,7 +38,6 @@ namespace blink {
 
 class Document;
 class Gamepad;
-class Gamepads;
 class GamepadList;
 class Navigator;
 class WebKitGamepadList;

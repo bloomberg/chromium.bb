@@ -18,10 +18,7 @@ namespace blink {
 class BlobDataHandle;
 class ExecutionContext;
 class FetchHeaderList;
-struct ResourceLoaderOptions;
-class ResourceRequest;
 class SecurityOrigin;
-struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
 class FetchRequestData final : public GarbageCollectedFinalized<FetchRequestData> {

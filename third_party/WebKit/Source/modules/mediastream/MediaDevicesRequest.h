@@ -36,7 +36,6 @@ namespace blink {
 
 class Document;
 class ExceptionState;
-class MediaStreamDescriptor;
 class UserMediaController;
 
 class MediaDevicesRequest final : public GarbageCollectedFinalized<MediaDevicesRequest>, public ActiveDOMObject {

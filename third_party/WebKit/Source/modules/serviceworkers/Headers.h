@@ -16,7 +16,6 @@ namespace blink {
 class Dictionary;
 class ExceptionState;
 class Iterator;
-class ScriptValue;
 
 // http://fetch.spec.whatwg.org/#headers-class
 class Headers final : public GarbageCollected<Headers>, public ScriptWrappable {
