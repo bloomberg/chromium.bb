@@ -259,6 +259,13 @@ void idleTestTask(bool* taskRun, double expectedDeadline, double deadlineSeconds
     *taskRun = true;
 }
 
+void repostingIdleTestTask(Scheduler* scheduler, int* runCount, double deadlineSeconds)
+{
+    if (*runCount == 0)
+        scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&repostingIdleTestTask, scheduler, runCount));
+    (*runCount)++;
+}
+
 TEST_F(SchedulerTest, TestPostTask)
 {
     int result = 0;
@@ -332,6 +339,24 @@ TEST_F(SchedulerTest, TestIdleTask)
     m_scheduler->didCommitFrameToCompositor();
     runPendingTasks();
     EXPECT_TRUE(taskRun);
+}
+
+TEST_F(SchedulerTest, TestRepostingIdleTask)
+{
+    int runCount = 0;
+
+    m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&repostingIdleTestTask, m_scheduler, &runCount));
+
+    enableIdleTasks();
+    runPendingTasks();
+    EXPECT_EQ(1, runCount);
+
+    runPendingTasks();
+    EXPECT_EQ(1, runCount); // Reposted tasks shouldn't run until next idle period.
+
+    enableIdleTasks();
+    runPendingTasks();
+    EXPECT_EQ(2, runCount);
 }
 
 TEST_F(SchedulerTest, TestTaskPrioritization_normalPolicy)

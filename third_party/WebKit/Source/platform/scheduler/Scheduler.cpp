@@ -139,6 +139,7 @@ void Scheduler::didCommitFrameToCompositor()
 {
     ASSERT(isMainThread());
     m_currentFrameCommitted = true;
+    flushIncomingIdleTasks();
     maybePostMainThreadPendingIdleTask();
 }
 
@@ -157,8 +158,8 @@ void Scheduler::didRunHighPriorityTask()
 
 void Scheduler::postIdleTaskInternal(const TraceLocation& location, const IdleTask& idleTask, const char* traceName)
 {
-    Locker<Mutex> lock(m_pendingIdleTasksMutex);
-    m_pendingIdleTasks.append(internal::TracedIdleTask::Create(idleTask, location, traceName));
+    Locker<Mutex> lock(m_incomingIdleTasksMutex);
+    m_incomingIdleTasks.append(internal::TracedIdleTask::Create(idleTask, location, traceName));
 }
 
 void Scheduler::postTask(const TraceLocation& location, const Task& task)
@@ -200,7 +201,6 @@ bool Scheduler::maybePostMainThreadPendingIdleTask()
     ASSERT(isMainThread());
     TRACE_EVENT0("blink", "Scheduler::maybePostMainThreadPendingIdleTask");
     if (canRunIdleTask()) {
-        Locker<Mutex> lock(m_pendingIdleTasksMutex);
         if (!m_pendingIdleTasks.isEmpty()) {
             m_mainThread->postTask(new MainThreadPendingIdleTaskRunner());
             return true;
@@ -263,18 +263,19 @@ bool Scheduler::shouldYieldForHighPriorityWork() const
 bool Scheduler::maybeRunPendingIdleTask()
 {
     ASSERT(isMainThread());
-    if (!canRunIdleTask())
+    if (!canRunIdleTask() || m_pendingIdleTasks.isEmpty())
         return false;
 
-    takeFirstPendingIdleTask()->run();
+    m_pendingIdleTasks.takeFirst()->run();
     return true;
 }
 
-PassOwnPtr<internal::TracedIdleTask> Scheduler::takeFirstPendingIdleTask()
+void Scheduler::flushIncomingIdleTasks()
 {
-    Locker<Mutex> lock(m_pendingIdleTasksMutex);
-    ASSERT(!m_pendingIdleTasks.isEmpty());
-    return m_pendingIdleTasks.takeFirst();
+    ASSERT(isMainThread());
+    Locker<Mutex> lock(m_incomingIdleTasksMutex);
+    while (!m_incomingIdleTasks.isEmpty())
+        m_pendingIdleTasks.append(m_incomingIdleTasks.takeFirst());
 }
 
 double Scheduler::currentFrameDeadlineForIdleTasks() const

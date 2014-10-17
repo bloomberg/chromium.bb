@@ -97,10 +97,11 @@ protected:
     // Only does work if canRunIdleTask. Returns true if any work was done.
     bool maybeRunPendingIdleTask();
 
-    PassOwnPtr<internal::TracedIdleTask> takeFirstPendingIdleTask();
-
     // Returns true if the scheduler can run idle tasks at this time.
     bool canRunIdleTask() const;
+
+    // Flush the incoming idle tasks to the end of the pending idle task queue.
+    void flushIncomingIdleTasks();
 
     // Return the current SchedulerPolicy.
     SchedulerPolicy schedulerPolicy() const;
@@ -120,12 +121,14 @@ protected:
 
     WebThread* m_mainThread;
 
-    // This mutex protects calls to the pending idle task queue.
-    Mutex m_pendingIdleTasksMutex;
-    Deque<OwnPtr<internal::TracedIdleTask>> m_pendingIdleTasks;
+    // This mutex protects calls to the incoming idle task queue.
+    Mutex m_incomingIdleTasksMutex;
+    Deque<OwnPtr<internal::TracedIdleTask>> m_incomingIdleTasks;
 
     bool m_currentFrameCommitted;
     double m_estimatedNextBeginFrameSeconds;
+    Deque<OwnPtr<internal::TracedIdleTask>> m_pendingIdleTasks;
+
     // Declared volatile as it is atomically incremented.
     volatile int m_highPriorityTaskCount;
 
