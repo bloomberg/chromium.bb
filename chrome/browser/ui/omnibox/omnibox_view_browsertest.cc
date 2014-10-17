@@ -539,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BackspaceInKeywordMode) {
 }
 
 // http://crbug.com/158913
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(USE_AURA)
 #define MAYBE_Escape DISABLED_Escape
 #else
 #define MAYBE_Escape Escape
