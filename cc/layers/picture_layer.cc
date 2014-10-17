@@ -129,7 +129,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
                                          layer_size,
                                          visible_layer_rect,
                                          update_source_frame_number_,
-                                         RecordingMode(),
+                                         Picture::RECORD_NORMALLY,
                                          rendering_stats_instrumentation());
   last_updated_visible_content_rect_ = visible_content_rect();
 
@@ -146,17 +146,6 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
 
 void PictureLayer::SetIsMask(bool is_mask) {
   pile_->set_is_mask(is_mask);
-}
-
-Picture::RecordingMode PictureLayer::RecordingMode() const {
-  switch (layer_tree_host()->settings().recording_mode) {
-    case LayerTreeSettings::RecordNormally:
-      return Picture::RECORD_NORMALLY;
-    case LayerTreeSettings::RecordWithSkRecord:
-      return Picture::RECORD_WITH_SKRECORD;
-  }
-  NOTREACHED();
-  return Picture::RECORD_NORMALLY;
 }
 
 bool PictureLayer::SupportsLCDText() const {

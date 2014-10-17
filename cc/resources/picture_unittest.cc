@@ -45,65 +45,56 @@ TEST(PictureTest, AsBase64String) {
       Picture::CreateFromValue(tmp.get());
   EXPECT_FALSE(invalid_picture.get());
 
-  Picture::RecordingMode kRecordingModes[] = {Picture::RECORD_NORMALLY,
-                                              Picture::RECORD_WITH_SKRECORD};
-
   // Single full-size rect picture.
   content_layer_client.add_draw_rect(layer_rect, red_paint);
 
-  for (size_t i = 0; i < arraysize(kRecordingModes); ++i) {
-    scoped_refptr<Picture> one_rect_picture =
-        Picture::Create(layer_rect,
-                        &content_layer_client,
-                        tile_grid_info,
-                        false,
-                        kRecordingModes[i]);
-    scoped_ptr<base::Value> serialized_one_rect(one_rect_picture->AsValue());
+  scoped_refptr<Picture> one_rect_picture =
+      Picture::Create(layer_rect,
+                      &content_layer_client,
+                      tile_grid_info,
+                      false,
+                      Picture::RECORD_NORMALLY);
+  scoped_ptr<base::Value> serialized_one_rect(one_rect_picture->AsValue());
 
-    // Reconstruct the picture.
-    scoped_refptr<Picture> one_rect_picture_check =
-        Picture::CreateFromValue(serialized_one_rect.get());
-    EXPECT_TRUE(!!one_rect_picture_check.get());
+  // Reconstruct the picture.
+  scoped_refptr<Picture> one_rect_picture_check =
+      Picture::CreateFromValue(serialized_one_rect.get());
+  EXPECT_TRUE(!!one_rect_picture_check.get());
 
-    // Check for equivalence.
-    unsigned char one_rect_buffer[4 * 100 * 100] = {0};
-    DrawPicture(one_rect_buffer, layer_rect, one_rect_picture);
-    unsigned char one_rect_buffer_check[4 * 100 * 100] = {0};
-    DrawPicture(one_rect_buffer_check, layer_rect, one_rect_picture_check);
+  // Check for equivalence.
+  unsigned char one_rect_buffer[4 * 100 * 100] = {0};
+  DrawPicture(one_rect_buffer, layer_rect, one_rect_picture);
+  unsigned char one_rect_buffer_check[4 * 100 * 100] = {0};
+  DrawPicture(one_rect_buffer_check, layer_rect, one_rect_picture_check);
 
-    EXPECT_EQ(one_rect_picture->LayerRect(),
-              one_rect_picture_check->LayerRect());
-    EXPECT_EQ(0, memcmp(one_rect_buffer, one_rect_buffer_check, 4 * 100 * 100));
-  }
+  EXPECT_EQ(one_rect_picture->LayerRect(), one_rect_picture_check->LayerRect());
+  EXPECT_EQ(0, memcmp(one_rect_buffer, one_rect_buffer_check, 4 * 100 * 100));
 
   // Two rect picture.
   content_layer_client.add_draw_rect(gfx::Rect(25, 25, 50, 50), green_paint);
 
-  for (size_t i = 0; i < arraysize(kRecordingModes); ++i) {
-    scoped_refptr<Picture> two_rect_picture =
-        Picture::Create(layer_rect,
-                        &content_layer_client,
-                        tile_grid_info,
-                        false,
-                        Picture::RECORD_NORMALLY);
+  scoped_refptr<Picture> two_rect_picture =
+      Picture::Create(layer_rect,
+                      &content_layer_client,
+                      tile_grid_info,
+                      false,
+                      Picture::RECORD_NORMALLY);
 
-    scoped_ptr<base::Value> serialized_two_rect(two_rect_picture->AsValue());
+  scoped_ptr<base::Value> serialized_two_rect(two_rect_picture->AsValue());
 
-    // Reconstruct the picture.
-    scoped_refptr<Picture> two_rect_picture_check =
-        Picture::CreateFromValue(serialized_two_rect.get());
-    EXPECT_TRUE(!!two_rect_picture_check.get());
+  // Reconstruct the picture.
+  scoped_refptr<Picture> two_rect_picture_check =
+      Picture::CreateFromValue(serialized_two_rect.get());
+  EXPECT_TRUE(!!two_rect_picture_check.get());
 
-    // Check for equivalence.
-    unsigned char two_rect_buffer[4 * 100 * 100] = {0};
-    DrawPicture(two_rect_buffer, layer_rect, two_rect_picture);
-    unsigned char two_rect_buffer_check[4 * 100 * 100] = {0};
-    DrawPicture(two_rect_buffer_check, layer_rect, two_rect_picture_check);
+  // Check for equivalence.
+  unsigned char two_rect_buffer[4 * 100 * 100] = {0};
+  DrawPicture(two_rect_buffer, layer_rect, two_rect_picture);
+  unsigned char two_rect_buffer_check[4 * 100 * 100] = {0};
+  DrawPicture(two_rect_buffer_check, layer_rect, two_rect_picture_check);
 
-    EXPECT_EQ(two_rect_picture->LayerRect(),
-              two_rect_picture_check->LayerRect());
-    EXPECT_EQ(0, memcmp(two_rect_buffer, two_rect_buffer_check, 4 * 100 * 100));
-  }
+  EXPECT_EQ(two_rect_picture->LayerRect(), two_rect_picture_check->LayerRect());
+  EXPECT_EQ(0, memcmp(two_rect_buffer, two_rect_buffer_check, 4 * 100 * 100));
 }
 
 TEST(PictureTest, PixelRefIterator) {
@@ -479,15 +470,7 @@ TEST(PictureTest, RecordingModes) {
             content_layer_client.last_context_status());
   EXPECT_TRUE(picture.get());
 
-  picture = Picture::Create(layer_rect,
-                            &content_layer_client,
-                            tile_grid_info,
-                            false,
-                            Picture::RECORD_WITH_SKRECORD);
-  EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
-  EXPECT_TRUE(picture.get());
-
-  EXPECT_EQ(4, Picture::RECORDING_MODE_COUNT);
+  EXPECT_EQ(3, Picture::RECORDING_MODE_COUNT);
 }
 
 }  // namespace

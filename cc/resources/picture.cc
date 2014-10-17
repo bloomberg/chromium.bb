@@ -214,8 +214,6 @@ void Picture::Record(ContentLayerClient* painter,
   SkTileGridFactory factory(tile_grid_info);
   SkPictureRecorder recorder;
 
-  scoped_ptr<EXPERIMENTAL::SkRecording> recording;
-
   skia::RefPtr<SkCanvas> canvas;
   canvas = skia::SharePtr(recorder.beginRecording(
       layer_rect_.width(), layer_rect_.height(), &factory));
@@ -238,11 +236,6 @@ void Picture::Record(ContentLayerClient* painter,
       canvas = skia::AdoptRef(SkCreateNullCanvas());
       graphics_context_status = ContentLayerClient::GRAPHICS_CONTEXT_DISABLED;
       break;
-    case RECORD_WITH_SKRECORD:
-      recording.reset(new EXPERIMENTAL::SkRecording(layer_rect_.width(),
-                                                    layer_rect_.height()));
-      canvas = skia::SharePtr(recording->canvas());
-      break;
     default:
       NOTREACHED();
   }
@@ -262,13 +255,6 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->restore();
   picture_ = skia::AdoptRef(recorder.endRecording());
   DCHECK(picture_);
-
-  if (recording) {
-    // SkRecording requires it's the only one holding onto canvas before we
-    // may call releasePlayback().  (This helps enforce thread-safety.)
-    canvas.clear();
-    playback_.reset(recording->releasePlayback());
-  }
 
   EmitTraceSnapshot();
 }
@@ -348,9 +334,7 @@ int Picture::Raster(SkCanvas* canvas,
 
   canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
-  if (playback_) {
-    playback_->draw(canvas);
-  } else if (callback) {
+  if (callback) {
     // If we have a callback, we need to call |draw()|, |drawPicture()| doesn't
     // take a callback.  This is used by |AnalysisCanvas| to early out.
     picture_->draw(canvas, callback);
@@ -371,12 +355,7 @@ int Picture::Raster(SkCanvas* canvas,
 void Picture::Replay(SkCanvas* canvas) {
   TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
   DCHECK(picture_);
-
-  if (playback_) {
-    playback_->draw(canvas);
-  } else {
-    picture_->draw(canvas);
-  }
+  picture_->draw(canvas);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   TRACE_EVENT_END1("cc", "Picture::Replay",
@@ -385,21 +364,7 @@ void Picture::Replay(SkCanvas* canvas) {
 
 scoped_ptr<base::Value> Picture::AsValue() const {
   SkDynamicMemoryWStream stream;
-
-  if (playback_) {
-    // SkPlayback can't serialize itself, so re-record into an SkPicture.
-    SkPictureRecorder recorder;
-    skia::RefPtr<SkCanvas> canvas(skia::SharePtr(recorder.beginRecording(
-        layer_rect_.width(),
-        layer_rect_.height(),
-        NULL)));  // Default (no) bounding-box hierarchy is fastest.
-    playback_->draw(canvas.get());
-    skia::RefPtr<SkPicture> picture(skia::AdoptRef(recorder.endRecording()));
-    picture->serialize(&stream, &EncodeBitmap);
-  } else {
-    // Serialize the picture.
-    picture_->serialize(&stream, &EncodeBitmap);
-  }
+  picture_->serialize(&stream, &EncodeBitmap);
 
   // Encode the picture as base64.
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());

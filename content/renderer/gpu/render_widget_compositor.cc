@@ -235,10 +235,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.use_one_copy = render_thread->is_one_copy_enabled();
   }
 
-  if (cmd->HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths)) {
-    settings.recording_mode = cc::LayerTreeSettings::RecordWithSkRecord;
-  }
-
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
   if (cmd->HasSwitch(cc::switches::kTopControlsHeight)) {
