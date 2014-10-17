@@ -5,6 +5,8 @@
 package org.chromium.net;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
@@ -28,7 +30,6 @@ public class ChromiumUrlRequestContext {
 
     /**
      * Constructor.
-     *
      */
     protected ChromiumUrlRequestContext(Context context, String userAgent,
             String config) {
@@ -37,6 +38,17 @@ public class ChromiumUrlRequestContext {
         if (mChromiumUrlRequestContextAdapter == 0) {
             throw new NullPointerException("Context Adapter creation failed");
         }
+        // Post a task to UI thread to init native Chromium URLRequestContext.
+        // TODO(xunjieli): This constructor is not supposed to be invoked on
+        // the main thread. Consider making the following code into a blocking
+        // API to handle the case where we are already on main thread.
+        Runnable task = new Runnable() {
+            public void run() {
+                nativeInitRequestContextOnMainThread(
+                        mChromiumUrlRequestContextAdapter);
+            }
+        };
+        new Handler(Looper.getMainLooper()).post(task);
     }
 
     /**
@@ -129,4 +141,7 @@ public class ChromiumUrlRequestContext {
             long chromiumUrlRequestContextAdapter, String fileName);
 
     private native void nativeStopNetLog(long chromiumUrlRequestContextAdapter);
+
+    private native void nativeInitRequestContextOnMainThread(
+            long chromiumUrlRequestContextAdapter);
 }

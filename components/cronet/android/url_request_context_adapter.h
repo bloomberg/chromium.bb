@@ -24,6 +24,8 @@ namespace net {
 
 class NetLogLogger;
 
+class ProxyConfigService;
+
 }  // namespace net
 
 namespace cronet {
@@ -82,6 +84,9 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   void StartNetLogToFile(const std::string& file_name);
   void StopNetLog();
 
+  // Called on main Java thread to initialize URLRequestContext.
+  void InitRequestContextOnMainThread();
+
  private:
   scoped_refptr<URLRequestContextAdapterDelegate> delegate_;
   scoped_ptr<net::URLRequestContext> context_;
@@ -90,15 +95,17 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<NetLogObserver> net_log_observer_;
   scoped_ptr<net::NetLogLogger> net_log_logger_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<URLRequestContextConfig> config_;
 
   // A queue of tasks that need to be run after context has been initialized.
   std::queue<RunAfterContextInitTask> tasks_waiting_for_context_;
-  bool is_context_initialized_;
+  bool is_context_initialized_ = false;
 
   virtual ~URLRequestContextAdapter();
 
   // Initializes |context_| on the Network thread.
-  void InitializeURLRequestContext(scoped_ptr<URLRequestContextConfig> config);
+  void InitRequestContextOnNetworkThread();
 
   // Helper function to start writing NetLog data to file. This should only be
   // run after context is initialized.

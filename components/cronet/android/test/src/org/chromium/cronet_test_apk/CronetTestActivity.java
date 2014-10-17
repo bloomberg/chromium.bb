@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.util.Log;
 
 import org.chromium.base.PathUtils;
-import org.chromium.net.ChromiumUrlRequestFactory;
 import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
@@ -36,8 +35,8 @@ public class CronetTestActivity extends Activity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
     public static final String POST_DATA_KEY = "postData";
     public static final String CONFIG_KEY = "config";
+    public static final String SKIP_FACTORY_INIT_KEY = "skipFactoryInit";
 
-    ChromiumUrlRequestFactory mChromiumRequestFactory;
     HttpUrlRequestFactory mRequestFactory;
 
     String mUrl;
@@ -78,6 +77,23 @@ public class CronetTestActivity extends Activity {
             return;
         }
 
+        String skipInitString = getCommandLineArg(SKIP_FACTORY_INIT_KEY);
+        if (skipInitString != null) {
+            return;
+        }
+        mRequestFactory = initRequestFactory();
+        if (mRequestFactory == null) {
+            return;
+        }
+
+        String appUrl = getUrlFromIntent(getIntent());
+        if (appUrl != null) {
+            startWithURL(appUrl);
+        }
+    }
+
+    // Helper function to initialize request factory. Also used in testing.
+    public HttpUrlRequestFactory initRequestFactory() {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,
                                100 * 1024)
@@ -93,23 +109,15 @@ public class CronetTestActivity extends Activity {
             } catch (org.json.JSONException e) {
                 Log.e(TAG, "Invalid Config.", e);
                 finish();
-                return;
+                return null;
             }
         }
 
         // Setting this here so it isn't overridden on the command line
         config.setLibraryName("cronet_tests");
 
-        mRequestFactory = HttpUrlRequestFactory.createFactory(
-                getApplicationContext(), config);
-
-        mChromiumRequestFactory = new ChromiumUrlRequestFactory(
-                getApplicationContext(), config);
-
-        String appUrl = getUrlFromIntent(getIntent());
-        if (appUrl != null) {
-            startWithURL(appUrl);
-        }
+        return HttpUrlRequestFactory.createFactory(getApplicationContext(),
+                                                   config);
     }
 
     private boolean loadTestFiles() {
@@ -217,12 +225,12 @@ public class CronetTestActivity extends Activity {
     }
 
     public void startNetLog() {
-        mChromiumRequestFactory.getRequestContext().startNetLogToFile(
+        mRequestFactory.startNetLogToFile(
                 Environment.getExternalStorageDirectory().getPath() +
                         "/cronet_sample_netlog.json");
     }
 
     public void stopNetLog() {
-        mChromiumRequestFactory.getRequestContext().stopNetLog();
+        mRequestFactory.stopNetLog();
     }
 }

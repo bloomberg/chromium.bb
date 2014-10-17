@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/url_request_context_config.h"
 #include "net/base/net_errors.h"
@@ -16,7 +17,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_server_properties.h"
-#include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -25,6 +25,10 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 namespace {
+
+// MessageLoop on the main thread, which is where objects that receive Java
+// notifications generally live.
+base::MessageLoop* g_main_message_loop = nullptr;
 
 class BasicNetworkDelegate : public net::NetworkDelegate {
  public:
@@ -127,33 +131,43 @@ void URLRequestContextAdapter::Initialize(
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   network_thread_->StartWithOptions(options);
-
-  GetNetworkTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestContextAdapter::InitializeURLRequestContext,
-                 this,
-                 Passed(&config)));
+  config_ = config.Pass();
 }
 
-void URLRequestContextAdapter::InitializeURLRequestContext(
-    scoped_ptr<URLRequestContextConfig> config) {
+void URLRequestContextAdapter::InitRequestContextOnMainThread() {
+  if (!base::MessageLoop::current()) {
+    DCHECK(!g_main_message_loop);
+    g_main_message_loop = new base::MessageLoopForUI();
+    base::MessageLoopForUI::current()->Start();
+  }
+  DCHECK_EQ(g_main_message_loop, base::MessageLoop::current());
+
+  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
+      GetNetworkTaskRunner(), NULL));
+  GetNetworkTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLRequestContextAdapter::InitRequestContextOnNetworkThread,
+                 this));
+}
+
+void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  DCHECK(config_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
   context_builder.set_network_delegate(new BasicNetworkDelegate());
-  context_builder.set_proxy_config_service(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig()));
-  config->ConfigureURLRequestContextBuilder(&context_builder);
+  context_builder.set_proxy_config_service(proxy_config_service_.get());
+  config_->ConfigureURLRequestContextBuilder(&context_builder);
 
   context_.reset(context_builder.Build());
 
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
-  if (config->enable_quic) {
+  if (config_->enable_quic) {
     context_->http_server_properties()
         ->SetAlternateProtocolProbabilityThreshold(0.0f);
-    for (size_t hint = 0; hint < config->quic_hints.size(); ++hint) {
+    for (size_t hint = 0; hint < config_->quic_hints.size(); ++hint) {
       const URLRequestContextConfig::QuicHint& quic_hint =
-          *config->quic_hints[hint];
+          *config_->quic_hints[hint];
       if (quic_hint.host.empty()) {
         LOG(ERROR) << "Empty QUIC hint host: " << quic_hint.host;
         continue;
@@ -181,17 +195,19 @@ void URLRequestContextAdapter::InitializeURLRequestContext(
           net::AlternateProtocol::QUIC,
           1.0f);
     }
-    is_context_initialized_ = true;
-    while (!tasks_waiting_for_context_.empty()) {
-      tasks_waiting_for_context_.front().Run();
-      tasks_waiting_for_context_.pop();
-    }
   }
+  config_.reset(NULL);
 
   if (VLOG_IS_ON(2)) {
     net_log_observer_.reset(new NetLogObserver());
     context_->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
                                                net::NetLog::LOG_ALL_BUT_BYTES);
+  }
+
+  is_context_initialized_ = true;
+  while (!tasks_waiting_for_context_.empty()) {
+    tasks_waiting_for_context_.front().Run();
+    tasks_waiting_for_context_.pop();
   }
 
   delegate_->OnContextInitialized(this);

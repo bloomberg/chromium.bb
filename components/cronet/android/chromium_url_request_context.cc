@@ -147,4 +147,13 @@ static void StopNetLog(JNIEnv* env,
   adapter->StopNetLog();
 }
 
+// Called on application's main Java thread.
+static void InitRequestContextOnMainThread(JNIEnv* env,
+                                           jobject jcaller,
+                                           jlong url_request_context_adapter) {
+  URLRequestContextAdapter* adapter =
+      reinterpret_cast<URLRequestContextAdapter*>(url_request_context_adapter);
+  adapter->InitRequestContextOnMainThread();
+}
+
 }  // namespace cronet
