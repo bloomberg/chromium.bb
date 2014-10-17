@@ -659,7 +659,7 @@ if [ "${copy_64}" = "y" -o \
   readlinepkg=$(sudo "/usr/local/bin/${target%bit}" sh -c \
     'apt-cache search "lib64readline.\$" | sort | tail -n 1 | cut -d " " -f 1')
   sudo "/usr/local/bin/${target%bit}" apt-get -y install                       \
-    lib64expat1 lib64ncurses5 ${readlinepkg} lib64z1
+    lib64expat1 lib64ncurses5 ${readlinepkg} lib64z1 lib64stdc++6
   dep=
   for i in binutils gdb; do
     [ -d /usr/share/doc/"$i" ] || dep="$dep $i"
