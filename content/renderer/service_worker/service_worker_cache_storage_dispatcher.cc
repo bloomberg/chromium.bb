@@ -207,6 +207,7 @@ ServiceWorkerCacheStorageDispatcher::~ServiceWorkerCacheStorageDispatcher() {
   ClearCallbacksMapWithErrors(&get_callbacks_);
   ClearCallbacksMapWithErrors(&has_callbacks_);
   ClearCallbacksMapWithErrors(&create_callbacks_);
+  ClearCallbacksMapWithErrors(&open_callbacks_);
   ClearCallbacksMapWithErrors(&delete_callbacks_);
   ClearCallbacksMapWithErrors(&keys_callbacks_);
 
@@ -226,6 +227,8 @@ bool ServiceWorkerCacheStorageDispatcher::OnMessageReceived(
                           OnCacheStorageHasSuccess)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageCreateSuccess,
                           OnCacheStorageCreateSuccess)
+      IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageOpenSuccess,
+                          OnCacheStorageOpenSuccess)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageDeleteSuccess,
                           OnCacheStorageDeleteSuccess)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageKeysSuccess,
@@ -236,6 +239,8 @@ bool ServiceWorkerCacheStorageDispatcher::OnMessageReceived(
                           OnCacheStorageHasError)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageCreateError,
                           OnCacheStorageCreateError)
+      IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageOpenError,
+                          OnCacheStorageOpenError)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageDeleteError,
                           OnCacheStorageDeleteError)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageKeysError,
@@ -290,6 +295,17 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageCreateSuccess(
   create_callbacks_.Remove(request_id);
 }
 
+void ServiceWorkerCacheStorageDispatcher::OnCacheStorageOpenSuccess(
+    int request_id,
+    int cache_id) {
+  WebCache* web_cache = new WebCache(weak_factory_.GetWeakPtr(), cache_id);
+  web_caches_.AddWithID(web_cache, cache_id);
+  CacheStorageWithCacheCallbacks* callbacks =
+      open_callbacks_.Lookup(request_id);
+  callbacks->onSuccess(web_cache);
+  open_callbacks_.Remove(request_id);
+}
+
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageDeleteSuccess(
     int request_id) {
   CacheStorageCallbacks* callbacks = delete_callbacks_.Lookup(request_id);
@@ -333,6 +349,15 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageCreateError(
       create_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   create_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerCacheStorageDispatcher::OnCacheStorageOpenError(
+    int request_id,
+    blink::WebServiceWorkerCacheError reason) {
+  CacheStorageWithCacheCallbacks* callbacks =
+      open_callbacks_.Lookup(request_id);
+  callbacks->onError(&reason);
+  open_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageDeleteError(
@@ -457,6 +482,14 @@ void ServiceWorkerCacheStorageDispatcher::dispatchCreate(
     const blink::WebString& cacheName) {
   int request_id = create_callbacks_.Add(callbacks);
   script_context_->Send(new ServiceWorkerHostMsg_CacheStorageCreate(
+      script_context_->GetRoutingID(), request_id, cacheName));
+}
+
+void ServiceWorkerCacheStorageDispatcher::dispatchOpen(
+    CacheStorageWithCacheCallbacks* callbacks,
+    const blink::WebString& cacheName) {
+  int request_id = open_callbacks_.Add(callbacks);
+  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageOpen(
       script_context_->GetRoutingID(), request_id, cacheName));
 }
 

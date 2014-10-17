@@ -140,6 +140,25 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     return !error;
   }
 
+  bool Open(const GURL& origin, const std::string& cache_name) {
+    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
+    cache_manager_->OpenCache(
+        origin,
+        cache_name,
+        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheAndErrorCallback,
+                   base::Unretained(this),
+                   base::Unretained(loop.get())));
+    loop->Run();
+
+    bool error = callback_error_ !=
+                 ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
+    if (error)
+      EXPECT_TRUE(!callback_cache_.get());
+    else
+      EXPECT_TRUE(callback_cache_.get());
+    return !error;
+  }
+
   bool Has(const GURL& origin, const std::string& cache_name) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->HasCache(
@@ -293,6 +312,17 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, GetNonExistent) {
   EXPECT_FALSE(Get(origin1_, "foo"));
   EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND,
             callback_error_);
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenNewCache) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenExistingCache) {
+  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(cache.get() == callback_cache_.get());
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, HasCache) {

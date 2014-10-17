@@ -93,6 +93,8 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
                         OnCacheStorageHas)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageCreate,
                         OnCacheStorageCreate)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageOpen,
+                        OnCacheStorageOpen)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageDelete,
                         OnCacheStorageDelete)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageKeys,
@@ -149,6 +151,19 @@ void ServiceWorkerCacheListener::OnCacheStorageCreate(
       version_->scope().GetOrigin(),
       base::UTF16ToUTF8(cache_name),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageCreateCallback,
+                 weak_factory_.GetWeakPtr(),
+                 request_id));
+}
+
+void ServiceWorkerCacheListener::OnCacheStorageOpen(
+    int request_id,
+    const base::string16& cache_name) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageOpen");
+  context_->cache_manager()->OpenCache(
+      version_->scope().GetOrigin(),
+      base::UTF16ToUTF8(cache_name),
+      base::Bind(&ServiceWorkerCacheListener::OnCacheStorageOpenCallback,
                  weak_factory_.GetWeakPtr(),
                  request_id));
 }
@@ -342,6 +357,19 @@ void ServiceWorkerCacheListener::OnCacheStorageCreateCallback(
   }
   CacheID cache_id = StoreCacheReference(cache);
   Send(ServiceWorkerMsg_CacheStorageCreateSuccess(request_id, cache_id));
+}
+
+void ServiceWorkerCacheListener::OnCacheStorageOpenCallback(
+    int request_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
+    ServiceWorkerCacheStorage::CacheStorageError error) {
+  if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
+    Send(ServiceWorkerMsg_CacheStorageOpenError(
+        request_id, ToWebServiceWorkerCacheError(error)));
+    return;
+  }
+  CacheID cache_id = StoreCacheReference(cache);
+  Send(ServiceWorkerMsg_CacheStorageOpenSuccess(request_id, cache_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageDeleteCallback(

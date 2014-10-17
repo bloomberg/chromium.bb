@@ -59,15 +59,20 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   virtual ~ServiceWorkerCacheStorage();
 
   // Create a ServiceWorkerCache if it doesn't already exist and call the
-  // callback with the cache's id. If it already
+  // callback with the cache. If it already
   // exists the callback is called with CACHE_STORAGE_ERROR_EXISTS.
   void CreateCache(const std::string& cache_name,
                    const CacheAndErrorCallback& callback);
 
-  // Get the cache id for the given key. If not found returns
+  // Get the cache for the given key. If not found returns
   // CACHE_STORAGE_ERROR_NOT_FOUND.
   void GetCache(const std::string& cache_name,
                 const CacheAndErrorCallback& callback);
+
+  // Get the cache for the given key. If the cache is not found it is
+  // created.
+  void OpenCache(const std::string& cache_name,
+                 const CacheAndErrorCallback& callback);
 
   // Calls the callback with whether or not the cache exists.
   void HasCache(const std::string& cache_name,

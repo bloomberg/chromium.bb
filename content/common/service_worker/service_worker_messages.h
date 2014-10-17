@@ -201,6 +201,10 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageCreate,
                     int /* request_id */,
                     base::string16 /* fetch_store_name */)
 
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageOpen,
+                    int /* request_id */,
+                    base::string16 /* fetch_store_name */)
+
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageDelete,
                     int /* request_id */,
                     base::string16 /* fetch_store_name */)
@@ -369,6 +373,9 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageHasSuccess,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageCreateSuccess,
                      int /* request_id */,
                      int /* fetch_store_id */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageOpenSuccess,
+                     int /* request_id */,
+                     int /* fetch_store_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageDeleteSuccess,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysSuccess,
@@ -383,6 +390,9 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageHasError,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageCreateError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerCacheError /* reason */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageOpenError,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageDeleteError,

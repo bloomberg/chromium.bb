@@ -41,6 +41,7 @@ class ServiceWorkerCacheStorageDispatcher
   void OnCacheStorageGetSuccess(int request_id, int cache_id);
   void OnCacheStorageHasSuccess(int request_id);
   void OnCacheStorageCreateSuccess(int request_id, int cache_id);
+  void OnCacheStorageOpenSuccess(int request_id, int cache_id);
   void OnCacheStorageDeleteSuccess(int request_id);
   void OnCacheStorageKeysSuccess(int request_id,
                                  const std::vector<base::string16>& keys);
@@ -51,6 +52,8 @@ class ServiceWorkerCacheStorageDispatcher
                               blink::WebServiceWorkerCacheError reason);
   void OnCacheStorageCreateError(int request_id,
                                  blink::WebServiceWorkerCacheError reason);
+  void OnCacheStorageOpenError(int request_id,
+                               blink::WebServiceWorkerCacheError reason);
   void OnCacheStorageDeleteError(int request_id,
                                  blink::WebServiceWorkerCacheError reason);
   void OnCacheStorageKeysError(int request_id,
@@ -84,6 +87,8 @@ class ServiceWorkerCacheStorageDispatcher
                            const blink::WebString& cacheName);
   virtual void dispatchCreate(CacheStorageWithCacheCallbacks* callbacks,
                               const blink::WebString& cacheName);
+  virtual void dispatchOpen(CacheStorageWithCacheCallbacks* callbacks,
+                            const blink::WebString& cacheName);
   virtual void dispatchDelete(CacheStorageCallbacks* callbacks,
                               const blink::WebString& cacheName);
   virtual void dispatchKeys(CacheStorageKeysCallbacks* callbacks);
@@ -142,6 +147,7 @@ class ServiceWorkerCacheStorageDispatcher
   WithCacheCallbacksMap get_callbacks_;
   CallbacksMap has_callbacks_;
   WithCacheCallbacksMap create_callbacks_;
+  WithCacheCallbacksMap open_callbacks_;
   CallbacksMap delete_callbacks_;
   KeysCallbacksMap keys_callbacks_;
 

@@ -39,6 +39,7 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   void OnCacheStorageHas(int request_id, const base::string16& cache_name);
   void OnCacheStorageCreate(int request_id,
                           const base::string16& cache_name);
+  void OnCacheStorageOpen(int request_id, const base::string16& cache_name);
   void OnCacheStorageDelete(int request_id,
                            const base::string16& cache_name);
   void OnCacheStorageKeys(int request_id);
@@ -80,6 +81,10 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
       bool has_cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageCreateCallback(
+      int request_id,
+      const scoped_refptr<ServiceWorkerCache>& cache,
+      ServiceWorkerCacheStorage::CacheStorageError error);
+  void OnCacheStorageOpenCallback(
       int request_id,
       const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCacheStorage::CacheStorageError error);

@@ -92,6 +92,18 @@ void ServiceWorkerCacheStorageManager::GetCache(
   cache_storage->GetCache(cache_name, callback);
 }
 
+void ServiceWorkerCacheStorageManager::OpenCache(
+    const GURL& origin,
+    const std::string& cache_name,
+    const ServiceWorkerCacheStorage::CacheAndErrorCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ServiceWorkerCacheStorage* cache_storage =
+      FindOrCreateServiceWorkerCacheManager(origin);
+
+  cache_storage->OpenCache(cache_name, callback);
+}
+
 void ServiceWorkerCacheStorageManager::HasCache(
     const GURL& origin,
     const std::string& cache_name,

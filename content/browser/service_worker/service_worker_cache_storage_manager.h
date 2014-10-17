@@ -53,6 +53,10 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
       const GURL& origin,
       const std::string& cache_name,
       const ServiceWorkerCacheStorage::CacheAndErrorCallback& callback);
+  void OpenCache(
+      const GURL& origin,
+      const std::string& cache_name,
+      const ServiceWorkerCacheStorage::CacheAndErrorCallback& callback);
   void HasCache(
       const GURL& origin,
       const std::string& cache_name,
