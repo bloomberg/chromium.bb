@@ -91,6 +91,13 @@ void ExtensionOptionsGuest::CreateWebContents(
       extensions::ExtensionRegistry::Get(browser_context());
   const extensions::Extension* extension =
       registry->enabled_extensions().GetByID(extension_id);
+  if (!extension) {
+    // The ID was valid but the extension didn't exist. Typically this will
+    // happen when an extension is disabled.
+    callback.Run(NULL);
+    return;
+  }
+
   options_page_ = extensions::OptionsPageInfo::GetOptionsPage(extension);
   if (!options_page_.is_valid()) {
     callback.Run(NULL);

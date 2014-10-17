@@ -4,6 +4,11 @@
 
 // out/Debug/browser_tests
 //     --gtest_filter=ExtensionWebUITest.CanEmbedExtensionOptions
+//
+// also used by:
+//
+// out/Debug/browser_tests
+//     --gtest_filter=ExtensionWebUITest.CannotEmbedDisabledExtension
 if (!chrome || !chrome.test || !chrome.test.sendMessage) {
   console.error('chrome.test.sendMessage is unavailable on ' +
                 document.location.href);
@@ -14,7 +19,10 @@ if (!chrome || !chrome.test || !chrome.test.sendMessage) {
 chrome.test.sendMessage('ready', function(reply) {
   var extensionoptions = document.createElement('extensionoptions');
   extensionoptions.addEventListener('load', function() {
-    chrome.test.sendMessage('guest loaded');
+    chrome.test.sendMessage('load');
+  });
+  extensionoptions.addEventListener('createfailed', function() {
+    chrome.test.sendMessage('createfailed');
   });
   extensionoptions.setAttribute('extension', reply);
   document.body.appendChild(extensionoptions);

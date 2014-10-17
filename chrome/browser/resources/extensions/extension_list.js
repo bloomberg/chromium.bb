@@ -531,7 +531,7 @@ cr.define('options', function() {
 
       // Get the extension from the given id.
       var extension = this.data_.extensions.filter(function(extension) {
-        return extension.id == extensionId;
+        return extension.enabled && extension.id == extensionId;
       })[0];
 
       if (!extension)
