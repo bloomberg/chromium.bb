@@ -32,8 +32,7 @@ class MojoChannelFactory : public ChannelFactory {
   }
 
   virtual scoped_ptr<Channel> BuildChannel(Listener* listener) override {
-    return ChannelMojo::Create(delegate_, channel_handle_, mode_, listener)
-        .PassAs<Channel>();
+    return ChannelMojo::Create(delegate_, channel_handle_, mode_, listener);
   }
 
  private:
@@ -66,17 +65,15 @@ scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojo::Delegate* delegate,
 scoped_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
     ChannelMojo::Delegate* delegate,
     const ChannelHandle& channel_handle) {
-  return make_scoped_ptr(new MojoChannelFactory(
-                             delegate, channel_handle, Channel::MODE_SERVER))
-      .PassAs<ChannelFactory>();
+  return make_scoped_ptr(
+      new MojoChannelFactory(delegate, channel_handle, Channel::MODE_SERVER));
 }
 
 // static
 scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
     const ChannelHandle& channel_handle) {
   return make_scoped_ptr(
-             new MojoChannelFactory(NULL, channel_handle, Channel::MODE_CLIENT))
-      .PassAs<ChannelFactory>();
+      new MojoChannelFactory(NULL, channel_handle, Channel::MODE_CLIENT));
 }
 
 ChannelMojo::ChannelMojo(ChannelMojo::Delegate* delegate,
