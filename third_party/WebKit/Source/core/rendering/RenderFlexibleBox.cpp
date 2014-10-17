@@ -611,12 +611,11 @@ LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox& 
     if (preferredMainAxisExtentDependsOnLayout(flexBasis, hasInfiniteLineLength)) {
         LayoutUnit mainAxisExtent;
         if (hasOrthogonalFlow(child)) {
-            if (child.needsLayout() || relayoutChildren) {
+            if (child.needsLayout() || relayoutChildren || !m_intrinsicSizeAlongMainAxis.contains(&child)) {
                 m_intrinsicSizeAlongMainAxis.remove(&child);
                 child.forceChildLayout();
                 m_intrinsicSizeAlongMainAxis.set(&child, child.logicalHeight());
             }
-            ASSERT(m_intrinsicSizeAlongMainAxis.contains(&child));
             mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
         } else {
             mainAxisExtent = child.maxPreferredLogicalWidth();
