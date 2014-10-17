@@ -137,7 +137,10 @@ public:
 
     BLINK_EXPORT static void enableTextBlobs(bool);
 
+    // Note : Will be removed. Use enableCSSViewport() instead.
     BLINK_EXPORT static void setCSSViewportEnabled(bool);
+
+    BLINK_EXPORT static void enableCSSViewport(bool);
 
     BLINK_EXPORT static void enableV8IdleTasks(bool);
 
