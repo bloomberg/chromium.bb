@@ -5,6 +5,7 @@
 #ifndef LayerPainter_h
 #define LayerPainter_h
 
+#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/LayerFragment.h"
 #include "core/rendering/LayerPaintingInfo.h"
 
@@ -53,8 +54,8 @@ private:
 
     enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
 
-    void clipToRect(const LayerPaintingInfo&, GraphicsContext*, const ClipRect&, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
-    void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
+    void applyRoundedRectClips(const LayerPaintingInfo&, GraphicsContext*, const ClipRect&, PaintLayerFlags, ClipRecorder&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+    static bool needsToClip(const LayerPaintingInfo& localPaintingInfo, const ClipRect&);
 
     // Returns whether this layer should be painted during sofware painting (i.e., not via calls from CompositedLayerMapping to draw into composited
     // layers).

@@ -2139,9 +2139,9 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
 #endif
 
             if (RenderView* view = paintInfo.renderLayer->renderer()->view()) {
-                const PaintCommandList& paintCommandList = view->viewDisplayList().paintCommandList();
-                for (PaintCommandList::const_iterator it = paintCommandList.begin(); it != paintCommandList.end(); ++it)
-                    context->drawDisplayList(it->get()->displayList.get());
+                const PaintList& paintList = view->viewDisplayList().paintList();
+                for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
+                    (*it)->replay(context);
             }
         }
 

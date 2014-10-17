@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/ViewDisplayList.h"
 
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "platform/NotImplemented.h"
@@ -12,6 +13,24 @@
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
+
+void AtomicPaintChunk::replay(GraphicsContext* context)
+{
+    context->drawDisplayList(displayList.get());
+}
+
+void ClipDisplayItem::replay(GraphicsContext* context)
+{
+    context->save();
+    context->clip(clipRect);
+    for (RoundedRect roundedRect : roundedRectClips)
+        context->clipRoundedRect(roundedRect);
+}
+
+void EndClipDisplayItem::replay(GraphicsContext* context)
+{
+    context->restore();
+}
 
 PaintCommandRecorder::PaintCommandRecorder(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
     : m_context(context)
@@ -32,18 +51,52 @@ PaintCommandRecorder::~PaintCommandRecorder()
     m_renderer->view()->viewDisplayList().add(paintChunk.release());
 }
 
-const PaintCommandList& ViewDisplayList::paintCommandList()
+ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, ClipDisplayItem::ClipType clipType, const ClipRect& clipRect)
+    : m_graphicsContext(graphicsContext)
+    , m_renderLayer(renderLayer)
+{
+    IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        graphicsContext->save();
+        graphicsContext->clip(snappedClipRect);
+    } else {
+        m_clipDisplayItem = adoptPtr(new ClipDisplayItem);
+        m_clipDisplayItem->layer = renderLayer;
+        m_clipDisplayItem->clipType = clipType;
+        m_clipDisplayItem->clipRect = snappedClipRect;
+    }
+}
+
+void ClipRecorder::addRoundedRectClip(const RoundedRect& roundedRect)
+{
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        m_clipDisplayItem->roundedRectClips.append(roundedRect);
+    else
+        m_graphicsContext->clipRoundedRect(roundedRect);
+}
+
+ClipRecorder::~ClipRecorder()
+{
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem);
+        m_renderLayer->renderer()->view()->viewDisplayList().add(endClip.release());
+    } else {
+        m_graphicsContext->restore();
+    }
+}
+
+const PaintList& ViewDisplayList::paintList()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
-    updatePaintCommandList();
+    updatePaintList();
     return m_newPaints;
 }
 
-void ViewDisplayList::add(WTF::PassOwnPtr<AtomicPaintChunk> atomicPaintChunk)
+void ViewDisplayList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-    m_newPaints.append(atomicPaintChunk);
+    m_newPaints.append(displayItem);
 }
 
 void ViewDisplayList::invalidate(const RenderObject* renderer)
@@ -52,7 +105,7 @@ void ViewDisplayList::invalidate(const RenderObject* renderer)
     m_invalidated.add(renderer);
 }
 
-bool ViewDisplayList::isRepaint(PaintCommandList::iterator begin, const AtomicPaintChunk& atomicPaintChunk)
+bool ViewDisplayList::isRepaint(PaintList::iterator begin, const DisplayItem& displayItem)
 {
     notImplemented();
     return false;
@@ -63,7 +116,7 @@ bool ViewDisplayList::isRepaint(PaintCommandList::iterator begin, const AtomicPa
 //
 // The algorithm should be O(|existing paint list| + |newly painted list|). By using the ordering
 // implied by the existing paint list, extra treewalks are avoided.
-void ViewDisplayList::updatePaintCommandList()
+void ViewDisplayList::updatePaintList()
 {
     notImplemented();
 }
