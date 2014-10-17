@@ -448,7 +448,7 @@ void ProvidedFileSystem::RemoveObserver(ProvidedFileSystemObserver* observer) {
 bool ProvidedFileSystem::Notify(
     const base::FilePath& observed_path,
     ProvidedFileSystemObserver::ChangeType change_type,
-    const ProvidedFileSystemObserver::ChildChanges& child_changes,
+    scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
     const std::string& tag) {
   const ObservedEntries::iterator it = observed_entries_.find(observed_path);
   if (it == observed_entries_.end())
@@ -458,11 +458,17 @@ bool ProvidedFileSystem::Notify(
   if (file_system_info_.supports_notify_tag() == tag.empty())
     return false;
 
+  // The object is owned by AutoUpdated, so the reference is valid as long as
+  // callbacks created with AutoUpdater::CreateCallback().
+  const ProvidedFileSystemObserver::ChildChanges& child_changes_ref =
+      *child_changes.get();
+
   scoped_refptr<AutoUpdater> auto_updater(
       new AutoUpdater(base::Bind(&ProvidedFileSystem::OnNotifyCompleted,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  observed_path,
                                  change_type,
+                                 base::Passed(&child_changes),
                                  it->second.last_tag,
                                  tag)));
 
@@ -471,7 +477,7 @@ bool ProvidedFileSystem::Notify(
                     OnObservedEntryChanged(file_system_info_,
                                            observed_path,
                                            change_type,
-                                           child_changes,
+                                           child_changes_ref,
                                            auto_updater->CreateCallback()));
 
   return true;
@@ -521,6 +527,7 @@ void ProvidedFileSystem::OnObserveDirectoryCompleted(
 void ProvidedFileSystem::OnNotifyCompleted(
     const base::FilePath& observed_path,
     ProvidedFileSystemObserver::ChangeType change_type,
+    scoped_ptr<ProvidedFileSystemObserver::ChildChanges> /* child_changes */,
     const std::string& last_tag,
     const std::string& tag) {
   const ObservedEntries::iterator it = observed_entries_.find(observed_path);

@@ -51,7 +51,8 @@ class ProvidedFileSystemObserver {
   // Called when an observed entry is changed, including removals. |callback|
   // *must* be called after the entry change is handled. Once all observers
   // call the callback, the tag will be updated and OnObservedEntryTagUpdated
-  // called.
+  // called. The reference to |child_changes| is valid at least as long as
+  // |callback|.
   virtual void OnObservedEntryChanged(
       const ProvidedFileSystemInfo& file_system_info,
       const base::FilePath& observed_path,

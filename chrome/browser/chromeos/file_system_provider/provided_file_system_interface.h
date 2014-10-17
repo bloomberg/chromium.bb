@@ -207,7 +207,7 @@ class ProvidedFileSystemInterface {
   virtual bool Notify(
       const base::FilePath& observed_path,
       ProvidedFileSystemObserver::ChangeType change_type,
-      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
       const std::string& tag) = 0;
 
   // Returns a provided file system info for this file system.

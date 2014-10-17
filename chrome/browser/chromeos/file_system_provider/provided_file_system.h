@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -150,7 +151,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual bool Notify(
       const base::FilePath& observed_path,
       ProvidedFileSystemObserver::ChangeType change_type,
-      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
       const std::string& tag) override;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
@@ -170,10 +171,12 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // Called when all observers finished handling the change notification. It
   // updates the tag from |last_tag| to |tag| for the entry at |observed_path|.
-  void OnNotifyCompleted(const base::FilePath& observed_path,
-                         ProvidedFileSystemObserver::ChangeType change_type,
-                         const std::string& last_tag,
-                         const std::string& tag);
+  void OnNotifyCompleted(
+      const base::FilePath& observed_path,
+      ProvidedFileSystemObserver::ChangeType change_type,
+      scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
+      const std::string& last_tag,
+      const std::string& tag);
 
   Profile* profile_;                       // Not owned.
   extensions::EventRouter* event_router_;  // Not owned. May be NULL.

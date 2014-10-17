@@ -539,12 +539,11 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     // Notify about a change.
     const ProvidedFileSystemObserver::ChangeType change_type =
         ProvidedFileSystemObserver::CHANGED;
-    const ProvidedFileSystemObserver::ChildChanges child_changes;
     const std::string tag = "hello-world";
     EXPECT_TRUE(provided_file_system_->Notify(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         change_type,
-        child_changes,
+        make_scoped_ptr(new ProvidedFileSystemObserver::ChildChanges),
         tag));
 
     // Verify the observer event.
@@ -582,7 +581,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     EXPECT_TRUE(provided_file_system_->Notify(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         change_type,
-        child_changes,
+        make_scoped_ptr(new ProvidedFileSystemObserver::ChildChanges),
         tag));
     base::RunLoop().RunUntilIdle();
 

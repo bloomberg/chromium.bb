@@ -21,15 +21,59 @@
 using chromeos::file_system_provider::MountOptions;
 using chromeos::file_system_provider::ProvidedFileSystemInfo;
 using chromeos::file_system_provider::ProvidedFileSystemInterface;
+using chromeos::file_system_provider::ProvidedFileSystemObserver;
 using chromeos::file_system_provider::RequestValue;
 using chromeos::file_system_provider::Service;
 
 namespace extensions {
 namespace {
 
+typedef std::vector<linked_ptr<api::file_system_provider::ChildChange>>
+    IDLChildChanges;
+
 const char kNotifyFailedErrorMessage[] =
     "Sending a response for the request failed.";
 const char kInvalidNotificationErrorMessage[] = "The notification is invalid.";
+
+// Converts the change type from the IDL type to a native type. |changed_type|
+// must be specified (not CHANGE_TYPE_NONE).
+ProvidedFileSystemObserver::ChangeType ParseChangeType(
+    const api::file_system_provider::ChangeType& change_type) {
+  switch (change_type) {
+    case api::file_system_provider::CHANGE_TYPE_CHANGED:
+      return ProvidedFileSystemObserver::CHANGED;
+    case api::file_system_provider::CHANGE_TYPE_DELETED:
+      return ProvidedFileSystemObserver::DELETED;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return ProvidedFileSystemObserver::CHANGED;
+}
+
+// Convert the child change from the IDL type to a native type. The reason IDL
+// types are not used is since they are imperfect, eg. paths are stored as
+// strings.
+ProvidedFileSystemObserver::ChildChange ParseChildChange(
+    const api::file_system_provider::ChildChange& child_change) {
+  ProvidedFileSystemObserver::ChildChange result;
+  result.entry_path = base::FilePath::FromUTF8Unsafe(child_change.entry_path);
+  result.change_type = ParseChangeType(child_change.change_type);
+  return result;
+}
+
+// Converts a list of child changes from the IDL type to a native type.
+scoped_ptr<ProvidedFileSystemObserver::ChildChanges> ParseChildChanges(
+    const IDLChildChanges& child_changes) {
+  scoped_ptr<ProvidedFileSystemObserver::ChildChanges> results(
+      new ProvidedFileSystemObserver::ChildChanges);
+  for (IDLChildChanges::const_iterator it = child_changes.begin();
+       it != child_changes.end();
+       ++it) {
+    results->push_back(ParseChildChange(*it->get()));
+  }
+  return results;
+}
 
 }  // namespace
 
@@ -149,13 +193,13 @@ bool FileSystemProviderNotifyFunction::RunSync() {
     return true;
   }
 
-  // TODO(mtomasz): Pass real data to Notify() instead of fake ones.
   if (!file_system->Notify(
           base::FilePath::FromUTF8Unsafe(params->options.observed_path),
-          chromeos::file_system_provider::ProvidedFileSystemObserver::CHANGED,
-          chromeos::file_system_provider::ProvidedFileSystemObserver::
-              ChildChanges(),
-          "todo-tag")) {
+          ParseChangeType(params->options.change_type),
+          params->options.child_changes.get()
+              ? ParseChildChanges(*params->options.child_changes.get())
+              : make_scoped_ptr(new ProvidedFileSystemObserver::ChildChanges),
+          params->options.tag.get() ? *params->options.tag.get() : "")) {
     base::ListValue* const result = new base::ListValue();
     result->Append(
         CreateError(kSecurityErrorName, kInvalidNotificationErrorMessage));

@@ -131,4 +131,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Thumbnail) {
       << message_;
 }
 
+// TODO(mtomasz): Add a test for Notify() once it's wired to
+// chrome.fileManagerPrivate.
+
 }  // namespace extensions
