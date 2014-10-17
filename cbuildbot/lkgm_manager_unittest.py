@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import contextlib
 import mox
 import os
 import random
@@ -75,6 +76,18 @@ class LKGMCandidateInfoTest(cros_test_lib.TestCase):
     self.assertTrue(info4 > info1)
     self.assertTrue(info4 > info2)
     self.assertTrue(info4 > info3)
+
+
+@contextlib.contextmanager
+def TemporaryManifest():
+  with tempfile.NamedTemporaryFile() as f:
+    # Create fake but empty manifest file.
+    new_doc = minidom.getDOMImplementation().createDocument(
+        None, 'manifest', None)
+    print(new_doc.toxml())
+    new_doc.writexml(f)
+    f.flush()
+    yield f
 
 
 class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
@@ -451,14 +464,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
   def testAddChromeVersionToManifest(self):
     """Tests whether we can write the chrome version to the manifest file."""
-    with tempfile.NamedTemporaryFile() as f:
-      # Create fake but empty manifest file.
-      new_doc = minidom.getDOMImplementation().createDocument(
-          None, 'manifest', None)
-      print(new_doc.toxml())
-      new_doc.writexml(f)
-      f.flush()
-
+    with TemporaryManifest() as f:
       chrome_version = '35.0.1863.0'
       # Write the chrome element to manifest.
       self.manager._AddChromeVersionToManifest(f.name, chrome_version)
@@ -471,6 +477,33 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
           elements[0].getAttribute(lkgm_manager.CHROME_VERSION_ATTR),
           chrome_version)
 
+  def testAddLKGMToManifest(self, present=True):
+    """Tests whether we can write the LKGM version to the manifest file."""
+    with TemporaryManifest() as f:
+      # Set up LGKM symlink.
+      if present:
+        lkgm_version = '6377.0.0-rc1'
+        os.makedirs(os.path.dirname(self.manager.lkgm_path))
+        os.symlink('../foo/%s.xml' % lkgm_version, self.manager.lkgm_path)
+
+      # Write the chrome element to manifest.
+      self.manager._AddLKGMToManifest(f.name)
+
+      # Read the manifest file.
+      new_doc = minidom.parse(f.name)
+      elements = new_doc.getElementsByTagName(lkgm_manager.LKGM_ELEMENT)
+      if present:
+        self.assertEqual(len(elements), 1)
+        self.assertEqual(
+            elements[0].getAttribute(lkgm_manager.LKGM_VERSION_ATTR),
+            lkgm_version)
+      else:
+        self.assertEqual(len(elements), 0)
+
+  def testAddLKGMToManifestWithMissingFile(self):
+    """Tests writing the LKGM version when LKGM.xml is missing."""
+    self.testAddLKGMToManifest(present=False)
+
   def testAddPatchesToManifest(self):
     """Tests whether we can add a fake patch to an empty manifest file.
 
@@ -478,14 +511,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     runs the AddPatchesToManifest with one mocked out GerritPatch and ensures
     the newly generated manifest has the correct patch information afterwards.
     """
-    with tempfile.NamedTemporaryFile() as f:
-      # Create fake but empty manifest file.
-      new_doc = minidom.getDOMImplementation().createDocument(
-          None, 'manifest', None)
-      print(new_doc.toxml())
-      new_doc.writexml(f)
-      f.flush()
-
+    with TemporaryManifest() as f:
       gerrit_patch = mock.MagicMock()
       gerrit_patch.remote = 'cros-internal'
       gerrit_patch.gerrit_number = '12345'

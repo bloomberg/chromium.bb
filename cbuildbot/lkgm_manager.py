@@ -38,6 +38,8 @@ PALADIN_TOTAL_FAIL_COUNT_ATTR = 'total_fail_count'
 
 CHROME_ELEMENT = 'chrome'
 CHROME_VERSION_ATTR = 'version'
+LKGM_ELEMENT = 'lkgm'
+LKGM_VERSION_ATTR = 'version'
 
 MANIFEST_ELEMENT = 'manifest'
 DEFAULT_ELEMENT = 'default'
@@ -174,6 +176,27 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     return _LKGMCandidateInfo(version_info.VersionString(),
                               chrome_branch=version_info.chrome_branch,
                               incr_type=self.incr_type)
+
+  def _AddLKGMToManifest(self, manifest):
+    """Write the last known good version string to the manifest.
+
+    Args:
+      manifest: Path to the manifest.
+    """
+    # Get the last known good version string.
+    try:
+      lkgm_filename = os.path.basename(os.readlink(self.lkgm_path))
+      lkgm_version, _ = os.path.splitext(lkgm_filename)
+    except OSError:
+      return
+
+    # Write the last known good version string to the manifest.
+    manifest_dom = minidom.parse(manifest)
+    lkgm_element = manifest_dom.createElement(LKGM_ELEMENT)
+    lkgm_element.setAttribute(LKGM_VERSION_ATTR, lkgm_version)
+    manifest_dom.documentElement.appendChild(lkgm_element)
+    with open(manifest, 'w+') as manifest_file:
+      manifest_dom.writexml(manifest_file)
 
   def _AddChromeVersionToManifest(self, manifest, chrome_version):
     """Adds the chrome element with version |chrome_version| to |manifest|.
@@ -343,6 +366,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         return None
 
       self._AddPatchesToManifest(new_manifest, validation_pool.changes)
+
+      # Add info about the last known good version to the manifest. This will
+      # be used by slaves to calculate what artifacts from old builds are safe
+      # to use.
+      self._AddLKGMToManifest(new_manifest)
 
     last_error = None
     for attempt in range(0, retries + 1):
