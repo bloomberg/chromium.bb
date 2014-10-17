@@ -345,7 +345,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
 
   // Trailing slashes force the input to be treated as a URL.
   if (parts->path.is_nonempty()) {
-    char c = text[parts->path.end() - 1];
+    base::char16 c = text[parts->path.end() - 1];
     if ((c == '\\') || (c == '/'))
       return metrics::OmniboxInputType::URL;
   }

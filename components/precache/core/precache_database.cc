@@ -100,7 +100,8 @@ void PrecacheDatabase::RecordURLPrecached(const GURL& url,
   if (!was_cached) {
     // The precache only counts as overhead if it was downloaded over the
     // network.
-    UMA_HISTOGRAM_COUNTS("Precache.DownloadedPrecacheMotivated", size);
+    UMA_HISTOGRAM_COUNTS("Precache.DownloadedPrecacheMotivated",
+                         static_cast<base::HistogramBase::Sample>(size));
   }
 
   // Use the URL table to keep track of URLs that are in the cache thanks to
@@ -133,21 +134,24 @@ void PrecacheDatabase::RecordURLFetched(const GURL& url,
     return;
   }
 
+  base::HistogramBase::Sample size_sample =
+      static_cast<base::HistogramBase::Sample>(size);
   if (!was_cached) {
     // The fetch was served over the network during user browsing, so count it
     // as downloaded non-precache bytes.
-    UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache", size);
+    UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache", size_sample);
     if (is_connection_cellular) {
-      UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache.Cellular", size);
+      UMA_HISTOGRAM_COUNTS("Precache.DownloadedNonPrecache.Cellular",
+                           size_sample);
     }
   } else {
     // The fetch was served from the cache, and since there's an entry for this
     // URL in the URL table, this means that the resource was served from the
     // cache only because precaching put it there. Thus, precaching was helpful,
     // so count the fetch as saved bytes.
-    UMA_HISTOGRAM_COUNTS("Precache.Saved", size);
+    UMA_HISTOGRAM_COUNTS("Precache.Saved", size_sample);
     if (is_connection_cellular) {
-      UMA_HISTOGRAM_COUNTS("Precache.Saved.Cellular", size);
+      UMA_HISTOGRAM_COUNTS("Precache.Saved.Cellular", size_sample);
     }
   }
 

@@ -55,7 +55,8 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
   // create a bitmap with given pixel size.
   std::map<int, float> desired_pixel_sizes;
   for (size_t i = 0; i < favicon_scales.size(); ++i) {
-    int pixel_size = std::ceil(favicon_size * favicon_scales[i]);
+    int pixel_size =
+        static_cast<int>(std::ceil(favicon_size * favicon_scales[i]));
     desired_pixel_sizes[pixel_size] = favicon_scales[i];
   }
 
@@ -78,57 +79,58 @@ std::vector<gfx::ImagePNGRep> SelectFaviconFramesFromPNGsWithoutResizing(
   return png_reps;
 }
 
-// Returns a resampled bitmap of
-// |desired_size_in_pixel| x |desired_size_in_pixel| by resampling the best
-// bitmap out of |input_bitmaps|. ResizeBitmapByDownsamplingIfPossible() is
-// similar to SelectFaviconFrames() but it operates on bitmaps which have
-// already been resampled via SelectFaviconFrames().
+// Returns a resampled bitmap of |desired_size| x |desired_size| by resampling
+// the best bitmap out of |input_bitmaps|.
+// ResizeBitmapByDownsamplingIfPossible() is similar to SelectFaviconFrames()
+// but it operates on bitmaps which have already been resampled via
+// SelectFaviconFrames().
 SkBitmap ResizeBitmapByDownsamplingIfPossible(
     const std::vector<SkBitmap>& input_bitmaps,
-    int desired_size_in_pixel) {
+    int desired_size) {
   DCHECK(!input_bitmaps.empty());
-  DCHECK_NE(desired_size_in_pixel, 0);
+  DCHECK_NE(0, desired_size);
 
   SkBitmap best_bitmap;
   for (size_t i = 0; i < input_bitmaps.size(); ++i) {
     const SkBitmap& input_bitmap = input_bitmaps[i];
-    if (input_bitmap.width() == desired_size_in_pixel &&
-        input_bitmap.height() == desired_size_in_pixel) {
+    if (input_bitmap.width() == desired_size &&
+        input_bitmap.height() == desired_size) {
       return input_bitmap;
     } else if (best_bitmap.isNull()) {
       best_bitmap = input_bitmap;
     } else if (input_bitmap.width() >= best_bitmap.width() &&
                input_bitmap.height() >= best_bitmap.height()) {
-      if (best_bitmap.width() < desired_size_in_pixel ||
-          best_bitmap.height() < desired_size_in_pixel) {
+      if (best_bitmap.width() < desired_size ||
+          best_bitmap.height() < desired_size) {
         best_bitmap = input_bitmap;
       }
     } else {
-      if (input_bitmap.width() >= desired_size_in_pixel &&
-          input_bitmap.height() >= desired_size_in_pixel) {
+      if (input_bitmap.width() >= desired_size &&
+          input_bitmap.height() >= desired_size) {
         best_bitmap = input_bitmap;
       }
     }
   }
 
-  if (desired_size_in_pixel % best_bitmap.width() == 0 &&
-      desired_size_in_pixel % best_bitmap.height() == 0) {
+  if (desired_size % best_bitmap.width() == 0 &&
+      desired_size % best_bitmap.height() == 0) {
     // Use nearest neighbour resampling if upsampling by an integer. This
     // makes the result look similar to the result of SelectFaviconFrames().
     SkBitmap bitmap;
-    bitmap.allocN32Pixels(desired_size_in_pixel, desired_size_in_pixel);
+    bitmap.allocN32Pixels(desired_size, desired_size);
     if (!best_bitmap.isOpaque())
       bitmap.eraseARGB(0, 0, 0, 0);
 
     SkCanvas canvas(bitmap);
-    SkRect dest(SkRect::MakeWH(desired_size_in_pixel, desired_size_in_pixel));
-    canvas.drawBitmapRect(best_bitmap, NULL, dest);
+    canvas.drawBitmapRect(
+        best_bitmap, NULL,
+        SkRect::MakeFromIRect(SkIRect::MakeWH(desired_size, desired_size)));
     return bitmap;
   }
   return skia::ImageOperations::Resize(best_bitmap,
                                        skia::ImageOperations::RESIZE_LANCZOS3,
-                                       desired_size_in_pixel,
-                                       desired_size_in_pixel);
+                                       desired_size,
+                                       desired_size);
 }
 
 }  // namespace
@@ -214,7 +216,8 @@ gfx::Image SelectFaviconFramesFromPNGs(
   gfx::ImageSkia resized_image_skia;
   for (size_t i = 0; i < favicon_scales_to_generate.size(); ++i) {
     float scale = favicon_scales_to_generate[i];
-    int desired_size_in_pixel = std::ceil(favicon_size * scale);
+    int desired_size_in_pixel =
+        static_cast<int>(std::ceil(favicon_size * scale));
     SkBitmap bitmap =
         ResizeBitmapByDownsamplingIfPossible(bitmaps, desired_size_in_pixel);
     resized_image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));

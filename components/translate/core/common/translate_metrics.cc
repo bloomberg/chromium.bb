@@ -82,19 +82,22 @@ void ReportLanguageVerification(LanguageVerificationType type) {
 void ReportTimeToBeReady(double time_in_msec) {
   UMA_HISTOGRAM_MEDIUM_TIMES(
       kTranslateTimeToBeReady,
-      base::TimeDelta::FromMicroseconds(time_in_msec * 1000.0));
+      base::TimeDelta::FromMicroseconds(
+          static_cast<int64>(time_in_msec * 1000.0)));
 }
 
 void ReportTimeToLoad(double time_in_msec) {
   UMA_HISTOGRAM_MEDIUM_TIMES(
       kTranslateTimeToLoad,
-      base::TimeDelta::FromMicroseconds(time_in_msec * 1000.0));
+      base::TimeDelta::FromMicroseconds(
+          static_cast<int64>(time_in_msec * 1000.0)));
 }
 
 void ReportTimeToTranslate(double time_in_msec) {
   UMA_HISTOGRAM_MEDIUM_TIMES(
       kTranslateTimeToTranslate,
-      base::TimeDelta::FromMicroseconds(time_in_msec * 1000.0));
+      base::TimeDelta::FromMicroseconds(
+          static_cast<int64>(time_in_msec * 1000.0)));
 }
 
 void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end) {

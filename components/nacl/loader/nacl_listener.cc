@@ -208,7 +208,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
         IPC::PlatformFileForTransitToPlatformFile(ipc_fd);
 #if defined(OS_WIN)
     // On Windows, valid handles are 32 bit unsigned integers so this is safe.
-    *fd = reinterpret_cast<uintptr_t>(handle);
+    *fd = reinterpret_cast<int32>(handle);
 #else
     *fd = handle;
 #endif

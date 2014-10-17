@@ -41,8 +41,9 @@ SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
 
   {
     SkCanvas canvas(bitmap);
-    SkRect dest(SkRect::MakeWH(desired_size, desired_size));
-    canvas.drawBitmapRect(contents, NULL, dest);
+    canvas.drawBitmapRect(
+        contents, NULL,
+        SkRect::MakeFromIRect(SkIRect::MakeWH(desired_size, desired_size)));
   }
 
   return bitmap;
@@ -224,7 +225,8 @@ gfx::ImageSkia CreateFaviconImageSkia(
   } else {
     for (std::vector<float>::const_iterator iter = favicon_scales.begin();
          iter != favicon_scales.end(); ++iter) {
-      desired_sizes.push_back(ceil(desired_size_in_dip * (*iter)));
+      desired_sizes.push_back(
+          static_cast<int>(ceil(desired_size_in_dip * (*iter))));
     }
   }
 

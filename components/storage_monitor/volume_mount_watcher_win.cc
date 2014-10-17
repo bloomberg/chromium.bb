@@ -343,7 +343,7 @@ base::FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {
   if (drive_number < 0 || drive_number > 25)
     return base::FilePath();
   base::string16 path(L"_:\\");
-  path[0] = L'A' + drive_number;
+  path[0] = static_cast<base::char16>('A' + drive_number);
   return base::FilePath(path);
 }
 
