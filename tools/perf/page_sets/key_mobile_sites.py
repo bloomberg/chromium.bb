@@ -10,7 +10,7 @@ class KeyMobileSitesPage(page_module.Page):
   def __init__(self, url, page_set, name=''):
     super(KeyMobileSitesPage, self).__init__(
         url=url, page_set=page_set, name=name,
-        credentials_path = 'data/credentials.json')
+        credentials_path='data/credentials.json')
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_mobile_sites.json'
 
@@ -22,6 +22,12 @@ class KeyMobileSitesPage(page_module.Page):
 
   def RunRepaint(self, action_runner):
     action_runner.RepaintContinuously(seconds=5)
+
+  def RunTaskExecutionTime(self, action_runner):
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage()
+    interaction.End()
 
 
 class Page1(KeyMobileSitesPage):
