@@ -176,7 +176,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyURLVisited(ui::PageTransition transition,
                                 const history::URLRow& row,
                                 const history::RedirectList& redirects,
-                                base::Time visit_time) OVERRIDE {
+                                base::Time visit_time) override {
     service_task_runner_->PostTask(FROM_HERE,
                                    base::Bind(&HistoryService::NotifyURLVisited,
                                               history_service_,

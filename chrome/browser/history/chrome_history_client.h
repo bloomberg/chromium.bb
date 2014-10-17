@@ -50,7 +50,7 @@ class ChromeHistoryClient : public history::HistoryClient,
                             ui::PageTransition transition,
                             const history::URLRow& row,
                             const history::RedirectList& redirects,
-                            base::Time visit_time) OVERRIDE;
+                            base::Time visit_time) override;
 
   // TopSitesObserver:
   virtual void TopSitesLoaded(history::TopSites* top_sites) override;

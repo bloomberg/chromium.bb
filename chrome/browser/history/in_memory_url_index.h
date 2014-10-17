@@ -245,7 +245,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
                             ui::PageTransition transition,
                             const URLRow& row,
                             const RedirectList& redirects,
-                            base::Time visit_time) OVERRIDE;
+                            base::Time visit_time) override;
 
   // Notification handlers.
   void OnURLsModified(const URLsModifiedDetails* details);

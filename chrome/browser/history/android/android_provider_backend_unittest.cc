@@ -79,7 +79,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   virtual void NotifyURLVisited(ui::PageTransition,
                                 const history::URLRow& row,
                                 const history::RedirectList& redirects,
-                                base::Time visit_time) OVERRIDE {}
+                                base::Time visit_time) override {}
   virtual void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override {

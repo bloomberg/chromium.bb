@@ -78,7 +78,7 @@ class InMemoryHistoryBackend : public HistoryServiceObserver,
                             ui::PageTransition transition,
                             const URLRow& row,
                             const RedirectList& redirects,
-                            base::Time visit_time) OVERRIDE;
+                            base::Time visit_time) override;
 
   // Notification callback.
   virtual void Observe(int type,
