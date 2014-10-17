@@ -33,6 +33,8 @@ class FormDataList;
 class HTMLFormElement;
 class ValidationMessageClient;
 
+enum CheckValidityEventBehavior { CheckValidityDispatchNoEvent, CheckValidityDispatchInvalidEvent };
+
 // HTMLFormControlElement is the default implementation of FormAssociatedElement,
 // and form-associated element implementations should use HTMLFormControlElement
 // unless there is a special reason.
@@ -85,11 +87,10 @@ public:
     virtual void setActivatedSubmit(bool) { }
 
     virtual bool willValidate() const override;
-    virtual bool matchesValidityPseudoClasses() const override;
 
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
-    bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls = 0);
+    bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls = 0, CheckValidityEventBehavior = CheckValidityDispatchInvalidEvent);
     // This must be called when a validation constraint or control value is changed.
     void setNeedsValidityCheck();
     virtual void setCustomValidity(const String&) override final;
@@ -157,6 +158,7 @@ private:
 
     virtual bool isDefaultButtonForForm() const override final;
     virtual bool isValidElement() override final;
+    virtual bool matchesValidityPseudoClasses() const override final;
     void updateAncestorDisabledState() const;
 
     bool isValidationMessageVisible() const;

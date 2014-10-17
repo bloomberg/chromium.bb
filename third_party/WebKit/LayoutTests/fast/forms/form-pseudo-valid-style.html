@@ -30,7 +30,7 @@ var parent = document.createElement('div');
 document.body.appendChild(parent);
 
 debug('Removing and adding required text inputs and modifying ther value by a DOM tree mutation:');
-parent.innerHTML = '<form id=form1><input type=text id=input1 required><input type=text id=input2 required value="a"><input type=submit id=sub1></form>';
+parent.innerHTML = '<form id=form1><input type=text id=input1 required><input type=text id=input2 required value=a><input type=submit id=sub1></form>';
 var form1 = $('form1');
 var input1 = $('input1');
 var input2 = $('input2');
@@ -59,7 +59,7 @@ form1.appendChild(div1);
 shouldBe('div1.appendChild(input1); backgroundOf(form1)', 'invalidColor');
 debug('');
 
-debug('Render multiple forms and move an invalid input from one to another:');
+debug('Render multiple forms and reassign an invalid input from one to another:');
 parent.innerHTML = '<form id=form1><input type=text id=input1 required><input type=text id=input2 required value="a"></form>'
     + '<form id=form2><input type=text id=input3><input type=text id=input4 required value="a"></form>'
     + '<form id=form3></form>';
@@ -67,11 +67,18 @@ shouldBe('backgroundOf($("form1"))', 'invalidColor');
 shouldBe('backgroundOf($("form2"))', 'validColor');
 shouldBe('backgroundOf($("form3"))', 'validColor');
 var input1 = $('input1');
-var form1 = $('form1');
-var form3 = $('form3');
 input1.setAttribute("form", "form3");
 shouldBe('backgroundOf($("form1"))', 'validColor');
 shouldBe('backgroundOf($("form3"))', 'invalidColor');
+debug('');
+
+debug('Ensure that invalid event was not triggered on style evaluation:');
+var val = '0';
+parent.innerHTML = '<form id=form1><input type=text id=input1 required oninvalid="val=\'1\';"></form>';
+var form1 = $('form1');
+shouldBe('backgroundOf(form1)', 'invalidColor');
+shouldBeEqualToString('val', '0');
+shouldBeEqualToString('form1.checkValidity(); val', '1');
 debug('');
 
 parent.innerHTML = '';

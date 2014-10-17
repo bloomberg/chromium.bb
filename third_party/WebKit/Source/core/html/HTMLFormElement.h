@@ -47,8 +47,6 @@ public:
     virtual ~HTMLFormElement();
     virtual void trace(Visitor*) override;
 
-    virtual bool matchesValidityPseudoClasses() const override final;
-    virtual bool isValidElement() override final;
     void setNeedsValidityCheck();
 
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
@@ -97,6 +95,8 @@ public:
     HTMLFormControlElement* defaultButton() const;
 
     bool checkValidity();
+    virtual bool matchesValidityPseudoClasses() const override final;
+    virtual bool isValidElement() override final;
 
     enum AutocompleteResult {
         AutocompleteResultSuccess,
@@ -151,7 +151,7 @@ private:
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >*);
+    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >*, CheckValidityEventBehavior);
 
     Element* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Element*, const AtomicString& pastName);

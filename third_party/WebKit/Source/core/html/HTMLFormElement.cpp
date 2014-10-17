@@ -116,7 +116,7 @@ bool HTMLFormElement::matchesValidityPseudoClasses() const
 
 bool HTMLFormElement::isValidElement()
 {
-    return checkValidity();
+    return !checkInvalidControlsAndCollectUnhandled(0, CheckValidityDispatchNoEvent);
 }
 
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
@@ -290,7 +290,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
     }
 
     WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> > unhandledInvalidControls;
-    if (!checkInvalidControlsAndCollectUnhandled(&unhandledInvalidControls))
+    if (!checkInvalidControlsAndCollectUnhandled(&unhandledInvalidControls, CheckValidityDispatchInvalidEvent))
         return true;
     // Because the form has invalid controls, we abort the form submission and
     // show a validation message on a focusable form control.
@@ -733,10 +733,10 @@ void HTMLFormElement::setNeedsValidityCheck()
 
 bool HTMLFormElement::checkValidity()
 {
-    return !checkInvalidControlsAndCollectUnhandled(0);
+    return !checkInvalidControlsAndCollectUnhandled(0, CheckValidityDispatchInvalidEvent);
 }
 
-bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls)
+bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
     RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     // Copy associatedElements because event handlers called from
@@ -750,7 +750,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<R
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
-            if (!control->checkValidity(unhandledInvalidControls) && control->formOwner() == this)
+            if (!control->checkValidity(unhandledInvalidControls, eventBehavior) && control->formOwner() == this)
                 hasInvalidControls = true;
         }
     }

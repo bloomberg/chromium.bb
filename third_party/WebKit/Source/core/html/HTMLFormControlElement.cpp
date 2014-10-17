@@ -486,10 +486,12 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
     return &page->validationMessageClient();
 }
 
-bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls)
+bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
     if (!willValidate() || isValidElement())
         return true;
+    if (eventBehavior != CheckValidityDispatchInvalidEvent)
+        return false;
     // An event handler can deref this object.
     RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
     RefPtrWillBeRawPtr<Document> originalDocument(document());

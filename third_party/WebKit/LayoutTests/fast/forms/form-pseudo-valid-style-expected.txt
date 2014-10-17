@@ -19,12 +19,17 @@ Adding a required text input that is not a direct child of the form:
 PASS backgroundOf(form1) is validColor
 PASS div1.appendChild(input1); backgroundOf(form1) is invalidColor
 
-Render multiple forms and move an invalid input from one to another:
+Render multiple forms and reassign an invalid input from one to another:
 PASS backgroundOf($("form1")) is invalidColor
 PASS backgroundOf($("form2")) is validColor
 PASS backgroundOf($("form3")) is validColor
 PASS backgroundOf($("form1")) is validColor
 PASS backgroundOf($("form3")) is invalidColor
+
+Ensure that invalid event was not triggered on style evaluation:
+PASS backgroundOf(form1) is invalidColor
+PASS val is "0"
+PASS form1.checkValidity(); val is "1"
 
 PASS successfullyParsed is true
 
