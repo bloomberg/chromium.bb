@@ -33,6 +33,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/FrameTree.h"
 #include "core/rendering/RenderImage.h"
@@ -371,10 +372,12 @@ bool HitTestResult::isContentEditable() const
         return false;
 
     if (isHTMLTextAreaElement(*m_innerNonSharedNode))
-        return true;
+        return !toHTMLTextAreaElement(*m_innerNonSharedNode).isDisabledOrReadOnly();
 
-    if (isHTMLInputElement(*m_innerNonSharedNode))
-        return toHTMLInputElement(*m_innerNonSharedNode).isTextField();
+    if (isHTMLInputElement(*m_innerNonSharedNode)) {
+        HTMLInputElement& inputElement = toHTMLInputElement(*m_innerNonSharedNode);
+        return !inputElement.isDisabledOrReadOnly() && inputElement.isTextField();
+    }
 
     return m_innerNonSharedNode->hasEditableStyle();
 }
