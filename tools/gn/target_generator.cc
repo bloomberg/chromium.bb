@@ -126,7 +126,7 @@ void TargetGenerator::GenerateTarget(Scope* scope,
     *err = Err(function_call, "Can't define a target in this context.");
     return;
   }
-  collector->push_back(new scoped_ptr<Item>(target.PassAs<Item>()));
+  collector->push_back(target.release());
 }
 
 const BuildSettings* TargetGenerator::GetBuildSettings() const {

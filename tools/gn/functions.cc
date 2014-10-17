@@ -251,7 +251,7 @@ Value RunConfig(const FunctionCallNode* function,
     *err = Err(function, "Can't define a config in this context.");
     return Value();
   }
-  collector->push_back(new scoped_ptr<Item>(config.PassAs<Item>()));
+  collector->push_back(config.release());
 
   return Value();
 }

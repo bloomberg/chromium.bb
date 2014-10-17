@@ -65,7 +65,7 @@ TEST_F(GetTargetOutputsTest, Copy) {
   action->action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/{{source_file_part}}.one");
 
-  items_.push_back(new scoped_ptr<Item>(action));
+  items_.push_back(action);
 
   Err err;
   Value result = GetTargetOutputs("//foo:bar", &err);
@@ -80,7 +80,7 @@ TEST_F(GetTargetOutputsTest, Action) {
       "//output1.txt",
       "//output2.txt");
 
-  items_.push_back(new scoped_ptr<Item>(action));
+  items_.push_back(action);
 
   Err err;
   Value result = GetTargetOutputs("//foo:bar", &err);
@@ -96,7 +96,7 @@ TEST_F(GetTargetOutputsTest, ActionForeach) {
       "//out/Debug/{{source_file_part}}.one",
       "//out/Debug/{{source_file_part}}.two");
 
-  items_.push_back(new scoped_ptr<Item>(action));
+  items_.push_back(action);
 
   Err err;
   Value result = GetTargetOutputs("//foo:bar", &err);

@@ -265,8 +265,10 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
     g_scheduler->FailWithError(err);
 
   // Pass all of the items that were defined off to the builder.
-  for (const auto& item : collected_items)
-    settings->build_settings()->ItemDefined(item->Pass());
+  for (auto& item : collected_items) {
+    settings->build_settings()->ItemDefined(make_scoped_ptr(item));
+    item = nullptr;
+  }
 
   trace.Done();
 

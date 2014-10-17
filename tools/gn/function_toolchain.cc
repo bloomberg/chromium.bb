@@ -342,7 +342,7 @@ Value RunToolchain(Scope* scope,
     *err = Err(function, "Can't define a toolchain in this context.");
     return Value();
   }
-  collector->push_back(new scoped_ptr<Item>(toolchain.PassAs<Item>()));
+  collector->push_back(toolchain.release());
   return Value();
 }
 

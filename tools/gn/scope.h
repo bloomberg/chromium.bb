@@ -40,9 +40,8 @@ class Template;
 class Scope {
  public:
   typedef base::hash_map<base::StringPiece, Value> KeyValueMap;
-  // Holds an owning list of scoped_ptrs of Items (since we can't make a vector
-  // of scoped_ptrs).
-  typedef ScopedVector< scoped_ptr<Item> > ItemVector;
+  // Holds an owning list of Items.
+  typedef ScopedVector<Item> ItemVector;
 
   // Allows code to provide values for built-in variables. This class will
   // automatically register itself on construction and deregister itself on
