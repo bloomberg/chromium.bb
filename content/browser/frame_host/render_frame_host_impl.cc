@@ -1010,10 +1010,7 @@ void RenderFrameHostImpl::OnShowDesktopNotification(
 
   base::Closure cancel_callback;
   GetContentClient()->browser()->ShowDesktopNotification(
-      params,
-      this,
-      delegate.PassAs<DesktopNotificationDelegate>(),
-      &cancel_callback);
+      params, this, delegate.Pass(), &cancel_callback);
   cancel_notification_callbacks_[notification_id] = cancel_callback;
 }
 

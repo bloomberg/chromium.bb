@@ -271,7 +271,7 @@ scoped_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_NO_CONTENT);
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace
@@ -450,7 +450,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
   http_response->set_code(net::HTTP_FOUND);
   http_response->AddCustomHeader(
       "Location", request.relative_url.substr(request_path.length()));
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace

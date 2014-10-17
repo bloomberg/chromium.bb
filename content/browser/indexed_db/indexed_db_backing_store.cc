@@ -3781,7 +3781,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.PassAs<IndexedDBBackingStore::Cursor>();
+  return cursor.Pass();
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -3808,7 +3808,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.PassAs<IndexedDBBackingStore::Cursor>();
+  return cursor.Pass();
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -3837,7 +3837,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.PassAs<IndexedDBBackingStore::Cursor>();
+  return cursor.Pass();
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -3865,7 +3865,7 @@ IndexedDBBackingStore::OpenIndexCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.PassAs<IndexedDBBackingStore::Cursor>();
+  return cursor.Pass();
 }
 
 IndexedDBBackingStore::Transaction::Transaction(

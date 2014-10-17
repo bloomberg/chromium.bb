@@ -748,7 +748,7 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(net::URLRequest* request,
   stream_info->response_headers =
       new net::HttpResponseHeaders(response->head.headers->raw_headers());
   delegate_->OnStreamCreated(request, stream_info.Pass());
-  return handler.PassAs<ResourceHandler>();
+  return handler.Pass();
 }
 
 ResourceDispatcherHostLoginDelegate*

@@ -772,12 +772,12 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
     // 3. The tab is closed while a RequestResource IPC is in flight.
     unowned_requests_.insert(request.get());
     request->Start();
-    return request.PassAs<ResourceThrottle>();
+    return request.Pass();
   }
 
   Client* client = it->second;
   client->ScheduleRequest(url_request, request.get());
-  return request.PassAs<ResourceThrottle>();
+  return request.Pass();
 }
 
 void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {

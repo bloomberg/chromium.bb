@@ -38,7 +38,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
       base::StringPrintf(
           "<html><head><title>%s</title></head></html>",
           request.content.c_str()));
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace

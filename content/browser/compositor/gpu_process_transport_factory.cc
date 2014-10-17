@@ -207,7 +207,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     display_client->set_surface_output_surface(output_surface.get());
     output_surface->set_display_client(display_client.get());
     data->display_client = display_client.Pass();
-    return output_surface.PassAs<cc::OutputSurface>();
+    return output_surface.Pass();
   }
 
   if (!context_provider.get()) {
@@ -216,14 +216,12 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
                  " compositing with browser threaded compositing. Aborting.";
     }
 
-    scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
-        new SoftwareBrowserCompositorOutputSurface(
-            output_surface_proxy_,
-            CreateSoftwareOutputDevice(compositor),
-            per_compositor_data_[compositor]->surface_id,
-            &output_surface_map_,
-            compositor->vsync_manager()));
-    return surface.PassAs<cc::OutputSurface>();
+    return make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
+        output_surface_proxy_,
+        CreateSoftwareOutputDevice(compositor),
+        per_compositor_data_[compositor]->surface_id,
+        &output_surface_map_,
+        compositor->vsync_manager()));
   }
 
   scoped_ptr<BrowserCompositorOutputSurface> surface;
@@ -249,7 +247,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (data->reflector.get())
     data->reflector->ReattachToOutputSurfaceFromMainThread(surface.get());
 
-  return surface.PassAs<cc::OutputSurface>();
+  return surface.Pass();
 }
 
 scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(

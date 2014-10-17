@@ -522,7 +522,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequestAndSendRedirectResponse(
     response->set_code(net::HTTP_FOUND);
     response->AddCustomHeader("Location", target_url.spec());
   }
-  return response.PassAs<net::test_server::HttpResponse>();
+  return response.Pass();
 }
 
 // Creates a request handler for EmbeddedTestServer that responds with a HTTP
@@ -546,7 +546,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequestAndSendBasicResponse(
     response->set_content_type(content_type);
     response->set_content(body);
   }
-  return response.PassAs<net::test_server::HttpResponse>();
+  return response.Pass();
 }
 
 // Creates a request handler for an EmbeddedTestServer that response with an

@@ -304,7 +304,7 @@ class ResourceLoaderTest : public testing::Test,
   virtual scoped_ptr<ResourceHandler> WrapResourceHandler(
       scoped_ptr<ResourceHandlerStub> leaf_handler,
       net::URLRequest* request) {
-    return leaf_handler.PassAs<ResourceHandler>();
+    return leaf_handler.Pass();
   }
 
   virtual void SetUp() override {
@@ -377,8 +377,7 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   // Ownership of the |test_store| is about to be turned over to ResourceLoader.
   // We need to keep raw pointer copies to access these objects later.
   ClientCertStoreStub* raw_ptr_to_store = test_store.get();
-  resource_context_.SetClientCertStore(
-      test_store.PassAs<net::ClientCertStore>());
+  resource_context_.SetClientCertStore(test_store.Pass());
 
   // Prepare a dummy certificate request.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
@@ -523,14 +522,13 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
 
     // Inject them into the handler.
     scoped_ptr<RedirectToFileResourceHandler> handler(
-        new RedirectToFileResourceHandler(
-            leaf_handler.PassAs<ResourceHandler>(), request));
+        new RedirectToFileResourceHandler(leaf_handler.Pass(), request));
     redirect_to_file_resource_handler_ = handler.get();
     handler->SetCreateTemporaryFileStreamFunctionForTesting(
         base::Bind(&ResourceLoaderRedirectToFileTest::PostCallback,
                    base::Unretained(this),
-                   base::Passed(file_stream.PassAs<net::FileStream>())));
-    return handler.PassAs<ResourceHandler>();
+                   base::Passed(&file_stream)));
+    return handler.Pass();
   }
 
  private:

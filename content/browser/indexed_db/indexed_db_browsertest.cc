@@ -504,7 +504,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
-    return http_response.PassAs<net::test_server::HttpResponse>();
+    return http_response.Pass();
   } else if (request_path == "fail" && !request_query.empty()) {
     FailClass failure_class = FAIL_CLASS_NOTHING;
     FailMethod failure_method = FAIL_METHOD_NOTHING;
@@ -568,7 +568,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
-    return http_response.PassAs<net::test_server::HttpResponse>();
+    return http_response.Pass();
   }
 
   // A request for a test resource
@@ -581,7 +581,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
   if (!base::ReadFileToString(resourcePath, &file_contents))
     return scoped_ptr<net::test_server::HttpResponse>();
   http_response->set_content(file_contents);
-  return http_response.PassAs<net::test_server::HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace

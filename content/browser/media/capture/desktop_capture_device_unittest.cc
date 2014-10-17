@@ -175,8 +175,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_device_->AllocateAndStart(
-      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+  capture_device_->AllocateAndStart(capture_params, client.Pass());
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   capture_device_->StopAndDeAllocate();
 
@@ -212,8 +211,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
 
-  capture_device_->AllocateAndStart(
-      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+  capture_device_->AllocateAndStart(capture_params, client.Pass());
 
   // Capture at least two frames, to ensure that the source frame size has
   // changed while capturing.

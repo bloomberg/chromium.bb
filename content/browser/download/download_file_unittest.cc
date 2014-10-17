@@ -182,7 +182,7 @@ class DownloadFileTest : public testing::Test {
                                  net::BoundNetLog(),
                                  observer_factory_.GetWeakPtr()));
     download_file_impl->SetClientGuid("12345678-ABCD-1234-DCBA-123456789ABC");
-    download_file_ = download_file_impl.PassAs<DownloadFile>();
+    download_file_ = download_file_impl.Pass();
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))

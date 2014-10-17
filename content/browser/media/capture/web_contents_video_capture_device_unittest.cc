@@ -402,7 +402,7 @@ class StubClientObserver {
   virtual ~StubClientObserver() {}
 
   scoped_ptr<media::VideoCaptureDevice::Client> PassClient() {
-    return client_.PassAs<media::VideoCaptureDevice::Client>();
+    return client_.Pass();
   }
 
   void QuitIfConditionMet(SkColor color) {

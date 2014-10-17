@@ -181,7 +181,7 @@ SynchronousCompositorFactoryImpl::CreateOutputSurface(
   scoped_ptr<SynchronousCompositorOutputSurface> output_surface(
       new SynchronousCompositorOutputSurface(routing_id,
                                              frame_swap_message_queue));
-  return output_surface.PassAs<cc::OutputSurface>();
+  return output_surface.Pass();
 }
 
 InputHandlerManagerClient*

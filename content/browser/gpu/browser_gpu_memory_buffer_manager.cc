@@ -139,7 +139,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
     scoped_ptr<GpuMemoryBufferImpl> buffer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  request->result = buffer.PassAs<gfx::GpuMemoryBuffer>();
+  request->result = buffer.Pass();
   request->event.Signal();
 }
 

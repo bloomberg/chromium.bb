@@ -121,7 +121,7 @@ void LevelDBTransaction::Rollback() {
 }
 
 scoped_ptr<LevelDBIterator> LevelDBTransaction::CreateIterator() {
-  return TransactionIterator::Create(this).PassAs<LevelDBIterator>();
+  return TransactionIterator::Create(this);
 }
 
 scoped_ptr<LevelDBTransaction::DataIterator>

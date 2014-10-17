@@ -460,8 +460,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
   pending_replies_[render_frame_host] = reply_msg;
   scoped_refptr<GinJavaMethodInvocationHelper> result =
       new GinJavaMethodInvocationHelper(
-          make_scoped_ptr(new GinJavaBoundObjectDelegate(object))
-              .PassAs<GinJavaMethodInvocationHelper::ObjectDelegate>(),
+          make_scoped_ptr(new GinJavaBoundObjectDelegate(object)),
           method_name,
           arguments);
   result->Init(this);
