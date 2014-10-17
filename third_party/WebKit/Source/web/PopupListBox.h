@@ -243,7 +243,7 @@ private:
 
     int scrollX() const { return scrollPosition().x(); }
     int scrollY() const { return scrollPosition().y(); }
-    void updateScrollbars(const IntPoint& desiredOffset);
+    void updateScrollbars(IntPoint desiredOffset);
     void setHasVerticalScrollbar(bool);
     Scrollbar* scrollbarAtWindowPoint(const IntPoint& windowPoint);
     IntRect contentsToWindow(const IntRect&) const;

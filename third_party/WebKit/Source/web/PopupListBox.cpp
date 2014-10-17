@@ -966,7 +966,7 @@ IntRect PopupListBox::visibleContentRect(IncludeScrollbarsInRect scrollbarInclus
     return IntRect(m_scrollOffset, size);
 }
 
-void PopupListBox::updateScrollbars(const IntPoint& desiredOffset)
+void PopupListBox::updateScrollbars(IntPoint desiredOffset)
 {
     IntSize oldVisibleSize = visibleContentRect().size();
     adjustScrollbarExistence();
@@ -979,6 +979,10 @@ void PopupListBox::updateScrollbars(const IntPoint& desiredOffset)
         else
             invalidateRect(IntRect(oldVisibleSize.width(), 0, newVisibleSize.width() - oldVisibleSize.width(), newVisibleSize.height()));
     }
+
+    desiredOffset = desiredOffset.shrunkTo(maximumScrollPosition());
+    desiredOffset = desiredOffset.expandedTo(minimumScrollPosition());
+
     if (desiredOffset != scrollPosition())
         ScrollableArea::scrollToOffsetWithoutAnimation(desiredOffset);
 }
