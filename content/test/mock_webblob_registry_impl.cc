@@ -6,7 +6,6 @@
 
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebThreadSafeData.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 using blink::WebBlobData;
@@ -49,6 +48,11 @@ void MockWebBlobRegistryImpl::registerStreamURL(const WebURL& url,
 
 void MockWebBlobRegistryImpl::addDataToStream(const WebURL& url,
                                               WebThreadSafeData& data) {
+}
+
+void MockWebBlobRegistryImpl::addDataToStream(const WebURL& url,
+                                              const char* data,
+                                              size_t length) {
 }
 
 void MockWebBlobRegistryImpl::finalizeStream(const WebURL& url) {

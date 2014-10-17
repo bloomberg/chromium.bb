@@ -164,32 +164,37 @@ void WebBlobRegistryImpl::registerStreamURL(
 
 void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
                                           WebThreadSafeData& data) {
+  addDataToStream(url, data.data(), data.size());
+}
+
+void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
+                                          const char* data, size_t length) {
   DCHECK(ChildThread::current());
-  if (data.size() == 0)
+  if (length == 0)
     return;
-  if (data.size() < kLargeThresholdBytes) {
+  if (length < kLargeThresholdBytes) {
     storage::BlobData::Item item;
-    item.SetToBytes(data.data(), data.size());
+    item.SetToBytes(data, length);
     sender_->Send(new StreamHostMsg_AppendBlobDataItem(url, item));
   } else {
     // We handle larger amounts of data via SharedMemory instead of
     // writing it directly to the IPC channel.
     size_t shared_memory_size = std::min(
-        data.size(), kMaxSharedMemoryBytes);
+        length, kMaxSharedMemoryBytes);
     scoped_ptr<base::SharedMemory> shared_memory(
         ChildThread::AllocateSharedMemory(shared_memory_size,
                                           sender_.get()));
     CHECK(shared_memory.get());
 
-    size_t data_size = data.size();
-    const char* data_ptr = data.data();
-    while (data_size) {
-      size_t chunk_size = std::min(data_size, shared_memory_size);
-      memcpy(shared_memory->memory(), data_ptr, chunk_size);
+    size_t remaining_bytes = length;
+    const char* current_ptr = data;
+    while (remaining_bytes) {
+      size_t chunk_size = std::min(remaining_bytes, shared_memory_size);
+      memcpy(shared_memory->memory(), current_ptr, chunk_size);
       sender_->Send(new StreamHostMsg_SyncAppendSharedMemory(
           url, shared_memory->handle(), chunk_size));
-      data_size -= chunk_size;
-      data_ptr += chunk_size;
+      remaining_bytes -= chunk_size;
+      current_ptr += chunk_size;
     }
   }
 }
