@@ -76,6 +76,7 @@ public:
     virtual void disconnectOwnerElement();
 
     FrameOwner* owner() const;
+    void setOwner(FrameOwner* owner) { m_owner = owner; }
     HTMLFrameOwnerElement* deprecatedLocalOwner() const;
 
     // FIXME: LocalDOMWindow and Document should both be moved to LocalFrame

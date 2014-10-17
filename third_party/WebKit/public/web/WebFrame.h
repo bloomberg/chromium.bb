@@ -667,6 +667,12 @@ protected:
     WebFrame();
     virtual ~WebFrame();
 
+    // Sets the parent WITHOUT fulling adding it to the frame tree.
+    // Used to lie to a local frame that is replacing a remote frame,
+    // so it can properly start a navigation but wait to swap until
+    // commit-time.
+    void setParent(WebFrame*);
+
 private:
     friend class OpenedFrameTracker;
 

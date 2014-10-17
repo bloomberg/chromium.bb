@@ -221,6 +221,7 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
     // WebLocalFrame methods:
+    virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) override;
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) override;
     virtual bool isLoading() const override;
     virtual bool isResourceLoadInProgress() const override;

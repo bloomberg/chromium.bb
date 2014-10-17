@@ -205,6 +205,7 @@
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentPrivate.h"
 #include "web/WebPluginContainerImpl.h"
+#include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
@@ -1798,6 +1799,20 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
     String scriptResult = toCoreString(v8::Handle<v8::String>::Cast(result));
     if (!frame()->navigationScheduler().locationChangePending())
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
+}
+
+void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame)
+{
+    Frame* oldFrame = toCoreFrame(oldWebFrame);
+    OwnPtr<FrameOwner> tempOwner = adoptPtr(new PlaceholderFrameOwner());
+    m_frame = LocalFrame::create(&m_frameLoaderClientImpl, oldFrame->host(), tempOwner.get());
+    m_frame->setOwner(oldFrame->owner());
+    m_frame->tree().setName(oldFrame->tree().name());
+    setParent(oldWebFrame->parent());
+    // We must call init() after m_frame is assigned because it is referenced
+    // during init(). Note that this may dispatch JS events; the frame may be
+    // detached after init() returns.
+    m_frame->init();
 }
 
 void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)

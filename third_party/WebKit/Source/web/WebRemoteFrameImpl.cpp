@@ -5,7 +5,6 @@
 #include "config.h"
 #include "web/WebRemoteFrameImpl.h"
 
-#include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
@@ -76,20 +75,7 @@ void RemoteBridgeFrameOwner::dispatchLoad()
     // FIXME: Implement. Most likely goes through m_frame->client().
 }
 
-// FIXME: This is just a placeholder frame owner to supply to RemoteFrame when
-// the parent is also a remote frame. Strictly speaking, this shouldn't be
-// necessary, since a remote frame shouldn't ever need to communicate with a
-// remote parent (there are no sandbox flags to retrieve in this case, nor can
-// the RemoteFrame itself load a document). In most circumstances, the check for
-// frame->owner() can be replaced with a check for frame->tree().parent(). Once
-// that's done, this class can be removed.
-class PlaceholderFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<PlaceholderFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PlaceholderFrameOwner);
-public:
-    virtual bool isLocal() const override;
-    virtual SandboxFlags sandboxFlags() const override;
-    virtual void dispatchLoad() override;
-};
+} // namespace
 
 bool PlaceholderFrameOwner::isLocal() const
 {
@@ -98,16 +84,12 @@ bool PlaceholderFrameOwner::isLocal() const
 
 SandboxFlags PlaceholderFrameOwner::sandboxFlags() const
 {
-    ASSERT_NOT_REACHED();
     return 0;
 }
 
 void PlaceholderFrameOwner::dispatchLoad()
 {
-    ASSERT_NOT_REACHED();
 }
-
-} // namespace
 
 WebRemoteFrame* WebRemoteFrame::create(WebRemoteFrameClient* client)
 {

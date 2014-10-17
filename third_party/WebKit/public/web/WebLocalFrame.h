@@ -32,6 +32,13 @@ public:
     // the given element is not a frame, iframe or if the frame is empty.
     BLINK_EXPORT static WebLocalFrame* fromFrameOwnerElement(const WebElement&);
 
+    // Initialization ---------------------------------------------------------
+
+    // Used when we might swap from a remote frame to a local frame.
+    // Creates a provisional, semi-attached frame that will be fully
+    // swapped into the frame tree if it commits.
+    virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) = 0;
+
 
     // Navigation Ping --------------------------------------------------------
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;

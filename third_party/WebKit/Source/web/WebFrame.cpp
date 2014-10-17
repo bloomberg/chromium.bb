@@ -42,10 +42,6 @@ bool WebFrame::swap(WebFrame* frame)
     if (!oldFrame->host())
         return false;
 
-    // The frame being swapped in should not have a Frame associated
-    // with it yet.
-    ASSERT(!toCoreFrame(frame));
-
     if (m_parent) {
         if (m_parent->m_firstChild == this)
             m_parent->m_firstChild = frame;
@@ -79,7 +75,11 @@ bool WebFrame::swap(WebFrame* frame)
     // increments of connected subframes.
     FrameOwner* owner = oldFrame->owner();
     oldFrame->disconnectOwnerElement();
-    if (frame->isWebLocalFrame()) {
+    if (toCoreFrame(frame)) {
+        ASSERT(owner == toCoreFrame(frame)->owner());
+        if (owner->isLocal())
+            toHTMLFrameOwnerElement(owner)->setContentFrame(*toCoreFrame(frame));
+    } else if (frame->isWebLocalFrame()) {
         toWebLocalFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name(), nullAtom);
     } else {
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
@@ -144,6 +144,11 @@ void WebFrame::removeChild(WebFrame* child)
 
     toCoreFrame(this)->tree().invalidateScopedChildCount();
     toCoreFrame(this)->host()->decrementSubframeCount();
+}
+
+void WebFrame::setParent(WebFrame* parent)
+{
+    m_parent = parent;
 }
 
 WebFrame* WebFrame::parent() const

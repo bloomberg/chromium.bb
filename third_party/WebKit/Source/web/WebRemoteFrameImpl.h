@@ -5,6 +5,7 @@
 #ifndef WebRemoteFrameImpl_h
 #define WebRemoteFrameImpl_h
 
+#include "core/frame/FrameOwner.h"
 #include "platform/heap/Handle.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
@@ -19,6 +20,21 @@ class FrameHost;
 class FrameOwner;
 class RemoteFrame;
 class WebViewImpl;
+
+// FIXME: This is just a placeholder frame owner to supply to RemoteFrame when
+// the parent is also a remote frame. Strictly speaking, this shouldn't be
+// necessary, since a remote frame shouldn't ever need to communicate with a
+// remote parent (there are no sandbox flags to retrieve in this case, nor can
+// the RemoteFrame itself load a document). In most circumstances, the check for
+// frame->owner() can be replaced with a check for frame->tree().parent(). Once
+// that's done, this class can be removed.
+class PlaceholderFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<PlaceholderFrameOwner>, public FrameOwner {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PlaceholderFrameOwner);
+public:
+    virtual bool isLocal() const override;
+    virtual SandboxFlags sandboxFlags() const override;
+    virtual void dispatchLoad() override;
+};
 
 class WebRemoteFrameImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebRemoteFrameImpl>, public WebRemoteFrame {
 public:
