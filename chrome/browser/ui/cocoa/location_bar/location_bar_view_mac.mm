@@ -599,7 +599,6 @@ void LocationBarViewMac::HideURL() {
 }
 
 void LocationBarViewMac::EndOriginChipAnimations(bool cancel_fade) {
-  NOTIMPLEMENTED();
 }
 
 InstantController* LocationBarViewMac::GetInstant() {
