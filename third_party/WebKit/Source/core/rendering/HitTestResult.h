@@ -100,7 +100,6 @@ public:
     void setInnerNonSharedNode(Node*);
     void setURLElement(Element*);
     void setScrollbar(Scrollbar*);
-    void setIsFirstLetter(bool b) { m_isFirstLetter = b; }
     void setIsOverWidget(bool b) { m_isOverWidget = b; }
 
     bool isSelected() const;
@@ -148,7 +147,6 @@ private:
     RefPtrWillBeMember<Element> m_innerURLElement;
     RefPtrWillBeMember<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderPart for example).
-    bool m_isFirstLetter;
 
     mutable OwnPtrWillBeMember<NodeSet> m_rectBasedTestResult;
 };

@@ -262,6 +262,8 @@ private:
 
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, RenderStyle* parentStyle, StyleResolverState&);
 
+    PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
+
     Document& document() { return *m_document; }
 
     // FIXME: This likely belongs on RuleSet.

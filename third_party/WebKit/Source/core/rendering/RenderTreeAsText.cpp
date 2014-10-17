@@ -29,6 +29,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
+#include "core/dom/PseudoElement.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

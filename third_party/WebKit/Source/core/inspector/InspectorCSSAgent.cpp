@@ -793,16 +793,22 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     for (size_t i = 0; i < textNodes.size(); ++i) {
         RenderText* renderer = textNodes[i]->renderer();
         collectPlatformFontsForRenderer(renderer, &fontStats);
-        if (renderer->isTextFragment()) {
-            RenderTextFragment* textFragment = toRenderTextFragment(renderer);
-            if (textFragment->firstLetter()) {
-                RenderBoxModelObject* firstLetter = textFragment->firstLetter();
-                for (RenderObject* current = firstLetter->slowFirstChild(); current; current = current->nextSibling()) {
-                    if (current->isText())
-                        collectPlatformFontsForRenderer(toRenderText(current), &fontStats);
-                }
-            }
-        }
+
+        if (!renderer->isTextFragment())
+            continue;
+
+        // If we're the remaining text from a first-letter then our previous
+        // sibling has to be the first-letter renderer.
+        RenderObject* previous = renderer->previousSibling();
+        if (!previous)
+            continue;
+
+        if (!previous->isPseudoElement() || !previous->node()->isFirstLetterPseudoElement())
+            continue;
+
+        // The first-letter pseudoElement only has one child, which is the
+        // first-letter renderer.
+        collectPlatformFontsForRenderer(toRenderText(previous->slowFirstChild()), &fontStats);
     }
 
     platformFonts = TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>::create();

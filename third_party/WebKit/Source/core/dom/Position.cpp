@@ -85,7 +85,7 @@ Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset 
     , m_anchorType(anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset))
     , m_isLegacyEditingPosition(true)
 {
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
+    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
 }
 
 Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorType)
@@ -94,7 +94,7 @@ Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorTyp
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
+    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
 
     ASSERT(anchorType != PositionIsOffsetInAnchor);
     ASSERT(!((anchorType == PositionIsBeforeChildren || anchorType == PositionIsAfterChildren)
@@ -107,7 +107,7 @@ Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorTy
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
+    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
 
     ASSERT(anchorType == PositionIsOffsetInAnchor);
 }
