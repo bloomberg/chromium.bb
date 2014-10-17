@@ -2187,6 +2187,11 @@ public class ContentViewCore
                     final boolean isTouchHandleEvent = true;
                     return onTouchEventImpl(event, isTouchHandleEvent);
                 }
+
+                @Override
+                public boolean isScrollInProgress() {
+                    return ContentViewCore.this.isScrollInProgress();
+                }
             };
         }
         return new PopupTouchHandleDrawable(mTouchHandleDelegate);

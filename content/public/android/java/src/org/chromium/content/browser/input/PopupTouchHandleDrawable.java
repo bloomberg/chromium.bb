@@ -9,8 +9,10 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.PositionObserver;
@@ -60,6 +62,19 @@ public class PopupTouchHandleDrawable extends View {
     static final int RIGHT = 2;
     private int mOrientation = -1;
 
+    // Length of the delay before fading in after the last page movement.
+    private static final int FADE_IN_DELAY_MS = 300;
+    private static final int FADE_IN_DURATION_MS = 200;
+    private Runnable mDeferredHandleFadeInRunnable;
+    private long mFadeStartTime;
+    private boolean mVisible;
+    private boolean mTemporarilyHidden;
+
+    // Deferred runnable to avoid invalidating outside of frame dispatch,
+    // in turn avoiding issues with sync barrier insertion.
+    private Runnable mInvalidationRunnable;
+    private boolean mHasPendingInvalidate;
+
     /**
      * Provides additional interaction behaviors necessary for handle
      * manipulation and interaction.
@@ -81,6 +96,11 @@ public class PopupTouchHandleDrawable extends View {
          * performing handle manipulation.
          */
         boolean onTouchHandleEvent(MotionEvent ev);
+
+        /**
+         * @return Whether the associated content is actively scrolling.
+         */
+        boolean isScrollInProgress();
     }
 
     public PopupTouchHandleDrawable(PopupTouchHandleDrawableDelegate delegate) {
@@ -90,7 +110,9 @@ public class PopupTouchHandleDrawable extends View {
         mContainer = new PopupWindow(mContext, null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
+        mContainer.setAnimationStyle(0);
         mAlpha = 1.f;
+        mVisible = getVisibility() == VISIBLE;
         mParentPositionListener = new PositionObserver.Listener() {
             @Override
             public void onPositionChanged(int x, int y) {
@@ -153,16 +175,16 @@ public class PopupTouchHandleDrawable extends View {
         mHotspotY = 0;
 
         // Force handle repositioning to accommodate the new orientation's hotspot.
-        if (hadValidOrientation) positionAt(oldAdjustedPositionX, oldAdjustedPositionY);
+        if (hadValidOrientation) setFocus(oldAdjustedPositionX, oldAdjustedPositionY);
         mDrawable.setAlpha((int) (255 * mAlpha));
-
-        invalidate();
+        scheduleInvalidate();
     }
 
     private void updateParentPosition(int parentPositionX, int parentPositionY) {
+        if (mParentPositionX == parentPositionX && mParentPositionY == parentPositionY) return;
         mParentPositionX = parentPositionX;
         mParentPositionY = parentPositionY;
-        onPositionChanged();
+        temporarilyHide();
     }
 
     private int getContainerPositionX() {
@@ -173,16 +195,77 @@ public class PopupTouchHandleDrawable extends View {
         return mParentPositionY + mPositionY;
     }
 
-    private void onPositionChanged() {
+    private void updatePosition() {
         mContainer.update(getContainerPositionX(), getContainerPositionY(),
                 getRight() - getLeft(), getBottom() - getTop());
     }
 
-    // x and y are in physical pixels.
-    private void moveTo(int x, int y) {
-        mPositionX = x;
-        mPositionY = y;
-        onPositionChanged();
+    private void updateVisibility() {
+        boolean visible = mVisible && !mTemporarilyHidden;
+        setVisibility(visible ? VISIBLE : INVISIBLE);
+    }
+
+     private void updateAlpha() {
+        if (mAlpha == 1.f) return;
+        long currentTimeMillis = AnimationUtils.currentAnimationTimeMillis();
+        mAlpha = Math.min(1.f, (float) (currentTimeMillis - mFadeStartTime) / FADE_IN_DURATION_MS);
+        mDrawable.setAlpha((int) (255 * mAlpha));
+        scheduleInvalidate();
+    }
+
+    private void temporarilyHide() {
+        mTemporarilyHidden = true;
+        updateVisibility();
+        rescheduleFadeIn();
+    }
+
+    private void doInvalidate() {
+        updatePosition();
+        updateVisibility();
+        invalidate();
+    }
+
+    private void scheduleInvalidate() {
+        if (mInvalidationRunnable == null) {
+            mInvalidationRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mHasPendingInvalidate = false;
+                    doInvalidate();
+                }
+            };
+        }
+
+        if (mHasPendingInvalidate) return;
+        mHasPendingInvalidate = true;
+        ApiCompatibilityUtils.postOnAnimation(this, mInvalidationRunnable);
+    }
+
+    private void rescheduleFadeIn() {
+        if (mDeferredHandleFadeInRunnable == null) {
+            mDeferredHandleFadeInRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (isScrollInProgress()) {
+                        rescheduleFadeIn();
+                        return;
+                    }
+                    mTemporarilyHidden = false;
+                    beginFadeIn();
+                }
+            };
+        }
+
+        removeCallbacks(mDeferredHandleFadeInRunnable);
+        ApiCompatibilityUtils.postOnAnimationDelayed(
+                this, mDeferredHandleFadeInRunnable, FADE_IN_DELAY_MS);
+    }
+
+    private void beginFadeIn() {
+        if (getVisibility() == VISIBLE) return;
+        mAlpha = 0.f;
+        mFadeStartTime = AnimationUtils.currentAnimationTimeMillis();
+        doInvalidate();
     }
 
     @Override
@@ -191,20 +274,15 @@ public class PopupTouchHandleDrawable extends View {
             setMeasuredDimension(0, 0);
             return;
         }
-        setMeasuredDimension(mDrawable.getIntrinsicWidth(),
-                mDrawable.getIntrinsicHeight());
+        setMeasuredDimension(mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
     }
 
     @Override
     protected void onDraw(Canvas c) {
         if (mDrawable == null) return;
+        updateAlpha();
         mDrawable.setBounds(0, 0, getRight() - getLeft(), getBottom() - getTop());
         mDrawable.draw(c);
-    }
-
-    // x and y are in physical pixels.
-    private void positionAt(int x, int y) {
-        moveTo(x - Math.round(mHotspotX), y - Math.round(mHotspotY));
     }
 
     // Returns the x coordinate of the position that the handle appears to be pointing to relative
@@ -217,6 +295,16 @@ public class PopupTouchHandleDrawable extends View {
     // to the handles "parent" view.
     private int getAdjustedPositionY() {
         return mPositionY + Math.round(mHotspotY);
+    }
+
+    private boolean isScrollInProgress() {
+        final PopupTouchHandleDrawableDelegate delegate = mDelegate.get();
+        if (delegate == null) {
+            hide();
+            return false;
+        }
+
+        return delegate.isScrollInProgress();
     }
 
     @CalledByNative
@@ -244,6 +332,7 @@ public class PopupTouchHandleDrawable extends View {
 
     @CalledByNative
     private void hide() {
+        mTemporarilyHidden = false;
         mContainer.dismiss();
         if (mParentPositionObserver != null) {
             mParentPositionObserver.removeListener(mParentPositionListener);
@@ -269,19 +358,30 @@ public class PopupTouchHandleDrawable extends View {
 
     @CalledByNative
     private void setOpacity(float alpha) {
-        if (mAlpha == alpha) return;
-        mAlpha = alpha;
-        if (mDrawable != null) mDrawable.setAlpha((int) (255 * mAlpha));
+        // Ignore opacity updates from the caller as they are not compatible
+        // with the custom fade animation.
     }
 
     @CalledByNative
-    private void setFocus(float x, float y) {
-        positionAt((int) x, (int) y);
+    private void setFocus(float focusX, float focusY) {
+        int x = (int) focusX - Math.round(mHotspotX);
+        int y = (int) focusY - Math.round(mHotspotY);
+        if (mPositionX == x && mPositionY == y) return;
+        mPositionX = x;
+        mPositionY = y;
+        if (isScrollInProgress()) {
+            temporarilyHide();
+        } else {
+            scheduleInvalidate();
+        }
     }
 
     @CalledByNative
     private void setVisible(boolean visible) {
-        setVisibility(visible ? VISIBLE : INVISIBLE);
+        mVisible = visible;
+        int visibility = visible ? VISIBLE : INVISIBLE;
+        if (getVisibility() == visibility) return;
+        scheduleInvalidate();
     }
 
     @CalledByNative
