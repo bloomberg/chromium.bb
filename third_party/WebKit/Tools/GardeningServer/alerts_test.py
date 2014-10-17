@@ -101,11 +101,57 @@ class AlertsTest(unittest.TestCase):
         response = self.testapp.get('/alerts-history')
         self.assertEqual(response.status_int, 200)
         self.assertEqual(response.content_type, 'application/json')
-        response_json = json.loads(response.normal_body)
-        self.assertEqual(len(response_json['history']), 1)
-        self.assertEqual(response_json['history'][0], test_alert)
+        parsed_json = json.loads(response.normal_body)
+        self.assertEqual(len(parsed_json['history']), 1)
 
-    def test_internal_alerts_in_history_visible_to_internal_users_only(self):
+        entry_id = parsed_json['history'][0]
+        response = self.testapp.get('/alerts-history/%s' % entry_id)
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(response.content_type, 'application/json')
+        parsed_json = json.loads(response.normal_body)
+        self.assertEqual(parsed_json['alerts'], test_alert['alerts'])
+
+    def test_provides_login_url(self):
+        response = self.testapp.get('/alerts-history')
+        self.assertIn('login-url', response)
+
+    def test_invalid_keys_return_400(self):
+        response = self.testapp.get('/alerts-history/kjhg$%T',
+                                    expect_errors=True)
+        self.assertEqual(response.status_int, 400)
+        self.assertEqual(response.content_type, 'application/json')
+
+    def test_non_existing_keys_return_404(self):
+        response = self.testapp.get('/alerts-history/5348024557502464',
+                                    expect_errors=True)
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(response.content_type, 'application/json')
+
+    def test_internal_alerts_can_only_retrieved_by_internal_users(self):
+        test_alert = {'alerts': ['hello', 'world', '1']}
+        internal_alert = alerts.AlertsJSON(json=json.dumps(test_alert),
+                                           type='internal-alerts')
+        internal_alert_key = internal_alert.put().integer_id()
+
+        # No signed-in user.
+        response = self.testapp.get('/alerts-history/%s' % internal_alert_key,
+                                    expect_errors=True)
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(response.content_type, 'application/json')
+        parsed_json = json.loads(response.normal_body)
+        self.assertNotIn('alerts', parsed_json)
+
+        # Non-internal user.
+        self.testbed.setup_env(USER_EMAIL='test@example.com', USER_ID='1',
+                               USER_IS_ADMIN='1', overwrite=True)
+        response = self.testapp.get('/alerts-history/%s' % internal_alert_key,
+                                    expect_errors=True)
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(response.content_type, 'application/json')
+        parsed_json = json.loads(response.normal_body)
+        self.assertNotIn('alerts', parsed_json)
+
+    def test_lists_internal_alerts_to_internal_users_only(self):
         test_alert = {'alerts': ['hello', 'world', '1']}
         alerts.AlertsJSON(json=json.dumps(test_alert),
                           type='internal-alerts').put()
@@ -134,7 +180,6 @@ class AlertsTest(unittest.TestCase):
         self.assertEqual(response.content_type, 'application/json')
         response_json = json.loads(response.normal_body)
         self.assertEqual(len(response_json['history']), 1)
-        self.assertEqual(response_json['history'][0], test_alert)
 
     def test_returned_alerts_from_history_are_paged(self):
         for i in range(20):

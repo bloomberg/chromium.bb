@@ -112,22 +112,24 @@ class AlertsHandler(webapp2.RequestHandler):
 
 
 class AlertsHistory(webapp2.RequestHandler):
-    MAX_LIMIT_PER_PAGE = 5
+    MAX_LIMIT_PER_PAGE = 100
 
-    def get(self):
-        alerts_query = AlertsJSON.query().order(-AlertsJSON.date)
-        result_json = {}
+    def get_entry(self, query, key):
+        try:
+            key = int(key)
+        except ValueError:
+            self.response.set_status(400, 'Invalid key format')
+            return {}
 
-        user = users.get_current_user()
-        if not user:
-            result_json['redirect-url'] = users.create_login_url(
-                self.request.uri)
+        ndb_key = ndb.Key(AlertsJSON, key)
+        result = query.filter(AlertsJSON.key == ndb_key).get()
+        if result:
+            return json.loads(result.json)
+        else:
+            self.response.set_status(404, 'Failed to find key %s' % key)
+            return {}
 
-        # Return only public alerts for non-internal users.
-        if not user or not user.email().endswith('@google.com'):
-            alerts_query = alerts_query.filter(
-                AlertsJSON.type == AlertsHandler.ALERTS_TYPE)
-
+    def get_list(self, query):
         cursor = self.request.get('cursor')
         if cursor:
             cursor = datastore_query.Cursor(urlsafe=cursor)
@@ -136,16 +138,32 @@ class AlertsHistory(webapp2.RequestHandler):
         limit = min(self.MAX_LIMIT_PER_PAGE, limit)
 
         if cursor:
-            alerts, next_cursor, has_more = alerts_query.fetch_page(
-                limit, start_cursor=cursor)
+            alerts, next_cursor, has_more = query.fetch_page(limit,
+                                                             start_cursor=cursor)
         else:
-            alerts, next_cursor, has_more = alerts_query.fetch_page(limit)
+            alerts, next_cursor, has_more = query.fetch_page(limit)
 
-        result_json.update({
+        return {
             'has_more': has_more,
             'cursor': next_cursor.urlsafe() if next_cursor else '',
-            'history': [json.loads(alert.json) for alert in alerts]
-        })
+            'history': [alert.key.integer_id() for alert in alerts]
+        }
+
+    def get(self, key=None):
+        query = AlertsJSON.query().order(-AlertsJSON.date)
+        result_json = {}
+
+        user = users.get_current_user()
+        result_json['login-url'] = users.create_login_url(self.request.uri)
+
+        # Return only public alerts for non-internal users.
+        if not user or not user.email().endswith('@google.com'):
+            query = query.filter(AlertsJSON.type == AlertsHandler.ALERTS_TYPE)
+
+        if key:
+            result_json.update(self.get_entry(query, key))
+        else:
+            result_json.update(self.get_list(query))
 
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(json.dumps(result_json))
@@ -153,5 +171,6 @@ class AlertsHistory(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/alerts', AlertsHandler),
-    ('/alerts-history', AlertsHistory)
+    ('/alerts-history', AlertsHistory),
+    ('/alerts-history/(.*)', AlertsHistory),
 ])
