@@ -1,0 +1,1 @@
+/usr/bin/python ../xvfb.py $(PROD_DIR) $(PROD_DIR)/browser_tests --gtest_filter=RemoteDesktopBrowserTest.MANUAL_Launch --run-manual --ui-test-action-timeout=100000 --webapp-unpacked=$(PROD_DIR)/remoting/remoting.webapp --extension-name=Chromoting

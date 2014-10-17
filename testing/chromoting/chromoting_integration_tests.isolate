@@ -6,17 +6,16 @@
     ['OS=="linux"', {
       'variables': {
         'command': [
-          '../xvfb.py',
+          './browser_tests_launcher.py',
+          '-f',
+          './browser_test_commands_linux.txt',
+          '-p',
           '<(PRODUCT_DIR)',
-          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
-          '--gtest_filter=RemoteDesktopBrowserTest.MANUAL_Launch',
-          '--run-manual',
-          '--ui-test-action-timeout=100000',
-          '--webapp-unpacked=<(PRODUCT_DIR)/remoting/remoting.webapp',
-          '--extension-name=Chromoting',
         ],
         'files': [
           '../xvfb.py',
+          './browser_tests_launcher.py',
+          './browser_test_commands_linux.txt',
           '../../remoting/tools/internal/test_accounts.json',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
