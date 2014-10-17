@@ -632,6 +632,8 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
           last_used_profile->GetPath());
       bool signin_required = profile_index != std::string::npos &&
           profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
+
+      // Guest or locked profiles cannot be re-opened on startup.
       if (signin_required || last_used_profile->IsGuestSession()) {
         UserManager::Show(base::FilePath(),
                           profiles::USER_MANAGER_NO_TUTORIAL,
@@ -645,6 +647,16 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       return false;
     }
   } else {
+    // Guest profiles should not be reopened on startup. This can happen if
+    // the last used profile was a Guest, but other profiles were also open
+    // when Chrome was closed. In this case, pick a different open profile
+    // to be the active one, since the Guest profile is never added to the list
+    // of open profiles.
+    if (switches::IsNewAvatarMenu() && last_used_profile->IsGuestSession()) {
+      DCHECK(!last_opened_profiles[0]->IsGuestSession());
+      last_used_profile = last_opened_profiles[0];
+    }
+
     // Launch the last used profile with the full command line, and the other
     // opened profiles without the URLs to launch.
     CommandLine command_line_without_urls(command_line.GetProgram());
@@ -657,6 +669,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // Launch the profiles in the order they became active.
     for (Profiles::const_iterator it = last_opened_profiles.begin();
          it != last_opened_profiles.end(); ++it) {
+      DCHECK(!(*it)->IsGuestSession());
       // Don't launch additional profiles which would only open a new tab
       // page. When restarting after an update, all profiles will reopen last
       // open pages.
@@ -665,11 +678,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       if (*it != last_used_profile &&
           startup_pref.type == SessionStartupPref::DEFAULT &&
           !HasPendingUncleanExit(*it))
-        continue;
-
-      // Don't re-open a browser window for the guest profile.
-      if (switches::IsNewAvatarMenu() &&
-          (*it)->IsGuestSession())
         continue;
 
       if (!browser_creator->LaunchBrowser((*it == last_used_profile) ?
@@ -681,12 +689,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
     // This must be done after all profiles have been launched so the observer
     // knows about all profiles to wait for before activating this one.
-
-    // If the last used profile was the guest one, we didn't open it so
-    // we don't need to activate it either.
-    if (!switches::IsNewAvatarMenu() &&
-        !last_used_profile->IsGuestSession())
-      profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
+    profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
   }
   return true;
 }
