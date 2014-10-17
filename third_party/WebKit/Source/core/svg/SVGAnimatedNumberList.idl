@@ -26,6 +26,8 @@
 [
     NotScriptWrappable,
     SetWrapperReferenceTo(SVGElement contextElement),
+    RuntimeEnabled=SVG1DOM,
+    MeasureAs=SVG1DOM,
 ] interface SVGAnimatedNumberList {
     readonly attribute SVGNumberList baseVal;
     readonly attribute SVGNumberList animVal;

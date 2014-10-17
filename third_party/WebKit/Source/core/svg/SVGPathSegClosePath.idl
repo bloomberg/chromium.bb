@@ -24,5 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathSegClosePath : SVGPathSeg {
+[
+  RuntimeEnabled=SVG1DOM
+] interface SVGPathSegClosePath : SVGPathSeg {
 };

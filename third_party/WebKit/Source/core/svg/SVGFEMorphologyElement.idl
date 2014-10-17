@@ -29,14 +29,14 @@
     DoNotCheckConstants,
 ] interface SVGFEMorphologyElement : SVGElement {
     // Morphology Operators
-    const unsigned short SVG_MORPHOLOGY_OPERATOR_UNKNOWN = 0;
-    const unsigned short SVG_MORPHOLOGY_OPERATOR_ERODE = 1;
-    const unsigned short SVG_MORPHOLOGY_OPERATOR_DILATE = 2;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_MORPHOLOGY_OPERATOR_UNKNOWN = 0;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_MORPHOLOGY_OPERATOR_ERODE = 1;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] const unsigned short SVG_MORPHOLOGY_OPERATOR_DILATE = 2;
 
-    readonly attribute SVGAnimatedString in1;
-    [ImplementedAs=svgOperator] readonly attribute SVGAnimatedEnumeration operator;
-    readonly attribute SVGAnimatedNumber radiusX;
-    readonly attribute SVGAnimatedNumber radiusY;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedString in1;
+    [RuntimeEnabled=SVG1DOM,ImplementedAs=svgOperator] readonly attribute SVGAnimatedEnumeration operator;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber radiusX;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber radiusY;
 };
 
 SVGFEMorphologyElement implements SVGFilterPrimitiveStandardAttributes;

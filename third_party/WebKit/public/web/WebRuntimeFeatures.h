@@ -141,6 +141,8 @@ public:
 
     BLINK_EXPORT static void enableV8IdleTasks(bool);
 
+    BLINK_EXPORT static void enableSVG1DOM(bool);
+
 private:
     WebRuntimeFeatures();
 };

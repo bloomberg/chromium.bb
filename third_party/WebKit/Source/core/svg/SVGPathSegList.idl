@@ -27,7 +27,9 @@
 [
     TypeChecking=Interface,
     SetWrapperReferenceTo(SVGElement contextElement),
-    ImplementedAs=SVGPathSegListTearOff
+    ImplementedAs=SVGPathSegListTearOff,
+    RuntimeEnabled=SVG1DOM,
+    MeasureAs=SVGPathSegDOM,
 ] interface SVGPathSegList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

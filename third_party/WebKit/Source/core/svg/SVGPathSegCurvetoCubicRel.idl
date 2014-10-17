@@ -26,6 +26,8 @@
 
 [
     TypeChecking=Interface,
+    RuntimeEnabled=SVG1DOM,
+    MeasureAs=SVGPathSegDOM,
 ] interface SVGPathSegCurvetoCubicRel : SVGPathSeg {
     attribute float x;
     attribute float y;

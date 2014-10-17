@@ -144,3 +144,4 @@ WebMIDI status=test
 WebVTTRegions depends_on=Media, status=experimental
 V8IdleTasks
 XSLT status=stable
+SVG1DOM status=stable

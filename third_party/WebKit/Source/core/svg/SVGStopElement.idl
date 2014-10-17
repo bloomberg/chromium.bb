@@ -24,6 +24,5 @@
  */
 
 interface SVGStopElement : SVGElement {
-    readonly attribute SVGAnimatedNumber offset;
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber offset;
 };
-

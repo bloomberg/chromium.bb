@@ -26,7 +26,8 @@
 [
     TypeChecking=Interface,
     SetWrapperReferenceTo(SVGElement contextElement),
-    ImplementedAs=SVGStringListTearOff
+    ImplementedAs=SVGStringListTearOff,
+    RuntimeEnabled=SVG1DOM
 ] interface SVGStringList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
@@ -40,4 +41,3 @@
     [RaisesException] DOMString removeItem(unsigned long index);
     [RaisesException] DOMString appendItem(DOMString item);
 };
-

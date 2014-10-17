@@ -26,7 +26,9 @@
 [
     TypeChecking=Interface,
     ImplementedAs=SVGPreserveAspectRatioTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement)
+    SetWrapperReferenceTo(SVGElement contextElement),
+    RuntimeEnabled=SVG1DOM,
+    MeasureAs=SVG1DOM,
 ] interface SVGPreserveAspectRatio {
     // Alignment types
     const unsigned short SVG_PRESERVEASPECTRATIO_UNKNOWN = 0;

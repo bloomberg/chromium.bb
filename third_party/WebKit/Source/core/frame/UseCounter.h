@@ -536,6 +536,11 @@ public:
         NotificationInsecureOrigin = 564,
         NotificationShowEvent = 565,
         CSSXGetComputedStyleQueries = 566,
+        SVG1DOM = 567,
+        SVGPathSegDOM = 568,
+        SVGTransformListConsolidate = 569,
+        SVGAnimatedTransformListBaseVal = 570,
+
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

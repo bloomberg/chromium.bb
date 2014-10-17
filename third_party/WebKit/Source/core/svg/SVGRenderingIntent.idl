@@ -25,7 +25,8 @@
 
 [
     DependentLifetime,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
+    RuntimeEnabled=SVG1DOM
 ] interface SVGRenderingIntent {
     // Rendering Intent Types
     const unsigned short RENDERING_INTENT_UNKNOWN               = 0;
