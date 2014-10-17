@@ -47,7 +47,7 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override final;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override final;
 
-    virtual SVGPaintServer preparePaintServer(RenderObject*) override final;
+    virtual SVGPaintServer preparePaintServer(const RenderObject&) override final;
 
     virtual bool isChildAllowed(RenderObject* child, RenderStyle*) const override final;
 
@@ -63,7 +63,7 @@ protected:
 
 private:
     bool m_shouldCollectGradientAttributes : 1;
-    HashMap<RenderObject*, OwnPtr<GradientData> > m_gradientMap;
+    HashMap<const RenderObject*, OwnPtr<GradientData> > m_gradientMap;
 };
 
 }

@@ -282,7 +282,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
         ASSERT(shape.element());
 
         bool hasFallback;
-        if (RenderSVGResource* strokePaintingResource = RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, const_cast<RenderSVGShape*>(&shape), shape.style(), hasFallback)) {
+        if (RenderSVGResource* strokePaintingResource = RenderSVGResource::requestPaintingResource(ApplyToStrokeMode, shape, shape.style(), hasFallback)) {
             TextStreamSeparator s(" ");
             ts << " [stroke={" << s;
             writeSVGPaintingResource(ts, strokePaintingResource);
@@ -310,7 +310,7 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
             ts << "}]";
         }
 
-        if (RenderSVGResource* fillPaintingResource = RenderSVGResource::requestPaintingResource(ApplyToFillMode, const_cast<RenderSVGShape*>(&shape), shape.style(), hasFallback)) {
+        if (RenderSVGResource* fillPaintingResource = RenderSVGResource::requestPaintingResource(ApplyToFillMode, shape, shape.style(), hasFallback)) {
             TextStreamSeparator s(" ");
             ts << " [fill={" << s;
             writeSVGPaintingResource(ts, fillPaintingResource);

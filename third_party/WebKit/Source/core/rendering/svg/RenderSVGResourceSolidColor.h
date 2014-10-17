@@ -30,7 +30,7 @@ public:
     RenderSVGResourceSolidColor();
     virtual ~RenderSVGResourceSolidColor();
 
-    virtual SVGPaintServer preparePaintServer(RenderObject*) override;
+    virtual SVGPaintServer preparePaintServer(const RenderObject&) override;
 
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;

@@ -45,10 +45,8 @@ void RenderSVGResourceGradient::removeClientFromCache(RenderObject* client, bool
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-SVGPaintServer RenderSVGResourceGradient::preparePaintServer(RenderObject* object)
+SVGPaintServer RenderSVGResourceGradient::preparePaintServer(const RenderObject& object)
 {
-    ASSERT(object);
-
     clearInvalidationMask();
 
     // Be sure to synchronize all SVG properties on the gradientElement _before_ processing any further.
@@ -69,11 +67,11 @@ SVGPaintServer RenderSVGResourceGradient::preparePaintServer(RenderObject* objec
 
     // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
     // then the given effect (e.g. a gradient or a filter) will be ignored.
-    FloatRect objectBoundingBox = object->objectBoundingBox();
+    FloatRect objectBoundingBox = object.objectBoundingBox();
     if (gradientUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
-    OwnPtr<GradientData>& gradientData = m_gradientMap.add(object, nullptr).storedValue->value;
+    OwnPtr<GradientData>& gradientData = m_gradientMap.add(&object, nullptr).storedValue->value;
     if (!gradientData)
         gradientData = adoptPtr(new GradientData);
 

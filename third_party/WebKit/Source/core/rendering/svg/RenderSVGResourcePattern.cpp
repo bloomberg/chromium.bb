@@ -50,10 +50,9 @@ void RenderSVGResourcePattern::removeClientFromCache(RenderObject* client, bool 
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const SVGPatternElement* patternElement)
+PatternData* RenderSVGResourcePattern::buildPattern(const RenderObject& object, const SVGPatternElement* patternElement)
 {
-    ASSERT(object);
-    PatternData* currentData = m_patternMap.get(object);
+    PatternData* currentData = m_patternMap.get(&object);
     if (currentData && currentData->pattern)
         return currentData;
 
@@ -72,7 +71,7 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const 
         return 0;
 
     AffineTransform absoluteTransformIgnoringRotation;
-    SVGRenderingContext::calculateDeviceSpaceTransformation(object, absoluteTransformIgnoringRotation);
+    SVGRenderingContext::calculateDeviceSpaceTransformation(&object, absoluteTransformIgnoringRotation);
 
     // Ignore 2D rotation, as it doesn't affect the size of the tile.
     SVGRenderingContext::clear2DRotation(absoluteTransformIgnoringRotation);
@@ -107,13 +106,11 @@ PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, const 
     // Various calls above may trigger invalidations in some fringe cases (ImageBuffer allocation
     // failures in the SVG image cache for example). To avoid having our PatternData deleted by
     // removeAllClientsFromCache(), we only make it visible in the cache at the very end.
-    return m_patternMap.set(object, patternData.release()).storedValue->value.get();
+    return m_patternMap.set(&object, patternData.release()).storedValue->value.get();
 }
 
-SVGPaintServer RenderSVGResourcePattern::preparePaintServer(RenderObject* object)
+SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const RenderObject& object)
 {
-    ASSERT(object);
-
     clearInvalidationMask();
 
     SVGPatternElement* patternElement = toSVGPatternElement(element());
@@ -130,7 +127,7 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(RenderObject* object
 
     // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
     // then the given effect (e.g. a gradient or a filter) will be ignored.
-    FloatRect objectBoundingBox = object->objectBoundingBox();
+    FloatRect objectBoundingBox = object.objectBoundingBox();
     if (m_attributes.patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
@@ -151,16 +148,15 @@ static inline FloatRect calculatePatternBoundaries(const PatternAttributes& attr
     return SVGLengthContext::resolveRectangle(patternElement, attributes.patternUnits(), objectBoundingBox, attributes.x(), attributes.y(), attributes.width(), attributes.height());
 }
 
-bool RenderSVGResourcePattern::buildTileImageTransform(RenderObject* renderer,
+bool RenderSVGResourcePattern::buildTileImageTransform(const RenderObject& renderer,
                                                        const PatternAttributes& attributes,
                                                        const SVGPatternElement* patternElement,
                                                        FloatRect& patternBoundaries,
                                                        AffineTransform& tileImageTransform) const
 {
-    ASSERT(renderer);
     ASSERT(patternElement);
 
-    FloatRect objectBoundingBox = renderer->objectBoundingBox();
+    FloatRect objectBoundingBox = renderer.objectBoundingBox();
     patternBoundaries = calculatePatternBoundaries(attributes, objectBoundingBox, patternElement);
     if (patternBoundaries.width() <= 0 || patternBoundaries.height() <= 0)
         return false;

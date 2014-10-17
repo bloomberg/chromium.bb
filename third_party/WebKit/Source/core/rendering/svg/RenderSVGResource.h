@@ -54,7 +54,7 @@ public:
     explicit SVGPaintServer(PassRefPtr<Gradient>);
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
-    static SVGPaintServer requestForRenderer(RenderObject&, RenderStyle*, RenderSVGResourceMode);
+    static SVGPaintServer requestForRenderer(const RenderObject&, const RenderStyle*, RenderSVGResourceMode);
 
     void apply(GraphicsContext&, RenderSVGResourceMode, GraphicsContextStateSaver* = 0);
 
@@ -75,13 +75,13 @@ public:
     RenderSVGResource() { }
     virtual ~RenderSVGResource() { }
 
-    virtual SVGPaintServer preparePaintServer(RenderObject*);
+    virtual SVGPaintServer preparePaintServer(const RenderObject&);
 
     virtual RenderSVGResourceType resourceType() const = 0;
 
     // Helper utilities used in the render tree to access resources used for painting shapes/text (gradients & patterns & solid colors only)
     // If hasFallback gets set to true, the sharedSolidPaintingResource is set to a fallback color.
-    static RenderSVGResource* requestPaintingResource(RenderSVGResourceMode, RenderObject*, const RenderStyle*, bool& hasFallback);
+    static RenderSVGResource* requestPaintingResource(RenderSVGResourceMode, const RenderObject&, const RenderStyle*, bool& hasFallback);
     static RenderSVGResourceSolidColor* sharedSolidPaintingResource();
 
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);

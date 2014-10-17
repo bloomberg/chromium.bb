@@ -51,22 +51,22 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
-    virtual SVGPaintServer preparePaintServer(RenderObject*) override;
+    virtual SVGPaintServer preparePaintServer(const RenderObject&) override;
 
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
 private:
-    bool buildTileImageTransform(RenderObject*, const PatternAttributes&, const SVGPatternElement*, FloatRect& patternBoundaries, AffineTransform& tileImageTransform) const;
+    bool buildTileImageTransform(const RenderObject&, const PatternAttributes&, const SVGPatternElement*, FloatRect& patternBoundaries, AffineTransform& tileImageTransform) const;
 
     PassOwnPtr<ImageBuffer> createTileImage(const PatternAttributes&, const FloatRect& tileBoundaries,
                                             const FloatRect& absoluteTileBoundaries, const AffineTransform& tileImageTransform) const;
 
-    PatternData* buildPattern(RenderObject*, const SVGPatternElement*);
+    PatternData* buildPattern(const RenderObject&, const SVGPatternElement*);
 
     bool m_shouldCollectPatternAttributes : 1;
     PatternAttributes m_attributes;
-    HashMap<RenderObject*, OwnPtr<PatternData> > m_patternMap;
+    HashMap<const RenderObject*, OwnPtr<PatternData> > m_patternMap;
 };
 
 }

@@ -84,17 +84,17 @@ void SVGPaintServer::prependTransform(const AffineTransform& transform)
         m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
 }
 
-SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, RenderStyle* style, RenderSVGResourceMode resourceMode)
+SVGPaintServer SVGPaintServer::requestForRenderer(const RenderObject& renderer, const RenderStyle* style, RenderSVGResourceMode resourceMode)
 {
     ASSERT(style);
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
     bool hasFallback = false;
-    RenderSVGResource* paintingResource = RenderSVGResource::requestPaintingResource(resourceMode, &renderer, style, hasFallback);
+    RenderSVGResource* paintingResource = RenderSVGResource::requestPaintingResource(resourceMode, renderer, style, hasFallback);
     if (!paintingResource)
         return invalid();
 
-    SVGPaintServer paintServer = paintingResource->preparePaintServer(&renderer);
+    SVGPaintServer paintServer = paintingResource->preparePaintServer(renderer);
     if (paintServer.isValid())
         return paintServer;
     if (hasFallback)
@@ -102,15 +102,14 @@ SVGPaintServer SVGPaintServer::requestForRenderer(RenderObject& renderer, Render
     return invalid();
 }
 
-SVGPaintServer RenderSVGResource::preparePaintServer(RenderObject*)
+SVGPaintServer RenderSVGResource::preparePaintServer(const RenderObject&)
 {
     ASSERT_NOT_REACHED();
     return SVGPaintServer::invalid();
 }
 
-RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, RenderObject* object, const RenderStyle* style, bool& hasFallback)
+RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceMode mode, const RenderObject& object, const RenderStyle* style, bool& hasFallback)
 {
-    ASSERT(object);
     ASSERT(style);
 
     hasFallback = false;
@@ -166,7 +165,7 @@ RenderSVGResource* RenderSVGResource::requestPaintingResource(RenderSVGResourceM
     }
 
     RenderSVGResource* uriResource = 0;
-    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(object))
+    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(&object))
         uriResource = applyToFill ? resources->fill() : resources->stroke();
 
     // If the requested resource is not available, return the color resource or 'none'.
