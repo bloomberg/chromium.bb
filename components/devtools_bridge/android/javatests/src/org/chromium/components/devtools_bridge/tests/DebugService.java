@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.Process;
 import android.widget.Toast;
 
+import org.chromium.components.devtools_bridge.DevToolsBridgeServerSandbox;
 import org.chromium.components.devtools_bridge.LocalSessionBridge;
 import org.chromium.components.devtools_bridge.LocalTunnelBridge;
 
@@ -27,6 +28,8 @@ public class DebugService extends Service {
             PACKAGE + ".START_TUNNEL_BRIDGE_ACTION";
     public static final String START_SESSION_BRIDGE_ACTION =
             PACKAGE + ".START_SESSION_BRIDGE_ACTION";
+    public static final String START_SERVER_ACTION =
+            PACKAGE + ".START_SERVER_ACTION";
     public static final String STOP_ACTION = PACKAGE + ".STOP_ACTION";
     private static final int NOTIFICATION_ID = 1;
 
@@ -105,6 +108,33 @@ public class DebugService extends Service {
         }
     }
 
+    private class DevToolsBridgeServerSandboxController implements Controller {
+        private DevToolsBridgeServerSandbox mSandbox;
+
+        @Override
+        public void create() {
+            mSandbox = new DevToolsBridgeServerSandbox();
+        }
+
+        @Override
+        public void start() throws Exception {
+            mSandbox.start(DebugService.this);
+        }
+
+        @Override
+        public void stop() {
+            mSandbox.stop();
+        }
+
+        @Override
+        public void dispose() {}
+
+        @Override
+        public String toString() {
+            return "DevToolsBridgeServerSandbox";
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) return START_NOT_STICKY;
@@ -114,6 +144,8 @@ public class DebugService extends Service {
             return start(new LocalTunnelBridgeController());
         } else if (START_SESSION_BRIDGE_ACTION.equals(action)) {
             return start(new LocalSessionBridgeController());
+        } else if (START_SERVER_ACTION.equals(action)) {
+            return start(new DevToolsBridgeServerSandboxController());
         } else if (STOP_ACTION.equals(action)) {
             return stop();
         }
