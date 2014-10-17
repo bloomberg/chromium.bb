@@ -343,8 +343,10 @@ class GSContext(object):
     # Prefer boto_file if specified, else prefer the env then the default.
     if boto_file is None:
       boto_file = os.environ.get('BOTO_CONFIG')
-      if boto_file is None:
-        boto_file = self.DEFAULT_BOTO_FILE
+    if boto_file is None and os.path.isfile(self.DEFAULT_BOTO_FILE):
+      # Only set boto file to DEFAULT_BOTO_FILE if it exists.
+      boto_file = self.DEFAULT_BOTO_FILE
+
     self.boto_file = boto_file
 
     self.acl = acl
@@ -402,6 +404,8 @@ class GSContext(object):
     """Make sure we can access protected bits in GS."""
     print('Configuring gsutil. **Please use your @google.com account.**')
     try:
+      if not self.boto_file:
+        self.boto_file = self.DEFAULT_BOTO_FILE
       self.DoCommand(['config'], retries=0, debug_level=logging.CRITICAL,
                      print_cmd=False)
     finally:
@@ -622,7 +626,8 @@ class GSContext(object):
       retries = self.retries
 
     extra_env = kwargs.pop('extra_env', {})
-    extra_env.setdefault('BOTO_CONFIG', self.boto_file)
+    if self.boto_file:
+      extra_env.setdefault('BOTO_CONFIG', self.boto_file)
 
     if self.dry_run:
       logging.debug("%s: would've run: %s", self.__class__.__name__,

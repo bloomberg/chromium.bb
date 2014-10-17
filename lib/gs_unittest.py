@@ -689,6 +689,7 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
                       gsutil_bin=self.bad_path)
 
   def testInitBotoFileEnv(self):
+    """Test boto file environment is set correctly."""
     os.environ['BOTO_CONFIG'] = self.gsutil_bin
     self.assertTrue(gs.GSContext().boto_file, self.gsutil_bin)
     self.assertEqual(gs.GSContext(boto_file=self.acl_file).boto_file,
@@ -708,6 +709,13 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
     """Test bad boto file."""
     self.assertEqual(gs.GSContext(boto_file=self.bad_path).boto_file,
                      self.bad_path)
+
+  def testDoNotUseDefaultBotoFileIfItDoesNotExist(self):
+    """Do not set boto file if the default path does not exist."""
+    if 'BOTO_CONFIG' in os.environ:
+      del os.environ['BOTO_CONFIG']
+    gs.GSContext.DEFAULT_BOTO_FILE = 'foo/bar/doesnotexist'
+    self.assertEqual(gs.GSContext().boto_file, None)
 
   def testInitAclFile(self):
     """Test ACL selection logic in __init__."""
