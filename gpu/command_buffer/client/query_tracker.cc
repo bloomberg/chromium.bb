@@ -9,6 +9,7 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/atomicops.h"
+#include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
@@ -153,19 +154,18 @@ bool QueryTracker::Query::CheckResultsAvailable(
         helper->IsContextLost()) {
       switch (target()) {
         case GL_COMMANDS_ISSUED_CHROMIUM:
-          result_ = std::min(info_.sync->result,
-                             static_cast<uint64>(0xFFFFFFFFL));
+          result_ = base::saturated_cast<uint32>(info_.sync->result);
           break;
         case GL_LATENCY_QUERY_CHROMIUM:
           // Disabled DCHECK because of http://crbug.com/419236.
           //DCHECK(info_.sync->result >= client_begin_time_us_);
-          result_ = std::min(info_.sync->result - client_begin_time_us_,
-                             static_cast<uint64>(0xFFFFFFFFL));
+          result_ = base::saturated_cast<uint32>(
+              info_.sync->result - client_begin_time_us_);
           break;
         case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
         case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
         default:
-          result_ = info_.sync->result;
+          result_ = static_cast<uint32>(info_.sync->result);
           break;
       }
       state_ = kComplete;

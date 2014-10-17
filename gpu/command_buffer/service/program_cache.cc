@@ -123,9 +123,9 @@ void ProgramCache::ComputeProgramHash(
       current_pos += name_size;
       const GLint value = it->second;
       buffer[current_pos++] = value >> 24;
-      buffer[current_pos++] = value >> 16;
-      buffer[current_pos++] = value >> 8;
-      buffer[current_pos++] = value;
+      buffer[current_pos++] = static_cast<unsigned char>(value >> 16);
+      buffer[current_pos++] = static_cast<unsigned char>(value >> 8);
+      buffer[current_pos++] = static_cast<unsigned char>(value);
     }
   }
   base::SHA1HashBytes(buffer.get(),

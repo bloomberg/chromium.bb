@@ -154,12 +154,17 @@ GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
 
   UMA_HISTOGRAM_TIMES("GPU.WinSAT.ReadResultsFileTime",
                       base::TimeTicks::Now() - start_time);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.OverallScore2",
-                              stats.overall * 10, 10, 200, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GraphicsScore2",
-                              stats.graphics * 10, 10, 200, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GamingScore2",
-                              stats.gaming * 10, 10, 200, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.WinSAT.OverallScore2",
+      static_cast<base::HistogramBase::Sample>(stats.overall * 10), 10, 200,
+      50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.WinSAT.GraphicsScore2",
+      static_cast<base::HistogramBase::Sample>(stats.graphics * 10), 10, 200,
+      50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.WinSAT.GamingScore2",
+      static_cast<base::HistogramBase::Sample>(stats.gaming * 10), 10, 200, 50);
   UMA_HISTOGRAM_BOOLEAN(
       "GPU.WinSAT.HasResults",
       stats.overall != 0.0 && stats.graphics != 0.0 && stats.gaming != 0.0);

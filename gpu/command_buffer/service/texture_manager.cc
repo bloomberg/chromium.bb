@@ -1293,7 +1293,7 @@ void TextureManager::SetParameterf(
   if (result != GL_NO_ERROR) {
     if (result == GL_INVALID_ENUM) {
       ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
-          error_state, function_name, param, "param");
+          error_state, function_name, pname, "pname");
     } else {
       ERRORSTATE_SET_GL_ERROR_INVALID_PARAMF(
           error_state, result, function_name, pname, param);

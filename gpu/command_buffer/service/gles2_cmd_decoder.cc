@@ -3128,7 +3128,7 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
       return false;
     if (backbuffer_needs_clear_bits_) {
       glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
-          offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
+          offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1.f);
       state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearStencil(0);
       state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
@@ -3692,7 +3692,7 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   {
     ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
     glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
-        offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
+        offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1.f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearStencil(0);
     state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
@@ -7254,7 +7254,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   GLuint indx = c.indx;
   GLint size = c.size;
   GLenum type = c.type;
-  GLboolean normalized = c.normalized;
+  GLboolean normalized = static_cast<GLboolean>(c.normalized);
   GLsizei stride = c.stride;
   GLsizei offset = c.offset;
   const void* ptr = reinterpret_cast<const void*>(offset);
@@ -7496,7 +7496,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
   GLsizei height = c.height;
   GLenum format = c.format;
   GLenum type = c.type;
-  GLboolean async = c.async;
+  GLboolean async = static_cast<GLboolean>(c.async);
   if (width < 0 || height < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadPixels", "dimensions < 0");
     return error::kNoError;

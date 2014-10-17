@@ -591,16 +591,20 @@ bool Program::Link(ShaderManager* manager,
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",
-          (TimeTicks::HighResNow() - before_time).InMicroseconds(),
+          static_cast<base::HistogramBase::Sample>(
+              (TimeTicks::HighResNow() - before_time).InMicroseconds()),
           0,
-          TimeDelta::FromSeconds(10).InMicroseconds(),
+          static_cast<base::HistogramBase::Sample>(
+              TimeDelta::FromSeconds(10).InMicroseconds()),
           50);
     } else {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheHitTime",
-          (TimeTicks::HighResNow() - before_time).InMicroseconds(),
+          static_cast<base::HistogramBase::Sample>(
+              (TimeTicks::HighResNow() - before_time).InMicroseconds()),
           0,
-          TimeDelta::FromSeconds(1).InMicroseconds(),
+          static_cast<base::HistogramBase::Sample>(
+              TimeDelta::FromSeconds(1).InMicroseconds()),
           50);
     }
   } else {
