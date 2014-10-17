@@ -540,49 +540,9 @@ class MinidumpWriter {
 
     mod.base_of_image = mapping.start_addr;
     mod.size_of_image = mapping.size;
-    const char* filepath_ptr = mapping.name;
-    size_t filepath_len = my_strlen(mapping.name);
-
-    // Figure out file name from path
-    const char* filename_ptr = mapping.name + filepath_len - 1;
-    while (filename_ptr >= mapping.name) {
-      if (*filename_ptr == '/')
-        break;
-      filename_ptr--;
-    }
-    filename_ptr++;
-
-    size_t filename_len = mapping.name + filepath_len - filename_ptr;
-
-    // If an executable is mapped from a non-zero offset, this is likely
-    // because the executable was loaded directly from inside an archive
-    // file. We try to find the name of the shared object (SONAME) by
-    // looking in the file for ELF sections.
-
-    char soname[NAME_MAX];
-    char pathname[NAME_MAX];
-    if (mapping.exec && mapping.offset != 0 &&
-        LinuxDumper::ElfFileSoName(mapping, soname, sizeof(soname))) {
-      filename_ptr = soname;
-      filename_len = my_strlen(soname);
-
-      if (filepath_len + filename_len + 1 < NAME_MAX) {
-        // It doesn't have a real pathname, but tools such as stackwalk
-        // extract the basename, so simulating a pathname is helpful.
-        my_memcpy(pathname, filepath_ptr, filepath_len);
-        pathname[filepath_len] = '/';
-        my_memcpy(pathname + filepath_len + 1, filename_ptr, filename_len);
-        pathname[filepath_len + filename_len + 1] = '\0';
-        filepath_ptr = pathname;
-        filepath_len = filepath_len + filename_len + 1;
-      }
-    }
 
     uint8_t cv_buf[MDCVInfoPDB70_minsize + NAME_MAX];
     uint8_t* cv_ptr = cv_buf;
-    UntypedMDRVA cv(&minidump_writer_);
-    if (!cv.Allocate(MDCVInfoPDB70_minsize + filename_len + 1))
-      return false;
 
     const uint32_t cv_signature = MD_CVINFOPDB70_SIGNATURE;
     my_memcpy(cv_ptr, &cv_signature, sizeof(cv_signature));
@@ -593,20 +553,31 @@ class MinidumpWriter {
       // GUID was provided by caller.
       my_memcpy(signature, identifier, sizeof(MDGUID));
     } else {
+      // Note: ElfFileIdentifierForMapping() can manipulate the |mapping.name|.
       dumper_->ElfFileIdentifierForMapping(mapping, member,
                                            mapping_id, signature);
     }
     my_memset(cv_ptr, 0, sizeof(uint32_t));  // Set age to 0 on Linux.
     cv_ptr += sizeof(uint32_t);
 
+    char file_name[NAME_MAX];
+    char file_path[NAME_MAX];
+    LinuxDumper::GetMappingEffectiveNameAndPath(
+        mapping, file_path, sizeof(file_path), file_name, sizeof(file_name));
+
+    const size_t file_name_len = my_strlen(file_name);
+    UntypedMDRVA cv(&minidump_writer_);
+    if (!cv.Allocate(MDCVInfoPDB70_minsize + file_name_len + 1))
+      return false;
+
     // Write pdb_file_name
-    my_memcpy(cv_ptr, filename_ptr, filename_len + 1);
-    cv.Copy(cv_buf, MDCVInfoPDB70_minsize + filename_len + 1);
+    my_memcpy(cv_ptr, file_name, file_name_len + 1);
+    cv.Copy(cv_buf, MDCVInfoPDB70_minsize + file_name_len + 1);
 
     mod.cv_record = cv.location();
 
     MDLocationDescriptor ld;
-    if (!minidump_writer_.WriteString(filepath_ptr, filepath_len, &ld))
+    if (!minidump_writer_.WriteString(file_path, my_strlen(file_path), &ld))
       return false;
     mod.module_name_rva = ld.rva;
     return true;

@@ -184,10 +184,12 @@ bool ElfFileSoNameFromMappedFile(
   // Did not find SONAME
   return false;
 }
-}  // namespace
 
-// static
-bool LinuxDumper::ElfFileSoName(
+// Find the shared object name (SONAME) by examining the ELF information
+// for |mapping|. If the SONAME is found copy it into the passed buffer
+// |soname| and return true. The size of the buffer is |soname_size|.
+// The SONAME will be truncated if it is too long to fit in the buffer.
+bool ElfFileSoName(
     const MappingInfo& mapping, char* soname, size_t soname_size) {
   if (IsMappedFileOpenUnsafe(mapping)) {
     // Not safe
@@ -212,6 +214,44 @@ bool LinuxDumper::ElfFileSoName(
   }
 
   return ElfFileSoNameFromMappedFile(mapped_file.data(), soname, soname_size);
+}
+
+}  // namespace
+
+
+// static
+void LinuxDumper::GetMappingEffectiveNameAndPath(const MappingInfo& mapping,
+                                                 char* file_path,
+                                                 size_t file_path_size,
+                                                 char* file_name,
+                                                 size_t file_name_size) {
+  my_strlcpy(file_path, mapping.name, file_path_size);
+
+  // If an executable is mapped from a non-zero offset, this is likely because
+  // the executable was loaded directly from inside an archive file (e.g., an
+  // apk on Android). We try to find the name of the shared object (SONAME) by
+  // looking in the file for ELF sections.
+  bool mapped_from_archive = false;
+  if (mapping.exec && mapping.offset != 0)
+    mapped_from_archive = ElfFileSoName(mapping, file_name, file_name_size);
+
+  if (mapped_from_archive) {
+    // Some tools (e.g., stackwalk) extract the basename from the pathname. In
+    // this case, we append the file_name to the mapped archive path as follows:
+    //   file_name := libname.so
+    //   file_path := /path/to/ARCHIVE.APK/libname.so
+    if (my_strlen(file_path) + 1 + my_strlen(file_name) < file_path_size) {
+      my_strlcat(file_path, "/", file_path_size);
+      my_strlcat(file_path, file_name, file_path_size);
+    }
+  } else {
+    // Common case:
+    //   file_path := /path/to/libname.so
+    //   file_name := libname.so
+    const char* basename = my_strrchr(file_path, '/');
+    basename = basename == NULL ? file_path : (basename + 1);
+    my_strlcpy(file_name, basename, file_name_size);
+  }
 }
 
 bool LinuxDumper::ReadAuxv() {

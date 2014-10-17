@@ -111,18 +111,12 @@ class LinuxDumper {
   virtual bool BuildProcPath(char* path, pid_t pid, const char* node) const = 0;
 
   // Generate a File ID from the .text section of a mapped entry.
-  // If not a member, mapping_id is ignored.
+  // If not a member, mapping_id is ignored. This method can also manipulate the
+  // |mapping|.name to truncate "(deleted)" from the file name if necessary.
   bool ElfFileIdentifierForMapping(const MappingInfo& mapping,
                                    bool member,
                                    unsigned int mapping_id,
                                    uint8_t identifier[sizeof(MDGUID)]);
-
-  // Find the shared object name (SONAME) by examining the ELF information
-  // for |mapping|. If the SONAME is found copy it into the passed buffer
-  // |soname| and return true. The size of the buffer is |soname_size|.
-  // The SONAME will be truncated if it is too long to fit in the buffer.
-  static bool ElfFileSoName(
-      const MappingInfo& mapping, char* soname, size_t soname_size);
 
   uintptr_t crash_address() const { return crash_address_; }
   void set_crash_address(uintptr_t crash_address) {
@@ -134,6 +128,17 @@ class LinuxDumper {
 
   pid_t crash_thread() const { return crash_thread_; }
   void set_crash_thread(pid_t crash_thread) { crash_thread_ = crash_thread; }
+
+  // Extracts the effective path and file name of from |mapping|. In most cases
+  // the effective name/path are just the mapping's path and basename. In some
+  // other cases, however, a library can be mapped from an archive (e.g., when
+  // loading .so libs from an apk on Android) and this method is able to
+  // reconstruct the original file name.
+  static void GetMappingEffectiveNameAndPath(const MappingInfo& mapping,
+                                             char* file_path,
+                                             size_t file_path_size,
+                                             char* file_name,
+                                             size_t file_name_size);
 
  protected:
   bool ReadAuxv();
