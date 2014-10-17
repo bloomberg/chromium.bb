@@ -23,9 +23,8 @@ class CacheStorage final : public GarbageCollected<CacheStorage>, public ScriptW
 public:
     static CacheStorage* create(WebServiceWorkerCacheStorage*);
 
-    ScriptPromise get(ScriptState*, const String& cacheName);
+    ScriptPromise open(ScriptState*, const String& cacheName);
     ScriptPromise has(ScriptState*, const String& cacheName);
-    ScriptPromise createFunction(ScriptState*, const String& cacheName);
     ScriptPromise deleteFunction(ScriptState*, const String& cacheName);
     ScriptPromise keys(ScriptState*);
 

@@ -148,7 +148,7 @@ CacheStorage* CacheStorage::create(WebServiceWorkerCacheStorage* webCacheStorage
     return new CacheStorage(webCacheStorage);
 }
 
-ScriptPromise CacheStorage::get(ScriptState* scriptState, const String& cacheName)
+ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheName)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
@@ -160,7 +160,7 @@ ScriptPromise CacheStorage::get(ScriptState* scriptState, const String& cacheNam
     }
 
     if (m_webCacheStorage)
-        m_webCacheStorage->dispatchGet(new WithCacheCallbacks(cacheName, this, resolver), cacheName);
+        m_webCacheStorage->dispatchOpen(new WithCacheCallbacks(cacheName, this, resolver), cacheName);
     else
         resolver->reject(createNoImplementationException());
 
@@ -179,19 +179,6 @@ ScriptPromise CacheStorage::has(ScriptState* scriptState, const String& cacheNam
 
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchHas(new Callbacks(resolver), cacheName);
-    else
-        resolver->reject(createNoImplementationException());
-
-    return promise;
-}
-
-ScriptPromise CacheStorage::createFunction(ScriptState* scriptState, const String& cacheName)
-{
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    const ScriptPromise promise = resolver->promise();
-
-    if (m_webCacheStorage)
-        m_webCacheStorage->dispatchCreate(new WithCacheCallbacks(cacheName, this, resolver), cacheName);
     else
         resolver->reject(createNoImplementationException());
 

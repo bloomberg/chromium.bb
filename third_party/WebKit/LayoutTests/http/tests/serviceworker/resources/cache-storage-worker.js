@@ -5,13 +5,13 @@ promise_test(function(t) {
     var cache_name = 'cache-storage/foo';
     return self.caches.delete(cache_name)
       .then(function() {
-          return self.caches.create(cache_name);
+          return self.caches.open(cache_name);
         })
       .then(function(cache) {
           assert_true(cache instanceof Cache,
-                      'CacheStorage.create should return a Cache.');
+                      'CacheStorage.open should return a Cache.');
         });
-  }, 'CacheStorage.create');
+  }, 'CacheStorage.open');
 
 promise_test(function(t) {
     // Note that this test may collide with other tests running in the same
@@ -19,35 +19,20 @@ promise_test(function(t) {
     var cache_name = '';
     return self.caches.delete(cache_name)
       .then(function() {
-          return self.caches.create(cache_name);
+          return self.caches.open(cache_name);
         })
       .then(function(cache) {
           assert_true(cache instanceof Cache,
-                      'CacheStorage.create should accept an empty name.');
+                      'CacheStorage.open should accept an empty name.');
         });
-  }, 'CacheStorage.create with an empty name');
+  }, 'CacheStorage.open with an empty name');
 
 promise_test(function(t) {
     return assert_promise_rejects(
-      self.caches.create(),
+      self.caches.open(),
       new TypeError(),
-      'CacheStorage.create should throw TypeError if called with no arguments.');
-  }, 'CacheStorage.create with no arguments');
-
-promise_test(function(t) {
-    var cache_name = 'cache-storage/there can be only one';
-    return self.caches.delete(cache_name)
-      .then(function() {
-          return self.caches.create(cache_name);
-        })
-      .then(function() {
-          return assert_promise_rejects(
-            self.caches.create(cache_name),
-            'InvalidAccessError',
-            'CacheStorage.create should throw InvalidAccessError if called ' +
-            'with existing cache name.');
-        });
-  }, 'CacheStorage.create with an existing cache name');
+      'CacheStorage.open should throw TypeError if called with no arguments.');
+  }, 'CacheStorage.open with no arguments');
 
 promise_test(function(t) {
     var test_cases = [
@@ -80,7 +65,7 @@ promise_test(function(t) {
         var cache_name = testcase.name;
         return self.caches.delete(cache_name)
           .then(function() {
-              return self.caches.create(cache_name);
+              return self.caches.open(cache_name);
             })
           .then(function() {
               return self.caches.has(cache_name);
@@ -117,48 +102,39 @@ promise_test(function(t) {
   }, 'CacheStorage.has with nonexistent cache');
 
 promise_test(function(t) {
-    var cache_name = 'cache-storage/get';
+    var cache_name = 'cache-storage/open';
     var cache;
     return self.caches.delete(cache_name)
       .then(function() {
-          return self.caches.create(cache_name);
+          return self.caches.open(cache_name);
         })
       .then(function(result) {
           cache = result;
         })
       .then(function() {
-          return self.caches.get(cache_name);
+          return self.caches.open(cache_name);
         })
       .then(function(result) {
           assert_equals(result, cache,
-                        'CacheStorage.get should return the named Cache ' +
+                        'CacheStorage.open should return the named Cache ' +
                         'object if it exists.');
         })
       .then(function() {
-          return self.caches.get(cache_name);
+          return self.caches.open(cache_name);
         })
       .then(function(result) {
           assert_equals(result, cache,
-                        'CacheStorage.get should return the same ' +
+                        'CacheStorage.open should return the same ' +
                         'instance of an existing Cache object.');
         });
-  }, 'CacheStorage.get with existing cache');
-
-promise_test(function(t) {
-    return self.caches.get('cheezburger')
-      .then(function(result) {
-          assert_equals(result, undefined,
-                        'CacheStorage.get should return undefined for a ' +
-                        'nonexistent cache.');
-        });
-  }, 'CacheStorage.get with nonexistent cache');
+  }, 'CacheStorage.open with existing cache');
 
 promise_test(function(t) {
     var cache_name = 'cache-storage/delete';
 
     return self.caches.delete(cache_name)
       .then(function() {
-          return self.caches.create(cache_name);
+          return self.caches.open(cache_name);
         })
       .then(function() { return self.caches.delete(cache_name); })
       .then(function(result) {

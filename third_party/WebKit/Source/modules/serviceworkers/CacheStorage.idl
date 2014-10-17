@@ -8,9 +8,8 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorkerCache,
 ] interface CacheStorage {
-  [CallWith=ScriptState] Promise get(ScalarValueString cacheName);
   [CallWith=ScriptState] Promise has(ScalarValueString cacheName);
-  [CallWith=ScriptState, ImplementedAs=createFunction] Promise create(ScalarValueString cacheName);
+  [CallWith=ScriptState] Promise open(ScalarValueString cacheName);
   [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(ScalarValueString cacheName);
   [CallWith=ScriptState] Promise keys();
   // FIXME: From https://github.com/slightlyoff/ServiceWorker/issues/372 and the updated

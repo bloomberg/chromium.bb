@@ -15,7 +15,7 @@ promise_test(function(test) {
         })
       .then(function() {
           return Promise.all(test_cache_list.map(function(key) {
-              return self.caches.create(key);
+              return self.caches.open(key);
             }));
         })
 
