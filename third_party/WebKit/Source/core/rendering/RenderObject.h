@@ -1175,7 +1175,7 @@ protected:
     }
 #endif
 
-    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&);
+    virtual void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState);
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
 
 private:

@@ -375,20 +375,13 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
-void RenderBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void RenderBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
-    // Note, we don't want to early out here using shouldCheckForInvalidationAfterLayout as
-    // we have to make sure we go through any positioned objects as they won't be seen in
-    // the normal tree walk.
-
-    RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
+    RenderBox::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 
     // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
         TrackedRendererListHashSet::iterator end = positionedObjects->end();
-        bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-        const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
-        PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this, newPaintInvalidationContainer);
         for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
             RenderBox* box = *it;
 
@@ -399,7 +392,7 @@ void RenderBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInva
             // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
             // PaintInvalidationState.
             // FIXME: Teach PaintInvalidationState to handle this case. crbug.com/371485
-            if (&paintInvalidationContainerForChild != newPaintInvalidationContainer) {
+            if (paintInvalidationContainerForChild != childPaintInvalidationState.paintInvalidationContainer()) {
                 ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
                 PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, paintInvalidationContainerForChild);
                 box->invalidateTreeIfNeeded(disabledPaintInvalidationState);

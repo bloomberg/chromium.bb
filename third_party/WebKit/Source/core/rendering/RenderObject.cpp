@@ -1223,11 +1223,11 @@ void RenderObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
 }
 
-void RenderObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& paintInvalidationState)
+void RenderObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
     for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
-            child->invalidateTreeIfNeeded(paintInvalidationState);
+            child->invalidateTreeIfNeeded(childPaintInvalidationState);
     }
 }
 
