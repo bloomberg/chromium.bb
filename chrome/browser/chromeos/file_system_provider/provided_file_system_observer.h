@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -28,16 +29,6 @@ class ProvidedFileSystemObserver {
 
   // Lust of child changes.
   typedef std::vector<ChildChange> ChildChanges;
-
-  // Represents an observed entry on the file system.
-  struct ObservedEntry {
-    ObservedEntry();
-    ~ObservedEntry();
-
-    base::FilePath entry_path;
-    bool recursive;
-    std::string last_tag;
-  };
 
   // Describes a change in an entry contained in an observed directory.
   struct ChildChange {
@@ -63,11 +54,13 @@ class ProvidedFileSystemObserver {
   // Called when tag value is updated for the observed entry.
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path) = 0;
+      const base::FilePath& observed_path,
+      const std::string& tag) = 0;
 
   // Called when list of observed entries is changed.
   virtual void OnObservedEntryListChanged(
-      const ProvidedFileSystemInfo& file_system_info) = 0;
+      const ProvidedFileSystemInfo& file_system_info,
+      const ObservedEntries& observed_entries) = 0;
 };
 
 }  // namespace file_system_provider

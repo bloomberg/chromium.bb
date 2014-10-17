@@ -282,6 +282,8 @@
         'browser/chromeos/file_system_provider/notification_manager.cc',
         'browser/chromeos/file_system_provider/notification_manager.h',
         'browser/chromeos/file_system_provider/notification_manager_interface.h',
+        'browser/chromeos/file_system_provider/observed_entry.cc',
+        'browser/chromeos/file_system_provider/observed_entry.h',
         'browser/chromeos/file_system_provider/observer.h',
         'browser/chromeos/file_system_provider/operations/abort.cc',
         'browser/chromeos/file_system_provider/operations/abort.h',

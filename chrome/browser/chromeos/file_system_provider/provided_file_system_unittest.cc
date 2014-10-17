@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
+#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
@@ -134,13 +135,15 @@ class Observer : public ProvidedFileSystemObserver {
 
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path) override {
+      const base::FilePath& observed_path,
+      const std::string& tag) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     ++tag_updated_counter_;
   }
 
   virtual void OnObservedEntryListChanged(
-      const ProvidedFileSystemInfo& file_system_info) override {
+      const ProvidedFileSystemInfo& file_system_info,
+      const ObservedEntries& observed_entries) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
     ++list_changed_counter_;
   }
@@ -292,7 +295,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_NotFound) {
   ASSERT_EQ(1u, log.size());
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, log[0]);
 
-  ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+  ObservedEntries* const observed_entries =
       provided_file_system_->GetObservedEntries();
   EXPECT_EQ(0u, observed_entries->size());
 
@@ -320,11 +323,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory) {
   EXPECT_EQ(1, observer.list_changed_counter());
   EXPECT_EQ(0, observer.tag_updated_counter());
 
-  ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+  ObservedEntries* const observed_entries =
       provided_file_system_->GetObservedEntries();
   ASSERT_EQ(1u, observed_entries->size());
-  const ProvidedFileSystemInterface::ObservedEntry& observed_entry =
-      observed_entries->begin()->second;
+  const ObservedEntry& observed_entry = observed_entries->begin()->second;
   EXPECT_EQ(kDirectoryPath, observed_entry.entry_path.value());
   EXPECT_FALSE(observed_entry.recursive);
   EXPECT_EQ("", observed_entry.last_tag);
@@ -382,11 +384,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
     EXPECT_EQ(2, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     ASSERT_EQ(1u, observed_entries->size());
-    const ProvidedFileSystemInterface::ObservedEntry& observed_entry =
-        observed_entries->begin()->second;
+    const ObservedEntry& observed_entry = observed_entries->begin()->second;
     EXPECT_EQ(kDirectoryPath, observed_entry.entry_path.value());
     EXPECT_TRUE(observed_entry.recursive);
     EXPECT_EQ("", observed_entry.last_tag);
@@ -443,7 +444,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     EXPECT_EQ(1, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(1u, observed_entries->size());
   }
@@ -461,7 +462,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     EXPECT_EQ(2, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(0u, observed_entries->size());
   }
@@ -480,7 +481,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     EXPECT_EQ(3, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(1u, observed_entries->size());
   }
@@ -502,7 +503,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     EXPECT_EQ(4, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(0u, observed_entries->size());
   }
@@ -528,7 +529,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     EXPECT_EQ(1, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(1u, observed_entries->size());
     provided_file_system_->GetObservedEntries();
@@ -555,7 +556,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
 
     // The tag should not be updated in advance, before all observers handle
     // the notification.
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(1u, observed_entries->size());
     provided_file_system_->GetObservedEntries();
@@ -595,7 +596,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
 
   // Confirm, that the entry is not observed anymore.
   {
-    ProvidedFileSystemInterface::ObservedEntries* const observed_entries =
+    ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
     EXPECT_EQ(0u, observed_entries->size());
     EXPECT_EQ(2, observer.list_changed_counter());

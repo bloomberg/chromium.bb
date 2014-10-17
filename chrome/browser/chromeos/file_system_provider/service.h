@@ -138,9 +138,11 @@ class Service : public KeyedService,
       const base::Closure& callback) override;
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
-      const base::FilePath& observed_path) override;
+      const base::FilePath& observed_path,
+      const std::string& tag) override;
   virtual void OnObservedEntryListChanged(
-      const ProvidedFileSystemInfo& file_system_info) override;
+      const ProvidedFileSystemInfo& file_system_info,
+      const ObservedEntries& observed_entries) override;
 
  private:
   // Key is a pair of an extension id and file system id, which makes it

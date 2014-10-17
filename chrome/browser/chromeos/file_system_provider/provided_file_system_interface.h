@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
@@ -57,7 +58,6 @@ struct EntryMetadata {
 // fails synchronously.
 class ProvidedFileSystemInterface {
  public:
-  struct ObservedEntry;
   struct ChildChange;
 
   // Mode of opening a file. Used by OpenFile().
@@ -84,19 +84,6 @@ class ProvidedFileSystemInterface {
 
   // Mask of fields requested from the GetMetadata() call.
   typedef int MetadataFieldMask;
-
-  // List of observed entries.
-  typedef std::map<base::FilePath, ObservedEntry> ObservedEntries;
-
-  // Represents an observed entry on the file system.
-  struct ObservedEntry {
-    ObservedEntry();
-    ~ObservedEntry();
-
-    base::FilePath entry_path;
-    bool recursive;
-    std::string last_tag;
-  };
 
   virtual ~ProvidedFileSystemInterface() {}
 

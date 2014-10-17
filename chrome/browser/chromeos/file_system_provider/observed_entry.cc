@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 
 namespace chromeos {
 namespace file_system_provider {
 
-EntryMetadata::EntryMetadata() : is_directory(false), size(0) {
+ObservedEntry::ObservedEntry() : recursive(false) {
 }
 
-EntryMetadata::~EntryMetadata() {
+ObservedEntry::~ObservedEntry() {
 }
 
 }  // namespace file_system_provider

@@ -337,13 +337,15 @@ void Service::OnObservedEntryChanged(
 
 void Service::OnObservedEntryTagUpdated(
     const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& observed_path) {
+    const base::FilePath& observed_path,
+    const std::string& tag) {
   // TODO(mtomasz): Store tags of observed entries in preferences, or better
   // in leveldb.
 }
 
 void Service::OnObservedEntryListChanged(
-    const ProvidedFileSystemInfo& file_system_info) {
+    const ProvidedFileSystemInfo& file_system_info,
+    const ObservedEntries& observed_entries) {
   // TODO(mtomasz): Store observed entries in preferences or leveldb.
 }
 

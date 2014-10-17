@@ -407,9 +407,10 @@ void ProvidedFileSystem::UnobserveEntry(
   // by the C++ layer, not by the extension.
   observed_entries_.erase(it);
 
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
-                    observers_,
-                    OnObservedEntryListChanged(file_system_info_));
+  FOR_EACH_OBSERVER(
+      ProvidedFileSystemObserver,
+      observers_,
+      OnObservedEntryListChanged(file_system_info_, observed_entries_));
 
   // TODO(mtomasz): Consider returning always an OK error code, since for the
   // callers it's important that the entry is not watched anymore. The watcher
@@ -431,7 +432,7 @@ RequestManager* ProvidedFileSystem::GetRequestManager() {
   return request_manager_.get();
 }
 
-ProvidedFileSystem::ObservedEntries* ProvidedFileSystem::GetObservedEntries() {
+ObservedEntries* ProvidedFileSystem::GetObservedEntries() {
   return &observed_entries_;
 }
 
@@ -517,9 +518,10 @@ void ProvidedFileSystem::OnObserveDirectoryCompleted(
   observed_entries_[directory_path].entry_path = directory_path;
   observed_entries_[directory_path].recursive |= recursive;
 
-  FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
-                    observers_,
-                    OnObservedEntryListChanged(file_system_info_));
+  FOR_EACH_OBSERVER(
+      ProvidedFileSystemObserver,
+      observers_,
+      OnObservedEntryListChanged(file_system_info_, observed_entries_));
 
   callback.Run(result);
 }
@@ -550,7 +552,7 @@ void ProvidedFileSystem::OnNotifyCompleted(
   FOR_EACH_OBSERVER(
       ProvidedFileSystemObserver,
       observers_,
-      OnObservedEntryTagUpdated(file_system_info_, observed_path));
+      OnObservedEntryTagUpdated(file_system_info_, observed_path, tag));
 
   // If the observed entry is deleted, then unobserve it.
   if (change_type == ProvidedFileSystemObserver::DELETED)

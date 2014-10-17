@@ -347,8 +347,7 @@ RequestManager* FakeProvidedFileSystem::GetRequestManager() {
   return NULL;
 }
 
-ProvidedFileSystemInterface::ObservedEntries*
-FakeProvidedFileSystem::GetObservedEntries() {
+ObservedEntries* FakeProvidedFileSystem::GetObservedEntries() {
   NOTREACHED();
   return NULL;
 }
