@@ -598,6 +598,9 @@ RenderFrameImpl::~RenderFrameImpl() {
     render_view_->UnregisterVideoHoleFrame(this);
 #endif
 
+  if (render_frame_proxy_)
+    delete render_frame_proxy_;
+
   render_view_->UnregisterRenderFrame(this);
   g_routing_id_frame_map.Get().erase(routing_id_);
   RenderThread::Get()->RemoveRoute(routing_id_);

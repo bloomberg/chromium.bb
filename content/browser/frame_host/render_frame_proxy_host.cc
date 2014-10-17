@@ -68,8 +68,14 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
 }
 
 RenderFrameProxyHost::~RenderFrameProxyHost() {
-  if (GetProcess()->HasConnection())
-    Send(new FrameMsg_DeleteProxy(routing_id_));
+  if (GetProcess()->HasConnection()) {
+    // TODO(nasko): For now, don't send this IPC for top-level frames, as
+    // the top-level RenderFrame will delete the RenderFrameProxy.
+    // This can be removed once we don't have a swapped out state on
+    // RenderFrame. See https://crbug.com/357747
+    if (!frame_tree_node_->IsMainFrame())
+      Send(new FrameMsg_DeleteProxy(routing_id_));
+  }
 
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_proxy_map.Get().erase(

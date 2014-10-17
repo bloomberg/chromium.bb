@@ -98,6 +98,7 @@ class CONTENT_EXPORT RenderFrameProxy
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
 
   // blink::WebRemoteFrameClient implementation:
+  virtual void frameDetached();
   virtual void postMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebRemoteFrame* targetFrame,

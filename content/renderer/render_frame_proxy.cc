@@ -118,10 +118,6 @@ RenderFrameProxy::~RenderFrameProxy() {
 
   RenderThread::Get()->RemoveRoute(routing_id_);
   g_routing_id_proxy_map.Get().erase(routing_id_);
-
-  // TODO(nick): Call close unconditionally when web_frame() is always remote.
-  if (web_frame()->isWebRemoteFrame())
-    web_frame()->close();
 }
 
 void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
@@ -175,13 +171,8 @@ bool RenderFrameProxy::Send(IPC::Message* message) {
 }
 
 void RenderFrameProxy::OnDeleteProxy() {
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromRoutingID(frame_routing_id_);
-
-  if (render_frame)
-    render_frame->set_render_frame_proxy(NULL);
-
-  delete this;
+  DCHECK(web_frame_->isWebRemoteFrame());
+  web_frame_->detach();
 }
 
 void RenderFrameProxy::OnChildFrameProcessGone() {
@@ -228,6 +219,14 @@ void RenderFrameProxy::OnDisownOpener() {
 
   if (web_frame_->opener())
     web_frame_->setOpener(NULL);
+}
+
+void RenderFrameProxy::frameDetached() {
+  if (web_frame_->parent())
+    web_frame_->parent()->removeChild(web_frame_);
+
+  web_frame_->close();
+  delete this;
 }
 
 void RenderFrameProxy::postMessageEvent(
