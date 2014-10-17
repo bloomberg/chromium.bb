@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class RenderTextFragment;
-
 class PseudoElement : public Element {
 public:
     static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId);

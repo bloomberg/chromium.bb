@@ -53,9 +53,11 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str)
 
 RenderTextFragment::~RenderTextFragment()
 {
+#if !ENABLE(OILPAN)
     if (m_isRemainingTextRenderer && m_firstLetterPseudoElement)
         m_firstLetterPseudoElement->setRemainingTextRenderer(nullptr);
     m_firstLetterPseudoElement = nullptr;
+#endif
 }
 
 void RenderTextFragment::trace(Visitor* visitor)

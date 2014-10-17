@@ -156,16 +156,21 @@ RenderObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
     return firstLetterTextRenderer;
 }
 
-PassRefPtrWillBeRawPtr<FirstLetterPseudoElement> FirstLetterPseudoElement::create(Element* parent)
-{
-    return adoptRefWillBeNoop(new FirstLetterPseudoElement(parent));
-}
-
 FirstLetterPseudoElement::FirstLetterPseudoElement(Element* parent)
     : PseudoElement(parent, FIRST_LETTER)
     , m_remainingTextRenderer(nullptr)
     , m_needsUpdate(false)
 {
+}
+
+FirstLetterPseudoElement::~FirstLetterPseudoElement()
+{
+}
+
+void FirstLetterPseudoElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_remainingTextRenderer);
+    PseudoElement::trace(visitor);
 }
 
 void FirstLetterPseudoElement::setNeedsUpdate()

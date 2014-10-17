@@ -32,11 +32,18 @@ namespace blink {
 
 class Element;
 class RenderObject;
+class RenderTextFragment;
 
 class FirstLetterPseudoElement final : public PseudoElement {
-WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
+    WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
 public:
-    static PassRefPtrWillBeRawPtr<FirstLetterPseudoElement> create(Element* parent);
+    static PassRefPtrWillBeRawPtr<FirstLetterPseudoElement> create(Element* parent)
+    {
+        return adoptRefWillBeNoop(new FirstLetterPseudoElement(parent));
+    }
+
+    virtual ~FirstLetterPseudoElement();
+    virtual void trace(Visitor*) override;
 
     static RenderObject* firstLetterTextRenderer(const Element&);
     static unsigned firstLetterLength(const String&);
@@ -51,14 +58,14 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) override;
 
 private:
-    FirstLetterPseudoElement(Element*);
+    explicit FirstLetterPseudoElement(Element*);
 
     virtual void didRecalcStyle(StyleRecalcChange) override;
 
     void attachFirstLetterTextRenderers();
     RenderStyle* styleForFirstLetter(RenderObject*);
 
-    RenderTextFragment* m_remainingTextRenderer;
+    RawPtrWillBeMember<RenderTextFragment> m_remainingTextRenderer;
     bool m_needsUpdate;
 };
 
