@@ -16,3 +16,6 @@ SSLUITest.TestBadFrameNavigation
 SSLUITest.TestInterstitialJavaScriptProceeds
 SSLUITest.TestRefNavigation
 SSLUITest.TestWSSInvalidCertAndGoForward
+
+# http://crbug.com/403007
+WorkerDevToolsSanityTest.InspectSharedWorker
