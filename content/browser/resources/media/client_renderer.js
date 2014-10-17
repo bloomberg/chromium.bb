@@ -122,6 +122,44 @@ var ClientRenderer = (function() {
       }
     },
 
+    redrawVideoCaptureCapabilities: function(videoCaptureCapabilities, keys) {
+      var copyButtonElement =
+          document.getElementById('video-capture-capabilities-copy-button');
+      copyButtonElement.onclick = function() {
+        window.prompt('Copy to clipboard: Ctrl+C, Enter',
+                      JSON.stringify(videoCaptureCapabilities))
+      }
+
+      var videoTableBodyElement  =
+          document.getElementById('video-capture-capabilities-tbody');
+      removeChildren(videoTableBodyElement);
+
+      for (var component in videoCaptureCapabilities) {
+        var tableRow =  document.createElement('tr');
+        var device = videoCaptureCapabilities[ component ];
+        for (var i in keys) {
+          var value = device[keys[i]];
+          var tableCell = document.createElement('td');
+          var cellElement;
+          if ((typeof value) == (typeof [])) {
+            cellElement = document.createElement('ul');
+            for (var i in value) {
+              var format = value[i];
+              var li = document.createElement('li');
+              li.appendChild(document.createTextNode(format))
+              cellElement.appendChild(li)
+            }
+          } else {
+            cellElement = document.createTextNode(
+                ((typeof value) == 'undefined') ? 'n/a' : value);
+          }
+          tableCell.appendChild(cellElement)
+          tableRow.appendChild(tableCell);
+        }
+        videoTableBodyElement.appendChild(tableRow);
+      }
+    },
+
     redrawAudioComponentList_: function(componentType, components) {
       function redrawList(renderer, baseName, element) {
         var fragment = document.createDocumentFragment();

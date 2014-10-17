@@ -47,6 +47,10 @@ class CONTENT_EXPORT MediaInternals
   // Sends all audio cached data to each registered UpdateCallback.
   void SendAudioStreamData();
 
+  // Sends all video capture capabilities cached data to each registered
+  // UpdateCallback.
+  void SendVideoCaptureDeviceCapabilities();
+
   // Called to inform of the capabilities enumerated for video devices.
   void UpdateVideoCaptureDeviceCapabilities(
       const media::VideoCaptureDeviceInfos& video_capture_device_infos);
@@ -79,6 +83,7 @@ class CONTENT_EXPORT MediaInternals
 
   // Must only be accessed on the IO thread.
   std::vector<UpdateCallback> update_callbacks_;
+  base::ListValue video_capture_capabilities_cached_data_;
 
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;

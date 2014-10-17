@@ -224,29 +224,37 @@ void MediaInternals::SendAudioStreamData() {
   SendUpdate(audio_stream_update);
 }
 
+void MediaInternals::SendVideoCaptureDeviceCapabilities() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  SendUpdate(SerializeUpdate("media.onReceiveVideoCaptureCapabilities",
+                             &video_capture_capabilities_cached_data_));
+}
+
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const media::VideoCaptureDeviceInfos& video_capture_device_infos) {
-  base::DictionaryValue video_devices_info_dictionary;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  video_capture_capabilities_cached_data_.Clear();
 
   for (const auto& video_capture_device_info : video_capture_device_infos) {
-    base::DictionaryValue* formats_dict = new base::DictionaryValue();
-    formats_dict->SetString("Unique ID", video_capture_device_info.name.id());
+    base::ListValue* format_list = new base::ListValue();
+    for (const auto& format : video_capture_device_info.supported_formats)
+      format_list->AppendString(format.ToString());
+
+    base::DictionaryValue* device_dict = new base::DictionaryValue();
+    device_dict->SetString("id", video_capture_device_info.name.id());
+    device_dict->SetString(
+        "name", video_capture_device_info.name.GetNameAndModel());
+    device_dict->Set("formats", format_list);
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    formats_dict->SetInteger("Capture API: #",
-                             video_capture_device_info.name.capture_api_type());
+    device_dict->SetInteger(
+        "captureApi",
+        video_capture_device_info.name.capture_api_type());
 #endif
-    int count = 0;
-    for (const auto& format : video_capture_device_info.supported_formats) {
-      formats_dict->SetString(base::StringPrintf("[%3d]", count++),
-                              format.ToString());
-    }
-    video_devices_info_dictionary.Set(
-        video_capture_device_info.name.GetNameAndModel(), formats_dict);
+    video_capture_capabilities_cached_data_.Append(device_dict);
   }
-  // TODO(mcasas): Remove the following printout when sending the capabilities
-  // to JS is implemented in a similar way to how SendAudioStreamData() does.
-  // A lock might be needed if these capabilities are cached at this point.
-  DVLOG(1) << "Received: " << video_devices_info_dictionary;
+
+  if (update_callbacks_.size() > 0)
+    SendVideoCaptureDeviceCapabilities();
 }
 
 scoped_ptr<media::AudioLog> MediaInternals::CreateAudioLog(

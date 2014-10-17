@@ -31,8 +31,11 @@ class MediaInternalsTestBase {
  protected:
   // Extracts and deserializes the JSON update data; merges into |update_data_|.
   void UpdateCallbackImpl(const base::string16& update) {
-    // Each update string looks like "<JavaScript Function Name>({<JSON>});", to
-    // use the JSON reader we need to strip out the JavaScript code.
+    // Each update string looks like "<JavaScript Function Name>({<JSON>});"
+    // or for video capabilities: "<JavaScript Function Name>([{<JSON>}]);".
+    // In the second case we will be able to extract the dictionary if it is the
+    // only member of the list.
+    // To use the JSON reader we need to strip out the JS function name and ().
     std::string utf8_update = base::UTF16ToUTF8(update);
     const std::string::size_type first_brace = utf8_update.find('{');
     const std::string::size_type last_brace = utf8_update.rfind('}');
@@ -62,6 +65,21 @@ class MediaInternalsTestBase {
     ExpectString("status", expected_value);
   }
 
+  void ExpectListOfStrings(const std::string& key,
+                           const base::ListValue& expected_list) const {
+    const base::ListValue* actual_list;
+    ASSERT_TRUE(update_data_.GetList(key, &actual_list));
+    const size_t expected_size = expected_list.GetSize();
+    const size_t actual_size = actual_list->GetSize();
+    ASSERT_EQ(expected_size, actual_size);
+    for (size_t i = 0; i < expected_size; ++i) {
+      std::string expected_value, actual_value;
+      ASSERT_TRUE(expected_list.GetString(i, &expected_value));
+      ASSERT_TRUE(actual_list->GetString(i, &actual_value));
+      EXPECT_EQ(expected_value, actual_value);
+    }
+  }
+
   const content::TestBrowserThreadBundle thread_bundle_;
   base::DictionaryValue update_data_;
   content::MediaInternals* const media_internals_;
@@ -72,10 +90,25 @@ class MediaInternalsTestBase {
 namespace content {
 
 class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
-                                             public MediaInternalsTestBase {};
+                                             public MediaInternalsTestBase {
+ public:
+  MediaInternalsVideoCaptureDeviceTest()
+      : update_cb_(base::Bind(
+            &MediaInternalsVideoCaptureDeviceTest::UpdateCallbackImpl,
+            base::Unretained(this))) {
+    media_internals_->AddUpdateCallback(update_cb_);
+  }
+
+  virtual ~MediaInternalsVideoCaptureDeviceTest() {
+    media_internals_->RemoveUpdateCallback(update_cb_);
+  }
+
+ protected:
+  MediaInternals::UpdateCallback update_cb_;
+};
 
 TEST_F(MediaInternalsVideoCaptureDeviceTest,
-    NotifyVideoCaptureDeviceCapabilitiesEnumerated) {
+       NotifyVideoCaptureDeviceCapabilitiesEnumerated) {
   const int kWidth = 1280;
   const int kHeight = 720;
   const float kFrameRate = 30.0f;
@@ -100,10 +133,26 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   media::VideoCaptureDeviceInfos device_infos{};
   device_infos.push_back(device_info);
 
-  // TODO(mcasas): Listen for the serialised version of |device_infos| and
-  // check its content using ExpectInt(), ExpectString(), after RunUntilIdle().
+  // When updating video capture capabilities, the update will serialize
+  // a JSON array of objects to string. So here, the |UpdateCallbackImpl| will
+  // deserialize the first object in the array. This means we have to have
+  // exactly one device_info in the |device_infos|.
   media_internals_->UpdateVideoCaptureDeviceCapabilities(device_infos);
-  base::RunLoop().RunUntilIdle();
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  ExpectString("id", "/dev/dummy");
+#else
+  ExpectString("id", "dummy");
+#endif
+  ExpectString("name", "dummy");
+  base::ListValue expected_list;
+  expected_list.AppendString(format_hd.ToString());
+  ExpectListOfStrings("formats", expected_list);
+#if defined(OS_MACOSX)
+  ExpectInt("captureApi", media::VideoCaptureDevice::Name::QTKIT);
+#elif defined(OS_WIN)
+  ExpectInt("captureApi", media::VideoCaptureDevice::Name::DIRECT_SHOW);
+#endif
 }
 
 class MediaInternalsAudioLogTest

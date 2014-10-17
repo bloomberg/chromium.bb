@@ -109,6 +109,13 @@ var Manager = (function() {
                                          this.players_[id],
                                          key,
                                          value);
+    },
+
+    updateVideoCaptureCapabilities: function(videoCaptureCapabilities) {
+      // The keys of each device to be shown in order of appearance.
+      var videoCaptureDeviceKeys = ['id','name','formats','captureApi'];
+      this.clientRenderer_.redrawVideoCaptureCapabilities(
+          videoCaptureCapabilities, videoCaptureDeviceKeys);
     }
   };
 
