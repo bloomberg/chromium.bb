@@ -203,6 +203,9 @@ class ScrollManager {
   // until the pressure change per second goes below
   // max_pressure_change_hysteresis_.
   DoubleProperty max_pressure_change_hysteresis_;
+  // When a high pressure change occurs during a scroll, we'll repeat
+  // the last scroll if it's above this length.
+  DoubleProperty min_scroll_dead_reckoning_;
   // Try to look over a period up to this length of time when looking for large
   // pressure change.
   DoubleProperty max_pressure_change_duration_;

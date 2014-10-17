@@ -353,6 +353,9 @@ ScrollManager::ScrollManager(PropRegistry* prop_reg)
       max_pressure_change_hysteresis_(prop_reg,
                                       "Max Hysteresis Pressure Per Sec",
                                       600.0),
+      min_scroll_dead_reckoning_(prop_reg,
+                                 "Min Scroll Dead Reckoning Distance",
+                                 0.0),
       max_pressure_change_duration_(prop_reg,
                                     "Max Pressure Change Duration",
                                     0.016),
@@ -490,9 +493,15 @@ bool ScrollManager::ComputeScroll(
     // Also, only use previous gesture if it's in the same direction.
     if (prev_result.type == kGestureTypeScroll &&
         prev_result.details.scroll.dy * dy >= 0 &&
-        prev_result.details.scroll.dx * dx >= 0) {
+        prev_result.details.scroll.dx * dx >= 0 &&
+        (fabsf(prev_result.details.scroll.dy) >=
+         min_scroll_dead_reckoning_.val_ ||
+         fabsf(prev_result.details.scroll.dx) >=
+         min_scroll_dead_reckoning_.val_)) {
       did_generate_scroll_ = true;
       *result = prev_result;
+    } else {
+      scroll_buffer->Clear();
     }
     return false;
   }
