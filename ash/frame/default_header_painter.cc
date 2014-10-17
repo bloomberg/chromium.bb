@@ -35,8 +35,8 @@ const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(150, 150, 152);
 // Color of the inactive window header/content separator line.
 const SkColor kHeaderContentSeparatorInactiveColor =
     SkColorSetRGB(180, 180, 182);
-// The color of the frame.
-const SkColor kFrameColor = SkColorSetRGB(242, 242, 242);
+// The default color of the frame.
+const SkColor kDefaultFrameColor = SkColorSetRGB(242, 242, 242);
 // The alpha of the inactive frame.
 const SkAlpha kInactiveFrameAlpha = 204;
 // Duration of crossfade animation for activating and deactivating frame.
@@ -79,6 +79,8 @@ DefaultHeaderPainter::DefaultHeaderPainter()
       view_(NULL),
       left_header_view_(NULL),
       left_view_x_inset_(HeaderPainterUtil::GetDefaultLeftViewXInset()),
+      active_frame_color_(kDefaultFrameColor),
+      inactive_frame_color_(kDefaultFrameColor),
       caption_button_container_(NULL),
       height_(0),
       mode_(MODE_INACTIVE),
@@ -164,7 +166,7 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   SkPaint paint;
   int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
   paint.setColor(color_utils::AlphaBlend(
-      kFrameColor, GetInactiveFrameColor(), active_alpha));
+      active_frame_color_, GetInactiveFrameColor(), active_alpha));
 
   TileRoundRect(canvas, paint, GetLocalBounds(), corner_radius);
 
@@ -215,6 +217,12 @@ void DefaultHeaderPainter::UpdateLeftViewXInset(int left_view_x_inset) {
     left_view_x_inset_ = left_view_x_inset;
     LayoutLeftHeaderView();
   }
+}
+
+void DefaultHeaderPainter::SetFrameColors(SkColor active_frame_color,
+                                          SkColor inactive_frame_color) {
+  active_frame_color_ = active_frame_color;
+  inactive_frame_color_ = inactive_frame_color;
 }
 
 void DefaultHeaderPainter::UpdateLeftHeaderView(views::View* left_header_view) {
@@ -333,7 +341,7 @@ gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {
 }
 
 SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
-  SkColor color = kFrameColor;
+  SkColor color = inactive_frame_color_;
   if (!frame_->IsMaximized() && !frame_->IsFullscreen()) {
     color = SkColorSetARGB(kInactiveFrameAlpha,
                            SkColorGetR(color),

@@ -51,6 +51,10 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Sets the left header view for the header. Passing NULL removes the view.
   void UpdateLeftHeaderView(views::View* left_header_view);
 
+  // Sets the active and inactive frame colors. Note the inactive frame color
+  // will have some transparency added when the frame is drawn.
+  void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, TitleIconAlignment);
 
@@ -88,6 +92,8 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   views::View* view_;
   views::View* left_header_view_;  // May be NULL.
   int left_view_x_inset_;
+  SkColor active_frame_color_;
+  SkColor inactive_frame_color_;
   FrameCaptionButtonContainerView* caption_button_container_;
 
   // The height of the header including the header/content separator.

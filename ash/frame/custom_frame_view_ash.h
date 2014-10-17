@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace ash {
@@ -40,6 +41,10 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // |immersive_fullscreen_controller|.
   void InitImmersiveFullscreenControllerForView(
       ImmersiveFullscreenController* immersive_fullscreen_controller);
+
+  // Sets the active and inactive frame colors. Note the inactive frame color
+  // will have some transparency added when the frame is drawn.
+  void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
 
   // views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const override;

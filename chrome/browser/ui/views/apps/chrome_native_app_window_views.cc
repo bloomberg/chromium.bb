@@ -544,6 +544,12 @@ views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
     custom_frame_view->InitImmersiveFullscreenControllerForView(
         immersive_fullscreen_controller_.get());
     custom_frame_view->GetHeaderView()->set_context_menu_controller(this);
+
+    if (has_frame_color_) {
+      custom_frame_view->SetFrameColors(active_frame_color_,
+                                        inactive_frame_color_);
+    }
+
     return custom_frame_view;
   }
 #endif

@@ -153,6 +153,8 @@ class CustomFrameViewAsh::HeaderView
 
   void SizeConstraintsChanged();
 
+  void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
+
   // views::View:
   virtual void Layout() override;
   virtual void OnPaint(gfx::Canvas* canvas) override;
@@ -269,6 +271,11 @@ void CustomFrameViewAsh::HeaderView::SizeConstraintsChanged() {
   caption_button_container_->ResetWindowControls();
   caption_button_container_->UpdateSizeButtonVisibility();
   Layout();
+}
+
+void CustomFrameViewAsh::HeaderView::SetFrameColors(
+    SkColor active_frame_color, SkColor inactive_frame_color) {
+  header_painter_->SetFrameColors(active_frame_color, inactive_frame_color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -451,6 +458,11 @@ CustomFrameViewAsh::~CustomFrameViewAsh() {
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
   immersive_fullscreen_controller->Init(header_view_, frame_, header_view_);
+}
+
+void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
+                                        SkColor inactive_frame_color) {
+  header_view_->SetFrameColors(active_frame_color, inactive_frame_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
