@@ -1,0 +1,17 @@
+<html>
+<head>
+<script src="full_screen_video.js"></script>
+</head>
+<body>
+</script></head><body>
+<button autofocus style ='padding:1024px 1024px;' onclick="goFullscreen('div'); return false">Big enough you can't miss it</button>
+<p></p>
+<div  id='div'>
+    <!-- The video id must be kept in sync with VideoTestWebServer.VIDEO_ID -->
+    <video style = 'width: 1px; height: 1px;'  id='video'>
+        <source id="webm" src="VIDEO_FILE_URL" type="video/webm">
+    </video>
+    <button style = 'width: 100%; height: 100%;' onclick="playVideo(); return false">Play</button>
+</div>
+</body>
+</html>

@@ -1,22 +1,6 @@
 <html>
 <head>
-<script>
-function goFullscreen(id) {
-  var element = document.getElementById(id);
-  if (element.webkitRequestFullScreen) {
-    element.webkitRequestFullScreen();
-  }
-}
-
-addEventListener('DOMContentLoaded', function() {
-    document.getElementById('video').addEventListener('play', function() {
-        console.log('Video Played');
-    }, false);
-    document.addEventListener('webkitfullscreenerror', function() {
-        javaFullScreenErrorObserver.notifyJava();
-    }, false);
-}, false);
-</script>
+<script src="full_screen_video.js"></script>
 </head>
 <body>
 </script></head><body>

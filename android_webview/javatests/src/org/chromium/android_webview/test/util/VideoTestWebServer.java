@@ -19,7 +19,8 @@ import java.util.List;
  */
 public class VideoTestWebServer {
 
-    // VIDEO_ID must be kept in sync with the id in full_screen_video_test.html.
+    // VIDEO_ID must be kept in sync with the id in VIDEO_TEST_HTML_FILE and
+    // VIDEO_INSIDE_DIV_TEST_HTML_FILE.
     public static final String VIDEO_ID = "video";
     public static final String ONE_PIXEL_ONE_FRAME_WEBM_FILENAME = "one_pixel_one_frame.webm";
     public static final String ONE_PIXEL_ONE_FRAME_WEBM_BASE64 =
@@ -28,9 +29,14 @@ public class VideoTestWebServer {
             "dW5khkAFVl9WUDglhohAA1ZQOIOBAeBABrCBlrqBlh9DtnVAdOeBAKNAboEAAIDyCACdASqWAJYA" +
             "Pk0ci0WD+IBAAJiWlu4XdQTSq2H4MW0+sMO0gz8HMRe+0jRo0aNGjRo0aNGjRo0aNGjRo0aNGjRo" +
             "0aNGjRo0aNGjRo0VAAD+/729RWRzH4mOZ9/O8Dl319afX4gsgAAA";
+    private static final String VIDEO_TEST_HTML_FILE = "full_screen_video_test.html";
+    private static final String VIDEO_INSIDE_DIV_TEST_HTML_FILE =
+            "full_screen_video_inside_div_test.html";
+    private static final String VIDEO_TEST_JS_FILE = "full_screen_video.js";
 
     private String mOnePixelOneFrameWebmURL;
     private String mFullScreenVideoTestURL;
+    private String mFullScreenVideoInsideDivTestURL;
     private TestWebServer mTestWebServer;
 
     public VideoTestWebServer(Context context) throws Exception {
@@ -39,7 +45,12 @@ public class VideoTestWebServer {
         mOnePixelOneFrameWebmURL = mTestWebServer.setResponseBase64("/" +
                 ONE_PIXEL_ONE_FRAME_WEBM_FILENAME,
                 ONE_PIXEL_ONE_FRAME_WEBM_BASE64, headers);
-        initFullScreenVideoTest(context);
+        mFullScreenVideoTestURL = initFullScreenVideoTest(context, VIDEO_TEST_HTML_FILE);
+        mFullScreenVideoInsideDivTestURL =
+                initFullScreenVideoTest(context, VIDEO_INSIDE_DIV_TEST_HTML_FILE);
+        mTestWebServer.setResponse("/" + VIDEO_TEST_JS_FILE,
+                loadAssetData(context, VIDEO_TEST_JS_FILE),
+                getHTMLHeaders(false));
     }
 
     /**
@@ -51,6 +62,10 @@ public class VideoTestWebServer {
 
     public String getFullScreenVideoTestURL() {
         return mFullScreenVideoTestURL;
+    }
+
+    public String getFullScreenVideoInsideDivTestURL() {
+        return mFullScreenVideoInsideDivTestURL;
     }
 
     public TestWebServer getTestWebServer() {
@@ -65,10 +80,10 @@ public class VideoTestWebServer {
         return CommonResources.getContentTypeAndCacheHeaders("text/html", disableCache);
     }
 
-    private void initFullScreenVideoTest(Context context) throws IOException {
-        final String fullScreenVideoPath = "full_screen_video_test.html";
-        String data = loadAssetData(context, fullScreenVideoPath);
-        mFullScreenVideoTestURL = mTestWebServer.setResponse("/" + fullScreenVideoPath,
+    private String initFullScreenVideoTest(Context context, final String videoTestHtmlFile)
+            throws IOException {
+        String data = loadAssetData(context, videoTestHtmlFile);
+        return mTestWebServer.setResponse("/" + videoTestHtmlFile,
                 data.replace("VIDEO_FILE_URL", getOnePixelOneFrameWebmURL()),
                 getHTMLHeaders(false));
     }
