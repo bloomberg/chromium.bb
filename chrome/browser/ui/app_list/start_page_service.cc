@@ -137,7 +137,7 @@ void StartPageService::RemoveObserver(StartPageObserver* observer) {
 void StartPageService::AppListShown() {
   if (!contents_) {
     LoadContents();
-  } else {
+  } else if (contents_->GetWebUI()) {
     // If experimental hotwording is enabled, don't enable hotwording in the
     // start page, since the hotword extension is taking care of this.
     bool hotword_enabled = HotwordEnabled() &&
@@ -149,8 +149,10 @@ void StartPageService::AppListShown() {
 }
 
 void StartPageService::AppListHidden() {
-  contents_->GetWebUI()->CallJavascriptFunction(
-      "appList.startPage.onAppListHidden");
+  if (contents_->GetWebUI()) {
+    contents_->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.onAppListHidden");
+  }
   if (!app_list::switches::IsExperimentalAppListEnabled())
     UnloadContents();
 }
@@ -158,6 +160,9 @@ void StartPageService::AppListHidden() {
 void StartPageService::ToggleSpeechRecognition() {
   DCHECK(contents_);
   speech_button_toggled_manually_ = true;
+  if (!contents_->GetWebUI())
+    return;
+
   if (webui_finished_loading_) {
     contents_->GetWebUI()->CallJavascriptFunction(
         "appList.startPage.toggleSpeechRecognition");
