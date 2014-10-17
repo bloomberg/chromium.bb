@@ -1689,6 +1689,11 @@ int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
 }
 
 int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoHandshakeLoop"));
+
   DCHECK(OnNSSTaskRunner());
 
   int rv = last_io_result;
@@ -1725,6 +1730,11 @@ int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
 }
 
 int SSLClientSocketNSS::Core::DoReadLoop(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoReadLoop"));
+
   DCHECK(OnNSSTaskRunner());
   DCHECK(false_started_ || handshake_callback_called_);
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
@@ -2195,6 +2205,11 @@ void SSLClientSocketNSS::Core::OnSendComplete(int result) {
 // callback. For Read() and Write(), that's what we want. But for Connect(),
 // the caller expects OK (i.e. 0) for success.
 void SSLClientSocketNSS::Core::DoConnectCallback(int rv) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoConnectCallback"));
+
   DCHECK(OnNSSTaskRunner());
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!user_connect_callback_.is_null());
@@ -2206,6 +2221,11 @@ void SSLClientSocketNSS::Core::DoConnectCallback(int rv) {
 }
 
 void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424386 SSLClientSocketNSS::Core::DoReadCallback"));
+
   DCHECK(OnNSSTaskRunner());
   DCHECK_NE(ERR_IO_PENDING, rv);
   DCHECK(!user_read_callback_.is_null());
@@ -2222,7 +2242,7 @@ void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
       FROM_HERE,
       base::Bind(&Core::DidNSSRead, this, rv));
   // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  tracked_objects::ScopedProfile tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "SSLClientSocketNSS::Core::DoReadCallback"));
   PostOrRunCallback(
