@@ -709,7 +709,13 @@ static int computeBestScrollOffset(int currentScrollOffset, int subfocusMin, int
     // only a portion that's as large as the viewport, centering on
     // the subfocus as much as possible.
     if (objectMax - objectMin > viewportSize) {
-        // Subfocus must be within focus:
+        // Since it's impossible to fit the whole object in the
+        // viewport, exit now if the subfocus is already within the viewport.
+        if (subfocusMin - currentScrollOffset >= viewportMin
+            && subfocusMax - currentScrollOffset <= viewportMax)
+            return currentScrollOffset;
+
+        // Subfocus must be within focus.
         subfocusMin = std::max(subfocusMin, objectMin);
         subfocusMax = std::min(subfocusMax, objectMax);
 
