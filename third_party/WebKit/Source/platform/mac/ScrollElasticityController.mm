@@ -160,8 +160,10 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
     if (!shouldHandleEvent(wheelEvent))
         return false;
 
-    float deltaX = m_overflowScrollDelta.width();
-    float deltaY = m_overflowScrollDelta.height();
+    float deltaX = m_overflowScrollDelta.width() - wheelEvent.deltaX();
+    float deltaY = m_overflowScrollDelta.height() - wheelEvent.deltaY();
+    float eventCoalescedDeltaX = -wheelEvent.deltaX();
+    float eventCoalescedDeltaY = -wheelEvent.deltaY();
 
     // Reset overflow values because we may decide to remove delta at various points and put it into overflow.
     m_overflowScrollDelta = FloatSize();
@@ -169,20 +171,6 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
     IntSize stretchAmount = m_client->stretchAmount();
     bool isVerticallyStretched = stretchAmount.height();
     bool isHorizontallyStretched = stretchAmount.width();
-
-    float eventCoalescedDeltaX;
-    float eventCoalescedDeltaY;
-
-    if (isVerticallyStretched || isHorizontallyStretched) {
-        eventCoalescedDeltaX = -wheelEvent.unacceleratedScrollingDeltaX();
-        eventCoalescedDeltaY = -wheelEvent.unacceleratedScrollingDeltaY();
-    } else {
-        eventCoalescedDeltaX = -wheelEvent.deltaX();
-        eventCoalescedDeltaY = -wheelEvent.deltaY();
-    }
-
-    deltaX += eventCoalescedDeltaX;
-    deltaY += eventCoalescedDeltaY;
 
     // Slightly prefer scrolling vertically by applying the = case to deltaY
     if (fabsf(deltaY) >= fabsf(deltaX))

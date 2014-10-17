@@ -168,9 +168,6 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
     m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
     m_momentumPhase = static_cast<PlatformWheelEventPhase>(e.momentumPhase);
     m_timestamp = e.timeStampSeconds;
-    m_scrollCount = 0;
-    m_unacceleratedScrollingDeltaX = e.deltaX;
-    m_unacceleratedScrollingDeltaY = e.deltaY;
     m_canRubberbandLeft = e.canRubberbandLeft;
     m_canRubberbandRight = e.canRubberbandRight;
 #endif
