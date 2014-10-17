@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "extensions/common/extension.h"
+#include "build/build_config.h"
 
 namespace about_flags {
 class FlagsStorage;

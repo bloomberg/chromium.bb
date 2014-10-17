@@ -6,7 +6,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,7 +17,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
-const std::string kGuestProfileName = "Guest";
+const char kGuestProfileName[] = "Guest";
 
 namespace testing {
 

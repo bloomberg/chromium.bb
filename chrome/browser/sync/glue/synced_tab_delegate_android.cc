@@ -6,15 +6,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
 
 using content::NavigationEntry;
 

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"

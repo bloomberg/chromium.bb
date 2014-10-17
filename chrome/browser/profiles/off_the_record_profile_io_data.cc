@@ -27,7 +27,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
 #include "net/base/sdch_dictionary_fetcher.h"
 #include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -38,6 +37,10 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/database/database_tracker.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/extension.h"
+#endif
 
 using content::BrowserThread;
 

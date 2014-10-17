@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 
 namespace extensions {

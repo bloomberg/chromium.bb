@@ -11,10 +11,10 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
+#include "extensions/common/extension.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
