@@ -759,6 +759,12 @@ TEST(GraphicsContextTest, trackOpaqueTextTest)
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }
 
+static inline void writePixels(GraphicsContext* context, const SkBitmap& bm, int x, int y)
+{
+    SkAutoLockPixels locker(bm);
+    context->writePixels(bm.info(), bm.getPixels(), bm.rowBytes(), x, y);
+}
+
 TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
 {
     SkBitmap bitmap;
@@ -786,7 +792,7 @@ TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
-    context.writePixels(opaqueBitmap, 50, 50);
+    writePixels(&context, opaqueBitmap, 50, 50);
     EXPECT_EQ_RECT(IntRect(50, 50, 10, 10), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
@@ -794,19 +800,19 @@ TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.writePixels(alphaBitmap, 10, 0);
+    writePixels(&context, alphaBitmap, 10, 0);
     EXPECT_EQ_RECT(IntRect(10, 10, 90, 90), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.writePixels(alphaBitmap, 10, 1);
+    writePixels(&context, alphaBitmap, 10, 1);
     EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.writePixels(alphaBitmap, 0, 10);
+    writePixels(&context, alphaBitmap, 0, 10);
     EXPECT_EQ_RECT(IntRect(10, 11, 90, 89), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 
-    context.writePixels(alphaBitmap, 1, 10);
+    writePixels(&context, alphaBitmap, 1, 10);
     EXPECT_EQ_RECT(IntRect(11, 11, 89, 89), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH(bitmap, context.opaqueRegion().asRect());
 }

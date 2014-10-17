@@ -1202,18 +1202,6 @@ void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, s
     }
 }
 
-void GraphicsContext::writePixels(const SkBitmap& bitmap, int x, int y)
-{
-    if (contextDisabled())
-        return;
-
-    if (!bitmap.getTexture()) {
-        SkAutoLockPixels alp(bitmap);
-        if (bitmap.getPixels())
-            writePixels(bitmap.info(), bitmap.getPixels(), bitmap.rowBytes(), x, y);
-    }
-}
-
 void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
 {
     ASSERT(m_canvas);
