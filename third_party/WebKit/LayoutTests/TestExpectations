@@ -172,19 +172,6 @@ crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ F
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
-# crbug.com/366437 fast/repaint/box-shadow-h.html [ Pass ImageOnlyFailure ]
-# crbug.com/366437 fast/repaint/box-shadow-v.html [ Pass ImageOnlyFailure ]
-
-crbug.com/295848 fast/forms/listbox-hit-test-zoomed.html [ NeedsRebaseline ]
-crbug.com/295848 fast/forms/select-initial-position.html [ NeedsRebaseline ]
-crbug.com/295848 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/295848 fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/295848 fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/295848 fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ NeedsRebaseline ]
-crbug.com/295848 editing/input/reveal-caret-of-multiline-contenteditable.html [ NeedsRebaseline ]
-crbug.com/295848 editing/input/reveal-caret-of-multiline-input.html [ NeedsRebaseline ]
-crbug.com/295848 editing/input/caret-at-the-edge-of-contenteditable.html [ NeedsRebaseline ]
-
 # ThemePainter-related diffs, could rebaseline them or implement the clipping/transform code.
 crbug.com/229207 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ ImageOnlyFailure ]
 
