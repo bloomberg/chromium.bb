@@ -69,8 +69,12 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 
 // DEPRECATED: Just use |arraysize()|, now that C++11 has removed the
 // limitations that forced the use of |ARRAYSIZE_UNSAFE()|.
-// TODO(viettrungluu): Convert all instances and delete. crbug.com/423134
+// TODO(viettrungluu): Convert all instances and delete. (The only uses are now
+// in Blink; the ifdef is to prevent it from reappearing in Chromium.)
+// crbug.com/423134
+#if defined(BLINK_PLATFORM) || defined(BLINK_PLATFORM_IMPLEMENTATION)
 #define ARRAYSIZE_UNSAFE(a) arraysize(a)
+#endif
 
 
 // Use implicit_cast as a safe version of static_cast or const_cast
