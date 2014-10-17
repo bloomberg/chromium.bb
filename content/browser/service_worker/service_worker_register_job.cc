@@ -352,11 +352,8 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
       case net::ERR_ABORTED:
         status = SERVICE_WORKER_ERROR_ABORT;
         break;
-      case net::ERR_FAILED:
-        status = SERVICE_WORKER_ERROR_NETWORK;
-        break;
       default:
-        NOTREACHED();
+        status = SERVICE_WORKER_ERROR_NETWORK;
     }
   }
   Complete(status);
