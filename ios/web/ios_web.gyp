@@ -17,7 +17,12 @@
         '../../base/base.gyp:base',
       ],
       'sources': [
+        'public/favicon_status.cc',
+        'public/favicon_status.h',
         'public/navigation_item.h',
+        'public/security_style.h',
+        'public/ssl_status.cc',
+        'public/ssl_status.h',
         'public/user_agent.h',
         'public/user_agent.mm',
       ],
