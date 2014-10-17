@@ -81,6 +81,13 @@
         ],
       },
     }],
+    ['OS=="win" and target_arch=="ia32"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/wow_helper.exe',
+        ],
+      },
+    }],
     ['chromeos==1', {
       'variables': {
         'files': [
