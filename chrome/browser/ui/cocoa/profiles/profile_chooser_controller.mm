@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -2112,7 +2111,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [button setBordered:NO];
   [button setTarget:self];
   [button setAction:action];
-  [button setKeyEquivalent:kKeyEquivalentReturn];
 
   return button.autorelease();
 }
