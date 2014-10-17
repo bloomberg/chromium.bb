@@ -97,15 +97,17 @@ SkColor NSSystemColorToSkColor(NSColor* color) {
   // windowBackgroundColor; need to first convert colorspace." Hence the
   // conversion first to CGColor.
   CGColorRef cg_color = [color CGColor];
-  if (CGColorGetNumberOfComponents(cg_color) == 4)
+  const size_t component_count = CGColorGetNumberOfComponents(cg_color);
+  if (component_count == 4)
     return gfx::CGColorRefToSkColor(cg_color);
 
-  CHECK_EQ(2u, CGColorGetNumberOfComponents(cg_color));
-  // Two components means a grayscale channel and an alpha channel, which
+  CHECK(component_count == 1 || component_count == 2);
+  // 1-2 components means a grayscale channel and maybe an alpha channel, which
   // CGColorRefToSkColor will not like. But RGB is additive, so the conversion
   // is easy (RGB to grayscale is less easy).
   const CGFloat* components = CGColorGetComponents(cg_color);
-  return SkColorSetARGB(SkScalarRoundToInt(255.0 * components[1]),
+  CGFloat alpha = component_count == 2 ? components[1] : 1.0;
+  return SkColorSetARGB(SkScalarRoundToInt(255.0 * alpha),
                         SkScalarRoundToInt(255.0 * components[0]),
                         SkScalarRoundToInt(255.0 * components[0]),
                         SkScalarRoundToInt(255.0 * components[0]));
