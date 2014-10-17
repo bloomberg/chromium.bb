@@ -18,7 +18,6 @@ class RectF;
 }
 
 class GURL;
-class InfoBarService;
 class PrefService;
 
 namespace autofill {
@@ -28,10 +27,8 @@ class AutofillPopupDelegate;
 class AutofillWebDataService;
 class CreditCard;
 class FormStructure;
-class PasswordGenerator;
 class PersonalDataManager;
 struct FormData;
-struct PasswordForm;
 
 // A client interface that needs to be supplied to the Autofill component by the
 // embedder.

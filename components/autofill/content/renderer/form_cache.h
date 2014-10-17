@@ -14,7 +14,6 @@
 namespace blink {
 class WebDocument;
 class WebFormControlElement;
-class WebFormElement;
 class WebFrame;
 class WebInputElement;
 class WebSelectElement;

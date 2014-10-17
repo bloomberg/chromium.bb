@@ -4,7 +4,6 @@
 
 #include "components/autofill/core/common/password_form_fill_data.h"
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
 

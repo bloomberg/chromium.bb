@@ -12,7 +12,6 @@
 namespace autofill {
 
 class AutofillProfile;
-class CreditCard;
 
 // For classic Autofill form fields, the KeyType is AutofillKey.
 // Autofill++ types such as AutofillProfile and CreditCard simply use an int.

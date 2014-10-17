@@ -33,10 +33,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace blink {
-struct WebScreenInfo;
-}
-
 namespace autofill {
 namespace risk {
 

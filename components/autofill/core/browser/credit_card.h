@@ -15,8 +15,6 @@
 
 namespace autofill {
 
-struct FormFieldData;
-
 // A form group that stores credit card information.
 class CreditCard : public AutofillDataModel {
  public:

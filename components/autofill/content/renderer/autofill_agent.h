@@ -24,7 +24,6 @@
 namespace blink {
 class WebNode;
 class WebView;
-struct WebAutocompleteParams;
 }
 
 namespace autofill {

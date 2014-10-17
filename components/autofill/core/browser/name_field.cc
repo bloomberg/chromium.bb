@@ -4,7 +4,6 @@
 
 #include "components/autofill/core/browser/name_field.h"
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

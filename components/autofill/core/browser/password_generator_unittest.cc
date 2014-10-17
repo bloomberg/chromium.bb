@@ -4,7 +4,6 @@
 
 #include <locale>
 
-#include "base/logging.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

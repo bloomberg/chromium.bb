@@ -25,7 +25,6 @@ class Message;
 
 namespace autofill {
 
-class AutofillContext;
 class AutofillClient;
 
 // Class that drives autofill flow in the browser process based on

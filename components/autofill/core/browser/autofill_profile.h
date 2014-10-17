@@ -22,8 +22,6 @@
 
 namespace autofill {
 
-struct FormFieldData;
-
 // A collection of FormGroups stored in a profile.  AutofillProfile also
 // implements the FormGroup interface so that owners of this object can request
 // form information from the profile, and the profile will delegate the request

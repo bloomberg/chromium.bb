@@ -15,7 +15,6 @@
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
-class URLRequestStatus;
 }
 
 class GoogleServiceAuthError;

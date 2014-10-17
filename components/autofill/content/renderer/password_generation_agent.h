@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebCString;
 class WebDocument;
 }
 

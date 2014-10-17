@@ -31,14 +31,12 @@
 #include "sync/protocol/autofill_specifics.pb.h"
 
 class ProfileSyncServiceAutofillTest;
-class WebDataServiceBase;
 
 namespace autofill {
 
 class AutofillProfile;
 class AutofillTable;
 class AutofillWebDataService;
-class FormGroup;
 
 extern const char kAutofillProfileTag[];
 

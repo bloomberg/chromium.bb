@@ -16,6 +16,7 @@
 
 class CreditCard;
 class PersonalDataManager;
+class InfoBarService;
 
 namespace autofill {
 

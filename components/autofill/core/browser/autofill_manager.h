@@ -27,13 +27,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 
-class GURL;
-
-namespace content {
-class RenderViewHost;
-class WebContents;
-}
-
 namespace gfx {
 class Rect;
 class RectF;
@@ -59,7 +52,6 @@ class FormStructureBrowserTest;
 
 struct FormData;
 struct FormFieldData;
-struct PasswordFormFillData;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.

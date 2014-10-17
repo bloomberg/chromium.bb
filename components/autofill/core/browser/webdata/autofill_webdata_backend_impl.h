@@ -26,7 +26,6 @@ class WebDataServiceBackend;
 
 namespace autofill {
 
-class AutofillChange;
 class AutofillProfile;
 class AutofillWebDataServiceObserverOnDBThread;
 class CreditCard;
