@@ -2370,7 +2370,7 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
 
-  surfaceless_ = surface->IsSurfaceless();
+  surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
   set_initialized();
   gpu_tracer_.reset(new GPUTracer(this));

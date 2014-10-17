@@ -40,6 +40,7 @@ class GL_EXPORT NoOpGLSurface : public GLSurface {
   virtual gfx::Size GetSize() override { return size_; }
   virtual void* GetHandle() override { return NULL; }
   virtual void* GetDisplay() override { return NULL; }
+  virtual bool IsSurfaceless() const override { return true; }
 
  protected:
   virtual ~NoOpGLSurface() {}
