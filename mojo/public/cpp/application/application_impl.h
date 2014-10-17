@@ -76,6 +76,12 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   // Wait for the ShellPtr's Initialize message.
   bool WaitForInitialize();
 
+  // Unbind the shell from this application and return its handle.
+  ScopedMessagePipeHandle UnbindShell();
+
+  // Application implementation.
+  virtual void Initialize(Array<String> args) override;
+
  private:
   class ShellPtrWatcher;
 
@@ -90,7 +96,6 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   static void Terminate();
 
   // Application implementation.
-  virtual void Initialize(Array<String> args) override;
   virtual void AcceptConnection(const String& requestor_url,
                                 ServiceProviderPtr provider) override;
 

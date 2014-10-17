@@ -54,13 +54,6 @@ ApplicationImpl::~ApplicationImpl() {
   delete shell_watch_;
 }
 
-void ApplicationImpl::Initialize(Array<String> args) {
-  MOJO_CHECK(!initialized_);
-  initialized_ = true;
-  args_ = args.To<std::vector<std::string>>();
-  delegate_->Initialize(this);
-}
-
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
     const String& application_url) {
   MOJO_CHECK(initialized_);
@@ -82,6 +75,17 @@ bool ApplicationImpl::WaitForInitialize() {
   bool result = shell_.WaitForIncomingMethodCall();
   MOJO_CHECK(initialized_ || !result);
   return result;
+}
+
+ScopedMessagePipeHandle ApplicationImpl::UnbindShell() {
+  return shell_.PassMessagePipe();
+}
+
+void ApplicationImpl::Initialize(Array<String> args) {
+  MOJO_CHECK(!initialized_);
+  initialized_ = true;
+  args_ = args.To<std::vector<std::string>>();
+  delegate_->Initialize(this);
 }
 
 void ApplicationImpl::BindShell(ScopedMessagePipeHandle shell_handle) {
