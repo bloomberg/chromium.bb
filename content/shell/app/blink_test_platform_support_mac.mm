@@ -7,7 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/app/webkit_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include <AppKit/AppKit.h>
 #include <Foundation/Foundation.h>
@@ -48,7 +48,7 @@ bool CheckLayoutSystemDeps() {
   return true;
 }
 
-bool WebKitTestPlatformInitialize() {
+bool BlinkTestPlatformInitialize() {
 
   SetDefaultsToLayoutTestValues();
 

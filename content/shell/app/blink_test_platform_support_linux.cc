@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/app/webkit_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -26,7 +26,7 @@ bool CheckLayoutSystemDeps() {
   return true;
 }
 
-bool WebKitTestPlatformInitialize() {
+bool BlinkTestPlatformInitialize() {
   gfx::SetUpFontconfig();
 
   base::FilePath base_path;

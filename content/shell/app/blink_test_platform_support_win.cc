@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/app/webkit_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include <windows.h>
 #include <iostream>
@@ -110,7 +110,7 @@ bool CheckLayoutSystemDeps() {
   return errors.empty();
 }
 
-bool WebKitTestPlatformInitialize() {
+bool BlinkTestPlatformInitialize() {
   return SetupFonts();
 }
 

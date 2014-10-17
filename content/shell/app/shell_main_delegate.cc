@@ -17,8 +17,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
-#include "content/shell/app/webkit_test_platform_support.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -121,7 +121,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 #if defined(OS_MACOSX)
   // Needs to happen before InitializeResourceBundle() and before
-  // WebKitTestPlatformInitialize() are called.
+  // BlinkTestPlatformInitialize() are called.
   OverrideFrameworkBundlePath();
   OverrideChildProcessPath();
   EnsureCorrectResolutionSettings();
@@ -131,7 +131,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
     // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
-    // continue and try to load the fonts in WebKitTestPlatformInitialize
+    // continue and try to load the fonts in BlinkTestPlatformInitialize
     // below, and then try to bring up the rest of the content module.
     if (!CheckLayoutSystemDeps()) {
       if (exit_code)
@@ -190,7 +190,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     net::RemoveProprietaryMediaTypesAndCodecsForTests();
 #endif
 
-    if (!WebKitTestPlatformInitialize()) {
+    if (!BlinkTestPlatformInitialize()) {
       if (exit_code)
         *exit_code = 1;
       return true;

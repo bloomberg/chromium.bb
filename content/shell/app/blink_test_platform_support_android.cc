@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/app/webkit_test_platform_support.h"
+#include "content/shell/app/blink_test_platform_support.h"
 
 #include "third_party/skia/include/ports/SkTypeface_android.h"
 
@@ -31,7 +31,7 @@ bool CheckLayoutSystemDeps() {
   return true;
 }
 
-bool WebKitTestPlatformInitialize() {
+bool BlinkTestPlatformInitialize() {
   // Initialize Skia with the font configuration files crafted for layout tests.
   SkUseTestFontConfigFile(
       kPrimaryFontConfig, kFallbackFontConfig, kFontDirectory);
