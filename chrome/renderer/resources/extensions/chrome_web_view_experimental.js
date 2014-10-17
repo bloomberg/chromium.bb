@@ -8,18 +8,17 @@
 // <webview> Chrome Experimental API is only available on canary and dev
 // channels of Chrome.
 
+var ChromeWebView = require('chromeWebViewInternal').ChromeWebView;
+var ChromeWebViewSchema =
+    requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var ContextMenusSchema =
     requireNative('schema_registry').GetSchema('contextMenus');
 var CreateEvent = require('webViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
-var MessagingNatives = requireNative('messaging_natives');
-//var WebView = require('webViewInternal').WebView;
-var ChromeWebView = require('chromeWebViewInternal').ChromeWebView;
-var WebViewInternal = require('webView').WebViewInternal;
-var ChromeWebViewSchema =
-    requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var idGeneratorNatives = requireNative('id_generator');
+var MessagingNatives = requireNative('messaging_natives');
 var utils = require('utils');
+var WebView = require('webView').WebView;
 
 function GetUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();
@@ -95,7 +94,7 @@ var WebViewContextMenus = utils.expose(
     { functions: ['create', 'remove', 'removeAll', 'update'] });
 
 /** @private */
-WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
+WebView.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   var requestId = e.requestId;
   // Construct the event.menu object.
   var actionTaken = false;
@@ -133,7 +132,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
 };
 
 /** @private */
-WebViewInternal.prototype.setupExperimentalContextMenus = function() {
+WebView.prototype.setupExperimentalContextMenus = function() {
   var createContextMenus = function() {
     return function() {
       if (this.contextMenus_) {

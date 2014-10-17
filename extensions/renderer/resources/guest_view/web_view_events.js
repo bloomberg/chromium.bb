@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Event management for WebViewInternal.
+// Event management for WebView.
 
 var DeclarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
@@ -12,7 +12,7 @@ var MessagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
-var WebView = require('webViewInternal').WebView;
+var WebViewInternal = require('webViewInternal').WebViewInternal;
 
 var CreateEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
@@ -334,12 +334,12 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
     ok: function(user_input) {
       validateCall();
       user_input = user_input || '';
-      WebView.setPermission(getGuestInstanceId(), requestId, 'allow',
+      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'allow',
                             user_input);
     },
     cancel: function() {
       validateCall();
-      WebView.setPermission(getGuestInstanceId(), requestId, 'deny');
+      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'deny');
     }
   };
   webViewEvent.dialog = dialog;
@@ -357,7 +357,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
       if (actionTaken) {
         return;
       }
-      WebView.setPermission(
+      WebViewInternal.setPermission(
           getGuestInstanceId(), requestId, 'default', '', function(allowed) {
         if (allowed) {
           return;
@@ -368,7 +368,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   } else {
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.
-    WebView.setPermission(
+    WebViewInternal.setPermission(
         getGuestInstanceId(), requestId, 'default', '', function(allowed) {
       if (allowed) {
         return;
@@ -458,7 +458,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
         // then we will fail and it will be treated as if the new window
         // was rejected. The permission API plumbing is used here to clean
         // up the state created for the new window if attaching fails.
-        WebView.setPermission(
+        WebViewInternal.setPermission(
             guestInstanceId, requestId, attached ? 'allow' : 'deny');
       }, 0);
     },
@@ -470,7 +470,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
         // guestInstanceId.
         return;
       }
-      WebView.setPermission(guestInstanceId, requestId, 'deny');
+      WebViewInternal.setPermission(guestInstanceId, requestId, 'deny');
     }
   };
   webViewEvent.window = windowObj;
@@ -495,7 +495,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
         return;
       }
 
-      WebView.setPermission(
+      WebViewInternal.setPermission(
           guestInstanceId, requestId, 'default', '', function(allowed) {
             if (allowed) {
               return;
@@ -506,7 +506,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   } else {
     actionTaken = true;
     // The default action is to discard the window.
-    WebView.setPermission(
+    WebViewInternal.setPermission(
         getGuestInstanceId(), requestId, 'default', '', function(allowed) {
       if (allowed) {
         return;
@@ -535,7 +535,7 @@ WebViewEvents.prototype.handlePermissionEvent =
 
   if (this.permissionTypes.indexOf(event.permission) < 0) {
     // The permission type is not allowed. Trigger the default response.
-    WebView.setPermission(
+    WebViewInternal.setPermission(
         getGuestInstanceId(), requestId, 'default', '', function(allowed) {
       if (!allowed)
         showWarningMessage(event.permission);
@@ -555,11 +555,11 @@ WebViewEvents.prototype.handlePermissionEvent =
   var request = {
     allow: function() {
       validateCall();
-      WebView.setPermission(getGuestInstanceId(), requestId, 'allow');
+      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'allow');
     },
     deny: function() {
       validateCall();
-      WebView.setPermission(getGuestInstanceId(), requestId, 'deny');
+      WebViewInternal.setPermission(getGuestInstanceId(), requestId, 'deny');
     }
   };
   webViewEvent.request = request;
@@ -576,7 +576,7 @@ WebViewEvents.prototype.handlePermissionEvent =
       if (decisionMade) {
         return;
       }
-      WebView.setPermission(
+      WebViewInternal.setPermission(
           getGuestInstanceId(), requestId, 'default', '', function(allowed) {
         if (allowed) {
           return;
@@ -586,7 +586,7 @@ WebViewEvents.prototype.handlePermissionEvent =
     });
   } else {
     decisionMade = true;
-    WebView.setPermission(
+    WebViewInternal.setPermission(
         getGuestInstanceId(), requestId, 'default', '',
         function(allowed) {
           if (allowed) {

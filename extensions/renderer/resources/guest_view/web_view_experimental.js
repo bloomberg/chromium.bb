@@ -8,31 +8,31 @@
 // <webview> Experimental API is only available on canary and dev channels of
 // Chrome.
 
-var WebViewInternal = require('webView').WebViewInternal;
-var WebView = require('webViewInternal').WebView;
+var WebView = require('webView').WebView;
+var WebViewInternal = require('webViewInternal').WebViewInternal;
 
 // Returns a map of experimental <webview> DOM event names to their associated
 // extension event descriptor objects. See |WEB_VIEW_EVENTS| in
 // web_view_events.js for more information and details on how this map should
 // be formatted.
-WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
+WebView.prototype.maybeGetExperimentalEvents = function() {
   return {};
 };
 
 // Captures the visible content within the webview.
-WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
-  WebView.captureVisibleRegion(this.guestInstanceId, spec, callback);
+WebView.prototype.captureVisibleRegion = function(spec, callback) {
+  WebViewInternal.captureVisibleRegion(this.guestInstanceId, spec, callback);
 };
 
 // Loads a data URL with a specified base URL used for relative links.
 // Optionally, a virtual URL can be provided to be shown to the user instead
 // of the data URL.
-WebViewInternal.prototype.loadDataWithBaseUrl = function(
+WebView.prototype.loadDataWithBaseUrl = function(
     dataUrl, baseUrl, virtualUrl) {
   if (!this.guestInstanceId) {
     return;
   }
-  WebView.loadDataWithBaseUrl(
+  WebViewInternal.loadDataWithBaseUrl(
       this.guestInstanceId, dataUrl, baseUrl, virtualUrl, function() {
         // Report any errors.
         if (chrome.runtime.lastError != undefined) {
@@ -44,7 +44,7 @@ WebViewInternal.prototype.loadDataWithBaseUrl = function(
 };
 
 // Registers the experimantal WebVIew API when available.
-WebViewInternal.maybeGetExperimentalAPIs = function() {
+WebView.maybeGetExperimentalAPIs = function() {
   var experimentalMethods = [
     'captureVisibleRegion',
     'loadDataWithBaseUrl'
