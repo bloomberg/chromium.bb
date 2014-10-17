@@ -60,7 +60,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   Shell* shell() const { return shell_.get(); }
 
   // Returns any initial configuration arguments, passed by the Shell.
-  const std::vector<std::string>& args() { return args_; }
+  const std::vector<std::string>& args() const { return args_; }
 
   // Establishes a new connection to an application. Caller does not own.
   ApplicationConnection* ConnectToApplication(const String& application_url);

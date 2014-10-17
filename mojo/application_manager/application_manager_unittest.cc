@@ -108,7 +108,7 @@ class TestApplicationLoader : public ApplicationLoader,
 
   void set_context(TestContext* context) { context_ = context; }
   int num_loads() const { return num_loads_; }
-  const std::vector<std::string>& GetArgs() { return test_app_->args(); }
+  const std::vector<std::string>& GetArgs() const { return test_app_->args(); }
 
  private:
   // ApplicationLoader implementation.
