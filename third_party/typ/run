@@ -139,13 +139,13 @@ def run_lint(args):
 
 def run_tests(args):
     # Tests that we can run the command line directly if typ is in sys.path.
-    call(['python', os.path.join('typ', 'cmdline.py'),
+    call(['python', os.path.join('typ', 'runner.py'),
           'typ.tests.main_test.TestMain.test_basic'])
 
     # Test that we can run the command line directly if typ is not in sys.path.
     repo_dir = os.path.abspath(os.path.dirname(__file__))
     home_dir = os.environ['HOME']
-    call(['python', os.path.join(repo_dir, 'typ', 'cmdline.py'),
+    call(['python', os.path.join(repo_dir, 'typ', 'runner.py'),
           'typ.tests.main_test.TestMain.test_basic'], cwd=home_dir)
 
     # Now run all the tests under Python2 and Python3.

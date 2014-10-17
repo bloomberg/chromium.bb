@@ -48,6 +48,7 @@ class Host(object):
         self.stderr = sys.stderr
         self.stdin = sys.stdin
         self.env = os.environ
+        self.platform = sys.platform
 
     def abspath(self, *comps):
         return os.path.abspath(self.join(*comps))
@@ -74,6 +75,10 @@ class Host(object):
 
         # pylint type checking bug - pylint: disable=E1103
         return proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8')
+
+    def call_inline(self, argv, env=None):
+        return subprocess.call(argv, stdin=self.stdin, stdout=self.stdout,
+                               stderr=self.stderr, env=env)
 
     def chdir(self, *comps):
         return os.chdir(self.join(*comps))

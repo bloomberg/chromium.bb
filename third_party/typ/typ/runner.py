@@ -16,10 +16,23 @@ import fnmatch
 import importlib
 import inspect
 import json
+import os
 import pdb
+import sys
 import unittest
 
 from collections import OrderedDict
+
+# This ensures that absolute imports of typ modules will work when
+# running typ/runner.py as a script even if typ is not installed.
+# We need this entry in addition to the one in __main__.py to ensure
+# that typ/runner.py works when invoked via subprocess on windows in
+# _spawn_main().
+path_to_file = os.path.realpath(__file__)
+dir_above_typ = os.path.dirname(os.path.dirname(path_to_file))
+if dir_above_typ not in sys.path:  # pragma: no cover
+    sys.path.append(dir_above_typ)
+
 
 from typ import json_results
 from typ.arg_parser import ArgumentParser
@@ -34,6 +47,19 @@ from typ.version import VERSION
 Result = json_results.Result
 ResultSet = json_results.ResultSet
 ResultType = json_results.ResultType
+
+
+def main(argv=None, host=None, stdout=None, stderr=None,
+         win_multiprocessing=None, **defaults):
+    host = host or Host()
+    if stdout:
+        host.stdout = stdout
+    if stderr:
+        host.stderr = stderr
+    runner = Runner(host=host)
+
+    return runner.main(argv, win_multiprocessing=win_multiprocessing,
+                       **defaults)
 
 
 class TestInput(object):
@@ -64,6 +90,15 @@ class TestSet(object):
         self.teardown_fn = teardown_fn
 
 
+class WinMultiprocessing(object):
+    force = 'force'
+    ignore = 'ignore'
+    run_serially = 'run_serially'
+    spawn = 'spawn'
+
+    values = [force, ignore, run_serially, spawn]
+
+
 class _AddTestsError(Exception):
     pass
 
@@ -84,14 +119,16 @@ class Runner(object):
         parser = ArgumentParser(self.host)
         self.parse_args(parser, [])
 
-    def main(self, argv=None, **defaults):
+    def main(self, argv=None, win_multiprocessing=None, **defaults):
         parser = ArgumentParser(self.host)
         self.parse_args(parser, argv, **defaults)
         if parser.exit_status is not None:
             return parser.exit_status
 
         try:
-            ret, _, _ = self.run()
+            ret = self._handle_win_multiprocessing('main', win_multiprocessing)
+            if ret is None:
+                ret, _, _ = self.run(win_multiprocessing=win_multiprocessing)
             return ret
         except KeyboardInterrupt:
             self.print_("interrupted, exiting", stream=self.host.stderr)
@@ -108,17 +145,75 @@ class Runner(object):
         if parser.exit_status is not None:
             return
 
+    def _handle_win_multiprocessing(self, entry_point, win_multiprocessing,
+                                    allow_spawn=True):
+        wmp = win_multiprocessing
+        force, ignore, run_serially, spawn = WinMultiprocessing.values
+
+        if (wmp is not None and wmp not in WinMultiprocessing.values):
+            raise ValueError('illegal value %s for win_multiprocessing' %
+                             wmp)
+
+        # First, check if __main__ is importable; if it is, we're fine.
+        if (self._main_is_importable() and wmp != force):
+            return None
+
+        if wmp is None and self.args.jobs == 1:
+            return None
+
+        if wmp is None:
+            raise ValueError(
+                'The __main__ module is not importable; The caller '
+                'must pass a valid WinMultiprocessing value (one of %s) '
+                'to %s to tell typ how to handle Windows.' %
+                (WinMultiprocessing.values, entry_point))
+
+        h = self.host
+
+        if (h.platform != 'win32' and wmp != force):
+            return
+
+        if wmp == ignore:  # pragma: win32
+            raise ValueError('Cannot use WinMultiprocessing.ignore for '
+                             'win_multiprocessing when actually running '
+                             'on Windows.')
+
+        if wmp == run_serially:  # pragma: win32
+            self.args.jobs = 1
+            return None
+
+        assert allow_spawn, ('Cannot use WinMultiprocessing.spawn '
+                             'in %s' % entry_point)
+        assert wmp in (force, spawn)
+        argv = ArgumentParser(h).argv_from_args(self.args)
+        return h.call_inline([h.python_interpreter, path_to_file] + argv)
+
+    def _main_is_importable(self):
+        path = self.host.realpath(sys.modules['__main__'].__file__)
+        if not path or not path.endswith('.py'):  # pragma: no cover
+            return False
+
+        for d in sys.path:
+            if path.startswith(self.host.realpath(d)):
+                return True
+        return False  # pragma: no cover
+
     def print_(self, msg='', end='\n', stream=None):
         self.host.print_(msg, end, stream=stream)
 
     def run(self, test_set=None, classifier=None,
-            context=None, setup_fn=None, teardown_fn=None):
+            context=None, setup_fn=None, teardown_fn=None,
+            win_multiprocessing=None):
+
         ret = 0
         h = self.host
 
         if self.args.version:
             self.print_(VERSION)
             return ret, None, None
+
+        self._handle_win_multiprocessing('Runner.run', win_multiprocessing,
+                                         allow_spawn=False)
 
         ret = self._set_up_runner()
         if ret:  # pragma: no cover
@@ -799,3 +894,7 @@ def _load_via_load_tests(child, test_name):
 
 def _sort_inputs(inps):
     return sorted(inps, key=lambda inp: inp.name)
+
+
+if __name__ == '__main__':  # pragma: no cover
+    sys.exit(main(win_multiprocessing='spawn'))

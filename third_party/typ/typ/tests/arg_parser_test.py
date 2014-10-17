@@ -29,3 +29,17 @@ class ArgumentParserTest(unittest.TestCase):
                                         skip='[-d]')
         options, _ = parser.parse_args(['-j', '1'])
         self.assertEqual(options.jobs, 1)
+
+    def test_argv_from_args(self):
+
+        def check(argv, expected=None):
+            parser = ArgumentParser()
+            args = parser.parse_args(argv)
+            actual_argv = parser.argv_from_args(args)
+            expected = expected or argv
+            self.assertEqual(expected, actual_argv)
+
+        check(['--version'])
+        check(['--coverage', '--coverage-omit', 'foo'])
+        check(['--jobs', '4'])
+        check(['-vv'], ['--verbose', '--verbose'])

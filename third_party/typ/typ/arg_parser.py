@@ -246,6 +246,49 @@ class ArgumentParser(argparse.ArgumentParser):
             options.append(optparse.make_option(*args, **kwargs))
         return options
 
+    def argv_from_args(self, args):
+        default_parser = ArgumentParser(host=self._host)
+        default_args = default_parser.parse_args([])
+        argv = []
+        tests = []
+        d = vars(args)
+        for k in sorted(d.keys()):
+            v = d[k]
+            argname = _argname_from_key(k)
+            action = self._action_for_key(k)
+            action_str = _action_str(action)
+            if k == 'tests':
+                tests = v
+                continue
+            if getattr(default_args, k) == v:
+                # this arg has the default value, so skip it.
+                continue
+
+            assert action_str in ['append', 'count', 'store', 'store_true']
+            if action_str == 'append':
+                for el in v:
+                    argv.append(argname)
+                    argv.append(el)
+            elif action_str == 'count':
+                for _ in range(v):
+                    argv.append(argname)
+            elif action_str == 'store':
+                argv.append(argname)
+                argv.append(str(v))
+            else:
+                # action_str == 'store_true'
+                argv.append(argname)
+
+        return argv + tests
+
+    def _action_for_key(self, key):
+        for action in self._actions:
+            if action.dest == key:
+                return action
+
+        assert False, ('Could not find an action for %s'  # pragma: no cover
+                       % key)
+
 
 def _action_str(action):
     # Access to a protected member pylint: disable=W0212
@@ -264,3 +307,7 @@ def _action_str(action):
         return 'store'
     if isinstance(action, argparse._StoreTrueAction):
         return 'store_true'
+
+
+def _argname_from_key(key):
+    return '--' + key.replace('_', '-')

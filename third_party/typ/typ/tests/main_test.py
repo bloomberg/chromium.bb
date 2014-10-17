@@ -165,7 +165,7 @@ LOAD_TEST_FILES = {'load_test.py': LOAD_TEST_PY}
 
 path_to_main = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'cmdline.py')
+    'runner.py')
 
 
 class TestCli(test_case.MainTestCase):

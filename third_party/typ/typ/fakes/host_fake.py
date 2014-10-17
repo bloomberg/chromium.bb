@@ -40,6 +40,7 @@ class FakeHost(object):
         self.stdin = io.StringIO()
         self.stdout = io.StringIO()
         self.stderr = io.StringIO()
+        self.platform = 'linux2'
         self.env = {}
         self.sep = '/'
         self.dirs = set([])
@@ -88,6 +89,9 @@ class FakeHost(object):
     def call(self, argv, stdin=None, env=None):
         self.cmds.append(argv)
         return 0, '', ''
+
+    def call_inline(self, argv):
+        return self.call(argv)[0]
 
     def chdir(self, *comps):
         path = self.join(*comps)

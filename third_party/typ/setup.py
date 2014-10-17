@@ -34,7 +34,7 @@ setup(
     package_data={'': ['../README.rst']},
     entry_points={
         'console_scripts': [
-            'typ=typ.cmdline:main',
+            'typ=typ.runner:main',
         ]
     },
     install_requires=[

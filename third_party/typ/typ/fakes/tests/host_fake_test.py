@@ -43,6 +43,11 @@ class TestFakeHost(host_test.TestHost):
         self.assertEqual(err, '')
         self.assertEqual(h.cmds, [['echo', 'hello, world']])
 
+    def test_call_inline(self):
+        h = self.host()
+        ret = h.call_inline(['echo', 'hello, world'])
+        self.assertEqual(ret, 0)
+
     def test_capture_output(self):
         h = self.host()
         self.host = lambda: h

@@ -184,6 +184,14 @@ class TestHost(unittest.TestCase):
         self.assertEqual(out, '')
         self.assertIn(err, ('err\n', 'err\r\n'))
 
+    def test_call_inline(self):
+        h = self.host()
+        h.stdout = None
+        h.stderr = None
+        ret = h.call_inline([h.python_interpreter,
+                             '-c', 'import sys; sys.exit(0)'])
+        self.assertEqual(ret, 0)
+
     def test_add_to_path(self):
         orig_sys_path = sys.path[:]
         try:
@@ -196,3 +204,7 @@ class TestHost(unittest.TestCase):
             self.assertNotEqual(sys.path, orig_sys_path)
         finally:
             sys.path = orig_sys_path
+
+    def test_platform(self):
+        h = self.host()
+        self.assertNotEqual(h.platform, None)
