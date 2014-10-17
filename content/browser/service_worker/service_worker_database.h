@@ -48,6 +48,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     STATUS_ERROR_FAILED,
     STATUS_ERROR_MAX,
   };
+  static const char* StatusToString(Status status);
 
   struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.

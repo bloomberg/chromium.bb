@@ -265,7 +265,10 @@ ServiceWorkerDatabase::Status LevelDBStatusToStatus(
     return ServiceWorkerDatabase::STATUS_ERROR_FAILED;
 }
 
-const char* StatusToString(ServiceWorkerDatabase::Status status) {
+}  // namespace
+
+const char* ServiceWorkerDatabase::StatusToString(
+  ServiceWorkerDatabase::Status status) {
   switch (status) {
     case ServiceWorkerDatabase::STATUS_OK:
       return "Database OK";
@@ -284,8 +287,6 @@ const char* StatusToString(ServiceWorkerDatabase::Status status) {
   NOTREACHED();
   return "Database unknown error";
 }
-
-}  // namespace
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
     : registration_id(kInvalidServiceWorkerRegistrationId),

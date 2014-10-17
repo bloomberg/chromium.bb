@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
-#include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -286,7 +285,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
         "ServiceWorkerStorage::FindRegistrationForDocument:CheckInstalling",
         TRACE_EVENT_SCOPE_THREAD,
         "URL", document_url.spec(),
-        "Status", (status == SERVICE_WORKER_OK) ? "Found" : "Not Found");
+        "Status", ServiceWorkerStatusToString(status));
     CompleteFindNow(installing_registration,
                     status,
                     callback);
@@ -788,9 +787,8 @@ void ServiceWorkerStorage::DidReadInitialData(
     registered_origins_.swap(data->origins);
     state_ = INITIALIZED;
   } else {
-    // TODO(nhiroki): Stringify |status| using StatusToString() defined in
-    // service_worker_database.cc.
-    DVLOG(2) << "Failed to initialize: " << status;
+    DVLOG(2) << "Failed to initialize: "
+             << ServiceWorkerDatabase::StatusToString(status);
     ScheduleDeleteAndStartOver();
   }
 
@@ -814,7 +812,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
         "ServiceWorker",
         "ServiceWorkerStorage::FindRegistrationForDocument",
         callback_id,
-        "Status", "OK");
+        "Status", ServiceWorkerDatabase::StatusToString(status));
     return;
   }
 
@@ -822,14 +820,18 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
-    callback.Run(installing_registration.get() ? SERVICE_WORKER_OK
-                                               : SERVICE_WORKER_ERROR_NOT_FOUND,
-                 installing_registration);
-    TRACE_EVENT_ASYNC_END1(
+    ServiceWorkerStatusCode installing_status = installing_registration.get() ?
+        SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND;
+    callback.Run(installing_status, installing_registration);
+    TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerStorage::FindRegistrationForDocument",
         callback_id,
-        "Status", status);
+        "Status", ServiceWorkerDatabase::StatusToString(status),
+        "Info",
+        (installing_status == SERVICE_WORKER_OK) ?
+            "Installing registration is found" :
+            "Any registrations are not found");
     return;
   }
 
@@ -840,7 +842,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
       "ServiceWorker",
       "ServiceWorkerStorage::FindRegistrationForDocument",
       callback_id,
-      "Status", status);
+      "Status", ServiceWorkerDatabase::StatusToString(status));
 }
 
 void ServiceWorkerStorage::DidFindRegistrationForPattern(
@@ -1460,7 +1462,8 @@ void ServiceWorkerStorage::DidDeleteDatabase(
   DCHECK_EQ(DISABLED, state_);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     // Give up the corruption recovery until the browser restarts.
-    LOG(ERROR) << "Failed to delete the database: " << status;
+    LOG(ERROR) << "Failed to delete the database: "
+               << ServiceWorkerDatabase::StatusToString(status);
     callback.Run(DatabaseStatusToStatusCode(status));
     return;
   }
