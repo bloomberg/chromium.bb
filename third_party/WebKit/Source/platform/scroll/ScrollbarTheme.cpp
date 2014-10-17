@@ -268,7 +268,11 @@ int ScrollbarTheme::thumbLength(ScrollbarThemeClient* scrollbar)
         overhang = -scrollbar->currentPos();
     else if (scrollbar->visibleSize() + scrollbar->currentPos() > scrollbar->totalSize())
         overhang = scrollbar->currentPos() + scrollbar->visibleSize() - scrollbar->totalSize();
-    float proportion = (scrollbar->visibleSize() - overhang) / usedTotalSize(scrollbar);
+    float proportion = 0.0f;
+    float totalSize = usedTotalSize(scrollbar);
+    if (totalSize > 0.0f) {
+        proportion = (scrollbar->visibleSize() - overhang) / totalSize;
+    }
     int trackLen = trackLength(scrollbar);
     int length = round(proportion * trackLen);
     length = std::max(length, minimumThumbLength(scrollbar));
