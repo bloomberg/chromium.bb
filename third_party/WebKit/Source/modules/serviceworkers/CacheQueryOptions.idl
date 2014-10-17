@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache
-[
-    GarbageCollected
-] dictionary CacheQueryOptions {
+dictionary CacheQueryOptions {
     boolean ignoreSearch = false;
     boolean ignoreMethod = false;
     boolean ignoreVary = false;

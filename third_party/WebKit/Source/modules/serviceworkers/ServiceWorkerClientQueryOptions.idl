@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#serviceworker-client-query-params-dictionary
-[
-    GarbageCollected
-] dictionary ServiceWorkerClientQueryOptions {
+dictionary ServiceWorkerClientQueryOptions {
     boolean includeUncontrolled = false;
 };

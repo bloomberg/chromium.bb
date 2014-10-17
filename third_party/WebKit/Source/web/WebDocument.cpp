@@ -331,8 +331,11 @@ v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     Document* document = unwrap<Document>();
     TrackExceptionState exceptionState;
-    ElementRegistrationOptions* registrationOptions = V8ElementRegistrationOptions::toImpl(isolate, options, exceptionState);
-    ScriptValue constructor = document->registerElement(ScriptState::current(isolate), name, *registrationOptions, exceptionState, CustomElement::EmbedderNames);
+    ElementRegistrationOptions registrationOptions;
+    V8ElementRegistrationOptions::toImpl(isolate, options, registrationOptions, exceptionState);
+    if (exceptionState.hadException())
+        return v8::Handle<v8::Value>();
+    ScriptValue constructor = document->registerElement(ScriptState::current(isolate), name, registrationOptions, exceptionState, CustomElement::EmbedderNames);
     ec = exceptionState.code();
     if (exceptionState.hadException())
         return v8::Handle<v8::Value>();

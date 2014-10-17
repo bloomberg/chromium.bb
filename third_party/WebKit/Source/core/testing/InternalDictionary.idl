@@ -4,9 +4,7 @@
 
 enum InternalEnum { "foo", "bar", "baz" };
 
-[
-    GarbageCollected
-] dictionary InternalDictionary {
+dictionary InternalDictionary {
     long longMember;
     long longMemberWithDefault = 42;
     long? longOrNullMember;

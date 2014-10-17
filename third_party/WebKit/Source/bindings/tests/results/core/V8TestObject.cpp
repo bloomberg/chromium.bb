@@ -6359,14 +6359,14 @@ static void testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethod(cons
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> result0 = nullptr;
-    TestDictionary* result1 = nullptr;
+    Nullable<TestDictionary> result1;
     impl->testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod(result0, result1);
     if (result0) {
         v8SetReturnValue(info, result0.release());
         return;
     }
     if (result1) {
-        v8SetReturnValue(info, result1);
+        v8SetReturnValue(info, result);
         return;
     }
     v8SetReturnValueNull(info);
@@ -6553,6 +6553,21 @@ static void dictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     TestObjectV8Internal::dictionaryMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void testDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    TestDictionary result;
+    impl->testDictionaryMethod(result);
+    v8SetReturnValue(info, result);
+}
+
+static void testDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::testDictionaryMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -8040,20 +8055,16 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    TestDictionary* testDictionaryArg;
+    TestDictionary testDictionaryArg;
     {
-        if (!info[0]->IsUndefined()) {
-            if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-                exceptionState.throwTypeError("parameter 1 ('testDictionaryArg') is not an object.");
-                exceptionState.throwIfNeeded();
-                return;
-            }
-            TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(testDictionaryArg, V8TestDictionary::toImpl(info.GetIsolate(), info[0], exceptionState), exceptionState);
-        } else {
-            testDictionaryArg = TestDictionary::create();
+        if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+            exceptionState.throwTypeError("parameter 1 ('testDictionaryArg') is not an object.");
+            exceptionState.throwIfNeeded();
+            return;
         }
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestDictionary::toImpl(info.GetIsolate(), info[0], testDictionaryArg, exceptionState), exceptionState);
     }
-    impl->overloadedMethodJ(*testDictionaryArg);
+    impl->overloadedMethodJ(testDictionaryArg);
 }
 
 static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10362,6 +10373,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"testEnumMethod", TestObjectV8Internal::testEnumMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestEnumArg", TestObjectV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"testDictionaryMethod", TestObjectV8Internal::testDictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 3, V8DOMConfiguration::ExposedToAllScripts},
     {"promiseMethodWithoutExceptionState", TestObjectV8Internal::promiseMethodWithoutExceptionStateMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

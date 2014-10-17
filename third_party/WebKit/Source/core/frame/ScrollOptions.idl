@@ -4,8 +4,6 @@
 
 // Spec: Non-standard
 
-[
-    GarbageCollected
-] dictionary ScrollOptions {
+dictionary ScrollOptions {
     DOMString behavior;
 };

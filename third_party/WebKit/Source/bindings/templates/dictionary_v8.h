@@ -17,13 +17,13 @@ class ExceptionState;
 
 class {{v8_class}} {
 public:
-    static {{cpp_class}}* toImpl(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
+    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, {{cpp_class}}&, ExceptionState&);
 };
 
-v8::Handle<v8::Value> toV8({{cpp_class}}*, v8::Handle<v8::Object>, v8::Isolate*);
+v8::Handle<v8::Value> toV8({{cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl)
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }

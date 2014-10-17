@@ -842,8 +842,8 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
 {
-    ElementRegistrationOptions* options = ElementRegistrationOptions::create();
-    return registerElement(scriptState, name, *options, exceptionState);
+    ElementRegistrationOptions options;
+    return registerElement(scriptState, name, options, exceptionState);
 }
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)

@@ -13,24 +13,20 @@
 
 namespace blink {
 
-class {{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}> {
+class {{cpp_class}} final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    static {{cpp_class}}* create()
-    {
-        return new {{cpp_class}};
-    }
+    {{cpp_class}}();
 
     {% for member in members %}
     bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
     {{member.rvalue_cpp_type}} {{member.cpp_name}}() const { return {{member.getter_expression}}; }
     void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.cpp_name}} = value; }
-    {% endfor %}
 
+    {% endfor %}
     void trace(Visitor*);
 
 private:
-    {{cpp_class}}();
-
     {% for member in members %}
     {{member.member_cpp_type}} m_{{member.cpp_name}};
     {% endfor %}

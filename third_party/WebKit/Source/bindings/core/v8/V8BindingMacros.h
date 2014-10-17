@@ -99,6 +99,11 @@ namespace blink {
     if (UNLIKELY(exceptionState.throwIfNeeded()))                       \
         return;
 
+#define TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(value, exceptionState) \
+    (value);                                                            \
+    if (UNLIKELY(exceptionState.throwIfNeeded()))                       \
+        return;
+
 #define TONATIVE_DEFAULT_EXCEPTIONSTATE(type, var, value, exceptionState, retVal) \
     type var = (value);                                                           \
     if (UNLIKELY(exceptionState.throwIfNeeded()))                                 \

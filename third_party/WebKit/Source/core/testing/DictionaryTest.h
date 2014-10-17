@@ -27,8 +27,8 @@ public:
 
     // Stores all members into corresponding fields
     void set(const InternalDictionary&);
-    // Creates a TestDictionary instnace from fields and returns it
-    InternalDictionary* get();
+    // Sets each member of the given TestDictionary from fields
+    void get(InternalDictionary&);
 
     void trace(Visitor*);
 

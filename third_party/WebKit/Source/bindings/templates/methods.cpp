@@ -233,6 +233,9 @@ Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
 {{method.cpp_type}} result{{method.cpp_type_initializer}};
 if (!{{method.cpp_value}})
     return;
+{% elif method.use_output_parameter_for_result %}
+{{method.cpp_type}} result;
+{{cpp_value}};
 {% elif method.is_constructor %}
 {{method.cpp_type}} impl = {{cpp_value}};
 {% elif method.use_local_result and not method.union_arguments %}

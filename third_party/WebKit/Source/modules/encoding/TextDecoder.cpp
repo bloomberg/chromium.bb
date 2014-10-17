@@ -106,8 +106,8 @@ String TextDecoder::decode(ArrayBufferView* input, const TextDecodeOptions& opti
 
 String TextDecoder::decode(ExceptionState& exceptionState)
 {
-    TextDecodeOptions* options = TextDecodeOptions::create();
-    return decode(0, *options, exceptionState);
+    TextDecodeOptions options;
+    return decode(0, options, exceptionState);
 }
 
 } // namespace blink

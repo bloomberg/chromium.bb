@@ -4,8 +4,6 @@
 
 // http://encoding.spec.whatwg.org/#textdecoder
 
-[
-    GarbageCollected
-] dictionary TextDecodeOptions {
+dictionary TextDecodeOptions {
     boolean stream = false;
 };

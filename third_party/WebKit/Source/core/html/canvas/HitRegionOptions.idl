@@ -6,9 +6,7 @@
 
 enum CanvasFillRule { "nonzero", "evenodd" };
 
-[
-    GarbageCollected
-] dictionary HitRegionOptions {
+dictionary HitRegionOptions {
     Path2D? path = null;
     CanvasFillRule fillRule = "nonzero";
     DOMString id = "";

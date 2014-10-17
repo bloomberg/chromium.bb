@@ -79,7 +79,7 @@ def member_context(member):
         'cpp_name': cpp_name,
         'cpp_type': idl_type.cpp_type,
         'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
-            cpp_value='impl->%s()' % cpp_name, isolate='isolate',
+            cpp_value='impl.%s()' % cpp_name, isolate='isolate',
             creation_context='creationContext',
             extended_attributes=member.extended_attributes),
         'enum_validation_expression': idl_type.enum_validation_expression,

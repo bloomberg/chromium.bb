@@ -179,6 +179,7 @@ def method_context(interface, method):
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
         'union_arguments': idl_type.union_arguments,
+        'use_output_parameter_for_result': idl_type.is_dictionary,
         'use_local_result': use_local_result(method),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
@@ -266,8 +267,6 @@ def cpp_value(interface, method, number_of_arguments):
         idl_type = argument.idl_type
         if idl_type.name == 'EventListener':
             return argument.name
-        if idl_type.is_dictionary:
-            return '*%s' % argument.name
         if (idl_type.name in ['NodeFilter', 'NodeFilterOrNull',
                               'XPathNSResolver', 'XPathNSResolverOrNull']):
             # FIXME: remove this special case
@@ -308,6 +307,11 @@ def cpp_value(interface, method, number_of_arguments):
         (method.is_constructor and
          has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
         cpp_arguments.append('exceptionState')
+
+    # If a method returns an IDL dictionary, the return value is passed
+    # as an argument to impl classes.
+    if method.idl_type and method.idl_type.is_dictionary:
+        cpp_arguments.append('result')
 
     if method.name == 'Constructor':
         base_name = 'create'
@@ -433,8 +437,7 @@ def union_arguments(idl_type):
 
 def argument_default_cpp_value(argument):
     if argument.idl_type.is_dictionary:
-        # We always create impl objects for IDL dictionaries.
-        return '%s::create()' % argument.idl_type.base_type
+        return None
     if not argument.default_value:
         return None
     return argument.idl_type.literal_cpp_value(argument.default_value)

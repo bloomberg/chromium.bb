@@ -10,9 +10,7 @@ enum NotificationDirection {
     "rtl"
 };
 
-[
-    GarbageCollected
-] dictionary NotificationOptions {
+dictionary NotificationOptions {
     NotificationDirection dir = "auto";
     DOMString lang = "";
     DOMString body = "";

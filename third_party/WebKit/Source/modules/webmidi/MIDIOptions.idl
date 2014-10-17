@@ -4,8 +4,6 @@
 
 // http://www.w3.org/TR/webmidi/#midioptions-dictionary
 
-[
-    GarbageCollected
-] dictionary MIDIOptions {
+dictionary MIDIOptions {
     boolean sysex;
 };

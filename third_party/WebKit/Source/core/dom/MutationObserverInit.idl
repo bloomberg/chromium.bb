@@ -4,9 +4,7 @@
 
 // Spec: http://dom.spec.whatwg.org/#interface-mutationobserver
 
-[
-    GarbageCollected
-] dictionary MutationObserverInit {
+dictionary MutationObserverInit {
     boolean childList = false;
     boolean attributes;
     boolean characterData;

@@ -185,6 +185,8 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         new_type = 'Member' if used_in_cpp_sequence else 'RawPtr'
         ptr_type = cpp_ptr_type(('PassRefPtr' if used_as_rvalue_type else 'RefPtr'), new_type, idl_type.gc_type)
         return cpp_template_type(ptr_type, implemented_as_class)
+    if idl_type.is_dictionary:
+        return base_idl_type
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
 
@@ -501,7 +503,7 @@ def v8_conversion_is_trivial(idl_type):
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, needs_type_check, index, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, needs_type_check, index, isolate):
     if idl_type.name == 'void':
         return ''
 
@@ -531,7 +533,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, needs_type_ch
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
     elif idl_type.is_dictionary:
-        cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, exceptionState)'
+        cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif needs_type_check:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')
@@ -539,7 +541,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, needs_type_ch
         cpp_expression_format = (
             'V8{idl_type}::toImpl(v8::Handle<v8::Object>::Cast({v8_value}))')
 
-    return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, isolate=isolate)
+    return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, variable_name=variable_name, isolate=isolate)
 
 
 def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value, index, isolate='info.GetIsolate()'):
@@ -563,7 +565,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, needs_type_check=True, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, needs_type_check=True, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     # FIXME: Support union type.
@@ -576,7 +578,11 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     if idl_type.base_type in ('void', 'object', 'EventHandler', 'EventListener'):
         return '/* no V8 -> C++ conversion for IDL type: %s */' % idl_type.name
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, needs_type_check, index, isolate)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, needs_type_check, index, isolate)
+
+    if idl_type.is_dictionary:
+        return 'TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(%s, exceptionState)' % cpp_value
+
     if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:
         # Types that need error handling and use one of a group of (C++) macros
         # to take care of this.
@@ -679,6 +685,9 @@ def v8_conversion_type(idl_type, extended_attributes):
     if idl_type.is_union_type:
         return ''
 
+    if idl_type.is_dictionary:
+        return 'IDLDictionary'
+
     # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
@@ -745,6 +754,7 @@ V8_SET_RETURN_VALUE = {
     'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, WTF::getPtr({cpp_value}))',
     'DOMWrapperFast': 'v8SetReturnValueFast(info, WTF::getPtr({cpp_value}), {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
+    'IDLDictionary': 'v8SetReturnValue(info, result)',
 }
 
 
@@ -815,6 +825,7 @@ CPP_VALUE_TO_V8_VALUE = {
     # General
     'array': 'v8Array({cpp_value}, {creation_context}, {isolate})',
     'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    'IDLDictionary': 'toV8({cpp_value}, {creation_context}, {isolate})',
 }
 
 
@@ -852,11 +863,9 @@ def cpp_type_has_null_value(idl_type):
     # - Enum types, as they are implemented as Strings.
     # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
-    # - Dictionary types represent null as a null pointer. They are garbage
-    #   collected so their type is raw pointer.
     # - 'Object' type. We use ScriptValue for object type.
     return (idl_type.is_string_type or idl_type.is_wrapper_type or
-            idl_type.is_enum or idl_type.is_dictionary or idl_type.base_type == 'object')
+            idl_type.is_enum or idl_type.base_type == 'object')
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 

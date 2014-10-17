@@ -6,9 +6,7 @@
 // In the spec, the flags don't have default values, but Blink assumes
 // that they are false when not specified.
 
-[
-    GarbageCollected
-] dictionary FileSystemFlags {
+dictionary FileSystemFlags {
     // [ImplementedAs] is used to workaround a name conflict; our IDL
     // compiler generates create() static method which creates an impl instance.
     [ImplementedAs=createFlag] boolean create = false;

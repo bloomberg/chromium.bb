@@ -4,9 +4,7 @@
 
 // Spec: http://w3c.github.io/webcomponents/spec/custom/#api-element-registration-options
 
-[
-    GarbageCollected
-] dictionary ElementRegistrationOptions {
+dictionary ElementRegistrationOptions {
     object? prototype = null;
     DOMString? extends = null;
 };

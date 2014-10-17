@@ -4,9 +4,7 @@
 
 // Spec: http://dev.w3.org/fxtf/geometry/#DOMPoint
 
-[
-    GarbageCollected
-] dictionary DOMPointInit {
+dictionary DOMPointInit {
     unrestricted double x = 0;
     unrestricted double y = 0;
     unrestricted double z = 0;

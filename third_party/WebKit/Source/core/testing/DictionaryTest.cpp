@@ -50,36 +50,34 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
     m_objectOrNullMemberWithDefault = testingDictionary.objectOrNullMemberWithDefault();
 }
 
-InternalDictionary* DictionaryTest::get()
+void DictionaryTest::get(InternalDictionary& result)
 {
-    InternalDictionary* result = InternalDictionary::create();
     if (m_longMember)
-        result->setLongMember(m_longMember.get());
-    result->setLongMemberWithDefault(m_longMemberWithDefault);
+        result.setLongMember(m_longMember.get());
+    result.setLongMemberWithDefault(m_longMemberWithDefault);
     if (m_longOrNullMember)
-        result->setLongOrNullMember(m_longOrNullMember.get());
+        result.setLongOrNullMember(m_longOrNullMember.get());
     if (m_longOrNullMemberWithDefault)
-        result->setLongOrNullMemberWithDefault(m_longOrNullMemberWithDefault.get());
+        result.setLongOrNullMemberWithDefault(m_longOrNullMemberWithDefault.get());
     if (m_booleanMember)
-        result->setBooleanMember(m_booleanMember.get());
+        result.setBooleanMember(m_booleanMember.get());
     if (m_doubleMember)
-        result->setDoubleMember(m_doubleMember.get());
-    result->setStringMember(m_stringMember);
-    result->setStringMemberWithDefault(m_stringMemberWithDefault);
+        result.setDoubleMember(m_doubleMember.get());
+    result.setStringMember(m_stringMember);
+    result.setStringMemberWithDefault(m_stringMemberWithDefault);
     if (m_stringSequenceMember)
-        result->setStringSequenceMember(m_stringSequenceMember.get());
+        result.setStringSequenceMember(m_stringSequenceMember.get());
     if (m_stringSequenceOrNullMember)
-        result->setStringSequenceOrNullMember(m_stringSequenceOrNullMember.get());
-    result->setEnumMember(m_enumMember);
-    result->setEnumMemberWithDefault(m_enumMemberWithDefault);
-    result->setEnumOrNullMember(m_enumOrNullMember);
+        result.setStringSequenceOrNullMember(m_stringSequenceOrNullMember.get());
+    result.setEnumMember(m_enumMember);
+    result.setEnumMemberWithDefault(m_enumMemberWithDefault);
+    result.setEnumOrNullMember(m_enumOrNullMember);
     if (m_elementMember)
-        result->setElementMember(m_elementMember);
+        result.setElementMember(m_elementMember);
     if (m_elementOrNullMember)
-        result->setElementOrNullMember(m_elementOrNullMember);
-    result->setObjectMember(m_objectMember);
-    result->setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
-    return result;
+        result.setElementOrNullMember(m_elementOrNullMember);
+    result.setObjectMember(m_objectMember);
+    result.setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
 }
 
 void DictionaryTest::reset()

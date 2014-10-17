@@ -4,9 +4,7 @@
 
 // https://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Overview.html#options-object-concept
 
-[
-    GarbageCollected
-] dictionary IDBIndexParameters {
+dictionary IDBIndexParameters {
     boolean unique = false;
     boolean multiEntry = false;
 };
