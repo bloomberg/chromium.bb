@@ -56,6 +56,7 @@ public:
     virtual unsigned long maxChannelCount() const { return 0; }
 
     virtual void startRendering() = 0;
+    virtual void stopRendering() = 0;
 
 protected:
     // LocalAudioInputProvider allows us to expose an AudioSourceProvider for local/live audio input.

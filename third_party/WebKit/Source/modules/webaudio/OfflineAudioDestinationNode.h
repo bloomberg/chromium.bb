@@ -52,6 +52,7 @@ public:
 
     // AudioDestinationNode
     virtual void startRendering() override;
+    virtual void stopRendering() override;
 
     virtual float sampleRate()  const override { return m_renderTarget->sampleRate(); }
 

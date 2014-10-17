@@ -92,6 +92,11 @@ void OfflineAudioDestinationNode::startRendering()
     }
 }
 
+void OfflineAudioDestinationNode::stopRendering()
+{
+    ASSERT_NOT_REACHED();
+}
+
 void OfflineAudioDestinationNode::offlineRender()
 {
     ASSERT(!isMainThread());

@@ -51,6 +51,7 @@ public:
 
     // AudioDestinationNode
     virtual void startRendering() override;
+    virtual void stopRendering() override;
     virtual unsigned long maxChannelCount() const override;
 
 private:
