@@ -8,15 +8,20 @@ function test()
 {
     var mockContentsMap = {};
     var lastResourceId = 0;
+    var lastStyleSheetId = 0;
 
-    var mockStyleSheetHeader = {
-        styleSheetId: "1",
-        sourceURL: "foo.css",
-        sourceMapURL: "",
-        origin: "regular",
-        title: "",
-        disabled: false
-    };
+
+    function createMockStyleSheetHeader(url)
+    {
+        return {
+            styleSheetId: (++lastStyleSheetId) + "",
+            sourceURL: url,
+            sourceMapURL: "",
+            origin: "regular",
+            title: "",
+            disabled: false
+        };
+    }
 
     NetworkAgent.getResponseBody = function(requestId, callback)
     {
@@ -138,27 +143,39 @@ function test()
             }
         },
 
-        function testRemoveStyleSheetFromModel(next)
+        function testRemoveStyleSheetFromModelWithComplexURL(next)
         {
-            var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
-            var target = WebInspector.targetManager.mainTarget();
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            target.cssModel._styleSheetAdded(mockStyleSheetHeader);
+            var mockStyleSheetHeader = createMockStyleSheetHeader("http://example.com/foo.css");
+            testRemoveStyleSheetFromModel(mockStyleSheetHeader, next);
+        },
 
-            function uiSourceCodeAdded(uiSourceCode)
-            {
-                InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
-                InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
-                target.cssModel._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
-            }
-
-            function uiSourceCodeRemoved(uiSourceCode)
-            {
-                InspectorTest.addResult("Removed uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
-                next();
-            }
+        function testRemoveStyleSheetFromModelWithSimpleURL(next)
+        {
+            var mockStyleSheetHeader = createMockStyleSheetHeader("foo.css");
+            testRemoveStyleSheetFromModel(mockStyleSheetHeader, next);
         }
     ]);
+
+    function testRemoveStyleSheetFromModel(mockStyleSheetHeader, callback)
+    {
+        var networkUISourceCodeProvider = createNetworkUISourceCodeProvider();
+        var target = WebInspector.targetManager.mainTarget();
+        InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+        target.cssModel._styleSheetAdded(mockStyleSheetHeader);
+
+        function uiSourceCodeAdded(uiSourceCode)
+        {
+            InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
+            InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
+            target.cssModel._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
+        }
+
+        function uiSourceCodeRemoved(uiSourceCode)
+        {
+            InspectorTest.addResult("Removed uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
+            callback();
+        }
+    }
 };
 </script>
 </head>
