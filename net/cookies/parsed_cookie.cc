@@ -137,7 +137,7 @@ bool IsValidCookieValue(const std::string& value) {
 }
 
 bool IsControlCharacter(unsigned char c) {
-    return (c >= 0) && (c <= 31);
+  return c <= 31;
 }
 
 bool IsValidCookieAttributeValue(const std::string& value) {
