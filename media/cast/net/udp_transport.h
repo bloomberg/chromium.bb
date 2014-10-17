@@ -35,11 +35,13 @@ class UdpTransport : public PacketSender {
   // |remote_end_point| specifies the address and port to send packets
   // to. If the value is 0.0.0.0:0 the the end point is set to the source
   // address of the first packet received.
+  // |send_buffer_size| specifies the size of the socket send buffer.
   UdpTransport(
       net::NetLog* net_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,
+      int32 send_buffer_size,
       const CastTransportStatusCallback& status_callback);
   virtual ~UdpTransport();
 
@@ -82,6 +84,7 @@ class UdpTransport : public PacketSender {
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiverCallback packet_receiver_;
+  int32 send_buffer_size_;
   const CastTransportStatusCallback status_callback_;
   int bytes_sent_;
 

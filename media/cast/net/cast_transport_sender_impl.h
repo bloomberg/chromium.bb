@@ -61,6 +61,8 @@ class CastTransportSenderImpl : public CastTransportSender {
   //                                    per 10 ms ideally.
   //   "pacer_max_burst_size": int - specifies how many pakcets to send
   //                                 per 10 ms, max
+  //   "send_buffer_min_size": int - specifies the minimum socket send buffer
+  //                                 size
   //   "disable_wifi_scan" (value ignored) - disable wifi scans while streaming
   //   "media_streaming_mode" (value ignored) - turn media streaming mode on
   // Note, these options may be ignored on some platforms.

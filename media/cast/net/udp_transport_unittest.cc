@@ -65,11 +65,13 @@ TEST(UdpTransport, SendAndReceive) {
                               message_loop.message_loop_proxy(),
                               free_local_port1,
                               free_local_port2,
+                              65536,
                               base::Bind(&UpdateCastTransportStatus));
   UdpTransport recv_transport(NULL,
                               message_loop.message_loop_proxy(),
                               free_local_port2,
                               net::IPEndPoint(empty_addr_number, 0),
+                              65536,
                               base::Bind(&UpdateCastTransportStatus));
 
   Packet packet;

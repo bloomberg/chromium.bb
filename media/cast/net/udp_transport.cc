@@ -42,6 +42,7 @@ UdpTransport::UdpTransport(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
+    int32 send_buffer_size,
     const CastTransportStatusCallback& status_callback)
     : io_thread_proxy_(io_thread_proxy),
       local_addr_(local_end_point),
@@ -54,6 +55,7 @@ UdpTransport::UdpTransport(
       receive_pending_(false),
       client_connected_(false),
       next_dscp_value_(net::DSCP_NO_CHANGE),
+      send_buffer_size_(send_buffer_size),
       status_callback_(status_callback),
       bytes_sent_(0),
       weak_factory_(this) {
@@ -84,6 +86,9 @@ void UdpTransport::StartReceiving(
     client_connected_ = true;
   } else {
     NOTREACHED() << "Either local or remote address has to be defined.";
+  }
+  if (udp_socket_->SetSendBufferSize(send_buffer_size_) != net::OK) {
+    LOG(WARNING) << "Failed to set socket send buffer size.";
   }
 
   ScheduleReceiveNextPacket();

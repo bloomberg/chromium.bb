@@ -9,12 +9,22 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/udp_transport.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 
 namespace media {
 namespace cast {
 
 namespace {
+
+// See header file for what these mean.
+const char kOptionPacerTargetBurstSize[] = "pacer_target_burst_size";
+const char kOptionPacerMaxBurstSize[] = "pacer_max_burst_size";
+const char kOptionSendBufferMinSize[] = "send_buffer_min_size";
+const char kOptionDscp[] = "DSCP";
+const char kOptionWifiDisableScan[] = "disable_wifi_scan";
+const char kOptionWifiMediaStreamingMode[] = "media_streaming_mode";
+
 int LookupOptionWithDefault(const base::DictionaryValue& options,
                             const std::string& path,
                             int default_value) {
@@ -25,6 +35,17 @@ int LookupOptionWithDefault(const base::DictionaryValue& options,
     return default_value;
   }
 };
+
+int32 GetTransportSendBufferSize(const base::DictionaryValue& options) {
+  // Socket send buffer size needs to be at least greater than one burst
+  // size.
+  int32 max_burst_size =
+      LookupOptionWithDefault(options, kOptionPacerMaxBurstSize,
+                              kMaxBurstSize) * kMaxIpPacketSize;
+  int32 min_send_buffer_size =
+      LookupOptionWithDefault(options, kOptionSendBufferMinSize, 0);
+  return std::max(max_burst_size, min_send_buffer_size);
+}
 
 }  // namespace
 
@@ -66,17 +87,20 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     : clock_(clock),
       status_callback_(status_callback),
       transport_task_runner_(transport_task_runner),
-      transport_(external_transport ? NULL
-                                    : new UdpTransport(net_log,
-                                                       transport_task_runner,
-                                                       net::IPEndPoint(),
-                                                       remote_end_point,
-                                                       status_callback)),
-      pacer_(LookupOptionWithDefault(*options.get(),
-                                     "pacer_target_burst_size",
+      transport_(
+          external_transport ?
+              NULL :
+              new UdpTransport(net_log,
+                               transport_task_runner,
+                               net::IPEndPoint(),
+                               remote_end_point,
+                               GetTransportSendBufferSize(*options),
+                               status_callback)),
+      pacer_(LookupOptionWithDefault(*options,
+                                     kOptionPacerTargetBurstSize,
                                      kTargetBurstSize),
-             LookupOptionWithDefault(*options.get(),
-                                     "pacer_max_burst_size",
+             LookupOptionWithDefault(*options,
+                                     kOptionPacerMaxBurstSize,
                                      kMaxBurstSize),
              clock,
              &logging_,
@@ -98,7 +122,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
         raw_events_callback_interval);
   }
   if (transport_) {
-    if (options->HasKey("DSCP")) {
+    if (options->HasKey(kOptionDscp)) {
       // The default DSCP value for cast is AF41. Which gives it a higher
       // priority over other traffic.
       transport_->SetDscp(net::DSCP_AF41);
@@ -107,10 +131,10 @@ CastTransportSenderImpl::CastTransportSenderImpl(
         base::Bind(&CastTransportSenderImpl::OnReceivedPacket,
                    weak_factory_.GetWeakPtr()));
     int wifi_options = 0;
-    if (options->HasKey("disable_wifi_scan")) {
+    if (options->HasKey(kOptionWifiDisableScan)) {
       wifi_options |= net::WIFI_OPTIONS_DISABLE_SCAN;
     }
-    if (options->HasKey("media_streaming_mode")) {
+    if (options->HasKey(kOptionWifiMediaStreamingMode)) {
       wifi_options |= net::WIFI_OPTIONS_MEDIA_STREAMING_MODE;
     }
     if (wifi_options) {
