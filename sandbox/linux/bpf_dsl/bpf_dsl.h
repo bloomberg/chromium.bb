@@ -16,14 +16,6 @@
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/sandbox_export.h"
 
-namespace sandbox {
-class ErrorCode;
-class Verifier;
-namespace bpf_dsl {
-class PolicyCompiler;
-}
-}
-
 // The sandbox::bpf_dsl namespace provides a domain-specific language
 // to make writing BPF policies more expressive.  In general, the
 // object types all have value semantics (i.e., they can be copied
@@ -127,14 +119,6 @@ class SANDBOX_EXPORT SandboxBPFDSLPolicy {
   static ResultExpr Trap(TrapRegistry::TrapFnc trap_func, const void* aux);
 
  private:
-  friend PolicyCompiler;
-  friend Verifier;
-
-  // Private methods used for compiling and verifying policies.
-  ErrorCode EvaluateSyscall(PolicyCompiler* pc, int sysno) const;
-  ErrorCode InvalidSyscall(PolicyCompiler* pc) const;
-  bool HasUnsafeTraps() const;
-
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFDSLPolicy);
 };
 

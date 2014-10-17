@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
@@ -74,6 +75,17 @@ intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
   SANDBOX_DIE(static_cast<char*>(aux));
 }
 
+bool HasUnsafeTraps(const SandboxBPFDSLPolicy* policy) {
+  for (SyscallIterator iter(false); !iter.Done();) {
+    uint32_t sysnum = iter.Next();
+    if (SyscallIterator::IsValid(sysnum) &&
+        policy->EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
+      return true;
+    }
+  }
+  return policy->InvalidSyscall()->HasUnsafeTraps();
+}
+
 }  // namespace
 
 struct PolicyCompiler::Range {
@@ -88,14 +100,14 @@ PolicyCompiler::PolicyCompiler(const SandboxBPFDSLPolicy* policy,
       registry_(registry),
       conds_(),
       gen_(),
-      has_unsafe_traps_(policy_->HasUnsafeTraps()) {
+      has_unsafe_traps_(HasUnsafeTraps(policy_)) {
 }
 
 PolicyCompiler::~PolicyCompiler() {
 }
 
 scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
-  if (!IsDenied(policy_->InvalidSyscall(this))) {
+  if (!IsDenied(policy_->InvalidSyscall()->Compile(this))) {
     SANDBOX_DIE("Policies should deny invalid system calls.");
   }
 
@@ -112,7 +124,7 @@ scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
     }
 
     for (int sysnum : kSyscallsRequiredForUnsafeTraps) {
-      if (!policy_->EvaluateSyscall(this, sysnum)
+      if (!policy_->EvaluateSyscall(sysnum)->Compile(this)
                .Equals(ErrorCode(ErrorCode::ERR_ALLOWED))) {
         SANDBOX_DIE(
             "Policies that use UnsafeTrap() must unconditionally allow all "
@@ -238,17 +250,17 @@ void PolicyCompiler::FindRanges(Ranges* ranges) {
   // deal with this disparity by enumerating from MIN_SYSCALL to MAX_SYSCALL,
   // and then verifying that the rest of the number range (both positive and
   // negative) all return the same ErrorCode.
-  const ErrorCode invalid_err = policy_->InvalidSyscall(this);
+  const ErrorCode invalid_err = policy_->InvalidSyscall()->Compile(this);
   uint32_t old_sysnum = 0;
   ErrorCode old_err = SyscallIterator::IsValid(old_sysnum)
-                          ? policy_->EvaluateSyscall(this, old_sysnum)
+                          ? policy_->EvaluateSyscall(old_sysnum)->Compile(this)
                           : invalid_err;
 
   for (SyscallIterator iter(false); !iter.Done();) {
     uint32_t sysnum = iter.Next();
     ErrorCode err =
         SyscallIterator::IsValid(sysnum)
-            ? policy_->EvaluateSyscall(this, static_cast<int>(sysnum))
+            ? policy_->EvaluateSyscall(static_cast<int>(sysnum))->Compile(this)
             : invalid_err;
     if (!err.Equals(old_err) || iter.Done()) {
       ranges->push_back(Range(old_sysnum, sysnum - 1, old_err));

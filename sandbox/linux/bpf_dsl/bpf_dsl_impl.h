@@ -11,20 +11,24 @@
 
 namespace sandbox {
 class ErrorCode;
-class SandboxBPF;
 
 namespace bpf_dsl {
+class PolicyCompiler;
+
 namespace internal {
 
 // Internal interface implemented by BoolExpr implementations.
 class BoolExprImpl : public base::RefCounted<BoolExprImpl> {
  public:
-  BoolExprImpl() {}
+  // Compile uses |pc| to construct an ErrorCode that conditionally continues
+  // to either |true_ec| or |false_ec|, depending on whether the represented
+  // boolean expression is true or false.
   virtual ErrorCode Compile(PolicyCompiler* pc,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const = 0;
 
  protected:
+  BoolExprImpl() {}
   virtual ~BoolExprImpl() {}
 
  private:
@@ -35,11 +39,16 @@ class BoolExprImpl : public base::RefCounted<BoolExprImpl> {
 // Internal interface implemented by ResultExpr implementations.
 class ResultExprImpl : public base::RefCounted<ResultExprImpl> {
  public:
-  ResultExprImpl() {}
+  // Compile uses |pc| to construct an ErrorCode analogous to the represented
+  // result expression.
   virtual ErrorCode Compile(PolicyCompiler* pc) const = 0;
+
+  // HasUnsafeTraps returns whether the result expression is or recursively
+  // contains an unsafe trap expression.
   virtual bool HasUnsafeTraps() const;
 
  protected:
+  ResultExprImpl() {}
   virtual ~ResultExprImpl() {}
 
  private:

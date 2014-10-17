@@ -13,7 +13,6 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 
 namespace sandbox {
 namespace bpf_dsl {
@@ -375,26 +374,6 @@ ResultExpr Elser::Else(const ResultExpr& else_result) const {
 
 ResultExpr SandboxBPFDSLPolicy::InvalidSyscall() const {
   return Error(ENOSYS);
-}
-
-ErrorCode SandboxBPFDSLPolicy::EvaluateSyscall(PolicyCompiler* pc,
-                                               int sysno) const {
-  return EvaluateSyscall(sysno)->Compile(pc);
-}
-
-ErrorCode SandboxBPFDSLPolicy::InvalidSyscall(PolicyCompiler* pc) const {
-  return InvalidSyscall()->Compile(pc);
-}
-
-bool SandboxBPFDSLPolicy::HasUnsafeTraps() const {
-  for (SyscallIterator iter(false); !iter.Done();) {
-    uint32_t sysnum = iter.Next();
-    if (SyscallIterator::IsValid(sysnum) &&
-        EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
-      return true;
-    }
-  }
-  return InvalidSyscall()->HasUnsafeTraps();
 }
 
 ResultExpr SandboxBPFDSLPolicy::Trap(TrapRegistry::TrapFnc trap_func,

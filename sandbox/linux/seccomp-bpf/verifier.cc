@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
@@ -340,8 +341,8 @@ bool Verifier::VerifyBPF(bpf_dsl::PolicyCompiler* compiler,
 #endif
 #endif
     ErrorCode code = iter.IsValid(sysnum)
-                         ? policy.EvaluateSyscall(compiler, sysnum)
-                         : policy.InvalidSyscall(compiler);
+                         ? policy.EvaluateSyscall(sysnum)->Compile(compiler)
+                         : policy.InvalidSyscall()->Compile(compiler);
     if (!VerifyErrorCode(compiler, program, &data, code, code, err)) {
       return false;
     }
