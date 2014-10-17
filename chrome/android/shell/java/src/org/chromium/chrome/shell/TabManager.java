@@ -112,6 +112,12 @@ public class TabManager extends LinearLayout {
             }
         };
         ChromeShellTab tab = new ChromeShellTab(getContext(), url, mWindow, client);
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onToggleFullscreenMode(Tab tab, boolean enable) {
+                 mToolbar.setVisibility(enable ? GONE : VISIBLE);
+            }
+        });
         setCurrentTab(tab);
     }
 

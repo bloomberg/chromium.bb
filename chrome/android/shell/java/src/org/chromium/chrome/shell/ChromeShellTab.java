@@ -26,6 +26,7 @@ import org.chromium.ui.base.WindowAndroid;
 public class ChromeShellTab extends Tab {
     // Tab state
     private boolean mIsLoading;
+    private boolean mIsFullscreen = false;
 
     /**
      * @param context           The Context the view is running in.
@@ -121,6 +122,17 @@ public class ChromeShellTab extends Tab {
         @Override
         public void onLoadStopped() {
             mIsLoading = false;
+        }
+
+        @Override
+        public void toggleFullscreenModeForTab(boolean enterFullscreen) {
+            mIsFullscreen = enterFullscreen;
+            super.toggleFullscreenModeForTab(enterFullscreen);
+        }
+
+        @Override
+        public boolean isFullscreenForTabOrPending() {
+            return mIsFullscreen;
         }
     }
 }
