@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <iostream>
 #include <limits>
 
 #include "base/basictypes.h"
@@ -1640,6 +1641,14 @@ struct KeepAliveTestData {
   bool expected_keep_alive;
 };
 
+// Enable GTest to print KeepAliveTestData in an intelligible way if the test
+// fails.
+void PrintTo(const KeepAliveTestData& keep_alive_test_data,
+             std::ostream* os) {
+  *os << "{\"" << keep_alive_test_data.headers << "\", " << std::boolalpha
+      << keep_alive_test_data.expected_keep_alive << "}";
+}
+
 class IsKeepAliveTest
     : public HttpResponseHeadersTest,
       public ::testing::WithParamInterface<KeepAliveTestData> {
@@ -1713,6 +1722,82 @@ const KeepAliveTestData keepalive_tests[] = {
   { "HTTP/1.1 200 OK\n"
     "proxy-connection: keep-alive\n",
     true
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: Upgrade, close\n",
+    false
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: Upgrade, keep-alive\n",
+    true
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: Upgrade\n"
+    "Connection: close\n",
+    false
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: Upgrade\n"
+    "Connection: keep-alive\n",
+    true
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: close, Upgrade\n",
+    false
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: keep-alive, Upgrade\n",
+    true
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: Upgrade\n"
+    "Proxy-Connection: close\n",
+    false
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: Upgrade\n"
+    "Proxy-Connection: keep-alive\n",
+    true
+  },
+  // In situations where the response headers conflict with themselves, use the
+  // first one for backwards-compatibility.
+  { "HTTP/1.1 200 OK\n"
+    "Connection: close\n"
+    "Connection: keep-alive\n",
+    false
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Connection: keep-alive\n"
+    "Connection: close\n",
+    true
+  },
+  { "HTTP/1.0 200 OK\n"
+    "Connection: close\n"
+    "Connection: keep-alive\n",
+    false
+  },
+  { "HTTP/1.0 200 OK\n"
+    "Connection: keep-alive\n"
+    "Connection: close\n",
+    true
+  },
+  // Ignore the Proxy-Connection header if at all possible.
+  { "HTTP/1.0 200 OK\n"
+    "Proxy-Connection: keep-alive\n"
+    "Connection: close\n",
+    false
+  },
+  { "HTTP/1.1 200 OK\n"
+    "Proxy-Connection: close\n"
+    "Connection: keep-alive\n",
+    true
+  },
+  // Older versions of Chrome would have ignored Proxy-Connection in this case,
+  // but it doesn't seem safe.
+  { "HTTP/1.1 200 OK\n"
+    "Proxy-Connection: close\n"
+    "Connection: Transfer-Encoding\n",
+    false
   },
 };
 

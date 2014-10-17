@@ -1202,28 +1202,40 @@ bool HttpResponseHeaders::GetTimeValuedHeader(const std::string& name,
   return Time::FromUTCString(value.c_str(), result);
 }
 
+// We accept the first value of "close" or "keep-alive" in a Connection or
+// Proxy-Connection header, in that order. Obeying "keep-alive" in HTTP/1.1 or
+// "close" in 1.0 is not strictly standards-compliant, but we'd like to
+// avoid looking at the Proxy-Connection header whenever it is reasonable to do
+// so.
+// TODO(ricea): Measure real-world usage of the "Proxy-Connection" header,
+// with a view to reducing support for it in order to make our Connection header
+// handling more RFC 7230 compliant.
 bool HttpResponseHeaders::IsKeepAlive() const {
-  if (http_version_ < HttpVersion(1, 0))
-    return false;
-
   // NOTE: It is perhaps risky to assume that a Proxy-Connection header is
   // meaningful when we don't know that this response was from a proxy, but
   // Mozilla also does this, so we'll do the same.
-  std::string connection_val;
-  if (!EnumerateHeader(NULL, "connection", &connection_val))
-    EnumerateHeader(NULL, "proxy-connection", &connection_val);
+  static const char* kConnectionHeaders[] = {"connection", "proxy-connection"};
+  struct KeepAliveToken {
+    const char* token;
+    bool keep_alive;
+  };
+  static const KeepAliveToken kKeepAliveTokens[] = {{"keep-alive", true},
+                                                    {"close", false}};
 
-  bool keep_alive;
+  if (http_version_ < HttpVersion(1, 0))
+    return false;
 
-  if (http_version_ == HttpVersion(1, 0)) {
-    // HTTP/1.0 responses default to NOT keep-alive
-    keep_alive = LowerCaseEqualsASCII(connection_val, "keep-alive");
-  } else {
-    // HTTP/1.1 responses default to keep-alive
-    keep_alive = !LowerCaseEqualsASCII(connection_val, "close");
+  for (const char* header : kConnectionHeaders) {
+    void* iterator = nullptr;
+    std::string token;
+    while (EnumerateHeader(&iterator, header, &token)) {
+      for (const KeepAliveToken& keep_alive_token : kKeepAliveTokens) {
+        if (LowerCaseEqualsASCII(token, keep_alive_token.token))
+          return keep_alive_token.keep_alive;
+      }
+    }
   }
-
-  return keep_alive;
+  return http_version_ != HttpVersion(1, 0);
 }
 
 bool HttpResponseHeaders::HasStrongValidators() const {
