@@ -52,9 +52,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSupervisedUserSettingsSyncTest, Sanity) {
       std::string("token value doesn't matter in tests"));
 
   ASSERT_TRUE(GetClient(0)->AwaitBackendInitialization());
-  // TODO(pvalenzuela): Remove the following line after crbug.com/422508 is
-  // fixed.
-  GetSyncService(0)->SetSetupInProgress(false);
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
 
   // TODO(pvalenzuela): Add additional tests and some verification of sync-
