@@ -37,6 +37,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorAnimationAgent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorCanvasAgent.h"
@@ -79,6 +80,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
+    , m_animationAgent(nullptr)
     , m_inspectorFrontendClient(nullptr)
     , m_page(page)
     , m_inspectorClient(inspectorClient)
@@ -98,7 +100,6 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
-
 
     OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_page));
     m_layerTreeAgent = layerTreeAgentPtr.get();
@@ -137,6 +138,7 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_state);
     visitor->trace(m_domAgent);
+    visitor->trace(m_animationAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_timelineAgent);
     visitor->trace(m_cssAgent);
@@ -184,6 +186,10 @@ void InspectorController::initializeDeferredAgents()
     OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
     m_cssAgent = cssAgentPtr.get();
     m_agents.append(cssAgentPtr.release());
+
+    OwnPtrWillBeRawPtr<InspectorAnimationAgent> animationAgentPtr(InspectorAnimationAgent::create(m_domAgent));
+    m_animationAgent = animationAgentPtr.get();
+    m_agents.append(animationAgentPtr.release());
 
     m_agents.append(InspectorDOMStorageAgent::create(m_pageAgent));
 

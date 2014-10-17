@@ -1258,6 +1258,8 @@
             'inspector/InjectedScriptManager.h',
             'inspector/InjectedScriptModule.cpp',
             'inspector/InjectedScriptModule.h',
+            'inspector/InspectorAnimationAgent.cpp',
+            'inspector/InspectorAnimationAgent.h',
             'inspector/InspectorApplicationCacheAgent.cpp',
             'inspector/InspectorApplicationCacheAgent.h',
             'inspector/InspectorBaseAgent.cpp',

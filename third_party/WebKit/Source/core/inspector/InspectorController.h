@@ -47,6 +47,7 @@ class GraphicsLayer;
 class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorAgent;
+class InspectorAnimationAgent;
 class InspectorClient;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
@@ -153,6 +154,7 @@ private:
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
+    RawPtrWillBeMember<InspectorAnimationAgent> m_animationAgent;
 
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     InspectorFrontendClient* m_inspectorFrontendClient;
