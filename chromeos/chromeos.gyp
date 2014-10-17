@@ -598,7 +598,6 @@
         '../build/linux/system.gyp:dbus',
         '../build/linux/system.gyp:ssl',
         '../components/components.gyp:onc_component',
-        '../content/content_shell_and_tests.gyp:test_support_content',
         '../crypto/crypto.gyp:crypto',
         '../crypto/crypto.gyp:crypto_test_support',
         '../dbus/dbus.gyp:dbus_test_support',
