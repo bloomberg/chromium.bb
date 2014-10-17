@@ -59,7 +59,7 @@ FileAPIBlobClose status=experimental
 FileConstructor status=stable
 FileSystem status=stable
 FullscreenUnprefixed status=test
-Geofencing status=test
+Geofencing status=experimental
 GeometryInterfaces status=test
 // Temporary setting to allow easy rollback of change to hover media feature.
 HoverMediaQueryKeywords status=stable

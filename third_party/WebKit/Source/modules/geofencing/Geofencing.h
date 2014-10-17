@@ -14,23 +14,26 @@ namespace blink {
 class GeofencingRegion;
 class ScriptPromise;
 class ScriptState;
+class ServiceWorkerRegistration;
 
 class Geofencing final : public GarbageCollected<Geofencing>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Geofencing* create()
+    static Geofencing* create(ServiceWorkerRegistration* registration)
     {
-        return new Geofencing();
+        return new Geofencing(registration);
     }
 
     ScriptPromise registerRegion(ScriptState*, GeofencingRegion*);
     ScriptPromise unregisterRegion(ScriptState*, const String& regionId);
     ScriptPromise getRegisteredRegions(ScriptState*) const;
 
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor*);
 
 private:
-    Geofencing();
+    explicit Geofencing(ServiceWorkerRegistration*);
+
+    Member<ServiceWorkerRegistration> m_registration;
 };
 
 } // namespace blink

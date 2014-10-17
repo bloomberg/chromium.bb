@@ -6,5 +6,6 @@
     RuntimeEnabled=Geofencing,
     Exposed=Worker,
 ] partial interface WorkerNavigator {
+    // FIXME: Delete this class once ServiceWorkerRegistration is exposed in service workers.
     readonly attribute Geofencing geofencing;
 };

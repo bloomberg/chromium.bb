@@ -13,6 +13,7 @@ namespace blink {
 class Geofencing;
 class WorkerNavigator;
 
+// FIXME: Delete this class once ServiceWorkerRegistration is exposed in service workers.
 class WorkerNavigatorGeofencing final : public NoBaseWillBeGarbageCollectedFinalized<WorkerNavigatorGeofencing>, public WillBeHeapSupplement<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorGeofencing);
     WTF_MAKE_NONCOPYABLE(WorkerNavigatorGeofencing);

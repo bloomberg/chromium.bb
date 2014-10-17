@@ -4,6 +4,6 @@
 
 [
     RuntimeEnabled=Geofencing,
-] partial interface Navigator {
+] partial interface ServiceWorkerRegistration {
     readonly attribute Geofencing geofencing;
 };

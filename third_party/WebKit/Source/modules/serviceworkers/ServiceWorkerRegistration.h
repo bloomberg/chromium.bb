@@ -8,6 +8,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "modules/serviceworkers/ServiceWorker.h"
+#include "platform/Supplementable.h"
 #include "public/platform/WebServiceWorkerRegistration.h"
 #include "public/platform/WebServiceWorkerRegistrationProxy.h"
 #include "wtf/OwnPtr.h"
@@ -26,10 +27,11 @@ class ServiceWorkerRegistration final
     : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ServiceWorkerRegistration>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
-    , public WebServiceWorkerRegistrationProxy {
+    , public WebServiceWorkerRegistrationProxy
+    , public HeapSupplementable<ServiceWorkerRegistration> {
     DEFINE_WRAPPERTYPEINFO();
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<ServiceWorkerRegistration>);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
+    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
 public:
     // EventTarget overrides.
     virtual const AtomicString& interfaceName() const override;
@@ -52,6 +54,8 @@ public:
     PassRefPtrWillBeRawPtr<ServiceWorker> active() { return m_active.get(); }
 
     String scope() const;
+
+    WebServiceWorkerRegistration* webRegistration() { return m_outerRegistration.get(); }
 
     ScriptPromise unregister(ScriptState*);
 

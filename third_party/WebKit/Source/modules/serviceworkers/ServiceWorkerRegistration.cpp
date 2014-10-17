@@ -161,6 +161,7 @@ void ServiceWorkerRegistration::trace(Visitor* visitor)
     visitor->trace(m_waiting);
     visitor->trace(m_active);
     EventTargetWithInlineData::trace(visitor);
+    HeapSupplementable<ServiceWorkerRegistration>::trace(visitor);
 }
 
 bool ServiceWorkerRegistration::hasPendingActivity() const

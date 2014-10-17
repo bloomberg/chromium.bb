@@ -41,7 +41,7 @@ Geofencing* WorkerNavigatorGeofencing::geofencing(WorkerNavigator& navigator)
 Geofencing* WorkerNavigatorGeofencing::geofencing()
 {
     if (!m_geofencing)
-        m_geofencing = Geofencing::create();
+        m_geofencing = Geofencing::create(nullptr);
     return m_geofencing.get();
 }
 
