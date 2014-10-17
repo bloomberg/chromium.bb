@@ -47,6 +47,19 @@ class CountingMojoHandler : public MessagePumpMojoHandler {
   DISALLOW_COPY_AND_ASSIGN(CountingMojoHandler);
 };
 
+class CountingObserver : public MessagePumpMojo::Observer {
+ public:
+  virtual void WillSignalHandler() override {
+    will_signal_handler_count++;
+  }
+  virtual void DidSignalHandler() override {
+    did_signal_handler_count++;
+  }
+
+  int will_signal_handler_count = 0;
+  int did_signal_handler_count = 0;
+};
+
 TEST(MessagePumpMojo, RunUntilIdle) {
   base::MessageLoop message_loop(MessagePumpMojo::Create());
   CountingMojoHandler handler;
@@ -62,6 +75,36 @@ TEST(MessagePumpMojo, RunUntilIdle) {
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_EQ(2, handler.success_count());
+}
+
+TEST(MessagePumpMojo, Observer) {
+  base::MessageLoop message_loop(MessagePumpMojo::Create());
+
+  CountingObserver observer;
+  MessagePumpMojo::current()->AddObserver(&observer);
+
+  CountingMojoHandler handler;
+  MessagePipe handles;
+  MessagePumpMojo::current()->AddHandler(&handler,
+                                         handles.handle0.get(),
+                                         MOJO_HANDLE_SIGNAL_READABLE,
+                                         base::TimeTicks());
+  WriteMessageRaw(
+      handles.handle1.get(), NULL, 0, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(1, handler.success_count());
+  EXPECT_EQ(1, observer.will_signal_handler_count);
+  EXPECT_EQ(1, observer.did_signal_handler_count);
+  MessagePumpMojo::current()->RemoveObserver(&observer);
+
+  WriteMessageRaw(
+      handles.handle1.get(), NULL, 0, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+  base::RunLoop run_loop2;
+  run_loop2.RunUntilIdle();
+  EXPECT_EQ(2, handler.success_count());
+  EXPECT_EQ(1, observer.will_signal_handler_count);
+  EXPECT_EQ(1, observer.did_signal_handler_count);
 }
 
 TEST(MessagePumpMojo, UnregisterAfterDeadline) {

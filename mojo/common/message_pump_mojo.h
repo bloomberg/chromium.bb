@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
+#include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "mojo/common/mojo_common_export.h"
@@ -23,6 +24,17 @@ class MessagePumpMojoHandler;
 // Mojo implementation of MessagePump.
 class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
  public:
+  class Observer {
+   public:
+    Observer() {}
+
+    virtual void WillSignalHandler() = 0;
+    virtual void DidSignalHandler() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   MessagePumpMojo();
   virtual ~MessagePumpMojo();
 
@@ -44,6 +56,9 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
                   base::TimeTicks deadline);
 
   void RemoveHandler(const Handle& handle);
+
+  void AddObserver(Observer*);
+  void RemoveObserver(Observer*);
 
   // MessagePump:
   virtual void Run(Delegate* delegate) override;
@@ -88,6 +103,9 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // Returns the deadline for the call to MojoWaitMany().
   MojoDeadline GetDeadlineForWait(const RunState& run_state) const;
 
+  void WillSignalHandler();
+  void DidSignalHandler();
+
   // If non-NULL we're running (inside Run()). Member is reference to value on
   // stack.
   RunState* run_state_;
@@ -105,6 +123,8 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // match it means the handler was removed then added so that we shouldn't
   // notify it.
   int next_handler_id_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpMojo);
 };

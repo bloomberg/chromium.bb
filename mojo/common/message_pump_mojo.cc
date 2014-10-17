@@ -97,6 +97,14 @@ void MessagePumpMojo::RemoveHandler(const Handle& handle) {
   handlers_.erase(handle);
 }
 
+void MessagePumpMojo::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessagePumpMojo::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void MessagePumpMojo::Run(Delegate* delegate) {
   RunState run_state;
   // TODO: better deal with error handling.
@@ -175,8 +183,10 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
   } else if (result > 0) {
     const size_t index = static_cast<size_t>(result);
     DCHECK(handlers_.find(wait_state.handles[index]) != handlers_.end());
+    WillSignalHandler();
     handlers_[wait_state.handles[index]].handler->OnHandleReady(
         wait_state.handles[index]);
+    DidSignalHandler();
   } else {
     switch (result) {
       case MOJO_RESULT_CANCELLED:
@@ -204,7 +214,9 @@ bool MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
     if (!i->second.deadline.is_null() && i->second.deadline < now &&
         handlers_.find(i->first) != handlers_.end() &&
         handlers_[i->first].id == i->second.id) {
+      WillSignalHandler();
       i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
+      DidSignalHandler();
       handlers_.erase(i->first);
       did_work = true;
     }
@@ -232,7 +244,9 @@ void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
       MessagePumpMojoHandler* handler =
           handlers_[wait_state.handles[i]].handler;
       handlers_.erase(wait_state.handles[i]);
+      WillSignalHandler();
       handler->OnHandleError(wait_state.handles[i], result);
+      DidSignalHandler();
       return;
     }
   }
@@ -272,6 +286,14 @@ MojoDeadline MessagePumpMojo::GetDeadlineForWait(
         TimeTicksToMojoDeadline(i->second.deadline, now), deadline);
   }
   return deadline;
+}
+
+void MessagePumpMojo::WillSignalHandler() {
+  FOR_EACH_OBSERVER(Observer, observers_, WillSignalHandler());
+}
+
+void MessagePumpMojo::DidSignalHandler() {
+  FOR_EACH_OBSERVER(Observer, observers_, DidSignalHandler());
 }
 
 }  // namespace common
