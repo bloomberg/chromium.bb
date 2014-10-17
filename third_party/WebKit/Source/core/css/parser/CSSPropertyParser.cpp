@@ -2924,6 +2924,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationName()
     CSSParserValue* value = m_valueList->current();
     // FIXME: Strings are not valid as per spec
     if (value->unit == CSSPrimitiveValue::CSS_STRING || value->unit == CSSPrimitiveValue::CSS_IDENT) {
+        if (value->unit == CSSPrimitiveValue::CSS_STRING)
+            m_context.useCounter()->count(UseCounter::QuotedAnimationName);
         if (value->id == CSSValueNone || (value->unit == CSSPrimitiveValue::CSS_STRING && equalIgnoringCase(value->string, "none")))
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return createPrimitiveStringValue(value);
