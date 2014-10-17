@@ -133,7 +133,6 @@ class PrivetNotificationDelegate : public NotificationDelegate {
 
   // NotificationDelegate implementation.
   virtual std::string id() const override;
-  virtual content::WebContents* GetWebContents() const override;
   virtual void Display() override;
   virtual void Error() override;
   virtual void Close(bool by_user) override;

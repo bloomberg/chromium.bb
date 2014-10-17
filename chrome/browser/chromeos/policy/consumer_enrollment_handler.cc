@@ -75,7 +75,6 @@ class DesktopNotificationDelegate : public NotificationDelegate {
 
   // NotificationDelegate:
   virtual std::string id() const override;
-  virtual content::WebContents* GetWebContents() const override;
   virtual void Display() override;
   virtual void ButtonClick(int button_index) override;
   virtual void Error() override;
@@ -102,10 +101,6 @@ DesktopNotificationDelegate::~DesktopNotificationDelegate() {
 
 std::string DesktopNotificationDelegate::id() const {
   return id_;
-}
-
-content::WebContents* DesktopNotificationDelegate::GetWebContents() const {
-  return NULL;
 }
 
 void DesktopNotificationDelegate::Display() {

@@ -95,10 +95,6 @@ void QuitWithAppsController::ButtonClick(int button_index) {
   }
 }
 
-content::WebContents* QuitWithAppsController::GetWebContents() const {
-  return NULL;
-}
-
 std::string QuitWithAppsController::id() const {
   return kQuitWithAppsNotificationID;
 }

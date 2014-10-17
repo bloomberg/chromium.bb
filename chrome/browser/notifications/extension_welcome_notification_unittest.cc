@@ -217,10 +217,6 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
 
     virtual std::string id() const override { return id_; }
 
-    virtual content::WebContents* GetWebContents() const override {
-      return NULL;
-    }
-
    private:
     virtual ~TestNotificationDelegate() {}
 

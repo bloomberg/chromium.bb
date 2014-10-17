@@ -370,10 +370,6 @@ std::string PrivetNotificationDelegate::id() const {
   return kPrivetNotificationID;
 }
 
-content::WebContents* PrivetNotificationDelegate::GetWebContents() const {
-  return NULL;
-}
-
 void PrivetNotificationDelegate::Display() {
 }
 

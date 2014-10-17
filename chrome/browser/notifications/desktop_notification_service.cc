@@ -159,8 +159,7 @@ void DesktopNotificationService::ShowDesktopNotification(
     base::Closure* cancel_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const GURL& origin = params.origin;
-  NotificationObjectProxy* proxy =
-      new NotificationObjectProxy(render_frame_host, delegate.Pass());
+  NotificationObjectProxy* proxy = new NotificationObjectProxy(delegate.Pass());
 
   base::string16 display_source = DisplayNameForOriginInProcessId(
       origin, render_frame_host->GetProcess()->GetID());

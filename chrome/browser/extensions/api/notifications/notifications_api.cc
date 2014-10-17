@@ -122,23 +122,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
     return scoped_id_;
   }
 
-  virtual content::WebContents* GetWebContents() const override {
-    // We're holding a reference to api_function_, so we know it'll be valid
-    // until ReleaseRVH is called, and api_function_ (as a
-    // AsyncExtensionFunction) will zero out its copy of render_view_host
-    // when the RVH goes away.
-    if (!api_function_.get())
-      return NULL;
-    content::RenderViewHost* rvh = api_function_->render_view_host();
-    if (!rvh)
-      return NULL;
-    return content::WebContents::FromRenderViewHost(rvh);
-  }
-
-  virtual void ReleaseRenderViewHost() override {
-    api_function_ = NULL;
-  }
-
  private:
   virtual ~NotificationsApiDelegate() {}
 

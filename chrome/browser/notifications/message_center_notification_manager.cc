@@ -158,7 +158,6 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
 
   message_center_->AddNotification(make_scoped_ptr(
       new message_center::Notification(profile_notification->notification())));
-  profile_notification->StartDownloads();
 }
 
 bool MessageCenterNotificationManager::Update(const Notification& notification,
@@ -203,7 +202,6 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
           make_scoped_ptr(new message_center::Notification(
               new_notification->notification())));
 
-      new_notification->StartDownloads();
       return true;
     }
   }
@@ -362,116 +360,6 @@ MessageCenterNotificationManager::GetMessageCenterNotificationIdForTest(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ImageDownloads
-
-MessageCenterNotificationManager::ImageDownloads::ImageDownloads(
-    message_center::MessageCenter* message_center,
-    ImageDownloadsObserver* observer)
-    : message_center_(message_center),
-      pending_downloads_(0),
-      observer_(observer) {
-}
-
-MessageCenterNotificationManager::ImageDownloads::~ImageDownloads() { }
-
-void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
-    const Notification& notification) {
-  // In case all downloads are synchronous, assume a pending download.
-  AddPendingDownload();
-
-  // Notification image.
-  StartDownloadWithImage(
-      notification,
-      NULL,
-      notification.image_url(),
-      base::Bind(&message_center::MessageCenter::SetNotificationImage,
-                 base::Unretained(message_center_),
-                 notification.id()));
-
-  // Notification button icons.
-  StartDownloadWithImage(
-      notification,
-      NULL,
-      notification.button_one_icon_url(),
-      base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
-                 base::Unretained(message_center_),
-                 notification.id(),
-                 0));
-  StartDownloadWithImage(
-      notification,
-      NULL,
-      notification.button_two_icon_url(),
-      base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
-                 base::Unretained(message_center_),
-                 notification.id(),
-                 1));
-
-  // This should tell the observer we're done if everything was synchronous.
-  PendingDownloadCompleted();
-}
-
-void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
-    const Notification& notification,
-    const gfx::Image* image,
-    const GURL& url,
-    const SetImageCallback& callback) {
-  // Set the image directly if we have it.
-  if (image && !image->IsEmpty()) {
-    callback.Run(*image);
-    return;
-  }
-
-  // Leave the image null if there's no URL.
-  if (url.is_empty())
-    return;
-
-  content::WebContents* contents = notification.delegate()->GetWebContents();
-  if (!contents) {
-    LOG(WARNING) << "Notification needs an image but has no WebContents";
-    return;
-  }
-
-  AddPendingDownload();
-
-  contents->DownloadImage(
-      url,
-      false,  // Not a favicon
-      0,  // No maximum size
-      base::Bind(
-          &MessageCenterNotificationManager::ImageDownloads::DownloadComplete,
-          AsWeakPtr(),
-          callback));
-}
-
-void MessageCenterNotificationManager::ImageDownloads::DownloadComplete(
-    const SetImageCallback& callback,
-    int download_id,
-    int http_status_code,
-    const GURL& image_url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& original_bitmap_sizes) {
-  PendingDownloadCompleted();
-
-  if (bitmaps.empty())
-    return;
-  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmaps[0]);
-  callback.Run(image);
-}
-
-// Private methods.
-
-void MessageCenterNotificationManager::ImageDownloads::AddPendingDownload() {
-  ++pending_downloads_;
-}
-
-void
-MessageCenterNotificationManager::ImageDownloads::PendingDownloadCompleted() {
-  DCHECK(pending_downloads_ > 0);
-  if (--pending_downloads_ == 0 && observer_)
-    observer_->OnDownloadsCompleted();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ProfileNotification
 
 MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
@@ -484,8 +372,7 @@ MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
           // id, which should be unique for every profile + Notification pair.
           GetProfileNotificationId(notification.delegate_id(),
                                    GetProfileID(profile)),
-          notification),
-      downloads_(new ImageDownloads(message_center, this)) {
+          notification) {
   DCHECK(profile);
 #if defined(OS_CHROMEOS)
   notification_.set_profile_id(multi_user_util::GetUserIDFromProfile(profile));
@@ -493,15 +380,6 @@ MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
 }
 
 MessageCenterNotificationManager::ProfileNotification::~ProfileNotification() {
-}
-
-void MessageCenterNotificationManager::ProfileNotification::StartDownloads() {
-  downloads_->StartDownloads(notification_);
-}
-
-void
-MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
-  notification_.delegate()->ReleaseRenderViewHost();
 }
 
 void

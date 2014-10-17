@@ -57,13 +57,6 @@ class Notification : public message_center::Notification {
   // A unique identifier used to update (replace) or remove a notification.
   const base::string16& replace_id() const { return replace_id_; }
 
-  // A url for the button icons to be shown (optional).
-  const GURL& button_one_icon_url() const { return button_one_icon_url_; }
-  const GURL& button_two_icon_url() const { return button_two_icon_url_; }
-
-  // A url for the image to be shown (optional).
-  const GURL& image_url() const { return image_url_; }
-
   // Id of the delegate embedded inside this instance.
   std::string delegate_id() const { return delegate()->id(); }
 
@@ -72,13 +65,6 @@ class Notification : public message_center::Notification {
  private:
   // The Origin of the page/worker which created this notification.
   GURL origin_url_;
-
-  // The URLs of the button images for a rich notification.
-  GURL button_one_icon_url_;
-  GURL button_two_icon_url_;
-
-  // The URL of a large image to be displayed for a a rich notification.
-  GURL image_url_;
 
   // The user-supplied replace ID for the notification.
   base::string16 replace_id_;

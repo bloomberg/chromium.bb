@@ -162,9 +162,6 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
   virtual std::string id() const override {
     return std::string(kNotificationId);
   }
-  virtual content::WebContents* GetWebContents() const override {
-    return NULL;
-  }
 
  private:
   virtual ~ScreenshotTakerNotificationDelegate() {}

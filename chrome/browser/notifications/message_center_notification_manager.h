@@ -97,55 +97,6 @@ class MessageCenterNotificationManager
  private:
   FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,
                            ManuallyCloseMessageCenter);
-  class ImageDownloadsObserver {
-   public:
-    virtual void OnDownloadsCompleted() = 0;
-  };
-
-  typedef base::Callback<void(const gfx::Image&)> SetImageCallback;
-  class ImageDownloads
-      : public base::SupportsWeakPtr<ImageDownloads> {
-   public:
-    ImageDownloads(
-        message_center::MessageCenter* message_center,
-        ImageDownloadsObserver* observer);
-    virtual ~ImageDownloads();
-
-    void StartDownloads(const Notification& notification);
-    void StartDownloadWithImage(const Notification& notification,
-                                const gfx::Image* image,
-                                const GURL& url,
-                                const SetImageCallback& callback);
-    void StartDownloadByKey(const Notification& notification,
-                            const char* key,
-                            int size,
-                            const SetImageCallback& callback);
-
-    // FaviconHelper callback.
-    void DownloadComplete(const SetImageCallback& callback,
-                          int download_id,
-                          int http_status_code,
-                          const GURL& image_url,
-                          const std::vector<SkBitmap>& bitmaps,
-                          const std::vector<gfx::Size>& original_bitmap_sizes);
-   private:
-    // Used to keep track of the number of pending downloads.  Once this
-    // reaches zero, we can tell the delegate that we don't need the
-    // RenderViewHost anymore.
-    void AddPendingDownload();
-    void PendingDownloadCompleted();
-
-    // Weak reference to global message center.
-    message_center::MessageCenter* message_center_;
-
-    // Count of downloads that remain.
-    size_t pending_downloads_;
-
-    // Weak.
-    ImageDownloadsObserver* observer_;
-
-    DISALLOW_COPY_AND_ASSIGN(ImageDownloads);
-  };
 
   // This class keeps a set of original Notification objects and corresponding
   // Profiles, so when MessageCenter calls back with a notification_id, this
@@ -159,17 +110,12 @@ class MessageCenterNotificationManager
   // TODO(dimich): Consider merging all 4 types (Notification,
   // QueuedNotification, ProfileNotification and NotificationList::Notification)
   // into a single class.
-  class ProfileNotification : public ImageDownloadsObserver {
+  class ProfileNotification {
    public:
     ProfileNotification(Profile* profile,
                         const Notification& notification,
                         message_center::MessageCenter* message_center);
     virtual ~ProfileNotification();
-
-    void StartDownloads();
-
-    // Overridden from ImageDownloadsObserver.
-    virtual void OnDownloadsCompleted() override;
 
     Profile* profile() const { return profile_; }
     const Notification& notification() const { return notification_; }
@@ -181,9 +127,6 @@ class MessageCenterNotificationManager
     // Weak, guaranteed not to be used after profile removal by parent class.
     Profile* profile_;
     Notification notification_;
-    // Track the downloads for this notification so the notification can be
-    // updated properly.
-    scoped_ptr<ImageDownloads> downloads_;
   };
 
   scoped_ptr<message_center::MessageCenterTrayDelegate> tray_;

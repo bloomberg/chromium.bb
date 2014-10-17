@@ -49,9 +49,6 @@ class DummyNotificationDelegate : public NotificationDelegate {
   virtual void Close(bool by_user) override {}
   virtual void Click() override {}
   virtual std::string id() const override { return id_; }
-  virtual content::WebContents* GetWebContents() const override {
-    return NULL;
-  }
 
  private:
   virtual ~DummyNotificationDelegate() {}

@@ -11,10 +11,6 @@ MockNotificationDelegate::~MockNotificationDelegate() {}
 
 std::string MockNotificationDelegate::id() const { return id_; }
 
-content::WebContents* MockNotificationDelegate::GetWebContents() const {
-  return NULL;
-}
-
 // TODO(peter): |notification_| should be initialized with the correct origin.
 StubNotificationUIManager::StubNotificationUIManager(const GURL& welcome_origin)
     : notification_(GURL(),

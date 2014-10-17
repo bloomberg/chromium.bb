@@ -25,7 +25,6 @@ class NotificationObjectProxy
   // Creates a Proxy object with the necessary callback information. The Proxy
   // will take ownership of |delegate|.
   NotificationObjectProxy(
-      content::RenderFrameHost* render_frame_host,
       scoped_ptr<content::DesktopNotificationDelegate> delegate);
 
   // NotificationDelegate implementation.
@@ -34,7 +33,6 @@ class NotificationObjectProxy
   virtual void Close(bool by_user) override;
   virtual void Click() override;
   virtual std::string id() const override;
-  virtual content::WebContents* GetWebContents() const override;
 
  protected:
   friend class base::RefCountedThreadSafe<NotificationObjectProxy>;
@@ -42,9 +40,6 @@ class NotificationObjectProxy
   virtual ~NotificationObjectProxy();
 
  private:
-  // Callback information to find the JS Notification object where it lives.
-  int render_process_id_;
-  int render_frame_id_;
   scoped_ptr<content::DesktopNotificationDelegate> delegate_;
   bool displayed_;
   std::string id_;

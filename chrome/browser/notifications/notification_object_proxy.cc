@@ -12,11 +12,8 @@
 #include "content/public/browser/web_contents.h"
 
 NotificationObjectProxy::NotificationObjectProxy(
-    content::RenderFrameHost* render_frame_host,
     scoped_ptr<content::DesktopNotificationDelegate> delegate)
-    : render_process_id_(render_frame_host->GetProcess()->GetID()),
-      render_frame_id_(render_frame_host->GetRoutingID()),
-      delegate_(delegate.Pass()),
+    : delegate_(delegate.Pass()),
       displayed_(false),
       id_(base::GenerateGUID()) {
 }
@@ -47,9 +44,4 @@ void NotificationObjectProxy::Click() {
 
 std::string NotificationObjectProxy::id() const {
   return id_;
-}
-
-content::WebContents* NotificationObjectProxy::GetWebContents() const {
-  return content::WebContents::FromRenderFrameHost(
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_));
 }

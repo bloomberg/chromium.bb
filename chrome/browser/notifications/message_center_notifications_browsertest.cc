@@ -84,9 +84,6 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
       log_ += base::IntToString(button_index) + "_";
     }
     virtual std::string id() const override { return id_; }
-    virtual content::WebContents* GetWebContents() const override {
-      return NULL;
-    }
 
     const std::string& log() { return log_; }
 

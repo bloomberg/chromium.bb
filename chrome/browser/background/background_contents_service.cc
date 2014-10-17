@@ -147,10 +147,6 @@ class CrashNotificationDelegate : public NotificationDelegate {
     return kNotificationPrefix + extension_id_;
   }
 
-  virtual content::WebContents* GetWebContents() const override {
-    return NULL;
-  }
-
  private:
   virtual ~CrashNotificationDelegate() {}
 
