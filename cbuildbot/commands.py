@@ -36,6 +36,7 @@ from chromite.scripts import upload_symbols
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
+CHROME_UNMASK_FILE = ('/build/%(board)s/etc/portage/package.unmask/chrome')
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FACTORY_SHIM = 'factory_shim'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
@@ -1093,12 +1094,14 @@ def MarkChromeAsStable(buildroot,
     # to unmask it manually.
     if chrome_rev != constants.CHROME_REV_LATEST:
       keywords_file = CHROME_KEYWORDS_FILE % {'board': board}
-      cros_build_lib.SudoRunCommand(
-          ['mkdir', '-p', os.path.dirname(keywords_file)],
-          enter_chroot=True, cwd=cwd)
-      cros_build_lib.SudoRunCommand(
-          ['tee', keywords_file], input='=%s\n' % chrome_atom,
-          enter_chroot=True, cwd=cwd)
+      for keywords_file in (CHROME_KEYWORDS_FILE % {'board': board},
+                            CHROME_UNMASK_FILE % {'board': board}):
+        cros_build_lib.SudoRunCommand(
+            ['mkdir', '-p', os.path.dirname(keywords_file)],
+            enter_chroot=True, cwd=cwd)
+        cros_build_lib.SudoRunCommand(
+            ['tee', keywords_file], input='=%s\n' % chrome_atom,
+            enter_chroot=True, cwd=cwd)
 
     # Sanity check: We should always be able to merge the version of
     # Chrome we just unmasked.
@@ -1106,9 +1109,10 @@ def MarkChromeAsStable(buildroot,
       cros_build_lib.RunCommand(
           ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
           enter_chroot=True, combine_stdout_stderr=True, capture_output=True)
-    finally:
+    except cros_build_lib.RunCommandError:
       cros_build_lib.Error('Cannot emerge-%s =%s\nIs Chrome pinned to an '
                            'older version?' % (board, chrome_atom))
+      raise
 
   return chrome_atom
 
