@@ -2080,6 +2080,7 @@ internal_notest_paladin.add_config('kayle-paladin',
   paladin_builder_name='kayle paladin',
   important=False,
   manifest='kayle.xml',
+  dev_manifest='kayle.xml',
   factory_toolkit=False,
   factory_install_netboot=False,
 )
@@ -2541,11 +2542,13 @@ _non_testable_brillo_release = _brillo_release.derive(non_testable_builder)
 _non_testable_brillo_release.add_config('kayle-release',
   boards=['kayle'],
   manifest='kayle.xml',
+  dev_manifest='kayle.xml',
   paygen=False,
   important=False,
   signer_tests=False,
   factory_toolkit=False,
   factory_install_netboot=False,
+  images=['base', 'test'],
 )
 
 _non_testable_brillo_release.add_config('storm-release',
