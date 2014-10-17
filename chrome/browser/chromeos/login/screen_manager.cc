@@ -12,12 +12,12 @@ ScreenManager::ScreenManager() {
 ScreenManager::~ScreenManager() {
 }
 
-WizardScreen* ScreenManager::GetScreen(const std::string& screen_name) {
+BaseScreen* ScreenManager::GetScreen(const std::string& screen_name) {
   ScreenMap::const_iterator iter = screens_.find(screen_name);
   if (iter != screens_.end()) {
     return iter->second.get();
   }
-  WizardScreen* result = CreateScreen(screen_name);
+  BaseScreen* result = CreateScreen(screen_name);
   DCHECK(result) << "Can not create screen named " << screen_name;
   screens_[screen_name] = make_linked_ptr(result);
   return result;

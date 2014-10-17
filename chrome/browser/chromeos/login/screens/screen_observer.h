@@ -10,7 +10,7 @@
 namespace chromeos {
 
 class ErrorScreen;
-class WizardScreen;
+class BaseScreen;
 
 // Interface that handles notifications received from any of login wizard
 // screens.
@@ -69,7 +69,7 @@ class ScreenObserver {
 
   virtual ErrorScreen* GetErrorScreen() = 0;
   virtual void ShowErrorScreen() = 0;
-  virtual void HideErrorScreen(WizardScreen* parent_screen) = 0;
+  virtual void HideErrorScreen(BaseScreen* parent_screen) = 0;
 
  protected:
   virtual ~ScreenObserver() {}

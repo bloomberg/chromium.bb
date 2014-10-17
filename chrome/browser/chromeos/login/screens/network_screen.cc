@@ -40,7 +40,7 @@ NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
 
 NetworkScreen::NetworkScreen(ScreenObserver* screen_observer,
                              NetworkScreenActor* actor)
-    : WizardScreen(screen_observer),
+    : BaseScreen(screen_observer),
       is_network_subscribed_(false),
       continue_pressed_(false),
       actor_(actor),
@@ -58,7 +58,7 @@ NetworkScreen::~NetworkScreen() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, WizardScreen implementation:
+// NetworkScreen, BaseScreen implementation:
 
 void NetworkScreen::PrepareToShow() {
   if (actor_)

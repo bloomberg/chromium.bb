@@ -9,20 +9,20 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen showing warning about
 // HID absence to users.
-class HIDDetectionScreen : public WizardScreen,
+class HIDDetectionScreen : public BaseScreen,
                            public HIDDetectionScreenActor::Delegate {
  public:
   HIDDetectionScreen(ScreenObserver* observer, HIDDetectionScreenActor* actor);
   virtual ~HIDDetectionScreen();
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

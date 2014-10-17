@@ -8,9 +8,10 @@
 #include <map>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
@@ -21,10 +22,10 @@ class ScreenManager {
   virtual ~ScreenManager();
 
   // Getter for screen with lazy initialization.
-  WizardScreen* GetScreen(const std::string& screen_name);
+  BaseScreen* GetScreen(const std::string& screen_name);
 
   // Factory for screen instances.
-  virtual WizardScreen* CreateScreen(const std::string& screen_name) = 0;
+  virtual BaseScreen* CreateScreen(const std::string& screen_name) = 0;
 
   bool HasScreen(const std::string& screen_name);
 
@@ -37,7 +38,7 @@ class ScreenManager {
   friend class WizardControllerBrokenLocalStateTest;
 
   // Screens.
-  typedef std::map<std::string, linked_ptr<WizardScreen> > ScreenMap;
+  typedef std::map<std::string, linked_ptr<BaseScreen>> ScreenMap;
   ScreenMap screens_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenManager);

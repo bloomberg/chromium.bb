@@ -52,10 +52,9 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
       manager->GetScreen(WizardController::kEnrollmentScreenName));
 }
 
-EnrollmentScreen::EnrollmentScreen(
-    ScreenObserver* observer,
-    EnrollmentScreenActor* actor)
-    : WizardScreen(observer),
+EnrollmentScreen::EnrollmentScreen(ScreenObserver* observer,
+                                   EnrollmentScreenActor* actor)
+    : BaseScreen(observer),
       shark_controller_(NULL),
       remora_controller_(NULL),
       actor_(actor),

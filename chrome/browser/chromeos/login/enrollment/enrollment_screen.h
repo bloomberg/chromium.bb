@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "components/pairing/host_pairing_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
@@ -34,7 +34,7 @@ class ScreenObserver;
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
 class EnrollmentScreen
-    : public WizardScreen,
+    : public BaseScreen,
       public pairing_chromeos::HostPairingController::Observer,
       public EnrollmentScreenActor::Controller {
  public:
@@ -58,7 +58,7 @@ class EnrollmentScreen
       pairing_chromeos::ControllerPairingController* shark_controller,
       pairing_chromeos::HostPairingController* remora_controller);
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

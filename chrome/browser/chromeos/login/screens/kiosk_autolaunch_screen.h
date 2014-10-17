@@ -9,21 +9,21 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen showing auto launch
 // warning to users.
-class KioskAutolaunchScreen : public WizardScreen,
+class KioskAutolaunchScreen : public BaseScreen,
                               public KioskAutolaunchScreenActor::Delegate {
  public:
   KioskAutolaunchScreen(ScreenObserver* observer,
                         KioskAutolaunchScreenActor* actor);
   virtual ~KioskAutolaunchScreen();
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override {}
   virtual void Show() override;
   virtual void Hide() override {}

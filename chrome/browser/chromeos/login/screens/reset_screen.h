@@ -9,19 +9,18 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen showing reset to users.
-class ResetScreen : public WizardScreen,
-                    public ResetScreenActor::Delegate {
+class ResetScreen : public BaseScreen, public ResetScreenActor::Delegate {
  public:
   ResetScreen(ScreenObserver* observer, ResetScreenActor* actor);
   virtual ~ResetScreen();
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

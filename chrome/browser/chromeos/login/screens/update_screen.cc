@@ -92,11 +92,10 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
       manager->GetScreen(WizardController::kUpdateScreenName));
 }
 
-UpdateScreen::UpdateScreen(
-    ScreenObserver* screen_observer,
-    UpdateScreenActor* actor,
-    HostPairingController* remora_controller)
-    : WizardScreen(screen_observer),
+UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
+                           UpdateScreenActor* actor,
+                           HostPairingController* remora_controller)
+    : BaseScreen(screen_observer),
       state_(STATE_IDLE),
       reboot_check_delay_(0),
       is_checking_for_update_(true),

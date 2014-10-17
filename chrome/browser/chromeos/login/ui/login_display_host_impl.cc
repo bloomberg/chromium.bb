@@ -520,11 +520,11 @@ void LoginDisplayHostImpl::StartWizard(
 
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
-  wizard_first_screen_name_ = first_screen_name;
+  first_screen_name_ = first_screen_name;
   if (screen_parameters.get())
-    wizard_screen_parameters_.reset(screen_parameters->DeepCopy());
+    screen_parameters_.reset(screen_parameters->DeepCopy());
   else
-    wizard_screen_parameters_.reset();
+    screen_parameters_.reset();
   is_showing_login_ = false;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
@@ -1025,8 +1025,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
 
   switch (restore_path_) {
     case RESTORE_WIZARD:
-      StartWizard(wizard_first_screen_name_,
-                  wizard_screen_parameters_.Pass());
+      StartWizard(first_screen_name_, screen_parameters_.Pass());
       break;
     case RESTORE_SIGN_IN:
       StartSignInScreen(LoginScreenContext());

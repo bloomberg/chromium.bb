@@ -27,7 +27,7 @@ AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     ScreenObserver* observer,
     AutoEnrollmentCheckScreenActor* actor)
-    : WizardScreen(observer),
+    : BaseScreen(observer),
       actor_(actor),
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 
 namespace base {
 class DictionaryValue;
@@ -16,6 +17,7 @@ class DictionaryValue;
 namespace chromeos {
 
 class ScreenContext;
+class ScreenObserver;
 
 // Base class for the all OOBE/login/before-session screens.
 // Screens are identified by ID, screen and it's JS counterpart must have same
@@ -26,7 +28,7 @@ class ScreenContext;
 // Initialize() method calls.
 class BaseScreen {
  public:
-  BaseScreen();
+  explicit BaseScreen(ScreenObserver* screen_observer);
   virtual ~BaseScreen();
 
   // ---- Old implementation ----
@@ -86,9 +88,20 @@ class BaseScreen {
   // counterpart.
   virtual void OnContextChanged(const base::DictionaryValue* diff);
 
+  ScreenObserver* get_screen_observer() const { return screen_observer_; }
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
+  FRIEND_TEST_ALL_PREFIXES(ProvisionedEnrollmentScreenTest, TestBackButton);
+
+  friend class NetworkScreenTest;
   friend class ScreenManager;
+  friend class UpdateScreenTest;
+
   void SetContext(ScreenContext* context);
+
+  ScreenObserver* screen_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreen);
 };

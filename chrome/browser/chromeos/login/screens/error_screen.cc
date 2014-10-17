@@ -15,7 +15,7 @@ namespace chromeos {
 
 ErrorScreen::ErrorScreen(ScreenObserver* screen_observer,
                          ErrorScreenActor* actor)
-    : WizardScreen(screen_observer),
+    : BaseScreen(screen_observer),
       actor_(actor),
       parent_screen_(OobeDisplay::SCREEN_UNKNOWN),
       weak_factory_(this) {

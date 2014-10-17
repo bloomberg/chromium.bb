@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/pairing/host_pairing_controller.h"
@@ -29,10 +29,10 @@ class ScreenObserver;
 // Controller for the update screen. It does not depend on the specific
 // implementation of the screen showing (Views of WebUI based), the dependency
 // is moved to the UpdateScreenActor instead.
-class UpdateScreen: public UpdateEngineClient::Observer,
-                    public UpdateScreenActor::Delegate,
-                    public WizardScreen,
-                    public NetworkPortalDetector::Observer {
+class UpdateScreen : public UpdateEngineClient::Observer,
+                     public UpdateScreenActor::Delegate,
+                     public BaseScreen,
+                     public NetworkPortalDetector::Observer {
  public:
   UpdateScreen(ScreenObserver* screen_observer,
                UpdateScreenActor* actor,
@@ -41,7 +41,7 @@ class UpdateScreen: public UpdateEngineClient::Observer,
 
   static UpdateScreen* Get(ScreenManager* manager);
 
-  // Overridden from WizardScreen.
+  // Overridden from BaseScreen.
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

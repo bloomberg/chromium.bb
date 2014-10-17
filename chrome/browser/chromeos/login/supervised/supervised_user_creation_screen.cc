@@ -97,7 +97,7 @@ SupervisedUserCreationScreen* SupervisedUserCreationScreen::Get(
 SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     ScreenObserver* observer,
     SupervisedUserCreationScreenHandler* actor)
-    : WizardScreen(observer),
+    : BaseScreen(observer),
       actor_(actor),
       on_error_screen_(false),
       manager_signin_in_progress_(false),

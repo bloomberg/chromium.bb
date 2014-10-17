@@ -284,7 +284,7 @@ chromeos::ErrorScreen* WizardController::GetErrorScreen() {
   return static_cast<chromeos::ErrorScreen*>(GetScreen(kErrorScreenName));
 }
 
-WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
+BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
     return new chromeos::NetworkScreen(this,
                                        oobe_display_->GetNetworkScreenActor());
@@ -794,7 +794,7 @@ void WizardController::PerformOOBECompletedActions() {
     chrome::AttemptRestart();
 }
 
-void WizardController::SetCurrentScreen(WizardScreen* new_current) {
+void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   SetCurrentScreenSmooth(new_current, false);
 }
 
@@ -815,7 +815,7 @@ void WizardController::ShowCurrentScreen() {
   current_screen_->Show();
 }
 
-void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
+void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
                                               bool use_smoothing) {
   if (current_screen_ == new_current ||
       new_current == NULL ||
@@ -1019,7 +1019,7 @@ void WizardController::ShowErrorScreen() {
   SetCurrentScreen(GetScreen(kErrorScreenName));
 }
 
-void WizardController::HideErrorScreen(WizardScreen* parent_screen) {
+void WizardController::HideErrorScreen(BaseScreen* parent_screen) {
   DCHECK(parent_screen);
   VLOG(1) << "Hiding error screen.";
   SetCurrentScreen(parent_screen);

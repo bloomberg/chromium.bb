@@ -27,8 +27,7 @@ namespace chromeos {
 
 TermsOfServiceScreen::TermsOfServiceScreen(ScreenObserver* screen_observer,
                                            TermsOfServiceScreenActor* actor)
-    : WizardScreen(screen_observer),
-      actor_(actor) {
+    : BaseScreen(screen_observer), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);

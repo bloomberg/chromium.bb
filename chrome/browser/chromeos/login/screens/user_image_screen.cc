@@ -66,7 +66,7 @@ UserImageScreen* UserImageScreen::Get(ScreenManager* manager) {
 
 UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
                                  UserImageScreenActor* actor)
-    : WizardScreen(screen_observer),
+    : BaseScreen(screen_observer),
       actor_(actor),
       accept_photo_after_decoding_(false),
       selected_image_(user_manager::User::USER_IMAGE_INVALID),

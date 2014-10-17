@@ -16,7 +16,7 @@
 namespace chromeos {
 
 EulaScreen::EulaScreen(ScreenObserver* observer, EulaScreenActor* actor)
-    : WizardScreen(observer), actor_(actor), password_fetcher_(this) {
+    : BaseScreen(observer), actor_(actor), password_fetcher_(this) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);

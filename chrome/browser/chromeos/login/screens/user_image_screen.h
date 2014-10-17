@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/user_manager/user.h"
@@ -30,12 +30,12 @@ namespace chromeos {
 class UserImageManager;
 class ScreenManager;
 
-class UserImageScreen: public WizardScreen,
-                       public UserImageScreenActor::Delegate,
-                       public ImageDecoder::Delegate,
-                       public content::NotificationObserver,
-                       public UserImageSyncObserver::Observer,
-                       public CameraPresenceNotifier::Observer {
+class UserImageScreen : public BaseScreen,
+                        public UserImageScreenActor::Delegate,
+                        public ImageDecoder::Delegate,
+                        public content::NotificationObserver,
+                        public UserImageSyncObserver::Observer,
+                        public CameraPresenceNotifier::Observer {
  public:
   UserImageScreen(ScreenObserver* screen_observer,
                   UserImageScreenActor* actor);
@@ -43,7 +43,7 @@ class UserImageScreen: public WizardScreen,
 
   static UserImageScreen* Get(ScreenManager* manager);
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

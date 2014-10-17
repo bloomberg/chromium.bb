@@ -25,7 +25,7 @@ class ScreenObserver;
 // doesn't actually drive a dedicated screen.
 class AutoEnrollmentCheckScreen
     : public AutoEnrollmentCheckScreenActor::Delegate,
-      public WizardScreen,
+      public BaseScreen,
       public NetworkPortalDetector::Observer {
  public:
   AutoEnrollmentCheckScreen(
@@ -44,7 +44,7 @@ class AutoEnrollmentCheckScreen
     auto_enrollment_controller_ = auto_enrollment_controller;
   }
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chromeos/tpm_password_fetcher.h"
 #include "url/gurl.h"
 
@@ -17,14 +17,14 @@ namespace chromeos {
 
 // Representation independent class that controls OOBE screen showing EULA
 // to users.
-class EulaScreen : public WizardScreen,
+class EulaScreen : public BaseScreen,
                    public EulaScreenActor::Delegate,
                    public TpmPasswordFetcherDelegate {
  public:
   EulaScreen(ScreenObserver* observer, EulaScreenActor* actor);
   virtual ~EulaScreen();
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

@@ -9,20 +9,20 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 
 namespace chromeos {
 
 // Representation independent class that controls screen for enabling
 // consumer kiosk mode.
-class KioskEnableScreen : public WizardScreen,
+class KioskEnableScreen : public BaseScreen,
                           public KioskEnableScreenActor::Delegate {
  public:
   KioskEnableScreen(ScreenObserver* observer, KioskEnableScreenActor* actor);
   virtual ~KioskEnableScreen();
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override {}
   virtual void Show() override;
   virtual void Hide() override {}

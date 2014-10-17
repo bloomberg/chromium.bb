@@ -9,7 +9,8 @@
 
 namespace chromeos {
 
-BaseScreen::BaseScreen() {
+BaseScreen::BaseScreen(ScreenObserver* screen_observer)
+    : screen_observer_(screen_observer) {
 }
 
 BaseScreen::~BaseScreen() {

@@ -18,7 +18,7 @@ ControllerPairingScreen::ControllerPairingScreen(
     ScreenObserver* observer,
     ControllerPairingScreenActor* actor,
     ControllerPairingController* shark_controller)
-    : WizardScreen(observer),
+    : BaseScreen(observer),
       actor_(actor),
       shark_controller_(shark_controller),
       current_stage_(ControllerPairingController::STAGE_NONE),

@@ -6,17 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_HOST_PAIRING_SCREEN_H_
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/screen_context.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
 
-class HostPairingScreen :
-  public WizardScreen,
-  public pairing_chromeos::HostPairingController::Observer,
-  public HostPairingScreenActor::Delegate {
+class HostPairingScreen
+    : public BaseScreen,
+      public pairing_chromeos::HostPairingController::Observer,
+      public HostPairingScreenActor::Delegate {
  public:
   HostPairingScreen(ScreenObserver* observer, HostPairingScreenActor* actor,
                     pairing_chromeos::HostPairingController* remora_controller);
@@ -27,7 +27,7 @@ class HostPairingScreen :
 
   void CommitContextChanges();
 
-  // Overridden from WizardScreen:
+  // Overridden from BaseScreen:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

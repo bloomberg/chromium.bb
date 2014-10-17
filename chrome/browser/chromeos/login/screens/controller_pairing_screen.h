@@ -7,17 +7,17 @@
 
 #include "base/macros.h"
 
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/screen_context.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "components/pairing/controller_pairing_controller.h"
 
 namespace chromeos {
 
-class ControllerPairingScreen :
-  public WizardScreen,
-  public pairing_chromeos::ControllerPairingController::Observer,
-  public ControllerPairingScreenActor::Delegate {
+class ControllerPairingScreen
+    : public BaseScreen,
+      public pairing_chromeos::ControllerPairingController::Observer,
+      public ControllerPairingScreenActor::Delegate {
  public:
   ControllerPairingScreen(
       ScreenObserver* observer,
@@ -31,7 +31,7 @@ class ControllerPairingScreen :
   void CommitContextChanges();
   bool ExpectStageIs(Stage stage) const;
 
-  // Overridden from WizardScreen:
+  // Overridden from BaseScreen:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

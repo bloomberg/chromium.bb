@@ -280,8 +280,8 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   RestorePath restore_path_;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
-  std::string wizard_first_screen_name_;
-  scoped_ptr<base::DictionaryValue> wizard_screen_parameters_;
+  std::string first_screen_name_;
+  scoped_ptr<base::DictionaryValue> screen_parameters_;
 
   // Called before host deletion.
   base::Closure completion_callback_;

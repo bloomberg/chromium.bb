@@ -532,8 +532,6 @@
         'browser/chromeos/login/screens/user_image_screen_actor.h',
         'browser/chromeos/login/screens/user_selection_screen.cc',
         'browser/chromeos/login/screens/user_selection_screen.h',
-        'browser/chromeos/login/screens/wizard_screen.cc',
-        'browser/chromeos/login/screens/wizard_screen.h',
         'browser/chromeos/login/screens/wrong_hwid_screen.cc',
         'browser/chromeos/login/screens/wrong_hwid_screen.h',
         'browser/chromeos/login/screens/wrong_hwid_screen_actor.h',

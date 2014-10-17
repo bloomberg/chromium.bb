@@ -17,7 +17,7 @@ HostPairingScreen::HostPairingScreen(
     ScreenObserver* observer,
     HostPairingScreenActor* actor,
     pairing_chromeos::HostPairingController* remora_controller)
-    : WizardScreen(observer),
+    : BaseScreen(observer),
       actor_(actor),
       remora_controller_(remora_controller),
       current_stage_(HostPairingController::STAGE_NONE) {

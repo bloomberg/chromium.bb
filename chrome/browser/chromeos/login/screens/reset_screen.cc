@@ -11,7 +11,7 @@
 namespace chromeos {
 
 ResetScreen::ResetScreen(ScreenObserver* observer, ResetScreenActor* actor)
-    : WizardScreen(observer), actor_(actor) {
+    : BaseScreen(observer), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);

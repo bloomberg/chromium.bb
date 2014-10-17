@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
@@ -27,7 +27,7 @@ class ScreenManager;
 
 // Class that controls screen showing ui for supervised user creation.
 class SupervisedUserCreationScreen
-    : public WizardScreen,
+    : public BaseScreen,
       public SupervisedUserCreationScreenHandler::Delegate,
       public SupervisedUserCreationController::StatusConsumer,
       public SupervisedUserSyncServiceObserver,
@@ -74,7 +74,7 @@ class SupervisedUserCreationScreen
   virtual void OnSupervisedUsersSyncingStopped() override {}
   virtual void OnSupervisedUsersChanged() override;
 
-  // WizardScreen implementation:
+  // BaseScreen implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

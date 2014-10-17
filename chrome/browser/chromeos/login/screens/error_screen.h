@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/auth/login_performer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
@@ -20,7 +20,7 @@ namespace chromeos {
 class ScreenObserver;
 
 // Controller for the error screen.
-class ErrorScreen : public WizardScreen,
+class ErrorScreen : public BaseScreen,
                     public ErrorScreenActorDelegate,
                     public LoginPerformer::Delegate {
  public:
@@ -47,7 +47,7 @@ class ErrorScreen : public WizardScreen,
   ErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);
   virtual ~ErrorScreen();
 
-  // WizardScreen implementation.
+  // BaseScreen implementation.
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

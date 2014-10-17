@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
@@ -25,7 +25,7 @@ class ScreenObserver;
 // policy. The screen is shown during login and requires the user to accept the
 // Terms of Service before proceeding. Currently, Terms of Service are available
 // for public sessions only.
-class TermsOfServiceScreen : public WizardScreen,
+class TermsOfServiceScreen : public BaseScreen,
                              public TermsOfServiceScreenActor::Delegate,
                              public net::URLFetcherDelegate {
  public:
@@ -33,7 +33,7 @@ class TermsOfServiceScreen : public WizardScreen,
                        TermsOfServiceScreenActor* actor);
   virtual ~TermsOfServiceScreen();
 
-  // WizardScreen:
+  // BaseScreen:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;

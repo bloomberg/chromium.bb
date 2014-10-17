@@ -60,7 +60,7 @@ class WizardController : public ScreenObserver, public ScreenManager {
   class Observer {
    public:
     // Called before a screen change happens.
-    virtual void OnScreenChanged(WizardScreen* next_screen) = 0;
+    virtual void OnScreenChanged(BaseScreen* next_screen) = 0;
 
     // Called after the browser session has started.
     virtual void OnSessionStart() = 0;
@@ -130,13 +130,13 @@ class WizardController : public ScreenObserver, public ScreenManager {
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
-  WizardScreen* current_screen() const { return current_screen_; }
+  BaseScreen* current_screen() const { return current_screen_; }
 
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
 
   // ScreenManager implementation.
-  virtual WizardScreen* CreateScreen(const std::string& screen_name) override;
+  virtual BaseScreen* CreateScreen(const std::string& screen_name) override;
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -241,18 +241,18 @@ class WizardController : public ScreenObserver, public ScreenManager {
   virtual bool GetUsageStatisticsReporting() const override;
   virtual ErrorScreen* GetErrorScreen() override;
   virtual void ShowErrorScreen() override;
-  virtual void HideErrorScreen(WizardScreen* parent_screen) override;
+  virtual void HideErrorScreen(BaseScreen* parent_screen) override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
 
   // Switches from one screen to another.
-  void SetCurrentScreen(WizardScreen* screen);
+  void SetCurrentScreen(BaseScreen* screen);
 
   // Switches from one screen to another with delay before showing. Calling
   // ShowCurrentScreen directly forces screen to be shown immediately.
-  void SetCurrentScreenSmooth(WizardScreen* screen, bool use_smoothing);
+  void SetCurrentScreenSmooth(BaseScreen* screen, bool use_smoothing);
 
   // Changes status area visibility.
   void SetStatusAreaVisible(bool visible);
@@ -319,10 +319,10 @@ class WizardController : public ScreenObserver, public ScreenManager {
   static bool zero_delay_enabled_;
 
   // Screen that's currently active.
-  WizardScreen* current_screen_;
+  BaseScreen* current_screen_;
 
   // Screen that was active before, or NULL for login screen.
-  WizardScreen* previous_screen_;
+  BaseScreen* previous_screen_;
 
   std::string username_;
   std::string password_;
