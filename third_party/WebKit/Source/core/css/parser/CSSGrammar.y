@@ -39,7 +39,6 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
 #include "wtf/FastMalloc.h"
 #include <stdlib.h>
 #include <string.h>
@@ -863,9 +862,7 @@ keyframes:
 
 keyframe_name:
     IDENT
-    | STRING {
-        parser->m_context.useCounter()->count(UseCounter::QuotedKeyframesRule);
-    }
+    | STRING
     ;
 
 keyframes_rule:
