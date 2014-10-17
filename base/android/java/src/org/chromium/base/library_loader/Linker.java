@@ -826,7 +826,7 @@ public class Linker {
                 sCurrentLoadAddress = libInfo.mLoadAddress + libInfo.mLoadSize;
             }
 
-            sLoadedLibraries.put(libName, libInfo);
+            sLoadedLibraries.put(sharedRelRoName, libInfo);
             if (DEBUG) Log.i(TAG, "Library details " + libInfo.toString());
         }
     }
