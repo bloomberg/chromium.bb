@@ -6,19 +6,19 @@
     'chrome_browser_extensions_test_support_sources': [
       # A list of sources which is shared between different browser tests.
       'browser/apps/app_browsertest_util.cc',
-      'browser/apps/app_browsertest_util.h',   
+      'browser/apps/app_browsertest_util.h',
       'browser/extensions/browsertest_util.cc',
       'browser/extensions/browsertest_util.h',
       'browser/extensions/extension_apitest.cc',
-      'browser/extensions/extension_apitest.h',       
+      'browser/extensions/extension_apitest.h',
       'browser/extensions/extension_browsertest.cc',
       'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_function_test_utils.cc',
       'browser/extensions/extension_function_test_utils.h',
       'browser/extensions/extension_test_notification_observer.cc',
-      'browser/extensions/extension_test_notification_observer.h', 
+      'browser/extensions/extension_test_notification_observer.h',
       'browser/extensions/updater/extension_cache_fake.h',
-      'browser/extensions/updater/extension_cache_fake.cc',                      
+      'browser/extensions/updater/extension_cache_fake.cc',
     ],
     'chrome_browser_tests_sources': [
       # The list of sources which is only used by chrome browser tests.
@@ -1691,7 +1691,7 @@
       'sources': [
         '<@(chrome_browser_tests_sources)',
         '<@(chrome_browser_extensions_test_support_sources)',
-        'test/base/browser_tests_main.cc',        
+        'test/base/browser_tests_main.cc',
       ],
       'rules': [
         {

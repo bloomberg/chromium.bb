@@ -111,7 +111,7 @@
         'monitoring/fake_gcm_stats_recorder.cc',
         'monitoring/fake_gcm_stats_recorder.h',
       ],
-    },    
+    },
 
     # A standalone MCS (mobile connection server) client.
     {

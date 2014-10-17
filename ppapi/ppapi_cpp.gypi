@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Shared source lists between trusted and untrusted targets are stored in 
+# Shared source lists between trusted and untrusted targets are stored in
 # ppapi_sources.gypi.
 
 {
@@ -45,7 +45,7 @@
           },
           'msvs_disabled_warnings': [
             4267,
-          ],      
+          ],
         }],
         ['OS=="linux"', {
           'cflags': ['-Wextra', '-pedantic'],

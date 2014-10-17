@@ -4,7 +4,7 @@
 
 {
    'targets': [
-     {   
+     {
        'target_name': 'asan_dynamic_runtime',
        'type': 'none',
        'variables': {
@@ -48,6 +48,6 @@
            ],
          }],
        ],
-     },  
-   ],  
+     },
+   ],
 }

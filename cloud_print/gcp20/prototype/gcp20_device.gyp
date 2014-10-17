@@ -21,7 +21,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(DEPTH)/cloud_print/cloud_print_resources.gyp:cloud_print_version_header', 
+        '<(DEPTH)/cloud_print/cloud_print_resources.gyp:cloud_print_version_header',
         '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
         '<(DEPTH)/jingle/jingle.gyp:notifier',
         '<(DEPTH)/net/net.gyp:http_server',
@@ -29,7 +29,7 @@
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
-        'cloud_print_response_parser.cc',        
+        'cloud_print_response_parser.cc',
         'cloud_print_response_parser.h',
         'cloud_print_request.cc',
         'cloud_print_request.h',
@@ -39,8 +39,8 @@
         'cloud_print_url_request_context_getter.h',
         'cloud_print_xmpp_listener.cc',
         'cloud_print_xmpp_listener.h',
-        'conio_posix.cc',  
-        'conio_posix.h',  
+        'conio_posix.cc',
+        'conio_posix.h',
         'command_line_reader.cc',
         'command_line_reader.h',
         'dns_packet_parser.cc',

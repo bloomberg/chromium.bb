@@ -14,7 +14,7 @@
       ],
       'sources': [
         '../public/provider/components/signin/browser/profile_oauth2_token_service_ios_provider.h',
-      ] 
+      ]
     },
   ],
 }

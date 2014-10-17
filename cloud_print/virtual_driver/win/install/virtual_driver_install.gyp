@@ -99,7 +99,7 @@
             '../../gcp_driver.gpd',
           ],
         },
-      ], 
+      ],
     },
     {
       'target_name': 'virtual_driver_setup_resources',

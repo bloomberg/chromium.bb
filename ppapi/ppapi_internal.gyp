@@ -243,7 +243,7 @@
           ],
           'defines': [
             '<@(nacl_win64_defines)',
-          ],              
+          ],
           'export_dependent_settings': [
             '../base/base.gyp:base_win64',
           ],
@@ -275,7 +275,7 @@
           ],
           'defines': [
             '<@(nacl_win64_defines)',
-          ],              
+          ],
           'all_dependent_settings': {
             'include_dirs': [
                '..',

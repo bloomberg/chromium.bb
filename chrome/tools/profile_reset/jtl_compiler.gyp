@@ -7,7 +7,7 @@
       'target_name': 'jtl_compiler',
       'type': 'executable',
       'dependencies': [
-        '../../../base/base.gyp:base',        
+        '../../../base/base.gyp:base',
         '../../../crypto/crypto.gyp:crypto',
         'jtl_compiler_lib',
       ],

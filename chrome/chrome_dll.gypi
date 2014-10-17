@@ -132,7 +132,7 @@
               ],
               'sources': [
                 'app/chrome_dll.rc',
-                
+
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
 
                 # Cursors.

@@ -16,6 +16,6 @@
         '<(DEPTH)/cloud_print/common/win/install_utils.cc',
         '<(DEPTH)/cloud_print/common/win/install_utils.h',
       ],
-    }, 
+    },
   ],
 }
