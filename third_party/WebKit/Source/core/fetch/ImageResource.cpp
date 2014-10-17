@@ -122,12 +122,12 @@ void ImageResource::switchClientsToRevalidatedResource()
     if (!m_pendingContainerSizeRequests.isEmpty()) {
         // A copy of pending size requests is needed as they are deleted during Resource::switchClientsToRevalidateResouce().
         ContainerSizeRequests switchContainerSizeRequests;
-        for (ContainerSizeRequests::iterator it = m_pendingContainerSizeRequests.begin(); it != m_pendingContainerSizeRequests.end(); ++it)
-            switchContainerSizeRequests.set(it->key, it->value);
+        for (const auto& containerSizeRequest : m_pendingContainerSizeRequests)
+            switchContainerSizeRequests.set(containerSizeRequest.key, containerSizeRequest.value);
         Resource::switchClientsToRevalidatedResource();
         ImageResource* revalidatedImageResource = toImageResource(resourceToRevalidate());
-        for (ContainerSizeRequests::iterator it = switchContainerSizeRequests.begin(); it != switchContainerSizeRequests.end(); ++it)
-            revalidatedImageResource->setContainerSizeForRenderer(it->key, it->value.first, it->value.second);
+        for (const auto& containerSizeRequest : switchContainerSizeRequests)
+            revalidatedImageResource->setContainerSizeForRenderer(containerSizeRequest.key, containerSizeRequest.value.first, containerSizeRequest.value.second);
         return;
     }
 
@@ -329,8 +329,8 @@ inline void ImageResource::createImage()
     if (m_image) {
         // Send queued container size requests.
         if (m_image->usesContainerSize()) {
-            for (ContainerSizeRequests::iterator it = m_pendingContainerSizeRequests.begin(); it != m_pendingContainerSizeRequests.end(); ++it)
-                setContainerSizeForRenderer(it->key, it->value.first, it->value.second);
+            for (const auto& containerSizeRequest : m_pendingContainerSizeRequests)
+                setContainerSizeForRenderer(containerSizeRequest.key, containerSizeRequest.value.first, containerSizeRequest.value.second);
         }
         m_pendingContainerSizeRequests.clear();
     }
@@ -387,8 +387,7 @@ void ImageResource::updateImage(bool allDataReceived)
 
 void ImageResource::updateBitmapImages(HashSet<ImageResource*>& images, bool redecodeImages)
 {
-    for (HashSet<ImageResource*>::iterator it = images.begin(); it != images.end(); ++it) {
-        ImageResource* imageResource = *it;
+    for (const auto& imageResource : images) {
         if (!imageResource->hasImage() || imageResource->image()->isNull())
             continue;
         BitmapImage* image = toBitmapImage(imageResource->image());

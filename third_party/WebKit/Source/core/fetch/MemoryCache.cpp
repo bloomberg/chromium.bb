@@ -62,11 +62,8 @@ PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillB
 {
 #if ENABLE(OILPAN)
     // Move m_liveResources content to keep Resource objects alive.
-    for (HeapHashSet<Member<Resource> >::iterator i = memoryCache()->m_liveResources.begin();
-        i != memoryCache()->m_liveResources.end();
-        ++i) {
-        cache->m_liveResources.add(*i);
-    }
+    for (const auto& resource : memoryCache()->m_liveResources)
+        cache->m_liveResources.add(resource);
     memoryCache()->m_liveResources.clear();
 #else
     // Make sure we have non-empty gMemoryCache.
@@ -616,9 +613,8 @@ void MemoryCache::TypeStatistic::addResource(Resource* o)
 MemoryCache::Statistics MemoryCache::getStatistics()
 {
     Statistics stats;
-    ResourceMap::iterator e = m_resources.end();
-    for (ResourceMap::iterator i = m_resources.begin(); i != e; ++i) {
-        Resource* resource = i->value->m_resource.get();
+    for (const auto& resourceIter : m_resources) {
+        Resource* resource = resourceIter.value->m_resource.get();
         switch (resource->type()) {
         case Resource::Image:
             stats.images.addResource(resource);

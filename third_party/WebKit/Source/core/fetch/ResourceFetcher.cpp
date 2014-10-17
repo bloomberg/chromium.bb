@@ -809,12 +809,8 @@ void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* tim
     ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
     HashMap<RefPtr<ResourceTimingInfo>, bool> timingReports;
     timingReports.swap(m_scheduledResourceTimingReports);
-    HashMap<RefPtr<ResourceTimingInfo>, bool>::iterator end = timingReports.end();
-    for (HashMap<RefPtr<ResourceTimingInfo>, bool>::iterator it = timingReports.begin(); it != end; ++it) {
-        RefPtr<ResourceTimingInfo> info = it->key;
-        bool isMainResource = it->value;
-        reportResourceTiming(info.get(), document(), isMainResource);
-    }
+    for (const auto& timingInfo : timingReports)
+        reportResourceTiming(timingInfo.key.get(), document(), timingInfo.value);
 }
 
 void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type)
@@ -1137,9 +1133,8 @@ bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
 
 void ResourceFetcher::reloadImagesIfNotDeferred()
 {
-    DocumentResourceMap::iterator end = m_documentResources.end();
-    for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != end; ++it) {
-        Resource* resource = it->value.get();
+    for (const auto& documentResource : m_documentResources) {
+        Resource* resource = documentResource.value.get();
         if (resource->type() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
             const_cast<Resource*>(resource)->load(this, defaultResourceOptions());
     }
@@ -1195,9 +1190,9 @@ void ResourceFetcher::garbageCollectDocumentResources()
     typedef Vector<String, 10> StringVector;
     StringVector resourcesToDelete;
 
-    for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != m_documentResources.end(); ++it) {
-        if (it->value->hasOneHandle())
-            resourcesToDelete.append(it->key);
+    for (const auto& documentResource : m_documentResources) {
+        if (documentResource.value->hasOneHandle())
+            resourcesToDelete.append(documentResource.key);
     }
 
     m_documentResources.removeAll(resourcesToDelete);
@@ -1277,9 +1272,7 @@ bool ResourceFetcher::isPreloaded(const String& urlString) const
     const KURL& url = m_document->completeURL(urlString);
 
     if (m_preloads) {
-        ListHashSet<Resource*>::iterator end = m_preloads->end();
-        for (ListHashSet<Resource*>::iterator it = m_preloads->begin(); it != end; ++it) {
-            Resource* resource = *it;
+        for (const auto& resource : *m_preloads) {
             if (resource->url() == url)
                 return true;
         }
@@ -1296,13 +1289,11 @@ void ResourceFetcher::clearPreloads()
     if (!m_preloads)
         return;
 
-    ListHashSet<Resource*>::iterator end = m_preloads->end();
-    for (ListHashSet<Resource*>::iterator it = m_preloads->begin(); it != end; ++it) {
-        Resource* res = *it;
-        res->decreasePreloadCount();
-        bool deleted = res->deleteIfPossible();
-        if (!deleted && res->preloadResult() == Resource::PreloadNotReferenced)
-            memoryCache()->remove(res);
+    for (const auto& resource : *m_preloads) {
+        resource->decreasePreloadCount();
+        bool deleted = resource->deleteIfPossible();
+        if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced)
+            memoryCache()->remove(resource);
     }
     m_preloads.clear();
 }
@@ -1472,34 +1463,32 @@ void ResourceFetcher::printPreloadStats()
     unsigned stylesheetMisses = 0;
     unsigned images = 0;
     unsigned imageMisses = 0;
-    ListHashSet<Resource*>::iterator end = m_preloads->end();
-    for (ListHashSet<Resource*>::iterator it = m_preloads->begin(); it != end; ++it) {
-        Resource* res = *it;
-        if (res->preloadResult() == Resource::PreloadNotReferenced)
-            printf("!! UNREFERENCED PRELOAD %s\n", res->url().string().latin1().data());
-        else if (res->preloadResult() == Resource::PreloadReferencedWhileComplete)
-            printf("HIT COMPLETE PRELOAD %s\n", res->url().string().latin1().data());
-        else if (res->preloadResult() == Resource::PreloadReferencedWhileLoading)
-            printf("HIT LOADING PRELOAD %s\n", res->url().string().latin1().data());
+    for (const auto& resource : *m_preloads) {
+        if (resource->preloadResult() == Resource::PreloadNotReferenced)
+            printf("!! UNREFERENCED PRELOAD %s\n", resource->url().string().latin1().data());
+        else if (resource->preloadResult() == Resource::PreloadReferencedWhileComplete)
+            printf("HIT COMPLETE PRELOAD %s\n", resource->url().string().latin1().data());
+        else if (resource->preloadResult() == Resource::PreloadReferencedWhileLoading)
+            printf("HIT LOADING PRELOAD %s\n", resource->url().string().latin1().data());
 
-        if (res->type() == Resource::Script) {
+        if (resource->type() == Resource::Script) {
             scripts++;
-            if (res->preloadResult() < Resource::PreloadReferencedWhileLoading)
+            if (resource->preloadResult() < Resource::PreloadReferencedWhileLoading)
                 scriptMisses++;
-        } else if (res->type() == Resource::CSSStyleSheet) {
+        } else if (resource->type() == Resource::CSSStyleSheet) {
             stylesheets++;
-            if (res->preloadResult() < Resource::PreloadReferencedWhileLoading)
+            if (resource->preloadResult() < Resource::PreloadReferencedWhileLoading)
                 stylesheetMisses++;
         } else {
             images++;
-            if (res->preloadResult() < Resource::PreloadReferencedWhileLoading)
+            if (resource->preloadResult() < Resource::PreloadReferencedWhileLoading)
                 imageMisses++;
         }
 
-        if (res->errorOccurred())
-            memoryCache()->remove(res);
+        if (resource->errorOccurred())
+            memoryCache()->remove(resource);
 
-        res->decreasePreloadCount();
+        resource->decreasePreloadCount();
     }
     m_preloads.clear();
 

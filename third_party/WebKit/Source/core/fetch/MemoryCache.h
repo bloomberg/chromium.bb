@@ -280,7 +280,7 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
-    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry> > ResourceMap;
+    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry>> ResourceMap;
     ResourceMap m_resources;
 
 #if ENABLE(OILPAN)
@@ -288,7 +288,7 @@ private:
     // should not be deleted. m_allResources only contains on-cache Resource
     // objects.
     // FIXME: Can we remove manual lifetime management of Resource and this?
-    HeapHashSet<Member<Resource> > m_liveResources;
+    HeapHashSet<Member<Resource>> m_liveResources;
     friend RawPtr<MemoryCache> replaceMemoryCacheForTesting(RawPtr<MemoryCache>);
 #endif
 

@@ -107,11 +107,10 @@ bool FetchUtils::isSimpleRequest(const String& method, const HTTPHeaderMap& head
     if (!isSimpleMethod(method))
         return false;
 
-    HTTPHeaderMap::const_iterator end = headerMap.end();
-    for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
+    for (const auto& header : headerMap) {
         // Preflight is required for MIME types that can not be sent via form
         // submission.
-        if (!isSimpleHeader(it->key, it->value))
+        if (!isSimpleHeader(header.key, header.value))
             return false;
     }
 
@@ -157,9 +156,8 @@ bool FetchUtils::isSimpleOrForbiddenRequest(const String& method, const HTTPHead
     if (!isSimpleMethod(method))
         return false;
 
-    HTTPHeaderMap::const_iterator end = headerMap.end();
-    for (HTTPHeaderMap::const_iterator it = headerMap.begin(); it != end; ++it) {
-        if (!isSimpleHeader(it->key, it->value) && !isForbiddenHeaderName(it->key))
+    for (const auto& header : headerMap) {
+        if (!isSimpleHeader(header.key, header.value) && !isForbiddenHeaderName(header.key))
             return false;
     }
 

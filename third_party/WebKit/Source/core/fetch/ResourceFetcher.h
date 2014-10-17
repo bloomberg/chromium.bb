@@ -102,7 +102,7 @@ public:
 
     Resource* cachedResource(const KURL&) const;
 
-    typedef HashMap<String, ResourcePtr<Resource> > DocumentResourceMap;
+    typedef HashMap<String, ResourcePtr<Resource>> DocumentResourceMap;
     const DocumentResourceMap& allResources() const { return m_documentResources; }
 
     bool autoLoadImages() const { return m_autoLoadImages; }
@@ -212,12 +212,12 @@ private:
 
     int m_requestCount;
 
-    OwnPtr<ListHashSet<Resource*> > m_preloads;
+    OwnPtr<ListHashSet<Resource*>> m_preloads;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
-    typedef HashMap<Resource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
+    typedef HashMap<Resource*, RefPtr<ResourceTimingInfo>> ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     HashMap<RefPtr<ResourceTimingInfo>, bool> m_scheduledResourceTimingReports;

@@ -49,20 +49,18 @@ void ResourceLoaderSet::trace(Visitor* visitor)
 
 void ResourceLoaderSet::cancelAll()
 {
-    WillBeHeapVector<RefPtrWillBeMember<ResourceLoader> > loadersCopy;
+    WillBeHeapVector<RefPtrWillBeMember<ResourceLoader>> loadersCopy;
     copyToVector(m_set, loadersCopy);
-    size_t size = loadersCopy.size();
-    for (size_t i = 0; i < size; ++i)
-        loadersCopy[i]->cancel();
+    for (const auto& loader : loadersCopy)
+        loader->cancel();
 }
 
 void ResourceLoaderSet::setAllDefersLoading(bool defers)
 {
-    WillBeHeapVector<RefPtrWillBeMember<ResourceLoader> > loadersCopy;
+    WillBeHeapVector<RefPtrWillBeMember<ResourceLoader>> loadersCopy;
     copyToVector(m_set, loadersCopy);
-    size_t size = loadersCopy.size();
-    for (size_t i = 0; i < size; ++i)
-        loadersCopy[i]->setDefersLoading(defers);
+    for (const auto& loader : loadersCopy)
+        loader->setDefersLoading(defers);
 }
 
 }
