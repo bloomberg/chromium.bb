@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -272,10 +273,11 @@ int FileStreamWriter::Cancel(const net::CompletionCallback& callback) {
 }
 
 int FileStreamWriter::Flush(const net::CompletionCallback& callback) {
-  if (state_ != INITIALIZED)
-    return net::ERR_FAILED;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, state_ == INITIALIZED ? net::OK : net::ERR_FAILED));
 
-  return net::OK;
+  return net::ERR_IO_PENDING;
 }
 
 void FileStreamWriter::OnWriteFileCompleted(

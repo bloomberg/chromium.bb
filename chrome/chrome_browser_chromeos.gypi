@@ -269,6 +269,8 @@
         'browser/chromeos/file_system_provider/fileapi/backend_delegate.h',
         'browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.cc',
         'browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h',
+        'browser/chromeos/file_system_provider/fileapi/buffering_file_stream_writer.cc',
+        'browser/chromeos/file_system_provider/fileapi/buffering_file_stream_writer.h',
         'browser/chromeos/file_system_provider/fileapi/file_stream_reader.cc',
         'browser/chromeos/file_system_provider/fileapi/file_stream_reader.h',
         'browser/chromeos/file_system_provider/fileapi/file_stream_writer.cc',
