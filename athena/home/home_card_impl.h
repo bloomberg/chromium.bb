@@ -11,14 +11,9 @@
 #include "athena/home/public/search_controller_factory.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class Window;
-
-namespace client {
-class ActivationClient;
-}
 }
 
 namespace gfx {
@@ -39,12 +34,10 @@ class AppListViewDelegate;
 class HomeCardLayoutManager;
 class HomeCardView;
 
-class ATHENA_EXPORT HomeCardImpl
-    : public HomeCard,
-      public AcceleratorHandler,
-      public HomeCardGestureManager::Delegate,
-      public WindowManagerObserver,
-      public aura::client::ActivationChangeObserver {
+class ATHENA_EXPORT HomeCardImpl : public HomeCard,
+                                   public AcceleratorHandler,
+                                   public HomeCardGestureManager::Delegate,
+                                   public WindowManagerObserver {
  public:
   HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
                scoped_ptr<SearchControllerFactory> search_factory);
@@ -85,10 +78,6 @@ class ATHENA_EXPORT HomeCardImpl
   virtual void OnSplitViewModeEnter() override;
   virtual void OnSplitViewModeExit() override;
 
-  // aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
-
   scoped_ptr<AppModelBuilder> model_builder_;
   scoped_ptr<SearchControllerFactory> search_factory_;
 
@@ -102,7 +91,6 @@ class ATHENA_EXPORT HomeCardImpl
   HomeCardView* home_card_view_;
   scoped_ptr<AppListViewDelegate> view_delegate_;
   HomeCardLayoutManager* layout_manager_;
-  aura::client::ActivationClient* activation_client_;  // Not owned
   scoped_ptr<ui::LayerOwner> minimized_home_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);

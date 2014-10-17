@@ -28,7 +28,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/visibility_controller.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace athena {
 namespace {
@@ -229,8 +228,7 @@ HomeCardImpl::HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
       original_state_(VISIBLE_MINIMIZED),
       home_card_widget_(NULL),
       home_card_view_(NULL),
-      layout_manager_(NULL),
-      activation_client_(NULL) {
+      layout_manager_(NULL) {
   DCHECK(!instance);
   instance = this;
   WindowManager::Get()->AddObserver(this);
@@ -239,8 +237,6 @@ HomeCardImpl::HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
 HomeCardImpl::~HomeCardImpl() {
   DCHECK(instance);
   WindowManager::Get()->RemoveObserver(this);
-  if (activation_client_)
-    activation_client_->RemoveObserver(this);
   home_card_widget_->CloseNow();
 
   // Reset the view delegate first as it access search provider during
@@ -278,11 +274,6 @@ void HomeCardImpl::Init() {
 
   SetState(VISIBLE_MINIMIZED);
   home_card_view_->Layout();
-
-  activation_client_ =
-      aura::client::GetActivationClient(container->GetRootWindow());
-  if (activation_client_)
-    activation_client_->AddObserver(this);
 
   AthenaEnv::Get()->SetDisplayWorkAreaInsets(
       gfx::Insets(0, 0, kHomeCardMinimizedHeight, 0));
@@ -424,14 +415,6 @@ void HomeCardImpl::OnSplitViewModeEnter() {
 }
 
 void HomeCardImpl::OnSplitViewModeExit() {
-}
-
-void HomeCardImpl::OnWindowActivated(aura::Window* gained_active,
-                                     aura::Window* lost_active) {
-  if (state_ != HIDDEN &&
-      gained_active != home_card_widget_->GetNativeWindow()) {
-    SetState(VISIBLE_MINIMIZED);
-  }
 }
 
 // static
