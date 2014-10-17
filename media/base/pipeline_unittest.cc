@@ -184,7 +184,7 @@ class PipelineTest : public ::testing::Test {
   void StartPipeline() {
     pipeline_->Start(
         demuxer_.get(),
-        scoped_renderer_.PassAs<Renderer>(),
+        scoped_renderer_.Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),

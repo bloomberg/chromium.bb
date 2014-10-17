@@ -451,7 +451,7 @@ scoped_ptr<PacketPipe> InterruptedPoissonProcess::NewBuffer(size_t size) {
   scoped_ptr<InternalBuffer> buffer(
       new InternalBuffer(weak_factory_.GetWeakPtr(), size));
   send_buffers_.push_back(buffer->GetWeakPtr());
-  return buffer.PassAs<PacketPipe>();
+  return buffer.Pass();
 }
 
 base::TimeDelta InterruptedPoissonProcess::NextEvent(double rate) {

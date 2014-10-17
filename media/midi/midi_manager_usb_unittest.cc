@@ -130,7 +130,7 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
  public:
   explicit MidiManagerUsbForTesting(
       scoped_ptr<UsbMidiDevice::Factory> device_factory)
-      : MidiManagerUsb(device_factory.PassAs<UsbMidiDevice::Factory>()) {}
+      : MidiManagerUsb(device_factory.Pass()) {}
   virtual ~MidiManagerUsbForTesting() {}
 
   void CallCompleteInitialization(MidiResult result) {
@@ -148,8 +148,7 @@ class MidiManagerUsbTest : public ::testing::Test {
   MidiManagerUsbTest() : message_loop_(new base::MessageLoop) {
     scoped_ptr<TestUsbMidiDeviceFactory> factory(new TestUsbMidiDeviceFactory);
     factory_ = factory.get();
-    manager_.reset(
-        new MidiManagerUsbForTesting(factory.PassAs<UsbMidiDevice::Factory>()));
+    manager_.reset(new MidiManagerUsbForTesting(factory.Pass()));
   }
   virtual ~MidiManagerUsbTest() {
     std::string leftover_logs = logger_.TakeLog();

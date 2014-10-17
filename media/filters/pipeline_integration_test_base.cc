@@ -303,7 +303,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
   if (clockless_playback_)
     renderer_impl->EnableClocklessVideoPlaybackForTesting();
 
-  return renderer_impl.PassAs<Renderer>();
+  return renderer_impl.Pass();
 }
 
 void PipelineIntegrationTestBase::SetDecryptor(

@@ -134,7 +134,7 @@ TEST_F(FakeVideoCaptureDeviceTest, Capture) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
   EXPECT_EQ(last_format().frame_size.height(), 480);
@@ -196,7 +196,7 @@ TEST_F(FakeVideoCaptureDeviceTest, DISABLED_CaptureVariableResolution) {
       .Times(0);
   int action_count = 200;
 
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
 
   // We set TimeWait to 200 action timeouts and this should be enough for at
   // least action_count/kFakeCaptureCapabilityChangePeriod calls.

@@ -47,7 +47,7 @@ scoped_ptr<BrowserCdm> CreateBrowserCdm(
     return scoped_ptr<BrowserCdm>();
   }
 
-  return cdm.PassAs<BrowserCdm>();
+  return cdm.Pass();
 }
 
 }  // namespace media

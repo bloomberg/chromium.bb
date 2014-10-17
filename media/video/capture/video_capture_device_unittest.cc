@@ -239,7 +239,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
     capture_params.requested_format.frame_size.SetSize(640, 480);
     capture_params.requested_format.frame_rate = 30;
     capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-    device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+    device->AllocateAndStart(capture_params, client_.Pass());
     device->StopAndDeAllocate();
   }
 #endif
@@ -264,7 +264,7 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
@@ -290,7 +290,7 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
   capture_params.requested_format.frame_size.SetSize(1280, 720);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
@@ -313,7 +313,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   capture_params.requested_format.frame_size.SetSize(637, 472);
   capture_params.requested_format.frame_rate = 35;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
   EXPECT_EQ(last_format().frame_size.width(), 640);
@@ -349,7 +349,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_ReAllocateCamera) {
     capture_params.requested_format.frame_size = resolution;
     capture_params.requested_format.frame_rate = 30;
     capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-    device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+    device->AllocateAndStart(capture_params, client_.Pass());
     device->StopAndDeAllocate();
   }
 
@@ -363,7 +363,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_ReAllocateCamera) {
   scoped_ptr<VideoCaptureDevice> device(
       video_capture_device_factory_->Create(names_->front()));
 
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
   device.reset();
@@ -388,7 +388,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
@@ -416,7 +416,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   capture_params.requested_format.frame_size.SetSize(1280, 720);
   capture_params.requested_format.frame_rate = 30;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_MJPEG;
-  device->AllocateAndStart(capture_params, client_.PassAs<Client>());
+  device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
   // Verify we get MJPEG from the device. Not all devices can capture 1280x720
