@@ -220,7 +220,7 @@ std::string SummarizeTraces() {
   // possible for more than one to run if more than one build is going in
   // parallel. Just report the total of all of them.
   if (!check_headers.empty()) {
-    float check_headers_time = 0;
+    double check_headers_time = 0;
     for (const auto& cur : check_headers)
       check_headers_time += cur->delta().InMillisecondsF();
 

@@ -132,7 +132,8 @@ std::vector<base::FilePath::StringType> GetPathComponents(
   // don't want the slash in there. This doesn't support input like "C:foo"
   // which means foo relative to the current directory of the C drive but
   // that's basically legacy DOS behavior we don't need to support.
-  if (result.size() >= 2 && result[1].size() == 1 && IsSlash(result[1][0]))
+  if (result.size() >= 2 && result[1].size() == 1 &&
+      IsSlash(static_cast<char>(result[1][0])))
     result.erase(result.begin() + 1);
 #endif
 

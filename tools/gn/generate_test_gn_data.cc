@@ -38,7 +38,7 @@ base::FilePath RepoPathToPathName(const std::vector<int>& repo_path) {
 
 std::string TargetIndexToLetter(int target_index) {
   char ret[2];
-  ret[0] = 'a' + target_index;
+  ret[0] = static_cast<char>('a' + target_index);
   ret[1] = 0;
   return ret;
 }

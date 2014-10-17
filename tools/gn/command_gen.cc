@@ -114,7 +114,7 @@ int RunGen(const std::vector<std::string>& args) {
         base::IntToString(
             setup->scheduler().input_file_manager()->GetInputFileCount()) +
         " files in " +
-        base::IntToString(elapsed_time.InMilliseconds()) + "ms\n";
+        base::Int64ToString(elapsed_time.InMilliseconds()) + "ms\n";
     OutputString(stats);
   }
 
