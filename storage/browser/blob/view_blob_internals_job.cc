@@ -11,6 +11,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -131,6 +132,10 @@ int ViewBlobInternalsJob::GetData(
     std::string* charset,
     std::string* data,
     const net::CompletionCallback& callback) const {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("422489 ViewBlobInternalsJob::GetData"));
+
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 

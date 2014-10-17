@@ -5,6 +5,7 @@
 #include "content/browser/tcmalloc_internals_request_job.h"
 
 #include "base/allocator/allocator_extension.h"
+#include "base/profiler/scoped_profile.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,6 +109,11 @@ int TcmallocInternalsRequestJob::GetData(
     std::string* charset,
     std::string* data,
     const net::CompletionCallback& callback) const {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422489 TcmallocInternalsRequestJob::GetData"));
+
   mime_type->assign("text/html");
   charset->assign("UTF8");
 

@@ -100,6 +100,11 @@ void URLRequestSimpleJob::StartAsync() {
 }
 
 void URLRequestSimpleJob::OnGetDataCompleted(int result) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422489 URLRequestSimpleJob::OnGetDataCompleted"));
+
   if (result == OK) {
     // Notify that the headers are complete
     if (!byte_range_.ComputeBounds(data_.size())) {
