@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_aura.h"
 
 #include <list>
 
@@ -406,7 +406,7 @@ ClipboardData* ClipboardDataBuilder::current_data_ = NULL;
 
 }  // namespace
 
-// Clipboard FormatType implementation.
+// Clipboard::FormatType implementation.
 Clipboard::FormatType::FormatType() {
 }
 
@@ -511,25 +511,30 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
   return type;
 }
 
-// Clipboard implementation.
-Clipboard::Clipboard() {
+// Clipboard factory method.
+Clipboard* Clipboard::Create() {
+  return new ClipboardAura;
+}
+
+// ClipboardAura implementation.
+ClipboardAura::ClipboardAura() {
   DCHECK(CalledOnValidThread());
   // Make sure clipboard is created.
   GetClipboard();
 }
 
-Clipboard::~Clipboard() {
+ClipboardAura::~ClipboardAura() {
   DCHECK(CalledOnValidThread());
   DeleteClipboard();
 }
 
-uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
+uint64 ClipboardAura::GetSequenceNumber(ClipboardType type) {
   DCHECK(CalledOnValidThread());
   return GetClipboard()->sequence_number();
 }
 
-bool Clipboard::IsFormatAvailable(const FormatType& format,
-                                  ClipboardType type) const {
+bool ClipboardAura::IsFormatAvailable(const FormatType& format,
+                                      ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
   AuraClipboard* clipboard = GetClipboard();
@@ -552,16 +557,16 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
   return false;
 }
 
-void Clipboard::Clear(ClipboardType type) {
+void ClipboardAura::Clear(ClipboardType type) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
   AuraClipboard* clipboard = GetClipboard();
   clipboard->Clear();
 }
 
-void Clipboard::ReadAvailableTypes(ClipboardType type,
-                                   std::vector<base::string16>* types,
-                                   bool* contains_filenames) const {
+void ClipboardAura::ReadAvailableTypes(ClipboardType type,
+                                       std::vector<base::string16>* types,
+                                       bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
     NOTREACHED();
@@ -586,95 +591,98 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
   }
 }
 
-void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
+void ClipboardAura::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadText(result);
 }
 
-void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
+void ClipboardAura::ReadAsciiText(ClipboardType type,
+                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadAsciiText(result);
 }
 
-void Clipboard::ReadHTML(ClipboardType type,
-                         base::string16* markup,
-                         std::string* src_url,
-                         uint32* fragment_start,
-                         uint32* fragment_end) const {
+void ClipboardAura::ReadHTML(ClipboardType type,
+                             base::string16* markup,
+                             std::string* src_url,
+                             uint32* fragment_start,
+                             uint32* fragment_end) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadHTML(markup, src_url, fragment_start, fragment_end);
 }
 
-void Clipboard::ReadRTF(ClipboardType type, std::string* result) const {
+void ClipboardAura::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadRTF(result);
 }
 
-SkBitmap Clipboard::ReadImage(ClipboardType type) const {
+SkBitmap ClipboardAura::ReadImage(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   return GetClipboard()->ReadImage();
 }
 
-void Clipboard::ReadCustomData(ClipboardType clipboard_type,
-                               const base::string16& type,
-                               base::string16* result) const {
+void ClipboardAura::ReadCustomData(ClipboardType clipboard_type,
+                                   const base::string16& type,
+                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadCustomData(type, result);
 }
 
-void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
+void ClipboardAura::ReadBookmark(base::string16* title,
+                                 std::string* url) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadBookmark(title, url);
 }
 
-void Clipboard::ReadData(const FormatType& format, std::string* result) const {
+void ClipboardAura::ReadData(const FormatType& format,
+                             std::string* result) const {
   DCHECK(CalledOnValidThread());
   GetClipboard()->ReadData(format.ToString(), result);
 }
 
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+void ClipboardAura::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
-  for (ObjectMap::const_iterator iter = objects.begin();
-       iter != objects.end(); ++iter) {
+  for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end();
+       ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
   ClipboardDataBuilder::CommitToClipboard();
 }
 
-void Clipboard::WriteText(const char* text_data, size_t text_len) {
+void ClipboardAura::WriteText(const char* text_data, size_t text_len) {
   ClipboardDataBuilder::WriteText(text_data, text_len);
 }
 
-void Clipboard::WriteHTML(const char* markup_data,
-                          size_t markup_len,
-                          const char* url_data,
-                          size_t url_len) {
+void ClipboardAura::WriteHTML(const char* markup_data,
+                              size_t markup_len,
+                              const char* url_data,
+                              size_t url_len) {
   ClipboardDataBuilder::WriteHTML(markup_data, markup_len, url_data, url_len);
 }
 
-void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
+void ClipboardAura::WriteRTF(const char* rtf_data, size_t data_len) {
   ClipboardDataBuilder::WriteRTF(rtf_data, data_len);
 }
 
-void Clipboard::WriteBookmark(const char* title_data,
-                              size_t title_len,
-                              const char* url_data,
-                              size_t url_len) {
+void ClipboardAura::WriteBookmark(const char* title_data,
+                                  size_t title_len,
+                                  const char* url_data,
+                                  size_t url_len) {
   ClipboardDataBuilder::WriteBookmark(title_data, title_len, url_data, url_len);
 }
 
-void Clipboard::WriteWebSmartPaste() {
+void ClipboardAura::WriteWebSmartPaste() {
   ClipboardDataBuilder::WriteWebSmartPaste();
 }
 
-void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
+void ClipboardAura::WriteBitmap(const SkBitmap& bitmap) {
   ClipboardDataBuilder::WriteBitmap(bitmap);
 }
 
-void Clipboard::WriteData(const FormatType& format,
-                          const char* data_data,
-                          size_t data_len) {
+void ClipboardAura::WriteData(const FormatType& format,
+                              const char* data_data,
+                              size_t data_len) {
   ClipboardDataBuilder::WriteData(format.ToString(), data_data, data_len);
 }
 

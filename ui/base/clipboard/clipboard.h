@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -22,15 +21,6 @@
 
 #if defined(OS_WIN)
 #include <objidl.h>
-#elif defined(OS_ANDROID)
-#include <jni.h>
-
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#endif
-
-#if defined(USE_AURA) && defined(USE_X11)
-#include "base/memory/scoped_ptr.h"
 #endif
 
 namespace base {
@@ -88,7 +78,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
 #if defined(OS_WIN)
     const FORMATETC& ToFormatEtc() const { return data_; }
-#elif defined(USE_AURA)
+#elif defined(USE_AURA) || defined(OS_ANDROID)
     const std::string& ToString() const { return data_; }
 #elif defined(OS_MACOSX)
     NSString* ToNSString() const { return data_; }
@@ -113,19 +103,13 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 #if defined(OS_WIN)
     explicit FormatType(UINT native_format);
     FormatType(UINT native_format, LONG index);
-    UINT ToUINT() const { return data_.cfFormat; }
     FORMATETC data_;
-#elif defined(USE_AURA)
+#elif defined(USE_AURA) || defined(OS_ANDROID)
     explicit FormatType(const std::string& native_format);
-    const std::string& data() const { return data_; }
     std::string data_;
 #elif defined(OS_MACOSX)
     explicit FormatType(NSString* native_format);
     NSString* data_;
-#elif defined(OS_ANDROID)
-    explicit FormatType(const std::string& native_format);
-    const std::string& data() const { return data_; }
-    std::string data_;
 #else
 #error No FormatType definition.
 #endif
@@ -211,51 +195,53 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
   // whether it has changed.
-  uint64 GetSequenceNumber(ClipboardType type);
+  virtual uint64 GetSequenceNumber(ClipboardType type) = 0;
 
   // Tests whether the clipboard contains a certain format
-  bool IsFormatAvailable(const FormatType& format, ClipboardType type) const;
+  virtual bool IsFormatAvailable(const FormatType& format,
+                                 ClipboardType type) const = 0;
 
   // Clear the clipboard data.
-  void Clear(ClipboardType type);
+  virtual void Clear(ClipboardType type) = 0;
 
-  void ReadAvailableTypes(ClipboardType type,
-                          std::vector<base::string16>* types,
-                          bool* contains_filenames) const;
+  virtual void ReadAvailableTypes(ClipboardType type,
+                                  std::vector<base::string16>* types,
+                                  bool* contains_filenames) const = 0;
 
   // Reads UNICODE text from the clipboard, if available.
-  void ReadText(ClipboardType type, base::string16* result) const;
+  virtual void ReadText(ClipboardType type, base::string16* result) const = 0;
 
   // Reads ASCII text from the clipboard, if available.
-  void ReadAsciiText(ClipboardType type, std::string* result) const;
+  virtual void ReadAsciiText(ClipboardType type, std::string* result) const = 0;
 
   // Reads HTML from the clipboard, if available. If the HTML fragment requires
   // context to parse, |fragment_start| and |fragment_end| are indexes into
   // markup indicating the beginning and end of the actual fragment. Otherwise,
   // they will contain 0 and markup->size().
-  void ReadHTML(ClipboardType type,
-                base::string16* markup,
-                std::string* src_url,
-                uint32* fragment_start,
-                uint32* fragment_end) const;
+  virtual void ReadHTML(ClipboardType type,
+                        base::string16* markup,
+                        std::string* src_url,
+                        uint32* fragment_start,
+                        uint32* fragment_end) const = 0;
 
   // Reads RTF from the clipboard, if available. Stores the result as a byte
   // vector.
-  void ReadRTF(ClipboardType type, std::string* result) const;
+  virtual void ReadRTF(ClipboardType type, std::string* result) const = 0;
 
   // Reads an image from the clipboard, if available.
-  SkBitmap ReadImage(ClipboardType type) const;
+  virtual SkBitmap ReadImage(ClipboardType type) const = 0;
 
-  void ReadCustomData(ClipboardType clipboard_type,
-                      const base::string16& type,
-                      base::string16* result) const;
+  virtual void ReadCustomData(ClipboardType clipboard_type,
+                              const base::string16& type,
+                              base::string16* result) const = 0;
 
   // Reads a bookmark from the clipboard, if available.
-  void ReadBookmark(base::string16* title, std::string* url) const;
+  virtual void ReadBookmark(base::string16* title, std::string* url) const = 0;
 
   // Reads raw data from the clipboard with the given format type. Stores result
   // as a byte vector.
-  void ReadData(const FormatType& format, std::string* result) const;
+  virtual void ReadData(const FormatType& format,
+                        std::string* result) const = 0;
 
   // Gets the FormatType corresponding to an arbitrary format string,
   // registering it with the system if needed. Due to Windows/Linux
@@ -298,6 +284,40 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const FormatType& GetIDListFormatType();
 #endif
 
+ protected:
+  static Clipboard* Create();
+
+  Clipboard() {}
+  virtual ~Clipboard() {}
+
+  // Write a bunch of objects to the system clipboard. Copies are made of the
+  // contents of |objects|.
+  virtual void WriteObjects(ClipboardType type, const ObjectMap& objects) = 0;
+
+  void DispatchObject(ObjectType type, const ObjectMapParams& params);
+
+  virtual void WriteText(const char* text_data, size_t text_len) = 0;
+
+  virtual void WriteHTML(const char* markup_data,
+                         size_t markup_len,
+                         const char* url_data,
+                         size_t url_len) = 0;
+
+  virtual void WriteRTF(const char* rtf_data, size_t data_len) = 0;
+
+  virtual void WriteBookmark(const char* title_data,
+                             size_t title_len,
+                             const char* url_data,
+                             size_t url_len) = 0;
+
+  virtual void WriteWebSmartPaste() = 0;
+
+  virtual void WriteBitmap(const SkBitmap& bitmap) = 0;
+
+  virtual void WriteData(const FormatType& format,
+                         const char* data_data,
+                         size_t data_len) = 0;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, SharedBitmapTest);
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, EmptyHTMLTest);
@@ -306,65 +326,6 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // TODO(dcheng): Remove the temporary exception for content.
   friend class content::ClipboardMessageFilter;
   friend class ScopedClipboardWriter;
-
-  Clipboard();
-  ~Clipboard();
-
-  // Write a bunch of objects to the system clipboard. Copies are made of the
-  // contents of |objects|.
-  void WriteObjects(ClipboardType type, const ObjectMap& objects);
-
-  void DispatchObject(ObjectType type, const ObjectMapParams& params);
-
-  void WriteText(const char* text_data, size_t text_len);
-
-  void WriteHTML(const char* markup_data,
-                 size_t markup_len,
-                 const char* url_data,
-                 size_t url_len);
-
-  void WriteRTF(const char* rtf_data, size_t data_len);
-
-  void WriteBookmark(const char* title_data,
-                     size_t title_len,
-                     const char* url_data,
-                     size_t url_len);
-
-  void WriteWebSmartPaste();
-
-  void WriteBitmap(const SkBitmap& bitmap);
-
-  void WriteData(const FormatType& format,
-                 const char* data_data,
-                 size_t data_len);
-#if defined(OS_WIN)
-  void WriteBitmapFromHandle(HBITMAP source_hbitmap,
-                             const gfx::Size& size);
-
-  // Safely write to system clipboard. Free |handle| on failure.
-  void WriteToClipboard(unsigned int format, HANDLE handle);
-
-  static void ParseBookmarkClipboardFormat(const base::string16& bookmark,
-                                           base::string16* title,
-                                           std::string* url);
-
-  // Free a handle depending on its type (as intuited from format)
-  static void FreeData(unsigned int format, HANDLE data);
-
-  // Return the window that should be the clipboard owner, creating it
-  // if neccessary.  Marked const for lazily initialization by const methods.
-  HWND GetClipboardWindow() const;
-
-  // Mark this as mutable so const methods can still do lazy initialization.
-  mutable scoped_ptr<base::win::MessageWindow> clipboard_owner_;
-
-#elif defined(USE_CLIPBOARD_AURAX11)
- private:
-  // We keep our implementation details private because otherwise we bring in
-  // the X11 headers and break chrome compile.
-  class AuraX11Details;
-  scoped_ptr<AuraX11Details> aurax11_details_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };

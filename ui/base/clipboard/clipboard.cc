@@ -88,7 +88,7 @@ Clipboard* Clipboard::GetForCurrentThread() {
   if (it != clipboard_map->end())
     return it->second;
 
-  Clipboard* clipboard = new ui::Clipboard;
+  Clipboard* clipboard = Clipboard::Create();
   clipboard_map->insert(std::make_pair(id, clipboard));
   return clipboard;
 }

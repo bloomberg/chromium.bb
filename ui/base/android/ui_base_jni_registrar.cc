@@ -8,7 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
-#include "ui/base/clipboard/clipboard_android_initialization.h"
+#include "ui/base/clipboard/clipboard_android.h"
 #include "ui/base/device_form_factor_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/base/resource/resource_bundle_android.h"

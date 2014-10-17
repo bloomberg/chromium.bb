@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_android.h"
 
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
@@ -11,7 +11,6 @@
 #include "base/synchronization/lock.h"
 #include "jni/Clipboard_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/clipboard/clipboard_android_initialization.h"
 #include "ui/gfx/size.h"
 
 // TODO:(andrewhayden) Support additional formats in Android: Bitmap, URI, HTML,
@@ -258,16 +257,22 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
   return type;
 }
 
-// Clipboard implementation.
-Clipboard::Clipboard() {
+// Clipboard factory method.
+// static
+Clipboard* Clipboard::Create() {
+  return new ClipboardAndroid;
+}
+
+// ClipboardAndroid implementation.
+ClipboardAndroid::ClipboardAndroid() {
   DCHECK(CalledOnValidThread());
 }
 
-Clipboard::~Clipboard() {
+ClipboardAndroid::~ClipboardAndroid() {
   DCHECK(CalledOnValidThread());
 }
 
-uint64 Clipboard::GetSequenceNumber(ClipboardType /* type */) {
+uint64 ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) {
   DCHECK(CalledOnValidThread());
   // TODO: implement this. For now this interface will advertise
   // that the clipboard never changes. That's fine as long as we
@@ -275,22 +280,22 @@ uint64 Clipboard::GetSequenceNumber(ClipboardType /* type */) {
   return 0;
 }
 
-bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
-                                  ClipboardType type) const {
+bool ClipboardAndroid::IsFormatAvailable(const Clipboard::FormatType& format,
+                                         ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
-  return g_map.Get().HasFormat(format.data());
+  return g_map.Get().HasFormat(format.ToString());
 }
 
-void Clipboard::Clear(ClipboardType type) {
+void ClipboardAndroid::Clear(ClipboardType type) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   g_map.Get().Clear();
 }
 
-void Clipboard::ReadAvailableTypes(ClipboardType type,
-                                   std::vector<base::string16>* types,
-                                   bool* contains_filenames) const {
+void ClipboardAndroid::ReadAvailableTypes(ClipboardType type,
+                                          std::vector<base::string16>* types,
+                                          bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
@@ -305,7 +310,8 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
   *contains_filenames = false;
 }
 
-void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
+void ClipboardAndroid::ReadText(ClipboardType type,
+                                base::string16* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   std::string utf8;
@@ -313,18 +319,19 @@ void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   *result = base::UTF8ToUTF16(utf8);
 }
 
-void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
+void ClipboardAndroid::ReadAsciiText(ClipboardType type,
+                                     std::string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   *result = g_map.Get().Get(kPlainTextFormat);
 }
 
 // Note: |src_url| isn't really used. It is only implemented in Windows
-void Clipboard::ReadHTML(ClipboardType type,
-                         base::string16* markup,
-                         std::string* src_url,
-                         uint32* fragment_start,
-                         uint32* fragment_end) const {
+void ClipboardAndroid::ReadHTML(ClipboardType type,
+                                base::string16* markup,
+                                std::string* src_url,
+                                uint32* fragment_start,
+                                uint32* fragment_end) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   if (src_url)
@@ -337,12 +344,12 @@ void Clipboard::ReadHTML(ClipboardType type,
   *fragment_end = static_cast<uint32>(markup->length());
 }
 
-void Clipboard::ReadRTF(ClipboardType type, std::string* result) const {
+void ClipboardAndroid::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
-SkBitmap Clipboard::ReadImage(ClipboardType type) const {
+SkBitmap ClipboardAndroid::ReadImage(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   std::string input = g_map.Get().Get(kBitmapFormat);
@@ -361,66 +368,70 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
   return bmp;
 }
 
-void Clipboard::ReadCustomData(ClipboardType clipboard_type,
-                               const base::string16& type,
-                               base::string16* result) const {
+void ClipboardAndroid::ReadCustomData(ClipboardType clipboard_type,
+                                      const base::string16& type,
+                                      base::string16* result) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
+void ClipboardAndroid::ReadBookmark(base::string16* title,
+                                    std::string* url) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
-void Clipboard::ReadData(const Clipboard::FormatType& format,
-                         std::string* result) const {
+void ClipboardAndroid::ReadData(const Clipboard::FormatType& format,
+                                std::string* result) const {
   DCHECK(CalledOnValidThread());
-  *result = g_map.Get().Get(format.data());
+  *result = g_map.Get().Get(format.ToString());
 }
 
 // Main entry point used to write several values in the clipboard.
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+void ClipboardAndroid::WriteObjects(ClipboardType type,
+                                    const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   g_map.Get().Clear();
-  for (ObjectMap::const_iterator iter = objects.begin();
-       iter != objects.end(); ++iter) {
+  for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end();
+       ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
 }
 
-void Clipboard::WriteText(const char* text_data, size_t text_len) {
+void ClipboardAndroid::WriteText(const char* text_data, size_t text_len) {
   g_map.Get().Set(kPlainTextFormat, std::string(text_data, text_len));
 }
 
-void Clipboard::WriteHTML(const char* markup_data,
-                          size_t markup_len,
-                          const char* url_data,
-                          size_t url_len) {
+void ClipboardAndroid::WriteHTML(const char* markup_data,
+                                 size_t markup_len,
+                                 const char* url_data,
+                                 size_t url_len) {
   g_map.Get().Set(kHTMLFormat, std::string(markup_data, markup_len));
 }
 
-void Clipboard::WriteRTF(const char* rtf_data, size_t data_len) {
+void ClipboardAndroid::WriteRTF(const char* rtf_data, size_t data_len) {
   NOTIMPLEMENTED();
 }
 
 // Note: according to other platforms implementations, this really writes the
 // URL spec.
-void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
-                              const char* url_data, size_t url_len) {
+void ClipboardAndroid::WriteBookmark(const char* title_data,
+                                     size_t title_len,
+                                     const char* url_data,
+                                     size_t url_len) {
   g_map.Get().Set(kBookmarkFormat, std::string(url_data, url_len));
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
-void Clipboard::WriteWebSmartPaste() {
+void ClipboardAndroid::WriteWebSmartPaste() {
   g_map.Get().Set(kWebKitSmartPasteFormat, std::string());
 }
 
 // Note: we implement this to pass all unit tests but it is currently unclear
 // how some code would consume this.
-void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
+void ClipboardAndroid::WriteBitmap(const SkBitmap& bitmap) {
   gfx::Size size(bitmap.width(), bitmap.height());
 
   std::string packed(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -432,12 +443,12 @@ void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
   g_map.Get().Set(kBitmapFormat, packed);
 }
 
-void Clipboard::WriteData(const Clipboard::FormatType& format,
-                          const char* data_data, size_t data_len) {
-  g_map.Get().Set(format.data(), std::string(data_data, data_len));
+void ClipboardAndroid::WriteData(const Clipboard::FormatType& format,
+                                 const char* data_data,
+                                 size_t data_len) {
+  g_map.Get().Set(format.ToString(), std::string(data_data, data_len));
 }
 
-// See clipboard_android_initialization.h for more information.
 bool RegisterClipboardAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
