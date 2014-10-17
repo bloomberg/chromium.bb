@@ -157,15 +157,6 @@ PluginServiceImpl::PluginServiceImpl()
 }
 
 PluginServiceImpl::~PluginServiceImpl() {
-#if defined(OS_WIN)
-  // Release the events since they're owned by RegKey, not WaitableEvent.
-  hkcu_watcher_.StopWatching();
-  hklm_watcher_.StopWatching();
-  if (hkcu_event_)
-    hkcu_event_->Release();
-  if (hklm_event_)
-    hklm_event_->Release();
-#endif
   // Make sure no plugin channel requests have been leaked.
   DCHECK(pending_plugin_clients_.empty());
 }
@@ -200,24 +191,18 @@ void PluginServiceImpl::StartWatchingPlugins() {
   if (hkcu_key_.Create(HKEY_CURRENT_USER,
                        kRegistryMozillaPlugins,
                        KEY_NOTIFY) == ERROR_SUCCESS) {
-    if (hkcu_key_.StartWatching() == ERROR_SUCCESS) {
-      hkcu_event_.reset(new base::WaitableEvent(hkcu_key_.watch_event()));
-      base::WaitableEventWatcher::EventCallback callback =
-            base::Bind(&PluginServiceImpl::OnWaitableEventSignaled,
-                       base::Unretained(this));
-      hkcu_watcher_.StartWatching(hkcu_event_.get(), callback);
-    }
+    base::win::RegKey::ChangeCallback callback =
+        base::Bind(&PluginServiceImpl::OnKeyChanged, base::Unretained(this),
+                   base::Unretained(&hkcu_key_));
+    hkcu_key_.StartWatching(callback);
   }
   if (hklm_key_.Create(HKEY_LOCAL_MACHINE,
                        kRegistryMozillaPlugins,
                        KEY_NOTIFY) == ERROR_SUCCESS) {
-    if (hklm_key_.StartWatching() == ERROR_SUCCESS) {
-      hklm_event_.reset(new base::WaitableEvent(hklm_key_.watch_event()));
-      base::WaitableEventWatcher::EventCallback callback =
-            base::Bind(&PluginServiceImpl::OnWaitableEventSignaled,
-                       base::Unretained(this));
-      hklm_watcher_.StartWatching(hklm_event_.get(), callback);
-    }
+    base::win::RegKey::ChangeCallback callback =
+        base::Bind(&PluginServiceImpl::OnKeyChanged, base::Unretained(this),
+                   base::Unretained(&hkcu_key_));
+    hklm_key_.StartWatching(callback);
   }
 #endif
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
@@ -642,22 +627,16 @@ void PluginServiceImpl::GetPluginsOnIOThread(
 }
 #endif
 
-void PluginServiceImpl::OnWaitableEventSignaled(
-    base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
-  if (waitable_event == hkcu_event_) {
-    hkcu_key_.StartWatching();
-  } else {
-    hklm_key_.StartWatching();
-  }
+void PluginServiceImpl::OnKeyChanged(base::win::RegKey* key) {
+  key->StartWatching(base::Bind(&PluginServiceImpl::OnKeyChanged,
+                                base::Unretained(this),
+                                base::Unretained(&hkcu_key_)));
 
   PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(NULL, false);
-#else
-  // This event should only get signaled on a Windows machine.
-  NOTREACHED();
-#endif  // defined(OS_WIN)
 }
+#endif  // defined(OS_WIN)
 
 void PluginServiceImpl::RegisterPepperPlugins() {
   ComputePepperPluginList(&ppapi_plugins_);

@@ -23,8 +23,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "base/win/object_watcher.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
@@ -292,8 +292,7 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
 }
 
 // Watches a single registry key for changes.
-class RegistryWatcher : public base::win::ObjectWatcher::Delegate,
-                        public base::NonThreadSafe {
+class RegistryWatcher : public base::NonThreadSafe {
  public:
   typedef base::Callback<void(bool succeeded)> CallbackType;
   RegistryWatcher() {}
@@ -305,35 +304,31 @@ class RegistryWatcher : public base::win::ObjectWatcher::Delegate,
     callback_ = callback;
     if (key_.Open(HKEY_LOCAL_MACHINE, key, KEY_NOTIFY) != ERROR_SUCCESS)
       return false;
-    if (key_.StartWatching() != ERROR_SUCCESS)
-      return false;
-    if (!watcher_.StartWatching(key_.watch_event(), this))
-      return false;
-    return true;
+
+    return key_.StartWatching(base::Bind(&RegistryWatcher::OnObjectSignaled,
+                                         base::Unretained(this)));
   }
 
-  virtual void OnObjectSignaled(HANDLE object) override {
+  void OnObjectSignaled() {
     // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
     tracked_objects::ScopedProfile tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "RegistryWatcher_OnObjectSignaled"));
 
     DCHECK(CalledOnValidThread());
-    bool succeeded = (key_.StartWatching() == ERROR_SUCCESS) &&
-                      watcher_.StartWatching(key_.watch_event(), this);
-    if (!succeeded && key_.Valid()) {
-      watcher_.StopWatching();
-      key_.StopWatching();
+    DCHECK(!callback_.is_null());
+    if (key_.StartWatching(base::Bind(&RegistryWatcher::OnObjectSignaled,
+                                      base::Unretained(this)))) {
+      callback_.Run(true);
+    } else {
       key_.Close();
+      callback_.Run(false);
     }
-    if (!callback_.is_null())
-      callback_.Run(succeeded);
   }
 
  private:
   CallbackType callback_;
   base::win::RegKey key_;
-  base::win::ObjectWatcher watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryWatcher);
 };
@@ -740,9 +735,8 @@ bool DnsConfigServiceWin::StartWatching() {
 
 void DnsConfigServiceWin::OnConfigChanged(bool succeeded) {
   InvalidateConfig();
-  if (succeeded) {
-    config_reader_->WorkNow();
-  } else {
+  config_reader_->WorkNow();
+  if (!succeeded) {
     LOG(ERROR) << "DNS config watch failed.";
     set_watch_failed(true);
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",

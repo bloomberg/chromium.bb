@@ -166,7 +166,9 @@ class CONTENT_EXPORT PluginServiceImpl
   PluginServiceImpl();
   virtual ~PluginServiceImpl();
 
-  void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+#if defined(OS_WIN)
+  void OnKeyChanged(base::win::RegKey* key);
+#endif
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
@@ -224,10 +226,6 @@ class CONTENT_EXPORT PluginServiceImpl
   // Registry keys for getting notifications when new plugins are installed.
   base::win::RegKey hkcu_key_;
   base::win::RegKey hklm_key_;
-  scoped_ptr<base::WaitableEvent> hkcu_event_;
-  scoped_ptr<base::WaitableEvent> hklm_event_;
-  base::WaitableEventWatcher hkcu_watcher_;
-  base::WaitableEventWatcher hklm_watcher_;
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)

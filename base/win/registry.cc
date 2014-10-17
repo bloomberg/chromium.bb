@@ -34,23 +34,67 @@ const REGSAM kWow64AccessMask = KEY_WOW64_32KEY | KEY_WOW64_64KEY;
 
 }  // namespace
 
-// RegKey ----------------------------------------------------------------------
+// Watches for modifications to a key.
+class RegKey::Watcher : public ObjectWatcher::Delegate {
+ public:
+  explicit Watcher(RegKey* owner) : owner_(owner) {}
+  ~Watcher() {}
 
-RegKey::RegKey()
-    : key_(NULL),
-      watch_event_(0),
-      wow64access_(0) {
+  bool StartWatching(HKEY key, const ChangeCallback& callback);
+
+  // Implementation of ObjectWatcher::Delegate.
+  void OnObjectSignaled(HANDLE object) override {
+    DCHECK(watch_event_.IsValid() && watch_event_.Get() == object);
+    ChangeCallback callback = callback_;
+    callback_.Reset();
+    callback.Run();
+  }
+
+ private:
+  RegKey* owner_;
+  ScopedHandle watch_event_;
+  ObjectWatcher object_watcher_;
+  ChangeCallback callback_;
+  DISALLOW_COPY_AND_ASSIGN(Watcher);
+};
+
+bool RegKey::Watcher::StartWatching(HKEY key, const ChangeCallback& callback) {
+  DCHECK(key);
+  DCHECK(callback_.is_null());
+
+  if (!watch_event_.IsValid())
+    watch_event_.Set(CreateEvent(NULL, TRUE, FALSE, NULL));
+
+  if (!watch_event_.IsValid())
+    return false;
+
+  DWORD filter = REG_NOTIFY_CHANGE_NAME |
+                 REG_NOTIFY_CHANGE_ATTRIBUTES |
+                 REG_NOTIFY_CHANGE_LAST_SET |
+                 REG_NOTIFY_CHANGE_SECURITY;
+
+  // Watch the registry key for a change of value.
+  LONG result = RegNotifyChangeKeyValue(key, TRUE, filter, watch_event_.Get(),
+                                        TRUE);
+  if (result != ERROR_SUCCESS) {
+    watch_event_.Close();
+    return false;
+  }
+
+  callback_ = callback;
+  return object_watcher_.StartWatching(watch_event_.Get(), this);
 }
 
-RegKey::RegKey(HKEY key)
-    : key_(key),
-      watch_event_(0),
-      wow64access_(0) {
+// RegKey ----------------------------------------------------------------------
+
+RegKey::RegKey() : key_(NULL), wow64access_(0) {
+}
+
+RegKey::RegKey(HKEY key) : key_(key), wow64access_(0) {
 }
 
 RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
     : key_(NULL),
-      watch_event_(0),
       wow64access_(0) {
   if (rootkey) {
     if (access & (KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK))
@@ -150,7 +194,6 @@ LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
 }
 
 void RegKey::Close() {
-  StopWatching();
   if (key_) {
     ::RegCloseKey(key_);
     key_ = NULL;
@@ -168,7 +211,6 @@ void RegKey::Set(HKEY key) {
 
 HKEY RegKey::Take() {
   DCHECK(wow64access_ == 0);
-  StopWatching();
   HKEY key = key_;
   key_ = NULL;
   return key;
@@ -367,44 +409,14 @@ LONG RegKey::WriteValue(const wchar_t* name,
   return result;
 }
 
-LONG RegKey::StartWatching() {
-  DCHECK(key_);
-  if (!watch_event_)
-    watch_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
+bool RegKey::StartWatching(const ChangeCallback& callback) {
+  if (!key_watcher_)
+    key_watcher_.reset(new Watcher(this));
 
-  DWORD filter = REG_NOTIFY_CHANGE_NAME |
-                 REG_NOTIFY_CHANGE_ATTRIBUTES |
-                 REG_NOTIFY_CHANGE_LAST_SET |
-                 REG_NOTIFY_CHANGE_SECURITY;
+  if (!key_watcher_.get()->StartWatching(key_, callback))
+    return false;
 
-  // Watch the registry key for a change of value.
-  LONG result = RegNotifyChangeKeyValue(key_, TRUE, filter, watch_event_, TRUE);
-  if (result != ERROR_SUCCESS) {
-    CloseHandle(watch_event_);
-    watch_event_ = 0;
-  }
-
-  return result;
-}
-
-bool RegKey::HasChanged() {
-  if (watch_event_) {
-    if (WaitForSingleObject(watch_event_, 0) == WAIT_OBJECT_0) {
-      StartWatching();
-      return true;
-    }
-  }
-  return false;
-}
-
-LONG RegKey::StopWatching() {
-  LONG result = ERROR_INVALID_HANDLE;
-  if (watch_event_) {
-    CloseHandle(watch_event_);
-    watch_event_ = 0;
-    result = ERROR_SUCCESS;
-  }
-  return result;
+  return true;
 }
 
 // static
