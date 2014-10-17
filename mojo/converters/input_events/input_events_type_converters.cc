@@ -192,7 +192,7 @@ scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
               input->key_data->text,
               input->key_data->unmodified_text)));
       key_event->set_platform_keycode(input->key_data->native_key_code);
-      ui_event = key_event.PassAs<ui::KeyEvent>();
+      ui_event = key_event.Pass();
       break;
     }
     case EVENT_TYPE_MOUSE_PRESSED:

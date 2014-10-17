@@ -175,8 +175,7 @@ void ConnectAndRegisterOnIOThread(const base::FilePath& socket_path,
           connector->url(), loop, quit_callback));
   // Since connectee won't be ready when connector is done registering, pass
   // in a do-nothing callback.
-  connector->Register(connector_app_impl.PassAs<InterfaceImpl<Application>>(),
-                      base::Bind(&NoOp));
+  connector->Register(connector_app_impl.Pass(), base::Bind(&NoOp));
 
   // Connect the second app to the registrar.
   connectee->ConnectSynchronously(socket_path);
@@ -186,7 +185,7 @@ void ConnectAndRegisterOnIOThread(const base::FilePath& socket_path,
   // After connectee is successfully registered, connector should be
   // able to connect to is by URL. Pass in a callback to attempt the
   // app -> app connection.
-  connectee->Register(connectee_app_impl.PassAs<InterfaceImpl<Application>>(),
+  connectee->Register(connectee_app_impl.Pass(),
                       base::Bind(&ConnectToApp, connector, connectee));
 }
 

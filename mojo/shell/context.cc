@@ -233,7 +233,7 @@ void Context::Init() {
             scoped_ptr<ApplicationLoader>(new NetworkApplicationLoader()),
             "network_service",
             base::MessageLoop::TYPE_IO));
-    application_manager_.SetLoaderForURL(loader.PassAs<ApplicationLoader>(),
+    application_manager_.SetLoaderForURL(loader.Pass(),
                                          GURL("mojo:mojo_network_service"));
   }
 #endif

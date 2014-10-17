@@ -445,8 +445,7 @@ class ApplicationManagerTest : public testing::Test {
   }
 
   void AddLoaderForURL(const GURL& url, const std::string& requestor_url) {
-    application_manager_->SetLoaderForURL(
-        MakeLoader(requestor_url).PassAs<ApplicationLoader>(), url);
+    application_manager_->SetLoaderForURL(MakeLoader(requestor_url), url);
   }
 
   bool HasFactoryForTestURL() {

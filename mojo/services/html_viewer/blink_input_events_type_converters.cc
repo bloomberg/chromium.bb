@@ -107,7 +107,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(const EventPtr& event) {
 
   web_event->clickCount = GetClickCount(event->flags);
 
-  return web_event.PassAs<blink::WebInputEvent>();
+  return web_event.Pass();
 }
 
 scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
@@ -139,7 +139,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
   web_event->unmodifiedText[0] = event->key_data->unmodified_text;
 
   web_event->setKeyIdentifierFromWindowsKeyCode();
-  return web_event.PassAs<blink::WebInputEvent>();
+  return web_event.Pass();
 }
 
 scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
@@ -173,7 +173,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   web_event->wheelTicksX = web_event->deltaX / kPixelsPerTick;
   web_event->wheelTicksY = web_event->deltaY / kPixelsPerTick;
 
-  return web_event.PassAs<blink::WebInputEvent>();
+  return web_event.Pass();
 }
 
 }  // namespace
