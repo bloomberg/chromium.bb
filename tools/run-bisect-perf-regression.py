@@ -207,6 +207,9 @@ def _CreateBisectOptionsFromConfig(config):
   if config.has_key('goma_dir'):
     opts_dict['goma_dir'] = config['goma_dir']
 
+  if config.has_key('improvement_direction'):
+    opts_dict['improvement_direction'] = int(config['improvement_direction'])
+
   opts_dict['build_preference'] = 'ninja'
   opts_dict['output_buildbot_annotations'] = True
 
@@ -402,6 +405,9 @@ def _RunBisectionScript(
 
   if config.has_key('bisect_mode'):
     cmd.extend(['--bisect_mode', config['bisect_mode']])
+
+  if config.has_key('improvement_direction'):
+    cmd.extend(['-d', config['improvement_direction']])
 
   cmd.extend(['--build_preference', 'ninja'])
 

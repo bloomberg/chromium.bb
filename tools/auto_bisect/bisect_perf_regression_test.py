@@ -17,9 +17,8 @@ import mock
 import source_control
 
 
-def _GetBisectPerformanceMetricsInstance():
-  """Returns an instance of the BisectPerformanceMetrics class."""
-  options_dict = {
+# Default options for the dry run
+DEFAULT_OPTIONS = {
     'debug_ignore_build': True,
     'debug_ignore_sync': True,
     'debug_ignore_perf_test': True,
@@ -28,10 +27,51 @@ def _GetBisectPerformanceMetricsInstance():
     'good_revision': 280000,
     'bad_revision': 280005,
   }
+
+
+def _GetBisectPerformanceMetricsInstance(options_dict):
+  """Returns an instance of the BisectPerformanceMetrics class."""
   bisect_options = bisect_perf_regression.BisectOptions.FromDict(options_dict)
   bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
       bisect_options)
   return bisect_instance
+
+
+def _GetExtendedOptions(d, f):
+  """Returns the a copy of the default options dict plus some options."""
+  result = dict(DEFAULT_OPTIONS)
+  result.update({
+      'improvement_direction': d,
+      'debug_fake_first_test_mean': f})
+  return result
+
+
+def _GenericDryRun(options, print_results=False):
+  """Performs a dry run of the bisector.
+
+  Args:
+    options: Dictionary containing the options for the bisect instance.
+    print_results: Boolean telling whether to call FormatAndPrintResults.
+
+  Returns:
+    The results dictionary as returned by the bisect Run method.
+  """
+  # Disable rmtree to avoid deleting local trees.
+  old_rmtree = shutil.rmtree
+  try:
+    shutil.rmtree = lambda path, onerror: None
+    bisect_instance = _GetBisectPerformanceMetricsInstance(options)
+    results = bisect_instance.Run(bisect_instance.opts.command,
+                                  bisect_instance.opts.bad_revision,
+                                  bisect_instance.opts.good_revision,
+                                  bisect_instance.opts.metric)
+
+    if print_results:
+      bisect_instance.FormatAndPrintResults(results)
+
+    return results
+  finally:
+    shutil.rmtree = old_rmtree
 
 
 class BisectPerfRegressionTest(unittest.TestCase):
@@ -257,18 +297,29 @@ class BisectPerfRegressionTest(unittest.TestCase):
     This serves as a smoke test to catch errors in the basic execution of the
     script.
     """
-    # Disable rmtree to avoid deleting local trees.
-    old_rmtree = shutil.rmtree
-    try:
-      shutil.rmtree = lambda path, onerror: None
-      bisect_instance = _GetBisectPerformanceMetricsInstance()
-      results = bisect_instance.Run(bisect_instance.opts.command,
-                                    bisect_instance.opts.bad_revision,
-                                    bisect_instance.opts.good_revision,
-                                    bisect_instance.opts.metric)
-      bisect_instance.FormatAndPrintResults(results)
-    finally:
-      shutil.rmtree = old_rmtree
+    _GenericDryRun(DEFAULT_OPTIONS, True)
+
+  def testBisectImprovementDirectionFails(self):
+    """Dry run of a bisect with an improvement instead of regression."""
+
+    # Test result goes from 0 to 100 where higher is better
+    results = _GenericDryRun(_GetExtendedOptions(1, 100))
+    self.assertIsNotNone(results.error)
+    self.assertIn('not a regression', results.error)
+    # Test result goes from 0 to -100 where lower is better
+    results = _GenericDryRun(_GetExtendedOptions(-1, -100))
+    self.assertIsNotNone(results.error)
+    self.assertIn('not a regression', results.error)
+
+  def testBisectImprovementDirectionSucceeds(self):
+    """Bisects with improvement direction matching regression range."""
+    # Test result goes from 0 to 100 where lower is better
+    results = _GenericDryRun(_GetExtendedOptions(-1, 100))
+    self.assertIsNone(results.error)
+    # Test result goes from 0 to -100 where higher is better
+    results = _GenericDryRun(_GetExtendedOptions(1, -100))
+    self.assertIsNone(results.error)
+
 
   def testGetCommitPosition(self):
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
@@ -278,21 +329,21 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self.assertEqual(291467, source_control.GetCommitPosition(svn_git_rev))
 
   def testGetCommitPositionForV8(self):
-    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
     v8_rev = '21d700eedcdd6570eff22ece724b63a5eefe78cb'
     depot_path = os.path.join(bisect_instance.src_cwd, 'v8')
     self.assertEqual(
         23634, source_control.GetCommitPosition(v8_rev, depot_path))
 
   def testGetCommitPositionForWebKit(self):
-    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
     wk_rev = 'a94d028e0f2c77f159b3dac95eb90c3b4cf48c61'
     depot_path = os.path.join(bisect_instance.src_cwd, 'third_party', 'WebKit')
     self.assertEqual(
         181660, source_control.GetCommitPosition(wk_rev, depot_path))
 
   def testUpdateDepsContent(self):
-    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    bisect_instance = _GetBisectPerformanceMetricsInstance(DEFAULT_OPTIONS)
     deps_file = 'DEPS'
     # We are intentionally reading DEPS file contents instead of string literal
     # with few lines from DEPS because to check if the format we are expecting

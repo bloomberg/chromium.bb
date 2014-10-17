@@ -1518,7 +1518,6 @@ class BisectPerformanceMetrics(object):
       print 'Something went wrong while updating DEPS file. [%s]' % e
     return False
 
-
   def CreateDEPSPatch(self, depot, revision):
     """Modifies DEPS and returns diff as text.
 
@@ -1664,6 +1663,14 @@ class BisectPerformanceMetrics(object):
           'std_dev': 0.0,
           'values': [0.0]
       }
+
+      # When debug_fake_test_mean is set, its value is returned as the mean
+      # and the flag is cleared so that further calls behave as if it wasn't
+      # set (returning the fake_results dict as defined above).
+      if self.opts.debug_fake_first_test_mean:
+        fake_results['mean'] = float(self.opts.debug_fake_first_test_mean)
+        self.opts.debug_fake_first_test_mean = 0
+
       return (fake_results, success_code)
 
     # For Windows platform set posix=False, to parse windows paths correctly.
@@ -2414,10 +2421,10 @@ class BisectPerformanceMetrics(object):
       # Perform the performance tests on the good and bad revisions, to get
       # reference values.
       bad_results, good_results = self.GatherReferenceValues(good_revision,
-                                                               bad_revision,
-                                                               command_to_run,
-                                                               metric,
-                                                               target_depot)
+                                                             bad_revision,
+                                                             command_to_run,
+                                                             metric,
+                                                             target_depot)
 
       if self.opts.output_buildbot_annotations:
         bisect_utils.OutputAnnotationStepClosed()
@@ -2436,11 +2443,33 @@ class BisectPerformanceMetrics(object):
             good_results[0])
         return results
 
-
       # We need these reference values to determine if later runs should be
       # classified as pass or fail.
       known_bad_value = bad_results[0]
       known_good_value = good_results[0]
+
+      # Check the direction of improvement only if the improvement_direction
+      # option is set to a specific direction (1 for higher is better or -1 for
+      # lower is better).
+      improvement_dir = self.opts.improvement_direction
+      if improvement_dir:
+        higher_is_better  = improvement_dir > 0
+        if higher_is_better:
+          message = "Expecting higher values to be better for this metric, "
+        else:
+          message = "Expecting lower values to be better for this metric, "
+        metric_increased = known_bad_value['mean'] > known_good_value['mean']
+        if metric_increased:
+          message += "and the metric appears to have increased. "
+        else:
+          message += "and the metric appears to have decreased. "
+        if ((higher_is_better and metric_increased) or
+            (not higher_is_better and not metric_increased)):
+          results.error = (message + 'Then, the test results for the ends of '
+                           'the given \'good\' - \'bad\' range of revisions '
+                           'represent an improvement (and not a regression).')
+          return results
+        print message, "Therefore we continue to bisect."
 
       # Can just mark the good and bad revisions explicitly here since we
       # already know the results.
@@ -2939,12 +2968,14 @@ class BisectOptions(object):
     self.debug_ignore_build = None
     self.debug_ignore_sync = None
     self.debug_ignore_perf_test = None
+    self.debug_fake_first_test_mean = 0
     self.gs_bucket = None
     self.target_arch = 'ia32'
     self.target_build_type = 'Release'
     self.builder_host = None
     self.builder_port = None
     self.bisect_mode = BISECT_MODE_MEAN
+    self.improvement_direction = 0
 
   @staticmethod
   def _CreateCommandLineParser():
@@ -2978,6 +3009,12 @@ class BisectOptions(object):
                      type='str',
                      help='The desired metric to bisect on. For example ' +
                      '"vm_rss_final_b/vm_rss_f_b"')
+    group.add_option('-d', '--improvement_direction',
+                     type='int',
+                     default=0,
+                     help='An integer number representing the direction of ' +
+                     'improvement. 1 for higher is better, -1 for lower is ' +
+                     'better, 0 for ignore (default).')
     group.add_option('-r', '--repeat_test_count',
                      type='int',
                      default=20,
@@ -3098,6 +3135,12 @@ class BisectOptions(object):
     group.add_option('--debug_ignore_perf_test',
                      action='store_true',
                      help='DEBUG: Don\'t perform performance tests.')
+    group.add_option('--debug_fake_first_test_mean',
+                     type='int',
+                     default='0',
+                     help=('DEBUG: When faking performance tests, return this '
+                           'value as the mean of the first performance test, '
+                           'and return a mean of 0.0 for further tests.'))
     parser.add_option_group(group)
     return parser
 
