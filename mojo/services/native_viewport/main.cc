@@ -32,13 +32,13 @@ class NativeViewportAppDelegate
 
  private:
   bool HasArg(const std::string& arg) {
-    return std::find(args_.begin(), args_.end(), arg) != args_.end();
+    const auto& args = app_->args();
+    return std::find(args.begin(), args.end(), arg) != args.end();
   }
 
   // ApplicationDelegate implementation.
   virtual void Initialize(ApplicationImpl* application) override {
     app_ = application;
-    args_ = application->args().To<std::vector<std::string> >();
 
 #if !defined(COMPONENT_BUILD)
     if (HasArg(kUseTestConfig))
@@ -70,7 +70,6 @@ class NativeViewportAppDelegate
   }
 
   ApplicationImpl* app_;
-  std::vector<std::string> args_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   bool is_headless_;

@@ -57,7 +57,7 @@ ApplicationImpl::~ApplicationImpl() {
 void ApplicationImpl::Initialize(Array<String> args) {
   MOJO_CHECK(!initialized_);
   initialized_ = true;
-  args_ = args.Pass();
+  args_ = args.To<std::vector<std::string>>();
   delegate_->Initialize(this);
 }
 

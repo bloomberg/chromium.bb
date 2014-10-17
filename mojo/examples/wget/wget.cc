@@ -76,8 +76,8 @@ class WGetApp : public ApplicationDelegate {
   }
 
  private:
-  void Start(const Array<String>& args) {
-    std::string url((args.size() > 1) ? args[1].get() : PromptForURL());
+  void Start(const std::vector<std::string>& args) {
+    std::string url((args.size() > 1) ? args[1] : PromptForURL());
     printf("Loading: %s\n", url.c_str());
 
     network_service_->CreateURLLoader(GetProxy(&url_loader_));

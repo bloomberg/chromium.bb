@@ -97,7 +97,7 @@ MojoResult MojoMain(MojoHandle shell_handle) {
   {
     // InitGoogleTest expects (argc + 1) elements, including a terminating NULL.
     // It also removes GTEST arguments from |argv| and updates the |argc| count.
-    const mojo::Array<mojo::String>& args = app.args();
+    const std::vector<std::string>& args = app.args();
     MOJO_CHECK(args.size() < INT_MAX);
     int argc = static_cast<int>(args.size());
     std::vector<char*> argv(argc + 1);
