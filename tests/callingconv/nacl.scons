@@ -48,7 +48,7 @@ base_settings = {
   # which would force scons to always rebuild.
 }
 
-def AddTest(env, test_variant, envlist, settings, is_broken):
+def AddTest(env, test_variant, envlist, settings):
   envlist = list(envlist)
   settings = dict(settings)
   # Add custom CFLAGS: this must be done here, since PNaClGetNNaClEnv
@@ -108,8 +108,7 @@ def AddTest(env, test_variant, envlist, settings, is_broken):
       stdout_golden=nodes[0])
 
   env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
-                         'run_' + test_variant + '_test',
-                         is_broken=is_broken)
+                         'run_' + test_variant + '_test')
 
 
 if env.Bit('bitcode'):
@@ -122,14 +121,13 @@ if env.Bit('bitcode'):
   settings = dict(base_settings)
   envlist = [base_env]
   link_env = base_env
-  AddTest(base_env, 'callingconv_self', envlist, settings, is_broken=False)
+  AddTest(base_env, 'callingconv_self', envlist, settings)
 
   # (2) Cross-check.
   if env.Bit('target_arm'):
-    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2378
+    # Constant pool items are sometimes too far away with nacl-gcc.
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
     settings['allow_double'] = 0
-    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3143
-    settings['allow_struct'] = 0
 
   envlist = []
   pnacl_env = base_env.Clone()
@@ -153,10 +151,7 @@ if env.Bit('bitcode'):
   envlist.append(native_env)
   link_env = pnacl_env
 
-  # TODO(mcgrathr): Remove after fix for ARM:
-  # https://code.google.com/p/nativeclient/issues/detail?id=3143
-  is_broken = env.Bit('target_arm')
-  AddTest(base_env, 'callingconv', envlist, settings, is_broken)
+  AddTest(base_env, 'callingconv', envlist, settings)
 else:
   # For NNaCl toolchain, just test self-consistency.
   settings = dict(base_settings)
@@ -166,4 +161,4 @@ else:
     # Constant pool items sometimes too far away:
     # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
     settings['allow_double'] = 0
-  AddTest(base_env, 'callingconv', envlist, settings, is_broken=False)
+  AddTest(base_env, 'callingconv', envlist, settings)
