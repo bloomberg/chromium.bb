@@ -90,7 +90,7 @@ OrientationEvent
 OverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
-PathOpsSVGClipping status=stable
+PathOpsSVGClipping status=experimental
 PeerConnection status=stable
 Picture status=stable
 PictureSizes status=stable
