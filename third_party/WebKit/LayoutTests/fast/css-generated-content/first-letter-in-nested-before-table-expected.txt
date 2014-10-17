@@ -8,7 +8,7 @@ layer at (0,0) size 800x266
           RenderTableSection (anonymous) at (0,0) size 100x50
             RenderTableRow (anonymous) at (0,0) size 100x50
               RenderTableCell (anonymous) at (0,0) size 100x50 [r=0 c=0 rs=1 cs=1]
-                RenderInline (generated) at (0,0) size 50x50 [color=#008000]
+                RenderInline {<pseudo:first-letter>} at (0,0) size 50x50 [color=#008000]
                   RenderTextFragment at (0,0) size 50x50
                     text run at (0,0) width 50: "A"
                 RenderTextFragment at (50,0) size 50x50
@@ -18,8 +18,8 @@ layer at (0,0) size 800x266
             text run at (0,0) width 50: "C"
       RenderBlock {DIV} at (0,100) size 784x100
         RenderBlock (anonymous) at (0,0) size 784x50
-          RenderInline (generated) at (0,0) size 50x50 [color=#008000]
-            RenderTextFragment {#text} at (0,0) size 50x50
+          RenderInline {<pseudo:first-letter>} at (0,0) size 50x50 [color=#008000]
+            RenderTextFragment at (0,0) size 50x50
               text run at (0,0) width 50: "D"
           RenderTextFragment {#text} at (0,0) size 0x0
         RenderTable {<pseudo:after>} at (0,50) size 100x50
@@ -33,7 +33,7 @@ layer at (0,0) size 800x266
           RenderTableSection (anonymous) at (0,0) size 100x50
             RenderTableRow (anonymous) at (0,0) size 100x50
               RenderTableCell (anonymous) at (0,0) size 100x50 [r=0 c=0 rs=1 cs=1]
-                RenderInline (generated) at (0,0) size 50x50 [color=#008000]
+                RenderInline {<pseudo:first-letter>} at (0,0) size 50x50 [color=#008000]
                   RenderTextFragment at (0,0) size 50x50
                     text run at (0,0) width 50: "E"
                 RenderTextFragment at (50,0) size 50x50

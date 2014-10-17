@@ -30,8 +30,8 @@ layer at (0,0) size 800x600
             RenderTableCell {TD} at (2,2) size 28x22 [r=0 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 26x20
                 RenderBlock {P} at (0,0) size 26x20
-                  RenderBlock (floating) at (0,0) size 11x20 [color=#008000]
-                    RenderTextFragment {#text} at (0,0) size 11x19
+                  RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 11x20 [color=#008000]
+                    RenderTextFragment at (0,0) size 11x19
                       text run at (0,0) width 11: "A"
                   RenderTextFragment {#text} at (11,0) size 15x19
                     text run at (11,0) width 15: "-Z"
@@ -40,14 +40,14 @@ layer at (0,0) size 800x600
           RenderTableRow {TR} at (0,2) size 32x22
             RenderTableCell {TD} at (2,2) size 28x22 [r=0 c=0 rs=1 cs=1]
               RenderBlock {P} at (1,1) size 26x20
-                RenderBlock (floating) at (0,0) size 11x20 [color=#008000]
-                  RenderTextFragment {#text} at (0,0) size 11x19
+                RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 11x20 [color=#008000]
+                  RenderTextFragment at (0,0) size 11x19
                     text run at (0,0) width 11: "A"
                 RenderTextFragment {#text} at (11,0) size 15x19
                   text run at (11,0) width 15: "-Z"
       RenderBlock {P} at (0,160) size 784x20
-        RenderBlock (floating) at (0,0) size 11x20 [color=#008000]
-          RenderTextFragment {#text} at (0,0) size 11x19
+        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 11x20 [color=#008000]
+          RenderTextFragment at (0,0) size 11x19
             text run at (0,0) width 11: "A"
         RenderTextFragment {#text} at (11,0) size 15x19
           text run at (11,0) width 15: "-Z"

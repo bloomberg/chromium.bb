@@ -4,8 +4,8 @@ layer at (0,0) size 800x64
   RenderBlock {HTML} at (0,0) size 800x64
     RenderBody {BODY} at (8,16) size 784x32
       RenderBlock {P} at (0,0) size 784x32
-        RenderInline (generated) at (0,0) size 20x32 [bgcolor=#00FF00]
-          RenderTextFragment {#text} at (0,0) size 20x32
+        RenderInline {<pseudo:first-letter>} at (0,0) size 20x32 [bgcolor=#00FF00]
+          RenderTextFragment at (0,0) size 20x32
             text run at (0,0) width 20: "T"
         RenderTextFragment {#text} at (19,12) size 491x16
           text run at (19,12) width 340: "his very long paragraph should have a big first letter "

@@ -1,0 +1,38 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x144
+  RenderBlock {HTML} at (0,0) size 800x144
+    RenderBody {BODY} at (8,8) size 784x128
+      RenderBlock {DIV} at (0,0) size 784x32
+        RenderInline {<pseudo:first-letter>} at (0,0) size 20x32 [color=#008000]
+          RenderTextFragment at (0,0) size 20x32
+            text run at (0,0) width 20: "L"
+        RenderTextFragment {#text} at (19,12) size 34x16
+          text run at (19,12) width 34: "orem"
+      RenderBlock {DIV} at (0,32) size 784x32
+        RenderInline {SPAN} at (0,0) size 46x16
+          RenderInline {<pseudo:first-letter>} at (0,0) size 11x32 [color=#008000]
+            RenderTextFragment at (0,0) size 11x32
+              text run at (0,0) width 11: "I"
+          RenderTextFragment {#text} at (10,12) size 36x16
+            text run at (10,12) width 36: "psum"
+      RenderBlock {DIV} at (0,64) size 784x32
+        RenderInline {SPAN} at (0,0) size 89x16
+          RenderInline {<pseudo:before>} at (0,0) size 53x16
+            RenderInline {<pseudo:first-letter>} at (0,0) size 22x32 [color=#008000]
+              RenderTextFragment at (0,0) size 22x32
+                text run at (0,0) width 22: "C"
+            RenderTextFragment at (21,12) size 32x16
+              text run at (21,12) width 32: "arpe "
+          RenderText {#text} at (52,12) size 37x16
+            text run at (52,12) width 37: "Diem"
+      RenderBlock {DIV} at (0,96) size 784x32
+        RenderInline {SPAN} at (0,0) size 38x16
+          RenderInline {<pseudo:after>} at (0,0) size 38x16
+            RenderInline {<pseudo:first-letter>} at (0,0) size 18x32 [color=#008000]
+              RenderTextFragment at (0,0) size 18x32
+                text run at (0,0) width 18: "F"
+            RenderTextFragment at (17,12) size 21x16
+              text run at (17,12) width 21: "oo "
+        RenderText {#text} at (37,12) size 22x16
+          text run at (37,12) width 22: "bar"
