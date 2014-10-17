@@ -113,6 +113,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoUnresolved:
+    case CSSSelector::PseudoContent:
     case CSSSelector::PseudoHost:
     case CSSSelector::PseudoShadow:
     case CSSSelector::PseudoListBox:
@@ -173,7 +174,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoCue:
     case CSSSelector::PseudoFutureCue:
     case CSSSelector::PseudoPastCue:
-    case CSSSelector::PseudoContent:
     case CSSSelector::PseudoSpatialNavigationFocus:
         // FIXME: Most pseudo classes/elements above can be supported and moved
         // to assertSupportedPseudo(). Move on a case-by-case basis. If they
@@ -371,6 +371,8 @@ void RuleFeatureSet::addFeaturesToInvalidationSet(DescendantInvalidationSet& inv
 {
     if (features.treeBoundaryCrossing)
         invalidationSet.setTreeBoundaryCrossing();
+    if (features.insertionPointCrossing)
+        invalidationSet.setInsertionPointCrossing();
     if (features.adjacent) {
         invalidationSet.setWholeSubtreeInvalid();
         return;
@@ -393,8 +395,10 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
         if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
             addFeaturesToInvalidationSet(*invalidationSet, features);
         } else {
-            if (current->pseudoType() == CSSSelector::PseudoHost)
+            if (current->isTreeBoundaryCrossing())
                 features.treeBoundaryCrossing = true;
+            if (current->isInsertionPointCrossing())
+                features.insertionPointCrossing = true;
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 ASSERT(current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny || current->pseudoType() == CSSSelector::PseudoNot);
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))

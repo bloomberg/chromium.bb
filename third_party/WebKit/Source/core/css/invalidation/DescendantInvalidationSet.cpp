@@ -55,6 +55,7 @@ DescendantInvalidationSet::DescendantInvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
     , m_customPseudoInvalid(false)
     , m_treeBoundaryCrossing(false)
+    , m_insertionPointCrossing(false)
 {
 }
 
@@ -111,6 +112,9 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
 
     if (other.treeBoundaryCrossing())
         setTreeBoundaryCrossing();
+
+    if (other.insertionPointCrossing())
+        setInsertionPointCrossing();
 
     if (other.m_classes) {
         for (const auto& className : *other.m_classes)
@@ -196,6 +200,7 @@ void DescendantInvalidationSet::setWholeSubtreeInvalid()
 
     m_allDescendantsMightBeInvalid = true;
     m_treeBoundaryCrossing = false;
+    m_insertionPointCrossing = false;
     m_classes = nullptr;
     m_ids = nullptr;
     m_tagNames = nullptr;
@@ -222,6 +227,8 @@ void DescendantInvalidationSet::toTracedValue(TracedValue* value) const
         value->setBoolean("customPseudoInvalid", true);
     if (m_treeBoundaryCrossing)
         value->setBoolean("treeBoundaryCrossing", true);
+    if (m_insertionPointCrossing)
+        value->setBoolean("insertionPointCrossing", true);
 
     if (m_ids) {
         value->beginArray("ids");

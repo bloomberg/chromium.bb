@@ -83,6 +83,8 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvali
     ASSERT(!m_wholeSubtreeInvalid);
     if (invalidationSet.treeBoundaryCrossing())
         m_treeBoundaryCrossing = true;
+    if (invalidationSet.insertionPointCrossing())
+        m_insertionPointCrossing = true;
     if (invalidationSet.wholeSubtreeInvalid()) {
         m_wholeSubtreeInvalid = true;
         return;
@@ -99,6 +101,9 @@ ALWAYS_INLINE bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSe
         TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element, InvalidateCustomPseudo);
         return true;
     }
+
+    if (m_insertionPointCrossing && element.isInsertionPoint())
+        return true;
 
     for (const auto& invalidationSet : m_invalidationSets) {
         if (invalidationSet->invalidatesElement(element))
@@ -172,6 +177,9 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
             element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
         }
     }
+
+    if (recursionData.insertionPointCrossing() && element.isInsertionPoint())
+        element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
 
     element.clearChildNeedsStyleInvalidation();
     element.clearNeedsStyleInvalidation();

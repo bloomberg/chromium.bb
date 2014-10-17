@@ -148,6 +148,7 @@ private:
             : customPseudoElement(false)
             , treeBoundaryCrossing(false)
             , adjacent(false)
+            , insertionPointCrossing(false)
         { }
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
@@ -156,6 +157,7 @@ private:
         bool customPseudoElement;
         bool treeBoundaryCrossing;
         bool adjacent;
+        bool insertionPointCrossing;
     };
 
     static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);

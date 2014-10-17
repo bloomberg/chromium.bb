@@ -295,7 +295,8 @@ namespace blink {
         bool isContentPseudoElement() const;
         bool isShadowPseudoElement() const;
         bool isHostPseudoClass() const;
-
+        bool isTreeBoundaryCrossing() const;
+        bool isInsertionPointCrossing() const;
         // FIXME: selectors with no tagHistory() get a relation() of Descendant (and sometimes even SubSelector). It should instead be
         // None.
         Relation relation() const { return static_cast<Relation>(m_relation); }
@@ -443,6 +444,17 @@ inline bool CSSSelector::isContentPseudoElement() const
 inline bool CSSSelector::isShadowPseudoElement() const
 {
     return m_match == PseudoElement && pseudoType() == PseudoShadow;
+}
+
+inline bool CSSSelector::isTreeBoundaryCrossing() const
+{
+    return m_match == PseudoClass && (pseudoType() == PseudoHost || pseudoType() == PseudoHostContext);
+}
+
+inline bool CSSSelector::isInsertionPointCrossing() const
+{
+    return (m_match == PseudoClass && pseudoType() == PseudoHostContext)
+        || (m_match == PseudoElement && pseudoType() == PseudoContent);
 }
 
 inline void CSSSelector::setValue(const AtomicString& value)

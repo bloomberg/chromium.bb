@@ -70,6 +70,9 @@ public:
     void setTreeBoundaryCrossing() { m_treeBoundaryCrossing = true; }
     bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
 
+    void setInsertionPointCrossing() { m_insertionPointCrossing = true; }
+    bool insertionPointCrossing() const { return m_insertionPointCrossing; }
+
     void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
     bool customPseudoInvalid() const { return m_customPseudoInvalid; }
 
@@ -105,6 +108,9 @@ private:
 
     // If true, the invalidation must traverse into ShadowRoots with this set.
     unsigned m_treeBoundaryCrossing : 1;
+
+    // If true, insertion point descendants must be invalidated.
+    unsigned m_insertionPointCrossing : 1;
 };
 
 } // namespace blink
