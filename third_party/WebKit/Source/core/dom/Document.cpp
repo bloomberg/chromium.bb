@@ -950,8 +950,8 @@ PassRefPtrWillBeRawPtr<Text> Document::createEditingTextNode(const String& text)
 
 bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtrWillBeRawPtr<ContainerNode> newContainerNode, ExceptionState& exceptionState)
 {
-    for (Node* oldChild = oldContainerNode->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
-        RefPtrWillBeRawPtr<Node> newChild = importNode(oldChild, true, exceptionState);
+    for (Node& oldChild : NodeTraversal::childrenOf(*oldContainerNode)) {
+        RefPtrWillBeRawPtr<Node> newChild = importNode(&oldChild, true, exceptionState);
         if (exceptionState.hadException())
             return false;
         newContainerNode->appendChild(newChild.release(), exceptionState);
@@ -2823,8 +2823,8 @@ void Document::updateBaseURL()
     if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
-        for (HTMLAnchorElement* anchor = Traversal<HTMLAnchorElement>::firstWithin(*this); anchor; anchor = Traversal<HTMLAnchorElement>::next(*anchor))
-            anchor->invalidateCachedVisitedLinkHash();
+        for (HTMLAnchorElement& anchor : Traversal<HTMLAnchorElement>::fromNext(*this))
+            anchor.invalidateCachedVisitedLinkHash();
     }
 }
 
@@ -3248,8 +3248,8 @@ bool Document::childTypeAllowed(NodeType type) const
     case ELEMENT_NODE:
         // Documents may contain no more than one of each of these.
         // (One Element and one DocumentType.)
-        for (Node* c = firstChild(); c; c = c->nextSibling())
-            if (c->nodeType() == type)
+        for (Node& c : NodeTraversal::childrenOf(*this))
+            if (c.nodeType() == type)
                 return false;
         return true;
     }
@@ -3266,11 +3266,11 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
 
     // First, check how many doctypes and elements we have, not counting
     // the child we're about to remove.
-    for (Node* c = firstChild(); c; c = c->nextSibling()) {
+    for (Node& c : NodeTraversal::childrenOf(*this)) {
         if (c == oldChild)
             continue;
 
-        switch (c->nodeType()) {
+        switch (c.nodeType()) {
         case DOCUMENT_TYPE_NODE:
             numDoctypes++;
             break;
@@ -3284,8 +3284,8 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
 
     // Then, see how many doctypes and elements might be added by the new child.
     if (newChild.isDocumentFragment()) {
-        for (Node* c = toDocumentFragment(newChild).firstChild(); c; c = c->nextSibling()) {
-            switch (c->nodeType()) {
+        for (Node& c : NodeTraversal::childrenOf(toDocumentFragment(newChild))) {
+            switch (c.nodeType()) {
             case ATTRIBUTE_NODE:
             case CDATA_SECTION_NODE:
             case DOCUMENT_FRAGMENT_NODE:
@@ -3758,15 +3758,15 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator nodeIteratorsEnd = m_nodeIterators.end();
     for (WillBeHeapHashSet<RawPtrWillBeWeakMember<NodeIterator> >::const_iterator it = m_nodeIterators.begin(); it != nodeIteratorsEnd; ++it) {
-        for (Node* n = container.firstChild(); n; n = n->nextSibling())
-            (*it)->nodeWillBeRemoved(*n);
+        for (Node& n : NodeTraversal::childrenOf(container))
+            (*it)->nodeWillBeRemoved(n);
     }
 
     if (LocalFrame* frame = this->frame()) {
-        for (Node* n = container.firstChild(); n; n = n->nextSibling()) {
-            frame->eventHandler().nodeWillBeRemoved(*n);
-            frame->selection().nodeWillBeRemoved(*n);
-            frame->page()->dragCaretController().nodeWillBeRemoved(*n);
+        for (Node& n : NodeTraversal::childrenOf(container)) {
+            frame->eventHandler().nodeWillBeRemoved(n);
+            frame->selection().nodeWillBeRemoved(n);
+            frame->page()->dragCaretController().nodeWillBeRemoved(n);
         }
     }
 }

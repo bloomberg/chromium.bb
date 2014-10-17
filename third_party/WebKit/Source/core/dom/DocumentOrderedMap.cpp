@@ -121,11 +121,11 @@ inline Element* DocumentOrderedMap::get(const AtomicString& key, const TreeScope
         return entry->element;
 
     // We know there's at least one node that matches; iterate to find the first one.
-    for (Element* element = ElementTraversal::firstWithin(scope->rootNode()); element; element = ElementTraversal::next(*element)) {
-        if (!keyMatches(key, *element))
+    for (Element& element : ElementTraversal::fromNext(scope->rootNode())) {
+        if (!keyMatches(key, element))
             continue;
-        entry->element = element;
-        return element;
+        entry->element = &element;
+        return &element;
     }
     ASSERT_NOT_REACHED();
     return 0;

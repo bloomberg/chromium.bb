@@ -293,22 +293,22 @@ static Position positionForIndex(HTMLElement* innerEditor, int index)
     }
     int remainingCharactersToMoveForward = index;
     Node* lastBrOrText = innerEditor;
-    for (Node* node = NodeTraversal::next(*innerEditor, innerEditor); node; node = NodeTraversal::next(*node, innerEditor)) {
+    for (Node& node : NodeTraversal::descendantsOf(*innerEditor)) {
         ASSERT(remainingCharactersToMoveForward >= 0);
-        if (node->hasTagName(brTag)) {
+        if (node.hasTagName(brTag)) {
             if (remainingCharactersToMoveForward == 0)
-                return positionBeforeNode(node);
+                return positionBeforeNode(&node);
             --remainingCharactersToMoveForward;
-            lastBrOrText = node;
+            lastBrOrText = &node;
             continue;
         }
 
-        if (node->isTextNode()) {
-            Text& text = toText(*node);
+        if (node.isTextNode()) {
+            Text& text = toText(node);
             if (remainingCharactersToMoveForward < static_cast<int>(text.length()))
                 return Position(&text, remainingCharactersToMoveForward);
             remainingCharactersToMoveForward -= text.length();
-            lastBrOrText = node;
+            lastBrOrText = &node;
             continue;
         }
 

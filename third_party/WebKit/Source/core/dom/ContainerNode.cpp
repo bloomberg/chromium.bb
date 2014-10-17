@@ -794,14 +794,14 @@ void ContainerNode::notifyNodeInsertedInternal(Node& root, NodeVector& postInser
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
+    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         // As an optimization we don't notify leaf nodes when when inserting
         // into detached subtrees.
-        if (!inDocument() && !node->isContainerNode())
+        if (!inDocument() && !node.isContainerNode())
             continue;
-        if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node->insertedInto(this))
-            postInsertionNotificationTargets.append(node);
-        for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+        if (Node::InsertionShouldCallDidNotifySubtreeInsertions == node.insertedInto(this))
+            postInsertionNotificationTargets.append(&node);
+        for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
             notifyNodeInsertedInternal(*shadowRoot, postInsertionNotificationTargets);
     }
 }
@@ -812,16 +812,16 @@ void ContainerNode::notifyNodeRemoved(Node& root)
     EventDispatchForbiddenScope assertNoEventDispatch;
 
     Document& document = root.document();
-    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
+    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         // As an optimization we skip notifying Text nodes and other leaf nodes
         // of removal when they're not in the Document tree since the virtual
         // call to removedFrom is not needed.
-        if (!node->inDocument() && !node->isContainerNode())
+        if (!node.inDocument() && !node.isContainerNode())
             continue;
         if (document.cssTarget() == node)
             document.setCSSTarget(nullptr);
-        node->removedFrom(this);
-        for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+        node.removedFrom(this);
+        for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
             notifyNodeRemoved(*shadowRoot);
     }
 }

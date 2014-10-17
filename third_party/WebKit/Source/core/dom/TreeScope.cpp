@@ -524,10 +524,10 @@ Element* TreeScope::getElementByAccessKey(const String& key) const
         return 0;
     Element* result = 0;
     Node& root = rootNode();
-    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(*element, &root)) {
-        if (equalIgnoringCase(element->fastGetAttribute(accesskeyAttr), key))
-            result = element;
-        for (ShadowRoot* shadowRoot = element->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+    for (Element& element : ElementTraversal::descendantsOf(root)) {
+        if (equalIgnoringCase(element.fastGetAttribute(accesskeyAttr), key))
+            result = &element;
+        for (ShadowRoot* shadowRoot = element.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
             if (Element* shadowResult = shadowRoot->getElementByAccessKey(key))
                 result = shadowResult;
         }

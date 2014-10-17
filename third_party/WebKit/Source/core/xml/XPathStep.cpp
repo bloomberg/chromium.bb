@@ -331,9 +331,9 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
 
     case FollowingAxis:
         if (context->isAttributeNode()) {
-            for (Node* p = NodeTraversal::next(*toAttr(context)->ownerElement()); p; p = NodeTraversal::next(*p)) {
-                if (nodeMatches(evaluationContext, p, FollowingAxis, nodeTest()))
-                    nodes.append(p);
+            for (Node& p : NodeTraversal::fromNext(*toAttr(context)->ownerElement())) {
+                if (nodeMatches(evaluationContext, &p, FollowingAxis, nodeTest()))
+                    nodes.append(&p);
             }
         } else {
             for (Node* p = context; !isRootDomNode(p); p = p->parentNode()) {

@@ -53,29 +53,29 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
     if (willMoveToNewDocument)
         oldDocument.incDOMTreeVersion();
 
-    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
-        updateTreeScope(*node);
+    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
+        updateTreeScope(node);
 
         if (willMoveToNewDocument) {
             if (axObjectCache)
-                axObjectCache->remove(node);
-            moveNodeToNewDocument(*node, oldDocument, newDocument);
-        } else if (node->hasRareData()) {
-            NodeRareData* rareData = node->rareData();
+                axObjectCache->remove(&node);
+            moveNodeToNewDocument(node, oldDocument, newDocument);
+        } else if (node.hasRareData()) {
+            NodeRareData* rareData = node.rareData();
             if (rareData->nodeLists())
                 rareData->nodeLists()->adoptTreeScope();
         }
 
-        if (!node->isElementNode())
+        if (!node.isElementNode())
             continue;
 
-        if (node->hasSyntheticAttrChildNodes()) {
-            WillBeHeapVector<RefPtrWillBeMember<Attr> >& attrs = *toElement(node)->attrNodeList();
+        if (node.hasSyntheticAttrChildNodes()) {
+            WillBeHeapVector<RefPtrWillBeMember<Attr> >& attrs = *toElement(node).attrNodeList();
             for (unsigned i = 0; i < attrs.size(); ++i)
                 moveTreeToNewScope(*attrs[i]);
         }
 
-        for (ShadowRoot* shadow = node->youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
+        for (ShadowRoot* shadow = node.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
             shadow->setParentTreeScope(newScope());
             if (willMoveToNewDocument)
                 moveTreeToNewDocument(*shadow, oldDocument, newDocument);
