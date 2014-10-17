@@ -570,15 +570,27 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     self.assertNotEqual(self.overlays[self.PUB_ONLY][self.PUBLIC][-1],
                         self.overlays[self.PUB2_ONLY][self.PUBLIC][-1])
 
-  def testReadOverlayFile(self):
-    """Verify that the boards are examined in the right order"""
-    m = self.PatchObject(osutils, 'ReadFile',
-                         side_effect=IOError(os.errno.ENOENT, 'ENOENT'))
+  def testReadOverlayFileOrder(self):
+    """Verify that the boards are examined in the right order."""
+    m = self.PatchObject(os.path, 'isfile', return_value=False)
     portage_util.ReadOverlayFile('test', self.PUBLIC, self.PUB_PRIV,
                                  self.tempdir)
     read_overlays = [x[0][0][:-5] for x in m.call_args_list]
     overlays = [x for x in reversed(self.overlays[self.PUB_PRIV][self.PUBLIC])]
     self.assertEqual(read_overlays, overlays)
+
+  def testFindOverlayFile(self):
+    """Verify that the first file found is returned."""
+    file_to_find = 'something_special'
+    full_path = os.path.join(self.tempdir,
+                             'src', 'private-overlays',
+                             'overlay-%s' % self.PUB_PRIV,
+                             file_to_find)
+    osutils.Touch(full_path)
+    self.assertEqual(full_path,
+                     portage_util.FindOverlayFile(file_to_find, self.BOTH,
+                                                  self.PUB_PRIV_VARIANT,
+                                                  self.tempdir))
 
   def testFoundPrivateOverlays(self):
     """Verify that private boards had their overlays located."""

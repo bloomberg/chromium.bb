@@ -798,8 +798,9 @@ def main(argv):
   if options.private:
     binhost_base_url = options.upload
     if target:
-      board_path = GetBoardOverlay(options.build_path, target)
-      acl = os.path.join(board_path, _GOOGLESTORAGE_GSUTIL_FILE)
+      acl = portage_util.FindOverlayFile(_GOOGLESTORAGE_GSUTIL_FILE,
+                                         board=target.board_variant,
+                                         buildroot=options.build_path)
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,

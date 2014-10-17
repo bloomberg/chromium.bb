@@ -167,6 +167,31 @@ def FindOverlays(overlay_type, board=None, buildroot=constants.SOURCE_ROOT):
     return []
 
 
+def FindOverlayFile(filename, overlay_type='both', board=None,
+                    buildroot=constants.SOURCE_ROOT):
+  """Attempt to find a file in the overlay directories.
+
+  Searches through this board's overlays for the specified file. The
+  overlays are searched in child -> parent order.
+
+  Args:
+    filename: Path to search for inside the overlay.
+    overlay_type: A string describing which overlays you want.
+      'private': Just the private overlays.
+      'public': Just the public overlays.
+      'both': Both the public and private overlays.
+    board: Board to look at.
+    buildroot: Source root to find overlays.
+
+  Returns:
+    Path to the first file found in the search. None if the file is not found.
+  """
+  for overlay in reversed(FindOverlays(overlay_type, board, buildroot)):
+    if os.path.isfile(os.path.join(overlay, filename)):
+      return os.path.join(overlay, filename)
+  return None
+
+
 def ReadOverlayFile(filename, overlay_type='both', board=None,
                     buildroot=constants.SOURCE_ROOT):
   """Attempt to open a file in the overlay directories.
@@ -186,12 +211,10 @@ def ReadOverlayFile(filename, overlay_type='both', board=None,
   Returns:
     The contents of the file, or None if no files could be opened.
   """
-  for overlay in reversed(FindOverlays(overlay_type, board, buildroot)):
-    try:
-      return osutils.ReadFile(os.path.join(overlay, filename))
-    except IOError as e:
-      if e.errno != os.errno.ENOENT:
-        raise
+  file_found = FindOverlayFile(filename, overlay_type, board, buildroot)
+  if file_found is None:
+    return None
+  return osutils.ReadFile(file_found)
 
 
 def FindPrimaryOverlay(overlay_type, board, buildroot=constants.SOURCE_ROOT):
