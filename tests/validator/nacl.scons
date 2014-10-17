@@ -1,0 +1,20 @@
+# -*- python -*-
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# The following test is specific to the x86_64 sandbox, and is not portable.
+if env.Bit('build_x86_64') and env.AllowInlineAssembly():
+  lahf_sahf_nexe = env.ComponentProgram(
+      'lahf_sahf_test', ['lahf_sahf_test.c'],
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+  node = env.CommandSelLdrTestNacl(
+      'lahf_sahf_test.out',
+      lahf_sahf_nexe)
+
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'nonpexe_tests'],
+                         'run_lahf_sahf_test')

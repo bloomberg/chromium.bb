@@ -33,7 +33,7 @@ NACL_X86_CPU_FEATURE(F16C          , ECX_I, ECX_F16C   , FixedOff, NONE, "F16C" 
 NACL_X86_CPU_FEATURE(FMA           , ECX_I, ECX_FMA    , FixedOff, NONE, "FMA"            )
 NACL_X86_CPU_FEATURE(FMA4          , ECX_A, ECX_FMA4   , FixedOff, AMD , "FMA4"           )
 NACL_X86_CPU_FEATURE(FXSR          , EDX_I, EDX_FXSR   , FixedOn , NONE, "FXSAVE/FXRSTOR" )
-NACL_X86_CPU_FEATURE(LAHF          , EDX_A, ECX_LAHF   , FixedOff, NONE, "LAHF"           )
+NACL_X86_CPU_FEATURE(LAHF          , ECX_A, ECX_LAHF   , FixedOff, NONE, "LAHF"           )
 NACL_X86_CPU_FEATURE(LM            , EDX_A, EDX_LM     , FixedOff, NONE, "LongMode"       )
 NACL_X86_CPU_FEATURE(LWP           , ECX_A, ECX_LWP    , FixedOff, AMD , "LWP"            )
 NACL_X86_CPU_FEATURE(LZCNT         , ECX_A, ECX_ABM    , FixedOff, AMD , "LZCNT"          )
