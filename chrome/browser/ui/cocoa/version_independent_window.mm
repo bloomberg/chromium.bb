@@ -4,10 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/version_independent_window.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
-#include "chrome/common/chrome_switches.h"
 
 @interface VersionIndependentWindow ()
 
