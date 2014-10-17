@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
 #include "base/files/file_path.h"
+#include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
@@ -83,6 +84,12 @@ ChromeExtensionsAPIClient::CreateContentRulesRegistry(
     RulesCacheDelegate* cache_delegate) const {
   return scoped_refptr<ContentRulesRegistry>(
       new ChromeContentRulesRegistry(browser_context, cache_delegate));
+}
+
+scoped_ptr<DevicePermissionsPrompt>
+ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
+    content::WebContents* web_contents) const {
+  return make_scoped_ptr(new ChromeDevicePermissionsPrompt(web_contents));
 }
 
 }  // namespace extensions

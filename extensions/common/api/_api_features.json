@@ -289,6 +289,11 @@
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
   },
+  "usb.getUserSelectedDevices": {
+    "channel": "dev",
+    "dependencies": ["permission:usb"],
+    "contexts": ["blessed_extension"]
+  },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
     "contexts": ["blessed_extension"]

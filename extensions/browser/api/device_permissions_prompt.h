@@ -124,22 +124,21 @@ class DevicePermissionsPrompt {
     virtual ~Delegate() {}
   };
 
-  typedef base::Callback<void(content::WebContents*,
-                              DevicePermissionsPrompt::Delegate*,
-                              scoped_refptr<DevicePermissionsPrompt::Prompt>)>
-      ShowDialogCallback;
-
-  static ShowDialogCallback GetDefaultShowDialogCallback();
-
   DevicePermissionsPrompt(content::WebContents* web_contents);
   virtual ~DevicePermissionsPrompt();
 
-  virtual void AskForUsbDevices(
-      Delegate* delegate,
-      const Extension* extension,
-      content::BrowserContext* context,
-      bool multiple,
-      const std::vector<device::UsbDeviceFilter>& filters);
+  void AskForUsbDevices(Delegate* delegate,
+                        const Extension* extension,
+                        content::BrowserContext* context,
+                        bool multiple,
+                        const std::vector<device::UsbDeviceFilter>& filters);
+
+ protected:
+  virtual void ShowDialog() = 0;
+
+  content::WebContents* web_contents() { return web_contents_; }
+  Delegate* delegate() { return delegate_; }
+  scoped_refptr<Prompt> prompt() { return prompt_; }
 
  private:
   // Parent web contents of the device permissions UI dialog.

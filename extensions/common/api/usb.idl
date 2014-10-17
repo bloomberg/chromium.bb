@@ -186,7 +186,7 @@ namespace usb {
     // will return all devices the app has permission for.
     DeviceFilter[]? filters;
   };
-  
+
   dictionary EnumerateDevicesAndRequestAccessOptions {
     // The device vendor ID.
     long vendorId;
@@ -195,6 +195,14 @@ namespace usb {
     // The interface ID to request access to.
     // Only available on ChromeOS. It has no effect on other platforms.
     long? interfaceId;
+  };
+
+  dictionary DevicePromptOptions {
+    // Allow the user to select multiple devices.
+    boolean? multiple;
+    // Filter the list of devices presented to the user. If multiple filters are
+    // provided devices matching any filter will be displayed.
+    DeviceFilter[]? filters;
   };
 
   callback VoidCallback = void ();
@@ -213,6 +221,16 @@ namespace usb {
     // |options|: The properties to search for on target devices.
     static void getDevices(EnumerateDevicesOptions options,
                            GetDevicesCallback callback);
+
+    // Presents a device picker to the user and returns the $(ref:Device)s
+    // selected.
+    // If the user cancels the picker devices will be empty. A user gesture
+    // is required for the dialog to display. Without a user gesture, the
+    // callback will run as though the user cancelled.
+    // |options|: Configuration of the device picker dialog box.
+    // |callback|: Invoked with a list of chosen $(ref:Device)s.
+    static void getUserSelectedDevices(DevicePromptOptions options,
+                                       GetDevicesCallback callback);
 
     // Requests access from the permission broker to a device claimed by
     // ChromeOS if the given interface on the device is not claimed.

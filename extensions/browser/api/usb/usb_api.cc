@@ -12,6 +12,9 @@
 #include "device/core/device_client.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"
+#include "extensions/browser/api/device_permissions_manager.h"
+#include "extensions/browser/api/device_permissions_prompt.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/api/usb.h"
@@ -25,6 +28,7 @@ namespace CloseDevice = usb::CloseDevice;
 namespace ControlTransfer = usb::ControlTransfer;
 namespace FindDevices = usb::FindDevices;
 namespace GetDevices = usb::GetDevices;
+namespace GetUserSelectedDevices = usb::GetUserSelectedDevices;
 namespace InterruptTransfer = usb::InterruptTransfer;
 namespace IsochronousTransfer = usb::IsochronousTransfer;
 namespace GetConfiguration = usb::GetConfiguration;
@@ -36,6 +40,20 @@ namespace ResetDevice = usb::ResetDevice;
 namespace SetInterfaceAlternateSetting = usb::SetInterfaceAlternateSetting;
 
 using content::BrowserThread;
+using device::UsbConfigDescriptor;
+using device::UsbDevice;
+using device::UsbDeviceFilter;
+using device::UsbDeviceHandle;
+using device::UsbEndpointDescriptor;
+using device::UsbEndpointDirection;
+using device::UsbInterfaceDescriptor;
+using device::UsbService;
+using device::UsbSynchronizationType;
+using device::UsbTransferStatus;
+using device::UsbTransferType;
+using device::UsbUsageType;
+using std::string;
+using std::vector;
 using usb::ConfigDescriptor;
 using usb::ControlTransferInfo;
 using usb::ConnectionHandle;
@@ -50,18 +68,6 @@ using usb::RequestType;
 using usb::SynchronizationType;
 using usb::TransferType;
 using usb::UsageType;
-using device::UsbConfigDescriptor;
-using device::UsbDevice;
-using device::UsbDeviceFilter;
-using device::UsbDeviceHandle;
-using device::UsbEndpointDescriptor;
-using device::UsbEndpointDirection;
-using device::UsbInterfaceDescriptor;
-using device::UsbService;
-using device::UsbSynchronizationType;
-using device::UsbTransferStatus;
-using device::UsbTransferType;
-using device::UsbUsageType;
 
 typedef std::vector<scoped_refptr<UsbDevice> > DeviceVector;
 typedef scoped_ptr<DeviceVector> ScopedDeviceVector;
@@ -77,9 +83,7 @@ const char kErrorOpen[] = "Failed to open device.";
 const char kErrorCancelled[] = "Transfer was cancelled.";
 const char kErrorDisconnect[] = "Device disconnected.";
 const char kErrorGeneric[] = "Transfer failed.";
-#if !defined(OS_CHROMEOS)
 const char kErrorNotSupported[] = "Not supported on this platform.";
-#endif
 const char kErrorOverflow[] = "Inbound transfer overflow.";
 const char kErrorStalled[] = "Transfer stalled.";
 const char kErrorTimeout[] = "Transfer timed out.";
@@ -294,7 +298,7 @@ base::Value* PopulateConnectionHandle(int handle,
   return result.ToValue().release();
 }
 
-base::Value* PopulateDevice(UsbDevice* device) {
+base::Value* PopulateDevice(const UsbDevice* device) {
   Device result;
   result.device = device->unique_id();
   result.vendor_id = device->vendor_id();
@@ -419,6 +423,25 @@ void ConvertConfigDescriptor(const UsbConfigDescriptor& input,
   }
 }
 
+void ConvertDeviceFilter(const usb::DeviceFilter& input,
+                         UsbDeviceFilter* output) {
+  if (input.vendor_id) {
+    output->SetVendorId(*input.vendor_id);
+  }
+  if (input.product_id) {
+    output->SetProductId(*input.product_id);
+  }
+  if (input.interface_class) {
+    output->SetInterfaceClass(*input.interface_class);
+  }
+  if (input.interface_subclass) {
+    output->SetInterfaceSubclass(*input.interface_subclass);
+  }
+  if (input.interface_protocol) {
+    output->SetInterfaceProtocol(*input.interface_protocol);
+  }
+}
+
 }  // namespace
 
 namespace extensions {
@@ -439,33 +462,21 @@ bool UsbAsyncApiFunction::Respond() {
   return error_.empty();
 }
 
-// static
-void UsbAsyncApiFunction::CreateDeviceFilter(const usb::DeviceFilter& input,
-                                             UsbDeviceFilter* output) {
-  if (input.vendor_id) {
-    output->SetVendorId(*input.vendor_id);
-  }
-  if (input.product_id) {
-    output->SetProductId(*input.product_id);
-  }
-  if (input.interface_class) {
-    output->SetInterfaceClass(*input.interface_class);
-  }
-  if (input.interface_subclass) {
-    output->SetInterfaceSubclass(*input.interface_subclass);
-  }
-  if (input.interface_protocol) {
-    output->SetInterfaceProtocol(*input.interface_protocol);
-  }
-}
-
 bool UsbAsyncApiFunction::HasDevicePermission(scoped_refptr<UsbDevice> device) {
   UsbDevicePermission::CheckParam param(
       device->vendor_id(),
       device->product_id(),
       UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  return extension()->permissions_data()->CheckAPIPermissionWithParam(
-      APIPermission::kUsbDevice, &param);
+  if (extension()->permissions_data()->CheckAPIPermissionWithParam(
+          APIPermission::kUsbDevice, &param)) {
+    return true;
+  }
+
+  if (device_permissions_.get()) {
+    return device_permissions_->CheckUsbDevice(device);
+  }
+
+  return false;
 }
 
 scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrCompleteWithError(
@@ -657,6 +668,8 @@ UsbGetDevicesFunction::~UsbGetDevicesFunction() {
 bool UsbGetDevicesFunction::Prepare() {
   parameters_ = GetDevices::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  device_permissions_ = DevicePermissionsManager::Get(browser_context())
+                            ->GetForExtension(extension()->id());
   return true;
 }
 
@@ -665,8 +678,8 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
   if (parameters_->options.filters) {
     filters.resize(parameters_->options.filters->size());
     for (size_t i = 0; i < parameters_->options.filters->size(); ++i) {
-      CreateDeviceFilter(*parameters_->options.filters->at(i).get(),
-                         &filters[i]);
+      ConvertDeviceFilter(*parameters_->options.filters->at(i).get(),
+                          &filters[i]);
     }
   }
   if (parameters_->options.vendor_id) {
@@ -699,6 +712,59 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
   AsyncWorkCompleted();
 }
 
+UsbGetUserSelectedDevicesFunction::UsbGetUserSelectedDevicesFunction() {
+}
+
+UsbGetUserSelectedDevicesFunction::~UsbGetUserSelectedDevicesFunction() {
+}
+
+AsyncApiFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
+  scoped_ptr<extensions::core_api::usb::GetUserSelectedDevices::Params>
+      parameters = GetUserSelectedDevices::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  if (!user_gesture()) {
+    return RespondNow(OneArgument(new base::ListValue()));
+  }
+
+  bool multiple = false;
+  if (parameters->options.multiple) {
+    multiple = *parameters->options.multiple;
+  }
+
+  std::vector<UsbDeviceFilter> filters;
+  if (parameters->options.filters) {
+    filters.resize(parameters->options.filters->size());
+    for (size_t i = 0; i < parameters->options.filters->size(); ++i) {
+      ConvertDeviceFilter(*parameters->options.filters->at(i).get(),
+                          &filters[i]);
+    }
+  }
+
+  prompt_ = ExtensionsAPIClient::Get()->CreateDevicePermissionsPrompt(
+      GetAssociatedWebContents());
+  if (!prompt_) {
+    return RespondNow(Error(kErrorNotSupported));
+  }
+
+  AddRef();
+  prompt_->AskForUsbDevices(
+      this, extension(), browser_context(), multiple, filters);
+  return RespondLater();
+}
+
+void UsbGetUserSelectedDevicesFunction::OnUsbDevicesChosen(
+    const std::vector<scoped_refptr<UsbDevice>>& devices) {
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (const auto& device : devices) {
+    result->Append(PopulateDevice(device.get()));
+  }
+
+  SetResult(result.release());
+  SendResponse(true);
+  Release();
+}
+
 UsbRequestAccessFunction::UsbRequestAccessFunction() {
 }
 
@@ -708,6 +774,8 @@ UsbRequestAccessFunction::~UsbRequestAccessFunction() {
 bool UsbRequestAccessFunction::Prepare() {
   parameters_ = RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  device_permissions_ = DevicePermissionsManager::Get(browser_context())
+                            ->GetForExtension(extension()->id());
   return true;
 }
 
@@ -741,6 +809,8 @@ UsbOpenDeviceFunction::~UsbOpenDeviceFunction() {
 bool UsbOpenDeviceFunction::Prepare() {
   parameters_ = OpenDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  device_permissions_ = DevicePermissionsManager::Get(browser_context())
+                            ->GetForExtension(extension()->id());
   return true;
 }
 

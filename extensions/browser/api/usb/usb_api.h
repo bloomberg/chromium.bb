@@ -15,11 +15,13 @@
 #include "device/usb/usb_device_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
+#include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/common/api/usb.h"
 #include "net/base/io_buffer.h"
 
 namespace extensions {
 
+class DevicePermissions;
 class UsbDeviceResource;
 
 class UsbAsyncApiFunction : public AsyncApiFunction {
@@ -32,15 +34,9 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
   virtual bool PrePrepare() override;
   virtual bool Respond() override;
 
-  static void CreateDeviceFilter(
-      const extensions::core_api::usb::DeviceFilter& input,
-      device::UsbDeviceFilter* output);
-
   bool HasDevicePermission(scoped_refptr<device::UsbDevice> device);
-
   scoped_refptr<device::UsbDevice> GetDeviceOrCompleteWithError(
       const extensions::core_api::usb::Device& input_device);
-
   scoped_refptr<device::UsbDeviceHandle> GetDeviceHandleOrCompleteWithError(
       const extensions::core_api::usb::ConnectionHandle& input_device_handle);
 
@@ -49,6 +45,7 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
   void CompleteWithError(const std::string& error);
 
   ApiResourceManager<UsbDeviceResource>* manager_;
+  scoped_ptr<DevicePermissions> device_permissions_;
 };
 
 class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
@@ -103,10 +100,30 @@ class UsbGetDevicesFunction : public UsbAsyncApiFunction {
   virtual ~UsbGetDevicesFunction();
 
  private:
-  void EnumerationCompletedFileThread(
-      scoped_ptr<std::vector<scoped_refptr<device::UsbDevice> > > devices);
-
   scoped_ptr<extensions::core_api::usb::GetDevices::Params> parameters_;
+};
+
+class UsbGetUserSelectedDevicesFunction
+    : public UIThreadExtensionFunction,
+      public DevicePermissionsPrompt::Delegate {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usb.getUserSelectedDevices",
+                             USB_GETUSERSELECTEDDEVICES)
+
+  UsbGetUserSelectedDevicesFunction();
+
+ protected:
+  virtual ~UsbGetUserSelectedDevicesFunction();
+  virtual ResponseAction Run() override;
+
+ private:
+  virtual void OnUsbDevicesChosen(
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices) override;
+
+  scoped_ptr<DevicePermissionsPrompt> prompt_;
+  std::vector<uint32> device_ids_;
+  std::vector<scoped_refptr<device::UsbDevice>> devices_;
+  std::vector<base::string16> serial_numbers_;
 };
 
 class UsbRequestAccessFunction : public UsbAsyncApiFunction {

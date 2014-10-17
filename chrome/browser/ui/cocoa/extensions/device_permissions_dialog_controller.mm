@@ -8,24 +8,13 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/device_permissions_view_controller.h"
 #include "device/usb/usb_device.h"
 
 using extensions::DevicePermissionsPrompt;
-
-namespace {
-
-void ShowDevicePermissionsDialogImpl(
-    content::WebContents* web_contents,
-    DevicePermissionsPrompt::Delegate* delegate,
-    scoped_refptr<DevicePermissionsPrompt::Prompt> prompt) {
-  // These objects will delete themselves when the dialog closes.
-  new DevicePermissionsDialogController(web_contents, delegate, prompt);
-}
-
-}  // namespace
 
 DevicePermissionsDialogController::DevicePermissionsDialogController(
     content::WebContents* web_contents,
@@ -72,8 +61,7 @@ void DevicePermissionsDialogController::OnConstrainedWindowClosed(
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-// static
-DevicePermissionsPrompt::ShowDialogCallback
-DevicePermissionsPrompt::GetDefaultShowDialogCallback() {
-  return base::Bind(&ShowDevicePermissionsDialogImpl);
+void ChromeDevicePermissionsPrompt::ShowDialog() {
+  // These objects will delete themselves when the dialog closes.
+  new DevicePermissionsDialogController(web_contents(), delegate(), prompt());
 }

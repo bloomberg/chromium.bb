@@ -128,6 +128,8 @@ source_set("browser") {
       "api/declarative_webrequest/webrequest_rules_registry.h",
       "api/device_permissions_manager.cc",
       "api/device_permissions_manager.h",
+      "api/device_permissions_prompt.cc",
+      "api/device_permissions_prompt.h",
       "api/dns/dns_api.cc",
       "api/dns/dns_api.h",
       "api/dns/host_resolver_wrapper.cc",

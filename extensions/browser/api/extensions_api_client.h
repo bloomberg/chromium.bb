@@ -98,6 +98,10 @@ class ExtensionsAPIClient {
       content::BrowserContext* browser_context,
       RulesCacheDelegate* cache_delegate) const;
 
+  // Creates a DevicePermissionsPrompt appropriate for the embedder.
+  virtual scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
+      content::WebContents* web_contents) const;
+
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.
 };

@@ -173,8 +173,7 @@ void DevicePermissionsPrompt::Prompt::SetDevices(
 
 DevicePermissionsPrompt::DevicePermissionsPrompt(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      delegate_(nullptr) {
+    : web_contents_(web_contents), delegate_(nullptr) {
 }
 
 DevicePermissionsPrompt::~DevicePermissionsPrompt() {
@@ -193,7 +192,7 @@ void DevicePermissionsPrompt::AskForUsbDevices(
   prompt_->set_filters(filters);
   delegate_ = delegate;
 
-  GetDefaultShowDialogCallback().Run(web_contents_, delegate_, prompt_);
+  ShowDialog();
 }
 
 }  // namespace extensions

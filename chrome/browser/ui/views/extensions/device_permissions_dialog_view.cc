@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/device_permissions_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,19 +21,6 @@
 
 using device::UsbDevice;
 using extensions::DevicePermissionsPrompt;
-
-namespace {
-
-void ShowDevicePermissionsDialogImpl(
-    content::WebContents* web_contents,
-    DevicePermissionsPrompt::Delegate* delegate,
-    scoped_refptr<DevicePermissionsPrompt::Prompt> prompt) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ShowWebModalDialogViews(new DevicePermissionsDialogView(delegate, prompt),
-                          web_contents);
-}
-
-}  // namespace
 
 class DevicePermissionsTableModel
     : public ui::TableModel,
@@ -173,8 +161,8 @@ gfx::Size DevicePermissionsDialogView::GetPreferredSize() const {
   return gfx::Size(500, 250);
 }
 
-// static
-DevicePermissionsPrompt::ShowDialogCallback
-DevicePermissionsPrompt::GetDefaultShowDialogCallback() {
-  return base::Bind(&ShowDevicePermissionsDialogImpl);
+void ChromeDevicePermissionsPrompt::ShowDialog() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ShowWebModalDialogViews(new DevicePermissionsDialogView(delegate(), prompt()),
+                          web_contents());
 }

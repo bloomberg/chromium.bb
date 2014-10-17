@@ -39,6 +39,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   virtual scoped_refptr<ContentRulesRegistry> CreateContentRulesRegistry(
       content::BrowserContext* browser_context,
       RulesCacheDelegate* cache_delegate) const override;
+  virtual scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
+      content::WebContents* web_contents) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
