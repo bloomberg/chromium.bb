@@ -171,6 +171,21 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
     EXPECT_EQ(static_cast<int32_t>(i), array2[i]);
 }
 
+TEST_F(ArrayTest, Serialization_EmptyArrayOfPOD) {
+  Array<int32_t> array(0);
+  size_t size = GetSerializedSize_(array);
+  EXPECT_EQ(8U, size);
+
+  FixedBuffer buf(size);
+  Array_Data<int32_t>* data;
+  SerializeArray_<ArrayValidateParams<0, false, NoValidateParams>>(
+      array.Pass(), &buf, &data);
+
+  Array<int32_t> array2;
+  Deserialize_(data, &array2);
+  EXPECT_EQ(0U, array2.size());
+}
+
 TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
   Array<Array<int32_t>> array(2);
   for (size_t j = 0; j < array.size(); ++j) {

@@ -63,11 +63,13 @@ struct ArraySerializer<E, F, false> {
     static_assert((IsSame<ElementValidateParams, NoValidateParams>::value),
                   "Primitive type should not have array validate params");
 
-    memcpy(output->storage(), &input.storage()[0], input.size() * sizeof(E));
+    if (input.size())
+      memcpy(output->storage(), &input.storage()[0], input.size() * sizeof(E));
   }
   static void DeserializeElements(Array_Data<F>* input, Array<E>* output) {
     std::vector<E> result(input->size());
-    memcpy(&result[0], input->storage(), input->size() * sizeof(E));
+    if (input->size())
+      memcpy(&result[0], input->storage(), input->size() * sizeof(E));
     output->Swap(&result);
   }
 };
