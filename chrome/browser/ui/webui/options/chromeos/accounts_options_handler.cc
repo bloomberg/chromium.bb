@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
@@ -57,8 +58,8 @@ void AccountsOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("unwhitelistUser",
       base::Bind(&AccountsOptionsHandler::HandleUnwhitelistUser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("whitelistExistingUsers",
-      base::Bind(&AccountsOptionsHandler::HandleWhitelistExistingUsers,
+  web_ui()->RegisterMessageCallback("updateWhitelist",
+      base::Bind(&AccountsOptionsHandler::HandleUpdateWhitelist,
                  base::Unretained(this)));
 }
 
@@ -119,7 +120,7 @@ void AccountsOptionsHandler::HandleUnwhitelistUser(
   user_manager::UserManager::Get()->RemoveUser(email, NULL);
 }
 
-void AccountsOptionsHandler::HandleWhitelistExistingUsers(
+void AccountsOptionsHandler::HandleUpdateWhitelist(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
 
@@ -134,6 +135,20 @@ void AccountsOptionsHandler::HandleWhitelistExistingUsers(
     new_list.reset(existing->DeepCopy());
   else
     new_list.reset(new base::ListValue);
+
+  // Remove all supervised users. On the next step only supervised users present
+  // on the device will be added back. Thus not present SU are removed.
+  // No need to remove usual users as they can simply login back.
+  for (size_t i = 0; i < new_list->GetSize(); ++i) {
+    std::string whitelisted_user;
+    new_list->GetString(i, &whitelisted_user);
+    LOG(ERROR) << gaia::ExtractDomainName(whitelisted_user);
+    if (gaia::ExtractDomainName(whitelisted_user) ==
+        chromeos::login::kSupervisedUserDomain) {
+      new_list->Remove(i, NULL);
+      --i;
+    }
+  }
 
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();

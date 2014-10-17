@@ -25,12 +25,13 @@ class AccountsOptionsHandler : public ::options::OptionsPageUIHandler {
       base::DictionaryValue* localized_strings) override;
 
  private:
-  // Javascript callbacks to whitelist/unwhitelist user.
+  // Javascript callbacks to update whitelist/unwhitelist user.
   void HandleWhitelistUser(const base::ListValue* args);
   void HandleUnwhitelistUser(const base::ListValue* args);
 
-  // Javascript callback to auto add existing users to white list.
-  void HandleWhitelistExistingUsers(const base::ListValue* args);
+  // Javascript callback to update the white list: auto add existing users,
+  // remove not present supervised users.
+  void HandleUpdateWhitelist(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsHandler);
 };

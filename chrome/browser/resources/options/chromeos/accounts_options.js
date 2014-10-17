@@ -81,6 +81,7 @@ cr.define('options', function() {
      */
     handleVisibleChange_: function(e) {
       if (this.visible) {
+        chrome.send('updateWhitelist');
         this.updateControls_();
         if (this.showWhitelist_)
           $('userList').redraw();
@@ -94,7 +95,7 @@ cr.define('options', function() {
     handleUseWhitelistCheckChange_: function(e) {
       // Whitelist existing users when guest login is being disabled.
       if ($('useWhitelistCheck').checked) {
-        chrome.send('whitelistExistingUsers');
+        chrome.send('updateWhitelist');
       }
 
       this.updateControls_();
