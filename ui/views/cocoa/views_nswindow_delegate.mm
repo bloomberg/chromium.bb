@@ -5,6 +5,7 @@
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 
 #include "base/logging.h"
+#import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/widget/native_widget_mac.h"
 
@@ -20,6 +21,15 @@
 
 - (views::NativeWidgetMac*)nativeWidgetMac {
   return parent_->native_widget_mac();
+}
+
+- (void)onWindowOrderWillChange:(NSWindowOrderingMode)orderingMode {
+  if (orderingMode != NSWindowOut)
+    [parent_->ns_view() setWillShow:YES];
+}
+
+- (void)onWindowOrderChanged {
+  [parent_->ns_view() setWillShow:NO];
 }
 
 // NSWindowDelegate implementation.

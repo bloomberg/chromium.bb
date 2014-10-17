@@ -82,7 +82,6 @@ namespace views {
 
 class FocusManagerDelegate;
 class FocusSearch;
-class RootView;
 class View;
 class Widget;
 

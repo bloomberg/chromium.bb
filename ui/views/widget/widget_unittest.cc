@@ -1125,12 +1125,13 @@ TEST_F(WidgetTest, TestViewWidthAfterMinimizingWidget) {
 class DesktopAuraTestValidPaintWidget : public views::Widget {
  public:
   DesktopAuraTestValidPaintWidget()
-    : expect_paint_(true),
-      received_paint_while_hidden_(false) {
-  }
+    : received_paint_(false),
+      expect_paint_(true),
+      received_paint_while_hidden_(false) {}
 
-  virtual ~DesktopAuraTestValidPaintWidget() {
-  }
+  virtual ~DesktopAuraTestValidPaintWidget() {}
+
+  void InitForTest(Widget::InitParams create_params);
 
   virtual void Show() override {
     expect_paint_ = true;
@@ -1148,10 +1149,17 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
   }
 
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) override {
+    received_paint_ = true;
     EXPECT_TRUE(expect_paint_);
     if (!expect_paint_)
       received_paint_while_hidden_ = true;
     views::Widget::OnNativeWidgetPaint(canvas);
+  }
+
+  bool ReadReceivedPaintAndReset() {
+    bool result = received_paint_;
+    received_paint_ = false;
+    return result;
   }
 
   bool received_paint_while_hidden() const {
@@ -1159,47 +1167,48 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
   }
 
  private:
+  bool received_paint_;
   bool expect_paint_;
   bool received_paint_while_hidden_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopAuraTestValidPaintWidget);
 };
 
-TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterCloseTest) {
+void DesktopAuraTestValidPaintWidget::InitForTest(InitParams init_params) {
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  init_params.ownership = InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new PlatformDesktopNativeWidget(this);
+  Init(init_params);
+
   View* contents_view = new View;
   contents_view->SetFocusable(true);
+  SetContentsView(contents_view);
+
+  Show();
+  Activate();
+}
+
+TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterCloseTest) {
   DesktopAuraTestValidPaintWidget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = new PlatformDesktopNativeWidget(&widget);
-  widget.Init(init_params);
-  widget.SetContentsView(contents_view);
-  widget.Show();
-  widget.Activate();
+  widget.InitForTest(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   RunPendingMessages();
-  widget.SchedulePaintInRect(init_params.bounds);
+  EXPECT_TRUE(widget.ReadReceivedPaintAndReset());
+  widget.SchedulePaintInRect(widget.GetRestoredBounds());
   widget.Close();
   RunPendingMessages();
+  EXPECT_FALSE(widget.ReadReceivedPaintAndReset());
   EXPECT_FALSE(widget.received_paint_while_hidden());
 }
 
 TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterHideTest) {
-  View* contents_view = new View;
-  contents_view->SetFocusable(true);
   DesktopAuraTestValidPaintWidget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  init_params.native_widget = new PlatformDesktopNativeWidget(&widget);
-  widget.Init(init_params);
-  widget.SetContentsView(contents_view);
-  widget.Show();
-  widget.Activate();
+  widget.InitForTest(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   RunPendingMessages();
-  widget.SchedulePaintInRect(init_params.bounds);
+  EXPECT_TRUE(widget.ReadReceivedPaintAndReset());
+  widget.SchedulePaintInRect(widget.GetRestoredBounds());
   widget.Hide();
   RunPendingMessages();
+  EXPECT_FALSE(widget.ReadReceivedPaintAndReset());
   EXPECT_FALSE(widget.received_paint_while_hidden());
   widget.Close();
 }
@@ -1221,6 +1230,8 @@ TEST_F(WidgetTest, TestWindowVisibilityAfterHide) {
   NonClientFrameView* frame_view = new MinimumSizeFrameView(&widget);
   non_client_view->SetFrameView(frame_view);
 
+  widget.Show();
+  EXPECT_TRUE(IsNativeWindowVisible(widget.GetNativeWindow()));
   widget.Hide();
   EXPECT_FALSE(IsNativeWindowVisible(widget.GetNativeWindow()));
   widget.Show();

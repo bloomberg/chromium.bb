@@ -20,6 +20,7 @@
 #include "ui/views/ime/input_method.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -223,7 +224,6 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   virtual void TearDown() override;
 
  protected:
-  // TODO(tapted): Make this a EventCountView from widget_unittest.cc.
   scoped_ptr<views::View> view_;
   scoped_ptr<BridgedNativeWidget> bridge_;
   BridgedContentView* ns_view_;  // Weak. Owned by bridge_.
@@ -255,7 +255,7 @@ std::string BridgedNativeWidgetTest::GetText() {
 void BridgedNativeWidgetTest::SetUp() {
   BridgedNativeWidgetTestBase::SetUp();
 
-  view_.reset(new views::View);
+  view_.reset(new views::internal::RootView(widget_.get()));
   base::scoped_nsobject<NSWindow> window([test_window() retain]);
 
   // BridgedNativeWidget expects to be initialized with a hidden (deferred)

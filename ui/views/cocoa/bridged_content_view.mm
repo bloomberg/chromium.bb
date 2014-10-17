@@ -30,6 +30,7 @@
 
 @synthesize hostedView = hostedView_;
 @synthesize textInputClient = textInputClient_;
+@synthesize willShow = willShow_;
 
 - (id)initWithView:(views::View*)viewToHost {
   DCHECK(viewToHost);
@@ -89,11 +90,13 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  if (!hostedView_)
+  // Note that on a Show, Cocoa calls drawRect: before changing
+  // -[NSWindow isVisible], hence the extra check.
+  if (!hostedView_ || (!willShow_ && ![[self window] isVisible]))
     return;
 
   gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);
-  hostedView_->Paint(&canvas, views::CullSet());
+  hostedView_->GetWidget()->OnNativeWidgetPaint(&canvas);
 }
 
 // NSResponder implementation.

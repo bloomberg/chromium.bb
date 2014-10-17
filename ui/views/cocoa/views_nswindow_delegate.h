@@ -26,6 +26,16 @@ class BridgedNativeWidget;
 // Initialize with the given |parent|.
 - (id)initWithBridgedNativeWidget:(views::BridgedNativeWidget*)parent;
 
+// Notify that the window is about to be reordered on screen. This ensures a
+// paint will occur, even if Cocoa has not yet updated the window visibility.
+- (void)onWindowOrderWillChange:(NSWindowOrderingMode)orderingMode;
+
+// Notify that the window has been reordered in (or removed from) the window
+// server's screen list. This is a substitute for -[NSWindowDelegate
+// windowDidExpose:], which is only sent for nonretained windows (those without
+// a backing store).
+- (void)onWindowOrderChanged;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_VIEWS_NSWINDOW_DELEGATE_H_

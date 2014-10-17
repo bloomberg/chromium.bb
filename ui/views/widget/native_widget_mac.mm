@@ -18,9 +18,14 @@
 #include "ui/views/window/native_frame_view.h"
 
 @interface NativeWidgetMacNSWindow : NSWindow
+- (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 @end
 
 @implementation NativeWidgetMacNSWindow
+
+- (ViewsNSWindowDelegate*)viewsNSWindowDelegate {
+  return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
+}
 
 // Override canBecome{Key,Main}Window to always return YES, otherwise Windows
 // with a styleMask of NSBorderlessWindowMask default to NO.
@@ -30,6 +35,15 @@
 
 - (BOOL)canBecomeMainWindow {
   return YES;
+}
+
+// Override orderWindow to intercept visibility changes, since there is no way
+// to observe these changes via NSWindowDelegate.
+- (void)orderWindow:(NSWindowOrderingMode)orderingMode
+         relativeTo:(NSInteger)otherWindowNumber {
+  [[self viewsNSWindowDelegate] onWindowOrderWillChange:orderingMode];
+  [super orderWindow:orderingMode relativeTo:otherWindowNumber];
+  [[self viewsNSWindowDelegate] onWindowOrderChanged];
 }
 
 @end
@@ -301,6 +315,12 @@ void NativeWidgetMac::SetShape(gfx::NativeRegion shape) {
 }
 
 void NativeWidgetMac::Close() {
+  if (!bridge_)
+    return;
+
+  // Clear the view early to suppress repaints.
+  bridge_->SetRootView(NULL);
+
   NSWindow* window = GetNativeWindow();
   // Calling performClose: will momentarily highlight the close button, but
   // AppKit will reject it if there is no close button.
