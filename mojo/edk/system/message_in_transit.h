@@ -59,9 +59,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Subtypes for type |kTypeMessagePipe|:
   // Nothing currently.
   // Subtypes for type |kTypeChannel|:
-  static const Subtype kSubtypeChannelRunMessagePipeEndpoint = 0;
+  static const Subtype kSubtypeChannelAttachAndRunEndpoint = 0;
   static const Subtype kSubtypeChannelRemoveMessagePipeEndpoint = 1;
   static const Subtype kSubtypeChannelRemoveMessagePipeEndpointAck = 2;
+
   // Subtypes for type |kTypeRawChannel|:
   static const Subtype kSubtypeRawChannelPosixExtraPlatformHandles = 0;
 

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/system/message_pipe_endpoint.h"
 #include "mojo/edk/system/transport_data.h"
 
 namespace mojo {
@@ -125,8 +124,9 @@ void Channel::RunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
   endpoint->Run(remote_id);
 }
 
-void Channel::AttachAndRunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
-                                   bool is_bootstrap) {
+ChannelEndpointId Channel::AttachAndRunEndpoint(
+    scoped_refptr<ChannelEndpoint> endpoint,
+    bool is_bootstrap) {
   DCHECK(endpoint.get());
 
   ChannelEndpointId local_id;
@@ -144,8 +144,6 @@ void Channel::AttachAndRunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
 
       remote_id = ChannelEndpointId::GetBootstrap();
     } else {
-      // TODO(vtl): More work needs to be done to enable the non-bootstrap case.
-      NOTREACHED() << "Non-bootstrap case not yet fully implemented";
       do {
         local_id = local_id_generator_.GetNext();
       } while (local_id_to_endpoint_map_.find(local_id) !=
@@ -158,29 +156,22 @@ void Channel::AttachAndRunEndpoint(scoped_refptr<ChannelEndpoint> endpoint,
     local_id_to_endpoint_map_[local_id] = endpoint;
   }
 
+  if (!is_bootstrap) {
+    if (!SendControlMessage(
+            MessageInTransit::kSubtypeChannelAttachAndRunEndpoint,
+            local_id,
+            remote_id)) {
+      HandleLocalError(base::StringPrintf(
+          "Failed to send message to run remote message pipe endpoint (local "
+          "ID %u, remote ID %u)",
+          static_cast<unsigned>(local_id.value()),
+          static_cast<unsigned>(remote_id.value())));
+      // TODO(vtl): Should we continue on to |AttachAndRun()|?
+    }
+  }
+
   endpoint->AttachAndRun(this, local_id, remote_id);
-}
-
-void Channel::RunRemoteMessagePipeEndpoint(ChannelEndpointId local_id,
-                                           ChannelEndpointId remote_id) {
-#if DCHECK_IS_ON
-  {
-    base::AutoLock locker(lock_);
-    DCHECK(local_id_to_endpoint_map_.find(local_id) !=
-           local_id_to_endpoint_map_.end());
-  }
-#endif
-
-  if (!SendControlMessage(
-          MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint,
-          local_id,
-          remote_id)) {
-    HandleLocalError(base::StringPrintf(
-        "Failed to send message to run remote message pipe endpoint (local ID "
-        "%u, remote ID %u)",
-        static_cast<unsigned>(local_id.value()),
-        static_cast<unsigned>(remote_id.value())));
-  }
+  return remote_id;
 }
 
 bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
@@ -241,6 +232,25 @@ void Channel::DetachEndpoint(ChannelEndpoint* endpoint,
         static_cast<unsigned>(local_id.value()),
         static_cast<unsigned>(remote_id.value())));
   }
+}
+
+scoped_refptr<MessagePipe> Channel::PassIncomingMessagePipe(
+    ChannelEndpointId local_id) {
+  // No need to check the validity of |local_id| -- if it's not valid, it simply
+  // won't be in |incoming_message_pipes_|.
+  DVLOG_IF(2, !local_id.is_valid() || !local_id.is_remote())
+      << "Attempt to get invalid incoming message pipe for ID " << local_id;
+
+  base::AutoLock locker(lock_);
+
+  auto it = incoming_message_pipes_.find(local_id);
+  if (it == incoming_message_pipes_.end())
+    return scoped_refptr<MessagePipe>();
+
+  scoped_refptr<MessagePipe> rv;
+  rv.swap(it->second);
+  incoming_message_pipes_.erase(it);
+  return rv;
 }
 
 size_t Channel::GetSerializedPlatformHandleSize() const {
@@ -375,14 +385,14 @@ void Channel::OnReadMessageForChannel(
   }
 
   switch (message_view.subtype()) {
-    case MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint:
-      DVLOG(2) << "Handling channel message to run message pipe (local ID "
-               << message_view.destination_id() << ", remote ID "
-               << message_view.source_id() << ")";
-      if (!OnRunMessagePipeEndpoint(message_view.destination_id(),
-                                    message_view.source_id())) {
+    case MessageInTransit::kSubtypeChannelAttachAndRunEndpoint:
+      DVLOG(2) << "Handling channel message to attach and run message pipe "
+                  "(local ID " << message_view.destination_id()
+               << ", remote ID " << message_view.source_id() << ")";
+      if (!OnAttachAndRunEndpoint(message_view.destination_id(),
+                                  message_view.source_id())) {
         HandleRemoteError(
-            "Received invalid channel message to run message pipe");
+            "Received invalid channel message to attach and run message pipe");
       }
       break;
     case MessageInTransit::kSubtypeChannelRemoveMessagePipeEndpoint:
@@ -411,20 +421,51 @@ void Channel::OnReadMessageForChannel(
   }
 }
 
-bool Channel::OnRunMessagePipeEndpoint(ChannelEndpointId local_id,
-                                       ChannelEndpointId remote_id) {
+bool Channel::OnAttachAndRunEndpoint(ChannelEndpointId local_id,
+                                     ChannelEndpointId remote_id) {
+  // We should only get this for remotely-created local endpoints, so our local
+  // ID should be "remote".
+  if (!local_id.is_valid() || !local_id.is_remote()) {
+    DVLOG(2) << "Received attach and run endpoint with invalid local ID";
+    return false;
+  }
+
+  // Conversely, the remote end should be "local".
+  if (!remote_id.is_valid() || remote_id.is_remote()) {
+    DVLOG(2) << "Received attach and run endpoint with invalid remote ID";
+    return false;
+  }
+
+  // Create a message pipe and thus an endpoint (outside the lock).
   scoped_refptr<ChannelEndpoint> endpoint;
+  scoped_refptr<MessagePipe> message_pipe(
+      MessagePipe::CreateLocalProxy(&endpoint));
+
+  bool success = true;
   {
     base::AutoLock locker(lock_);
 
-    IdToEndpointMap::iterator it = local_id_to_endpoint_map_.find(local_id);
-    if (it == local_id_to_endpoint_map_.end())
-      return false;
+    if (local_id_to_endpoint_map_.find(local_id) ==
+        local_id_to_endpoint_map_.end()) {
+      DCHECK(incoming_message_pipes_.find(local_id) ==
+             incoming_message_pipes_.end());
 
-    endpoint = it->second;
+      // TODO(vtl): Use emplace when we move to C++11 unordered_maps. (It'll
+      // avoid some refcount churn.)
+      local_id_to_endpoint_map_[local_id] = endpoint;
+      incoming_message_pipes_[local_id] = message_pipe;
+    } else {
+      // We need to call |Close()| on the message pipe outside the lock.
+      success = false;
+    }
+  }
+  if (!success) {
+    DVLOG(2) << "Received attach and run endpoint for existing local ID";
+    message_pipe->Close(0);
+    return false;
   }
 
-  RunEndpoint(endpoint, remote_id);
+  endpoint->AttachAndRun(this, local_id, remote_id);
   return true;
 }
 

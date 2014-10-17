@@ -23,7 +23,11 @@ namespace {
 const unsigned kInvalidPort = static_cast<unsigned>(-1);
 
 struct SerializedMessagePipeDispatcher {
-  ChannelEndpointId endpoint_id;
+  // This is the endpoint ID on the receiving side, and should be a "remote ID".
+  // (The receiving side should have already have an endpoint attached and run
+  // via the |Channel|s. This endpoint will have both IDs assigned, so this ID
+  // is only needed to associated that endpoint with a particular dispatcher.)
+  ChannelEndpointId receiver_endpoint_id;
 };
 
 }  // namespace
@@ -104,33 +108,21 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
     return scoped_refptr<MessagePipeDispatcher>();
   }
 
-  scoped_refptr<ChannelEndpoint> channel_endpoint;
-  scoped_refptr<MessagePipeDispatcher> dispatcher =
-      CreateRemoteMessagePipe(&channel_endpoint);
-
-  ChannelEndpointId remote_id =
-      static_cast<const SerializedMessagePipeDispatcher*>(source)->endpoint_id;
-  if (!remote_id.is_valid()) {
-    // This means that the other end was closed, and there were no messages
-    // enqueued for us.
-    // TODO(vtl): This is wrong. We should produce a "dead" message pipe
-    // dispatcher.
-    NOTIMPLEMENTED();
+  const SerializedMessagePipeDispatcher* s =
+      static_cast<const SerializedMessagePipeDispatcher*>(source);
+  scoped_refptr<MessagePipe> message_pipe =
+      channel->PassIncomingMessagePipe(s->receiver_endpoint_id);
+  if (!message_pipe.get()) {
+    LOG(ERROR) << "Failed to deserialize message pipe dispatcher (ID = "
+               << s->receiver_endpoint_id << ")";
     return scoped_refptr<MessagePipeDispatcher>();
   }
-  ChannelEndpointId local_id = channel->AttachEndpoint(channel_endpoint);
-  if (!local_id.is_valid()) {
-    LOG(ERROR) << "Failed to deserialize message pipe dispatcher (failed to "
-                  "attach; remote ID = " << remote_id << ")";
-    return scoped_refptr<MessagePipeDispatcher>();
-  }
-  DVLOG(2) << "Deserializing message pipe dispatcher (remote ID = " << remote_id
-           << ", new local ID = " << local_id << ")";
 
-  channel->RunEndpoint(channel_endpoint, remote_id);
-
-  // TODO(vtl): FIXME -- Need some error handling here.
-  channel->RunRemoteMessagePipeEndpoint(local_id, remote_id);
+  DVLOG(2) << "Deserializing message pipe dispatcher (new local ID = "
+           << s->receiver_endpoint_id << ")";
+  scoped_refptr<MessagePipeDispatcher> dispatcher(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
+  dispatcher->Init(message_pipe, 0);
   return dispatcher;
 }
 
@@ -243,22 +235,15 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
     embedder::PlatformHandleVector* /*platform_handles*/) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
+  SerializedMessagePipeDispatcher* s =
+      static_cast<SerializedMessagePipeDispatcher*>(destination);
+
   // Convert the local endpoint to a proxy endpoint (moving the message queue)
   // and attach it to the channel.
-  ChannelEndpointId endpoint_id =
-      channel->AttachEndpoint(message_pipe_->ConvertLocalToProxy(port_));
-  // Note: It's okay to get an invalid endpoint ID. (It's possible that the
-  // other endpoint -- the one that we're not sending -- was closed in the
-  // intervening time.) In that case, we need to deserialize a "dead" message
-  // pipe dispatcher on the other end. (Note that this is different from just
-  // producing |MOJO_HANDLE_INVALID|.)
-  DVLOG(2) << "Serializing message pipe dispatcher (local ID = " << endpoint_id
-           << ")";
-
-  // We now have a local ID. Before we can run the proxy endpoint, we need to
-  // get an ack back from the other side with the remote ID.
-  static_cast<SerializedMessagePipeDispatcher*>(destination)->endpoint_id =
-      endpoint_id;
+  s->receiver_endpoint_id = channel->AttachAndRunEndpoint(
+      message_pipe_->ConvertLocalToProxy(port_), false);
+  DVLOG(2) << "Serializing message pipe dispatcher (remote ID = "
+           << s->receiver_endpoint_id << ")";
 
   message_pipe_ = nullptr;
   port_ = kInvalidPort;
