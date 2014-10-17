@@ -40,6 +40,7 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferId& id,
       const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
       unsigned internalformat);
 
  private:

@@ -17,6 +17,7 @@ class NativePixmap : public base::RefCounted<NativePixmap> {
 
   virtual void* /* EGLClientBuffer */ GetEGLClientBuffer() = 0;
   virtual int GetDmaBufFd() = 0;
+  virtual int GetDmaBufPitch() = 0;
 
  protected:
   virtual ~NativePixmap() {}

@@ -63,7 +63,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
           return scoped_refptr<gfx::GLImage>();
 
         return ozone_buffer_factory_.CreateImageForGpuMemoryBuffer(
-            handle.global_id, size, internalformat);
+            handle.global_id, size, format, internalformat);
       default:
         NOTREACHED();
         return scoped_refptr<gfx::GLImage>();

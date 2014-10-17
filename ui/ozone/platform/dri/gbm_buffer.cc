@@ -71,7 +71,10 @@ void* GbmPixmap::GetEGLClientBuffer() {
 }
 
 int GbmPixmap::GetDmaBufFd() {
-  NOTIMPLEMENTED();
+  return -1;
+}
+
+int GbmPixmap::GetDmaBufPitch() {
   return -1;
 }
 
