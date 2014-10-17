@@ -1698,13 +1698,9 @@ def RietveldUpload(options, args, cl, change):
                     if ': ' in line)
         remote_url = keys.get('URL', None)
     else:
-      remote = cl.GetRemoteUrl()
-      branch = cl.GetUpstreamBranch()
-      if remote and branch:
-        if 'googlesource' in remote:
-          remote_url = remote + '/+/' + branch.split('/')[-1]
-        else:
-          remote_url = remote + '@' + branch.split('/')[-1]
+      if cl.GetRemoteUrl() and '/' in cl.GetUpstreamBranch():
+        remote_url = (cl.GetRemoteUrl() + '@'
+                      + cl.GetUpstreamBranch().split('/')[-1])
   if remote_url:
     upload_args.extend(['--base_url', remote_url])
 
