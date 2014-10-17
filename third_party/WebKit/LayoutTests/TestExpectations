@@ -1452,6 +1452,9 @@ crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pix
 
 crbug.com/414283 [ Mac ] fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure ]
 
+crbug.com/424756 fast/canvas/canvas-ImageData-behaviour.html [ Pass Failure ]
+crbug.com/424756 virtual/gpu/fast/canvas/canvas-ImageData-behaviour.html [ Pass Failure ]
+
 # Updating Javascript spec.
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebaseline ]
