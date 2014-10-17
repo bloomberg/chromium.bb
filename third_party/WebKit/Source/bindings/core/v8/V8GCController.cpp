@@ -424,12 +424,26 @@ void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 
 void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 {
-    v8::HandleScope scope(isolate);
-
     TRACE_EVENT_END0("v8", "majorGC");
     if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         ScriptForbiddenScope::exit();
+
+        // Schedule a precise GC to avoid the following scenario:
+        // (1) A DOM object X holds a v8::Persistent to a V8 object.
+        //     Assume that X is small but the V8 object is huge.
+        //     The v8::Persistent is released when X is destructed.
+        // (2) X's DOM wrapper is created.
+        // (3) The DOM wrapper becomes unreachable.
+        // (4) V8 triggers a GC. The V8's GC collects the DOM wrapper.
+        //     However, X is not collected until a next Oilpan's GC is
+        //     triggered.
+        // (5) If a lot of such DOM objects are created, we end up with
+        //     a situation where V8's GC collects the DOM wrappers but
+        //     the DOM objects are not collected forever. (Note that
+        //     Oilpan's GC is not triggered unless Oilpan's heap gets full.)
+        // (6) V8 hits OOM.
+        ThreadState::current()->setGCRequested();
     }
 }
 
