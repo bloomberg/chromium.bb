@@ -113,7 +113,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, MultipleUnits)
     initLengthArray(expectation);
     OwnPtrWillBeRawPtr<InterpolableList> list = createInterpolableLength(0, 10, 0, 10, 0, 10, 0, 10, 0, 10);
     toCSSPrimitiveValue(interpolableValueToLength(list.get(), ValueRangeAll).get())->accumulateLengthArray(expectation);
-    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(10%% + 10ex + 10ch + 10vh + 10vmax)")));
+    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(10% + 10ex + 10ch + 10vh + 10vmax)")));
 }
 
 }

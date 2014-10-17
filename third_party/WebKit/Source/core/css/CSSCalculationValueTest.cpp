@@ -179,20 +179,20 @@ TEST(CSSCalculationValue, AddToLengthUnitValues)
 
     expectation.at(CSSPrimitiveValue::UnitTypePixels) = 0;
     expectation.at(CSSPrimitiveValue::UnitTypePercentage) = 20;
-    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "20%%")));
+    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "20%")));
 
     expectation.at(CSSPrimitiveValue::UnitTypePixels) = 30;
     expectation.at(CSSPrimitiveValue::UnitTypePercentage) = -40;
-    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(30px - 40%%)")));
+    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(30px - 40%)")));
 
     expectation.at(CSSPrimitiveValue::UnitTypePixels) = 90;
     expectation.at(CSSPrimitiveValue::UnitTypePercentage) = 10;
-    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(1in + 10%% - 6px)")));
+    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc(1in + 10% - 6px)")));
 
     expectation.at(CSSPrimitiveValue::UnitTypePixels) = 15;
     expectation.at(CSSPrimitiveValue::UnitTypeFontSize) = 20;
     expectation.at(CSSPrimitiveValue::UnitTypePercentage) = -40;
-    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc((1 * 2) * (5px + 20em / 2) - 80%% / (3 - 1) + 5px)")));
+    EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "calc((1 * 2) * (5px + 20em / 2) - 80% / (3 - 1) + 5px)")));
 }
 
 }
