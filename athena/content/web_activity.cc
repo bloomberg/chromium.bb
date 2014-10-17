@@ -47,8 +47,11 @@ class WebActivityController : public AcceleratorHandler {
     CMD_STOP,
   };
 
-  explicit WebActivityController(views::WebView* web_view)
-      : web_view_(web_view), reserved_accelerator_enabled_(true) {}
+  explicit WebActivityController(WebActivity* owner_activity,
+                                 views::WebView* web_view)
+      : owner_activity_(owner_activity),
+        web_view_(web_view),
+        reserved_accelerator_enabled_(true) {}
   virtual ~WebActivityController() {}
 
   // Installs accelerators for web activity.
@@ -136,7 +139,7 @@ class WebActivityController : public AcceleratorHandler {
         web_view_->GetWebContents()->GetController().GoForward();
         return true;
       case CMD_CLOSE:
-        web_view_->GetWidget()->Close();
+        Activity::Delete(owner_activity_);
         return true;
       case CMD_STOP:
         web_view_->GetWebContents()->Stop();
@@ -145,6 +148,7 @@ class WebActivityController : public AcceleratorHandler {
     return false;
   }
 
+  Activity* const owner_activity_;
   views::WebView* web_view_;
   bool reserved_accelerator_enabled_;
   scoped_ptr<AcceleratorManager> accelerator_manager_;
@@ -164,9 +168,11 @@ const float kDistanceReload = 150;
 // own content so that it can eject and reload it.
 class AthenaWebView : public views::WebView {
  public:
-  explicit AthenaWebView(content::BrowserContext* context)
+  explicit AthenaWebView(content::BrowserContext* context,
+                         WebActivity* owner_activity)
       : views::WebView(context),
-        controller_(new WebActivityController(this)),
+        controller_(new WebActivityController(owner_activity, this)),
+        owner_activity_(owner_activity),
         fullscreen_(false),
         overscroll_y_(0) {
     SetEmbedFullscreenWidgetMode(true);
@@ -174,9 +180,11 @@ class AthenaWebView : public views::WebView {
     // content status to unloaded if that happens.
   }
 
-  AthenaWebView(content::WebContents* web_contents)
+  AthenaWebView(content::WebContents* web_contents,
+                WebActivity* owner_activity)
       : views::WebView(web_contents->GetBrowserContext()),
-        controller_(new WebActivityController(this)) {
+        controller_(new WebActivityController(owner_activity, this)),
+        owner_activity_(owner_activity) {
     scoped_ptr<content::WebContents> old_contents(
         SwapWebContents(scoped_ptr<content::WebContents>(web_contents)));
   }
@@ -376,6 +384,10 @@ class AthenaWebView : public views::WebView {
     return athena::OpenFileChooser(web_contents, params);
   }
 
+  virtual void CloseContents(content::WebContents* contents) override {
+    Activity::Delete(owner_activity_);
+  }
+
  private:
   void CreateProgressBar() {
     CHECK(!progress_bar_);
@@ -404,6 +416,8 @@ class AthenaWebView : public views::WebView {
 
   scoped_ptr<WebActivityController> controller_;
 
+  Activity* const owner_activity_;
+
   // If the activity got evicted, this is the web content which holds the known
   // state of the content before eviction.
   scoped_ptr<content::WebContents> evicted_web_contents_;
@@ -426,7 +440,7 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
                          const base::string16& title,
                          const GURL& url)
     : browser_context_(browser_context),
-      web_view_(new AthenaWebView(browser_context)),
+      web_view_(new AthenaWebView(browser_context, this)),
       title_(title),
       title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
@@ -439,7 +453,7 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
 
 WebActivity::WebActivity(content::WebContents* contents)
     : browser_context_(contents->GetBrowserContext()),
-      web_view_(new AthenaWebView(contents)),
+      web_view_(new AthenaWebView(contents, this)),
       title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
       weak_ptr_factory_(this) {
