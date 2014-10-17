@@ -108,7 +108,7 @@ class AndroidMkWriter(object):
     self.android_top_dir = android_top_dir
 
   def Write(self, qualified_target, relative_target, base_path, output_filename,
-            spec, configs, part_of_all, write_alias_target):
+            spec, configs, part_of_all, write_alias_target, sdk_version):
     """The main entry point: writes a .mk file for a single target.
 
     Arguments:
@@ -121,6 +121,7 @@ class AndroidMkWriter(object):
       part_of_all: flag indicating this target is part of 'all'
       write_alias_target: flag indicating whether to create short aliases for
                           this target
+      sdk_version: what to emit for LOCAL_SDK_VERSION in output
     """
     gyp.common.EnsureDirExists(output_filename)
 
@@ -166,6 +167,7 @@ class AndroidMkWriter(object):
     else:
       self.WriteLn('LOCAL_MODULE_TARGET_ARCH := '
                    '$(TARGET_$(GYP_VAR_PREFIX)ARCH)')
+      self.WriteLn('LOCAL_SDK_VERSION := %s' % sdk_version)
 
     # Grab output directories; needed for Actions and Rules.
     if self.toolset == 'host':
@@ -719,16 +721,20 @@ class AndroidMkWriter(object):
 
     return (clean_cflags, include_paths)
 
-  def ComputeAndroidLibraryModuleNames(self, libraries):
-    """Compute the Android module names from libraries, ie spec.get('libraries')
+  def FilterLibraries(self, libraries):
+    """Filter the 'libraries' key to separate things that shouldn't be ldflags.
+
+    Library entries that look like filenames should be converted to android
+    module names instead of being passed to the linker as flags.
 
     Args:
       libraries: the value of spec.get('libraries')
     Returns:
-      A tuple (static_lib_modules, dynamic_lib_modules)
+      A tuple (static_lib_modules, dynamic_lib_modules, ldflags)
     """
     static_lib_modules = []
     dynamic_lib_modules = []
+    ldflags = []
     for libs in libraries:
       # Libs can have multiple words.
       for lib in libs.split():
@@ -745,13 +751,9 @@ class AndroidMkWriter(object):
         if match:
           dynamic_lib_modules.append(match.group(1))
           continue
-        # "-lstlport" -> libstlport
         if lib.startswith('-l'):
-          if lib.endswith('_static'):
-            static_lib_modules.append('lib' + lib[2:])
-          else:
-            dynamic_lib_modules.append('lib' + lib[2:])
-    return (static_lib_modules, dynamic_lib_modules)
+          ldflags.append(lib)
+    return (static_lib_modules, dynamic_lib_modules, ldflags)
 
 
   def ComputeDeps(self, spec):
@@ -779,19 +781,20 @@ class AndroidMkWriter(object):
     spec, configs: input from gyp.
     link_deps: link dependency list; see ComputeDeps()
     """
+    # Libraries (i.e. -lfoo)
+    # These must be included even for static libraries as some of them provide
+    # implicit include paths through the build system.
+    libraries = gyp.common.uniquer(spec.get('libraries', []))
+    static_libs, dynamic_libs, ldflags_libs = self.FilterLibraries(libraries)
+
     if self.type != 'static_library':
       for configname, config in sorted(configs.iteritems()):
         ldflags = list(config.get('ldflags', []))
         self.WriteLn('')
         self.WriteList(ldflags, 'LOCAL_LDFLAGS_%s' % configname)
-      self.WriteLn('\nLOCAL_LDFLAGS := $(LOCAL_LDFLAGS_$(GYP_CONFIGURATION))')
-
-    # Libraries (i.e. -lfoo)
-    # These must be included even for static libraries as some of them provide
-    # implicit include paths through the build system.
-    libraries = gyp.common.uniquer(spec.get('libraries', []))
-    static_libs, dynamic_libs = self.ComputeAndroidLibraryModuleNames(
-        libraries)
+      self.WriteList(ldflags_libs, 'LOCAL_GYP_LIBS')
+      self.WriteLn('LOCAL_LDFLAGS := $(LOCAL_LDFLAGS_$(GYP_CONFIGURATION)) '
+                   '$(LOCAL_GYP_LIBS)')
 
     # Link dependencies (i.e. other gyp targets this target depends on)
     # These need not be included for static libraries as within the gyp build
@@ -962,6 +965,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   builddir_name = generator_flags.get('output_dir', 'out')
   limit_to_target_all = generator_flags.get('limit_to_target_all', False)
   write_alias_targets = generator_flags.get('write_alias_targets', True)
+  sdk_version = generator_flags.get('aosp_sdk_version', 19)
   android_top_dir = os.environ.get('ANDROID_BUILD_TOP')
   assert android_top_dir, '$ANDROID_BUILD_TOP not set; you need to run lunch.'
 
@@ -1058,7 +1062,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     android_module = writer.Write(qualified_target, relative_target, base_path,
                                   output_file, spec, configs,
                                   part_of_all=part_of_all,
-                                  write_alias_target=write_alias_targets)
+                                  write_alias_target=write_alias_targets,
+                                  sdk_version=sdk_version)
     if android_module in android_modules:
       print ('ERROR: Android module names must be unique. The following '
              'targets both generate Android module name %s.\n  %s\n  %s' %
