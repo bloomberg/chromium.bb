@@ -92,6 +92,7 @@ public final class SessionControlMessages {
             this.rawRequestType = rawRequestType;
         }
 
+        @Override
         public void write(JsonWriter writer) throws IOException {
             super.write(writer);
             writer.name("rawRequestType");
@@ -153,8 +154,8 @@ public final class SessionControlMessages {
         switch (getMessageType(ClientMessageType.class,
                                rawType,
                                ClientMessageType.UNKNOWN_REQUEST)) {
-           case UNKNOWN_REQUEST:
-               return new UnknownRequestMessage(rawType);
+            case UNKNOWN_REQUEST:
+                return new UnknownRequestMessage(rawType);
         }
         throw new IOException("Invalid message");
     }
@@ -175,10 +176,10 @@ public final class SessionControlMessages {
         reader.endObject();
 
         switch (getMessageType(ServerMessageType.class, rawType, null)) {
-           case ICE_EXCHANGE:
-               return new IceExchangeMessage();
-           case UNKNOWN_RESPONSE:
-               return new UnknownResponseMessage(rawRequestType);
+            case ICE_EXCHANGE:
+                return new IceExchangeMessage();
+            case UNKNOWN_RESPONSE:
+                return new UnknownResponseMessage(rawRequestType);
         }
         throw new IOException("Invalid message");
     }

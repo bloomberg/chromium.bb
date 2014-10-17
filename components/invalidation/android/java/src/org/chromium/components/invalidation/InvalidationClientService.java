@@ -455,7 +455,7 @@ public class InvalidationClientService extends AndroidListener {
     void requestSyncFromContentResolver(
             Bundle bundle, Account account, String contractAuthority) {
         Log.d(TAG, "Request sync: " + account + " / " + contractAuthority + " / "
-            + bundle.keySet());
+                + bundle.keySet());
         ContentResolver.requestSync(account, contractAuthority, bundle);
     }
 

@@ -51,45 +51,45 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testSuccessURLRequest() throws Exception {
         TestHttpUrlRequestListener listener =
-            createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_SUCCESS_URL);
+                createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_SUCCESS_URL);
         assertEquals(MOCK_CRONET_TEST_SUCCESS_URL, listener.mUrl);
         assertEquals(200, listener.mHttpStatusCode);
         assertEquals("this is a text file\n",
-                     new String(listener.mResponseAsBytes));
+                new String(listener.mResponseAsBytes));
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testRedirectURLRequest() throws Exception {
         TestHttpUrlRequestListener listener =
-            createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_REDIRECT_URL);
+                createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_REDIRECT_URL);
 
         // Currently Cronet does not expose the url after redirect.
         assertEquals(MOCK_CRONET_TEST_REDIRECT_URL, listener.mUrl);
         assertEquals(200, listener.mHttpStatusCode);
         // Expect that the request is redirected to success.txt.
         assertEquals("this is a text file\n",
-                     new String(listener.mResponseAsBytes));
+                new String(listener.mResponseAsBytes));
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testNotFoundURLRequest() throws Exception {
         TestHttpUrlRequestListener listener =
-            createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_NOTFOUND_URL);
+                createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_NOTFOUND_URL);
         assertEquals(MOCK_CRONET_TEST_NOTFOUND_URL, listener.mUrl);
         assertEquals(404, listener.mHttpStatusCode);
         assertEquals(
-            "<!DOCTYPE html>\n<html>\n<head>\n<title>Not found</title>\n" +
+                "<!DOCTYPE html>\n<html>\n<head>\n<title>Not found</title>\n" +
                 "<p>Test page loaded.</p>\n</head>\n</html>\n",
-            new String(listener.mResponseAsBytes));
+                new String(listener.mResponseAsBytes));
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testFailedURLRequest() throws Exception {
         TestHttpUrlRequestListener listener =
-            createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_FAILED_URL);
+                createUrlRequestAndWaitForComplete(MOCK_CRONET_TEST_FAILED_URL);
         assertEquals(MOCK_CRONET_TEST_FAILED_URL, listener.mUrl);
         assertEquals(0, listener.mHttpStatusCode);
     }

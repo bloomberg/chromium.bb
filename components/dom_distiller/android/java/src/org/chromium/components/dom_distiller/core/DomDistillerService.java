@@ -43,7 +43,7 @@ public final class DomDistillerService {
 
     private native boolean nativeHasEntry(long nativeDomDistillerServiceAndroid, String entryId);
     private native String nativeGetUrlForEntry(
-        long nativeDomDistillerServiceAndroid, String entryId);
+            long nativeDomDistillerServiceAndroid, String entryId);
     private static native long nativeGetDistilledPagePrefsPtr(
-        long nativeDomDistillerServiceAndroid);
+            long nativeDomDistillerServiceAndroid);
 }

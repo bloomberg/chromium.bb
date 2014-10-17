@@ -25,11 +25,11 @@ public class ColorChooserAndroid {
     private ColorChooserAndroid(long nativeColorChooserAndroid,
             Context context, int initialColor, ColorSuggestion[] suggestions) {
         OnColorChangedListener listener = new OnColorChangedListener() {
-          @Override
-          public void onColorChanged(int color) {
-              mDialog.dismiss();
-              nativeOnColorChosen(mNativeColorChooserAndroid, color);
-          }
+            @Override
+            public void onColorChanged(int color) {
+                mDialog.dismiss();
+                nativeOnColorChosen(mNativeColorChooserAndroid, color);
+            }
         };
 
         mNativeColorChooserAndroid = nativeColorChooserAndroid;
@@ -52,7 +52,7 @@ public class ColorChooserAndroid {
             int initialColor,
             ColorSuggestion[] suggestions) {
         ColorChooserAndroid chooser = new ColorChooserAndroid(nativeColorChooserAndroid,
-            contentViewCore.getContext(), initialColor, suggestions);
+                contentViewCore.getContext(), initialColor, suggestions);
         chooser.openColorChooser();
         return chooser;
     }

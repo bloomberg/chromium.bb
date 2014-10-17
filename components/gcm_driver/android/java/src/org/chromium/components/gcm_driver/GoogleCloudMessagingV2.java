@@ -99,7 +99,7 @@ public class GoogleCloudMessagingV2 {
             if (err != null) {
                 throw new IOException(err);
             } else {
-               throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
+                throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
             }
         } catch (InterruptedException e) {
             throw new IOException(e.getMessage());
@@ -109,9 +109,7 @@ public class GoogleCloudMessagingV2 {
     private void internalRegister(Messenger messenger, String subtype, String... senderIds) {
         Intent intent = new Intent(ACTION_C2DM_REGISTER);
         intent.setPackage(GOOGLE_PLAY_SERVICES_PACKAGE);
-        if (subtype != null) {
-          intent.putExtra("subtype", subtype);
-        }
+        if (subtype != null) intent.putExtra("subtype", subtype);
         intent.putExtra(EXTRA_MESSENGER, messenger);
         setPackageNameExtra(intent);
         intent.putExtra(EXTRA_SENDER, getFlatSenderIds(senderIds));
@@ -195,7 +193,7 @@ public class GoogleCloudMessagingV2 {
         Intent intent = new Intent(ACTION_C2DM_UNREGISTER);
         intent.setPackage(GOOGLE_PLAY_SERVICES_PACKAGE);
         if (subtype != null) {
-          intent.putExtra("subtype", subtype);
+            intent.putExtra("subtype", subtype);
         }
         intent.putExtra(EXTRA_MESSENGER, messenger);
         setPackageNameExtra(intent);

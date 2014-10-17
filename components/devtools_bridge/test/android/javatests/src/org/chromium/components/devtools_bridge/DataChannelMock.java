@@ -74,7 +74,7 @@ public class DataChannelMock extends AbstractDataChannel {
     @Override
     public void registerObserver(final Observer observer) {
         mSignalingThread.invoke(new Runnable() {
-        @Override
+            @Override
             public void run() {
                 Assert.assertNull(mObserver);
                 mObserver = observer;
@@ -86,7 +86,7 @@ public class DataChannelMock extends AbstractDataChannel {
     @Override
     public void unregisterObserver() {
         mSignalingThread.invoke(new Runnable() {
-        @Override
+            @Override
             public void run() {
                 Assert.assertNotNull(mObserver);
                 mObserver = null;

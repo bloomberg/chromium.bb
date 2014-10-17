@@ -65,7 +65,7 @@ public class GCMListener extends MultiplexingGcmListener.AbstractListener {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override public void run() {
                 GCMDriver.onMessageReceived(getApplicationContext(), appId,
-                    intent.getExtras());
+                        intent.getExtras());
             }
         });
     }

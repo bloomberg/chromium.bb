@@ -359,7 +359,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             }
 
             nativeStart(mUrlRequestAdapter);
-          }
+        }
     }
 
     @Override
@@ -510,7 +510,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
                     mContentLength > mContentLengthLimit &&
                     mCancelIfContentLengthOverLimit) {
                 onContentLengthOverLimit();
-                    return;
+                return;
             }
 
             if (mBufferFullResponse && mContentLength != -1 &&

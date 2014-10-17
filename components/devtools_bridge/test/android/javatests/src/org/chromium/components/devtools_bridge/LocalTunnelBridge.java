@@ -97,7 +97,7 @@ public class LocalTunnelBridge {
                     throws ProtocolError {
                 if (mLogPackets) {
                     Log.d(TAG, "Received server data packet with "
-                          + Integer.toString(data.length) + " bytes");
+                            + Integer.toString(data.length) + " bytes");
                 }
                 super.onReceivedDataPacket(connectionId, data);
             }

@@ -613,7 +613,7 @@ public class InvalidationClientServiceTest extends
         objectIds.add(ObjectId.newInstance(1, "obj1".getBytes()));
         objectIds.add(ObjectId.newInstance(2, "obj2".getBytes()));
         Intent registrationIntent =
-            createRegisterIntent(account, new int[] {1, 2}, new String[] {"obj1", "obj2"});
+                createRegisterIntent(account, new int[] {1, 2}, new String[] {"obj1", "obj2"});
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, false /* isReady */));
 

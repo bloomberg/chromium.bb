@@ -39,7 +39,7 @@ public class TestUtils {
                 executor.shutdown();
                 return response;
             }
-       });
+        });
     }
 
     public static void writeAndShutdown(LocalSocket socket, String data) throws IOException {
