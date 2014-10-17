@@ -327,39 +327,39 @@
           },
           {
             "title": "Learn with Codelab",
-            "href": "/apps/app_codelab1_setup",
+            "href": "/apps/app_codelab_intro",
             "items": [
               {
-                "title": "1 - Set Up Development Environment",
-                "href": "/apps/app_codelab1_setup"
+                "title": "Intro - Build Chrome App",
+                "href": "/apps/app_codelab_intro"
               },
               {
-                "title": "2 - Create Basic App",
-                "href": "/apps/app_codelab2_basic"
+                "title": "1 - Create and run a Chrome App",
+                "href": "/apps/app_codelab_basics"
               },
               {
-                "title": "3 - Create MVC",
-                "href": "/apps/app_codelab3_mvc"
+                "title": "2 - Import an existing web app",
+                "href": "/apps/app_codelab_import_todomvc"
               },
               {
-                "title": "4 - Save & Fetch Data",
-                "href": "/apps/app_codelab5_data"
+                "title": "3 - Add alarms and notifications",
+                "href": "/apps/app_codelab_alarms"
               },
               {
-                "title": "5 - Manage App Lifecycle",
-                "href": "/apps/app_codelab6_lifecycle"
+                "title": "4 - Open external links with a webview",
+                "href": "/apps/app_codelab_webview"
               },
               {
-                "title": "6 - Access User's Data",
-                "href": "/apps/app_codelab7_useridentification"
+                "title": "5 - Add images from the web",
+                "href": "/apps/app_codelab_images"
               },
               {
-                "title": "7 - Access Web Resources",
-                "href": "/apps/app_codelab8_webresources"
+                "title": "6 - Export todos to the filesystem",
+                "href": "/apps/app_codelab_filesystem"
               },
               {
-                "title": "8 - Publish App",
-                "href": "/apps/app_codelab_10_publishing"
+                "title": "7 - Publish your app",
+                "href": "/apps/app_codelab_publish"
               }
             ]
           },

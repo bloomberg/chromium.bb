@@ -117,6 +117,12 @@ $toc-width: 28%;
   }
 }
 
+// Multi-step codelabs
+.h1-step { display: block; font-size: 0.5em; line-height: 150%; }
+
+// API roundup on codelabs
+.anchor-link-icon { padding-left: 1px; }
+
 // Large than mobile.
 @media only screen and (min-width: $break-small)  { 
   .inline-toc { 

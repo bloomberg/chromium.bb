@@ -8,5 +8,14 @@
   "systemInfo_display": "system_display",
   "systemInfo_memory": "system_memory",
   "webview": "tags/webview",
-  "webview_tag": "tags/webview"
+  "webview_tag": "tags/webview",
+  "app_codelab": "app_codelab_intro",
+  "app_codelab1_setup": "app_codelab_intro",
+  "app_codelab2_basic": "app_codelab_intro",
+  "app_codelab3_mvc": "app_codelab_intro",
+  "app_codelab5_data": "app_codelab_intro",
+  "app_codelab6_lifecycle": "app_codelab_intro",
+  "app_codelab7_useridentification": "app_codelab_intro",
+  "app_codelab8_webresources": "app_codelab_intro",
+  "app_codelab_10_publishing": "app_codelab_intro"
 }
