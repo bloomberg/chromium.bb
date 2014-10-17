@@ -24,9 +24,11 @@
 #include "core/svg/SVGGraphicsElement.h"
 
 #include "core/SVGNames.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"
+#include "core/svg/SVGElementRareData.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
@@ -155,16 +157,14 @@ AffineTransform SVGGraphicsElement::animatedLocalTransform() const
         m_transform->currentValue()->concatenate(matrix);
     }
 
-    if (m_supplementalTransform)
-        return *m_supplementalTransform * matrix;
+    if (hasSVGRareData())
+        return *svgRareData()->animateMotionTransform() * matrix;
     return matrix;
 }
 
-AffineTransform* SVGGraphicsElement::supplementalTransform()
+AffineTransform* SVGGraphicsElement::animateMotionTransform()
 {
-    if (!m_supplementalTransform)
-        m_supplementalTransform = adoptPtr(new AffineTransform);
-    return m_supplementalTransform.get();
+    return ensureSVGRareData()->animateMotionTransform();
 }
 
 bool SVGGraphicsElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -77,6 +77,8 @@ public:
     void setUseOverrideComputedStyle(bool value) { m_useOverrideComputedStyle = value; }
     void setNeedsOverrideComputedStyleUpdate() { m_needsOverrideComputedStyleUpdate = true; }
 
+    AffineTransform* animateMotionTransform();
+
     void trace(Visitor*);
     void processWeakMembers(Visitor*);
 
@@ -95,6 +97,8 @@ private:
     bool m_needsOverrideComputedStyleUpdate : 1;
     RefPtrWillBeMember<MutableStylePropertySet> m_animatedSMILStyleProperties;
     RefPtr<RenderStyle> m_overrideComputedStyle;
+    // Used by <animateMotion>
+    OwnPtr<AffineTransform> m_animateMotionTransform;
 };
 
 }

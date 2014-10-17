@@ -53,7 +53,7 @@ AffineTransform SVGTextElement::animatedLocalTransform() const
         transform()->currentValue()->concatenate(matrix);
     }
 
-    const AffineTransform* transform = const_cast<SVGTextElement*>(this)->supplementalTransform();
+    const AffineTransform* transform = const_cast<SVGTextElement*>(this)->animateMotionTransform();
     if (transform)
         return *transform * matrix;
     return matrix;

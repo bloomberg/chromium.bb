@@ -9,6 +9,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGCursorElement.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
@@ -67,5 +68,11 @@ void SVGElementRareData::processWeakMembers(Visitor* visitor)
 #endif
 }
 
+AffineTransform* SVGElementRareData::animateMotionTransform()
+{
+    if (!m_animateMotionTransform)
+        m_animateMotionTransform = adoptPtr(new AffineTransform);
+    return m_animateMotionTransform.get();
+}
 
 }

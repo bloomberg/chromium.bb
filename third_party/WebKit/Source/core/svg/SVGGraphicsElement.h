@@ -52,7 +52,7 @@ public:
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return animatedLocalTransform(); }
     virtual AffineTransform animatedLocalTransform() const;
-    virtual AffineTransform* supplementalTransform() override;
+    virtual AffineTransform* animateMotionTransform() override;
 
     virtual FloatRect getBBox();
     PassRefPtr<SVGRectTearOff> getBBoxFromJavascript();
@@ -82,9 +82,6 @@ protected:
 
 private:
     virtual bool isSVGGraphicsElement() const override final { return true; }
-
-    // Used by <animateMotion>
-    OwnPtr<AffineTransform> m_supplementalTransform;
 };
 
 inline bool isSVGGraphicsElement(const SVGElement& element)

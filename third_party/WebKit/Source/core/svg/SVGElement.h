@@ -101,7 +101,7 @@ public:
     void svgLoadEventTimerFired(Timer<SVGElement>*);
     virtual Timer<SVGElement>* svgLoadEventTimer();
 
-    virtual AffineTransform* supplementalTransform() { return 0; }
+    virtual AffineTransform* animateMotionTransform() { return 0; }
 
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
