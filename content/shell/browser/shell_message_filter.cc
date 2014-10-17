@@ -7,10 +7,11 @@
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
+#include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
-#include "content/shell/browser/shell_notification_manager.h"
 #include "content/shell/common/shell_messages.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -101,8 +102,8 @@ void ShellMessageFilter::OnSetDatabaseQuota(int quota) {
 
 void ShellMessageFilter::OnCheckWebNotificationPermission(const GURL& origin,
                                                           int* result) {
-  ShellNotificationManager* manager =
-      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  LayoutTestNotificationManager* manager =
+      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     *result = manager->CheckPermission(origin);
   else
@@ -111,8 +112,8 @@ void ShellMessageFilter::OnCheckWebNotificationPermission(const GURL& origin,
 
 void ShellMessageFilter::OnGrantWebNotificationPermission(
     const GURL& origin, bool permission_granted) {
-  ShellNotificationManager* manager =
-      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  LayoutTestNotificationManager* manager =
+      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager) {
     manager->SetPermission(origin, permission_granted ?
         blink::WebNotificationPermissionAllowed :
@@ -121,8 +122,8 @@ void ShellMessageFilter::OnGrantWebNotificationPermission(
 }
 
 void ShellMessageFilter::OnClearWebNotificationPermissions() {
-  ShellNotificationManager* manager =
-      ShellContentBrowserClient::Get()->GetShellNotificationManager();
+  LayoutTestNotificationManager* manager =
+      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     manager->ClearPermissions();
 }

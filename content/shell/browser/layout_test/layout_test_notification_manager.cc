@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/shell_notification_manager.h"
+#include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 
 namespace content {
 
-ShellNotificationManager::ShellNotificationManager() {}
+LayoutTestNotificationManager::LayoutTestNotificationManager() {}
 
-ShellNotificationManager::~ShellNotificationManager() {}
+LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
 
 blink::WebNotificationPermission
-ShellNotificationManager::CheckPermission(const GURL& origin) {
+LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
   NotificationPermissionMap::iterator iter =
       permission_map_.find(origin);
   if (iter == permission_map_.end())
@@ -20,19 +20,19 @@ ShellNotificationManager::CheckPermission(const GURL& origin) {
   return iter->second;
 }
 
-void ShellNotificationManager::RequestPermission(
+void LayoutTestNotificationManager::RequestPermission(
     const GURL& origin,
     const base::Callback<void(blink::WebNotificationPermission)>& callback) {
   callback.Run(CheckPermission(origin));
 }
 
-void ShellNotificationManager::SetPermission(
+void LayoutTestNotificationManager::SetPermission(
     const GURL& origin,
     blink::WebNotificationPermission permission) {
   permission_map_[origin] = permission;
 }
 
-void ShellNotificationManager::ClearPermissions() {
+void LayoutTestNotificationManager::ClearPermissions() {
   permission_map_.clear();
 }
 

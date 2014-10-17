@@ -17,7 +17,6 @@ namespace content {
 
 class ShellBrowserContext;
 class ShellBrowserMainParts;
-class ShellNotificationManager;
 class ShellResourceDispatcherHostDelegate;
 
 class ShellContentBrowserClient : public ContentBrowserClient {
@@ -29,9 +28,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
-
-  // Will be lazily created when running layout tests.
-  ShellNotificationManager* GetShellNotificationManager();
 
   // ContentBrowserClient overrides.
   virtual BrowserMainParts* CreateBrowserMainParts(
@@ -59,16 +55,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() override;
-  virtual void RequestDesktopNotificationPermission(
-      const GURL& source_origin,
-      RenderFrameHost* render_frame_host,
-      const base::Callback<void(blink::WebNotificationPermission)>& callback)
-          override;
-  virtual blink::WebNotificationPermission
-      CheckDesktopNotificationPermission(
-          const GURL& source_url,
-          ResourceContext* context,
-          int render_process_id) override;
   virtual SpeechRecognitionManagerDelegate*
       GetSpeechRecognitionManagerDelegate() override;
   virtual net::NetLog* GetNetLog() override;
@@ -100,8 +86,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
  private:
   ShellBrowserContext* ShellBrowserContextForBrowserContext(
       BrowserContext* content_browser_context);
-
-  scoped_ptr<ShellNotificationManager> shell_notification_manager_;
 
   scoped_ptr<ShellResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;

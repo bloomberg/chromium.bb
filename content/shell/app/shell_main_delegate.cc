@@ -20,6 +20,7 @@
 #include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main.h"
+#include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_switches.h"
@@ -308,15 +309,20 @@ void ShellMainDelegate::InitializeResourceBundle() {
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new ShellContentBrowserClient);
+  browser_client_.reset(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree) ?
+          new LayoutTestContentBrowserClient :
+          new ShellContentBrowserClient);
+
   return browser_client_.get();
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    renderer_client_.reset(new LayoutTestContentRendererClient);
-  else
-    renderer_client_.reset(new ShellContentRendererClient);
+  renderer_client_.reset(
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree) ?
+          new LayoutTestContentRendererClient :
+          new ShellContentRendererClient);
+
   return renderer_client_.get();
 }
 
