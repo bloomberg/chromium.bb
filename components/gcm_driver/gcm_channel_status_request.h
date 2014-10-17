@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -49,6 +50,8 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
   static int min_poll_interval_seconds();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(GCMChannelStatusRequestTest, RequestData);
+
   // Overridden from URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
 

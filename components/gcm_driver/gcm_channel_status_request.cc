@@ -60,7 +60,9 @@ void GCMChannelStatusRequest::Start() {
   sync_pb::ExperimentStatusRequest proto_data;
   proto_data.add_experiment_name(kGCMChannelTag);
   std::string upload_data;
-  DCHECK(proto_data.SerializeToString(&upload_data));
+  if (!proto_data.SerializeToString(&upload_data)) {
+     NOTREACHED();
+  }
 
   url_fetcher_.reset(
       net::URLFetcher::Create(request_url, net::URLFetcher::POST, this));

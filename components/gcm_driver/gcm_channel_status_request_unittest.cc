@@ -108,6 +108,30 @@ void GCMChannelStatusRequestTest::OnRequestCompleted(
   poll_interval_seconds_ = poll_interval_seconds;
 }
 
+TEST_F(GCMChannelStatusRequestTest, RequestData) {
+  StartRequest();
+
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  EXPECT_EQ(GURL(request_->channel_status_request_url_),
+            fetcher->GetOriginalURL());
+
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string user_agent_header;
+  headers.GetHeader("User-Agent", &user_agent_header);
+  EXPECT_FALSE(user_agent_header.empty());
+  EXPECT_EQ(request_->user_agent_, user_agent_header);
+
+  std::string upload_data = fetcher->upload_data();
+  EXPECT_FALSE(upload_data.empty());
+  sync_pb::ExperimentStatusRequest proto_data;
+  proto_data.ParseFromString(upload_data);
+  EXPECT_EQ(1, proto_data.experiment_name_size());
+  EXPECT_EQ("gcm_channel", proto_data.experiment_name(0));
+}
+
 TEST_F(GCMChannelStatusRequestTest, ResponseHttpStatusNotOK) {
   StartRequest();
   SetResponseStatusAndString(net::HTTP_UNAUTHORIZED, "");
