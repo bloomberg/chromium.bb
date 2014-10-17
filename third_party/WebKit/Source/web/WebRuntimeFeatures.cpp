@@ -299,4 +299,9 @@ void WebRuntimeFeatures::setCSSViewportEnabled(bool enable)
     RuntimeEnabledFeatures::setCSSViewportEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableV8IdleTasks(bool enable)
+{
+    RuntimeEnabledFeatures::setV8IdleTasksEnabled(enable);
+}
+
 } // namespace blink

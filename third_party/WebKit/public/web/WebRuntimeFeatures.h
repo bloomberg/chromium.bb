@@ -139,6 +139,8 @@ public:
 
     BLINK_EXPORT static void setCSSViewportEnabled(bool);
 
+    BLINK_EXPORT static void enableV8IdleTasks(bool);
+
 private:
     WebRuntimeFeatures();
 };
