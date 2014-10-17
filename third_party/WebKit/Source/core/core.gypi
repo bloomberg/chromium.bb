@@ -3582,6 +3582,7 @@
             'fetch/MemoryCacheTest.cpp',
             'fetch/RawResourceTest.cpp',
             'fetch/ResourceFetcherTest.cpp',
+            'fileapi/FileTest.cpp',
             'frame/ImageBitmapTest.cpp',
             'frame/SubresourceIntegrityTest.cpp',
             'html/HTMLDimensionTest.cpp',

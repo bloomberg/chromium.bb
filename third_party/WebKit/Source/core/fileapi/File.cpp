@@ -150,7 +150,7 @@ File::File(const String& name, const FileMetadata& metadata, UserVisibility user
 
 File::File(const KURL& fileSystemURL, const FileMetadata& metadata)
     : Blob(BlobDataHandle::create(createBlobDataForFileSystemURL(fileSystemURL, metadata), metadata.length))
-    , m_hasBackingFile(true)
+    , m_hasBackingFile(false)
     , m_userVisibility(File::IsNotUserVisible)
     , m_name(decodeURLEscapeSequences(fileSystemURL.lastPathComponent()))
     , m_fileSystemURL(fileSystemURL)

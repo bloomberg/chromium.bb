@@ -150,7 +150,8 @@ private:
     double lastModifiedMS() const;
 
 #if ENABLE(ASSERT)
-    bool hasValidFileSystemURL() const { return hasBackingFile(); }
+    // Instances backed by a file must have an empty file system URL.
+    bool hasValidFileSystemURL() const { return !hasBackingFile() || m_fileSystemURL.isEmpty(); }
     // Instances not backed by a file must have an empty path set.
     bool hasValidFilePath() const { return hasBackingFile() || m_path.isEmpty(); }
 #endif
