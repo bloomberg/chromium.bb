@@ -56,20 +56,25 @@ class UsbDeviceImpl : public UsbDevice {
 
   virtual ~UsbDeviceImpl();
 
-  // Called only be UsbService.
+  // Called only by UsbService.
   void OnDisconnect();
 
  private:
   base::ThreadChecker thread_checker_;
   PlatformUsbDevice platform_device_;
 
-#if defined(USE_UDEV)
   // On Linux these properties are read from sysfs when the device is enumerated
   // to avoid hitting the permission broker on Chrome OS for a real string
   // descriptor request.
-  std::string manufacturer_;
-  std::string product_;
-  std::string serial_number_;
+  base::string16 manufacturer_;
+  base::string16 product_;
+  base::string16 serial_number_;
+#if !defined(USE_UDEV)
+  // On other platforms the device must be opened in order to cache them. This
+  // should be delayed until the strings are needed to avoid poor interactions
+  // with other applications.
+  void CacheStrings();
+  bool strings_cached_;
 #endif
 
   // The active configuration descriptor is not read immediately but cached for
