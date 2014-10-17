@@ -411,9 +411,7 @@ internal_decls:
 internal_value:
     INTERNAL_VALUE_SYM maybe_space expr TOKEN_EOF {
         parser->m_valueList = parser->sinkFloatingValueList($3);
-        int oldParsedProperties = parser->m_parsedProperties.size();
-        if (!parser->parseValue(parser->m_id, parser->m_important))
-            parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
+        parser->parseValue(parser->m_id, parser->m_important);
         parser->m_valueList = nullptr;
     }
 ;
@@ -1519,12 +1517,10 @@ declaration:
         bool isPropertyParsed = false;
         if ($1 != CSSPropertyInvalid) {
             parser->m_valueList = parser->sinkFloatingValueList($5);
-            int oldParsedProperties = parser->m_parsedProperties.size();
             $$ = parser->parseValue($1, $6);
-            if (!$$) {
-                parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
+            if (!$$)
                 parser->reportError($4, InvalidPropertyValueCSSError);
-            } else
+            else
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;
         }

@@ -120,12 +120,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID property, bool important,
     CSSParserValueList* valueList, const CSSParserContext& context, bool inViewport,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties, CSSRuleSourceData::Type ruleType)
 {
+    int parsedPropertiesSize = parsedProperties.size();
+
     CSSPropertyParser parser(valueList, context, inViewport, parsedProperties, ruleType);
     bool parseSuccess = parser.parseValue(property, important);
 
     // This doesn't count UA style sheets
     if (parseSuccess && context.useCounter())
         context.useCounter()->count(context, property);
+
+    if (!parseSuccess)
+        parser.rollbackLastProperties(parsedProperties.size() - parsedPropertiesSize);
 
     return parseSuccess;
 }
