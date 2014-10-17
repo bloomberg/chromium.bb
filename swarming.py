@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 import hashlib
 import json
@@ -539,8 +539,8 @@ def abort_task(_swarming, _manifest):
 
 def trigger_task_shards(
     swarming, isolate_server, namespace, isolated_hash, task_name, extra_args,
-    shards, dimensions, env, expiration, io_timeout, hard_timeout, verbose,
-    profile, priority, tags, user):
+    shards, dimensions, env, expiration, io_timeout, hard_timeout, idempotent,
+    verbose, profile, priority, tags, user):
   """Triggers multiple subtasks of a sharded task.
 
   Returns:
@@ -567,6 +567,7 @@ def trigger_task_shards(
         'env': env,
         'execution_timeout_secs': hard_timeout,
         'io_timeout_secs': io_timeout,
+        'idempotent': idempotent,
       },
       'scheduling_expiration_secs': expiration,
       'tags': tags,
@@ -650,6 +651,7 @@ def trigger(
     expiration,
     io_timeout,
     hard_timeout,
+    idempotent,
     verbose,
     profile,
     priority,
@@ -690,6 +692,7 @@ def trigger(
       expiration=expiration,
       io_timeout=io_timeout,
       hard_timeout=hard_timeout,
+      idempotent=idempotent,
       env=env,
       verbose=verbose,
       profile=profile,
@@ -817,6 +820,10 @@ def add_trigger_options(parser):
       '--user',
       help='User associated with the task. Defaults to authenticated user on '
            'the server.')
+  parser.task_group.add_option(
+      '--idempotent', action='store_true', default=False,
+      help='When set, the server will actively try to find a previous task '
+           'with the same parameter and return this result instead if possible')
   parser.task_group.add_option(
       '--expiration', type='int', default=6*60*60,
       help='Seconds to allow the task to be pending for a bot to run before '
@@ -1081,6 +1088,7 @@ def CMDrun(parser, args):
         expiration=options.expiration,
         io_timeout=options.io_timeout,
         hard_timeout=options.hard_timeout,
+        idempotent=options.idempotent,
         verbose=options.verbose,
         profile=options.profile,
         priority=options.priority,
@@ -1211,6 +1219,7 @@ def CMDtrigger(parser, args):
         expiration=options.expiration,
         io_timeout=options.io_timeout,
         hard_timeout=options.hard_timeout,
+        idempotent=options.idempotent,
         verbose=options.verbose,
         profile=options.profile,
         priority=options.priority,

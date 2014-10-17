@@ -80,7 +80,7 @@ def main(args):
   return dispatcher.execute(swarming.OptionParserSwarming(), args)
 
 
-def gen_request_data(isolated_hash=FILE_HASH, **kwargs):
+def gen_request_data(isolated_hash=FILE_HASH, properties=None, **kwargs):
   out = {
     'name': u'unit_tests',
     'priority': 101,
@@ -107,6 +107,7 @@ def gen_request_data(isolated_hash=FILE_HASH, **kwargs):
       },
       'env': {},
       'execution_timeout_secs': 60,
+      'idempotent': False,
       'io_timeout_secs': 60,
     },
     'scheduling_expiration_secs': 3600,
@@ -114,6 +115,7 @@ def gen_request_data(isolated_hash=FILE_HASH, **kwargs):
     'user': 'joe@localhost',
   }
   out.update(kwargs)
+  out['properties'].update(properties or {})
   return out
 
 
@@ -470,6 +472,7 @@ class TriggerTaskShardsTest(TestCase):
         expiration=60*60,
         hard_timeout=60,
         io_timeout=60,
+        idempotent=False,
         verbose=False,
         profile=False,
         priority=101,
@@ -523,6 +526,7 @@ class TriggerTaskShardsTest(TestCase):
         expiration=60*60,
         hard_timeout=60,
         io_timeout=60,
+        idempotent=False,
         verbose=False,
         profile=False,
         priority=101,
@@ -658,7 +662,8 @@ class MainTest(TestCase):
       f.write(content)
 
     isolated_hash = ALGO(content).hexdigest()
-    request = gen_request_data(isolated_hash=isolated_hash)
+    request = gen_request_data(
+        isolated_hash=isolated_hash, properties=dict(idempotent=True))
     result = gen_request_response(request)
     self.expected_requests(
         [
@@ -687,6 +692,7 @@ class MainTest(TestCase):
         '--tags', 'tagb',
         '--hard-timeout', '60',
         '--io-timeout', '60',
+        '--idempotent',
         '--task-name', 'unit_tests',
         '--dump-json', 'foo.json',
         isolated,
