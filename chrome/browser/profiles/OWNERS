@@ -7,9 +7,11 @@ rlp@chromium.org
 skuhne@chromium.org
 
 # Primarily for ProfileIOData and friends.
-willchan@chromium.org
 mmenke@chromium.org
 ajwong@chromium.org
+
+# Primarily for ProfileIOData and friends, but on extended leave
+willchan@chromium.org
 
 per-file incognito_mode_policy_handler*=dconnelly@chromium.org
 per-file incognito_mode_policy_handler*=joaodasilva@chromium.org
