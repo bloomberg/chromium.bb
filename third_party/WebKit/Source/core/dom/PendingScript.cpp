@@ -40,13 +40,12 @@ PendingScript::~PendingScript()
 void PendingScript::watchForLoad(ScriptResourceClient* client)
 {
     ASSERT(!m_watchingForLoad);
-    ASSERT(!isReady());
+    // addClient() will call notifyFinished() if the load is complete. Callers
+    // who do not expect to be re-entered from this call should not call
+    // watchForLoad for a PendingScript which isReady.
     if (m_streamer) {
         m_streamer->addClient(client);
     } else {
-        // addClient() will call notifyFinished() if the load is
-        // complete. Callers do not expect to be re-entered from this call, so
-        // they should not become a client of an already-loaded Resource.
         resource()->addClient(client);
     }
     m_watchingForLoad = true;

@@ -28,9 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/PendingScript.h"
 #include "core/dom/ScriptLoader.h"
-#include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -46,29 +44,24 @@ ScriptRunner::~ScriptRunner()
 {
 }
 
-void ScriptRunner::addPendingAsyncScript(ScriptLoader* scriptLoader, const PendingScript& pendingScript)
+void ScriptRunner::addPendingAsyncScript(ScriptLoader* scriptLoader)
 {
     m_document->incrementLoadEventDelayCount();
-    m_pendingAsyncScripts.add(scriptLoader, pendingScript);
+    m_pendingAsyncScripts.add(scriptLoader);
 }
 
-void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourcePtr<ScriptResource> resource, ExecutionType executionType)
+void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
     ASSERT(scriptLoader);
-    ASSERT(resource.get());
-
-    Element* element = scriptLoader->element();
-    ASSERT(element);
-    ASSERT(element->inDocument());
 
     switch (executionType) {
     case ASYNC_EXECUTION:
-        addPendingAsyncScript(scriptLoader, PendingScript(element, resource.get()));
+        addPendingAsyncScript(scriptLoader);
         break;
 
     case IN_ORDER_EXECUTION:
         m_document->incrementLoadEventDelayCount();
-        m_scriptsToExecuteInOrder.append(PendingScript(element, resource.get()));
+        m_scriptsToExecuteInOrder.append(scriptLoader);
         break;
     }
 }
@@ -89,7 +82,8 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
     switch (executionType) {
     case ASYNC_EXECUTION:
         ASSERT(m_pendingAsyncScripts.contains(scriptLoader));
-        m_scriptsToExecuteSoon.append(m_pendingAsyncScripts.take(scriptLoader));
+        m_scriptsToExecuteSoon.append(scriptLoader);
+        m_pendingAsyncScripts.remove(scriptLoader);
         break;
 
     case IN_ORDER_EXECUTION:
@@ -117,7 +111,8 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
 void ScriptRunner::movePendingAsyncScript(ScriptRunner* newRunner, ScriptLoader* scriptLoader)
 {
     if (m_pendingAsyncScripts.contains(scriptLoader)) {
-        newRunner->addPendingAsyncScript(scriptLoader, m_pendingAsyncScripts.take(scriptLoader));
+        newRunner->addPendingAsyncScript(scriptLoader);
+        m_pendingAsyncScripts.remove(scriptLoader);
         m_document->decrementLoadEventDelayCount();
     }
 }
@@ -128,20 +123,18 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
 
     RefPtrWillBeRawPtr<Document> protect(m_document.get());
 
-    Vector<PendingScript> scripts;
-    scripts.swap(m_scriptsToExecuteSoon);
+    Vector<ScriptLoader*> scriptLoaders;
+    scriptLoaders.swap(m_scriptsToExecuteSoon);
 
     size_t numInOrderScriptsToExecute = 0;
-    for (; numInOrderScriptsToExecute < m_scriptsToExecuteInOrder.size() && m_scriptsToExecuteInOrder[numInOrderScriptsToExecute].resource()->isLoaded(); ++numInOrderScriptsToExecute)
-        scripts.append(m_scriptsToExecuteInOrder[numInOrderScriptsToExecute]);
+    for (; numInOrderScriptsToExecute < m_scriptsToExecuteInOrder.size() && m_scriptsToExecuteInOrder[numInOrderScriptsToExecute]->isReady(); ++numInOrderScriptsToExecute)
+        scriptLoaders.append(m_scriptsToExecuteInOrder[numInOrderScriptsToExecute]);
     if (numInOrderScriptsToExecute)
         m_scriptsToExecuteInOrder.remove(0, numInOrderScriptsToExecute);
 
-    size_t size = scripts.size();
+    size_t size = scriptLoaders.size();
     for (size_t i = 0; i < size; ++i) {
-        ScriptResource* resource = scripts[i].resource();
-        RefPtrWillBeRawPtr<Element> element = scripts[i].releaseElementAndClear();
-        toScriptLoaderIfPossible(element.get())->execute(resource);
+        scriptLoaders[i]->execute();
         m_document->decrementLoadEventDelayCount();
     }
 }
