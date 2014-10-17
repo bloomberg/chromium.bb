@@ -369,6 +369,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSSLVersionMin,
     prefs::kSSLVersionMin,
     base::Value::TYPE_STRING },
+  { key::kSSLVersionFallbackMin,
+    prefs::kSSLVersionFallbackMin,
+    base::Value::TYPE_STRING },
 
 #if !defined(OS_MACOSX) && !defined(OS_IOS)
   { key::kFullscreenAllowed,

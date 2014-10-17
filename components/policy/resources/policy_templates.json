@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 279
+#   For your editing convenience: highest ID currently used: 280
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -6841,6 +6841,63 @@
       'desc': '''If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which is SSLv3 in Chrome 39 but may be TLS 1.0 in Chrome 40.
 
       Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions less than the specified version. An unrecognized value will be ignored.
+
+      Note that, despite the number, "sslv3" is an earier version than "tls1".''',
+    },
+    {
+      'name': 'SSLVersionFallbackMin',
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'ssl3',
+          'tls1',
+          'tls1.1',
+          'tls1.2',
+        ],
+      },
+      'items': [
+        {
+          'name': 'SSLv3',
+          'value': 'ssl3',
+          'caption': 'SSL 3.0',
+        },
+        {
+          'name': 'TLSv1',
+          'value': 'tls1',
+          'caption': 'TLS 1.0',
+        },
+        {
+          'name': 'TLSv1.1',
+          'value': 'tls1.1',
+          'caption': 'TLS 1.1',
+        },
+        {
+          'name': 'TLSv1.2',
+          'value': 'tls1.2',
+          'caption': 'TLS 1.2',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:39-',
+        'chrome_os:39-',
+        'android:39-',
+        'ios:39-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'tls1',
+      'id': 280,
+      'caption': '''Minimum SSL version to fallback to''',
+      'desc': '''When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly then this setting doesn't apply and SSLVersionMin controls.
+
+      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which was SSLv3 in Chrome 38 but is TLS 1.0 in Chrome 39.
+
+      Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". A setting of "tls1" protects against attacks on SSLv3 but is already the default. A more likely situation is that compatibility with a buggy server must be maintained and thus this needs to be set to "sslv3". That potentially opens up all connections to SSLv3 attacks since a network attacker can induce fallbacks. Thus this is a stopgap measure and the server should be rapidly fixed.
+
+      A setting of "tls1.2" disables all fallback but this may have a significant compatibility impact.
 
       Note that, despite the number, "sslv3" is an earier version than "tls1".''',
     },

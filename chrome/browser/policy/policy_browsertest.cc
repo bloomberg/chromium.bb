@@ -2295,6 +2295,35 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionMin) {
   EXPECT_TRUE(IsMinSSLVersionTLS12(browser()->profile()));
 }
 
+static bool IsMinSSLFallbackVersionTLS12(Profile* profile) {
+  scoped_refptr<net::SSLConfigService> config_service(
+      profile->GetSSLConfigService());
+  net::SSLConfig config;
+  config_service->GetSSLConfig(&config);
+  return config.version_fallback_min == net::SSL_PROTOCOL_VERSION_TLS1_2;
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
+  PrefService* prefs = g_browser_process->local_state();
+
+  const std::string new_value("tls1.2");
+  const std::string default_value(
+      prefs->GetString(prefs::kSSLVersionFallbackMin));
+
+  EXPECT_NE(default_value, new_value);
+  EXPECT_FALSE(IsMinSSLFallbackVersionTLS12(browser()->profile()));
+
+  PolicyMap policies;
+  policies.Set(key::kSSLVersionFallbackMin,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::StringValue(new_value),
+               NULL);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(IsMinSSLFallbackVersionTLS12(browser()->profile()));
+}
+
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedBrowser) {
   PolicyMap policies;
