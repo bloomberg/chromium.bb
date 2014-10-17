@@ -1659,7 +1659,7 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //content/shell/android:chromium_linker_test_apk
           'target_name': 'chromium_linker_test_apk',
           'type': 'none',
           'conditions': [
@@ -1693,7 +1693,7 @@
           ],
         },
         {
-          # TODO(GN)
+          # GN: //content/shell/android:linker_test
           'target_name': 'chromium_android_linker_test',
           'type': 'shared_library',
           'defines!': ['CONTENT_IMPLEMENTATION'],
@@ -1710,7 +1710,7 @@
           ],
         },
         {
-          # TODO(GN)
+          # GN: //content/shell/android:linker_test_jni_headers
           'target_name': 'chromium_android_linker_test_jni_headers',
           'type': 'none',
           'sources': [

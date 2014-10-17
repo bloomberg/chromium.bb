@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN: //third_party/android_crazy_linker:android_crazy_linker
       'target_name': 'crazy_linker',
       'type': 'static_library',
       'include_dirs': [

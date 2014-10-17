@@ -1,0 +1,18 @@
+import("//build/config/android/config.gni")
+
+assert(is_android)
+assert(!is_android_webview_build)
+
+shared_library("chromium_android_linker") {
+  sources = [ "linker/linker_jni.cc" ]
+  # The NDK contains the crazy_linker here:
+  #   '<(android_ndk_root)/crazy_linker.gyp:crazy_linker'
+  # However, we use our own fork.  See bug 384700.
+  deps = [ "//third_party/android_crazy_linker" ]
+
+  # TODO(GYP):
+  # The crazy linker is never instrumented.
+  #'cflags!': [
+  #'-finstrument-functions',
+  #],
+}

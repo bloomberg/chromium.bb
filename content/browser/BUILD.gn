@@ -332,6 +332,7 @@ source_set("browser") {
     deps += [
       "//content/public/android:jni",
       "//media",
+      "//mojo/android:libsystem_java",
     ]
     libs += [ "jnigraphics" ]
   }

@@ -20,7 +20,7 @@ generate_jni("system_java_jni_headers") {
   jni_package = "mojo"
 }
 
-shared_library("libsystem_java") {
+source_set("libsystem_java") {
   sources = [
     "system/core_impl.cc",
     "system/core_impl.h",

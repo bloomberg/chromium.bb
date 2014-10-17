@@ -769,8 +769,26 @@ template("android_apk") {
 
   _native_libs = []
   if (defined(invoker.native_libs)) {
+    _use_chromium_linker = false
+    if (defined(invoker.use_chromium_linker)) {
+      _use_chromium_linker = invoker.use_chromium_linker
+    }
+
+    # TODO(GYP) add "|| profiling_full_stack_frames
+    # Only enable the chromium linker on regular builds, since the
+    # component build crashes on Android 4.4. See b/11379966
+    if (is_component_build || cpu_arch == "arm64" || cpu_arch == "x64") {
+      _use_chromium_linker = false
+    }
+
     _native_libs = invoker.native_libs
     _native_libs_dir = base_path + "/libs"
+
+    if (_use_chromium_linker) {
+      _native_libs += [
+        "$root_build_dir/lib.stripped/libchromium_android_linker.so"
+      ]
+    }
   }
 
   _keystore_path = android_default_keystore_path
@@ -815,11 +833,13 @@ template("android_apk") {
   _srcjar_deps += [":${_template_name}__process_resources"]
 
   if (_native_libs != []) {
-    _use_chromium_linker = false
     _enable_chromium_linker_tests = false
+    if (defined(invoker.enable_chromium_linker_tests)) {
+      _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
+    }
+
     _load_library_from_apk = false
     _native_lib_version_name = ""
-
 
     java_cpp_template("${_template_name}__native_libraries_java") {
       package_name = "org/chromium/base/library_loader"
@@ -836,7 +856,7 @@ template("android_apk") {
         "NATIVE_LIBRARIES_VERSION_NUMBER=\"$_native_lib_version_name\"",
       ]
       if (_use_chromium_linker) {
-        defines += ["ENABLED_CHROMIUM_LINKER"]
+        defines += ["ENABLE_CHROMIUM_LINKER"]
       }
       if (_load_library_from_apk) {
         defines += ["ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE"]

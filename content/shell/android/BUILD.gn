@@ -26,7 +26,6 @@ shared_library("libcontent_shell_content_view") {
     "//components/crash/browser",
     "//skia",
     "//media/base/android",
-    "//mojo/android:libsystem_java",
   ]
   sources = [
     "shell_library_loader.cc",
@@ -98,6 +97,7 @@ copy_ex("copy_content_shell_assets") {
 }
 
 android_apk("content_shell_apk") {
+  use_chromium_linker = true
   testonly = true
   datadeps = [
     # "//tools/android/forwarder",
@@ -156,4 +156,62 @@ android_apk("content_shell_test_apk") {
   ]
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"
+}
+
+if (cpu_arch != "x64" && cpu_arch != "arm64") {
+
+  android_resources("linker_resources") {
+    resource_dirs = [ "linker_test_apk/res" ]
+    android_manifest = "linker_test_apk/AndroidManifest.xml"
+  }
+
+  # GYP: //content/content_tests.gypi:chromium_linker_test_apk
+  android_apk("chromium_linker_test_apk") {
+    testonly = true
+    deps = [
+      ":content_shell_java",
+      ":copy_content_shell_assets",
+      ":linker_resources",
+      ":linker_test",
+      "//base:base_java",
+      "//content/public/android:content_java",
+      "//ui/android:ui_java",
+    ]
+    android_manifest = "linker_test_apk/AndroidManifest.xml"
+    asset_location = content_shell_assets_dir
+    apk_name = "ChromiumLinkerTest"
+    DEPRECATED_java_in_dir = "linker_test_apk/src"
+    native_libs = [
+      "$root_build_dir/lib.stripped/liblinker_test.so"
+    ]
+    use_chromium_linker = true
+    enable_chromium_linker_tests = true
+  }
+
+
+  # GYP: //content/content_tests.gypi:chromium_android_linker_test
+  shared_library("linker_test") {
+    testonly = true
+    sources = [
+      "linker_test_apk/chromium_linker_test_android.cc",
+      "linker_test_apk/chromium_linker_test_linker_tests.cc",
+    ]
+
+    deps = [
+      ":linker_test_jni_headers",
+      "//content/shell:content_shell_lib",
+      # Required to include "content/public/browser/android/compositor.h"
+      # in chromium_linker_test_android.cc :-(
+      "//skia",
+    ]
+  }
+
+  # GYP: //content/content_tests.gypi:chromium_android_linker_test_jni_headers
+  generate_jni("linker_test_jni_headers") {
+    testonly = true
+    jni_package = "content/shell"
+    sources = [
+      "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
+    ]
+  }
 }

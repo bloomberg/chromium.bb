@@ -1404,7 +1404,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # TODO(GN)
+          # GN: //base/android/chromium_android_linker
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
           'conditions': [
