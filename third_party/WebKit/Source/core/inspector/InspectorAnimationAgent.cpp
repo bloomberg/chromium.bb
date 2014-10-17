@@ -134,6 +134,7 @@ void InspectorAnimationAgent::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_idToAnimationPlayer);
+    visitor->trace(m_domAgent);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
