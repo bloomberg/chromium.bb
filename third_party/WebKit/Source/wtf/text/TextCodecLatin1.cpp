@@ -73,35 +73,24 @@ static const UChar table[256] = {
 
 void TextCodecLatin1::registerEncodingNames(EncodingNameRegistrar registrar)
 {
+    // Taken from the alias table at https://encoding.spec.whatwg.org/
     registrar("windows-1252", "windows-1252");
-    registrar("ISO-8859-1", "ISO-8859-1");
-    registrar("US-ASCII", "US-ASCII");
-
-    registrar("WinLatin1", "windows-1252");
-    registrar("ibm-1252", "windows-1252");
-    registrar("ibm-1252_P100-2000", "windows-1252");
-
-    registrar("CP819", "ISO-8859-1");
-    registrar("IBM819", "ISO-8859-1");
-    registrar("csISOLatin1", "ISO-8859-1");
-    registrar("iso-ir-100", "ISO-8859-1");
-    registrar("iso_8859-1:1987", "ISO-8859-1");
-    registrar("l1", "ISO-8859-1");
-    registrar("latin1", "ISO-8859-1");
-
-    registrar("ANSI_X3.4-1968", "US-ASCII");
-    registrar("ANSI_X3.4-1986", "US-ASCII");
-    registrar("ASCII", "US-ASCII");
-    registrar("IBM367", "US-ASCII");
-    registrar("ISO646-US", "US-ASCII");
-    registrar("ISO_646.irv:1991", "US-ASCII");
-    registrar("cp367", "US-ASCII");
-    registrar("csASCII", "US-ASCII");
-    registrar("ibm-367_P100-1995", "US-ASCII");
-    registrar("iso-ir-6", "US-ASCII");
-    registrar("iso-ir-6-us", "US-ASCII");
-    registrar("us", "US-ASCII");
-    registrar("x-ansi", "US-ASCII");
+    registrar("ANSI_X3.4-1968", "windows-1252");
+    registrar("ASCII", "windows-1252");
+    registrar("cp1252", "windows-1252");
+    registrar("cp819", "windows-1252");
+    registrar("csISOLatin1", "windows-1252");
+    registrar("IBM819", "windows-1252");
+    registrar("ISO-8859-1", "windows-1252");
+    registrar("iso-ir-100", "windows-1252");
+    registrar("iso8859-1", "windows-1252");
+    registrar("iso88591", "windows-1252");
+    registrar("iso_8859-1", "windows-1252");
+    registrar("iso_8859-1:1987", "windows-1252");
+    registrar("l1", "windows-1252");
+    registrar("latin1", "windows-1252");
+    registrar("US-ASCII", "windows-1252");
+    registrar("x-cp1252", "windows-1252");
 }
 
 static PassOwnPtr<TextCodec> newStreamingTextDecoderWindowsLatin1(const TextEncoding&, const void*)
