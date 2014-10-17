@@ -123,7 +123,7 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
 
     RefPtrWillBeRawPtr<Document> protect(m_document.get());
 
-    Vector<ScriptLoader*> scriptLoaders;
+    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > scriptLoaders;
     scriptLoaders.swap(m_scriptsToExecuteSoon);
 
     size_t numInOrderScriptsToExecute = 0;

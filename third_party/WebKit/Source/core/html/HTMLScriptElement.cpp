@@ -208,4 +208,10 @@ PassRefPtrWillBeRawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributes
     return adoptRefWillBeNoop(new HTMLScriptElement(document(), false, m_loader->alreadyStarted()));
 }
 
+void HTMLScriptElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_loader);
+    HTMLElement::trace(visitor);
+}
+
 }

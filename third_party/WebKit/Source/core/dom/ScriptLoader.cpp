@@ -78,6 +78,12 @@ ScriptLoader::~ScriptLoader()
     m_pendingScript.stopWatchingForLoad(this);
 }
 
+void ScriptLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    visitor->trace(m_pendingScript);
+}
+
 void ScriptLoader::didNotifySubtreeInsertionsToDocument()
 {
     if (!m_parserInserted)
@@ -366,7 +372,8 @@ void ScriptLoader::execute()
     ASSERT(m_pendingScript.resource());
     bool errorOccurred = false;
     ScriptSourceCode source = m_pendingScript.getSource(KURL(), errorOccurred);
-    RefPtr<Element> element = m_pendingScript.releaseElementAndClear();
+    RefPtrWillBeRawPtr<Element> element = m_pendingScript.releaseElementAndClear();
+    ALLOW_UNUSED_LOCAL(element);
     if (errorOccurred) {
         dispatchErrorEvent();
     } else if (!m_resource->wasCanceled()) {
@@ -449,4 +456,4 @@ ScriptLoader* toScriptLoaderIfPossible(Element* element)
     return 0;
 }
 
-}
+} // namespace blink

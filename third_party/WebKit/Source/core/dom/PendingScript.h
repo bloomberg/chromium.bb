@@ -128,6 +128,6 @@ private:
     RefPtr<ScriptStreamer> m_streamer;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // PendingScript_h
