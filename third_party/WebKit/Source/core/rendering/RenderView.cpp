@@ -655,7 +655,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         RenderBlockSelectionInfo* newInfo = newSelectedBlocks.get(block);
         RenderBlockSelectionInfo* oldInfo = i->value.get();
         if (!newInfo || newInfo->hasChangedFrom(*oldInfo)) {
-            oldInfo->object()->setShouldInvalidateSelection();
+            oldInfo->invalidatePaint();
             if (newInfo) {
                 newInfo->object()->setShouldInvalidateSelection();
                 newSelectedBlocks.remove(block);
