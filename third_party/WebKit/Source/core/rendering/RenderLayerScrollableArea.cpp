@@ -1403,6 +1403,7 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
 LayoutRect RenderLayerScrollableArea::exposeRect(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     LayoutRect localExposeRect(box().absoluteToLocalQuad(FloatQuad(FloatRect(rect)), UseTransforms).boundingBox());
+    localExposeRect.move(-box().borderLeft(), -box().borderTop());
     LayoutRect layerBounds(0, 0, box().clientWidth(), box().clientHeight());
     LayoutRect r = ScrollAlignment::getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
 

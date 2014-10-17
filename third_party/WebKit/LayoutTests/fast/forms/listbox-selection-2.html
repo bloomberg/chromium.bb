@@ -80,11 +80,11 @@ mouseDownOnSelect("sl1", 8);
 shouldBe('selectionPattern("sl1")', '"00000001000000000"');
 
 mouseDownOnSelect("sl1", 0);
-shouldBe('selectionPattern("sl1")', '"01000000000000000"');
+shouldBe('selectionPattern("sl1")', '"10000000000000000"');
 
 for (i = 0; i < 9; i++)
     mouseDownOnSelect("sl1", 7);
-shouldBe('selectionPattern("sl1")', '"00000000000000001"');
+shouldBe('selectionPattern("sl1")', '"00000001000000000"');
 
 mouseDownOnSelect("sl2", 1);
 shouldBe('selectionPattern("sl2")', '"010"');
