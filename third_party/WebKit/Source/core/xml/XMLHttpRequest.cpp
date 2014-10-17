@@ -1020,7 +1020,6 @@ bool XMLHttpRequest::internalAbort()
     // If, window.onload contains open() and send(), m_loader will be set to
     // non 0 value. So, we cannot continue the outer open(). In such case,
     // just abort the outer open() by returning false.
-    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
     RefPtr<ThreadableLoader> loader = m_loader.release();
     loader->cancel();
 
@@ -1091,6 +1090,10 @@ void XMLHttpRequest::handleNetworkError()
     long long expectedLength = m_response.expectedContentLength();
     long long receivedLength = m_receivedLength;
 
+    // Prevent the XMLHttpRequest instance from being destoryed during
+    // |internalAbort()|.
+    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
+
     if (!internalAbort())
         return;
 
@@ -1104,6 +1107,10 @@ void XMLHttpRequest::handleDidCancel()
     // Response is cleared next, save needed progress event data.
     long long expectedLength = m_response.expectedContentLength();
     long long receivedLength = m_receivedLength;
+
+    // Prevent the XMLHttpRequest instance from being destoryed during
+    // |internalAbort()|.
+    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
 
     if (!internalAbort())
         return;
@@ -1311,11 +1318,13 @@ void XMLHttpRequest::didFail(const ResourceError& error)
 
     if (error.isCancellation()) {
         handleDidCancel();
+        // Now the XMLHttpRequest instance may be dead.
         return;
     }
 
     if (error.isTimeout()) {
         handleDidTimeout();
+        // Now the XMLHttpRequest instance may be dead.
         return;
     }
 
@@ -1324,6 +1333,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
         logConsoleError(executionContext(), "XMLHttpRequest cannot load " + error.failingURL() + ". " + error.localizedDescription());
 
     handleNetworkError();
+    // Now the XMLHttpRequest instance may be dead.
 }
 
 void XMLHttpRequest::didFailRedirectCheck()
@@ -1331,6 +1341,7 @@ void XMLHttpRequest::didFailRedirectCheck()
     WTF_LOG(Network, "XMLHttpRequest %p didFailRedirectCheck()", this);
 
     handleNetworkError();
+    // Now the XMLHttpRequest instance may be dead.
 }
 
 void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
@@ -1601,6 +1612,10 @@ void XMLHttpRequest::handleDidTimeout()
     // Response is cleared next, save needed progress event data.
     long long expectedLength = m_response.expectedContentLength();
     long long receivedLength = m_receivedLength;
+
+    // Prevent the XMLHttpRequest instance from being destoryed during
+    // |internalAbort()|.
+    RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
 
     if (!internalAbort())
         return;
