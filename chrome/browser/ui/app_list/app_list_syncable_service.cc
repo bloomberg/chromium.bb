@@ -263,6 +263,7 @@ AppListSyncableService::AppListSyncableService(
 AppListSyncableService::~AppListSyncableService() {
   // Remove observers.
   model_observer_.reset();
+  model_pref_updater_.reset();
 
   STLDeleteContainerPairSecondPointers(sync_items_.begin(), sync_items_.end());
 }
