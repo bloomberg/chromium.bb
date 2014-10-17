@@ -88,10 +88,16 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
         m_previousFrame->draw(m_fallbackSurface->canvas());
         m_previousFrame.clear();
     }
+
     if (m_currentFrame) {
+        bool savedState = false;
+        StateStack stateStack;
+        savedState = saveState(m_currentFrame->getRecordingCanvas(), &stateStack);
         RefPtr<SkPicture> currentPicture = adoptRef(m_currentFrame->endRecording());
         currentPicture->draw(m_fallbackSurface->canvas());
         m_currentFrame.clear();
+        if (savedState)
+            setCurrentState(m_fallbackSurface->canvas(), &stateStack);
     }
 
     if (m_imageBuffer) {
