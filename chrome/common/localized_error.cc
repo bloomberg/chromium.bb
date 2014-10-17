@@ -15,9 +15,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/net_error_info.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension_icon_set.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -27,6 +24,12 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#include "extensions/common/extension_icon_set.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #endif
 
 using blink::WebURLError;
@@ -847,6 +850,7 @@ bool LocalizedError::HasStrings(const std::string& error_domain,
   return LookupErrorMap(error_domain, error_code, /*is_post=*/false) != NULL;
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void LocalizedError::GetAppErrorStrings(
     const GURL& display_url,
     const extensions::Extension* app,
@@ -886,3 +890,4 @@ void LocalizedError::GetAppErrorStrings(
   error_strings->Set("suggestionsLearnMore", suggest_learn_more);
 #endif  // defined(OS_CHROMEOS)
 }
+#endif

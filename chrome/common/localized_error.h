@@ -50,6 +50,7 @@ class LocalizedError {
   // Returns true if an error page exists for the specified parameters.
   static bool HasStrings(const std::string& error_domain, int error_code);
 
+#if defined(ENABLE_EXTENSIONS)
   // Fills |error_strings| with values to be used to build an error page used
   // on HTTP errors, like 404 or connection reset, but using information from
   // the associated |app| in order to make the error page look like it's more
@@ -57,6 +58,7 @@ class LocalizedError {
   static void GetAppErrorStrings(const GURL& display_url,
                                  const extensions::Extension* app,
                                  base::DictionaryValue* error_strings);
+#endif
 
   static const char kHttpErrorDomain[];
 

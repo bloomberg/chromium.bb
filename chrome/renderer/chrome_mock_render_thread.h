@@ -61,12 +61,14 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   // print and extensions.
   virtual bool OnMessageReceived(const IPC::Message& msg) override;
 
+#if defined(ENABLE_EXTENSIONS)
   // The callee expects to be returned a valid channel_id.
   void OnOpenChannelToExtension(int routing_id,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
                                 bool include_tls_channel_id,
                                 int* port_id);
+#endif
 
 #if defined(ENABLE_PRINTING)
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)

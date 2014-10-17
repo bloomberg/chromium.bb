@@ -8,7 +8,6 @@
 
 #include "base/values.h"
 #include "chrome/renderer/printing/mock_printer.h"
-#include "extensions/common/extension_messages.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
@@ -18,6 +17,10 @@
 #include <fcntl.h>
 
 #include "base/files/file_util.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/extension_messages.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
@@ -54,8 +57,10 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   // Some messages we do special handling.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeMockRenderThread, msg)
+#if defined(ENABLE_EXTENSIONS)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
+#endif
 #if defined(ENABLE_PRINTING)
     IPC_MESSAGE_HANDLER(PrintHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings)
@@ -83,6 +88,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void ChromeMockRenderThread::OnOpenChannelToExtension(
     int routing_id,
     const ExtensionMsg_ExternalConnectionInfo& info,
@@ -91,6 +97,7 @@ void ChromeMockRenderThread::OnOpenChannelToExtension(
     int* port_id) {
   *port_id = 0;
 }
+#endif
 
 #if defined(ENABLE_PRINTING)
 #if defined(OS_CHROMEOS)

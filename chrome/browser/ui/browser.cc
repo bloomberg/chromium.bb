@@ -1980,6 +1980,7 @@ void Browser::Observe(int type,
   }
 }
 
+#if defined(ENABLE_EXTENSIONS)
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, extensions::ExtensionRegistryObserver implementation:
 
@@ -2044,6 +2045,7 @@ void Browser::OnExtensionUnloaded(
     }
   }
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):

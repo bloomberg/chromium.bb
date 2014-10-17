@@ -1108,8 +1108,13 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   bool is_post = EqualsASCII(failed_request.httpMethod(), "POST");
 
   if (error_html) {
+    bool extension_but_not_bookmark_app = false;
+#if defined(ENABLE_EXTENSIONS)
+    extension_but_not_bookmark_app = extension && !extension->from_bookmark();
+#endif
     // Use a local error page.
-    if (extension && !extension->from_bookmark()) {
+    if (extension_but_not_bookmark_app) {
+#if defined(ENABLE_EXTENSIONS)
       // TODO(erikkay): Should we use a different template for different
       // error messages?
       int resource_id = IDR_ERROR_APP_HTML;
@@ -1126,6 +1131,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
         *error_html = webui::GetTemplatesHtml(template_html, &error_strings,
                                               "t");
       }
+#endif
     } else {
       // TODO(ellyjones): change GetNavigationErrorStrings to take a RenderFrame
       // instead of a RenderView, then pass that in.
