@@ -424,7 +424,7 @@ class TestMain(cros_test_lib.MoxTestCase):
     prebuilt.GetBoardOverlay(
         options.build_path, options.board).AndReturn(fake_overlay_path)
     expected_gs_acl_path = os.path.join(fake_overlay_path,
-                                        prebuilt._GOOGLESTORAGE_ACL_FILE)
+                                        prebuilt._GOOGLESTORAGE_GSUTIL_FILE)
     prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,

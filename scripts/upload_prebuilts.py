@@ -55,7 +55,6 @@ _REL_HOST_PATH = 'host/%(host_arch)s/%(target)s/%(version)s'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
-_GOOGLESTORAGE_ACL_FILE = 'googlestorage_acl.xml'
 _GOOGLESTORAGE_GSUTIL_FILE = 'googlestorage_acl.txt'
 _BINHOST_BASE_URL = 'gs://chromeos-prebuilt'
 _PREBUILT_BASE_DIR = 'src/third_party/chromiumos-overlay/chromeos/config/'
@@ -800,11 +799,7 @@ def main(argv):
     binhost_base_url = options.upload
     if target:
       board_path = GetBoardOverlay(options.build_path, target)
-      # Use the gsutil acl ch argument file if it exists, or fall back to the
-      # XML acl file.
       acl = os.path.join(board_path, _GOOGLESTORAGE_GSUTIL_FILE)
-      if not os.path.isfile(acl):
-        acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,
                               pkg_indexes, options.build_path,
