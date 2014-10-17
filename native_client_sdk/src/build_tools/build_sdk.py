@@ -400,6 +400,8 @@ def GypNinjaInstall(pepperdir, toolchains):
                         'nacl_helper_bootstrap_x86_32'])
     tools_files.append(['nacl_helper_bootstrap64',
                         'nacl_helper_bootstrap_x86_64'])
+    tools_files.append(['nonsfi_loader_newlib_x32_nonsfi.nexe',
+                        'nonsfi_loader_x86_32'])
 
   buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
 
