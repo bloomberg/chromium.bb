@@ -133,7 +133,7 @@ def NormalizeGSPath(value):
 
 def NormalizeLocalOrGSPath(value):
   """Normalize a local or GS path."""
-  ptype = 'gs_path' if value.startswith(gs.BASE_GS_URL) else 'path'
+  ptype = 'gs_path' if gs.PathIsGs(value) else 'path'
   return VALID_TYPES[ptype](value)
 
 

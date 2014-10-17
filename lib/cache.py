@@ -255,7 +255,7 @@ class TarballCache(DiskCache):
     # only fetches files via non-gs URIs.
     from chromite.lib import gs
 
-    if url.startswith(gs.BASE_GS_URL):
+    if gs.PathIsGs(url):
       ctx = gs.GSContext()
       ctx.Copy(url, local_path)
     else:

@@ -54,6 +54,11 @@ LS_RE = re.compile(r'^\s*(?P<content_length>)(?P<creation_time>)(?P<url>.*)'
                    r'(?P<generation>)(?P<metageneration>)\s*$')
 
 
+def PathIsGs(path):
+  """Determine if a path is a Google Storage URI."""
+  return path.startswith(BASE_GS_URL)
+
+
 def CanonicalizeURL(url, strict=False):
   """Convert provided URL to gs:// URL, if it follows a known format.
 
@@ -65,7 +70,7 @@ def CanonicalizeURL(url, strict=False):
     if url.startswith(prefix):
       return url.replace(prefix, BASE_GS_URL, 1)
 
-  if not url.startswith(BASE_GS_URL) and strict:
+  if not PathIsGs(url) and strict:
     raise ValueError('Url %r cannot be canonicalized.' % url)
 
   return url
@@ -412,7 +417,7 @@ class GSContext(object):
   def Cat(self, path, **kwargs):
     """Returns the contents of a GS object."""
     kwargs.setdefault('redirect_stdout', True)
-    if not path.startswith(BASE_GS_URL):
+    if not PathIsGs(path):
       # gsutil doesn't support cat-ting a local path, so read it ourselves.
       try:
         return osutils.ReadFile(path)
@@ -693,8 +698,7 @@ class GSContext(object):
 
       cmd += ['--', src_path, dest_path]
 
-      if not (src_path.startswith(BASE_GS_URL) or
-              dest_path.startswith(BASE_GS_URL)):
+      if not (PathIsGs(src_path) or PathIsGs(dest_path)):
         # Don't retry on local copies.
         kwargs.setdefault('retries', 0)
 
@@ -735,7 +739,7 @@ class GSContext(object):
     if self.dry_run:
       return []
 
-    if not path.startswith(BASE_GS_URL):
+    if not PathIsGs(path):
       # gsutil doesn't support listing a local path, so just run 'ls'.
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
@@ -802,7 +806,7 @@ class GSContext(object):
 
   def GetSize(self, path, **kwargs):
     """Returns size of a single object (local or GS)."""
-    if not path.startswith(BASE_GS_URL):
+    if not PathIsGs(path):
       return os.path.getsize(path)
     else:
       return self.Stat(path, **kwargs).content_length
@@ -870,7 +874,7 @@ class GSContext(object):
     Returns:
       True if the path exists; otherwise returns False.
     """
-    if not path.startswith(BASE_GS_URL):
+    if not PathIsGs(path):
       return os.path.exists(path)
 
     try:
