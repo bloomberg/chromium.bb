@@ -18,15 +18,25 @@ class WebFederatedCredential;
 class FederatedCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    static FederatedCredential* create(const String& id, const String& federation, ExceptionState& exceptionState)
+    {
+        return create(id, federation, String(), String(), exceptionState);
+    }
+
+    static FederatedCredential* create(const String& id, const String& federation, const String& name, ExceptionState& exceptionState)
+    {
+        return create(id, federation, name, String(), exceptionState);
+    }
+
+    static FederatedCredential* create(const String& id, const String& federation, const String& name, const String& avatar, ExceptionState&);
     static FederatedCredential* create(WebFederatedCredential*);
-    static FederatedCredential* create(const String& id, const String& name, const String& avatar, const String& federation, ExceptionState&);
 
     // FederatedCredential.idl
     const KURL& federation() const;
 
 private:
     FederatedCredential(WebFederatedCredential*);
-    FederatedCredential(const String& id, const String& name, const KURL& avatar, const KURL& federation);
+    FederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& avatar);
 };
 
 } // namespace blink

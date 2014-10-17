@@ -8,9 +8,14 @@
 #include "platform/credentialmanager/PlatformLocalCredential.h"
 
 namespace blink {
+WebLocalCredential::WebLocalCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& avatarURL)
+    : WebCredential(PlatformLocalCredential::create(id, password, name, avatarURL))
+{
+}
 
+// FIXME: Throw this away once it's unused on the Chromium side.
 WebLocalCredential::WebLocalCredential(const WebString& id, const WebString& name, const WebURL& avatarURL, const WebString& password)
-    : WebCredential(PlatformLocalCredential::create(id, name, avatarURL, password))
+    : WebCredential(PlatformLocalCredential::create(id, password, name, avatarURL))
 {
 }
 

@@ -7,12 +7,12 @@
 
 namespace blink {
 
-PlatformFederatedCredential* PlatformFederatedCredential::create(const String& id, const String& name, const KURL& avatarURL, const KURL& federation)
+PlatformFederatedCredential* PlatformFederatedCredential::create(const String& id, const KURL& federation, const String& name, const KURL& avatarURL)
 {
-    return new PlatformFederatedCredential(id, name, avatarURL, federation);
+    return new PlatformFederatedCredential(id, federation, name, avatarURL);
 }
 
-PlatformFederatedCredential::PlatformFederatedCredential(const String& id, const String& name, const KURL& avatarURL, const KURL& federation)
+PlatformFederatedCredential::PlatformFederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& avatarURL)
     : PlatformCredential(id, name, avatarURL)
     , m_federation(federation)
 {

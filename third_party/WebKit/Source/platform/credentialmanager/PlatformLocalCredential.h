@@ -14,7 +14,7 @@ namespace blink {
 class PLATFORM_EXPORT PlatformLocalCredential final : public PlatformCredential {
     WTF_MAKE_NONCOPYABLE(PlatformLocalCredential);
 public:
-    static PlatformLocalCredential* create(const String& id, const String& name, const KURL& avatarURL, const String& password);
+    static PlatformLocalCredential* create(const String& id, const String& password, const String& name, const KURL& avatarURL);
     virtual ~PlatformLocalCredential();
 
     const String& password() const { return m_password; }
@@ -22,7 +22,7 @@ public:
     virtual bool isLocal() override { return true; }
 
 private:
-    PlatformLocalCredential(const String& id, const String& name, const KURL& avatarURL, const String& password);
+    PlatformLocalCredential(const String& id, const String& password, const String& name, const KURL& avatarURL);
 
     String m_password;
 };

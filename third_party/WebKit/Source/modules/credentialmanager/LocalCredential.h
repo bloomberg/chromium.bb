@@ -18,15 +18,25 @@ class WebLocalCredential;
 class LocalCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    static LocalCredential* create(const String& id, const String& password, ExceptionState& exceptionState)
+    {
+        return create(id, password, emptyString(), emptyString(), exceptionState);
+    }
+
+    static LocalCredential* create(const String& id, const String& password, const String& name, ExceptionState& exceptionState)
+    {
+        return create(id, password, name, emptyString(), exceptionState);
+    }
+
+    static LocalCredential* create(const String& id, const String& password, const String& name, const String& avatar, ExceptionState&);
     static LocalCredential* create(WebLocalCredential*);
-    static LocalCredential* create(const String& id, const String& name, const String& avatar, const String& password, ExceptionState&);
 
     // LocalCredential.idl
     const String& password() const;
 
 private:
     LocalCredential(WebLocalCredential*);
-    LocalCredential(const String& id, const String& name, const KURL& avatar, const String& password);
+    LocalCredential(const String& id, const String& password, const String& name, const KURL& avatar);
 };
 
 } // namespace blink

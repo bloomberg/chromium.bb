@@ -17,12 +17,12 @@ LocalCredential* LocalCredential::create(WebLocalCredential* webLocalCredential)
     return new LocalCredential(webLocalCredential);
 }
 
-LocalCredential* LocalCredential::create(const String& id, const String& name, const String& avatar, const String& password, ExceptionState& exceptionState)
+LocalCredential* LocalCredential::create(const String& id, const String& password, const String& name, const String& avatar, ExceptionState& exceptionState)
 {
     KURL avatarURL = parseStringAsURL(avatar, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return new LocalCredential(id, name, avatarURL, password);
+    return new LocalCredential(id, password, name, avatarURL);
 }
 
 LocalCredential::LocalCredential(WebLocalCredential* webLocalCredential)
@@ -30,8 +30,8 @@ LocalCredential::LocalCredential(WebLocalCredential* webLocalCredential)
 {
 }
 
-LocalCredential::LocalCredential(const String& id, const String& name, const KURL& avatar, const String& password)
-    : Credential(PlatformLocalCredential::create(id, name, avatar, password))
+LocalCredential::LocalCredential(const String& id, const String& password, const String& name, const KURL& avatar)
+    : Credential(PlatformLocalCredential::create(id, password, name, avatar))
 {
 }
 
