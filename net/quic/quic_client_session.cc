@@ -563,7 +563,8 @@ void QuicClientSession::OnClosedStream() {
 
 void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   if (!callback_.is_null() &&
-      (!require_confirmation_ || event == HANDSHAKE_CONFIRMED)) {
+      (!require_confirmation_ ||
+       event == HANDSHAKE_CONFIRMED || event == ENCRYPTION_REESTABLISHED)) {
     // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the
