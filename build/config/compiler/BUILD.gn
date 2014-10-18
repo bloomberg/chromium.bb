@@ -458,30 +458,18 @@ config("runtime_library") {
     # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
     # strange errors. The include ordering here is important; change with
     # caution.
-    if (use_system_stlport) {
-      cflags += [
-        # For libstdc++/include, which is used by stlport.
-        "-I" + rebase_path("$android_src/bionic", root_build_dir),
-        "-I" + rebase_path("$android_src/external/stlport/stlport",
-                           root_build_dir),
-      ]
-      libs += [
-        "stlport",
-      ]
+    android_stlport_root = "$android_ndk_root/sources/cxx-stl/stlport"
+
+    cflags += [
+      "-isystem" + rebase_path("$android_stlport_root/stlport",
+                               root_build_dir)
+    ]
+    lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
+
+    if (component_mode == "shared_library") {
+      libs += [ "stlport_shared" ]
     } else {
-      android_stlport_root = "$android_ndk_root/sources/cxx-stl/stlport"
-
-      cflags += [
-        "-isystem" + rebase_path("$android_stlport_root/stlport",
-                                 root_build_dir)
-      ]
-      lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
-
-      if (component_mode == "shared_library") {
-        libs += [ "stlport_shared" ]
-      } else {
-        libs += [ "stlport_static" ]
-      }
+      libs += [ "stlport_static" ]
     }
 
     if (cpu_arch == "mipsel") {

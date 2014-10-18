@@ -119,11 +119,7 @@ if (is_android) {
 
   # stlport stuff --------------------------------------------------------------
 
-  use_system_stlport = is_android_webview_build
-
-  if (use_system_stlport) {
-    android_stlport_library = "stlport"
-  } else if (component_mode == "shared_library") {
+  if (component_mode == "shared_library") {
     android_stlport_library = "stlport_shared"
   } else {
     android_stlport_library = "stlport_static"
@@ -149,5 +145,4 @@ if (is_android) {
   if (!defined(is_android_webview_build)) {
     is_android_webview_build = false
   }
-  use_system_stlport = false
 }

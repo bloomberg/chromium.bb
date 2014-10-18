@@ -1760,9 +1760,9 @@
         # Uses system APIs for decoding audio and video.
         'use_libffmpeg%': '0',
 
-        # When building as part of the Android system, use system libraries
-        # where possible to reduce ROM size.
-        'use_system_stlport%': '<(android_webview_build)',
+        # TODO(torne): Remove this unsupported option once all the places that
+        # test it have been updated.
+        'use_system_stlport%': 0,
 
         # Copy it out one scope.
         'android_webview_build%': '<(android_webview_build)',
@@ -4339,19 +4339,12 @@
         # build of chrome (e.g. where to find archived symbols).
         'chrome_build_id%': '',
         'conditions': [
-          # Use shared stlport library when system one used.
           # Figure this out early since it needs symbols from libgcc.a, so it
           # has to be before that in the set of libraries.
-          ['use_system_stlport==1', {
-            'android_stlport_library': 'stlport',
+          ['component=="shared_library"', {
+              'android_stlport_library': 'stlport_shared',
           }, {
-            'conditions': [
-              ['component=="shared_library"', {
-                  'android_stlport_library': 'stlport_shared',
-              }, {
-                  'android_stlport_library': 'stlport_static',
-              }],
-            ],
+              'android_stlport_library': 'stlport_static',
           }],
         ],
 
@@ -4443,16 +4436,7 @@
               '-pthread',  # Not supported by Android toolchain.
             ],
             'ldflags': [
-              '-nostdlib',
               '-Wl,--no-undefined',
-            ],
-            'libraries': [
-              '-l<(android_stlport_library)',
-              # Manually link the libgcc.a that the cross compiler uses.
-              '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
-              '-lc',
-              '-ldl',
-              '-lm',
             ],
             'conditions': [
               ['component=="static_library"', {
@@ -4526,13 +4510,18 @@
                 ],
                 'ldflags': [
                   '--sysroot=<(android_ndk_sysroot)',
+                  '-nostdlib',
+                ],
+                'libraries': [
+                  '-l<(android_stlport_library)',
+                  # Manually link the libgcc.a that the cross compiler uses.
+                  '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
+                  '-lc',
+                  '-ldl',
+                  '-lm',
                 ],
               }],
               ['android_webview_build==1', {
-                'include_dirs': [
-                  # OpenAL headers from the Android tree.
-                  '<(android_src)/frameworks/wilhelm/include',
-                ],
                 'cflags': [
                   # Android predefines this as 1; undefine it here so Chromium
                   # can redefine it later to be 2 for chromium code and unset
@@ -4551,6 +4540,9 @@
                   # Other things unrelated to -Wextra:
                   '-Wno-non-virtual-dtor',
                   '-Wno-sign-promo',
+                ],
+                'libraries': [
+                  '-ldl',
                 ],
               }],
               ['android_webview_build==1', {
@@ -4584,19 +4576,20 @@
               # don't use '-isystem' because the arm-linux-androideabi-4.4.3
               # toolchain (circa Gingerbread) will exhibit strange errors.
               # The include ordering here is important; change with caution.
-              ['use_system_stlport==1', {
-                'cflags': [
-                  # For libstdc++/include, which is used by stlport.
-                  '-I<(android_src)/bionic',
-                  '-I<(android_src)/external/stlport/stlport',
-                ],
-              }, { # else: use_system_stlport!=1
+              ['android_webview_build==0', {
                 'cflags': [
                   '-isystem<(android_stlport_include)',
                 ],
                 'ldflags': [
                   '-L<(android_stlport_libs_dir)',
                 ],
+              }, { # else: android_webview_build!=0
+                'aosp_build_settings': {
+                  # Specify that we want to statically link stlport from the
+                  # NDK. This will provide all the include and library paths
+                  # automatically at build time, and link the right library.
+                  'LOCAL_NDK_STL_VARIANT': 'stlport_static',
+                },
               }],
               ['target_arch=="ia32"', {
                 # The x86 toolchain currently has problems with stack-protector.
