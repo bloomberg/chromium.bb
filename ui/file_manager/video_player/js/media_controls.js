@@ -361,6 +361,10 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   this.media_.addEventListener('timeupdate', this.onMediaProgressBound_);
   this.media_.addEventListener('error', this.onMediaError_);
 
+  // If the text banner is being displayed, hide it immediately, since it is
+  // related to the previous media.
+  this.textBanner_.removeAttribute('visible');
+
   // Reflect the media state in the UI.
   this.onMediaDuration_();
   this.onMediaPlay_(this.isPlaying());
