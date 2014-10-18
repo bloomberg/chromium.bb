@@ -111,12 +111,14 @@ scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
     std::vector<InstallWarning>* install_warnings,
     base::string16* error) {
   GURL options_page;
+  // Chrome styling is always opt-in.
   bool chrome_style = false;
+  // Extensions can opt in or out to opening in a tab, and users can choose via
+  // the --embedded-extension-options flag which should be the default.
   bool open_in_tab = !FeatureSwitch::embedded_extension_options()->IsEnabled();
 
   // Parse the options_ui object.
-  if (options_ui_value &&
-      FeatureSwitch::embedded_extension_options()->IsEnabled()) {
+  if (options_ui_value) {
     base::string16 options_ui_error;
 
     scoped_ptr<OptionsUI> options_ui =
@@ -140,9 +142,10 @@ scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
         install_warnings->push_back(
             InstallWarning(base::UTF16ToASCII(options_parse_error)));
       }
-      chrome_style =
-          options_ui->chrome_style.get() && *options_ui->chrome_style;
-      open_in_tab = options_ui->open_in_tab.get() && *options_ui->open_in_tab;
+      if (options_ui->chrome_style.get())
+        chrome_style = *options_ui->chrome_style;
+      if (options_ui->open_in_tab.get())
+        open_in_tab = *options_ui->open_in_tab;
     }
   }
 

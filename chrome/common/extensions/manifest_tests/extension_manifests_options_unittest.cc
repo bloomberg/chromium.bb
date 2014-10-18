@@ -65,10 +65,46 @@ TEST_F(OptionsPageManifestTest, OptionsUIPage) {
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_WARNING);
 }
 
-// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields.
+// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields with
+// the flag enabled. This makes open_in_tab default to true if unspecified.
 TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTab) {
   FeatureSwitch::ScopedOverride enable_flag(
       FeatureSwitch::embedded_extension_options(), true);
+
+  // Explicitly specifying true in the manifest for options_ui.chrome_style and
+  // options_ui.open_in_tab sets them both to true.
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("options_ui_flags_true.json");
+  EXPECT_TRUE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+  // Explicitly specifying false in the manifest for options_ui.chrome_style
+  // and options_ui.open_in_tab sets them both to false.
+  extension = LoadAndExpectSuccess("options_ui_flags_false.json");
+  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+  // Specifying an options_ui key but neither options_ui.chrome_style nor
+  // options_ui.open_in_tab uses the default values: false for open-in-tab,
+  // false for use-chrome-style.
+  extension = LoadAndExpectSuccess("options_ui_page_basic.json");
+  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+  // Likewise specifying no options_ui key at all.
+  extension = LoadAndExpectSuccess("init_valid_options.json");
+  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+}
+
+// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields when
+// the flag for embedded extension options is turned off. This makes
+// open_in_tab default to false.
+TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTabNoFlag) {
+  ASSERT_FALSE(FeatureSwitch::embedded_extension_options()->IsEnabled());
+
+  // These conditions are the same as OptionsUIChromeStyleAndOpenInTab, except
+  // when the flag is off the default for open-in-tab is true.
 
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("options_ui_flags_true.json");
@@ -79,28 +115,11 @@ TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTab) {
   EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
   EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
 
-  // If chrome_style and open_in_tab are not set, they should be false.
   extension = LoadAndExpectSuccess("options_ui_page_basic.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-}
-
-// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields when
-// the flag for embedded extension options is turned off. chrome_style should
-// always be false, open_in_tab should always be true.
-TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTabNoFlag) {
-  ASSERT_FALSE(FeatureSwitch::embedded_extension_options()->IsEnabled());
-
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("options_ui_flags_true.json");
   EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
   EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
 
-  extension = LoadAndExpectSuccess("options_ui_flags_false.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  extension = LoadAndExpectSuccess("options_ui_page_basic.json");
+  extension = LoadAndExpectSuccess("init_valid_options.json");
   EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
   EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
 }

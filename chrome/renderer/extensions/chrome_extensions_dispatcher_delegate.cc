@@ -268,8 +268,7 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
     }
   }
 
-  if (extensions::FeatureSwitch::embedded_extension_options()->IsEnabled() &&
-      context->GetAvailability("extensionOptionsInternal").is_available()) {
+  if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     module_system->Require("extensionOptions");
   }
 }

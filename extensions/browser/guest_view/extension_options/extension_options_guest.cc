@@ -20,7 +20,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -51,9 +50,6 @@ ExtensionOptionsGuest::~ExtensionOptionsGuest() {
 extensions::GuestViewBase* ExtensionOptionsGuest::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id) {
-  if (!extensions::FeatureSwitch::embedded_extension_options()->IsEnabled()) {
-    return NULL;
-  }
   return new ExtensionOptionsGuest(browser_context, guest_instance_id);
 }
 

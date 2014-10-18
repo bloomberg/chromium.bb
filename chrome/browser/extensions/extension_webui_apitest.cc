@@ -17,7 +17,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -125,16 +124,6 @@ class ExtensionWebUITest : public ExtensionApiTest {
     active_web_contents->ForEachFrame(
         base::Bind(&FindFrame, frame_url, &frame_host));
     return frame_host;
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
-    FeatureSwitch::ScopedOverride enable_options(
-        FeatureSwitch::embedded_extension_options(), true);
-    // Need to add a command line flag as well as a FeatureSwitch because the
-    // FeatureSwitch is not copied over to the renderer process from the
-    // browser process.
-    command_line->AppendSwitch(switches::kEnableEmbeddedExtensionOptions);
-    ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
   scoped_ptr<FeatureSwitch::ScopedOverride> enable_options_;
