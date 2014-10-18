@@ -418,7 +418,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to finding overlays."""
 
   FAKE, PUB_PRIV, PUB_PRIV_VARIANT, PUB_ONLY, PUB2_ONLY, PRIV_ONLY = (
-      'fake!board', 'pub-priv-board', 'pub-priv-variant-board',
+      'fake!board', 'pub-priv-board', 'pub-priv-board_variant',
       'pub-only-board', 'pub2-only-board', 'priv-only-board',
   )
   PRIVATE = constants.PRIVATE_OVERLAYS
@@ -602,8 +602,8 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
   def testFoundParentOverlays(self):
     """Verify that the overlays for a parent board are found."""
     for d in self.PUBLIC, self.PRIVATE:
-      self.assertTrue(self.overlays[self.PUB_PRIV][d] <
-                      self.overlays[self.PUB_PRIV_VARIANT][d])
+      self.assertLess(set(self.overlays[self.PUB_PRIV][d]),
+                      set(self.overlays[self.PUB_PRIV_VARIANT][d]))
 
 
 class UtilFuncsTest(cros_test_lib.TempDirTestCase):
