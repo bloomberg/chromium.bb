@@ -272,7 +272,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
             return ImageMapRole;
         return LinkRole;
     }
-    if (cssBox && cssBox->isListItem())
+    if ((cssBox && cssBox->isListItem()) || isHTMLLIElement(node))
         return ListItemRole;
     if (m_renderer->isListMarker())
         return ListMarkerRole;
