@@ -236,7 +236,6 @@ class PersonalDataManager : public KeyedService,
   friend class PersonalDataManagerTest;
   friend class ProfileSyncServiceAutofillTest;
   friend class ::RemoveAutofillTester;
-  friend class TestingAutomationProvider;
   friend struct base::DefaultDeleter<PersonalDataManager>;
   friend void autofill_helper::SetProfiles(
       int, std::vector<autofill::AutofillProfile>*);

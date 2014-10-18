@@ -772,7 +772,6 @@ class Browser : public TabStripModelObserver,
   //             the LocationBarView's edit.
   friend class AutomationProvider;
   friend class BrowserProxy;
-  friend class TestingAutomationProvider;
 
   // Returns the StatusBubble from the current toolbar. It is possible for
   // this to return NULL if called before the toolbar has initialized.

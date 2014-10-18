@@ -19,7 +19,6 @@ class BrowserProcessImpl;
 class HistogramSynchronizer;
 class NativeBackendKWallet;
 class ScopedAllowWaitForLegacyWebViewApi;
-class TestingAutomationProvider;
 
 namespace cc {
 class CompletionEvent;
@@ -177,7 +176,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class content::ScopedAllowWaitForAndroidLayoutTests;
   friend class ::HistogramSynchronizer;
   friend class ::ScopedAllowWaitForLegacyWebViewApi;
-  friend class ::TestingAutomationProvider;
   friend class cc::CompletionEvent;
   friend class mojo::common::WatcherThreadManager;
   friend class remoting::AutoThread;
