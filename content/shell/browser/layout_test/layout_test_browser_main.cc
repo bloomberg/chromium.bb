@@ -147,6 +147,43 @@ bool RunOneTest(const std::string& test_string,
   return true;
 }
 
+int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
+  content::WebKitTestController test_controller;
+  {
+    // We're outside of the message loop here, and this is a test.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::FilePath temp_path;
+    base::GetTempDir(&temp_path);
+    test_controller.SetTempPath(temp_path);
+  }
+  std::string test_string;
+  CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
+  size_t command_line_position = 0;
+  bool ran_at_least_once = false;
+
+  std::cout << "#READY\n";
+  std::cout.flush();
+
+  while (GetNextTest(args, &command_line_position, &test_string)) {
+    if (!RunOneTest(test_string, &ran_at_least_once, main_runner))
+      break;
+  }
+  if (!ran_at_least_once) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    main_runner->Run();
+  }
+
+#if defined(OS_ANDROID)
+  // We need to execute 'main_runner->Shutdown()' before the test_controller
+  // destructs when running on Android, and after it destructs when running
+  // anywhere else.
+  main_runner->Shutdown();
+#endif
+
+  return 0;
+}
+
 }  // namespace
 
 // Main routine for running as the Browser process.
@@ -182,38 +219,7 @@ int LayoutTestBrowserMain(
     return 0;
   }
 
-  content::WebKitTestController test_controller;
-  {
-    // We're outside of the message loop here, and this is a test.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    base::FilePath temp_path;
-    base::GetTempDir(&temp_path);
-    test_controller.SetTempPath(temp_path);
-  }
-  std::string test_string;
-  CommandLine::StringVector args = CommandLine::ForCurrentProcess()->GetArgs();
-  size_t command_line_position = 0;
-  bool ran_at_least_once = false;
-
-  std::cout << "#READY\n";
-  std::cout.flush();
-
-  while (GetNextTest(args, &command_line_position, &test_string)) {
-    if (!RunOneTest(test_string, &ran_at_least_once, main_runner))
-      break;
-  }
-  if (!ran_at_least_once) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    main_runner->Run();
-  }
-
-#if defined(OS_ANDROID)
-  // Android should only execute Shutdown() here when running layout tests.
-  main_runner->Shutdown();
-#endif
-
-  exit_code = 0;
+  exit_code = RunTests(main_runner);
 
 #if !defined(OS_ANDROID)
   main_runner->Shutdown();
