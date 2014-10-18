@@ -15,7 +15,7 @@ namespace blink {
 
 class DictionaryBuilder : public blink::WebCryptoKeyAlgorithmDictionary {
 public:
-    DictionaryBuilder(v8::Handle<v8::Object> holder, v8::Isolate* isolate)
+    DictionaryBuilder(v8::Local<v8::Object> holder, v8::Isolate* isolate)
         : m_holder(holder)
         , m_isolate(isolate)
         , m_dictionary(Dictionary::createEmpty(isolate))
@@ -50,7 +50,7 @@ public:
     const Dictionary& dictionary() const { return m_dictionary; }
 
 private:
-    v8::Handle<v8::Object> m_holder;
+    v8::Local<v8::Object> m_holder;
     v8::Isolate* m_isolate;
     Dictionary m_dictionary;
 };

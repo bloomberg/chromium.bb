@@ -74,7 +74,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             sqlArgsLength = length->Uint32Value();
 
         for (unsigned i = 0; i < sqlArgsLength; ++i) {
-            v8::Handle<v8::Integer> key = v8::Integer::New(info.GetIsolate(), i);
+            v8::Local<v8::Integer> key = v8::Integer::New(info.GetIsolate(), i);
             TONATIVE_VOID(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
 
             if (value.IsEmpty() || value->IsNull()) {
@@ -97,7 +97,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             exceptionState.throwIfNeeded();
             return;
         }
-        callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), ScriptState::current(info.GetIsolate()));
+        callback = V8SQLStatementCallback::create(v8::Local<v8::Function>::Cast(info[2]), ScriptState::current(info.GetIsolate()));
     } else {
         callback = nullptr;
     }
@@ -109,7 +109,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             exceptionState.throwIfNeeded();
             return;
         }
-        errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Function>::Cast(info[3]), ScriptState::current(info.GetIsolate()));
+        errorCallback = V8SQLStatementErrorCallback::create(v8::Local<v8::Function>::Cast(info[3]), ScriptState::current(info.GetIsolate()));
     } else {
         errorCallback = nullptr;
     }

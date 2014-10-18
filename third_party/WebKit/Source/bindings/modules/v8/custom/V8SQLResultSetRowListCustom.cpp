@@ -69,7 +69,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
 
     for (unsigned i = 0; i < numColumns; ++i) {
         const SQLValue& sqlValue = rowList->values()[valuesIndex + i];
-        v8::Handle<v8::Value> value;
+        v8::Local<v8::Value> value;
         switch (sqlValue.type()) {
         case SQLValue::StringValue:
             value = v8String(info.GetIsolate(), sqlValue.string());
