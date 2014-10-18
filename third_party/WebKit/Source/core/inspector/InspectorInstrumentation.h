@@ -64,6 +64,7 @@ class WorkerInspectorProxy;
 #define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
 
 class InspectorInstrumentationCookie {
+    STACK_ALLOCATED();
 public:
     InspectorInstrumentationCookie();
     InspectorInstrumentationCookie(InstrumentingAgents*, int);
@@ -76,7 +77,7 @@ public:
     bool hasMatchingTimelineAgentId(int id) const { return m_timelineAgentId == id; }
 
 private:
-    RefPtrWillBePersistent<InstrumentingAgents> m_instrumentingAgents;
+    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     int m_timelineAgentId;
 };
 
