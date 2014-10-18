@@ -7,7 +7,7 @@
 namespace switches {
 
 // Specify configuration arguments for a Mojo application URL. For example:
-// --args-for='mojo://mojo_wget http://www.google.com'
+// --args-for='mojo://wget http://www.google.com'
 const char kArgsFor[] = "args-for";
 
 // Used to specify the type of child process (switch values from
@@ -15,7 +15,7 @@ const char kArgsFor[] = "args-for";
 const char kChildProcessType[] = "child-process-type";
 
 // Comma separated list like:
-// text/html,mojo://mojo_html_viewer,application/bravo,https://abarth.com/bravo
+// text/html,mojo://html_viewer,application/bravo,https://abarth.com/bravo
 const char kContentHandlers[] = "content-handlers";
 
 // Force dynamically loaded apps / services to be loaded irrespective of cache

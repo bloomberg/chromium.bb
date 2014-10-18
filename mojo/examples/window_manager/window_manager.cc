@@ -160,8 +160,8 @@ class KeyboardManager : public KeyboardClient,
     view_ = View::Create(view_manager);
     view_->SetBounds(bounds);
     parent->AddChild(view_);
-    view_->Embed("mojo:mojo_keyboard");
-    application->ConnectToService("mojo:mojo_keyboard", &keyboard_service_);
+    view_->Embed("mojo:keyboard");
+    application->ConnectToService("mojo:keyboard", &keyboard_service_);
     keyboard_service_.set_client(this);
     parent->AddObserver(this);
   }
@@ -490,7 +490,7 @@ class WindowManager
     bounds.Inset(kBorderInset, kBorderInset);
     bounds.set_height(kTextfieldHeight);
     launcher_ui_ = CreateWindow(bounds);
-    launcher_ui_->Embed("mojo:mojo_browser");
+    launcher_ui_->Embed("mojo:browser");
     return launcher_ui_->view()->id();
   }
 

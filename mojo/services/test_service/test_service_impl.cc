@@ -57,8 +57,7 @@ void TestServiceImpl::ConnectToAppAndGetTime(
 void TestServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
-  connection_->ConnectToService(
-      "mojo:mojo_test_request_tracker_app", &tracker);
+  connection_->ConnectToService("mojo:test_request_tracker_app", &tracker);
   tracking_.reset(
       new TestRequestTrackerClientImpl(tracker.Pass(), Name_, callback));
 }

@@ -509,7 +509,7 @@ class ViewManagerTest : public testing::Test {
     std::vector<std::string> native_viewport_args;
     native_viewport_args.push_back(kUseTestConfig);
     test_helper_.application_manager()->SetArgsForURL(
-        native_viewport_args, GURL("mojo:mojo_native_viewport_service"));
+        native_viewport_args, GURL("mojo:native_viewport_service"));
     printf("Setting args\n");
 
 #if defined(OS_WIN)
@@ -527,7 +527,7 @@ class ViewManagerTest : public testing::Test {
         GURL(kTestServiceURL2));
 
     test_helper_.application_manager()->ConnectToService(
-        GURL("mojo:mojo_view_manager"), &view_manager_init_);
+        GURL("mojo:view_manager"), &view_manager_init_);
     ASSERT_TRUE(InitEmbed(view_manager_init_.get(), kTestServiceURL, 1));
 
     connection_ = ViewManagerProxy::WaitForInstance();

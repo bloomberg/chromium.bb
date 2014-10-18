@@ -203,7 +203,7 @@ class MediaViewer
         control_view_(NULL),
         content_view_(NULL),
         control_panel_(this) {
-    handler_map_["image/png"] = "mojo:mojo_png_viewer";
+    handler_map_["image/png"] = "mojo:png_viewer";
   }
 
   virtual ~MediaViewer() {

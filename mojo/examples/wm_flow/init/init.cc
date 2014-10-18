@@ -23,8 +23,8 @@ class WMFlowInit : public mojo::ApplicationDelegate {
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) override {
     context_.reset(new mojo::ViewManagerContext(app));
-    context_->Embed("mojo:mojo_wm_flow_wm");
-    app->ConnectToApplication("mojo:mojo_wm_flow_app");
+    context_->Embed("mojo:wm_flow_wm");
+    app->ConnectToApplication("mojo:wm_flow_app");
   }
 
   scoped_ptr<mojo::ViewManagerContext> context_;

@@ -35,9 +35,9 @@ NativeViewportImpl::NativeViewportImpl(ApplicationImpl* app, bool is_headless)
       widget_id_(0u),
       waiting_for_event_ack_(false),
       weak_factory_(this) {
-  app->ConnectToService("mojo:mojo_surfaces_service", &surfaces_service_);
+  app->ConnectToService("mojo:surfaces_service", &surfaces_service_);
   // TODO(jamesr): Should be mojo_gpu_service
-  app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
+  app->ConnectToService("mojo:native_viewport_service", &gpu_service_);
 }
 
 NativeViewportImpl::~NativeViewportImpl() {

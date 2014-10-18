@@ -6,13 +6,13 @@
 // services and then prints a brief summary of the response.
 //
 // To run it using mojo_js_standalone (don't forget the quotes):
-//   mojo_shell 'mojo://mojo_js_standalone THIS_DIR/main.js'
+//   mojo_shell 'mojo://js_standalone THIS_DIR/main.js'
 //
 // To run it using mojo_js_content handler this file must be specified as
 // a URL. For example:
 //   (cd YOUR_DIR/mojo/apps/js; python -m SimpleHTTPServer ) &
 //   mojo_shell \
-//    --content-handlers=application/javascript,mojo://mojo_js_content_handler \
+//    --content-handlers=application/javascript,mojo://js_content_handler \
 //    http://localhost:8000/test.js
 
 define("test", [
@@ -26,7 +26,7 @@ define("test", [
 ], function(mojo, core, connection, support, net, loader, console) {
 
   var networkService = mojo.connectToService(
-      "mojo:mojo_network_service", net.NetworkService);
+      "mojo:network_service", net.NetworkService);
 
   var urlLoaderPipe = core.createMessagePipe();
   networkService.createURLLoader(urlLoaderPipe.handle1);

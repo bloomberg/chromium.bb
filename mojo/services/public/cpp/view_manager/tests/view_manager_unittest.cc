@@ -316,7 +316,7 @@ class ViewManagerTest : public testing::Test {
         GURL(kEmbeddedApp1URL));
 
     test_helper_.application_manager()->ConnectToService(
-        GURL("mojo:mojo_view_manager"), &view_manager_init_);
+        GURL("mojo:view_manager"), &view_manager_init_);
     ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kWindowManagerURL));
   }
 

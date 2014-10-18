@@ -56,14 +56,14 @@ BlinkPlatformImpl::BlinkPlatformImpl(ApplicationImpl* app)
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread) {
-  app->ConnectToService("mojo:mojo_network_service", &network_service_);
+  app->ConnectToService("mojo:network_service", &network_service_);
 
   CookieStorePtr cookie_store;
   network_service_->GetCookieStore(GetProxy(&cookie_store));
   cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
   ClipboardPtr clipboard;
-  app->ConnectToService("mojo:mojo_clipboard", &clipboard);
+  app->ConnectToService("mojo:clipboard", &clipboard);
   clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
 }
 

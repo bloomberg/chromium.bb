@@ -102,7 +102,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
     // Expose some services to the embeddee...
     registry->AddService(&embedder_factory_);
     scoped_ptr<mojo::ServiceProvider> imported =
-        embed->Embed("mojo:mojo_wm_flow_embedded", registry.Pass());
+        embed->Embed("mojo:wm_flow_embedded", registry.Pass());
     mojo::ConnectToService(imported.get(), &embeddee_);
     embeddee_->HelloBack(base::Bind(&WMFlowApp::HelloBackAck,
                                     base::Unretained(this)));
@@ -133,9 +133,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
     printf("HelloBack() ack'ed\n");
   }
 
-  void OpenNewWindow() {
-    view_manager_context_->Embed("mojo:mojo_wm_flow_app");
-  }
+  void OpenNewWindow() { view_manager_context_->Embed("mojo:wm_flow_app"); }
 
   mojo::Shell* shell_;
   int embed_count_;

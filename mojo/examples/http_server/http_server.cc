@@ -100,7 +100,7 @@ class Connection {
 class HttpServerApp : public ApplicationDelegate {
  public:
   virtual void Initialize(ApplicationImpl* app) override {
-    app->ConnectToService("mojo:mojo_network_service", &network_service_);
+    app->ConnectToService("mojo:network_service", &network_service_);
     Start();
   }
 

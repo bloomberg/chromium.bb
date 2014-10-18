@@ -21,7 +21,7 @@ class ChildApp : public ApplicationDelegate, public InterfaceFactory<Child> {
 
   virtual void Initialize(ApplicationImpl* app) override {
     surfaces_service_connection_ =
-        app->ConnectToApplication("mojo:mojo_surfaces_service");
+        app->ConnectToApplication("mojo:surfaces_service");
   }
 
   // ApplicationDelegate implementation.

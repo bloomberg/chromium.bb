@@ -205,7 +205,7 @@ void SurfaceBinding::PerViewManagerState::Init() {
   DCHECK(!surfaces_service_.get());
 
   ServiceProviderPtr surfaces_service_provider;
-  shell_->ConnectToApplication("mojo:mojo_surfaces_service",
+  shell_->ConnectToApplication("mojo:surfaces_service",
                                GetProxy(&surfaces_service_provider));
   ConnectToService(surfaces_service_provider.get(), &surfaces_service_);
   // base::Unretained is ok here as we block until the call is received.
@@ -221,8 +221,8 @@ void SurfaceBinding::PerViewManagerState::Init() {
   surface_.set_client(surface_client_.get());
 
   ServiceProviderPtr gpu_service_provider;
-  // TODO(jamesr): Should be mojo:mojo_gpu_service
-  shell_->ConnectToApplication("mojo:mojo_native_viewport_service",
+  // TODO(jamesr): Should be mojo:gpu_service
+  shell_->ConnectToApplication("mojo:native_viewport_service",
                                GetProxy(&gpu_service_provider));
   ConnectToService(gpu_service_provider.get(), &gpu_);
 }

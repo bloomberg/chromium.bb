@@ -46,7 +46,7 @@ namespace {
 // These mojo: URLs are loaded directly from the local filesystem. They
 // correspond to shared libraries bundled alongside the mojo_shell.
 const char* kLocalMojoURLs[] = {
-  "mojo:mojo_network_service",
+    "mojo:network_service",
 };
 
 // Used to ensure we only init once.
@@ -69,8 +69,8 @@ static base::LazyInstance<Setup>::Leaky setup = LAZY_INSTANCE_INITIALIZER;
 void InitContentHandlers(DynamicApplicationLoader* loader,
                          base::CommandLine* command_line) {
   // Default content handlers.
-  loader->RegisterContentHandler("image/png", GURL("mojo://mojo_png_viewer/"));
-  loader->RegisterContentHandler("text/html", GURL("mojo://mojo_html_viewer/"));
+  loader->RegisterContentHandler("image/png", GURL("mojo://png_viewer/"));
+  loader->RegisterContentHandler("text/html", GURL("mojo://html_viewer/"));
 
   // Command-line-specified content handlers.
   std::string handlers_spec = command_line->GetSwitchValueASCII(
@@ -212,7 +212,7 @@ void Context::Init() {
       scoped_ptr<ApplicationLoader>(new UIApplicationLoader(
           scoped_ptr<ApplicationLoader>(new NativeViewportApplicationLoader()),
           this)),
-      GURL("mojo:mojo_native_viewport_service"));
+      GURL("mojo:native_viewport_service"));
 #endif
 
   if (command_line->HasSwitch(switches::kSpy)) {
@@ -234,7 +234,7 @@ void Context::Init() {
             "network_service",
             base::MessageLoop::TYPE_IO));
     application_manager_.SetLoaderForURL(loader.Pass(),
-                                         GURL("mojo:mojo_network_service"));
+                                         GURL("mojo:network_service"));
   }
 #endif
 

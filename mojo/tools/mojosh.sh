@@ -15,7 +15,7 @@ Usage: $(basename "$0") [-d DIRECTORY] [-|--] <mojo_shell arguments ...>
 DIRECTORY defaults to $DIRECTORY.
 
 Example:
-  $(basename "$0") mojo:mojo_sample_app
+  $(basename "$0") mojo:sample_app
 EOF
 }
 

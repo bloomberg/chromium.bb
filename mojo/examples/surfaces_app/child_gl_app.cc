@@ -23,9 +23,9 @@ class ChildGLApp : public ApplicationDelegate, public InterfaceFactory<Child> {
 
   virtual void Initialize(ApplicationImpl* app) override {
     surfaces_service_connection_ =
-        app->ConnectToApplication("mojo:mojo_surfaces_service");
-    // TODO(jamesr): Should be mojo:mojo_gpu_service
-    app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
+        app->ConnectToApplication("mojo:surfaces_service");
+    // TODO(jamesr): Should be mojo:gpu_service
+    app->ConnectToService("mojo:native_viewport_service", &gpu_service_);
   }
 
   // ApplicationDelegate implementation.

@@ -77,7 +77,7 @@ DisplayManager::DisplayManager(
       size_(800, 600),
       draw_timer_(false, false),
       weak_factory_(this) {
-  app_connection->ConnectToService("mojo:mojo_native_viewport_service",
+  app_connection->ConnectToService("mojo:native_viewport_service",
                                    &native_viewport_);
   native_viewport_.set_client(this);
   native_viewport_->Create(
@@ -85,8 +85,7 @@ DisplayManager::DisplayManager(
       base::Bind(&DisplayManager::OnCreatedNativeViewport,
                  weak_factory_.GetWeakPtr()));
   native_viewport_->Show();
-  app_connection->ConnectToService("mojo:mojo_surfaces_service",
-                                   &surfaces_service_);
+  app_connection->ConnectToService("mojo:surfaces_service", &surfaces_service_);
   surfaces_service_->CreateSurfaceConnection(base::Bind(
       &DisplayManager::OnSurfaceConnectionCreated, weak_factory_.GetWeakPtr()));
 }

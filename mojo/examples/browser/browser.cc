@@ -169,7 +169,7 @@ class Browser : public ApplicationDelegate,
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(shell_, this));
     views_init_.reset(new ViewsInit);
-    app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
+    app->ConnectToService("mojo:window_manager", &window_manager_);
  }
 
  virtual bool ConfigureIncomingConnection(

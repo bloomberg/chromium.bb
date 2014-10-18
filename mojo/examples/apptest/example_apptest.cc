@@ -84,7 +84,7 @@ class ExampleApptest : public Apptest {
   }
   virtual void SetUp() override {
     Apptest::SetUp();
-    application_impl()->ConnectToService("mojo:mojo_example_service",
+    application_impl()->ConnectToService("mojo:example_service",
                                          &example_service_);
     example_service_.set_client(&example_client_);
   }
@@ -144,7 +144,7 @@ MojoResult MojoMain(MojoHandle shell_handle) {
 
     // Construct an ApplicationImpl just for the GTEST commandline arguments.
     // GTEST command line arguments are supported amid application arguments:
-    //   mojo_shell 'mojo:mojo_example_apptest arg1 --gtest_filter=foo arg2'
+    //   mojo_shell 'mojo:example_apptest arg1 --gtest_filter=foo arg2'
     mojo::ApplicationDelegate dummy_application_delegate;
     mojo::ApplicationImpl app(&dummy_application_delegate, shell_handle);
     MOJO_CHECK(app.WaitForInitialize());

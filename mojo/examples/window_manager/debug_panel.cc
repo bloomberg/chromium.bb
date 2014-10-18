@@ -120,7 +120,7 @@ void DebugPanel::Layout(views::View* view) {
 
 void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == colored_square_) {
-    Navigate("mojo://mojo_embedded_app/");
+    Navigate("mojo://embedded_app/");
   } else if (sender == close_last_) {
     delegate_->CloseTopWindow();
   } else if (sender == cross_app_) {

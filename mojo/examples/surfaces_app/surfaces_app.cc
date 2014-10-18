@@ -36,12 +36,10 @@ class SurfacesApp : public ApplicationDelegate,
   // ApplicationDelegate implementation
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) override {
-    connection->ConnectToService("mojo:mojo_native_viewport_service",
-                                 &viewport_);
+    connection->ConnectToService("mojo:native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
-    connection->ConnectToService("mojo:mojo_surfaces_service",
-                                 &surfaces_service_);
+    connection->ConnectToService("mojo:surfaces_service", &surfaces_service_);
     surfaces_service_->CreateSurfaceConnection(base::Bind(
         &SurfacesApp::SurfaceConnectionCreated, base::Unretained(this)));
 
@@ -53,9 +51,8 @@ class SurfacesApp : public ApplicationDelegate,
     viewport_->Show();
 
     child_size_ = gfx::Size(size_.width() / 3, size_.height() / 2);
-    connection->ConnectToService("mojo:mojo_surfaces_child_app", &child_one_);
-    connection->ConnectToService("mojo:mojo_surfaces_child_gl_app",
-                                 &child_two_);
+    connection->ConnectToService("mojo:surfaces_child_app", &child_one_);
+    connection->ConnectToService("mojo:surfaces_child_gl_app", &child_two_);
     child_one_->ProduceFrame(Color::From(SK_ColorBLUE),
                              Size::From(child_size_),
                              base::Bind(&SurfacesApp::ChildOneProducedFrame,

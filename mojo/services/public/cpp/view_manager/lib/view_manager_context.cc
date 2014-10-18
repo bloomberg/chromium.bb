@@ -15,8 +15,7 @@ void ConnectCallback(bool success) {}
 class ViewManagerContext::InternalState {
  public:
   InternalState(ApplicationImpl* application_impl) {
-    application_impl->ConnectToService("mojo:mojo_view_manager",
-                                       &init_service_);
+    application_impl->ConnectToService("mojo:view_manager", &init_service_);
   }
   ~InternalState() {}
 

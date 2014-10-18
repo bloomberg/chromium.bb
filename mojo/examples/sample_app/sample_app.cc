@@ -32,11 +32,11 @@ class SampleApp : public mojo::ApplicationDelegate,
   }
 
   virtual void Initialize(mojo::ApplicationImpl* app) override {
-    app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
+    app->ConnectToService("mojo:native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
-    // TODO(jamesr): Should be mojo:mojo_gpu_service
-    app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
+    // TODO(jamesr): Should be mojo:gpu_service
+    app->ConnectToService("mojo:native_viewport_service", &gpu_service_);
 
     mojo::SizePtr size(mojo::Size::New());
     size->width = 800;

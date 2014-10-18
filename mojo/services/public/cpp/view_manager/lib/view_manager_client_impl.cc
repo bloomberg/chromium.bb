@@ -93,7 +93,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
                                              Shell* shell)
     : connected_(false), connection_id_(0), next_id_(1), delegate_(delegate) {
   InterfacePtr<ServiceProvider> sp;
-  shell->ConnectToApplication("mojo:mojo_window_manager", GetProxy(&sp));
+  shell->ConnectToApplication("mojo:window_manager", GetProxy(&sp));
   ConnectToService(sp.get(), &window_manager_);
   window_manager_.set_client(this);
 }

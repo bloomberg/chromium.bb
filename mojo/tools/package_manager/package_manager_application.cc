@@ -34,7 +34,7 @@ PackageManagerApplication::~PackageManagerApplication() {
 }
 
 void PackageManagerApplication::Initialize(ApplicationImpl* app) {
-  app->ConnectToService("mojo:mojo_network_service", &network_service_);
+  app->ConnectToService("mojo:network_service", &network_service_);
 
   printf("Enter URL> ");
   char buf[1024];

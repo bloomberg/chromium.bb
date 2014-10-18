@@ -52,13 +52,10 @@ class ShellTestBaseTest : public ShellTestBase {
       return base::Bind(&ShellTestBaseTest::SetAndQuitImpl<T>,
           base::Unretained(this), val);
   }
-  static GURL test_app_url() {
-    return GURL("mojo:mojo_test_app");
-  }
+  static GURL test_app_url() { return GURL("mojo:test_app"); }
 
   void GetReport(std::vector<ServiceReport>* report) {
-    ConnectToService(GURL("mojo:mojo_test_request_tracker_app"),
-                     &request_tracking_);
+    ConnectToService(GURL("mojo:test_request_tracker_app"), &request_tracking_);
     request_tracking_->GetReport(base::Bind(&GetReportCallback,
         base::Unretained(message_loop()),
         base::Unretained(report)));
@@ -227,13 +224,13 @@ TEST_F(ShellTestBaseTest, ConnectDifferentServicesInDifferentApps) {
   int64 time_message;
   TestServicePtr service;
   ConnectToService(test_app_url(), &service);
-  service->ConnectToAppAndGetTime("mojo:mojo_test_request_tracker_app",
+  service->ConnectToAppAndGetTime("mojo:test_request_tracker_app",
                                   SetAndQuit<int64>(&time_message));
   message_loop()->Run();
 
   // Verify by hitting the TimeService in the request tracker app directly.
   TestTimeServicePtr time_service;
-  ConnectToService(GURL("mojo:mojo_test_request_tracker_app"), &time_service);
+  ConnectToService(GURL("mojo:test_request_tracker_app"), &time_service);
   int64 party_time;
   time_service->GetPartyTime(SetAndQuit<int64>(&party_time));
   message_loop()->Run();
@@ -278,7 +275,7 @@ TEST_F(ShellTestBaseTest, ConnectManyClientsAndServices) {
   for (int i = 0; i < 5; i++)
     service->Ping(mojo::Callback<void()>());
   int64 time_result;
-  service->ConnectToAppAndGetTime("mojo:mojo_test_request_tracker_app",
+  service->ConnectToAppAndGetTime("mojo:test_request_tracker_app",
                                   SetAndQuit<int64>(&time_result));
   message_loop()->Run();
 

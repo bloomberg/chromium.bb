@@ -45,11 +45,11 @@ BitmapUploader::BitmapUploader(View* view)
 
 void BitmapUploader::Init(Shell* shell) {
   ServiceProviderPtr surfaces_service_provider;
-  shell->ConnectToApplication("mojo:mojo_surfaces_service",
+  shell->ConnectToApplication("mojo:surfaces_service",
                               GetProxy(&surfaces_service_provider));
   ConnectToService(surfaces_service_provider.get(), &surfaces_service_);
   ServiceProviderPtr gpu_service_provider;
-  shell->ConnectToApplication("mojo:mojo_native_viewport_service",
+  shell->ConnectToApplication("mojo:native_viewport_service",
                               GetProxy(&gpu_service_provider));
   ConnectToService(gpu_service_provider.get(), &gpu_service_);
 

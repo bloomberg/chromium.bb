@@ -154,14 +154,14 @@ blink::WebStorageNamespace* HTMLDocumentView::createSessionStorageNamespace() {
 
 void HTMLDocumentView::initializeLayerTreeView() {
   ServiceProviderPtr surfaces_service_provider;
-  shell_->ConnectToApplication("mojo:mojo_surfaces_service",
+  shell_->ConnectToApplication("mojo:surfaces_service",
                                GetProxy(&surfaces_service_provider));
   SurfacesServicePtr surfaces_service;
   ConnectToService(surfaces_service_provider.get(), &surfaces_service);
 
   ServiceProviderPtr gpu_service_provider;
-  // TODO(jamesr): Should be mojo:mojo_gpu_service
-  shell_->ConnectToApplication("mojo:mojo_native_viewport_service",
+  // TODO(jamesr): Should be mojo:gpu_service
+  shell_->ConnectToApplication("mojo:native_viewport_service",
                                GetProxy(&gpu_service_provider));
   GpuPtr gpu_service;
   ConnectToService(gpu_service_provider.get(), &gpu_service);

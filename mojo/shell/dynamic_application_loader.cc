@@ -222,7 +222,7 @@ void DynamicApplicationLoader::Load(
 
   if (!network_service_) {
     context_->application_manager()->ConnectToService(
-        GURL("mojo:mojo_network_service"), &network_service_);
+        GURL("mojo:network_service"), &network_service_);
   }
 
   loaders_.push_back(new NetworkLoader(resolved_url,

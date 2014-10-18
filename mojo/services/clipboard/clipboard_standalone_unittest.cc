@@ -52,8 +52,8 @@ class ClipboardStandaloneTest : public testing::Test {
   virtual void SetUp() override {
     test_helper_.Init();
 
-    test_helper_.application_manager()->ConnectToService(
-        GURL("mojo:mojo_clipboard"), &clipboard_);
+    test_helper_.application_manager()->ConnectToService(GURL("mojo:clipboard"),
+                                                         &clipboard_);
   }
 
   uint64_t GetSequenceNumber() {

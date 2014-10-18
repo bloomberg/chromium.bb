@@ -212,7 +212,7 @@ class UDPSocketTest : public testing::Test {
     test_helper_.Init();
 
     test_helper_.application_manager()->ConnectToService(
-        GURL("mojo:mojo_network_service"), &network_service_);
+        GURL("mojo:network_service"), &network_service_);
 
     network_service_->CreateUDPSocket(GetProxy(&udp_socket_));
     udp_socket_.set_client(&udp_socket_client_);

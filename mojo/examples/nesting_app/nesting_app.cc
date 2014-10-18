@@ -26,7 +26,7 @@ namespace mojo {
 namespace examples {
 
 namespace {
-const char kEmbeddedAppURL[] = "mojo:mojo_embedded_app";
+const char kEmbeddedAppURL[] = "mojo:embedded_app";
 }
 
 class NestingApp;

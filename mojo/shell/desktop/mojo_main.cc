@@ -82,11 +82,11 @@ void Usage() {
       << " <mojo-app> ...\n\n"
       << "A <mojo-app> is a Mojo URL or a Mojo URL and arguments within "
       << "quotes.\n"
-      << "Example: mojo_shell \"mojo://mojo_js_standalone test.js\".\n"
+      << "Example: mojo_shell \"mojo://js_standalone test.js\".\n"
       << "<url-lib-path> is searched for shared libraries named by mojo URLs.\n"
       << "The value of <handlers> is a comma separated list like:\n"
-      << "text/html,mojo://mojo_html_viewer,"
-      << "application/javascript,mojo://mojo_js_content_handler\n";
+      << "text/html,mojo://html_viewer,"
+      << "application/javascript,mojo://js_content_handler\n";
 }
 
 bool ConfigureURLMappings(const std::string& mappings,
