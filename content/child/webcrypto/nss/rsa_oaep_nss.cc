@@ -168,15 +168,15 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
             blink::WebCryptoKeyUsageDecrypt |
                 blink::WebCryptoKeyUsageUnwrapKey) {}
 
-  virtual Status VerifyKeyUsagesBeforeGenerateKeyPair(
-      blink::WebCryptoKeyUsageMask combined_usage_mask,
-      blink::WebCryptoKeyUsageMask* public_usage_mask,
-      blink::WebCryptoKeyUsageMask* private_usage_mask) const override {
+  virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                             bool extractable,
+                             blink::WebCryptoKeyUsageMask usage_mask,
+                             GenerateKeyResult* result) const override {
     Status status = NssSupportsRsaOaep();
     if (status.IsError())
       return status;
-    return RsaHashedAlgorithm::VerifyKeyUsagesBeforeGenerateKeyPair(
-        combined_usage_mask, public_usage_mask, private_usage_mask);
+    return RsaHashedAlgorithm::GenerateKey(
+        algorithm, extractable, usage_mask, result);
   }
 
   virtual Status VerifyKeyUsagesBeforeImportKey(

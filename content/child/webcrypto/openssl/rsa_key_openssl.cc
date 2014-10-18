@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/status.h"
@@ -228,34 +229,27 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 
 }  // namespace
 
-Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeGenerateKeyPair(
+Status RsaHashedAlgorithm::GenerateKey(
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
     blink::WebCryptoKeyUsageMask combined_usage_mask,
-    blink::WebCryptoKeyUsageMask* public_usage_mask,
-    blink::WebCryptoKeyUsageMask* private_usage_mask) const {
+    GenerateKeyResult* result) const {
   Status status = CheckKeyCreationUsages(
       all_public_key_usages_ | all_private_key_usages_, combined_usage_mask);
   if (status.IsError())
     return status;
 
-  *public_usage_mask = combined_usage_mask & all_public_key_usages_;
-  *private_usage_mask = combined_usage_mask & all_private_key_usages_;
+  const blink::WebCryptoKeyUsageMask public_usage_mask =
+      combined_usage_mask & all_public_key_usages_;
+  const blink::WebCryptoKeyUsageMask private_usage_mask =
+      combined_usage_mask & all_private_key_usages_;
 
-  return Status::Success();
-}
-
-Status RsaHashedAlgorithm::GenerateKeyPair(
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask public_usage_mask,
-    blink::WebCryptoKeyUsageMask private_usage_mask,
-    blink::WebCryptoKey* public_key,
-    blink::WebCryptoKey* private_key) const {
   const blink::WebCryptoRsaHashedKeyGenParams* params =
       algorithm.rsaHashedKeyGenParams();
 
   unsigned int public_exponent = 0;
   unsigned int modulus_length_bits = 0;
-  Status status =
+  status =
       GetRsaKeyGenParameters(params, &public_exponent, &modulus_length_bits);
   if (status.IsError())
     return status;
@@ -290,6 +284,9 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
     return Status::OperationError();
   }
 
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+
   // Note that extractable is unconditionally set to true. This is because per
   // the WebCrypto spec generated public keys are always public.
   status = CreateWebCryptoPublicKey(public_pkey.Pass(),
@@ -297,16 +294,21 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
                                     params->hash(),
                                     true,
                                     public_usage_mask,
-                                    public_key);
+                                    &public_key);
   if (status.IsError())
     return status;
 
-  return CreateWebCryptoPrivateKey(private_pkey.Pass(),
-                                   algorithm.id(),
-                                   params->hash(),
-                                   extractable,
-                                   private_usage_mask,
-                                   private_key);
+  status = CreateWebCryptoPrivateKey(private_pkey.Pass(),
+                                     algorithm.id(),
+                                     params->hash(),
+                                     extractable,
+                                     private_usage_mask,
+                                     &private_key);
+  if (status.IsError())
+    return status;
+
+  result->AssignKeyPair(public_key, private_key);
+  return Status::Success();
 }
 
 Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeImportKey(

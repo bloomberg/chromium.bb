@@ -52,7 +52,6 @@ bool KeyUsageAllows(const blink::WebCryptoKey& key,
                     const blink::WebCryptoKeyUsage usage);
 
 bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id);
-bool IsAlgorithmAsymmetric(blink::WebCryptoAlgorithmId alg_id);
 
 Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,
                                 unsigned int* tag_length_bits);

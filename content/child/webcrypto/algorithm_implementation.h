@@ -16,6 +16,7 @@ namespace content {
 namespace webcrypto {
 
 class CryptoData;
+class GenerateKeyResult;
 class Status;
 
 // AlgorithmImplementation is a base class for *executing* the operations of an
@@ -71,32 +72,14 @@ class AlgorithmImplementation {
                         const CryptoData& data,
                         std::vector<uint8_t>* buffer) const;
 
-  // VerifyKeyUsagesBeforeGenerateKey() must be called prior to
-  // GenerateSecretKey() to validate the requested key usages.
-  virtual Status VerifyKeyUsagesBeforeGenerateKey(
-      blink::WebCryptoKeyUsageMask usage_mask) const;
-
   // This method corresponds to Web Crypto's crypto.subtle.generateKey().
-  virtual Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
-                                   bool extractable,
-                                   blink::WebCryptoKeyUsageMask usage_mask,
-                                   blink::WebCryptoKey* key) const;
-
-  // VerifyKeyUsagesBeforeGenerateKeyPair() must be called prior to
-  // GenerateKeyPair() to validate the requested key usages.
-  virtual Status VerifyKeyUsagesBeforeGenerateKeyPair(
-      blink::WebCryptoKeyUsageMask combined_usage_mask,
-      blink::WebCryptoKeyUsageMask* public_usage_mask,
-      blink::WebCryptoKeyUsageMask* private_usage_mask) const;
-
-  // This method corresponds to Web Crypto's crypto.subtle.generateKey().
-  virtual Status GenerateKeyPair(
-      const blink::WebCryptoAlgorithm& algorithm,
-      bool extractable,
-      blink::WebCryptoKeyUsageMask public_usage_mask,
-      blink::WebCryptoKeyUsageMask private_usage_mask,
-      blink::WebCryptoKey* public_key,
-      blink::WebCryptoKey* private_key) const;
+  //
+  // Implementations MUST verify |usage_mask| and return an error if it is not
+  // appropriate.
+  virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                             bool extractable,
+                             blink::WebCryptoKeyUsageMask usage_mask,
+                             GenerateKeyResult* result) const;
 
   // -----------------------------------------------
   // Key import

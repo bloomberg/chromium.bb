@@ -170,6 +170,19 @@ void ImportExportJwkSymmetricKey(
     blink::WebCryptoKeyUsageMask usages,
     const std::string& jwk_alg);
 
+// Wrappers around GenerateKey() which expect the result to be either a secret
+// key or a public/private keypair. If the result does not match the
+// expectation, then it fails with Status::ErrorUnexpected().
+Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key);
+Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
+                       bool extractable,
+                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKey* public_key,
+                       blink::WebCryptoKey* private_key);
+
 }  // namespace webcrypto
 
 }  // namesapce content

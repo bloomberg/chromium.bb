@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "content/child/webcrypto/algorithm_dispatch.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
@@ -578,6 +579,42 @@ void ImportExportJwkSymmetricKey(
   ASSERT_EQ(Status::Success(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_raw_out));
   EXPECT_BYTES_EQ_HEX(key_hex, key_raw_out);
+}
+
+Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key) {
+  GenerateKeyResult result;
+  Status status = GenerateKey(algorithm, extractable, usage_mask, &result);
+  if (status.IsError())
+    return status;
+
+  if (result.type() != GenerateKeyResult::TYPE_SECRET_KEY)
+    return Status::ErrorUnexpected();
+
+  *key = result.secret_key();
+
+  return Status::Success();
+}
+
+Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
+                       bool extractable,
+                       blink::WebCryptoKeyUsageMask usage_mask,
+                       blink::WebCryptoKey* public_key,
+                       blink::WebCryptoKey* private_key) {
+  GenerateKeyResult result;
+  Status status = GenerateKey(algorithm, extractable, usage_mask, &result);
+  if (status.IsError())
+    return status;
+
+  if (result.type() != GenerateKeyResult::TYPE_PUBLIC_PRIVATE_KEY_PAIR)
+    return Status::ErrorUnexpected();
+
+  *public_key = result.public_key();
+  *private_key = result.private_key();
+
+  return Status::Success();
 }
 
 }  // namespace webcrypto

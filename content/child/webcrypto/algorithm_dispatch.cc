@@ -102,45 +102,16 @@ Status Digest(const blink::WebCryptoAlgorithm& algorithm,
   return impl->Digest(algorithm, data, buffer);
 }
 
-Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
-                         bool extractable,
-                         blink::WebCryptoKeyUsageMask usage_mask,
-                         blink::WebCryptoKey* key) {
+Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                   bool extractable,
+                   blink::WebCryptoKeyUsageMask usage_mask,
+                   GenerateKeyResult* result) {
   const AlgorithmImplementation* impl = NULL;
   Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
   if (status.IsError())
     return status;
 
-  status = impl->VerifyKeyUsagesBeforeGenerateKey(usage_mask);
-  if (status.IsError())
-    return status;
-
-  return impl->GenerateSecretKey(algorithm, extractable, usage_mask, key);
-}
-
-Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
-                       bool extractable,
-                       blink::WebCryptoKeyUsageMask combined_usage_mask,
-                       blink::WebCryptoKey* public_key,
-                       blink::WebCryptoKey* private_key) {
-  const AlgorithmImplementation* impl = NULL;
-  Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
-  if (status.IsError())
-    return status;
-
-  blink::WebCryptoKeyUsageMask public_usage_mask;
-  blink::WebCryptoKeyUsageMask private_usage_mask;
-  status = impl->VerifyKeyUsagesBeforeGenerateKeyPair(
-      combined_usage_mask, &public_usage_mask, &private_usage_mask);
-  if (status.IsError())
-    return status;
-
-  return impl->GenerateKeyPair(algorithm,
-                               extractable,
-                               public_usage_mask,
-                               private_usage_mask,
-                               public_key,
-                               private_key);
+  return impl->GenerateKey(algorithm, extractable, usage_mask, result);
 }
 
 // Note that this function may be called from the target Blink thread.

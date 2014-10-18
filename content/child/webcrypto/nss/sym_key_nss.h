@@ -14,6 +14,7 @@ namespace content {
 namespace webcrypto {
 
 class CryptoData;
+class GenerateKeyResult;
 class Status;
 
 Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
@@ -21,7 +22,7 @@ Status GenerateSecretKeyNss(const blink::WebCryptoKeyAlgorithm& algorithm,
                             blink::WebCryptoKeyUsageMask usage_mask,
                             unsigned keylen_bytes,
                             CK_MECHANISM_TYPE mechanism,
-                            blink::WebCryptoKey* key);
+                            GenerateKeyResult* result);
 
 Status ImportKeyRawNss(const CryptoData& key_data,
                        const blink::WebCryptoKeyAlgorithm& algorithm,

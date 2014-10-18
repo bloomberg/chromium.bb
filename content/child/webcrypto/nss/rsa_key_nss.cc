@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/nss/key_nss.h"
 #include "content/child/webcrypto/nss/util_nss.h"
@@ -505,33 +506,26 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
 
 }  // namespace
 
-Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeGenerateKeyPair(
+Status RsaHashedAlgorithm::GenerateKey(
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
     blink::WebCryptoKeyUsageMask combined_usage_mask,
-    blink::WebCryptoKeyUsageMask* public_usage_mask,
-    blink::WebCryptoKeyUsageMask* private_usage_mask) const {
+    GenerateKeyResult* result) const {
   Status status = CheckKeyCreationUsages(
       all_public_key_usages_ | all_private_key_usages_, combined_usage_mask);
   if (status.IsError())
     return status;
 
-  *public_usage_mask = combined_usage_mask & all_public_key_usages_;
-  *private_usage_mask = combined_usage_mask & all_private_key_usages_;
+  const blink::WebCryptoKeyUsageMask public_usage_mask =
+      combined_usage_mask & all_public_key_usages_;
+  const blink::WebCryptoKeyUsageMask private_usage_mask =
+      combined_usage_mask & all_private_key_usages_;
 
-  return Status::Success();
-}
-
-Status RsaHashedAlgorithm::GenerateKeyPair(
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask public_usage_mask,
-    blink::WebCryptoKeyUsageMask private_usage_mask,
-    blink::WebCryptoKey* public_key,
-    blink::WebCryptoKey* private_key) const {
   unsigned int public_exponent = 0;
   unsigned int modulus_length_bits = 0;
-  Status status = GetRsaKeyGenParameters(algorithm.rsaHashedKeyGenParams(),
-                                         &public_exponent,
-                                         &modulus_length_bits);
+  status = GetRsaKeyGenParameters(algorithm.rsaHashedKeyGenParams(),
+                                  &public_exponent,
+                                  &modulus_length_bits);
   if (status.IsError())
     return status;
 
@@ -591,17 +585,21 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
   scoped_ptr<PrivateKeyNss> private_key_handle(
       new PrivateKeyNss(scoped_sec_private_key.Pass(), CryptoData(pkcs8_data)));
 
-  *public_key = blink::WebCryptoKey::create(public_key_handle.release(),
-                                            blink::WebCryptoKeyTypePublic,
-                                            true,
-                                            key_algorithm,
-                                            public_usage_mask);
-  *private_key = blink::WebCryptoKey::create(private_key_handle.release(),
-                                             blink::WebCryptoKeyTypePrivate,
-                                             extractable,
-                                             key_algorithm,
-                                             private_usage_mask);
+  blink::WebCryptoKey public_key =
+      blink::WebCryptoKey::create(public_key_handle.release(),
+                                  blink::WebCryptoKeyTypePublic,
+                                  true,
+                                  key_algorithm,
+                                  public_usage_mask);
 
+  blink::WebCryptoKey private_key =
+      blink::WebCryptoKey::create(private_key_handle.release(),
+                                  blink::WebCryptoKeyTypePrivate,
+                                  extractable,
+                                  key_algorithm,
+                                  private_usage_mask);
+
+  result->AssignKeyPair(public_key, private_key);
   return Status::Success();
 }
 

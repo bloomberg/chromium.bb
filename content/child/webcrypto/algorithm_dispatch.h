@@ -18,6 +18,7 @@ namespace webcrypto {
 
 class AlgorithmImplementation;
 class CryptoData;
+class GenerateKeyResult;
 class Status;
 
 // These functions provide an entry point for synchronous webcrypto operations.
@@ -42,18 +43,10 @@ CONTENT_EXPORT Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                              const CryptoData& data,
                              std::vector<uint8_t>* buffer);
 
-CONTENT_EXPORT Status
-    GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
-                      bool extractable,
-                      blink::WebCryptoKeyUsageMask usage_mask,
-                      blink::WebCryptoKey* key);
-
-CONTENT_EXPORT Status
-    GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
-                    bool extractable,
-                    blink::WebCryptoKeyUsageMask usage_mask,
-                    blink::WebCryptoKey* public_key,
-                    blink::WebCryptoKey* private_key);
+CONTENT_EXPORT Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                                  bool extractable,
+                                  blink::WebCryptoKeyUsageMask usage_mask,
+                                  GenerateKeyResult* result);
 
 CONTENT_EXPORT Status ImportKey(blink::WebCryptoKeyFormat format,
                                 const CryptoData& key_data,

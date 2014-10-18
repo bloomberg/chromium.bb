@@ -38,18 +38,10 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
   virtual const char* GetJwkAlgorithm(
       const blink::WebCryptoAlgorithmId hash) const = 0;
 
-  virtual Status VerifyKeyUsagesBeforeGenerateKeyPair(
-      blink::WebCryptoKeyUsageMask combined_usage_mask,
-      blink::WebCryptoKeyUsageMask* public_usage_mask,
-      blink::WebCryptoKeyUsageMask* private_usage_mask) const override;
-
-  virtual Status GenerateKeyPair(
-      const blink::WebCryptoAlgorithm& algorithm,
-      bool extractable,
-      blink::WebCryptoKeyUsageMask public_usage_mask,
-      blink::WebCryptoKeyUsageMask private_usage_mask,
-      blink::WebCryptoKey* public_key,
-      blink::WebCryptoKey* private_key) const override;
+  virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                             bool extractable,
+                             blink::WebCryptoKeyUsageMask usage_mask,
+                             GenerateKeyResult* result) const override;
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,

@@ -30,19 +30,16 @@ AesAlgorithm::AesAlgorithm(const std::string& jwk_suffix)
       jwk_suffix_(jwk_suffix) {
 }
 
-Status AesAlgorithm::VerifyKeyUsagesBeforeGenerateKey(
-    blink::WebCryptoKeyUsageMask usage_mask) const {
-  return CheckKeyCreationUsages(all_key_usages_, usage_mask);
-}
+Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                                 bool extractable,
+                                 blink::WebCryptoKeyUsageMask usage_mask,
+                                 GenerateKeyResult* result) const {
+  Status status = CheckKeyCreationUsages(all_key_usages_, usage_mask);
+  if (status.IsError())
+    return status;
 
-Status AesAlgorithm::GenerateSecretKey(
-    const blink::WebCryptoAlgorithm& algorithm,
-    bool extractable,
-    blink::WebCryptoKeyUsageMask usage_mask,
-    blink::WebCryptoKey* key) const {
   unsigned int keylen_bits;
-  Status status =
-      GetAesKeyGenLengthInBits(algorithm.aesKeyGenParams(), &keylen_bits);
+  status = GetAesKeyGenLengthInBits(algorithm.aesKeyGenParams(), &keylen_bits);
   if (status.IsError())
     return status;
 
@@ -51,7 +48,7 @@ Status AesAlgorithm::GenerateSecretKey(
       extractable,
       usage_mask,
       keylen_bits / 8,
-      key);
+      result);
 }
 
 Status AesAlgorithm::VerifyKeyUsagesBeforeImportKey(

@@ -28,13 +28,10 @@ class AesAlgorithm : public AlgorithmImplementation {
   // algorithms (supports usages for: encrypt, decrypt, wrap, unwrap).
   explicit AesAlgorithm(const std::string& jwk_suffix);
 
-  virtual Status VerifyKeyUsagesBeforeGenerateKey(
-      blink::WebCryptoKeyUsageMask usage_mask) const override;
-
-  virtual Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
-                                   bool extractable,
-                                   blink::WebCryptoKeyUsageMask usage_mask,
-                                   blink::WebCryptoKey* key) const override;
+  virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                             bool extractable,
+                             blink::WebCryptoKeyUsageMask usage_mask,
+                             GenerateKeyResult* result) const override;
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,

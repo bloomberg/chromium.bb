@@ -36,13 +36,10 @@ class AesAlgorithm : public AlgorithmImplementation {
   AesAlgorithm(CK_MECHANISM_TYPE import_mechanism,
                const std::string& jwk_suffix);
 
-  virtual Status VerifyKeyUsagesBeforeGenerateKey(
-      blink::WebCryptoKeyUsageMask usage_mask) const override;
-
-  virtual Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
-                                   bool extractable,
-                                   blink::WebCryptoKeyUsageMask usage_mask,
-                                   blink::WebCryptoKey* key) const override;
+  virtual Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
+                             bool extractable,
+                             blink::WebCryptoKeyUsageMask usage_mask,
+                             GenerateKeyResult* result) const override;
 
   virtual Status VerifyKeyUsagesBeforeImportKey(
       blink::WebCryptoKeyFormat format,

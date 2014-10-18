@@ -140,12 +140,6 @@ bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id) {
          alg_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
 }
 
-bool IsAlgorithmAsymmetric(blink::WebCryptoAlgorithmId alg_id) {
-  // TODO(padolph): include all other asymmetric algorithms once they are
-  // defined, e.g. EC and DH.
-  return IsAlgorithmRsa(alg_id);
-}
-
 // The WebCrypto spec defines the default value for the tag length, as well as
 // the allowed values for tag length.
 Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,

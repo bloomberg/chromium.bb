@@ -217,6 +217,8 @@
       'child/webcrypto/algorithm_registry.h',
       'child/webcrypto/crypto_data.cc',
       'child/webcrypto/crypto_data.h',
+      'child/webcrypto/generate_key_result.cc',
+      'child/webcrypto/generate_key_result.h',
       'child/webcrypto/jwk.cc',
       'child/webcrypto/jwk.h',
       'child/webcrypto/platform_crypto.h',

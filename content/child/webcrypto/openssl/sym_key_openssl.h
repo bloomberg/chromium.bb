@@ -12,13 +12,14 @@ namespace content {
 namespace webcrypto {
 
 class CryptoData;
+class GenerateKeyResult;
 class Status;
 
 Status GenerateSecretKeyOpenSsl(const blink::WebCryptoKeyAlgorithm& algorithm,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usage_mask,
                                 unsigned keylen_bytes,
-                                blink::WebCryptoKey* key);
+                                GenerateKeyResult* result);
 
 Status ImportKeyRawOpenSsl(const CryptoData& key_data,
                            const blink::WebCryptoKeyAlgorithm& algorithm,
