@@ -69,8 +69,6 @@ deps_os = {
     },
     'unix':
     {
-        'third_party/ragel':
-            Var('git_url') + '/native_client/deps/third_party/ragel.git@da42bb33f1b67c2d70b38ec1d2edf5263271b635',
     },
     'win':
     {
