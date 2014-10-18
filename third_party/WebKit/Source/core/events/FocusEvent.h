@@ -31,8 +31,6 @@
 
 namespace blink {
 
-class Node;
-
 struct FocusEventInit : public UIEventInit {
     FocusEventInit();
 

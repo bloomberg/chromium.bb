@@ -34,7 +34,6 @@
 namespace blink {
 
 class EventTarget;
-class EventDispatcher;
 class ExecutionContext;
 
 struct EventInit {

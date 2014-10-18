@@ -44,10 +44,6 @@ class Event;
 class ExceptionState;
 class MessagePort;
 class Node;
-class TextTrack;
-class TextTrackCue;
-class XMLHttpRequest;
-class XMLHttpRequestUpload;
 
 struct FiringEventIterator {
     FiringEventIterator(const AtomicString& eventType, size_t& iterator, size_t& end)

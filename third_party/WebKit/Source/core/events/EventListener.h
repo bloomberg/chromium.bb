@@ -25,7 +25,6 @@
 
 namespace blink {
 
-    class DOMWrapperWorld;
     class Event;
     class ExecutionContext;
 

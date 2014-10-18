@@ -30,7 +30,6 @@
 namespace blink {
 
 class EventDispatcher;
-class Node;
 class PlatformKeyboardEvent;
 
 struct KeyboardEventInit : public UIEventInit {

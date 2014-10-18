@@ -40,7 +40,6 @@ namespace blink {
 
 class Event;
 class EventDispatcher;
-class Node;
 
 class EventDispatchMediator : public RefCountedWillBeGarbageCollectedFinalized<EventDispatchMediator> {
 public:

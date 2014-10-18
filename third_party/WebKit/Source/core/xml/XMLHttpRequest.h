@@ -53,6 +53,7 @@ class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 class UnderlyingSource;
+class XMLHttpRequestUpload;
 
 typedef int ExceptionCode;
 

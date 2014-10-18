@@ -37,7 +37,6 @@ namespace blink {
 
 class Event;
 class DOMWindowEventQueueTimer;
-class Node;
 class ExecutionContext;
 
 #if ENABLE(OILPAN)
