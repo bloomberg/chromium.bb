@@ -69,7 +69,7 @@ public:
 
 private:
     const TextRun* m_textRun;
-    int m_offset;
+    unsigned m_offset;
 };
 
 

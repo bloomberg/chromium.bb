@@ -134,7 +134,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData,
                 }
             }
             if (m_run.allowsTrailingExpansion()
-                || (m_run.ltr() && charData.characterOffset + charData.clusterLength < static_cast<size_t>(m_run.length()))
+                || (m_run.ltr() && charData.characterOffset + charData.clusterLength < m_run.length())
                 || (m_run.rtl() && charData.characterOffset)) {
                 m_expansion -= m_expansionPerOpportunity;
                 width += m_expansionPerOpportunity;

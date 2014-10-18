@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/SVGTextMetricsBuilder.h"
 
 #include "core/rendering/svg/RenderSVGInline.h"
@@ -43,7 +42,7 @@ public:
     ~SVGTextMetricsCalculator();
 
     SVGTextMetrics computeMetricsForCharacter(unsigned textPosition);
-    unsigned textLength() const { return static_cast<unsigned>(m_run.charactersLength()); }
+    unsigned textLength() const { return m_run.charactersLength(); }
 
     bool characterStartsSurrogatePair(unsigned textPosition) const
     {
