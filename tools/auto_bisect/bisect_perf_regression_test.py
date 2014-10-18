@@ -17,16 +17,74 @@ import mock
 import source_control
 
 
+# Regression confidence: 0%
+CLEAR_NON_REGRESSION = [
+    # Mean: 30.223 Std. Dev.: 11.383
+    [[16.886], [16.909], [16.99], [17.723], [17.952], [18.118], [19.028],
+     [19.552], [21.954], [38.573], [38.839], [38.965], [40.007], [40.572],
+     [41.491], [42.002], [42.33], [43.109], [43.238]],
+    # Mean: 34.76 Std. Dev.: 11.516
+    [[16.426], [17.347], [20.593], [21.177], [22.791], [27.843], [28.383],
+     [28.46], [29.143], [40.058], [40.303], [40.558], [41.918], [42.44],
+     [45.223], [46.494], [50.002], [50.625], [50.839]]
+]
+# Regression confidence: ~ 90%
+ALMOST_REGRESSION = [
+    # Mean: 30.042 Std. Dev.: 2.002
+    [[26.146], [28.04], [28.053], [28.074], [28.168], [28.209], [28.471],
+     [28.652], [28.664], [30.862], [30.973], [31.002], [31.897], [31.929],
+     [31.99], [32.214], [32.323], [32.452], [32.696]],
+    # Mean: 33.008 Std. Dev.: 4.265
+    [[34.963], [30.741], [39.677], [39.512], [34.314], [31.39], [34.361],
+     [25.2], [30.489], [29.434]]
+]
+# Regression confidence: ~ 98%
+BARELY_REGRESSION = [
+    # Mean: 28.828 Std. Dev.: 1.993
+    [[26.96], [27.605], [27.768], [27.829], [28.006], [28.206], [28.393],
+     [28.911], [28.933], [30.38], [30.462], [30.808], [31.74], [31.805],
+     [31.899], [32.077], [32.454], [32.597], [33.155]],
+    # Mean: 31.156 Std. Dev.: 1.980
+    [[28.729], [29.112], [29.258], [29.454], [29.789], [30.036], [30.098],
+     [30.174], [30.534], [32.285], [32.295], [32.552], [32.572], [32.967],
+     [33.165], [33.403], [33.588], [33.744], [34.147], [35.84]]
+]
+# Regression confidence: 99.5%
+CLEAR_REGRESSION = [
+    # Mean: 30.254 Std. Dev.: 2.987
+    [[26.494], [26.621], [26.701], [26.997], [26.997], [27.05], [27.37],
+     [27.488], [27.556], [31.846], [32.192], [32.21], [32.586], [32.596],
+     [32.618], [32.95], [32.979], [33.421], [33.457], [34.97]],
+    # Mean: 33.190 Std. Dev.: 2.972
+    [[29.547], [29.713], [29.835], [30.132], [30.132], [30.33], [30.406],
+     [30.592], [30.72], [34.486], [35.247], [35.253], [35.335], [35.378],
+     [35.934], [36.233], [36.41], [36.947], [37.982]]
+]
 # Default options for the dry run
 DEFAULT_OPTIONS = {
     'debug_ignore_build': True,
     'debug_ignore_sync': True,
     'debug_ignore_perf_test': True,
+    'debug_ignore_regression_confidence': True,
     'command': 'fake_command',
     'metric': 'fake/metric',
     'good_revision': 280000,
     'bad_revision': 280005,
   }
+
+# This global is a placeholder for a generator to be defined by the testcases
+# that use _MockRunTest
+_MockResultsGenerator = (x for x in [])
+
+def _FakeTestResult(values):
+  result_dict = {'mean': 0.0, 'std_err': 0.0, 'std_dev': 0.0, 'values': values}
+  success_code = 0
+  return (result_dict, success_code)
+
+
+def _MockRunTests(*args, **kwargs):
+  _, _ = args, kwargs
+  return _FakeTestResult(_MockResultsGenerator.next())
 
 
 def _GetBisectPerformanceMetricsInstance(options_dict):
@@ -37,12 +95,13 @@ def _GetBisectPerformanceMetricsInstance(options_dict):
   return bisect_instance
 
 
-def _GetExtendedOptions(d, f):
+def _GetExtendedOptions(improvement_dir, fake_first, ignore_confidence=True):
   """Returns the a copy of the default options dict plus some options."""
   result = dict(DEFAULT_OPTIONS)
   result.update({
-      'improvement_direction': d,
-      'debug_fake_first_test_mean': f})
+      'improvement_direction': improvement_dir,
+      'debug_fake_first_test_mean': fake_first,
+      'debug_ignore_regression_confidence': ignore_confidence})
   return result
 
 
@@ -301,11 +360,11 @@ class BisectPerfRegressionTest(unittest.TestCase):
 
   def testBisectImprovementDirectionFails(self):
     """Dry run of a bisect with an improvement instead of regression."""
-
     # Test result goes from 0 to 100 where higher is better
     results = _GenericDryRun(_GetExtendedOptions(1, 100))
     self.assertIsNotNone(results.error)
     self.assertIn('not a regression', results.error)
+
     # Test result goes from 0 to -100 where lower is better
     results = _GenericDryRun(_GetExtendedOptions(-1, -100))
     self.assertIsNotNone(results.error)
@@ -320,6 +379,31 @@ class BisectPerfRegressionTest(unittest.TestCase):
     results = _GenericDryRun(_GetExtendedOptions(1, -100))
     self.assertIsNone(results.error)
 
+  @mock.patch('bisect_perf_regression.BisectPerformanceMetrics.'
+              'RunPerformanceTestAndParseResults', _MockRunTests)
+  def testBisectStopsOnDoubtfulRegression(self):
+    global _MockResultsGenerator
+    _MockResultsGenerator = (rs for rs in CLEAR_NON_REGRESSION)
+    results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
+    self.assertIsNotNone(results.error)
+    self.assertIn('could not reproduce the regression', results.error)
+
+    _MockResultsGenerator = (rs for rs in ALMOST_REGRESSION)
+    results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
+    self.assertIsNotNone(results.error)
+    self.assertIn('could not reproduce the regression', results.error)
+
+  @mock.patch('bisect_perf_regression.BisectPerformanceMetrics.'
+              'RunPerformanceTestAndParseResults', _MockRunTests)
+  def testBisectContinuesOnClearRegression(self):
+    global _MockResultsGenerator
+    _MockResultsGenerator = (rs for rs in CLEAR_REGRESSION)
+    with self.assertRaises(StopIteration):
+      _GenericDryRun(_GetExtendedOptions(0, 0, False))
+
+    _MockResultsGenerator = (rs for rs in BARELY_REGRESSION)
+    with self.assertRaises(StopIteration):
+      _GenericDryRun(_GetExtendedOptions(0, 0, False))
 
   def testGetCommitPosition(self):
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
