@@ -5,13 +5,9 @@
 #ifndef ATHENA_SYSTEM_NETWORK_SELECTOR_H_
 #define ATHENA_SYSTEM_NETWORK_SELECTOR_H_
 
-namespace aura {
-class Window;
-}
-
 namespace athena {
 
-void CreateNetworkSelector(aura::Window* window);
+void CreateNetworkSelector();
 
 }  // namespace athena
 

@@ -1063,6 +1063,9 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   athena::ScreenManager::ContainerParams container_params(
       "LoginScreen", athena::CP_LOGIN_SCREEN);
   container_params.can_activate_children = true;
+  container_params.block_events = true;
+  container_params.modal_container_priority =
+      athena::CP_LOGIN_SCREEN_SYSTEM_MODAL;
   login_screen_container_.reset(
       athena::ScreenManager::Get()->CreateContainer(container_params));
   params.parent = login_screen_container_.get();

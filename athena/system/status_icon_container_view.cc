@@ -208,9 +208,7 @@ class StatusIconContainerView::UpdateStatus
 };
 
 StatusIconContainerView::StatusIconContainerView(
-    SystemUI::ColorScheme color_scheme,
-    aura::Window* system_modal_container)
-    : system_modal_container_(system_modal_container) {
+    SystemUI::ColorScheme color_scheme) {
   const int kHorizontalSpacing = 10;
   const int kVerticalSpacing = 3;
   const int kBetweenChildSpacing = 10;
@@ -241,13 +239,13 @@ StatusIconContainerView::~StatusIconContainerView() {
 }
 
 bool StatusIconContainerView::OnMousePressed(const ui::MouseEvent& event) {
-  CreateNetworkSelector(system_modal_container_);
+  CreateNetworkSelector();
   return true;
 }
 
 void StatusIconContainerView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    CreateNetworkSelector(system_modal_container_);
+    CreateNetworkSelector();
     event->SetHandled();
   }
 }

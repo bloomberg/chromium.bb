@@ -12,9 +12,11 @@ enum ContainerPriorities {
   CP_DEFAULT,
   CP_HOME_CARD,
   CP_SYSTEM_MODAL,
+  // TODO(oshima): rename LOGIN_xxx to something more generic.
   CP_LOGIN_SCREEN,
   CP_LOGIN_SCREEN_SYSTEM_MODAL,
   CP_VIRTUAL_KEYBOARD,
+  CP_END,
 };
 
 }  // namespace athena

@@ -27,11 +27,9 @@ SystemUI* instance = NULL;
 // right.
 class SystemInfoView : public views::View {
  public:
-  SystemInfoView(SystemUI::ColorScheme color_scheme,
-                 aura::Window* system_modal_container)
+  SystemInfoView(SystemUI::ColorScheme color_scheme)
       : time_view_(new TimeView(color_scheme)),
-        status_icon_view_(
-            new StatusIconContainerView(color_scheme, system_modal_container)) {
+        status_icon_view_(new StatusIconContainerView(color_scheme)) {
     AddChildView(time_view_);
     AddChildView(status_icon_view_);
   }
@@ -76,8 +74,7 @@ class SystemUIImpl : public SystemUI {
  public:
   SystemUIImpl(scoped_refptr<base::TaskRunner> blocking_task_runner)
       : orientation_controller_(new OrientationController()),
-        background_container_(NULL),
-        system_modal_container_(NULL) {
+        background_container_(NULL) {
     orientation_controller_->InitWith(blocking_task_runner);
   }
 
@@ -93,34 +90,22 @@ class SystemUIImpl : public SystemUI {
         ScreenManager::ContainerParams("AthenaBackground", CP_BACKGROUND));
     background_container_->SetLayoutManager(
         new FillLayoutManager(background_container_));
-    ScreenManager::ContainerParams system_modal_params(
-        "AthenaSystemModalContainer", CP_SYSTEM_MODAL);
-    system_modal_params.can_activate_children = true;
-    system_modal_container_ =
-        screen_manager->CreateContainer(system_modal_params);
-    login_screen_system_modal_container_ = screen_manager->CreateContainer(
-        ScreenManager::ContainerParams("AthenaLoginScreenSystemModalContainer",
-                                       CP_LOGIN_SCREEN_SYSTEM_MODAL));
 
-    // Use |login_screen_system_modal_container_| for the power button's dialog
-    // because it needs to show over the login screen.
-    // TODO(pkotwicz): Pick the most appropriate container based on whether the
-    // user has logged in.
-    shutdown_dialog_.reset(
-        new ShutdownDialog(login_screen_system_modal_container_));
+    shutdown_dialog_.reset(new ShutdownDialog());
     background_controller_.reset(
         new BackgroundController(background_container_));
   }
 
+ private:
+  // SystemUI:
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) override {
     background_controller_->SetImage(image);
   }
 
   virtual views::View* CreateSystemInfoView(ColorScheme color_scheme) override {
-    return new SystemInfoView(color_scheme, system_modal_container_);
+    return new SystemInfoView(color_scheme);
   }
 
- private:
   scoped_ptr<OrientationController> orientation_controller_;
   scoped_ptr<ShutdownDialog> shutdown_dialog_;
   scoped_ptr<BackgroundController> background_controller_;

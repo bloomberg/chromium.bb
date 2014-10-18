@@ -6,6 +6,7 @@
 
 #include "athena/screen/public/screen_manager.h"
 #include "athena/test/base/athena_test_base.h"
+#include "athena/test/base/test_windows.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/split_view_controller.h"
 #include "athena/wm/test/window_manager_impl_test_api.h"
@@ -28,7 +29,7 @@ class WindowManagerTest : public test::AthenaTestBase {
 
   scoped_ptr<aura::Window> CreateAndActivateWindow(
       aura::WindowDelegate* delegate) {
-    scoped_ptr<aura::Window> window(CreateTestWindow(delegate, gfx::Rect()));
+    scoped_ptr<aura::Window> window(test::CreateNormalWindow(delegate, NULL));
     window->Show();
     wm::ActivateWindow(window.get());
     return window.Pass();

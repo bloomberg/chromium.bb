@@ -150,7 +150,9 @@ void AthenaContainerLayoutManager::SetChildBounds(
 WindowManagerImpl::WindowManagerImpl() {
   ScreenManager::ContainerParams params("DefaultContainer", CP_DEFAULT);
   params.can_activate_children = true;
-  container_.reset(ScreenManager::Get()->CreateDefaultContainer(params));
+  params.default_parent = true;
+  params.modal_container_priority = CP_SYSTEM_MODAL;
+  container_.reset(ScreenManager::Get()->CreateContainer(params));
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
   window_list_provider_.reset(new WindowListProviderImpl(container_.get()));
@@ -164,6 +166,8 @@ WindowManagerImpl::WindowManagerImpl() {
   wm_state_.reset(new wm::WMState());
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(container_->GetRootWindow());
+  DCHECK(container_->GetRootWindow());
+  DCHECK(activation_client);
   shadow_controller_.reset(new wm::ShadowController(activation_client));
   instance = this;
   InstallAccelerators();
