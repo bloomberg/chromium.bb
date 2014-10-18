@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import logging
 
+from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
@@ -521,6 +522,12 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
           self.sync_stage.pool.changes, self._build_root, manifest)
       if cbuildbot_config.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
+
+    manager = self._run.attrs.manifest_manager
+    version = manager.current_version
+    if version:
+      chroot_manager = chroot_lib.ChrootManager(self._build_root)
+      chroot_manager.SetChrootVersion(version)
 
   def HandleFailure(self, failing, inflight, no_stat):
     """Handle a build failure or timeout in the Commit Queue.

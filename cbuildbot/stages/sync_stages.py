@@ -15,6 +15,7 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
@@ -723,6 +724,15 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         self._run.config.master, self._run.options.debug,
         metadata=self._run.attrs.metadata)
 
+  def _GetLGKMVersionFromManifest(self, manifest):
+    manifest_dom = minidom.parse(manifest)
+    elements = manifest_dom.getElementsByTagName(lkgm_manager.LKGM_ELEMENT)
+    if elements:
+      lkgm_version = elements[0].getAttribute(lkgm_manager.LKGM_VERSION_ATTR)
+      logging.info(
+          'LKGM version was found in the manifest: %s', lkgm_version)
+      return lkgm_version
+
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
     assert self.manifest_manager, \
@@ -758,7 +768,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
             manifest, dashboard_url=self.ConstructDashboardURL(),
             build_id=build_id)
 
-      return manifest
     else:
       manifest = self.manifest_manager.GetLatestCandidate(
           dashboard_url=self.ConstructDashboardURL())
@@ -773,7 +782,15 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         self._SetPoolFromManifest(manifest)
         self.pool.ApplyPoolIntoRepo()
 
-      return manifest
+    # Make sure the chroot version is valid.
+    lkgm_version = self._GetLGKMVersionFromManifest(manifest)
+    chroot_manager = chroot_lib.ChrootManager(self._build_root)
+    chroot_manager.EnsureChrootAtVersion(lkgm_version)
+
+    # Clear the chroot version as we are in the middle of building it.
+    chroot_manager.ClearChrootVersion()
+
+    return manifest
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
