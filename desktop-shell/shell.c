@@ -817,7 +817,8 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 						 struct focus_state,
 						 surface_destroy_listener);
 	struct desktop_shell *shell;
-	struct weston_surface *main_surface, *next;
+	struct weston_surface *main_surface;
+	struct weston_view *next;
 	struct weston_view *view;
 
 	main_surface = weston_surface_get_main_surface(state->keyboard_focus);
@@ -830,13 +831,13 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 		if (is_focus_view(view))
 			continue;
 
-		next = view->surface;
+		next = view;
 		break;
 	}
 
 	/* if the focus was a sub-surface, activate its main surface */
 	if (main_surface != state->keyboard_focus)
-		next = main_surface;
+		next = get_default_view(main_surface);
 
 	shell = state->seat->compositor->shell_interface.shell;
 	if (next) {
@@ -2014,10 +2015,10 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 	struct weston_seat *seat = pointer->seat;
 
 	if (shsurf && button == BTN_LEFT && state) {
-		activate(shsurf->shell, shsurf->surface, seat, true);
+		activate(shsurf->shell, shsurf->view, seat, true);
 		surface_move(shsurf, pointer, false);
 	} else if (shsurf && button == BTN_RIGHT && state) {
-		activate(shsurf->shell, shsurf->surface, seat, true);
+		activate(shsurf->shell, shsurf->view, seat, true);
 		surface_rotate(shsurf, pointer);
 	}
 }
@@ -5161,9 +5162,10 @@ lower_fullscreen_layer(struct desktop_shell *shell,
 }
 
 void
-activate(struct desktop_shell *shell, struct weston_surface *es,
+activate(struct desktop_shell *shell, struct weston_view *view,
 	 struct weston_seat *seat, bool configure)
 {
+	struct weston_surface *es = view->surface;
 	struct weston_surface *main_surface;
 	struct focus_state *state;
 	struct workspace *ws;
@@ -5239,7 +5241,7 @@ activate_binding(struct weston_seat *seat,
 	if (get_shell_surface_type(main_surface) == SHELL_SURFACE_NONE)
 		return;
 
-	activate(shell, focus_view->surface, seat, true);
+	activate(shell, focus_view, seat, true);
 }
 
 static void
@@ -5713,7 +5715,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		if (shell->locked)
 			break;
 		wl_list_for_each(seat, &compositor->seat_list, link)
-			activate(shell, shsurf->surface, seat, true);
+			activate(shell, shsurf->view, seat, true);
 		break;
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_NONE:
@@ -6129,7 +6131,7 @@ switcher_destroy(struct switcher *switcher)
 	}
 
 	if (switcher->current)
-		activate(switcher->shell, switcher->current->surface,
+		activate(switcher->shell, switcher->current,
 			 keyboard->seat, true);
 	wl_list_remove(&switcher->listener.link);
 	weston_keyboard_end_grab(keyboard);
