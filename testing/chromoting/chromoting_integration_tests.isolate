@@ -52,7 +52,7 @@
     ['OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
-          '../testing/test_env.py',
+          '../test_env.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '--gtest_filter=RemoteDesktopBrowserTest.MANUAL_Launch',
           '--run-manual',
