@@ -182,6 +182,66 @@ class CC_EXPORT TilingData {
     int vertical_step_count_;
   };
 
+  class CC_EXPORT ReverseSpiralDifferenceIterator : public BaseIterator {
+   public:
+    ReverseSpiralDifferenceIterator();
+    ReverseSpiralDifferenceIterator(const TilingData* tiling_data,
+                                    const gfx::Rect& consider_rect,
+                                    const gfx::Rect& ignore_rect,
+                                    const gfx::Rect& center_rect);
+    ReverseSpiralDifferenceIterator& operator++();
+
+   private:
+    bool in_consider_rect() const {
+      return index_x_ >= consider_left_ && index_x_ <= consider_right_ &&
+             index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
+    }
+    bool in_around_rect() const {
+      return index_x_ >= around_left_ && index_x_ <= around_right_ &&
+             index_y_ >= around_top_ && index_y_ <= around_bottom_;
+    }
+    bool in_ignore_rect() const {
+      return index_x_ >= ignore_left_ && index_x_ <= ignore_right_ &&
+             index_y_ >= ignore_top_ && index_y_ <= ignore_bottom_;
+    }
+    bool valid_column() const {
+      return index_x_ >= consider_left_ && index_x_ <= consider_right_;
+    }
+    bool valid_row() const {
+      return index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
+    }
+
+    int current_step_count() const {
+      return (direction_ == UP || direction_ == DOWN) ? vertical_step_count_
+                                                      : horizontal_step_count_;
+    }
+
+    bool needs_direction_switch() const;
+    void switch_direction();
+
+    int consider_left_;
+    int consider_top_;
+    int consider_right_;
+    int consider_bottom_;
+    int around_left_;
+    int around_top_;
+    int around_right_;
+    int around_bottom_;
+    int ignore_left_;
+    int ignore_top_;
+    int ignore_right_;
+    int ignore_bottom_;
+
+    enum Direction { LEFT, UP, RIGHT, DOWN };
+
+    Direction direction_;
+    int delta_x_;
+    int delta_y_;
+    int current_step_;
+    int horizontal_step_count_;
+    int vertical_step_count_;
+  };
+
  private:
   void AssertTile(int i, int j) const {
     DCHECK_GE(i,  0);

@@ -1374,20 +1374,42 @@ void TestSpiralIterate(int source_line_number,
                        const gfx::Rect& ignore,
                        const gfx::Rect& center,
                        const std::vector<std::pair<int, int>>& expected) {
-  std::vector<std::pair<int, int>> actual;
+  std::vector<std::pair<int, int>> actual_forward;
   for (TilingData::SpiralDifferenceIterator it(
            &tiling_data, consider, ignore, center);
        it;
        ++it) {
-    actual.push_back(it.index());
+    actual_forward.push_back(it.index());
   }
 
-  EXPECT_EQ(expected.size(), actual.size()) << "error from line "
-                                            << source_line_number;
-  for (size_t i = 0; i < std::min(expected.size(), actual.size()); ++i) {
-    EXPECT_EQ(expected[i].first, actual[i].first)
+  EXPECT_EQ(expected.size(), actual_forward.size()) << "error from line "
+                                                    << source_line_number;
+  for (size_t i = 0; i < std::min(expected.size(), actual_forward.size());
+       ++i) {
+    EXPECT_EQ(expected[i].first, actual_forward[i].first)
         << "i: " << i << " error from line: " << source_line_number;
-    EXPECT_EQ(expected[i].second, actual[i].second)
+    EXPECT_EQ(expected[i].second, actual_forward[i].second)
+        << "i: " << i << " error from line: " << source_line_number;
+  }
+
+  std::vector<std::pair<int, int>> actual_reverse;
+  for (TilingData::ReverseSpiralDifferenceIterator it(
+           &tiling_data, consider, ignore, center);
+       it;
+       ++it) {
+    actual_reverse.push_back(it.index());
+  }
+
+  std::vector<std::pair<int, int>> reversed_expected = expected;
+  std::reverse(reversed_expected.begin(), reversed_expected.end());
+  EXPECT_EQ(reversed_expected.size(), actual_reverse.size())
+      << "error from line " << source_line_number;
+  for (size_t i = 0;
+       i < std::min(reversed_expected.size(), actual_reverse.size());
+       ++i) {
+    EXPECT_EQ(reversed_expected[i].first, actual_reverse[i].first)
+        << "i: " << i << " error from line: " << source_line_number;
+    EXPECT_EQ(reversed_expected[i].second, actual_reverse[i].second)
         << "i: " << i << " error from line: " << source_line_number;
   }
 }
