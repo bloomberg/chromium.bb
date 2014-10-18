@@ -39,7 +39,6 @@ CXXFLAGS += $(PC_CFLAGS)
 
 LINK_FLAGS=\
 	$(PC_LIBS) \
-	-lgflags \
 	-lpthread \
 	-lrt \
 	-ludev \

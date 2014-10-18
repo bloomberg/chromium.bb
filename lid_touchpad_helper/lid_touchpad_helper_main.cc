@@ -6,6 +6,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <linux/input.h>
 #include <memory>
 #include <stdio.h>
@@ -16,7 +17,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <gflags/gflags.h>
 #include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -36,9 +36,6 @@ const char kEventDevName[] = "event";
 const char kTapPausedName[] = "Tap Paused";
 
 using std::string;
-
-DEFINE_string(display, "", "X display. Default: use env var DISPLAY");
-DEFINE_bool(foreground, false, "Don't daemon()ize; run in foreground.");
 
 namespace lid_touchpad_helper {
 
@@ -322,7 +319,40 @@ class MainLoop {
 
 int main(int argc, char** argv) {
   using namespace lid_touchpad_helper;
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  bool FLAGS_foreground = false;
+  string FLAGS_display;
+
+  while (1) {
+    int option_index = 0;
+    static struct option long_options[] = {
+      {"display", required_argument, 0, 0},
+      {"foreground", no_argument, 0, 0},
+      {"help", no_argument, 0, 0},
+      {0, 0, 0, 0}
+    };
+
+    if (getopt_long_only(argc, argv, "", long_options, &option_index) == 0) {
+      switch (option_index) {
+        case 0:
+          FLAGS_display.assign(optarg);
+          break;
+        case 1:
+          FLAGS_foreground = true;
+          break;
+        case 2:
+          printf("Chromium OS Lid Touchpad Helper\n\n");
+          printf("\t--display\tX display. Default: use env var DISPLAY\n");
+          printf("\t--foreground\tDon't daemon()ize; run in foreground.\n");
+          printf("\t--help\t\tDisplay this help message.\n");
+          exit(0);
+        default:
+          break;
+      }
+    } else {
+      break;
+    }
+
+  }
 
   if (!FLAGS_foreground && daemon(0, 0) < 0)
     PerrorAbort("daemon");
