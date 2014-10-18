@@ -25,7 +25,7 @@
     'conditions': [
         # Webview doesn't use zipalign or rezip_apk_jar.
         ['android_webview_build==0', {
-          'zipalign_path%': ['<!@(find <(android_sdk_root) -name zipalign)'],
+          'zipalign_path%': '<(android_sdk_tools)/zipalign',
           'rezip_apk_jar_path%': '<(PRODUCT_DIR)/lib.java/rezip_apk.jar'
         }, {
           'zipalign_path%': "",
