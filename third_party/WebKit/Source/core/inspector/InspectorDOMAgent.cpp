@@ -290,7 +290,6 @@ void InspectorDOMAgent::restore()
     if (!enabled())
         return;
     innerEnable();
-    notifyDocumentUpdated();
 }
 
 WillBeHeapVector<RawPtrWillBeMember<Document> > InspectorDOMAgent::documents()
@@ -513,6 +512,8 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
 void InspectorDOMAgent::innerEnable()
 {
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
+    m_document = nullptr;
+    setDocument(m_pageAgent->mainFrame()->document());
     if (m_listener)
         m_listener->domAgentWasEnabled();
 }
@@ -522,13 +523,6 @@ void InspectorDOMAgent::enable(ErrorString*)
     if (enabled())
         return;
     innerEnable();
-    notifyDocumentUpdated();
-}
-
-void InspectorDOMAgent::notifyDocumentUpdated()
-{
-    m_document = nullptr;
-    setDocument(m_pageAgent->mainFrame()->document());
 }
 
 bool InspectorDOMAgent::enabled() const
