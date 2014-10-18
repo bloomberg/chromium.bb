@@ -531,14 +531,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           self.assertFalse(child_config.important,
                            msg % (child_config.name, build_name, build_name))
 
-  # def testFullCQBuilderDoNotRunHWTest(self):
-  #   """Full CQ configs should not run HWTest."""
-  #   msg = ('%s should not be a full builder and run HWTest for '
-  #          'performance reasons')
-  #   for build_name, config in cbuildbot_config.config.iteritems():
-  #     if config.build_type == constants.PALADIN_TYPE:
-  #       self.assertFalse(config.chrome_binhost_only and config.hw_tests,
-  #                        msg % build_name)
+  def testFullCQBuilderDoNotRunHWTest(self):
+    """Full CQ configs should not run HWTest."""
+    msg = ('%s should not be a full builder and run HWTest for '
+           'performance reasons')
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config.build_type == constants.PALADIN_TYPE:
+        self.assertFalse(config.chrome_binhost_only and config.hw_tests,
+                         msg % build_name)
 
 
 class FindFullTest(cros_test_lib.TestCase):
