@@ -24,7 +24,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestTypedefs::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestTypedefs::domTemplate, V8TestTypedefs::refObject, V8TestTypedefs::derefObject, V8TestTypedefs::createPersistentHandle, 0, 0, 0, V8TestTypedefs::installConditionallyEnabledMethods, V8TestTypedefs::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestTypedefs::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestTypedefs::domTemplate, V8TestTypedefs::refObject, V8TestTypedefs::derefObject, V8TestTypedefs::trace, 0, 0, 0, V8TestTypedefs::installConditionallyEnabledMethods, V8TestTypedefs::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestTypedefs.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -373,12 +373,6 @@ void V8TestTypedefs::refObject(ScriptWrappableBase* internalPointer)
 void V8TestTypedefs::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestTypedefs>()->deref();
-}
-
-WrapperPersistentNode* V8TestTypedefs::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>

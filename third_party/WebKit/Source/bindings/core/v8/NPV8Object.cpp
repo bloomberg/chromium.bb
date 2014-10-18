@@ -50,10 +50,8 @@ using namespace blink;
 
 namespace {
 
-WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer)
+void trace(Visitor*, ScriptWrappableBase*)
 {
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 } // namespace
@@ -62,7 +60,7 @@ namespace blink {
 
 const WrapperTypeInfo* npObjectTypeInfo()
 {
-    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, createPersistentHandle, 0, 0, 0, 0, 0, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, trace, 0, 0, 0, 0, 0, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
     return &typeInfo;
 }
 

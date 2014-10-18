@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::refObject, V8TestInterfaceCheckSecurity::derefObject, V8TestInterfaceCheckSecurity::createPersistentHandle, 0, 0, 0, V8TestInterfaceCheckSecurity::installConditionallyEnabledMethods, V8TestInterfaceCheckSecurity::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::refObject, V8TestInterfaceCheckSecurity::derefObject, V8TestInterfaceCheckSecurity::trace, 0, 0, 0, V8TestInterfaceCheckSecurity::installConditionallyEnabledMethods, V8TestInterfaceCheckSecurity::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCheckSecurity.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -532,12 +532,6 @@ void V8TestInterfaceCheckSecurity::refObject(ScriptWrappableBase* internalPointe
 void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceCheckSecurity>()->deref();
-}
-
-WrapperPersistentNode* V8TestInterfaceCheckSecurity::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>

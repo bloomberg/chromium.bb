@@ -29,7 +29,9 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
-    static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
+    static void trace(Visitor* visitor, ScriptWrappableBase* internalPointer)
+    {
+    }
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline ScriptWrappableBase* toScriptWrappableBase(SVGTestInterface* impl)
     {

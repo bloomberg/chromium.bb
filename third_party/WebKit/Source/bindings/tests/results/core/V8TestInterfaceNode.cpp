@@ -25,7 +25,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNode::domTemplate, V8TestInterfaceNode::refObject, V8TestInterfaceNode::derefObject, V8TestInterfaceNode::createPersistentHandle, 0, V8TestInterfaceNode::toEventTarget, 0, V8TestInterfaceNode::installConditionallyEnabledMethods, V8TestInterfaceNode::installConditionallyEnabledProperties, &V8Node::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNode::domTemplate, V8TestInterfaceNode::refObject, V8TestInterfaceNode::derefObject, V8TestInterfaceNode::trace, 0, V8TestInterfaceNode::toEventTarget, 0, V8TestInterfaceNode::installConditionallyEnabledMethods, V8TestInterfaceNode::installConditionallyEnabledProperties, &V8Node::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceNode.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -348,16 +348,6 @@ void V8TestInterfaceNode::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
     internalPointer->toImpl<TestInterfaceNode>()->deref();
-#endif
-}
-
-WrapperPersistentNode* V8TestInterfaceNode::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-#if ENABLE(OILPAN)
-    return WrapperPersistent<TestInterfaceNode>::create(internalPointer->toImpl<TestInterfaceNode>());
-#else
-    ASSERT_NOT_REACHED();
-    return 0;
 #endif
 }
 

@@ -297,7 +297,7 @@ bool WindowProxy::installDOMWindow()
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window->toScriptWrappableBase());
+    V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window->toScriptWrappableBase());
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -311,16 +311,8 @@ bool WindowProxy::installDOMWindow()
     // Note: Much of this prototype structure is hidden from web content. The
     //       outer, inner, and LocalDOMWindow instance all appear to be the same
     //       JavaScript object.
-    //
-    // Note: With Oilpan, the LocalDOMWindow object is garbage collected.
-    //       Persistent references to this inner global object view of the LocalDOMWindow
-    //       aren't kept, as that would prevent the global object from ever being released.
-    //       It is safe not to do so, as the wrapper for the LocalDOMWindow being installed here
-    //       already keeps a persistent reference, and it along with the inner global object
-    //       views of the LocalDOMWindow will die together once that wrapper clears the persistent
-    //       reference.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, wrapperTypeInfo, window->toScriptWrappableBase());
+    V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window->toScriptWrappableBase());
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapperNonTemplate(window, wrapperTypeInfo, windowWrapper, m_isolate);
     wrapperTypeInfo->installConditionallyEnabledProperties(windowWrapper, m_isolate);

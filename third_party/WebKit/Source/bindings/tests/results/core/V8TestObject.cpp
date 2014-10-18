@@ -69,7 +69,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::refObject, V8TestObject::derefObject, V8TestObject::createPersistentHandle, 0, 0, 0, V8TestObject::installConditionallyEnabledMethods, V8TestObject::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::refObject, V8TestObject::derefObject, V8TestObject::trace, 0, 0, 0, V8TestObject::installConditionallyEnabledMethods, V8TestObject::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestObject.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -10684,12 +10684,6 @@ void V8TestObject::refObject(ScriptWrappableBase* internalPointer)
 void V8TestObject::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestObject>()->deref();
-}
-
-WrapperPersistentNode* V8TestObject::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>

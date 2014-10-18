@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::createPersistentHandle, 0, 0, 0, V8TestInterfaceNamedConstructor2::installConditionallyEnabledMethods, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::trace, 0, 0, 0, V8TestInterfaceNamedConstructor2::installConditionallyEnabledMethods, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceNamedConstructor2.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -32,7 +32,7 @@ namespace TestInterfaceNamedConstructor2V8Internal {
 
 } // namespace TestInterfaceNamedConstructor2V8Internal
 
-const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2Constructor::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::createPersistentHandle, 0, 0, 0, V8TestInterfaceNamedConstructor2::installConditionallyEnabledMethods, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2Constructor::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::trace, 0, 0, 0, V8TestInterfaceNamedConstructor2::installConditionallyEnabledMethods, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -125,12 +125,6 @@ void V8TestInterfaceNamedConstructor2::refObject(ScriptWrappableBase* internalPo
 void V8TestInterfaceNamedConstructor2::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceNamedConstructor2>()->deref();
-}
-
-WrapperPersistentNode* V8TestInterfaceNamedConstructor2::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>

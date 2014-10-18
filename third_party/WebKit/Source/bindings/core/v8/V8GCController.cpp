@@ -368,14 +368,14 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
         {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMajorGC");
             MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-            v8::V8::VisitHandlesWithClassIds(&visitor);
+            v8::V8::VisitHandlesWithClassIds(isolate, &visitor);
             visitor.notifyFinished();
         }
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
         TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MajorGC");
     } else {
         MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-        v8::V8::VisitHandlesWithClassIds(&visitor);
+        v8::V8::VisitHandlesWithClassIds(isolate, &visitor);
         visitor.notifyFinished();
     }
 }
@@ -468,6 +468,37 @@ void V8GCController::reportDOMMemoryUsageToV8(v8::Isolate* isolate)
     isolate->AdjustAmountOfExternalAllocatedMemory(diff);
 
     lastUsageReportedToV8 = currentUsage;
+}
+
+class DOMWrapperTracer : public v8::PersistentHandleVisitor {
+public:
+    explicit DOMWrapperTracer(Visitor* visitor)
+        : m_visitor(visitor)
+    {
+    }
+
+    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) override
+    {
+        if (classId != WrapperTypeInfo::NodeClassId && classId != WrapperTypeInfo::ObjectClassId)
+            return;
+
+        // Casting to a Handle is safe here, since the Persistent doesn't get GCd
+        // during tracing.
+        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
+        v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
+        ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
+        if (m_visitor)
+            toWrapperTypeInfo(*wrapper)->trace(m_visitor, toScriptWrappableBase(*wrapper));
+    }
+
+private:
+    Visitor* m_visitor;
+};
+
+void V8GCController::traceDOMWrappers(v8::Isolate* isolate, Visitor* visitor)
+{
+    DOMWrapperTracer tracer(visitor);
+    v8::V8::VisitHandlesWithClassIds(isolate, &tracer);
 }
 
 } // namespace blink

@@ -51,7 +51,7 @@ static const int v8PrototypeInternalFieldcount = 1;
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
 typedef void (*RefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
-typedef WrapperPersistentNode* (*CreatePersistentHandleFunction)(ScriptWrappableBase* internalPointer);
+typedef void (*TraceFunction)(Visitor*, ScriptWrappableBase* internalPointer);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
@@ -133,10 +133,10 @@ struct WrapperTypeInfo {
         derefObjectFunction(internalPointer);
     }
 
-    WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer) const
+    void trace(Visitor* visitor, ScriptWrappableBase* internalPointer) const
     {
-        ASSERT(createPersistentHandleFunction);
-        return createPersistentHandleFunction(internalPointer);
+        ASSERT(traceFunction);
+        return traceFunction(visitor, internalPointer);
     }
 
     void installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
@@ -179,7 +179,7 @@ struct WrapperTypeInfo {
     const DomTemplateFunction domTemplateFunction;
     const RefObjectFunction refObjectFunction;
     const DerefObjectFunction derefObjectFunction;
-    const CreatePersistentHandleFunction createPersistentHandleFunction;
+    const TraceFunction traceFunction;
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
     const ToEventTargetFunction toEventTargetFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
@@ -223,32 +223,9 @@ inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> wrapper)
     return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
 }
 
-inline const WrapperPersistentNode* toPersistentHandle(const v8::Handle<v8::Object>& wrapper)
-{
-    // Persistent handle is stored in the last internal field.
-    return static_cast<WrapperPersistentNode*>(wrapper->GetAlignedPointerFromInternalField(wrapper->InternalFieldCount() - 1));
-}
-
 inline void releaseObject(v8::Handle<v8::Object> wrapper)
 {
-    const WrapperTypeInfo* typeInfo = toWrapperTypeInfo(wrapper);
-    if (typeInfo->gcType == WrapperTypeInfo::GarbageCollectedObject) {
-        const WrapperPersistentNode* handle = toPersistentHandle(wrapper);
-        // This will be null iff a wrapper for a hidden wrapper object,
-        // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
-        WrapperPersistentNode::destroy(handle);
-    } else if (typeInfo->gcType == WrapperTypeInfo::WillBeGarbageCollectedObject) {
-#if ENABLE(OILPAN)
-        const WrapperPersistentNode* handle = toPersistentHandle(wrapper);
-        // This will be null iff a wrapper for a hidden wrapper object,
-        // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
-        WrapperPersistentNode::destroy(handle);
-#else
-        typeInfo->derefObject(toScriptWrappableBase(wrapper));
-#endif
-    } else {
-        typeInfo->derefObject(toScriptWrappableBase(wrapper));
-    }
+    toWrapperTypeInfo(wrapper)->derefObject(toScriptWrappableBase(wrapper));
 }
 
 } // namespace blink

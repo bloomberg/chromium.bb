@@ -22,7 +22,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::refObject, V8TestInterfaceGarbageCollected::derefObject, V8TestInterfaceGarbageCollected::createPersistentHandle, 0, V8TestInterfaceGarbageCollected::toEventTarget, 0, V8TestInterfaceGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::refObject, V8TestInterfaceGarbageCollected::derefObject, V8TestInterfaceGarbageCollected::trace, 0, V8TestInterfaceGarbageCollected::toEventTarget, 0, V8TestInterfaceGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceGarbageCollected.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -176,11 +176,6 @@ void V8TestInterfaceGarbageCollected::refObject(ScriptWrappableBase* internalPoi
 
 void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)
 {
-}
-
-WrapperPersistentNode* V8TestInterfaceGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    return WrapperPersistent<TestInterfaceGarbageCollected>::create(internalPointer->toImpl<TestInterfaceGarbageCollected>());
 }
 
 template<>

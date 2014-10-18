@@ -22,7 +22,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::refObject, V8SVGTestInterface::derefObject, V8SVGTestInterface::createPersistentHandle, 0, 0, 0, V8SVGTestInterface::installConditionallyEnabledMethods, V8SVGTestInterface::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::refObject, V8SVGTestInterface::derefObject, V8SVGTestInterface::trace, 0, 0, 0, V8SVGTestInterface::installConditionallyEnabledMethods, V8SVGTestInterface::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in SVGTestInterface.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -116,12 +116,6 @@ void V8SVGTestInterface::refObject(ScriptWrappableBase* internalPointer)
 void V8SVGTestInterface::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<SVGTestInterface>()->deref();
-}
-
-WrapperPersistentNode* V8SVGTestInterface::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>

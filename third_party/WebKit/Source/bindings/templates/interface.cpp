@@ -434,7 +434,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
                               if is_active_dom_object else '0' %}
 {% set to_event_target = '%s::toEventTarget' % v8_class
                          if is_event_target else '0' %}
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::createPersistentHandle, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 {{generate_constructor(named_constructor)}}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
@@ -875,23 +875,6 @@ void {{v8_class}}::derefObject(ScriptWrappableBase* internalPointer)
 #endif
 {% elif gc_type == 'RefCountedObject' %}
     internalPointer->toImpl<{{cpp_class}}>()->deref();
-{% endif %}
-}
-
-WrapperPersistentNode* {{v8_class}}::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-{% if gc_type == 'GarbageCollectedObject' %}
-    return WrapperPersistent<{{cpp_class}}>::create(internalPointer->toImpl<{{cpp_class}}>());
-{% elif gc_type == 'WillBeGarbageCollectedObject' %}
-#if ENABLE(OILPAN)
-    return WrapperPersistent<{{cpp_class}}>::create(internalPointer->toImpl<{{cpp_class}}>());
-#else
-    ASSERT_NOT_REACHED();
-    return 0;
-#endif
-{% elif gc_type == 'RefCountedObject' %}
-    ASSERT_NOT_REACHED();
-    return 0;
 {% endif %}
 }
 

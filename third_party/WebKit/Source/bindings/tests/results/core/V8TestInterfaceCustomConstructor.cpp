@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::refObject, V8TestInterfaceCustomConstructor::derefObject, V8TestInterfaceCustomConstructor::createPersistentHandle, 0, 0, 0, V8TestInterfaceCustomConstructor::installConditionallyEnabledMethods, V8TestInterfaceCustomConstructor::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::refObject, V8TestInterfaceCustomConstructor::derefObject, V8TestInterfaceCustomConstructor::trace, 0, 0, 0, V8TestInterfaceCustomConstructor::installConditionallyEnabledMethods, V8TestInterfaceCustomConstructor::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCustomConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -98,12 +98,6 @@ void V8TestInterfaceCustomConstructor::refObject(ScriptWrappableBase* internalPo
 void V8TestInterfaceCustomConstructor::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceCustomConstructor>()->deref();
-}
-
-WrapperPersistentNode* V8TestInterfaceCustomConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>

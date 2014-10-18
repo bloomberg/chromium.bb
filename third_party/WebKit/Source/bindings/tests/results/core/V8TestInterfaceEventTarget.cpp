@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::createPersistentHandle, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installConditionallyEnabledMethods, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::trace, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installConditionallyEnabledMethods, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceEventTarget.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -32,7 +32,7 @@ namespace TestInterfaceEventTargetV8Internal {
 
 } // namespace TestInterfaceEventTargetV8Internal
 
-const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::createPersistentHandle, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installConditionallyEnabledMethods, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::trace, 0, V8TestInterfaceEventTarget::toEventTarget, 0, V8TestInterfaceEventTarget::installConditionallyEnabledMethods, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 
 static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -126,16 +126,6 @@ void V8TestInterfaceEventTarget::derefObject(ScriptWrappableBase* internalPointe
 {
 #if !ENABLE(OILPAN)
     internalPointer->toImpl<TestInterfaceEventTarget>()->deref();
-#endif
-}
-
-WrapperPersistentNode* V8TestInterfaceEventTarget::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-#if ENABLE(OILPAN)
-    return WrapperPersistent<TestInterfaceEventTarget>::create(internalPointer->toImpl<TestInterfaceEventTarget>());
-#else
-    ASSERT_NOT_REACHED();
-    return 0;
 #endif
 }
 

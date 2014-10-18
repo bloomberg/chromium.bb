@@ -101,6 +101,7 @@ void initialize(Platform* platform)
 
     s_isolateInterruptor = new V8IsolateInterruptor(V8PerIsolateData::mainThreadIsolate());
     ThreadState::current()->addInterruptor(s_isolateInterruptor);
+    ThreadState::current()->registerTraceDOMWrappers(V8PerIsolateData::mainThreadIsolate(), V8GCController::traceDOMWrappers);
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {

@@ -291,7 +291,7 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
         v8::Isolate* m_isolate;
     } wrapperVisitor(visitor, isolate);
 
-    v8::V8::VisitHandlesWithClassIds(&wrapperVisitor);
+    v8::V8::VisitHandlesWithClassIds(isolate, &wrapperVisitor);
 }
 
 ProfileNameIdleTimeMap* ScriptProfiler::currentProfileNameIdleTimeMap()

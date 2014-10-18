@@ -31,14 +31,14 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
-    static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
-    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void trace(Visitor* visitor, ScriptWrappableBase* internalPointer)
+    {
 #if ENABLE(OILPAN)
-    static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 0;
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0 + 1;
-#else
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+        visitor->trace(internalPointer->toImpl<TestInterfaceEventConstructor>());
 #endif
+    }
+    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceEventConstructor* impl)
     {
         return impl->toScriptWrappableBase();

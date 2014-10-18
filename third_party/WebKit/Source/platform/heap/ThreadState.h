@@ -43,6 +43,10 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
+namespace v8 {
+class Isolate;
+};
+
 namespace blink {
 
 class BaseHeap;
@@ -52,7 +56,6 @@ struct GCInfo;
 class HeapObjectHeader;
 class PageMemory;
 class PersistentNode;
-class WrapperPersistentRegion;
 class Visitor;
 class SafePointBarrier;
 class SafePointAwareMutexLocker;
@@ -623,14 +626,6 @@ public:
     BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
 
-    WrapperPersistentRegion* wrapperRoots() const
-    {
-        ASSERT(m_liveWrapperPersistents);
-        return m_liveWrapperPersistents;
-    }
-    WrapperPersistentRegion* takeWrapperPersistentRegion();
-    void freeWrapperPersistentRegion(WrapperPersistentRegion*);
-
     // List of persistent roots allocated on the given thread.
     PersistentNode* roots() const { return m_persistents.get(); }
 
@@ -724,6 +719,12 @@ public:
 
     void shouldFlushHeapDoesNotContainCache() { m_shouldFlushHeapDoesNotContainCache = true; }
 
+    void registerTraceDOMWrappers(v8::Isolate* isolate, void (*traceDOMWrappers)(v8::Isolate*, Visitor*))
+    {
+        m_isolate = isolate;
+        m_traceDOMWrappers = traceDOMWrappers;
+    }
+
 private:
     explicit ThreadState();
     ~ThreadState();
@@ -783,9 +784,6 @@ private:
     static uint8_t s_mainThreadStateStorage[];
 
     ThreadIdentifier m_thread;
-    WrapperPersistentRegion* m_liveWrapperPersistents;
-    WrapperPersistentRegion* m_pooledWrapperPersistents;
-    size_t m_pooledWrapperPersistentRegionCount;
     OwnPtr<PersistentNode> m_persistents;
     StackState m_stackState;
     intptr_t* m_startOfStack;
@@ -817,6 +815,9 @@ private:
 
     CallbackStack* m_weakCallbackStack;
     HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
+
+    v8::Isolate* m_isolate;
+    void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);
 
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;

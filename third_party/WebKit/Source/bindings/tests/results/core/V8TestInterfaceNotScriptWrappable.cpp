@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceNotScriptWrappable::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNotScriptWrappable::domTemplate, V8TestInterfaceNotScriptWrappable::refObject, V8TestInterfaceNotScriptWrappable::derefObject, V8TestInterfaceNotScriptWrappable::createPersistentHandle, 0, 0, 0, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledMethods, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNotScriptWrappable::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNotScriptWrappable::domTemplate, V8TestInterfaceNotScriptWrappable::refObject, V8TestInterfaceNotScriptWrappable::derefObject, V8TestInterfaceNotScriptWrappable::trace, 0, 0, 0, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledMethods, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 namespace TestInterfaceNotScriptWrappableV8Internal {
 
@@ -154,12 +154,6 @@ void V8TestInterfaceNotScriptWrappable::refObject(ScriptWrappableBase* internalP
 void V8TestInterfaceNotScriptWrappable::derefObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceNotScriptWrappable>()->deref();
-}
-
-WrapperPersistentNode* V8TestInterfaceNotScriptWrappable::createPersistentHandle(ScriptWrappableBase* internalPointer)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 template<>
