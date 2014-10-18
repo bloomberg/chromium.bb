@@ -12,7 +12,6 @@ class ChromeProxyLatency(benchmark.Benchmark):
   tag = 'latency'
   test = measurements.ChromeProxyLatency
   page_set = pagesets.Top20PageSet
-  options = {'pageset_repeat_iters': 2}
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
@@ -23,7 +22,6 @@ class ChromeProxyLatencyDirect(benchmark.Benchmark):
   tag = 'latency_direct'
   test = measurements.ChromeProxyLatency
   page_set = pagesets.Top20PageSet
-  options = {'pageset_repeat_iters': 2}
 
 
 @benchmark.Enabled('android')
@@ -41,7 +39,6 @@ class ChromeProxyDataSaving(benchmark.Benchmark):
   tag = 'data_saving'
   test = measurements.ChromeProxyDataSaving
   page_set = pagesets.Top20PageSet
-  options = {'pageset_repeat_iters': 1}
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
@@ -51,7 +48,6 @@ class ChromeProxyDataSavingDirect(benchmark.Benchmark):
   tag = 'data_saving_direct'
   test = measurements.ChromeProxyDataSaving
   page_set = pagesets.Top20PageSet
-  options = {'pageset_repeat_iters': 2}
 
 
 @benchmark.Enabled('android')
