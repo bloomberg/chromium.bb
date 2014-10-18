@@ -1018,7 +1018,7 @@
                   '--name', '>(out_newlib_mips)',
                   '--objdir', '>(objdir_newlib_mips)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-stdlib=libstdc++ ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--compile_flags=-stdlib=libstdc++ -Wt,-mtls-use-call ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-stdlib=libstdc++ -B>(tc_lib_dir_irt_mips) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
