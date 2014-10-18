@@ -53,11 +53,15 @@ RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str)
 
 RenderTextFragment::~RenderTextFragment()
 {
-#if !ENABLE(OILPAN)
+    ASSERT(!m_firstLetterPseudoElement);
+}
+
+void RenderTextFragment::destroy()
+{
     if (m_isRemainingTextRenderer && m_firstLetterPseudoElement)
         m_firstLetterPseudoElement->setRemainingTextRenderer(nullptr);
     m_firstLetterPseudoElement = nullptr;
-#endif
+    RenderText::destroy();
 }
 
 void RenderTextFragment::trace(Visitor* visitor)

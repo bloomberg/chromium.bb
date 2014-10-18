@@ -39,6 +39,7 @@ public:
     RenderTextFragment(Node*, StringImpl*);
     virtual ~RenderTextFragment();
     virtual void trace(Visitor*) override;
+    virtual void destroy() override;
 
     virtual bool isTextFragment() const override { return true; }
 
