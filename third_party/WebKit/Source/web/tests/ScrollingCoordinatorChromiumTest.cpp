@@ -106,6 +106,11 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
+class GraphicsLayerForScrollTesting : public GraphicsLayer {
+public:
+    virtual WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
+};
+
 TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)
 {
     navigateTo("about:blank");
@@ -472,6 +477,34 @@ TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldNotCrash)
     forceFullCompositingUpdate();
     // This test document setup an iframe with scrollbars, then switch to
     // an empty document by javascript.
+}
+
+#if OS(MACOSX)
+TEST_F(ScrollingCoordinatorChromiumTest, DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
+#else
+TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
+#endif
+{
+    registerMockedHttpURLLoad("wide_document.html");
+    navigateTo(m_baseURL + "wide_document.html");
+    forceFullCompositingUpdate();
+
+    FrameView* frameView = frame()->view();
+    ASSERT_TRUE(frameView);
+
+    GraphicsLayerForScrollTesting* scrollbarGraphicsLayer = static_cast<GraphicsLayerForScrollTesting*>(frameView->layerForHorizontalScrollbar());
+    ASSERT_TRUE(scrollbarGraphicsLayer);
+
+    WebLayer* platformLayer = scrollbarGraphicsLayer->platformLayer();
+    ASSERT_TRUE(platformLayer);
+
+    WebLayer* contentsLayer = scrollbarGraphicsLayer->contentsLayer();
+    ASSERT_TRUE(contentsLayer);
+
+    // After scrollableAreaScrollbarLayerDidChange,
+    // if the main frame's scrollbarLayer is opaque,
+    // contentsLayer should be opaque too.
+    ASSERT_EQ(platformLayer->opaque(), contentsLayer->opaque());
 }
 
 } // namespace

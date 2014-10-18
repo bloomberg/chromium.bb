@@ -343,14 +343,14 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
             scrollbarLayer = addWebScrollbarLayer(scrollableArea, orientation, webScrollbarLayer.release());
         }
 
+        WebLayer* scrollLayer = toWebLayer(scrollableArea->layerForScrolling());
+        WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
+        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollLayer, containerLayer);
+
         // Root layer non-overlay scrollbars should be marked opaque to disable
         // blending.
         bool isOpaqueScrollbar = !scrollbar->isOverlayScrollbar();
         scrollbarGraphicsLayer->setContentsOpaque(isMainFrame && isOpaqueScrollbar);
-
-        WebLayer* scrollLayer = toWebLayer(scrollableArea->layerForScrolling());
-        WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
-        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollLayer, containerLayer);
     } else
         removeWebScrollbarLayer(scrollableArea, orientation);
 }
