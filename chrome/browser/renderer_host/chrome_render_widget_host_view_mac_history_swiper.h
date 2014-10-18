@@ -13,10 +13,10 @@ class WebMouseWheelEvent;
 
 @class HistorySwiper;
 @protocol HistorySwiperDelegate
-// Return NO from this method is the view/render_widget_host should not
+// Return NO from this method if the view/render_widget_host should not
 // allow history swiping.
 - (BOOL)shouldAllowHistorySwiping;
-// The history overlay is added to the view returning from this method.
+// The history overlay is added to the view returned from this method.
 - (NSView*)viewThatWantsHistoryOverlay;
 @end
 
@@ -25,6 +25,11 @@ enum NavigationDirection {
   kBackwards = 0,
   kForwards,
 };
+
+// The states of a state machine that recognizes the history swipe gesture.
+// When a gesture first begins, the state is reset to kPending. The state
+// machine only applies to trackpad gestures. Magic Mouse gestures use a
+// different mechanism.
 enum RecognitionState {
   // Waiting to see whether the renderer will handle the event with phase
   // NSEventPhaseBegan. The state machine will also stay in this state if
@@ -97,13 +102,13 @@ enum RecognitionState {
 //   then this class will transition to the state kTracking. Events are
 //   consumed, and not passed to the renderer.
 //
-// There are multiple APIs that provide information about gestures on the
-// trackpad. This class uses two different set of APIs.
-//   1. The -[NSView touches*WithEvent:] APIs provide detailed information
+// There are multiple callbacks that provide information about gestures on the
+// trackpad. This class uses two different sets of callbacks.
+//   1. The -[NSView touches*WithEvent:] callbacks provide detailed information
 //   about the touches within a gesture. The callbacks happen with more
-//   frequency, and have higher accuracy. These APIs are used to transition
-//   between all state, exception for kPending -> kPotential.
-//   2. The -[NSView scrollWheel:] API provides less information, but the
+//   frequency, and have higher accuracy. These callbacks are used to
+//   transition between all states except for kPending -> kPotential.
+//   2. The -[NSView scrollWheel:] callback provides less information, but the
 //   events are passed to the renderer. This class must process these events so
 //   that it can decide whether to consume the events and prevent them from
 //   being passed to the renderer. This API is used to transition from kPending
@@ -113,13 +118,12 @@ enum RecognitionState {
  @private
   // This controller will exist if and only if the UI is in history swipe mode.
   HistoryOverlayController* historyOverlay_;
-  // Each gesture received by the window is given a unique id.
-  // The id is monotonically increasing.
-  int currentGestureId_;
   // The location of the fingers when the gesture started.
   NSPoint gestureStartPoint_;
   // The current location of the fingers in the gesture.
   NSPoint gestureCurrentPoint_;
+  // The total Y distance moved since the beginning of the gesture.
+  CGFloat gestureTotalY_;
   // A flag that indicates that there is an ongoing gesture. Only used to
   // determine whether swipe events are coming from a Magic Mouse.
   BOOL inGesture_;
@@ -128,11 +132,13 @@ enum RecognitionState {
   // Each time a new gesture begins, we must get a new start point.
   // This ivar determines whether the start point is valid.
   int gestureStartPointValid_;
-  // The id of the last gesture that we processed as a history swipe.
-  int lastProcessedGestureId_;
-  // A flag that indicates the user's intended direction with the history swipe.
+
+  // The user's intended direction with the history swipe. Set during the
+  // transition from kPending -> kPotential.
   history_swiper::NavigationDirection historySwipeDirection_;
-  // A flag that indicates whether the gesture has its direction inverted.
+
+  // Whether the history swipe gesture has its direction inverted. Set during
+  // the transition from kPending -> kPotential.
   BOOL historySwipeDirectionInverted_;
 
   // Whether the event with phase NSEventPhaseBegan was not consumed by the
