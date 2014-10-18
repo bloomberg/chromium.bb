@@ -2772,7 +2772,8 @@ shell_surface_get_shell(struct shell_surface *shsurf)
 static int
 black_surface_get_label(struct weston_surface *surface, char *buf, size_t len)
 {
-	struct weston_surface *fs_surface = surface->configure_private;
+	struct weston_view *fs_view = surface->configure_private;
+	struct weston_surface *fs_surface = fs_view->surface;
 	int n;
 	int rem;
 	int ret;
@@ -2801,7 +2802,7 @@ black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy);
 
 static struct weston_view *
 create_black_surface(struct weston_compositor *ec,
-		     struct weston_surface *fs_surface,
+		     struct weston_view *fs_view,
 		     float x, float y, int w, int h)
 {
 	struct weston_surface *surface = NULL;
@@ -2820,7 +2821,7 @@ create_black_surface(struct weston_compositor *ec,
 	}
 
 	surface->configure = black_surface_configure;
-	surface->configure_private = fs_surface;
+	surface->configure_private = fs_view;
 	weston_surface_set_label_func(surface, black_surface_get_label);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
 	pixman_region32_fini(&surface->opaque);
@@ -2844,7 +2845,7 @@ shell_ensure_fullscreen_black_view(struct shell_surface *shsurf)
 	if (!shsurf->fullscreen.black_view)
 		shsurf->fullscreen.black_view =
 			create_black_surface(shsurf->surface->compositor,
-			                     shsurf->surface,
+			                     shsurf->view,
 			                     output->x, output->y,
 			                     output->width,
 			                     output->height);
@@ -5208,11 +5209,13 @@ black_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 }
 
 static bool
-is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
+is_black_surface_view(struct weston_view *view, struct weston_view **fs_view)
 {
-	if (es->configure == black_surface_configure) {
-		if (fs_surface)
-			*fs_surface = (struct weston_surface *)es->configure_private;
+	struct weston_surface *surface = view->surface;
+
+	if (surface->configure == black_surface_configure) {
+		if (fs_view)
+			*fs_view = surface->configure_private;
 		return true;
 	}
 	return false;
@@ -5223,19 +5226,20 @@ activate_binding(struct weston_seat *seat,
 		 struct desktop_shell *shell,
 		 struct weston_view *focus_view)
 {
-	struct weston_surface *focus;
+	struct weston_view *main_view;
 	struct weston_surface *main_surface;
 
-	focus = focus_view->surface;
+	if (!focus_view)
+		return;
 
-	if (is_black_surface(focus, &main_surface))
-		focus = main_surface;
+	if (is_black_surface_view(focus_view, &main_view))
+		focus_view = main_view;
 
-	main_surface = weston_surface_get_main_surface(focus);
+	main_surface = weston_surface_get_main_surface(focus_view->surface);
 	if (get_shell_surface_type(main_surface) == SHELL_SURFACE_NONE)
 		return;
 
-	activate(shell, focus, seat, true);
+	activate(shell, focus_view->surface, seat, true);
 }
 
 static void
@@ -6075,7 +6079,7 @@ switcher_next(struct switcher *switcher)
 			weston_surface_damage(view->surface);
 		}
 
-		if (is_black_surface(view->surface, NULL)) {
+		if (is_black_surface_view(view, NULL)) {
 			view->alpha = 0.25;
 			weston_view_geometry_dirty(view);
 			weston_surface_damage(view->surface);
