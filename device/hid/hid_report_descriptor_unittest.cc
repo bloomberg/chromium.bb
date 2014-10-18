@@ -298,18 +298,18 @@ class HidReportDescriptorTest : public testing::Test {
   void ValidateDetails(
       const std::vector<HidCollectionInfo>& expected_collections,
       const bool expected_has_report_id,
-      const uint16_t expected_max_input_report_size,
-      const uint16_t expected_max_output_report_size,
-      const uint16_t expected_max_feature_report_size,
+      const size_t expected_max_input_report_size,
+      const size_t expected_max_output_report_size,
+      const size_t expected_max_feature_report_size,
       const uint8_t* bytes,
       size_t size) {
     descriptor_ = new HidReportDescriptor(bytes, size);
 
     std::vector<HidCollectionInfo> actual_collections;
     bool actual_has_report_id;
-    uint16_t actual_max_input_report_size;
-    uint16_t actual_max_output_report_size;
-    uint16_t actual_max_feature_report_size;
+    size_t actual_max_input_report_size;
+    size_t actual_max_output_report_size;
+    size_t actual_max_feature_report_size;
     descriptor_->GetDetails(&actual_collections,
                             &actual_has_report_id,
                             &actual_max_input_report_size,

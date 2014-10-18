@@ -111,7 +111,7 @@ void HidConnectionLinux::PlatformGetFeatureReport(
     const ReadCallback& callback) {
   // The first byte of the destination buffer is the report ID being requested
   // and is overwritten by the feature report.
-  DCHECK_GT(device_info().max_feature_report_size, 0);
+  DCHECK_GT(device_info().max_feature_report_size, 0u);
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(device_info().max_feature_report_size + 1));
   buffer->data()[0] = report_id;

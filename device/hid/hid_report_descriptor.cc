@@ -29,9 +29,9 @@ HidReportDescriptor::~HidReportDescriptor() {}
 void HidReportDescriptor::GetDetails(
     std::vector<HidCollectionInfo>* top_level_collections,
     bool* has_report_id,
-    uint16_t* max_input_report_size,
-    uint16_t* max_output_report_size,
-    uint16_t* max_feature_report_size) {
+    size_t* max_input_report_size,
+    size_t* max_output_report_size,
+    size_t* max_feature_report_size) {
   DCHECK(top_level_collections);
   DCHECK(max_input_report_size);
   DCHECK(max_output_report_size);
@@ -45,16 +45,16 @@ void HidReportDescriptor::GetDetails(
 
   // Global tags data:
   HidUsageAndPage::Page current_usage_page = HidUsageAndPage::kPageUndefined;
-  uint16_t current_report_count = 0;
-  uint16_t cached_report_count = 0;
-  uint16_t current_report_size = 0;
-  uint16_t cached_report_size = 0;
-  uint16_t current_input_report_size = 0;
-  uint16_t current_output_report_size = 0;
-  uint16_t current_feature_report_size = 0;
+  size_t current_report_count = 0;
+  size_t cached_report_count = 0;
+  size_t current_report_size = 0;
+  size_t cached_report_size = 0;
+  size_t current_input_report_size = 0;
+  size_t current_output_report_size = 0;
+  size_t current_feature_report_size = 0;
 
   // Local tags data:
-  uint16_t current_usage = 0;
+  uint32_t current_usage = 0;
 
   for (std::vector<linked_ptr<HidReportDescriptorItem> >::const_iterator
            items_iter = items().begin();
@@ -65,10 +65,12 @@ void HidReportDescriptor::GetDetails(
     switch (current_item->tag()) {
       // Main tags:
       case HidReportDescriptorItem::kTagCollection:
-        if (!current_item->parent()) {
+        if (!current_item->parent() &&
+            (current_usage <= std::numeric_limits<uint16_t>::max())) {
           // This is a top-level collection.
           HidCollectionInfo collection;
-          collection.usage = HidUsageAndPage(current_usage, current_usage_page);
+          collection.usage = HidUsageAndPage(
+              static_cast<uint16_t>(current_usage), current_usage_page);
           top_level_collections->push_back(collection);
         }
         break;
@@ -87,7 +89,7 @@ void HidReportDescriptor::GetDetails(
       // Global tags:
       case HidReportDescriptorItem::kTagUsagePage:
         current_usage_page =
-            (HidUsageAndPage::Page)current_item->GetShortData();
+            static_cast<HidUsageAndPage::Page>(current_item->GetShortData());
         break;
       case HidReportDescriptorItem::kTagReportId:
         if (top_level_collections->size() > 0) {

@@ -158,10 +158,11 @@ TEST_F(HidConnectionTest, ReadWrite) {
   scoped_refptr<HidConnection> conn = connect_callback.WaitForConnection();
   ASSERT_TRUE(conn.get());
 
-  for (int i = 0; i < 8; ++i) {
-    scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(9));
+  const char kBufferSize = 9;
+  for (char i = 0; i < 8; ++i) {
+    scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(kBufferSize));
     buffer->data()[0] = 0;
-    for (int j = 1; j < buffer->size(); ++j) {
+    for (char j = 1; j < kBufferSize; ++j) {
       buffer->data()[j] = i + j - 1;
     }
 
@@ -174,7 +175,7 @@ TEST_F(HidConnectionTest, ReadWrite) {
     ASSERT_TRUE(read_callback.WaitForResult());
     ASSERT_EQ(9UL, read_callback.size());
     ASSERT_EQ(0, read_callback.buffer()->data()[0]);
-    for (int j = 1; j < buffer->size(); ++j) {
+    for (char j = 1; j < kBufferSize; ++j) {
       ASSERT_EQ(i + j - 1, read_callback.buffer()->data()[j]);
     }
   }

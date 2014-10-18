@@ -106,8 +106,11 @@ void GetCollectionInfos(IOHIDDeviceRef device,
       HidCollectionInfo collection_info;
       HidUsageAndPage::Page page = static_cast<HidUsageAndPage::Page>(
           IOHIDElementGetUsagePage(collection));
-      uint16_t usage = IOHIDElementGetUsage(collection);
-      collection_info.usage = HidUsageAndPage(usage, page);
+      uint32_t usage = IOHIDElementGetUsage(collection);
+      if (usage > std::numeric_limits<uint16_t>::max())
+        continue;
+      collection_info.usage =
+          HidUsageAndPage(static_cast<uint16_t>(usage), page);
       // Explore children recursively and retrieve their report IDs
       GetReportIds(collection, &collection_info.report_ids);
       if (collection_info.report_ids.size() > 0) {
