@@ -236,7 +236,7 @@ lower_fullscreen_layer(struct desktop_shell *shell,
 
 void
 activate(struct desktop_shell *shell, struct weston_view *view,
-	 struct weston_seat *seat, bool configure);
+	 struct weston_seat *seat, uint32_t flags);
 
 void
 exposay_binding(struct weston_keyboard *keyboard,

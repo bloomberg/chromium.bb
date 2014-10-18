@@ -1124,6 +1124,11 @@ enum weston_key_state_update {
 	STATE_UPDATE_NONE,
 };
 
+enum weston_activate_flag {
+	WESTON_ACTIVATE_FLAG_NONE = 0,
+	WESTON_ACTIVATE_FLAG_CONFIGURE = 1 << 0,
+};
+
 void
 weston_version(int *major, int *minor, int *micro);
 

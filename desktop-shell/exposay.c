@@ -162,7 +162,8 @@ exposay_highlight_surface(struct desktop_shell *shell,
 	shell->exposay.column_current = esurface->column;
 	shell->exposay.cur_output = esurface->eoutput;
 
-	activate(shell, view, shell->exposay.seat, false);
+	activate(shell, view, shell->exposay.seat,
+		 WESTON_ACTIVATE_FLAG_NONE);
 	shell->exposay.focus_current = view;
 }
 
@@ -571,10 +572,12 @@ exposay_transition_inactive(struct desktop_shell *shell, int switch_focus)
 	 * to the new. */
 	if (switch_focus && shell->exposay.focus_current)
 		activate(shell, shell->exposay.focus_current,
-		         shell->exposay.seat, true);
+		         shell->exposay.seat,
+			 WESTON_ACTIVATE_FLAG_CONFIGURE);
 	else if (shell->exposay.focus_prev)
 		activate(shell, shell->exposay.focus_prev,
-		         shell->exposay.seat, true);
+		         shell->exposay.seat,
+			 WESTON_ACTIVATE_FLAG_CONFIGURE);
 
 	wl_list_for_each(esurface, &shell->exposay.surface_list, link)
 		exposay_animate_out(esurface);
