@@ -466,6 +466,7 @@ bool PictureLayerTiling::RemoveTileAt(int i,
     return false;
   found->second->set_shared(false);
   tiles_.erase(found);
+  eviction_tiles_cache_valid_ = false;
   if (recycled_twin) {
     // Recycled twin does not also have a recycled twin, so pass NULL.
     recycled_twin->RemoveTileAt(i, j, NULL);

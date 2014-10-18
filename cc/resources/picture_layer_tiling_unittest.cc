@@ -64,8 +64,12 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
   }
 
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
+  bool eviction_tiles_cache_valid() const {
+    return eviction_tiles_cache_valid_;
+  }
 
   using PictureLayerTiling::ComputeSkewport;
+  using PictureLayerTiling::RemoveTileAt;
 
  protected:
   TestablePictureLayerTiling(float contents_scale,
@@ -1344,6 +1348,10 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
 
   EXPECT_GT(all_tiles_set.size(), 0u);
   EXPECT_EQ(all_tiles_set, eviction_tiles);
+
+  EXPECT_TRUE(tiling->eviction_tiles_cache_valid());
+  tiling->RemoveTileAt(0, 0, nullptr);
+  EXPECT_FALSE(tiling->eviction_tiles_cache_valid());
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
