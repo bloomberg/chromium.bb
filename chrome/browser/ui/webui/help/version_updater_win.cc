@@ -19,11 +19,9 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
-using base::UserMetricsAction;
 using content::BrowserThread;
 
 namespace {
@@ -178,18 +176,14 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
 
   switch (result) {
     case UPGRADE_CHECK_STARTED: {
-      content::RecordAction(UserMetricsAction("UpgradeCheck_Started"));
       status = CHECKING;
       break;
     }
     case UPGRADE_STARTED: {
-      content::RecordAction(UserMetricsAction("Upgrade_Started"));
       status = UPDATING;
       break;
     }
     case UPGRADE_IS_AVAILABLE: {
-      content::RecordAction(
-          UserMetricsAction("UpgradeCheck_UpgradeIsAvailable"));
       DCHECK(!google_updater_);  // Should have been nulled out already.
       CreateGoogleUpdater();
       UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, base::string16());
@@ -208,12 +202,10 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
       return;
     }
     case UPGRADE_SUCCESSFUL: {
-      content::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
       status = NEARLY_UPDATED;
       break;
     }
     case UPGRADE_ERROR: {
-      content::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
       status = FAILED;
       if (error_code == GOOGLE_UPDATE_DISABLED_BY_POLICY) {
         message =
@@ -253,14 +245,11 @@ void VersionUpdaterWin::GotInstalledVersion(const Version& version) {
   // out of date.
   chrome::VersionInfo version_info;
   Version running_version(version_info.Version());
-  if (!version.IsValid() || version.CompareTo(running_version) <= 0) {
-    content::RecordAction(
-        UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));
-    callback_.Run(UPDATED, 0, base::string16());
-  } else {
-    content::RecordAction(UserMetricsAction("UpgradeCheck_AlreadyUpgraded"));
-    callback_.Run(NEARLY_UPDATED, 0, base::string16());
-  }
+  callback_.Run((version.IsValid() && version.CompareTo(running_version) > 0)
+                    ? NEARLY_UPDATED
+                    : UPDATED,
+                0,
+                base::string16());
 }
 
 void VersionUpdaterWin::CreateGoogleUpdater() {

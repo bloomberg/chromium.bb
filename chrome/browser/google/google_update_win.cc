@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -391,6 +393,12 @@ void GoogleUpdate::ReportResults(GoogleUpdateUpgradeResult results,
   // If there is an error, then error code must not be blank, and vice versa.
   DCHECK(results == UPGRADE_ERROR ? error_code != GOOGLE_UPDATE_NO_ERROR :
                                     error_code == GOOGLE_UPDATE_NO_ERROR);
+  UMA_HISTOGRAM_ENUMERATION(
+      "GoogleUpdate.UpgradeResult", results, NUM_UPGRADE_RESULTS);
+  if (results == UPGRADE_ERROR) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "GoogleUpdate.UpdateErrorCode", error_code, NUM_ERROR_CODES);
+  }
   if (listener_) {
     listener_->OnReportResults(
         results, error_code, error_message, version_available_);
@@ -404,6 +412,7 @@ bool GoogleUpdate::ReportFailure(HRESULT hr,
   DLOG(ERROR) << "Communication with Google Update failed: " << hr
               << " error: " << error_code
               << ", message: " << error_message.c_str();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("GoogleUpdate.ErrorHresult", hr);
   main_loop->PostTask(
       FROM_HERE,
       base::Bind(&GoogleUpdate::ReportResults, this,

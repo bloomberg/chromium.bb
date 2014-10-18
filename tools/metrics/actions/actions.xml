@@ -11162,46 +11162,58 @@ should be able to be added at any place in this file.
 <action name="UpgradeCheck_AlreadyUpToDate">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
 <action name="UpgradeCheck_AlreadyUpgraded">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
 <action name="UpgradeCheck_Done">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Not present in codebase.</obsolete>
 </action>
 
 <action name="UpgradeCheck_Error">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Removed from codebase; see GoogleUpdate.UpgradeResult,
+    GoogleUpdate.UpdateErrorCode, and GoogleUpdate.ErrorHresult.
+  </obsolete>
 </action>
 
 <action name="UpgradeCheck_Started">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
 <action name="UpgradeCheck_TimedOut">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Not present in codebase.</obsolete>
 </action>
 
 <action name="UpgradeCheck_UpgradeIsAvailable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
 <action name="UpgradeCheck_Upgraded">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
 <action name="Upgrade_Started">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
 </action>
 
 <action name="ViewAboutConflicts">

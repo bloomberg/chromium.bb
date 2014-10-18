@@ -9638,6 +9638,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GoogleUpdate.ErrorHresult">
+  <owner>grt@chromium.org</owner>
+  <summary>The HRESULT for a failed on-demand update check.</summary>
+</histogram>
+
+<histogram name="GoogleUpdate.UpdateErrorCode" enum="GoogleUpdateErrorCode">
+  <owner>grt@chromium.org</owner>
+  <summary>The error code for a failed on-demand update check.</summary>
+</histogram>
+
 <histogram name="GoogleUpdate.UpdatePolicyIsOverridden" enum="Boolean">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -9645,6 +9655,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     an app-specific override; false if it is the default for all apps. Recorded
     once per startup (following a 45 seconds delay).
   </summary>
+</histogram>
+
+<histogram name="GoogleUpdate.UpgradeResult" enum="GoogleUpdateUpgradeResult">
+  <owner>grt@chromium.org</owner>
+  <summary>The result of an on-demand update check.</summary>
 </histogram>
 
 <histogram name="GPU.AcceleratedSurfaceRefreshRate" units="hz">
@@ -44621,6 +44636,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="11" label="UNEXPECTED_SERVICE_RESPONSE"/>
   <int value="12" label="SERVICE_ERROR"/>
   <int value="13" label="WEB_LOGIN_REQUIRED"/>
+</enum>
+
+<enum name="GoogleUpdateErrorCode" type="int">
+  <int value="0" label="GOOGLE_UPDATE_NO_ERROR"/>
+  <int value="1" label="CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY"/>
+  <int value="2" label="GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED"/>
+  <int value="3" label="GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND"/>
+  <int value="4" label="GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR"/>
+  <int value="5" label="GOOGLE_UPDATE_GET_RESULT_CALL_FAILED"/>
+  <int value="6" label="GOOGLE_UPDATE_GET_VERSION_INFO_FAILED"/>
+  <int value="7" label="GOOGLE_UPDATE_ERROR_UPDATING"/>
+  <int value="8" label="GOOGLE_UPDATE_DISABLED_BY_POLICY"/>
+  <int value="9" label="GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY"/>
+</enum>
+
+<enum name="GoogleUpdateUpgradeResult" type="int">
+  <int value="0" label="UPGRADE_STARTED"/>
+  <int value="1" label="UPGRADE_CHECK_STARTED"/>
+  <int value="2" label="UPGRADE_IS_AVAILABLE"/>
+  <int value="3" label="UPGRADE_SUCCESSFUL"/>
+  <int value="4" label="UPGRADE_ALREADY_UP_TO_DATE"/>
+  <int value="5" label="UPGRADE_ERROR"/>
 </enum>
 
 <enum name="HIDContinueScenarioType" type="int">

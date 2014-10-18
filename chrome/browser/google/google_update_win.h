@@ -20,48 +20,52 @@ class Widget;
 
 // The status of the upgrade. UPGRADE_STARTED and UPGRADE_CHECK_STARTED are
 // internal states and will not be reported as results to the listener.
+// These values are used for a histogram. Do not reorder.
 enum GoogleUpdateUpgradeResult {
   // The upgrade has started.
   UPGRADE_STARTED = 0,
   // A check for upgrade has been initiated.
-  UPGRADE_CHECK_STARTED,
+  UPGRADE_CHECK_STARTED = 1,
   // An update is available.
-  UPGRADE_IS_AVAILABLE,
+  UPGRADE_IS_AVAILABLE = 2,
   // The upgrade happened successfully.
-  UPGRADE_SUCCESSFUL,
+  UPGRADE_SUCCESSFUL = 3,
   // No need to upgrade, Chrome is up to date.
-  UPGRADE_ALREADY_UP_TO_DATE,
+  UPGRADE_ALREADY_UP_TO_DATE = 4,
   // An error occurred.
-  UPGRADE_ERROR,
+  UPGRADE_ERROR = 5,
+  NUM_UPGRADE_RESULTS
 };
 
+// These values are used for a histogram. Do not reorder.
 enum GoogleUpdateErrorCode {
   // The upgrade completed successfully (or hasn't been started yet).
   GOOGLE_UPDATE_NO_ERROR = 0,
   // Google Update only supports upgrading if Chrome is installed in the default
   // location. This error will appear for developer builds and with
   // installations unzipped to random locations.
-  CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY,
+  CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY = 1,
   // Failed to create Google Update JobServer COM class.
-  GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED,
+  GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED = 2,
   // Failed to create Google Update OnDemand COM class.
-  GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND,
+  GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND = 3,
   // Google Update OnDemand COM class reported an error during a check for
   // update (or while upgrading).
-  GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR,
+  GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR = 4,
   // A call to GetResults failed.
-  GOOGLE_UPDATE_GET_RESULT_CALL_FAILED,
+  GOOGLE_UPDATE_GET_RESULT_CALL_FAILED = 5,
   // A call to GetVersionInfo failed.
-  GOOGLE_UPDATE_GET_VERSION_INFO_FAILED,
+  GOOGLE_UPDATE_GET_VERSION_INFO_FAILED = 6,
   // An error occurred while upgrading (or while checking for update).
   // Check the Google Update log in %TEMP% for more details.
-  GOOGLE_UPDATE_ERROR_UPDATING,
+  GOOGLE_UPDATE_ERROR_UPDATING = 7,
   // Updates can not be downloaded because the administrator has disabled all
   // types of updating.
-  GOOGLE_UPDATE_DISABLED_BY_POLICY,
+  GOOGLE_UPDATE_DISABLED_BY_POLICY = 8,
   // Updates can not be downloaded because the administrator has disabled
   // manual (on-demand) updates.  Automatic background updates are allowed.
-  GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY,
+  GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY = 9,
+  NUM_ERROR_CODES
 };
 
 // The GoogleUpdateStatusListener interface is used by components to receive
