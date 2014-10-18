@@ -5183,7 +5183,7 @@ activate(struct desktop_shell *shell, struct weston_view *view,
 	 * Leave fullscreen surfaces on unrelated outputs alone. */
 	lower_fullscreen_layer(shell, shsurf->output);
 
-	weston_seat_set_keyboard_focus(seat, es);
+	weston_view_activate(view, seat, flags);
 
 	state = ensure_focus_state(shell, seat);
 	if (state == NULL)
@@ -5258,6 +5258,7 @@ click_to_activate_binding(struct weston_pointer *pointer, uint32_t time,
 		return;
 
 	activate_binding(pointer->seat, data, pointer->focus,
+			 WESTON_ACTIVATE_FLAG_CLICKED |
 			 WESTON_ACTIVATE_FLAG_CONFIGURE);
 }
 
