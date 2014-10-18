@@ -67,7 +67,7 @@
 
 <td>
   <div class="test-div">
-    <script>addTestCanvas("test1", "-webkit-transform: rotateY(180deg);");</script>
+    <script>addTestCanvas("test1", "transform: rotateY(180deg);");</script>
   </div>
 </td>
 
@@ -75,7 +75,7 @@
      single-sided canvas facing towards its div.  This should appear. -->
 
 <td>
-  <div class="test-div" style="-webkit-transform: rotateY(180deg)">
+  <div class="test-div" style="transform: rotateY(180deg)">
     <script>addTestCanvas("test2", "");</script>
   </div>
 </td>
@@ -87,7 +87,7 @@
      the parent div. -->
 
 <td>
-  <div class="test-div" style="-webkit-transform: rotateY(180deg); -webkit-transform-style: preserve-3d;">
+  <div class="test-div" style="transform: rotateY(180deg); -webkit-transform-style: preserve-3d;">
     <script>addTestCanvas("test3", "");</script>
   </div>
 </td>
@@ -97,8 +97,8 @@
      parent div. -->
 
 <td>
-  <div class="test-div" style="-webkit-transform: rotateY(180deg); -webkit-transform-style: preserve-3d; -webkit-backface-visibility: hidden;">
-    <script>addTestCanvas("test4", "-webkit-transform: rotateY(180deg);");</script>
+  <div class="test-div" style="transform: rotateY(180deg); -webkit-transform-style: preserve-3d; -webkit-backface-visibility: hidden;">
+    <script>addTestCanvas("test4", "transform: rotateY(180deg);");</script>
   </div>
 </td>
 
@@ -107,8 +107,8 @@
      for the parent div.  -->
 
 <td>
-  <div class="test-div" style="-webkit-transform: rotateY(180deg); -webkit-backface-visibility: hidden;">
-    <script>addTestCanvas("test5", "-webkit-transform: rotateY(180deg);")</script>
+  <div class="test-div" style="transform: rotateY(180deg); -webkit-backface-visibility: hidden;">
+    <script>addTestCanvas("test5", "transform: rotateY(180deg);")</script>
   </div>
 </td>
 

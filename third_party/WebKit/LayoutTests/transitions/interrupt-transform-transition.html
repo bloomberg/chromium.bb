@@ -8,9 +8,9 @@
       width: 100px;
       height: 100px;
       background-color: blue;
-      -webkit-transition-property: -webkit-transform;
+      -webkit-transition-property: transform;
       -webkit-transition-duration: 2s;
-      -webkit-transform: translate(0, 0);
+      transform: translate(0, 0);
     }
   </style>
   <script>
@@ -21,7 +21,7 @@
 
     function test()
     {
-      var t = window.getComputedStyle(document.getElementById('box')).webkitTransform;
+      var t = window.getComputedStyle(document.getElementById('box')).transform;
       // grab the x value from the matrix()
       var lastValueRE = /([\.\d]+),[^,]+\)$/;
       var xTranslate = lastValueRE.exec(t)[1];
@@ -35,10 +35,10 @@
     function startTest()
     {
       var box = document.getElementById('box');
-      box.style.webkitTransform = 'translate(200px, 0)';
+      box.style.transform = 'translate(200px, 0)';
       
       window.setTimeout(function() {
-        box.style.webkitTransform = 'translate(0, 200px)';
+        box.style.transform = 'translate(0, 200px)';
         window.setTimeout(test, 0);
       }, 300);
 

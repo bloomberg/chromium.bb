@@ -30,7 +30,7 @@ DIV style,position:absolute;top:200;left:100;width:100;height:100;background:gre
     [6] : 100
     [7] : 300
 ]
-DIV style,position:absolute;top:150;left:50;width:100;height:100;background:blue;-webkit-transform:rotate(45deg); [
+DIV style,position:absolute;top:150;left:50;width:100;height:100;background:blue;transform:rotate(45deg); [
     [0] : 100
     [1] : 129
     [2] : 171

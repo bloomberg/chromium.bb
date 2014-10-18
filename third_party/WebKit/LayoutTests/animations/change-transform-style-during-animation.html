@@ -3,7 +3,7 @@
 <head>
   <style>
     #container {
-      -webkit-transform: translateZ(0px);
+      transform: translateZ(0px);
       -webkit-perspective: 400;
     }
 
@@ -21,7 +21,7 @@
       height: 100px;
       width: 100px;
       background-color: red;
-      -webkit-transform: translateZ(10px);
+      transform: translateZ(10px);
       -webkit-transform-style: preserve-3d;
       -webkit-animation-duration: 100ms;
       -webkit-animation-fill-mode: both;
@@ -30,8 +30,8 @@
     }
 
     @-webkit-keyframes anim {
-      from { -webkit-transform: translateZ(0px) translateX(0px); }
-      to { -webkit-transform: translateZ(200px) translateX(-200px); }
+      from { transform: translateZ(0px) translateX(0px); }
+      to { transform: translateZ(200px) translateX(-200px); }
     }
    </style>
 

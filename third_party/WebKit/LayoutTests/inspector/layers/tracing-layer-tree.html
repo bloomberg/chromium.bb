@@ -13,7 +13,7 @@ function doActions(callback)
 
     // Make sure to force commit, otherwise some owner nodes will be missing.
     var style = document.createElement("style");
-    style.textContent = ".layer { -webkit-transform: translateZ(10px); opacity: 0.8; }";
+    style.textContent = ".layer { transform: translateZ(10px); opacity: 0.8; }";
     document.head.appendChild(style);
 
     if (!window.testRunner) {

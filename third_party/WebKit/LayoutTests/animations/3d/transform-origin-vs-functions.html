@@ -26,12 +26,12 @@
       -webkit-transform-origin: center center 200px;
     }
     @-webkit-keyframes b1 {
-        from { -webkit-transform: rotateY(0deg); }
-        5%  { -webkit-transform: rotateY(90deg); }
-        20%  { -webkit-transform: rotateY(90deg); }
-        50%  { -webkit-transform: rotateY(180deg); }
-        75%  { -webkit-transform: rotateY(270deg); }
-        to   { -webkit-transform: rotateY(360deg); }
+        from { transform: rotateY(0deg); }
+        5%  { transform: rotateY(90deg); }
+        20%  { transform: rotateY(90deg); }
+        50%  { transform: rotateY(180deg); }
+        75%  { transform: rotateY(270deg); }
+        to   { transform: rotateY(360deg); }
     }
     #b2 {
       top: 320px;
@@ -45,12 +45,12 @@
       -webkit-animation-timing-function: linear;
     }
     @-webkit-keyframes b2 {
-        from { -webkit-transform: translateZ(200px) rotateY(0deg) translateZ(-200px) }
-        5%  { -webkit-transform: translateZ(200px) rotateY(90deg) translateZ(-200px) }
-        20%  { -webkit-transform: translateZ(200px) rotateY(90deg) translateZ(-200px) }
-        50%  { -webkit-transform: translateZ(200px) rotateY(180deg) translateZ(-200px) }
-        75%  { -webkit-transform: translateZ(200px) rotateY(270deg) translateZ(-200px) }
-        to   { -webkit-transform: translateZ(200px) rotateY(360deg) translateZ(-200px) }
+        from { transform: translateZ(200px) rotateY(0deg) translateZ(-200px) }
+        5%  { transform: translateZ(200px) rotateY(90deg) translateZ(-200px) }
+        20%  { transform: translateZ(200px) rotateY(90deg) translateZ(-200px) }
+        50%  { transform: translateZ(200px) rotateY(180deg) translateZ(-200px) }
+        75%  { transform: translateZ(200px) rotateY(270deg) translateZ(-200px) }
+        to   { transform: translateZ(200px) rotateY(360deg) translateZ(-200px) }
     }
     </style>
     
@@ -129,7 +129,7 @@
   <body onload="start()">
     <div id="a">
         <div id="b1"> </div>
-        <div style="-webkit-transform:translateZ(-200px); -webkit-transform-style:preserve-3d;">
+        <div style="transform:translateZ(-200px); transform-style:preserve-3d;">
             <div id="b2"> </div>
         </div>
     </div>

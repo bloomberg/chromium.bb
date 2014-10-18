@@ -5,8 +5,8 @@
 <!-- Test for https://bugs.webkit.org/show_bug.cgi?id=111587 -->
 <!-- Passes if all circles are drawn at high resolution, without pixelation -->
 
-<div style="position: relative; left: 27px; -webkit-transform: scale(5); -webkit-transform-origin: 0 0; width: 100px;">
-<div style="-webkit-transform: scale(2); -webkit-transform-origin: 0 0; width: 50px;">
+<div style="position: relative; left: 27px; transform: scale(5); -webkit-transform-origin: 0 0; width: 100px;">
+<div style="transform: scale(2); -webkit-transform-origin: 0 0; width: 50px;">
   <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <pattern id="pattern" width="10" height="10" patternUnits="userSpaceOnUse">

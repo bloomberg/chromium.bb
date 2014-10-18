@@ -15,7 +15,7 @@
     }
     
     .moved {
-      -webkit-transform: translateX(100px);
+      transform: translateX(100px);
       
     }
     .box {
@@ -24,7 +24,7 @@
       width: 100px;
       margin: 50px;
       background-color: blue;
-      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
       -webkit-animation: fade 1s infinite linear alternate;
     }
     
@@ -33,8 +33,8 @@
     }
     
     @-webkit-keyframes fade {
-      from { -webkit-transform: rotate(-20deg); }
-      to   { -webkit-transform: rotate(20deg);   }
+      from { transform: rotate(-20deg); }
+      to   { transform: rotate(20deg);   }
     }
   </style>
   <script type="text/javascript" charset="utf-8">

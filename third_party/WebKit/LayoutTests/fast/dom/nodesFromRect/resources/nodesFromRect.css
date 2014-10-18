@@ -34,7 +34,7 @@ h1, div, p {
 
 #transf {
   margin-top: 60px;
-  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
 }
 
 #decimal {

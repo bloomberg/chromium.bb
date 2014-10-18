@@ -5,7 +5,7 @@ div {
     height: 100px;
     width: 100px;
     background: blue;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
     -webkit-animation-direction: alternate;
     -webkit-animation-duration: 2s;
     -webkit-animation-timing-function: linear;
@@ -49,10 +49,10 @@ div {
 
 @-webkit-keyframes anim-transform {
     0% {
-        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
     }
     100% {
-        -webkit-transform: translateX(300px);
+        transform: translateX(300px);
     }
 }
 </style>

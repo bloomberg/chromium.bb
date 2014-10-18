@@ -76,7 +76,7 @@
       background-color: #81AA8A;
       -webkit-transform-style: preserve-3d;
       -webkit-box-sizing: border-box;
-      -webkit-transform: rotateY(20deg);
+      transform: rotateY(20deg);
     }
 
     .transformed-flat {
@@ -120,11 +120,11 @@
   <!-- Flatten in the middle of 3d -->
   <div class="container box" id="box1">
     <div class="transformed-3d box" id="box2">
-      <div class="transformed-3d box" style="-webkit-transform: translateZ(40px) rotateX(10deg)" id="box3">
-        <div class="transformed-flat box" style="-webkit-transform: translate3d(0, 20px, 40px) rotateX(-15deg)" id="box4">
+      <div class="transformed-3d box" style="transform: translateZ(40px) rotateX(10deg)" id="box3">
+        <div class="transformed-flat box" style="transform: translate3d(0, 20px, 40px) rotateX(-15deg)" id="box4">
           <div class="transformed-flat box" style="-webkit-perspective: 500" id="box5">
-            <div class="transformed-3d box" style="-webkit-transform-origin: top left; -webkit-transform: rotateY(-15deg);" id="box6">
-              <div class="transformed-3d box" style="-webkit-transform-origin: top left; -webkit-transform: translateZ(20px)" id="box7">
+            <div class="transformed-3d box" style="-webkit-transform-origin: top left; transform: rotateY(-15deg);" id="box6">
+              <div class="transformed-3d box" style="-webkit-transform-origin: top left; transform: translateZ(20px)" id="box7">
                 <div class="inner" id="box8">
                 </div>
               </div>

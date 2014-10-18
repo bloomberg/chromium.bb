@@ -17,7 +17,7 @@
       height: 180px;
     }
     img {
-      -webkit-transform: rotate3d(0, 0, 1, 0);
+      transform: rotate3d(0, 0, 1, 0);
     }
    </style>
 </head>
@@ -65,7 +65,7 @@ defaults write com.apple.Safari WebCoreLayerBorders -bool yes
   </p>
 
   <p>
-    <img src="resources/simple_image.png" style="-webkit-transform: rotate3d(0, 0, 1, 10deg);">
+    <img src="resources/simple_image.png" style="transform: rotate3d(0, 0, 1, 10deg);">
     rotated but otherwise no style - can be directly composited
   </p>
 

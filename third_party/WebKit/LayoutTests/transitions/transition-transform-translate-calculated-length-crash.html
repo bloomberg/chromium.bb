@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <style>
     div {
-        -webkit-transition: -webkit-transform 50ms;
+        -webkit-transition: transform 50ms;
     }
     #div2 {
-        -webkit-transform: translate(calc(10% + 10px));
+        transform: translate(calc(10% + 10px));
     }
 </style>
 <body>
@@ -17,6 +17,6 @@
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    document.getElementById("div1").style.webkitTransform = "translate(calc(10% + 20px))";
-    document.getElementById("div2").style.webkitTransform = "none";
+    document.getElementById("div1").style.transform = "translate(calc(10% + 20px))";
+    document.getElementById("div2").style.transform = "none";
 </script>

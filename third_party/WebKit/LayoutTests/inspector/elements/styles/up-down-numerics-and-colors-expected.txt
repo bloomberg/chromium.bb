@@ -12,5 +12,5 @@ Running: testAlterNumber
 opacity: 11.6;
 
 Running: testAlterBigNumber
--webkit-transform: rotate(1000000000000000065537deg);
+transform: rotate(1000000000000000065537deg);
 

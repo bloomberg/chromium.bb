@@ -13,7 +13,7 @@ clipPathElement.setAttribute("id", "clipper");
 var clipRectElement = createSVGElement("rect");
 clipRectElement.setAttribute("width", "5");
 clipRectElement.setAttribute("height", "5");
-clipRectElement.setAttribute("style", "-webkit-transform: scale(20)");
+clipRectElement.setAttribute("style", "transform: scale(20)");
 clipPathElement.appendChild(clipRectElement);
 
 defsElement.appendChild(clipPathElement);

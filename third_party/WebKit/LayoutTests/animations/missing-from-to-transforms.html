@@ -12,7 +12,7 @@
       top: 10px;
       height: 20px;
       width: 20px;
-      -webkit-transform: translateX(10px);
+      transform: translateX(10px);
       background-color: blue;
       -webkit-animation-duration: 2s;
       -webkit-animation-timing-function: linear;
@@ -22,10 +22,10 @@
       -webkit-animation-name: anim1;
     }
     @-webkit-keyframes anim1 {
-      from { -webkit-transform: translateX(10px); }
-      40% { -webkit-transform: translateX(30px); }
-      60% { -webkit-transform: translateX(10px); }
-      to { -webkit-transform: translateX(20px); }
+      from { transform: translateX(10px); }
+      40% { transform: translateX(30px); }
+      60% { transform: translateX(10px); }
+      to { transform: translateX(20px); }
     }
 
     #box2 {
@@ -33,20 +33,20 @@
       background-color: red;
     }
     @-webkit-keyframes anim2 {
-      40% { -webkit-transform: translateX(30px); }
-      60% { -webkit-transform: translateX(10px); }
-      to { -webkit-transform: translateX(20px); }
+      40% { transform: translateX(30px); }
+      60% { transform: translateX(10px); }
+      to { transform: translateX(20px); }
     }
 
     #box3 {
-      -webkit-transform: translateX(20px);
+      transform: translateX(20px);
       -webkit-animation-name: anim3;
       background-color: green;
     }
     @-webkit-keyframes anim3 {
-      from { -webkit-transform: translateX(10px); }
-      40% { -webkit-transform: translateX(30px); }
-      60% { -webkit-transform: translateX(10px); }
+      from { transform: translateX(10px); }
+      40% { transform: translateX(30px); }
+      60% { transform: translateX(10px); }
     }
 
     #box4 {
@@ -54,8 +54,8 @@
       background-color: yellow;
     }
     @-webkit-keyframes anim4 {
-      40% { -webkit-transform: translateX(30px); }
-      60% { -webkit-transform: translateX(20px); }
+      40% { transform: translateX(30px); }
+      60% { transform: translateX(20px); }
     }
 
     #result {

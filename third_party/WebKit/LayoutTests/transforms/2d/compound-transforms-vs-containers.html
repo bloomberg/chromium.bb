@@ -30,26 +30,26 @@
 <p>Test ensures that nested transformed elements produce the same result as a single compound transform.You should not see any red in the two tests below</p>
 <div class="container">
   <p>Translate first</p>
-  <div style="-webkit-transform: translate(75px, 20px)">
-    <div style="-webkit-transform: scale(1.6, 1.6)">
-      <div style="-webkit-transform: rotate(45deg)">
+  <div style="transform: translate(75px, 20px)">
+    <div style="transform: scale(1.6, 1.6)">
+      <div style="transform: rotate(45deg)">
         <div class="box" style="background-color: red">Individual</div>
       </div>
     </div>
   </div>
-  <div class="box" style="-webkit-transform: translate(75px, 20px) scale(1.6, 1.6) rotate(45deg);"></div>
+  <div class="box" style="transform: translate(75px, 20px) scale(1.6, 1.6) rotate(45deg);"></div>
 </div>
 
 <div class="container">
   <p>Translate second</p>
-  <div style="-webkit-transform: scale(1.6, 1.6)">
-    <div style="-webkit-transform: translate(75px, 20px)">
-      <div style="-webkit-transform: rotate(45deg)">
+  <div style="transform: scale(1.6, 1.6)">
+    <div style="transform: translate(75px, 20px)">
+      <div style="transform: rotate(45deg)">
         <div class="box" style="background-color: red">Individual</div>
       </div>
     </div>
   </div>
-  <div class="box" style="-webkit-transform: scale(1.6, 1.6) translate(75px, 20px) rotate(45deg);"></div>
+  <div class="box" style="transform: scale(1.6, 1.6) translate(75px, 20px) rotate(45deg);"></div>
 </div>
 
 </body>

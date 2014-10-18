@@ -10,7 +10,7 @@
 
     #trigger {
       /* Only overlap with the contents element, not the stretch element */
-      -webkit-transform:translateZ(0);
+      transform:translateZ(0);
       position: absolute;
       top: 0px;
       left: 0px;
@@ -20,7 +20,7 @@
 
     #container {
       /* Force compositing for this layer if any children get composited */
-      -webkit-transform:translate(0px, 1px);
+      transform:translate(0px, 1px);
     }
 
     #negative {

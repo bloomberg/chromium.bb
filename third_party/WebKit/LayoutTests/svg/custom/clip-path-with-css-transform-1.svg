@@ -2,7 +2,7 @@
      xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs>
     <clipPath id="myclip">
-        <path style="-webkit-transform: scale(.5)" d="M 0 0 l 200 0 l 0 200 l -200 0 Z"/>
+        <path style="transform: scale(.5)" d="M 0 0 l 200 0 l 0 200 l -200 0 Z"/>
     </clipPath>
 </defs>
 <g  clip-path="url(#myclip)">

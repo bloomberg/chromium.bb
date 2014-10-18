@@ -104,7 +104,7 @@
           background-color: green;
           -webkit-animation: move 300ms linear;
           -webkit-transform-style: preserve-3d;
-          -webkit-transform: trasnlate3d(10px, 0, 0);
+          transform: trasnlate3d(10px, 0, 0);
       }
 
      #testHardwareAcceleratedCompositing:before {
@@ -113,8 +113,8 @@
      }
 
       @-webkit-keyframes move {
-          from { -webkit-transform: translate3d(10px, 0, 0); }
-          to   { -webkit-transform: translate3d(300px, 0, 0); }
+          from { transform: translate3d(10px, 0, 0); }
+          to   { transform: translate3d(300px, 0, 0); }
       }
 
       .pass {

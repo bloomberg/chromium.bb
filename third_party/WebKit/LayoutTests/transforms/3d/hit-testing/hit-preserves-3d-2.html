@@ -16,11 +16,11 @@
 
     .should-be-visible { background-color: green !important; }
     .composited {
-      -webkit-transform: rotate3d(0, 0, 1, 45deg);
+      transform: rotate3d(0, 0, 1, 45deg);
     }
 
     .intermediate {
-      -webkit-transform: rotate3d(0, 0, 1, -45deg);
+      transform: rotate3d(0, 0, 1, -45deg);
       -webkit-transform-style: preserve-3d;
       background-color: red;
     }

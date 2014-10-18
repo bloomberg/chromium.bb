@@ -17,7 +17,7 @@
 
     #container {
         -webkit-transform-style: preserve-3d;
-        -webkit-transform: translateZ(800px)
+        transform: translateZ(800px)
     }
 
     #layer {
@@ -27,7 +27,7 @@
         background-color: green;
 
         /* This should theoretically cancel out the container's transform, and hit-testing should work. */
-        -webkit-transform: translateZ(-800px);
+        transform: translateZ(-800px);
     }
 
     #background {

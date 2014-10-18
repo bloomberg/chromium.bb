@@ -1,6 +1,6 @@
 The green box appear angled out from the yellow box and embedded in it.
 
--webkit-transform: translateZ(-100px) rotateY(45deg);
+transform: translateZ(-100px) rotateY(45deg);
 {
   "bounds": [800, 600],
   "children": [

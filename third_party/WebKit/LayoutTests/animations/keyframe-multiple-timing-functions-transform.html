@@ -7,15 +7,15 @@
             width: 100px;
             margin: 20px;
             background-color: red;
-            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
             -webkit-animation:
                 horizontal 2s linear 1 alternate,
                 fade 2s steps(1, end) 1 alternate;
         }
 
         @-webkit-keyframes horizontal {
-            from { -webkit-transform: translateX(0px); }
-            to   { -webkit-transform: translateX(200px); }
+            from { transform: translateX(0px); }
+            to   { transform: translateX(200px); }
         }
 
         @-webkit-keyframes fade {

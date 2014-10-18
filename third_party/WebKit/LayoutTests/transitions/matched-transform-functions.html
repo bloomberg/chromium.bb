@@ -7,9 +7,9 @@
       height: 100px;
       width: 100px;
       background-color: blue;
-      -webkit-transition-property: -webkit-transform;
+      -webkit-transition-property: transform;
       -webkit-transition-duration: 3s;
-      -webkit-transform: translate(0, 0) rotate(0);
+      transform: translate(0, 0) rotate(0);
     }
     
   </style>
@@ -21,7 +21,7 @@
 
     function test()
     {
-      var c = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById('box')).webkitTransform);      
+      var c = new WebKitCSSMatrix(window.getComputedStyle(document.getElementById('box')).transform);      
       var result = (c.f < 200) ? 'PASS' : 'FAIL: transition should still be running, so y < 200';
       document.getElementById('result').innerHTML = result;
 
@@ -32,10 +32,10 @@
     function startTest()
     {
       var box = document.getElementById('box');
-      box.style.webkitTransform = 'translate(100px, 0) rotate(0)';
+      box.style.transform = 'translate(100px, 0) rotate(0)';
       
       window.setTimeout(function() {
-        box.style.webkitTransform = 'translate(0, 200px) rotate(10deg)';
+        box.style.transform = 'translate(0, 200px) rotate(10deg)';
         window.setTimeout(function() {
           test();
         }, 200);

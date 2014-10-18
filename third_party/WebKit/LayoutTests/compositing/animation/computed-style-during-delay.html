@@ -8,7 +8,7 @@
             width: 100px;
             margin: 20px;
             background-color: blue;
-            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
         }
 
         #movers.moved > .box {
@@ -17,7 +17,7 @@
 
         /* Test that we fetch the current style, not the one snapshotted when the animation started */
         #movers.moved > #changedbox {
-            -webkit-transform: translate3d(50px, 0, 0);
+            transform: translate3d(50px, 0, 0);
         }
 
         /* Test that fill-mode: backwards works */
@@ -26,8 +26,8 @@
         }
         
         @-webkit-keyframes move {
-            from { -webkit-transform: translateX(100px);   }
-            to   { -webkit-transform: translateX(400px); }
+            from { transform: translateX(100px);   }
+            to   { transform: translateX(400px); }
         }
     </style>
     <script type="text/javascript" charset="utf-8">

@@ -2,9 +2,9 @@
      xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs>
   <clipPath id="myclip">
-    <rect x="0" y="0" width="200" height="200" style="-webkit-transform: scale(.5)"/>
+    <rect x="0" y="0" width="200" height="200" style="transform: scale(.5)"/>
     <!-- second rect causes masking -->
-    <rect x="0" y="0" width="200" height="200" style="-webkit-transform: scale(.5)"/>
+    <rect x="0" y="0" width="200" height="200" style="transform: scale(.5)"/>
   </clipPath>
 </defs>
 <g  clip-path="url(#myclip)">

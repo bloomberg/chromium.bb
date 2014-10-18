@@ -34,19 +34,19 @@
     }
 
     #group1 {
-      -webkit-transform: translate(75px, 25px);
+      transform: translate(75px, 25px);
     }
 
     #group2 {
-      -webkit-transform: scale(2);
+      transform: scale(2);
     }
 
     #group3 {
-      -webkit-transform: rotate(45deg);
+      transform: rotate(45deg);
     }
 
     #rect1 {
-      -webkit-transform: translate(75px, 25px) scale(2) rotate(45deg);
+      transform: translate(75px, 25px) scale(2) rotate(45deg);
     }
     
     .final {
@@ -74,9 +74,9 @@
 
   <h2>CSS nested</h2>
   <div class="container">
-    <div id="box1" class="box" style="-webkit-transform: translate(75px, 25px)">
-      <div id="box2" class="box" style="-webkit-transform: scale(2)">
-        <div id="box3" class="final box" style="-webkit-transform: rotate(45deg)">
+    <div id="box1" class="box" style="transform: translate(75px, 25px)">
+      <div id="box2" class="box" style="transform: scale(2)">
+        <div id="box3" class="final box" style="transform: rotate(45deg)">
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@
 
   <h2>CSS compound</h2>
   <div class="container">
-    <div class="final box" style="-webkit-transform: translate(75px, 25px) scale(2) rotate(45deg)">
+    <div class="final box" style="transform: translate(75px, 25px) scale(2) rotate(45deg)">
     </div>
   </div>
 </div>

@@ -4,7 +4,7 @@
 <script src="../../resources/js-test.js"></script>
 <style id="style" media="screen">
 .non-existent-class {
-    -webkit-transform: translate(10px)
+    transform: translate(10px)
                        translateX(10px)
                        translateY(10px)
                        rotate(10deg)
@@ -48,7 +48,7 @@
       shouldBe("jsWrapperClass(" + expression + ".constructor)", "'" + constructorName + "'");
   }
 
-  var transformRule = stylesheet.cssRules.item(0).style.getPropertyCSSValue('-webkit-transform');
+  var transformRule = stylesheet.cssRules.item(0).style.getPropertyCSSValue('transform');
   test("transformRule", "CSSValueList");
   
   test("transformRule[0]", "WebKitCSSTransformValue");

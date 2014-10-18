@@ -3,14 +3,14 @@
 <title>Transform in an empty container test.</title>
 <style type="text/css">
   .composited {
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   .abs {
     position: absolute;
   }
 
   .empty-transform {
-    -webkit-transform: matrix3d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    transform: matrix3d(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
     width: 0px;
     height: 100px;
   }

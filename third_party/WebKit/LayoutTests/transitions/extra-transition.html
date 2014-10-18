@@ -16,10 +16,10 @@
   }
 
   #features > li > .picture {
-      -webkit-transition-property: -webkit-transform;
+      -webkit-transition-property: transform;
       -webkit-transition-duration: 500ms;
       -webkit-transition-timing-function: ease-in;
-      -webkit-transform: rotate(-5deg);
+      transform: rotate(-5deg);
       opacity: 0.2;
       border: 5px solid white;
       background-color: gray;
@@ -32,11 +32,11 @@
 
   #features > li.enabled > .picture {
       -webkit-transition-timing-function: ease-out;
-      -webkit-transform:rotate(10deg);
+      transform:rotate(10deg);
   }
 
   #features > li > .description {
-      -webkit-transition-property: -webkit-transform;
+      -webkit-transition-property: transform;
       -webkit-transition-duration: 560ms;
       -webkit-transition-timing-function: ease-in;
       line-height: 1.4em;
@@ -54,7 +54,7 @@
   }
 
   #features > li.enabled > .description {
-      -webkit-transform:translate3d(100px,0,0);
+      transform:translate3d(100px,0,0);
   }
   </style>
   <script>
@@ -77,7 +77,7 @@
 
   function check()
   {
-      var transform = window.getComputedStyle(document.getElementById('description')).webkitTransform;
+      var transform = window.getComputedStyle(document.getElementById('description')).transform;
       if (transform == "matrix(1, 0, 0, 1, 100, 0)")
           log('transform="'+transform+'" as expected: PASS');
         else

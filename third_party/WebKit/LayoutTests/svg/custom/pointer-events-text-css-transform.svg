@@ -52,7 +52,7 @@
               txt.setAttribute('fill', fillValues[fi]);
               txt.setAttribute('stroke', strokeValues[si]);
               txt.setAttribute('pointer-events', pointerEventsValues[pi]);
-              txt.setAttribute('style', "-webkit-transform: scale(2)");
+              txt.setAttribute('style', "transform: scale(2)");
               txt.setAttribute('onclick', 'clickHit(evt, "' + identString + '")');
               txt.appendChild(document.createTextNode("#"));
               

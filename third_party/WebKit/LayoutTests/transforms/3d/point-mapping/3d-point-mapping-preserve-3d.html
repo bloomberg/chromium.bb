@@ -106,7 +106,7 @@
       background-color: #81AA8A;
       -webkit-transform-style: preserve-3d;
       -webkit-box-sizing: border-box;
-      -webkit-transform: rotateY(-30deg);
+      transform: rotateY(-30deg);
     }
 
     .transformed-flat {
@@ -119,7 +119,7 @@
       background-color: #AA7994;
       -webkit-transform-style: flat;
       -webkit-box-sizing: border-box;
-      -webkit-transform: rotateY(-30deg);
+      transform: rotateY(-30deg);
     }
     
     .inner {
@@ -178,7 +178,7 @@
   <!-- Nested transformed, preserve-3d divs in perpsective -->
   <div class="container box" id="box9">
     <div class="transformed-3d box" id="box10">
-      <div class="transformed-3d box" style="-webkit-transform: translateZ(20px) rotateY(50deg)" id="box11">
+      <div class="transformed-3d box" style="transform: translateZ(20px) rotateY(50deg)" id="box11">
       </div>
     </div>
   </div>
@@ -187,7 +187,7 @@
   <!-- Transformed, preserve-3d div in perpsective with non-layer child -->
   <div class="container box" id="box12">
     <div class="transformed-3d box" id="box13">
-      <div class="transformed-3d box" style="-webkit-transform: translateZ(10px) rotateY(50deg)" id="box14">
+      <div class="transformed-3d box" style="transform: translateZ(10px) rotateY(50deg)" id="box14">
         <div class="inner box" id="box15">
         </div>
       </div>
@@ -198,8 +198,8 @@
   <!-- Flatten in the middle of 3d -->
   <div class="container box" id="box16">
     <div class="transformed-3d box" id="box17">
-      <div class="transformed-3d box" style="-webkit-transform: translateZ(10px) rotateY(20deg)" id="box18">
-        <div class="transformed-flat box" style="-webkit-transform-style: flat; -webkit-transform: rotateX(-20deg)" id="box19">
+      <div class="transformed-3d box" style="transform: translateZ(10px) rotateY(20deg)" id="box18">
+        <div class="transformed-flat box" style="-webkit-transform-style: flat; transform: rotateX(-20deg)" id="box19">
           <div class="inner box" id="box20">
           </div>
         </div>

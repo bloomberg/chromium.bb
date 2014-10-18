@@ -11,16 +11,16 @@
       height: 400px;
       margin: 20px;
       border: 1px solid black;
-      -webkit-perspective: 800;
+      perspective: 800;
     }
     #tester {
       width: 300px;
       height: 300px;
       margin: 50px;
       background-color: blue;
-      -webkit-transition: -webkit-transform 3s linear;
-      -webkit-transform: rotateX(65deg) translateZ(75px) rotateZ(0deg);
-      -webkit-transform-style: preserve-3d;
+      -webkit-transition: transform 3s linear;
+      transform: rotateX(65deg) translateZ(75px) rotateZ(0deg);
+      transform-style: preserve-3d;
     }
     #pos1 {
       position:absolute;
@@ -28,8 +28,8 @@
       height: 300px;
       margin: 50px;
       border: 2px solid #F00;
-      -webkit-transform: rotateX(65deg) translateZ(75px) rotateZ(118deg);
-      -webkit-transform-style: preserve-3d;
+      transform: rotateX(65deg) translateZ(75px) rotateZ(118deg);
+      transform-style: preserve-3d;
     }
     #pos2 {
       position:absolute;
@@ -37,15 +37,15 @@
       height: 300px;
       margin: 50px;
       border: 2px solid #0F0;
-      -webkit-transform: rotateX(65deg) translateZ(75px) rotateZ(80deg);
-      -webkit-transform-style: preserve-3d;
+      transform: rotateX(65deg) translateZ(75px) rotateZ(80deg);
+      transform-style: preserve-3d;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
     function setAngle(index)
     {
       var tester = document.getElementById('tester');
-      tester.style.webkitTransform = "rotateX(65deg) translateZ(75px) rotateZ(" + index + "deg)";
+      tester.style.transform = "rotateX(65deg) translateZ(75px) rotateZ(" + index + "deg)";
     }
     
     function runTest()

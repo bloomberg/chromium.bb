@@ -40,11 +40,11 @@
     }
 
     .rotatedUp {
-        -webkit-transform: rotateX(-240deg) translateZ(200px)
+        transform: rotateX(-240deg) translateZ(200px)
     }
 
     .rotatedDown {
-        -webkit-transform: rotateX(-300deg) translateZ(200px)
+        transform: rotateX(-300deg) translateZ(200px)
     }
 
     .green {
@@ -91,7 +91,7 @@
   <div id="backgroundLayer"></div>
 
   <div id="container">
-    <div id="intermediate" class="host" style="-webkit-transform: rotate3d(1, 0, 0, 270deg)">
+    <div id="intermediate" class="host" style="transform: rotate3d(1, 0, 0, 270deg)">
       <div id="topLayer" class="highlightOnHover rotatedUp green box" style=""></div>
       <div id="bottomLayer" class="highlightOnHover rotatedDown green box" style=""></div>
     </div>

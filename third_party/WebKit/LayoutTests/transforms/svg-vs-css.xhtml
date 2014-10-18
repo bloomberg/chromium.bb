@@ -50,9 +50,9 @@
     {
       var matrixDiv = document.getElementById('matrixed');
       
-      var firstMatrix = new WebKitCSSMatrix(document.getElementById('box1').style.webkitTransform);
-      var secondMatrix = new WebKitCSSMatrix(document.getElementById('box2').style.webkitTransform);
-      var thirdMatrix = new WebKitCSSMatrix(document.getElementById('box3').style.webkitTransform);
+      var firstMatrix = new WebKitCSSMatrix(document.getElementById('box1').style.transform);
+      var secondMatrix = new WebKitCSSMatrix(document.getElementById('box2').style.transform);
+      var thirdMatrix = new WebKitCSSMatrix(document.getElementById('box3').style.transform);
       
       var finalMatrix = firstMatrix.multiply(secondMatrix);
       finalMatrix = finalMatrix.multiply(thirdMatrix);
@@ -61,7 +61,7 @@
       // var finalMatrix = thirdMatrix.multiply(secondMatrix);
       // finalMatrix = finalMatrix.multiply(firstMatrix);
 
-      matrixDiv.style.webkitTransform = finalMatrix;
+      matrixDiv.style.transform = finalMatrix;
     }
 
     function doSVG()
@@ -109,9 +109,9 @@
 
     <h2>CSS nested</h2>
     <div class="container">
-      <div id="box1" class="box" style="-webkit-transform: translate(75px, 25px)">
-        <div id="box2" class="box" style="-webkit-transform: scale(2)">
-          <div id="box3" class="final box" style="-webkit-transform: rotate(45deg)">
+      <div id="box1" class="box" style="transform: translate(75px, 25px)">
+        <div id="box2" class="box" style="transform: scale(2)">
+          <div id="box3" class="final box" style="transform: rotate(45deg)">
           </div>
         </div>
       </div>
@@ -130,7 +130,7 @@
 
     <h2>CSS compound</h2>
     <div class="container">
-      <div class="final box" style="-webkit-transform: translate(75px, 25px) scale(2) rotate(45deg)">
+      <div class="final box" style="transform: translate(75px, 25px) scale(2) rotate(45deg)">
       </div>
     </div>
   </div>

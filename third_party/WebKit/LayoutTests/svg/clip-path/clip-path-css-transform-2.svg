@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs>
-<clipPath id="clip" clipPathUnits="userSpaceOnUse" style="-webkit-transform: scale(10) translate(2px, 2px) ">
+<clipPath id="clip" clipPathUnits="userSpaceOnUse" style="transform: scale(10) translate(2px, 2px) ">
   <circle cx="10" cy="10" r="10"/>
 </clipPath>
 </defs>

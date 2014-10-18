@@ -5,7 +5,7 @@
 h1 {
     color: #FF2;
     opacity: .5;
-    -webkit-transform: rotate(1000000000000000065537deg);
+    transform: rotate(1000000000000000065537deg);
 }
 </style>
 
@@ -59,7 +59,7 @@ function test()
 
         function testAlterBigNumber(next)
         {
-            var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("-webkit-transform");
+            var treeElement = InspectorTest.getMatchedStylePropertyTreeItem("transform");
             treeElement.startEditing(treeElement.valueElement);
             var selection = window.getSelection();
             var range = selection.getRangeAt(0);

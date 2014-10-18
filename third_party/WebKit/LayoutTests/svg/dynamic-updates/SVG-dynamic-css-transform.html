@@ -113,25 +113,25 @@ var wrapper = document.getElementById("wrapper");
 
 debug("");
 debug("Transform via style attribute");
-rect1.setAttribute("style", "-webkit-transform: translate(100px, 25px) scale(2) rotate(45deg)");
+rect1.setAttribute("style", "transform: translate(100px, 25px) scale(2) rotate(45deg)");
 
-shouldBeEqualToString("rect1.style.webkitTransform", "translate(100px, 25px) scale(2) rotate(45deg)");
+shouldBeEqualToString("rect1.style.transform", "translate(100px, 25px) scale(2) rotate(45deg)");
 shouldBeEqualToString("dumpMatrix(rect1.getCTM())", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect1.style.webkitTransform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBe("dumpMatrix(new WebKitCSSMatrix(rect1.style.webkitTransform))", "dumpMatrix(rect1.getCTM())");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect1.style.transform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
+shouldBe("dumpMatrix(new WebKitCSSMatrix(rect1.style.transform))", "dumpMatrix(rect1.getCTM())");
 shouldBe("rect1.transform.baseVal.numberOfItems", "0");
 shouldBeNull("rect1.getAttribute('transform')");
 
 
 shouldBeEqualToString("dumpMatrix(rect2.getCTM())", "[0.0 1.0 -1.0 0.0 1000.0 1000.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect2.style.webkitTransform))", "[1.0 0.0 0.0 1.0 0.0 0.0]");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect2.style.transform))", "[1.0 0.0 0.0 1.0 0.0 0.0]");
 
-rect2.setAttribute("style", "-webkit-transform: translate(100px, 25px) scale(2) rotate(45deg)");
+rect2.setAttribute("style", "transform: translate(100px, 25px) scale(2) rotate(45deg)");
 
-shouldBeEqualToString("rect2.style.webkitTransform", "translate(100px, 25px) scale(2) rotate(45deg)");
+shouldBeEqualToString("rect2.style.transform", "translate(100px, 25px) scale(2) rotate(45deg)");
 shouldBeEqualToString("dumpMatrix(rect2.getCTM())", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect2.style.webkitTransform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBe("dumpMatrix(new WebKitCSSMatrix(rect2.style.webkitTransform))", "dumpMatrix(rect2.getCTM())");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect2.style.transform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
+shouldBe("dumpMatrix(new WebKitCSSMatrix(rect2.style.transform))", "dumpMatrix(rect2.getCTM())");
 shouldBe("rect2.transform.baseVal.numberOfItems", "2");
 shouldBeEqualToString("rect2.getAttribute('transform')", "translate(1000, 1000) rotate(90)");
 shouldBeEqualToString("dumpTransform(rect2.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 1000.0 1000.0]");
@@ -139,25 +139,25 @@ shouldBeEqualToString("dumpTransform(rect2.transform.baseVal.getItem(1))", "type
 
 debug("");
 debug("Transform via CSS");
-rect3.style.webkitTransform = "translate(100px, 25px) scale(2) rotate(45deg)";
+rect3.style.transform = "translate(100px, 25px) scale(2) rotate(45deg)";
 
-shouldBeEqualToString("rect3.style.webkitTransform", "translate(100px, 25px) scale(2) rotate(45deg)");
+shouldBeEqualToString("rect3.style.transform", "translate(100px, 25px) scale(2) rotate(45deg)");
 shouldBeEqualToString("dumpMatrix(rect3.getCTM())", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect3.style.webkitTransform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBe("dumpMatrix(new WebKitCSSMatrix(rect3.style.webkitTransform))", "dumpMatrix(rect3.getCTM())");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect3.style.transform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
+shouldBe("dumpMatrix(new WebKitCSSMatrix(rect3.style.transform))", "dumpMatrix(rect3.getCTM())");
 shouldBe("rect3.transform.baseVal.numberOfItems", "0");
 shouldBeNull("rect3.getAttribute('transform')");
 
 
 shouldBeEqualToString("dumpMatrix(rect2.getCTM())", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect2.style.webkitTransform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect2.style.transform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
 
-rect4.style.webkitTransform = "translate(100px, 25px) scale(2) rotate(45deg)";
+rect4.style.transform = "translate(100px, 25px) scale(2) rotate(45deg)";
 
-shouldBeEqualToString("rect4.style.webkitTransform", "translate(100px, 25px) scale(2) rotate(45deg)");
+shouldBeEqualToString("rect4.style.transform", "translate(100px, 25px) scale(2) rotate(45deg)");
 shouldBeEqualToString("dumpMatrix(rect4.getCTM())", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect4.style.webkitTransform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
-shouldBe("dumpMatrix(new WebKitCSSMatrix(rect4.style.webkitTransform))", "dumpMatrix(rect4.getCTM())");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect4.style.transform))", "[1.4 1.4 -1.4 1.4 100.0 25.0]");
+shouldBe("dumpMatrix(new WebKitCSSMatrix(rect4.style.transform))", "dumpMatrix(rect4.getCTM())");
 shouldBe("rect4.transform.baseVal.numberOfItems", "2");
 shouldBeEqualToString("rect4.getAttribute('transform')", "translate(1000, 1000) rotate(90)");
 shouldBeEqualToString("dumpTransform(rect4.transform.baseVal.getItem(0))", "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 1000.0 1000.0]");
@@ -165,11 +165,11 @@ shouldBeEqualToString("dumpTransform(rect4.transform.baseVal.getItem(1))", "type
 
 debug("");
 debug("Transform on wrapper div");
-wrapper.style.webkitTransform = "translate(100px, 25px) scale(2) rotate(45deg)";
-shouldBeEqualToString("rect5.style.webkitTransform", "");
+wrapper.style.transform = "translate(100px, 25px) scale(2) rotate(45deg)";
+shouldBeEqualToString("rect5.style.transform", "");
 shouldBeEqualToString("dumpMatrix(rect5.getCTM())", "[1.0 0.0 0.0 1.0 0.0 0.0]");
-shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect5.style.webkitTransform))", "[1.0 0.0 0.0 1.0 0.0 0.0]");
-shouldBe("dumpMatrix(new WebKitCSSMatrix(rect5.style.webkitTransform))", "dumpMatrix(rect5.getCTM())");
+shouldBeEqualToString("dumpMatrix(new WebKitCSSMatrix(rect5.style.transform))", "[1.0 0.0 0.0 1.0 0.0 0.0]");
+shouldBe("dumpMatrix(new WebKitCSSMatrix(rect5.style.transform))", "dumpMatrix(rect5.getCTM())");
 shouldBe("rect5.transform.baseVal.numberOfItems", "0");
 shouldBeNull("rect5.getAttribute('transform')");
 

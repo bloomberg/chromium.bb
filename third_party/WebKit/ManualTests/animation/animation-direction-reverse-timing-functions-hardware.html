@@ -43,19 +43,19 @@
     }
 
     .expected {
-      -webkit-transform: translateX(100px);    
+      transform: translateX(100px);    
     }
     #normal .expected.delay_six_thirds {
-      -webkit-transform: translateX(200px);
+      transform: translateX(200px);
     }
     #alternate .expected.delay_three_thirds {
-      -webkit-transform: translateX(200px);
+      transform: translateX(200px);
     }
     #reverse .expected.delay_zero, #reverse .expected.delay_three_thirds {
-      -webkit-transform: translateX(200px);
+      transform: translateX(200px);
     }
     #alternate-reverse .expected.delay_zero, #alternate-reverse .expected.delay_six_thirds {
-      -webkit-transform: translateX(200px);
+      transform: translateX(200px);
     }
 
     #normal div {
@@ -72,8 +72,8 @@
     }
     
     @-webkit-keyframes move {
-      from { -webkit-transform: translateX(100px); }
-      to   { -webkit-transform: translateX(200px); }
+      from { transform: translateX(100px); }
+      to   { transform: translateX(200px); }
     }
   </style>
 </head>

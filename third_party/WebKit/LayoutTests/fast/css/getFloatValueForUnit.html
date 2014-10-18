@@ -4,7 +4,7 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
-<div id="test-div" style="font-size: 10pt; -webkit-transform: rotate(100grad); -webkit-animation-delay: 0.2s;"></div>
+<div id="test-div" style="font-size: 10pt; transform: rotate(100grad); -webkit-animation-delay: 0.2s;"></div>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -26,10 +26,10 @@ shouldBe("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_IN)", "0.138889");
 shouldBe("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_PC)", "0.833333");
 shouldBe("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_PX)", "13.333333");
 shouldBe("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_NUMBER)", "13.333333");
-shouldBe("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_DEG)", "90");
-shouldBe("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_RAD)", "1.570796");
-shouldBe("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_GRAD)", "100");
-shouldBe("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_NUMBER)", "90");
+shouldBe("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_DEG)", "90");
+shouldBe("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_RAD)", "1.570796");
+shouldBe("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_GRAD)", "100");
+shouldBe("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_NUMBER)", "90");
 shouldBe("getFloatValue(1, '-webkit-animation-delay', CSSPrimitiveValue.CSS_MS)", "200");
 shouldBe("getFloatValue(1, '-webkit-animation-delay', CSSPrimitiveValue.CSS_S)", "0.2");
 shouldBe("getFloatValue(1, '-webkit-animation-delay', CSSPrimitiveValue.CSS_NUMBER)", "200");
@@ -40,11 +40,11 @@ shouldThrow("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_HZ)");
 shouldThrow("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_DEG)");
 shouldThrow("getFloatValue(0, 'font-size', CSSPrimitiveValue.CSS_RGBCOLOR)");
 
-shouldThrow("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_PERCENTAGE)");
-shouldThrow("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_PX)");
-shouldThrow("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_MS)");
-shouldThrow("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_HZ)");
-shouldThrow("getFloatValue(2, '-webkit-transform', CSSPrimitiveValue.CSS_RGBCOLOR)");
+shouldThrow("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_PERCENTAGE)");
+shouldThrow("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_PX)");
+shouldThrow("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_MS)");
+shouldThrow("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_HZ)");
+shouldThrow("getFloatValue(2, 'transform', CSSPrimitiveValue.CSS_RGBCOLOR)");
 
 shouldThrow("getFloatValue(1, '-webkit-animation-delay', CSSPrimitiveValue.CSS_PERCENTAGE)");
 shouldThrow("getFloatValue(1, '-webkit-animation-delay', CSSPrimitiveValue.CSS_PX)");

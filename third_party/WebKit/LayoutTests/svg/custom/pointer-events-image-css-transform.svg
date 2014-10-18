@@ -55,7 +55,7 @@
               img.setAttribute('fill', fillValues[fi]);
               img.setAttribute('stroke', strokeValues[si]);
               img.setAttribute('pointer-events', pointerEventsValues[pi]);
-              img.setAttribute('style', "-webkit-transform: scale(2)");
+              img.setAttribute('style', "transform: scale(2)");
               img.setAttribute('onclick', 'clickHit(evt, "' + identString + '")');
               
               testContent.appendChild(img);

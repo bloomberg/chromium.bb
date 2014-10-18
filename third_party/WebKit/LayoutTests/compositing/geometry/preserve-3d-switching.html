@@ -24,7 +24,7 @@
       background-color: yellow;
       opacity: 0.8;
       -webkit-transform-style: preserve-3d;
-      -webkit-transform: rotateX(-60deg) rotateY(40deg);
+      transform: rotateX(-60deg) rotateY(40deg);
     }
     
     #parent > div {
@@ -42,7 +42,7 @@
     #parent > :first-child {
       background-color: green;
       opacity:0.7;
-      -webkit-transform: translateZ(50px) rotateY(-40deg);
+      transform: translateZ(50px) rotateY(-40deg);
     }
   </style>
   <script type="text/javascript" charset="utf-8">
@@ -75,7 +75,7 @@
   <p>The green box appear angled out from the yellow box and embedded in it.</p>
   <div id="container">
     <div id="parent">
-      <div>-webkit-transform: translateZ(-100px) rotateY(45deg);</div>
+      <div>transform: translateZ(-100px) rotateY(45deg);</div>
     </div>
     <div id="layerTree"></div>
   </div>

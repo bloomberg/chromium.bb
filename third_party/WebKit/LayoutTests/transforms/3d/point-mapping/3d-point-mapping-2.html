@@ -89,7 +89,7 @@
       background-color: blue;
       height: 90px;
       width: 90px;
-      -webkit-transform: rotateY(30deg);
+      transform: rotateY(30deg);
     }
     
     #results {
@@ -114,7 +114,7 @@
 <div class="test">
   <!-- preserve-3d element with no transform-->
   <div class="container box" id="box1">
-    <div class="transformed-3d box" style="-webkit-transform: rotateY(-30deg);" id="box2">
+    <div class="transformed-3d box" style="transform: rotateY(-30deg);" id="box2">
       <div class="transformed-3d box" id="box3">
         <div class="inner box" id="box4">
         </div>
@@ -126,7 +126,7 @@
 <div class="test">
   <!-- layer with no transform-->
   <div class="container box" id="box5">
-    <div class="transformed-3d box" style="-webkit-transform: rotateY(-30deg);" id="box6">
+    <div class="transformed-3d box" style="transform: rotateY(-30deg);" id="box6">
       <div class="box" style="position: relative; padding-left: 20px" id="box7">
         <div class="inner box" id="box8">
         </div>
@@ -138,7 +138,7 @@
 <div class="test">
   <!-- non-layer with no transform-->
   <div class="container box" id="box9">
-    <div class="transformed-3d box" style="-webkit-transform: rotateY(-30deg);" id="box10">
+    <div class="transformed-3d box" style="transform: rotateY(-30deg);" id="box10">
       <div class="box" style="padding-left: 20px" id="box11">
         <div class="inner box" id="box12">
         </div>

@@ -35,7 +35,7 @@ function test()
 </script>
 
 <body onload="runTestAfterDisplay()">
-<p style="-webkit-transform: translateZ(10px)"> <!-- Force compositing so we have SetLayerTreeHostId event as well -->
+<p style="transform: translateZ(10px)"> <!-- Force compositing so we have SetLayerTreeHostId event as well -->
 Tests that Tracing agent returns a session id upon a start that is matching one issued in trace events.
 </p>
 </body>
