@@ -755,7 +755,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const T
 
 static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(RenderObject* renderer, const RenderStyle& style)
 {
-    if (!renderer || !renderer->hasTransform() || !style.hasTransform())
+    if (!renderer || !renderer->hasTransformRelatedProperty() || !style.hasTransform())
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     IntRect box;

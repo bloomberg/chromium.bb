@@ -320,7 +320,7 @@ void RenderLayer::updateTransform(const RenderStyle* oldStyle, RenderStyle* newS
 
     // hasTransform() on the renderer is also true when there is transform-style: preserve-3d or perspective set,
     // so check style too.
-    bool hasTransform = renderer()->hasTransform() && newStyle->hasTransform();
+    bool hasTransform = renderer()->hasTransformRelatedProperty() && newStyle->hasTransform();
     bool had3DTransform = has3DTransform();
 
     bool hadTransform = m_transform;
@@ -496,7 +496,7 @@ void RenderLayer::updatePagination()
             // paint the transform multiple times in each column, so we don't have to use
             // fragments for the transformed content.
             m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
-            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransform())
+            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
                 m_enclosingPaginationLayer = 0;
         } else {
             m_isPaginated = parent()->renderer()->hasColumns();
@@ -517,7 +517,7 @@ void RenderLayer::updatePagination()
                 // paint the transform multiple times in each column, so we don't have to use
                 // fragments for the transformed content.
                 m_enclosingPaginationLayer = containingBlock->layer()->enclosingPaginationLayer();
-                if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransform())
+                if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
                     m_enclosingPaginationLayer = 0;
                 return;
             }
@@ -869,7 +869,7 @@ const LayoutSize RenderLayer::offsetForInFlowPosition() const
 
 TransformationMatrix RenderLayer::perspectiveTransform() const
 {
-    if (!renderer()->hasTransform())
+    if (!renderer()->hasTransformRelatedProperty())
         return TransformationMatrix();
 
     RenderStyle* style = renderer()->style();
@@ -899,7 +899,7 @@ TransformationMatrix RenderLayer::perspectiveTransform() const
 
 FloatPoint RenderLayer::perspectiveOrigin() const
 {
-    if (!renderer()->hasTransform())
+    if (!renderer()->hasTransformRelatedProperty())
         return FloatPoint();
 
     const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
@@ -910,7 +910,7 @@ FloatPoint RenderLayer::perspectiveOrigin() const
 
 static inline bool isFixedPositionedContainer(RenderLayer* layer)
 {
-    return layer->isRootLayer() || layer->hasTransform();
+    return layer->isRootLayer() || layer->hasTransformRelatedProperty();
 }
 
 RenderLayer* RenderLayer::enclosingPositionedAncestor() const
@@ -925,7 +925,7 @@ RenderLayer* RenderLayer::enclosingPositionedAncestor() const
 RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 {
     RenderLayer* curr = parent();
-    while (curr && !curr->isRootLayer() && !curr->renderer()->hasTransform())
+    while (curr && !curr->isRootLayer() && !curr->renderer()->hasTransformRelatedProperty())
         curr = curr->parent();
 
     return curr;
@@ -1125,7 +1125,7 @@ LayoutRect RenderLayer::transparencyClipBox(const RenderLayer* layer, const Rend
     // would be better to respect clips.
 
     if (rootLayer != layer && ((transparencyBehavior == PaintingTransparencyClipBox && layer->paintsWithTransform(paintBehavior))
-        || (transparencyBehavior == HitTestingTransparencyClipBox && layer->hasTransform()))) {
+        || (transparencyBehavior == HitTestingTransparencyClipBox && layer->hasTransformRelatedProperty()))) {
         // The best we can do here is to use enclosed bounding boxes to establish a "fuzzy" enough clip to encompass
         // the transformed layer and all of its children.
         const RenderLayer* paginationLayer = transparencyMode == DescendantsOfTransparencyClipBox ? layer->enclosingPaginationLayer() : 0;
@@ -1473,7 +1473,7 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
     ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy, ShouldRespectOverflowClip respectOverflowClip, const LayoutPoint* offsetFromRoot,
     const LayoutSize& subPixelAccumulation, const LayoutRect* layerBoundingBox)
 {
-    if (!enclosingPaginationLayer() || hasTransform()) {
+    if (!enclosingPaginationLayer() || hasTransformRelatedProperty()) {
         // For unpaginated layers, there is only one fragment.
         LayerFragment fragment;
         ClipRectsContext clipRectsContext(rootLayer, clipRectsCacheSlot, inOverlayScrollbarSizeRelevancy, subPixelAccumulation);

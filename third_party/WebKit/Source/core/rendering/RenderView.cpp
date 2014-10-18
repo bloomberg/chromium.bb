@@ -741,7 +741,7 @@ LayoutRect RenderView::backgroundRect(RenderBox* backgroundRenderer) const
 IntRect RenderView::documentRect() const
 {
     FloatRect overflowRect(unscaledDocumentRect());
-    if (hasTransform())
+    if (hasTransformRelatedProperty())
         overflowRect = layer()->currentTransform().mapRect(overflowRect);
     return IntRect(overflowRect);
 }

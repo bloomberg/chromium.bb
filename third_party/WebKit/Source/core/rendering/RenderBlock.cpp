@@ -1820,7 +1820,7 @@ bool RenderBlock::isSelectionRoot() const
     if (isBody() || isDocumentElement() || hasOverflowClip()
         || isPositioned() || isFloating()
         || isTableCell() || isInlineBlockOrInlineTable()
-        || hasTransform() || hasReflection() || hasMask() || isWritingModeRoot()
+        || hasTransformRelatedProperty() || hasReflection() || hasMask() || isWritingModeRoot()
         || isRenderFlowThread() || isFlexItemIncludingDeprecated())
         return true;
 
@@ -1911,7 +1911,7 @@ GapRects RenderBlock::selectionGaps(const RenderBlock* rootBlock, const LayoutPo
     if (!isRenderBlockFlow()) // FIXME: Make multi-column selection gap filling work someday.
         return result;
 
-    if (hasColumns() || hasTransform() || style()->columnSpan()) {
+    if (hasColumns() || hasTransformRelatedProperty() || style()->columnSpan()) {
         // FIXME: We should learn how to gap fill multiple columns and transforms eventually.
         lastLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalHeight();
         lastLogicalLeft = logicalLeftSelectionOffset(rootBlock, logicalHeight());

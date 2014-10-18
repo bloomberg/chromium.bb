@@ -103,7 +103,7 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
         reasons |= CompositingReasonFilterWithCompositedDescendants;
 
     // See RenderLayer::updateTransform for an explanation of why we check both.
-    if (renderer->hasTransform() && style->hasTransform())
+    if (renderer->hasTransformRelatedProperty() && style->hasTransform())
         reasons |= CompositingReasonTransformWithCompositedDescendants;
 
     if (renderer->isTransparent())
@@ -123,7 +123,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(RenderObject* rend
 {
     // Note that we ask the renderer if it has a transform, because the style may have transforms,
     // but the renderer may be an inline that doesn't suppport them.
-    return renderer->hasTransform() && renderer->style()->transform().has3DOperation();
+    return renderer->hasTransformRelatedProperty() && renderer->style()->transform().has3DOperation();
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const RenderLayer* layer) const

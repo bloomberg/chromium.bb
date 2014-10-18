@@ -104,7 +104,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
 
 void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    bool hadTransform = hasTransform();
+    bool hadTransform = hasTransformRelatedProperty();
     bool hadLayer = hasLayer();
     bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
 
@@ -123,7 +123,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
             }
         }
     } else if (layer() && layer()->parent()) {
-        setHasTransform(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
+        setHasTransformRelatedProperty(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
         setHasReflection(false);
         layer()->removeOnlyThisLayer(); // calls destroyLayer() which clears m_layer
         if (s_wasFloating && isFloating())

@@ -2097,7 +2097,7 @@ LayoutSize RenderObject::offsetFromAncestorContainer(const RenderObject* contain
         ASSERT(nextContainer);  // This means we reached the top without finding container.
         if (!nextContainer)
             break;
-        ASSERT(!currContainer->hasTransform());
+        ASSERT(!currContainer->hasTransformRelatedProperty());
         LayoutSize currentOffset = currContainer->offsetFromContainer(nextContainer, referencePoint);
         offset += currentOffset;
         referencePoint.move(currentOffset);

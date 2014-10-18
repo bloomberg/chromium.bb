@@ -584,7 +584,7 @@ public:
     bool hasOverflowClip() const { return m_bitfields.hasOverflowClip(); }
     bool hasClipOrOverflowClip() const { return hasClip() || hasOverflowClip(); }
 
-    bool hasTransform() const { return m_bitfields.hasTransform(); }
+    bool hasTransformRelatedProperty() const { return m_bitfields.hasTransformRelatedProperty(); }
     bool hasMask() const { return style() && style()->hasMask(); }
     bool hasClipPath() const { return style() && style()->clipPath(); }
     bool hasHiddenBackface() const { return style() && style()->backfaceVisibility() == BackfaceVisibilityHidden; }
@@ -681,7 +681,7 @@ public:
     void setHorizontalWritingMode(bool hasHorizontalWritingMode) { m_bitfields.setHorizontalWritingMode(hasHorizontalWritingMode); }
     void setHasOverflowClip(bool hasOverflowClip) { m_bitfields.setHasOverflowClip(hasOverflowClip); }
     void setHasLayer(bool hasLayer) { m_bitfields.setHasLayer(hasLayer); }
-    void setHasTransform(bool hasTransform) { m_bitfields.setHasTransform(hasTransform); }
+    void setHasTransformRelatedProperty(bool hasTransform) { m_bitfields.setHasTransformRelatedProperty(hasTransform); }
     void setHasReflection(bool hasReflection) { m_bitfields.setHasReflection(hasReflection); }
 
     void scheduleRelayout();
@@ -741,7 +741,7 @@ public:
 
     bool canContainFixedPositionObjects() const
     {
-        return isRenderView() || (hasTransform() && isRenderBlock()) || isSVGForeignObject();
+        return isRenderView() || (hasTransformRelatedProperty() && isRenderBlock()) || isSVGForeignObject();
     }
 
     // Convert the given local point to absolute coordinates
@@ -1044,7 +1044,7 @@ public:
         return layoutDidGetCalledSinceLastFrame() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
     }
 
-    bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransform() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
+    bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     void setNeedsOverflowRecalcAfterStyleChange();
     void markContainingBlocksForOverflowRecalc();
@@ -1276,7 +1276,7 @@ private:
             , m_isDragging(false)
             , m_hasLayer(false)
             , m_hasOverflowClip(false)
-            , m_hasTransform(false)
+            , m_hasTransformRelatedProperty(false)
             , m_hasReflection(false)
             , m_hasCounterNodeMap(false)
             , m_everHadLayout(false)
@@ -1319,7 +1319,7 @@ private:
 
         ADD_BOOLEAN_BITFIELD(hasLayer, HasLayer);
         ADD_BOOLEAN_BITFIELD(hasOverflowClip, HasOverflowClip); // Set in the case of overflow:auto/scroll/hidden
-        ADD_BOOLEAN_BITFIELD(hasTransform, HasTransform);
+        ADD_BOOLEAN_BITFIELD(hasTransformRelatedProperty, HasTransformRelatedProperty);
         ADD_BOOLEAN_BITFIELD(hasReflection, HasReflection);
 
         ADD_BOOLEAN_BITFIELD(hasCounterNodeMap, HasCounterNodeMap);

@@ -108,7 +108,7 @@ private:
 
     virtual LayerType layerTypeRequired() const override
     {
-        if (hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations())
+        if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations())
             return NormalLayer;
 
         if (hasOverflowClip())

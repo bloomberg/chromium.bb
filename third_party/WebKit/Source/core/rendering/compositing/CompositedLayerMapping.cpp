@@ -263,7 +263,7 @@ void CompositedLayerMapping::updateTransform(const RenderStyle* style)
     // FIXME: This could use m_owningLayer.transform(), but that currently has transform-origin
     // baked into it, and we don't want that.
     TransformationMatrix t;
-    if (m_owningLayer.hasTransform()) {
+    if (m_owningLayer.hasTransformRelatedProperty()) {
         style->applyTransform(t, toRenderBox(renderer())->pixelSnappedBorderBoxRect().size(), RenderStyle::ExcludeTransformOrigin);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
@@ -848,7 +848,7 @@ void CompositedLayerMapping::updateMaskLayerGeometry()
 
 void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds)
 {
-    if (m_owningLayer.hasTransform()) {
+    if (m_owningLayer.hasTransformRelatedProperty()) {
         const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
 
         // Get layout bounds in the coords of compositingContainer to match relativeCompositingBounds.
@@ -1009,7 +1009,7 @@ void CompositedLayerMapping::registerScrollingLayers()
     // Page scale is applied as a transform on the root render view layer. Because the scroll
     // layer is further up in the hierarchy, we need to avoid marking the root render view
     // layer as a container.
-    bool isContainer = m_owningLayer.hasTransform() && !m_owningLayer.isRootLayer();
+    bool isContainer = m_owningLayer.hasTransformRelatedProperty() && !m_owningLayer.isRootLayer();
     // FIXME: we should make certain that childForSuperLayers will never be the m_squashingContainmentLayer here
     scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(childForSuperlayers(), isContainer);
 }

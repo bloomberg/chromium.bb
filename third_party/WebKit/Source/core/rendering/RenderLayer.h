@@ -210,7 +210,7 @@ public:
     bool canUseConvertToLayerCoords() const
     {
         // These RenderObjects have an impact on their layers without the renderers knowing about it.
-        return !renderer()->hasColumns() && !renderer()->hasTransform() && !renderer()->isSVGRoot();
+        return !renderer()->hasColumns() && !renderer()->hasTransformRelatedProperty() && !renderer()->isSVGRoot();
     }
 
     void convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutPoint&) const;
@@ -249,7 +249,7 @@ public:
     LayoutSize subpixelAccumulation() const;
     void setSubpixelAccumulation(const LayoutSize&);
 
-    bool hasTransform() const { return renderer()->hasTransform(); }
+    bool hasTransformRelatedProperty() const { return renderer()->hasTransformRelatedProperty(); }
     // Note that this transform has the transform-origin baked in.
     TransformationMatrix* transform() const { return m_transform.get(); }
     void setTransform(PassOwnPtr<TransformationMatrix> transform) { m_transform = transform; }
@@ -380,7 +380,7 @@ public:
         // RenderObject::canContainFixedPositionedObject() should probably be used
         // instead.
         RenderLayerModelObject* layerRenderer = renderer();
-        return isRootLayer() || layerRenderer->isPositioned() || hasTransform();
+        return isRootLayer() || layerRenderer->isPositioned() || hasTransformRelatedProperty();
     }
 
     bool scrollsOverflow() const;

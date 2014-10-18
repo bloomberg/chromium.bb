@@ -290,7 +290,7 @@ void RenderBox::updateFromStyle()
 
     setHasOverflowClip(boxHasOverflowClip);
 
-    setHasTransform(styleToUse->hasTransformRelatedProperty());
+    setHasTransformRelatedProperty(styleToUse->hasTransformRelatedProperty());
     setHasReflection(styleToUse->boxReflect());
 }
 
@@ -1157,7 +1157,7 @@ static bool isCandidateForOpaquenessTest(RenderBox* childBox)
         // FIXME: Deal with z-index.
         if (!childStyle->hasAutoZIndex())
             return false;
-        if (childLayer->hasTransform() || childLayer->isTransparent() || childLayer->hasFilter())
+        if (childLayer->hasTransformRelatedProperty() || childLayer->isTransparent() || childLayer->hasFilter())
             return false;
         if (childBox->hasOverflowClip() && childStyle->hasBorderRadius())
             return false;
