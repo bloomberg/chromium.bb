@@ -127,7 +127,6 @@ public:
     virtual void setDefaultTextEncodingName(const WebString&) = 0;
     virtual void setDefaultVideoPosterURL(const WebString&) = 0;
     void setDeferred2dCanvasEnabled(bool) { } // temporary stub
-    virtual void setDeferredFiltersEnabled(bool) = 0;
     virtual void setDeferredImageDecodingEnabled(bool) = 0;
     virtual void setDeviceScaleAdjustment(float) = 0;
     virtual void setDeviceSupportsMouse(bool) = 0;
