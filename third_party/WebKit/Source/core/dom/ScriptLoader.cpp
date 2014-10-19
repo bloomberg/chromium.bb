@@ -75,7 +75,7 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
 
 ScriptLoader::~ScriptLoader()
 {
-    m_pendingScript.stopWatchingForLoad(this);
+    stopLoadRequest();
 }
 
 void ScriptLoader::didNotifySubtreeInsertionsToDocument()
@@ -235,15 +235,11 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_willExecuteInOrder = true;
-        m_pendingScript = PendingScript(m_element, m_resource.get());
-        contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::IN_ORDER_EXECUTION);
-        // Note that watchForLoad can immediately call notifyFinished.
-        m_pendingScript.watchForLoad(this);
+        contextDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::IN_ORDER_EXECUTION);
+        m_resource->addClient(this);
     } else if (client->hasSourceAttribute()) {
-        m_pendingScript = PendingScript(m_element, m_resource.get());
-        contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::ASYNC_EXECUTION);
-        // Note that watchForLoad can immediately call notifyFinished.
-        m_pendingScript.watchForLoad(this);
+        contextDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::ASYNC_EXECUTION);
+        m_resource->addClient(this);
     } else {
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
@@ -360,20 +356,26 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     }
 }
 
-void ScriptLoader::execute()
+void ScriptLoader::stopLoadRequest()
+{
+    if (m_resource) {
+        if (!m_willBeParserExecuted)
+            m_resource->removeClient(this);
+        m_resource = 0;
+    }
+}
+
+void ScriptLoader::execute(ScriptResource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
-    ASSERT(m_pendingScript.resource());
-    bool errorOccurred = false;
-    ScriptSourceCode source = m_pendingScript.getSource(KURL(), errorOccurred);
-    RefPtr<Element> element = m_pendingScript.releaseElementAndClear();
-    if (errorOccurred) {
+    ASSERT(resource);
+    if (resource->errorOccurred()) {
         dispatchErrorEvent();
-    } else if (!m_resource->wasCanceled()) {
-        executeScript(source);
+    } else if (!resource->wasCanceled()) {
+        executeScript(ScriptSourceCode(resource));
         dispatchLoadEvent();
     }
-    m_resource = 0;
+    resource->removeClient(this);
 }
 
 void ScriptLoader::notifyFinished(Resource* resource)
@@ -385,8 +387,13 @@ void ScriptLoader::notifyFinished(Resource* resource)
     if (!contextDocument)
         return;
 
+    // Resource possibly invokes this notifyFinished() more than
+    // once because ScriptLoader doesn't unsubscribe itself from
+    // Resource here and does it in execute() instead.
+    // We use m_resource to check if this function is already called.
     ASSERT_UNUSED(resource, resource == m_resource);
-
+    if (!m_resource)
+        return;
     if (m_resource->errorOccurred()) {
         dispatchErrorEvent();
         contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
@@ -397,7 +404,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
     else
         contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
 
-    m_pendingScript.stopWatchingForLoad(this);
+    m_resource = 0;
 }
 
 bool ScriptLoader::ignoresLoadRequest() const

@@ -66,8 +66,8 @@ public:
     void addClient(ScriptResourceClient* client)
     {
         ASSERT(!m_client);
+        ASSERT(!isFinished());
         m_client = client;
-        notifyFinishedToClient();
     }
 
     void removeClient(ScriptResourceClient* client)

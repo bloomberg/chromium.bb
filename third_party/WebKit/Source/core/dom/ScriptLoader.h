@@ -21,7 +21,6 @@
 #ifndef ScriptLoader_h
 #define ScriptLoader_h
 
-#include "core/dom/PendingScript.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
@@ -49,7 +48,7 @@ public:
     String scriptCharset() const { return m_characterEncoding; }
     String scriptContent() const;
     void executeScript(const ScriptSourceCode&, double* compilationFinishTime = 0);
-    void execute();
+    void execute(ScriptResource*);
 
     // XML parser calls these
     void dispatchLoadEvent();
@@ -73,8 +72,6 @@ public:
     void handleSourceAttribute(const String& sourceUrl);
     void handleAsyncAttribute();
 
-    bool isReady() const { return m_pendingScript.isReady(); }
-
 private:
     ScriptLoader(Element*, bool createdByParser, bool isEvaluated);
 
@@ -82,6 +79,7 @@ private:
     bool isScriptForEventSupported() const;
 
     bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
+    void stopLoadRequest();
 
     ScriptLoaderClient* client() const;
 
@@ -103,8 +101,6 @@ private:
     bool m_willExecuteInOrder : 1;
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;
-
-    PendingScript m_pendingScript;
 };
 
 ScriptLoader* toScriptLoaderIfPossible(Element*);
