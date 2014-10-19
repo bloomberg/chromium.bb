@@ -312,11 +312,11 @@ void LinkHighlight::clearGraphicsLayerLinkHighlightPointer()
     }
 }
 
-void LinkHighlight::notifyAnimationStarted(double, WebCompositorAnimation::TargetProperty)
+void LinkHighlight::notifyAnimationStarted(double, int)
 {
 }
 
-void LinkHighlight::notifyAnimationFinished(double, WebCompositorAnimation::TargetProperty)
+void LinkHighlight::notifyAnimationFinished(double, int)
 {
     // Since WebViewImpl may hang on to us for a while, make sure we
     // release resources as soon as possible.

@@ -236,8 +236,8 @@ public:
     virtual void paint(GraphicsContext&, const IntRect& clip) override;
 
     // WebCompositorAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, WebCompositorAnimation::TargetProperty) override;
-    virtual void notifyAnimationFinished(double monotonicTime, WebCompositorAnimation::TargetProperty) override;
+    virtual void notifyAnimationStarted(double monotonicTime, int group) override;
+    virtual void notifyAnimationFinished(double monotonicTime, int group) override;
 
     // WebLayerScrollClient implementation.
     virtual void didScroll() override;

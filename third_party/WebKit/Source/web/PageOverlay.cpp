@@ -71,8 +71,6 @@ public:
 
     virtual ~OverlayGraphicsLayerClientImpl() { }
 
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) override { }
-
     virtual void paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
     {
         gc.save();

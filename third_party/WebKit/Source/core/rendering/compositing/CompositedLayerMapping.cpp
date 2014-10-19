@@ -2268,7 +2268,7 @@ void CompositedLayerMapping::verifyNotPainting()
 }
 #endif
 
-void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime)
+void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int)
 {
     renderer()->node()->document().compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
 }

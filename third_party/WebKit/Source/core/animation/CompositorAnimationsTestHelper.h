@@ -75,6 +75,7 @@ public:
     virtual WebCompositorAnimation::TargetProperty targetProperty() const { return m_property; };
 
     MOCK_METHOD0(id, int());
+    MOCK_METHOD0(group, int());
 
     MOCK_CONST_METHOD0(iterations, double());
     MOCK_METHOD1(setIterations, void(double));
@@ -128,7 +129,7 @@ public:
 
     class WebCompositorSupportMock : public WebCompositorSupport {
     public:
-        MOCK_METHOD3(createAnimation, WebCompositorAnimation*(const WebCompositorAnimationCurve& curve, WebCompositorAnimation::TargetProperty target, int animationId));
+        MOCK_METHOD4(createAnimation, WebCompositorAnimation*(const WebCompositorAnimationCurve& curve, WebCompositorAnimation::TargetProperty target, int groupId, int animationId));
         MOCK_METHOD0(createFloatAnimationCurve, WebFloatAnimationCurve*());
     };
 

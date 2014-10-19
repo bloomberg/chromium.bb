@@ -160,7 +160,6 @@ private:
     virtual GraphicsLayer* layerForVerticalScrollbar() const override;
 
     // GraphicsLayerClient implementation.
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) override;
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
     virtual String debugName(const GraphicsLayer*) override;
 

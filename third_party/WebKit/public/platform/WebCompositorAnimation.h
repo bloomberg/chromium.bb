@@ -37,6 +37,7 @@ public:
 
     // An id is effectively the animation's name, and it is not unique.
     virtual int id() = 0;
+    virtual int group() = 0;
 
     virtual TargetProperty targetProperty() const = 0;
 

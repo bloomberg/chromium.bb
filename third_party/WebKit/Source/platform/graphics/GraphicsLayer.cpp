@@ -1043,15 +1043,14 @@ void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
 }
 
 
-void GraphicsLayer::notifyAnimationStarted(double monotonicTime, WebCompositorAnimation::TargetProperty)
+void GraphicsLayer::notifyAnimationStarted(double monotonicTime, int group)
 {
     if (m_client)
-        m_client->notifyAnimationStarted(this, monotonicTime);
+        m_client->notifyAnimationStarted(this, monotonicTime, group);
 }
 
-void GraphicsLayer::notifyAnimationFinished(double, WebCompositorAnimation::TargetProperty)
+void GraphicsLayer::notifyAnimationFinished(double, int)
 {
-    // Do nothing.
 }
 
 void GraphicsLayer::didScroll()

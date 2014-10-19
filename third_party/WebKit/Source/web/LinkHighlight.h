@@ -61,8 +61,8 @@ public:
     virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus) override;
 
     // WebCompositorAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) override;
-    virtual void notifyAnimationFinished(double monotonicTime, blink::WebCompositorAnimation::TargetProperty) override;
+    virtual void notifyAnimationStarted(double monotonicTime, int group) override;
+    virtual void notifyAnimationFinished(double monotonicTime, int group) override;
 
     // LinkHighlightClient inplementation.
     virtual void invalidate() override;

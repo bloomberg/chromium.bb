@@ -152,7 +152,7 @@ public:
     void updateShouldFlattenTransform();
 
     // GraphicsLayerClient interface
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) override;
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) override;
     virtual bool isTrackingPaintInvalidations() const override;
 

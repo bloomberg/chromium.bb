@@ -178,7 +178,6 @@ private:
 #endif
 
     // GraphicsLayerClient implementation
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double) override { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) override;
 
     virtual bool isTrackingPaintInvalidations() const override;

@@ -8,7 +8,7 @@
 #include "WebCommon.h"
 #include "WebCompositorAnimation.h"
 
-#define WEB_ANIMATION_DELEGATE_TAKES_MONOTONIC_TIME 1
+#define WEB_COMPOSITOR_ANIMATION_DELEGATE_TAKES_GROUP 1
 
 namespace blink {
 
@@ -16,8 +16,8 @@ class BLINK_PLATFORM_EXPORT WebCompositorAnimationDelegate {
 public:
     virtual ~WebCompositorAnimationDelegate() { }
 
-    virtual void notifyAnimationStarted(double monotonicTime, WebCompositorAnimation::TargetProperty) = 0;
-    virtual void notifyAnimationFinished(double monotonicTime, WebCompositorAnimation::TargetProperty) = 0;
+    virtual void notifyAnimationStarted(double monotonicTime, int group) = 0;
+    virtual void notifyAnimationFinished(double monotonicTime, int group) = 0;
 };
 
 } // namespace blink

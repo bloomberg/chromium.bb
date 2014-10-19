@@ -26,6 +26,8 @@
 #ifndef WebCompositorSupport_h
 #define WebCompositorSupport_h
 
+#define WEB_COMPOSITOR_SUPPORT_CREATE_ANIMATION_SUPPORTS_GROUP 1
+
 #include "WebCommon.h"
 #include "WebCompositorAnimation.h"
 #include "WebCompositorAnimationCurve.h"
@@ -82,7 +84,7 @@ public:
 
     // Animation ----------------------------------------------------
 
-    virtual WebCompositorAnimation* createAnimation(const WebCompositorAnimationCurve&, WebCompositorAnimation::TargetProperty, int animationId = 0) { return 0; }
+    virtual WebCompositorAnimation* createAnimation(const WebCompositorAnimationCurve&, WebCompositorAnimation::TargetProperty, int groupId = 0, int animationId = 0) { return 0; }
 
     virtual WebFilterAnimationCurve* createFilterAnimationCurve() { return 0; }
 

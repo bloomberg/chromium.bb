@@ -37,7 +37,6 @@ namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
 public:
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) override { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override { }
     virtual String debugName(const GraphicsLayer*) override { return String(); }
 };

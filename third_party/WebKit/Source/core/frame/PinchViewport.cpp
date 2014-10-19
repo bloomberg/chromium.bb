@@ -467,10 +467,6 @@ GraphicsLayer* PinchViewport::layerForVerticalScrollbar() const
     return m_overlayScrollbarVertical.get();
 }
 
-void PinchViewport::notifyAnimationStarted(const GraphicsLayer*, double monotonicTime)
-{
-}
-
 void PinchViewport::paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip)
 {
 }
