@@ -69,10 +69,9 @@ private:
     void addPendingAsyncScript(ScriptLoader*);
 
     RawPtrWillBeMember<Document> m_document;
-    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > m_scriptsToExecuteInOrder;
-    // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > m_scriptsToExecuteSoon;
-    WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader> > m_pendingAsyncScripts;
+    Vector<ScriptLoader*> m_scriptsToExecuteInOrder;
+    Vector<ScriptLoader*> m_scriptsToExecuteSoon; // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
+    HashSet<ScriptLoader*> m_pendingAsyncScripts;
     Timer<ScriptRunner> m_timer;
 };
 

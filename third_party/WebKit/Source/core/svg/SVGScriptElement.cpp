@@ -178,10 +178,4 @@ bool SVGScriptElement::isAnimatableAttribute(const QualifiedName& name) const
 }
 #endif
 
-void SVGScriptElement::trace(Visitor* visitor)
-{
-    visitor->trace(m_loader);
-    SVGElement::trace(visitor);
 }
-
-} // namespace blink

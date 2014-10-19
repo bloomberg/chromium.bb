@@ -36,15 +36,10 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader final : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
+class ScriptLoader final : private ScriptResourceClient {
 public:
-    static PassOwnPtrWillBeRawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
-    {
-        return adoptPtrWillBeNoop(new ScriptLoader(element, createdByParser, isEvaluated));
-    }
-
+    static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptLoader();
-    virtual void trace(Visitor*);
 
     Element* element() const { return m_element; }
 
@@ -93,14 +88,10 @@ private:
     // ResourceClient
     virtual void notifyFinished(Resource*) override;
 
-    RawPtrWillBeMember<Element> m_element;
+    // FIXME: Oilpan: This should become a Member once ResourceClient is moved to the heap.
+    Element* m_element;
     ResourcePtr<ScriptResource> m_resource;
     WTF::OrdinalNumber m_startLineNumber;
-    String m_characterEncoding;
-    String m_fallbackCharacterEncoding;
-
-    PendingScript m_pendingScript;
-
     bool m_parserInserted : 1;
     bool m_isExternalScript : 1;
     bool m_alreadyStarted : 1;
@@ -110,10 +101,20 @@ private:
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
     bool m_willExecuteInOrder : 1;
+    String m_characterEncoding;
+    String m_fallbackCharacterEncoding;
+
+    PendingScript m_pendingScript;
 };
 
 ScriptLoader* toScriptLoaderIfPossible(Element*);
 
-} // namespace blink
+inline PassOwnPtr<ScriptLoader> ScriptLoader::create(Element* element, bool createdByParser, bool isEvaluated)
+{
+    return adoptPtr(new ScriptLoader(element, createdByParser, isEvaluated));
+}
 
-#endif // ScriptLoader_h
+}
+
+
+#endif

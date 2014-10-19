@@ -46,8 +46,6 @@ public:
     virtual bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
 
-    virtual void trace(Visitor*) override;
-
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
     virtual ~SVGScriptElement();
@@ -82,8 +80,9 @@ private:
 
     virtual Timer<SVGElement>* svgLoadEventTimer() override { return &m_svgLoadEventTimer; }
 
+
     Timer<SVGElement> m_svgLoadEventTimer;
-    OwnPtrWillBeMember<ScriptLoader> m_loader;
+    OwnPtr<ScriptLoader> m_loader;
 };
 
 } // namespace blink
