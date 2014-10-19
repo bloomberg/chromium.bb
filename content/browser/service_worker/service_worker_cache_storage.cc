@@ -22,7 +22,6 @@
 
 namespace content {
 
-const char ServiceWorkerCacheStorage::kIndexFileName[] = "index.txt";
 
 // Handles the loading and clean up of ServiceWorkerCache objects. The
 // callback of every public method is guaranteed to be called.
@@ -36,14 +35,10 @@ class ServiceWorkerCacheStorage::CacheLoader {
 
   CacheLoader(base::SequencedTaskRunner* cache_task_runner,
               net::URLRequestContext* request_context,
-              base::WeakPtr<storage::BlobStorageContext> blob_context,
-              const GURL& origin)
+              base::WeakPtr<storage::BlobStorageContext> blob_context)
       : cache_task_runner_(cache_task_runner),
         request_context_(request_context),
-        blob_context_(blob_context),
-        origin_(origin) {
-    DCHECK(!origin_.is_empty());
-  }
+        blob_context_(blob_context) {}
 
   virtual ~CacheLoader() {}
 
@@ -73,7 +68,6 @@ class ServiceWorkerCacheStorage::CacheLoader {
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
   net::URLRequestContext* request_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
-  GURL origin_;
 };
 
 // Creates memory-only ServiceWorkerCaches. Because these caches have no
@@ -85,9 +79,8 @@ class ServiceWorkerCacheStorage::MemoryLoader
  public:
   MemoryLoader(base::SequencedTaskRunner* cache_task_runner,
                net::URLRequestContext* request_context,
-               base::WeakPtr<storage::BlobStorageContext> blob_context,
-               const GURL& origin)
-      : CacheLoader(cache_task_runner, request_context, blob_context, origin) {}
+               base::WeakPtr<storage::BlobStorageContext> blob_context)
+      : CacheLoader(cache_task_runner, request_context, blob_context) {}
 
   virtual scoped_refptr<ServiceWorkerCache> CreateServiceWorkerCache(
       const std::string& cache_name) override {
@@ -137,9 +130,8 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
   SimpleCacheLoader(const base::FilePath& origin_path,
                     base::SequencedTaskRunner* cache_task_runner,
                     net::URLRequestContext* request_context,
-                    base::WeakPtr<storage::BlobStorageContext> blob_context,
-                    const GURL& origin)
-      : CacheLoader(cache_task_runner, request_context, blob_context, origin),
+                    base::WeakPtr<storage::BlobStorageContext> blob_context)
+      : CacheLoader(cache_task_runner, request_context, blob_context),
         origin_path_(origin_path),
         weak_ptr_factory_(this) {}
 
@@ -224,7 +216,6 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     // 2. Write the file to disk. (WriteIndexWriteToFileInPool)
 
     ServiceWorkerCacheStorageIndex index;
-    index.set_origin(origin_.spec());
 
     for (size_t i = 0u, max = cache_names.size(); i < max; ++i) {
       ServiceWorkerCacheStorageIndex::Cache* index_cache = index.add_cache();
@@ -237,8 +228,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     DCHECK(success);
 
     base::FilePath tmp_path = origin_path_.AppendASCII("index.txt.tmp");
-    base::FilePath index_path =
-        origin_path_.AppendASCII(ServiceWorkerCacheStorage::kIndexFileName);
+    base::FilePath index_path = origin_path_.AppendASCII("index.txt");
 
     cache_task_runner_->PostTask(
         FROM_HERE,
@@ -274,8 +264,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     // 1. Read the file from disk. (LoadIndexReadFileInPool)
     // 2. Parse file and return the names of the caches (LoadIndexDidReadFile)
 
-    base::FilePath index_path =
-        origin_path_.AppendASCII(ServiceWorkerCacheStorage::kIndexFileName);
+    base::FilePath index_path = origin_path_.AppendASCII("index.txt");
 
     cache_task_runner_->PostTask(
         FROM_HERE,
@@ -345,8 +334,7 @@ ServiceWorkerCacheStorage::ServiceWorkerCacheStorage(
     bool memory_only,
     base::SequencedTaskRunner* cache_task_runner,
     net::URLRequestContext* request_context,
-    base::WeakPtr<storage::BlobStorageContext> blob_context,
-    const GURL& origin)
+    base::WeakPtr<storage::BlobStorageContext> blob_context)
     : initialized_(false),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),
@@ -354,13 +342,10 @@ ServiceWorkerCacheStorage::ServiceWorkerCacheStorage(
       weak_factory_(this) {
   if (memory_only)
     cache_loader_.reset(new MemoryLoader(
-        cache_task_runner_.get(), request_context, blob_context, origin));
+        cache_task_runner_.get(), request_context, blob_context));
   else
-    cache_loader_.reset(new SimpleCacheLoader(origin_path_,
-                                              cache_task_runner_.get(),
-                                              request_context,
-                                              blob_context,
-                                              origin));
+    cache_loader_.reset(new SimpleCacheLoader(
+        origin_path_, cache_task_runner_.get(), request_context, blob_context));
 }
 
 ServiceWorkerCacheStorage::~ServiceWorkerCacheStorage() {
@@ -510,18 +495,6 @@ void ServiceWorkerCacheStorage::EnumerateCaches(
   }
 
   callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
-}
-
-void ServiceWorkerCacheStorage::CloseAllCaches() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!initialized_)
-    return;
-
-  for (auto& key_value : cache_map_) {
-    if (key_value.second)
-      key_value.second->Close();
-  }
 }
 
 // Init is run lazily so that it is called on the proper MessageLoop.

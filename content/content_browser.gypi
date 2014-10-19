@@ -1164,8 +1164,6 @@
       'browser/service_worker/service_worker_cache.h',
       'browser/service_worker/service_worker_cache_listener.cc',
       'browser/service_worker/service_worker_cache_listener.h',
-      'browser/service_worker/service_worker_cache_quota_client.cc',
-      'browser/service_worker/service_worker_cache_quota_client.h',
       'browser/service_worker/service_worker_cache_storage.cc',
       'browser/service_worker/service_worker_cache_storage.h',
       'browser/service_worker/service_worker_cache_storage_manager.cc',

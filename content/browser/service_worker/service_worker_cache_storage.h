@@ -49,18 +49,13 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   typedef base::Callback<void(const StringVector&, CacheStorageError)>
       StringsAndErrorCallback;
 
-  static const char kIndexFileName[];
-
   ServiceWorkerCacheStorage(
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
       net::URLRequestContext* request_context,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
-      const GURL& origin);
+      base::WeakPtr<storage::BlobStorageContext> blob_context);
 
-  // Any unfinished asynchronous operations may not complete or call their
-  // callbacks.
   virtual ~ServiceWorkerCacheStorage();
 
   // Create a ServiceWorkerCache if it doesn't already exist and call the
@@ -92,8 +87,6 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   void EnumerateCaches(const StringsAndErrorCallback& callback);
 
   // TODO(jkarlin): Add match() function.
-
-  void CloseAllCaches();
 
  private:
   class MemoryLoader;

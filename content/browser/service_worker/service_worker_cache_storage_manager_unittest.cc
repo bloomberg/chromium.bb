@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
-#include "content/browser/service_worker/service_worker_cache_quota_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,11 +39,11 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         browser_context_.GetRequestContext()->GetURLRequestContext();
     if (MemoryOnly()) {
       cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-          base::FilePath(), base::MessageLoopProxy::current(), nullptr);
+          base::FilePath(), base::MessageLoopProxy::current());
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       cache_manager_ = ServiceWorkerCacheStorageManager::Create(
-          temp_dir_.path(), base::MessageLoopProxy::current(), nullptr);
+          temp_dir_.path(), base::MessageLoopProxy::current());
     }
 
     cache_manager_->SetBlobParametersForCache(
@@ -202,12 +201,12 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   }
 
   bool CachePut(const scoped_refptr<ServiceWorkerCache>& cache,
-                const GURL& url) {
+                const std::string& url) {
     scoped_ptr<ServiceWorkerFetchRequest> request(
         new ServiceWorkerFetchRequest());
     scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse());
-    request->url = url;
-    response->url = url;
+    request->url = GURL("http://example.com/foo");
+    response->url = GURL("http://example.com/foo");
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache->Put(
         request.Pass(),
@@ -222,10 +221,10 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   }
 
   bool CacheMatch(const scoped_refptr<ServiceWorkerCache>& cache,
-                  const GURL& url) {
+                  const std::string& url) {
     scoped_ptr<ServiceWorkerFetchRequest> request(
         new ServiceWorkerFetchRequest());
-    request->url = url;
+    request->url = GURL("http://example.com/foo");
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache->Match(
         request.Pass(),
@@ -444,7 +443,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, BadCacheName) {
 TEST_F(ServiceWorkerCacheStorageManagerTest, BadOriginName) {
   // Since the implementation writes origin names to disk, ensure that we don't
   // escape the directory.
-  GURL bad_origin("http://../../../../../../../../../../../../../../foo");
+  GURL bad_origin("../../../../../../../../../../../../../../foo");
   EXPECT_TRUE(CreateCache(bad_origin, "foo"));
   EXPECT_TRUE(Keys(bad_origin));
   EXPECT_EQ(1u, callback_strings_.size());
@@ -475,10 +474,10 @@ TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest,
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, RecreateCacheOnDemand) {
   EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(CachePut(callback_cache_, "bar"));
   callback_cache_ = NULL;
   EXPECT_TRUE(Get(origin1_, "foo"));
-  EXPECT_TRUE(CacheMatch(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(CacheMatch(callback_cache_, "bar"));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
@@ -487,159 +486,8 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
   EXPECT_TRUE(callback_cache_->AsWeakPtr());
 }
 
-class ServiceWorkerCacheQuotaClientTest
-    : public ServiceWorkerCacheStorageManagerTest {
- protected:
-  ServiceWorkerCacheQuotaClientTest() {}
-
-  virtual void SetUp() override {
-    ServiceWorkerCacheStorageManagerTest::SetUp();
-    quota_client_.reset(
-        new ServiceWorkerCacheQuotaClient(cache_manager_->AsWeakPtr()));
-  }
-
-  void UsageCallback(base::RunLoop* run_loop, int64 usage) {
-    callback_usage_ = usage;
-    run_loop->Quit();
-  }
-
-  void OriginsCallback(base::RunLoop* run_loop, const std::set<GURL>& origins) {
-    callback_origins_ = origins;
-    run_loop->Quit();
-  }
-
-  void DeleteOriginCallback(base::RunLoop* run_loop,
-                            storage::QuotaStatusCode status) {
-    callback_status_ = status;
-    run_loop->Quit();
-  }
-
-  int64 QuotaGetOriginUsage(const GURL& origin) {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    quota_client_->GetOriginUsage(
-        origin,
-        storage::kStorageTypeTemporary,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::UsageCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
-    loop->Run();
-    return callback_usage_;
-  }
-
-  size_t QuotaGetOriginsForType() {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    quota_client_->GetOriginsForType(
-        storage::kStorageTypeTemporary,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::OriginsCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
-    loop->Run();
-    return callback_origins_.size();
-  }
-
-  size_t QuotaGetOriginsForHost(const std::string& host) {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    quota_client_->GetOriginsForHost(
-        storage::kStorageTypeTemporary,
-        host,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::OriginsCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
-    loop->Run();
-    return callback_origins_.size();
-  }
-
-  bool QuotaDeleteOriginData(const GURL& origin) {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    quota_client_->DeleteOriginData(
-        origin,
-        storage::kStorageTypeTemporary,
-        base::Bind(&ServiceWorkerCacheQuotaClientTest::DeleteOriginCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
-    loop->Run();
-    return callback_status_ == storage::kQuotaStatusOk;
-  }
-
-  bool QuotaDoesSupport(storage::StorageType type) {
-    return quota_client_->DoesSupport(type);
-  }
-
-  scoped_ptr<ServiceWorkerCacheQuotaClient> quota_client_;
-
-  storage::QuotaStatusCode callback_status_;
-  int64 callback_usage_;
-  std::set<GURL> callback_origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheQuotaClientTest);
-};
-
-class ServiceWorkerCacheQuotaClientTestP
-    : public ServiceWorkerCacheQuotaClientTest,
-      public testing::WithParamInterface<bool> {
-  virtual bool MemoryOnly() override { return !GetParam(); }
-};
-
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaID) {
-  EXPECT_EQ(storage::QuotaClient::kServiceWorkerCache, quota_client_->id());
-}
-
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginUsage) {
-  EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  // TODO(jkarlin): Once usage is working properly update this value.
-  EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
-}
-
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForType) {
-  EXPECT_EQ(0u, QuotaGetOriginsForType());
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
-  EXPECT_TRUE(CreateCache(origin2_, "foo"));
-  EXPECT_EQ(2u, QuotaGetOriginsForType());
-}
-
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForHost) {
-  EXPECT_EQ(0u, QuotaGetOriginsForHost("example.com"));
-  EXPECT_TRUE(CreateCache(GURL("http://example.com:8080"), "foo"));
-  EXPECT_TRUE(CreateCache(GURL("http://example.com:9000"), "foo"));
-  EXPECT_TRUE(CreateCache(GURL("ftp://example.com"), "foo"));
-  EXPECT_TRUE(CreateCache(GURL("http://example2.com"), "foo"));
-  EXPECT_EQ(3u, QuotaGetOriginsForHost("example.com"));
-  EXPECT_EQ(1u, QuotaGetOriginsForHost("example2.com"));
-  EXPECT_TRUE(callback_origins_.find(GURL("http://example2.com")) !=
-              callback_origins_.end());
-  EXPECT_EQ(0u, QuotaGetOriginsForHost("unknown.com"));
-}
-
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteOriginData) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
-  EXPECT_TRUE(CreateCache(origin2_, "baz"));
-
-  EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
-
-  EXPECT_FALSE(Has(origin1_, "foo"));
-  EXPECT_FALSE(Has(origin1_, "bar"));
-  EXPECT_TRUE(Has(origin2_, "baz"));
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-}
-
-TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDoesSupport) {
-  EXPECT_TRUE(QuotaDoesSupport(storage::kStorageTypeTemporary));
-  EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypePersistent));
-  EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypeSyncable));
-  EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypeQuotaNotManaged));
-  EXPECT_FALSE(QuotaDoesSupport(storage::kStorageTypeUnknown));
-}
-
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheStorageManagerTests,
                         ServiceWorkerCacheStorageManagerTestP,
-                        ::testing::Values(false, true));
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheQuotaClientTests,
-                        ServiceWorkerCacheQuotaClientTestP,
                         ::testing::Values(false, true));
 
 }  // namespace content

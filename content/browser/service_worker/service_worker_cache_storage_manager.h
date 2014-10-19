@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "content/browser/service_worker/service_worker_cache_storage.h"
 #include "content/common/content_export.h"
-#include "storage/browser/quota/quota_client.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -25,12 +24,9 @@ class URLRequestContext;
 
 namespace storage {
 class BlobStorageContext;
-class QuotaManagerProxy;
 }
 
 namespace content {
-
-class ServiceWorkerCacheQuotaClient;
 
 // Keeps track of a ServiceWorkerCacheStorage per origin. There is one
 // ServiceWorkerCacheStorageManager per ServiceWorkerContextCore.
@@ -40,8 +36,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
  public:
   static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
       const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy);
+      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner);
 
   static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
       ServiceWorkerCacheStorageManager* old_manager);
@@ -81,35 +76,18 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
-  base::WeakPtr<ServiceWorkerCacheStorageManager> AsWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
-  friend class ServiceWorkerCacheQuotaClient;
-
   typedef std::map<GURL, ServiceWorkerCacheStorage*>
       ServiceWorkerCacheStorageMap;
 
   ServiceWorkerCacheStorageManager(
       const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy);
+      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner);
 
   // The returned ServiceWorkerCacheStorage* is owned by
   // service_worker_cache_storages_.
   ServiceWorkerCacheStorage* FindOrCreateServiceWorkerCacheManager(
       const GURL& origin);
-
-  // QuotaClient support
-  void GetOriginUsage(const GURL& origin_url,
-                      const storage::QuotaClient::GetUsageCallback& callback);
-  void GetOrigins(const storage::QuotaClient::GetOriginsCallback& callback);
-  void GetOriginsForHost(
-      const std::string& host,
-      const storage::QuotaClient::GetOriginsCallback& callback);
-  void DeleteOriginData(const GURL& origin,
-                        const storage::QuotaClient::DeletionCallback& callback);
 
   net::URLRequestContext* url_request_context() const {
     return request_context_;
@@ -122,12 +100,8 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
     return cache_task_runner_;
   }
 
-  bool IsMemoryBacked() const { return root_path_.empty(); }
-
   base::FilePath root_path_;
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
-
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The map owns the CacheStorages and the CacheStorages are only accessed on
   // |cache_task_runner_|.
@@ -136,7 +110,6 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   net::URLRequestContext* request_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
-  base::WeakPtrFactory<ServiceWorkerCacheStorageManager> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageManager);
 };
 

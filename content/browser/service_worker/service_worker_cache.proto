@@ -15,7 +15,6 @@ message ServiceWorkerCacheStorageIndex {
     optional int64 size = 3;
   }
   repeated Cache cache = 1;
-  optional string origin = 2;
 }
 
 message ServiceWorkerRequestResponseHeaders {
