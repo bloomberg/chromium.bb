@@ -29,7 +29,7 @@ namespace WTF {
     // The following are provided in this file:
     //
     //   IsInteger<T>::value
-    //   IsPod<T>::value, see the definition for a note about its limitations
+    //   IsPod<T>::value
     //   IsConvertibleToInteger<T>::value
     //
     //   IsArray<T>::value
@@ -72,6 +72,26 @@ namespace WTF {
 
     template<typename T> struct IsArithmetic        { static const bool value = IsInteger<T>::value || IsFloatingPoint<T>::value; };
 
+    template<typename T> struct IsPointer {
+        static const bool value = false;
+    };
+
+    template<typename P> struct IsPointer<const P*> {
+        static const bool value = true;
+    };
+
+    template<typename P> struct IsPointer<P*> {
+        static const bool value = true;
+    };
+
+    template<typename T> struct IsEnum {
+        static const bool value = __is_enum(T);
+    };
+
+    template<typename T> struct IsScalar {
+        static const bool value = IsEnum<T>::value || IsArithmetic<T>::value || IsPointer<T>::value;
+    };
+
     template<typename T> struct IsWeak              { static const bool value = false; };
 
     enum WeakHandlingFlag {
@@ -79,10 +99,25 @@ namespace WTF {
         WeakHandlingInCollections
     };
 
-    // IsPod is misnamed as it doesn't cover all plain old data (pod) types.
-    // Specifically, it doesn't allow for enums or for structs.
-    template <typename T> struct IsPod              { static const bool value = IsArithmetic<T>::value; };
-    template <typename P> struct IsPod<P*>          { static const bool value = true; };
+    template <typename T> struct IsPod {
+        static const bool value = __is_pod(T);
+    };
+
+    template <typename T> struct IsTriviallyCopyAssignable {
+        static const bool value = __has_trivial_assign(T);
+    };
+
+    template <typename T> struct IsTriviallyMoveAssignable {
+        static const bool value = __has_trivial_assign(T);
+    };
+
+    template <typename T> struct IsTriviallyDefaultConstructible {
+        static const bool value = __has_trivial_constructor(T);
+    };
+
+    template <typename T> struct IsTriviallyDestructible {
+        static const bool value = __has_trivial_destructor(T);
+    };
 
     template<typename T> class IsConvertibleToInteger {
         // Avoid "possible loss of data" warning when using Microsoft's C++ compiler
