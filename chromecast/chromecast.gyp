@@ -113,6 +113,8 @@
         'browser/cast_browser_process.h',
         'browser/cast_content_browser_client.cc',
         'browser/cast_content_browser_client.h',
+        'browser/cast_content_window.cc',
+        'browser/cast_content_window.h',
         'browser/cast_download_manager_delegate.cc',
         'browser/cast_download_manager_delegate.h',
         'browser/cast_http_user_agent_settings.cc',

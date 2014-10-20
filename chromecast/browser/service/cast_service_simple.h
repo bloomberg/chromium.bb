@@ -8,15 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/browser/service/cast_service.h"
 
-namespace aura {
-class WindowTreeHost;
-}
-
 namespace content {
 class WebContents;
 }
 
 namespace chromecast {
+class CastContentWindow;
 
 class CastServiceSimple : public CastService {
  public:
@@ -31,7 +28,7 @@ class CastServiceSimple : public CastService {
   virtual void StopInternal() override;
 
  private:
-  scoped_ptr<aura::WindowTreeHost> window_tree_host_;
+  scoped_ptr<CastContentWindow> window_;
   scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(CastServiceSimple);

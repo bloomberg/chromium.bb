@@ -5,18 +5,11 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/macros.h"
+#include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/aura/env.h"
-#include "ui/aura/layout_manager.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
-#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 namespace chromecast {
@@ -36,36 +29,6 @@ GURL GetStartupURL() {
 
   return net::FilePathToFileURL(base::FilePath(args[0]));
 }
-
-class FillLayout : public aura::LayoutManager {
- public:
-  explicit FillLayout(aura::Window* root) : root_(root) {}
-  virtual ~FillLayout() {}
-
- private:
-  // aura::LayoutManager:
-  virtual void OnWindowResized() override {}
-
-  virtual void OnWindowAddedToLayout(aura::Window* child) override {
-    child->SetBounds(root_->bounds());
-  }
-
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
-
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override {}
-
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override {}
-
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override {
-    SetChildBoundsDirect(child, requested_bounds);
-  }
-
-  aura::Window* root_;
-
-  DISALLOW_COPY_AND_ASSIGN(FillLayout);
-};
 
 }  // namespace
 
@@ -90,34 +53,11 @@ void CastServiceSimple::Initialize() {
 }
 
 void CastServiceSimple::StartInternal() {
-  // Aura initialization
-  gfx::Size initial_size = gfx::Size(1280, 720);
-  // TODO(lcwu): http://crbug.com/391074. Chromecast only needs a minimal
-  // implementation of gfx::screen and aura's TestScreen will do for now.
-  // Change the code to use ozone's screen implementation when it is ready.
-  aura::TestScreen* screen = aura::TestScreen::Create(initial_size);
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
-  CHECK(aura::Env::GetInstance());
-  window_tree_host_.reset(
-      aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
-  window_tree_host_->InitHost();
-  window_tree_host_->window()->SetLayoutManager(
-      new FillLayout(window_tree_host_->window()));
-  window_tree_host_->Show();
+  // This is the simple version that hard-codes the size.
+  gfx::Size initial_size(1280, 720);
 
-  // Create a WebContents
-  content::WebContents::CreateParams create_params(browser_context(), NULL);
-  create_params.routing_id = MSG_ROUTING_NONE;
-  create_params.initial_size = initial_size;
-  web_contents_.reset(content::WebContents::Create(create_params));
-
-  // Add and show content's view/window
-  aura::Window* content_window = web_contents_->GetNativeView();
-  aura::Window* parent = window_tree_host_->window();
-  if (!parent->Contains(content_window)) {
-    parent->AddChild(content_window);
-  }
-  content_window->Show();
+  window_.reset(new CastContentWindow);
+  web_contents_ = window_->Create(initial_size, browser_context());
 
   web_contents_->GetController().LoadURL(GetStartupURL(),
                                          content::Referrer(),
@@ -127,10 +67,8 @@ void CastServiceSimple::StartInternal() {
 
 void CastServiceSimple::StopInternal() {
   web_contents_->GetRenderViewHost()->ClosePage();
-  window_tree_host_.reset();
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
-  aura::Env::DeleteInstance();
   web_contents_.reset();
+  window_.reset();
 }
 
 }  // namespace chromecast
