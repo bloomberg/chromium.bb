@@ -202,10 +202,10 @@ static inline void registerPendingResource(SVGDocumentExtensions& extensions, co
 
 bool SVGResources::hasResourceData() const
 {
-    return !m_clipperFilterMaskerData
-        && !m_markerData
-        && !m_fillStrokeData
-        && !m_linkedResource;
+    return m_clipperFilterMaskerData
+        || m_markerData
+        || m_fillStrokeData
+        || m_linkedResource;
 }
 
 static inline SVGResources* ensureResources(OwnPtr<SVGResources>& resources)
@@ -297,7 +297,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
             registerPendingResource(extensions, id, element);
     }
 
-    return (!resources || resources->hasResourceData()) ? nullptr : resources.release();
+    return (!resources || !resources->hasResourceData()) ? nullptr : resources.release();
 }
 
 void SVGResources::layoutIfNeeded()
@@ -333,7 +333,7 @@ void SVGResources::layoutIfNeeded()
 
 void SVGResources::removeClientFromCache(RenderObject* object, bool markForInvalidation) const
 {
-    if (hasResourceData())
+    if (!hasResourceData())
         return;
 
     if (m_linkedResource) {
@@ -373,7 +373,7 @@ void SVGResources::removeClientFromCache(RenderObject* object, bool markForInval
 void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
 {
     ASSERT(resource);
-    if (hasResourceData())
+    if (!hasResourceData())
         return;
 
     if (m_linkedResource == resource) {
@@ -447,7 +447,7 @@ void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
 
 void SVGResources::buildSetOfResources(HashSet<RenderSVGResourceContainer*>& set)
 {
-    if (hasResourceData())
+    if (!hasResourceData())
         return;
 
     if (m_linkedResource) {
