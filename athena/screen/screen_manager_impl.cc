@@ -112,6 +112,7 @@ class AthenaFocusRules : public wm::BaseFocusRules {
       aura::Window* ignore) const override {
     aura::Window* next = wm::BaseFocusRules::GetNextActivatableWindow(ignore);
     // TODO(oshima): Search from activatable containers if |next| is NULL.
+    // crbug.com/424750.
     return next;
   }
 

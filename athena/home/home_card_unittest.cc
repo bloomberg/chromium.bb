@@ -8,7 +8,9 @@
 #include "athena/home/home_card_constants.h"
 #include "athena/home/home_card_impl.h"
 #include "athena/test/base/athena_test_base.h"
+#include "athena/test/base/test_windows.h"
 #include "athena/wm/public/window_manager.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
@@ -296,6 +298,31 @@ TEST_F(HomeCardTest, KeyboardFocus) {
                                   10);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_FALSE(IsSearchBoxFocused(home_card));
+}
+
+TEST_F(HomeCardTest, DontMinimizeWithModalWindow) {
+  aura::Window* home_card = GetHomeCardWindow();
+
+  WindowManager::Get()->EnterOverview();
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(wm::IsActiveWindow(home_card));
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> modal(test::CreateTransientWindow(
+      &delegate, NULL, ui::MODAL_TYPE_SYSTEM, false));
+  modal->Show();
+  wm::ActivateWindow(modal.get());
+  EXPECT_TRUE(wm::IsActiveWindow(modal.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(home_card));
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+
+  modal.reset();
+
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+
+  // TODO(oshima): The focus should be set to home card. Flip the
+  // condition once crbug.com/424750 is fixed.a
+  EXPECT_FALSE(wm::IsActiveWindow(home_card));
 }
 
 }  // namespace athena
