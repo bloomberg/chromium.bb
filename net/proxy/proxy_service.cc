@@ -979,8 +979,24 @@ int ProxyService::ResolveProxy(const GURL& raw_url,
                                PacRequest** pac_request,
                                NetworkDelegate* network_delegate,
                                const BoundNetLog& net_log) {
-  DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
+  return ResolveProxyHelper(raw_url,
+                            load_flags,
+                            result,
+                            callback,
+                            pac_request,
+                            network_delegate,
+                            net_log);
+}
+
+int ProxyService::ResolveProxyHelper(const GURL& raw_url,
+                                     int load_flags,
+                                     ProxyInfo* result,
+                                     const net::CompletionCallback& callback,
+                                     PacRequest** pac_request,
+                                     NetworkDelegate* network_delegate,
+                                     const BoundNetLog& net_log) {
+  DCHECK(CalledOnValidThread());
 
   net_log.BeginEvent(NetLog::TYPE_PROXY_SERVICE);
 
@@ -1005,6 +1021,9 @@ int ProxyService::ResolveProxy(const GURL& raw_url,
     return DidFinishResolvingProxy(url, load_flags, network_delegate,
                                    result, rv, net_log);
 
+  if (callback.is_null())
+    return ERR_IO_PENDING;
+
   scoped_refptr<PacRequest> req(
       new PacRequest(this, url, load_flags, network_delegate,
                      result, callback, net_log));
@@ -1027,6 +1046,22 @@ int ProxyService::ResolveProxy(const GURL& raw_url,
   if (pac_request)
     *pac_request = req.get();
   return rv;  // ERR_IO_PENDING
+}
+
+bool ProxyService:: TryResolveProxySynchronously(
+    const GURL& raw_url,
+    int load_flags,
+    ProxyInfo* result,
+    NetworkDelegate* network_delegate,
+    const BoundNetLog& net_log) {
+  net::CompletionCallback null_callback;
+  return ResolveProxyHelper(raw_url,
+                            load_flags,
+                            result,
+                            null_callback,
+                            NULL /* pac_request*/,
+                            network_delegate,
+                            net_log) == OK;
 }
 
 int ProxyService::TryToCompleteSynchronously(const GURL& url,

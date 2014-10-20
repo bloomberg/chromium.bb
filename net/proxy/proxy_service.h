@@ -130,6 +130,14 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
                    NetworkDelegate* network_delegate,
                    const BoundNetLog& net_log);
 
+  // Returns true if the proxy information could be determined without spawning
+  // an asynchronous task.  Otherwise, |result| is unmodified.
+  bool TryResolveProxySynchronously(const GURL& raw_url,
+                                    int load_flags,
+                                    ProxyInfo* result,
+                                    NetworkDelegate* network_delegate,
+                                    const BoundNetLog& net_log);
+
   // This method is called after a failure to connect or resolve a host name.
   // It gives the proxy service an opportunity to reconsider the proxy to use.
   // The |results| parameter contains the results returned by an earlier call
@@ -320,6 +328,17 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
                                  int load_flags,
                                  NetworkDelegate* network_delegate,
                                  ProxyInfo* result);
+
+  // Identical to ResolveProxy, except that |callback| is permitted to be null.
+  // if |callback.is_null()|, this function becomes a thin wrapper around
+  // |TryToCompleteSynchronously|.
+  int ResolveProxyHelper(const GURL& url,
+                         int load_flags,
+                         ProxyInfo* results,
+                         const net::CompletionCallback& callback,
+                         PacRequest** pac_request,
+                         NetworkDelegate* network_delegate,
+                         const BoundNetLog& net_log);
 
   // Cancels all of the requests sent to the ProxyResolver. These will be
   // restarted when calling SetReady().

@@ -3081,4 +3081,56 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   EXPECT_TRUE(info3.is_direct());
 }
 
+// Test that the synchronous resolution fails when a PAC script is active.
+TEST_F(ProxyServiceTest, SynchronousWithPAC) {
+  MockProxyConfigService* config_service =
+      new MockProxyConfigService("http://foopy/proxy.pac");
+
+  MockAsyncProxyResolver* resolver = new MockAsyncProxyResolver();
+
+  ProxyService service(config_service, resolver, NULL);
+
+  GURL url("http://www.google.com/");
+
+  ProxyInfo info;
+  info.UseDirect();
+  CapturingBoundNetLog log;
+
+  bool synchronous_success = service.TryResolveProxySynchronously(
+      url, net::LOAD_NORMAL, &info, NULL, log.bound());
+  EXPECT_FALSE(synchronous_success);
+
+  // No request should have been queued.
+  EXPECT_EQ(0u, resolver->pending_requests().size());
+
+  // |info| should not have been modified.
+  EXPECT_TRUE(info.is_direct());
+}
+
+// Test that synchronous results are returned correctly if a fixed proxy
+// configuration is active.
+TEST_F(ProxyServiceTest, SynchronousWithFixedConfiguration) {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString("foopy1:8080");
+  config.set_auto_detect(false);
+
+  MockAsyncProxyResolver* resolver = new MockAsyncProxyResolver();
+
+  ProxyService service(new MockProxyConfigService(config), resolver, NULL);
+
+  GURL url("http://www.google.com/");
+
+  ProxyInfo info;
+  CapturingBoundNetLog log;
+
+  bool synchronous_success = service.TryResolveProxySynchronously(
+      url, net::LOAD_NORMAL, &info, NULL, log.bound());
+  EXPECT_TRUE(synchronous_success);
+  EXPECT_FALSE(info.is_direct());
+  EXPECT_EQ("foopy1", info.proxy_server().host_port_pair().host());
+
+  // No request should have been queued.
+  EXPECT_EQ(0u, resolver->pending_requests().size());
+}
+
 }  // namespace net

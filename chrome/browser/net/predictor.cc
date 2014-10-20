@@ -38,6 +38,7 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/dns/host_resolver.h"
@@ -148,6 +149,7 @@ Predictor::Predictor(bool preconnect_enabled, bool predictor_enabled)
       host_resolver_(NULL),
       transport_security_state_(NULL),
       ssl_config_service_(NULL),
+      proxy_service_(NULL),
       preconnect_enabled_(preconnect_enabled),
       consecutive_omnibox_preconnect_count_(0),
       next_trim_time_(base::TimeTicks::Now() +
@@ -699,6 +701,7 @@ void Predictor::FinalizeInitializationOnIOThread(
       url_request_context_getter_->GetURLRequestContext();
   transport_security_state_ = context->transport_security_state();
   ssl_config_service_ = context->ssl_config_service();
+  proxy_service_ = context->proxy_service();
 
   // base::WeakPtrFactory instances need to be created and destroyed
   // on the same thread. The predictor lives on the IO thread and will die
@@ -1033,6 +1036,17 @@ void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
   }
 }
 
+bool Predictor::WouldLikelyProxyURL(const GURL& url) {
+  if (!proxy_service_)
+    return false;
+
+  net::ProxyInfo info;
+  bool synchronous_success = proxy_service_->TryResolveProxySynchronously(
+      url, net::LOAD_NORMAL, &info, NULL, net::BoundNetLog());
+
+  return synchronous_success && !info.is_direct();
+}
+
 UrlInfo* Predictor::AppendToResolutionQueue(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
@@ -1055,7 +1069,8 @@ UrlInfo* Predictor::AppendToResolutionQueue(
   }
 
   AdviseProxy(url, motivation, false /* is_preconnect */);
-  if (proxy_advisor_ && proxy_advisor_->WouldProxyURL(url)) {
+  if ((proxy_advisor_ && proxy_advisor_->WouldProxyURL(url)) ||
+      WouldLikelyProxyURL(url)) {
     info->DLogResultsStats("DNS PrefetchForProxiedRequest");
     return NULL;
   }
