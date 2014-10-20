@@ -483,9 +483,14 @@ CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
 CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
 
 # Miscellaneous actions
-CL_ACTION_REQUEUED = 'requeued'           # Recorded for a change when it is
-                                          # noticed that a previously rejected
-                                          # patch is again in the queue.
+
+# Recorded by pre-cq launcher for a change when it is noticed that a previously
+# rejected change is again in the queue.
+# This is a best effort detection for developers re-marking their changes, to
+# help calculate true CQ handling time. It is susceptible to developers
+# un-marking their change after is requeued or to the CQ picking up a CL before
+# it is seen by the pre-cq-launcher.
+CL_ACTION_REQUEUED = 'requeued'
 
 # Recorded by pre-cq launcher when it has screened a change for necessary
 # tryjobs

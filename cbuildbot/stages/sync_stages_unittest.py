@@ -180,7 +180,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
   def PerformSync(self, committed=False, num_patches=1, tree_open=True,
                   tree_throttled=False,
                   pre_cq_status=constants.CL_STATUS_PASSED,
-                  runs=0, **kwargs):
+                  runs=0, changes=None, **kwargs):
     """Helper to perform a basic sync for master commit queue.
 
     Args:
@@ -194,6 +194,9 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
       runs: The maximum number of times to allow validation_pool.AcquirePool
             to wait for additional changes. runs=0 means never wait for
             additional changes. Default: 0.
+      changes: Optional list of MockPatch instances that should be available
+               in validation pool. If not specified, a set of |num_patches|
+               patches will be created.
       **kwargs: Additional arguments to pass to MockPatch when creating patches.
 
     Returns:
@@ -201,7 +204,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     """
     kwargs.setdefault('approval_timestamp',
         time.time() - sync_stages.PreCQLauncherStage.LAUNCH_DELAY * 60)
-    changes = [MockPatch(**kwargs)] * num_patches
+    changes = changes or [MockPatch(**kwargs)] * num_patches
     if pre_cq_status is not None:
       new_build_id = self.fake_db.InsertBuild('Pre cq group',
                                               constants.WATERFALL_TRYBOT,
@@ -288,15 +291,18 @@ class MasterCQSyncTestCase(BaseCQTestCase):
     """
     return self._testCommitNonManifestChange(committed=False)
 
-  def _testCommitManifestChange(self, **kwargs):
+  def _testCommitManifestChange(self, changes=None, **kwargs):
     """Test committing a change to a project that's part of the manifest.
+
+    Args:
+      changes: Optional list of MockPatch instances to use in PerformSync.
 
     Returns:
       List of MockPatch objects that were used in PerformSync
     """
     self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
                      side_effect=lambda x, _: (x, []))
-    return self.PerformSync(**kwargs)
+    return self.PerformSync(changes=changes, **kwargs)
 
   def _testDefaultSync(self):
     """Test basic ability to sync with standard options.
@@ -458,16 +464,20 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     action_history = self.fake_db.GetActionsForChanges([change])
     return clactions.GetCLPreCQStatus(change, action_history)
 
-  def runTrybotTest(self, launching=0, waiting=0, failed=0, runs=0):
+  def runTrybotTest(self, launching=0, waiting=0, failed=0, runs=0,
+                    change=None):
     """Helper function for testing PreCQLauncher.
 
-    Create a mock patch to be picked up by the PreCQ. Allow up to
-    |runs|+1 calls to ProcessChanges. Assert that the patch received status
-    LAUNCHING, WAITING, and FAILED |launching|, |waiting|, and |failed| times
-    respectively.
+    Create a mock patch to be picked up by the PreCQ (or use |change| if it is
+    specified. Allow up to |runs|+1 calls to ProcessChanges. Assert that the
+    patch received status LAUNCHING, WAITING, and FAILED |launching|,
+    |waiting|, and |failed| times respectively.
     """
-    change = self._testCommitManifestChange(pre_cq_status=None, runs=runs)[0]
-
+    changes = None
+    if change:
+      changes = [change]
+    change = self._testCommitManifestChange(changes=changes, pre_cq_status=None,
+                                            runs=runs)[0]
     # Count the number of recorded actions corresponding to launching, watiting,
     # and failed, and ensure they are correct.
     expected = (launching, waiting, failed)
@@ -511,6 +521,22 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
     self.runTrybotTest(runs=1)
     m.assert_called_with([mock.ANY], check_tree_open=False)
+
+  def testRequeued(self):
+    """Test that a previously rejected patch gets marked as requeued."""
+    p = MockPatch()
+    previous_build_id = self.fake_db.InsertBuild(
+        'some name', constants.WATERFALL_TRYBOT, 1, 'some_config',
+        'some_hostname')
+    action = clactions.CLAction.FromGerritPatchAndAction(
+        p, constants.CL_ACTION_KICKED_OUT)
+    self.fake_db.InsertCLActions(previous_build_id, [action])
+    self.runTrybotTest(launching=1, change=p)
+
+    actions_for_patch = self.fake_db.GetActionsForChanges([p])
+    requeued_actions = [a for a in actions_for_patch
+                        if a.action == constants.CL_ACTION_REQUEUED]
+    self.assertEqual(1, len(requeued_actions))
 
 
 if __name__ == '__main__':

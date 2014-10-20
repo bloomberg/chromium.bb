@@ -122,22 +122,65 @@ def GetCLPreCQStatus(change, action_history):
   Returns:
     The status, as a string, or None if there is no recorded pre-cq status.
   """
-  patch_number = int(change.patch_number)
-  change_number = int(change.gerrit_number)
-  change_source = BoolToChangeSource(change.internal)
-
-  # Filter out actions to other patch numbers and actions that are not
-  # pre-cq status actions.
-  actions_for_patch = [a for a in action_history
-                       if a.change_source == change_source and
-                          a.change_number == change_number and
-                          a.patch_number == patch_number and
-                          a.action in _PRECQ_ACTION_TO_STATUS]
+  actions_for_patch = ActionsForPatch(change, action_history)
+  actions_for_patch = [a for a in actions_for_patch
+                       if a.action in _PRECQ_ACTION_TO_STATUS]
 
   if not actions_for_patch:
     return None
 
   return TranslatePreCQActionToStatus(actions_for_patch[-1].action)
+
+
+def ActionsForPatch(change, action_history):
+  """Filters a CL action list to only those for a given patch.
+
+  Args:
+    change: GerritPatch instance to filter for.
+    action_history: List of CLAction objects.
+  """
+  patch_number = int(change.patch_number)
+  change_number = int(change.gerrit_number)
+  change_source = BoolToChangeSource(change.internal)
+
+  actions_for_patch = [a for a in action_history
+                       if a.change_source == change_source and
+                          a.change_number == change_number and
+                          a.patch_number == patch_number]
+
+  return actions_for_patch
+
+
+def WasChangeRequeued(change, action_history):
+  """For a |change| that is ready, determine if it has been re-marked as such.
+
+  This method is meant to be used on a |change| that is currently marked as
+  CQ ready. It determines if |change| had been previously rejected but not
+  yet marked as requeued.
+
+  If this returns True, then a REQUEUED action should be separately recorded
+  for |change|.
+
+  Args:
+    change: GerritPatch instance to operate upon.
+    action_history: List of CL actions (may include actions on changes other
+                    than |change|).
+
+  Returns:
+    True is |change| has been re-marked as CQ ready by a developer, but
+    not yet marked as REQUEUED in its action history.
+  """
+  actions_for_patch = ActionsForPatch(change, action_history)
+
+  # Return True if the newest KICKED_OUT action is newer than the newest
+  # REQUEUED action.
+  for a in reversed(actions_for_patch):
+    if a.action == constants.CL_ACTION_KICKED_OUT:
+      return True
+    if a.action == constants.CL_ACTION_REQUEUED:
+      return False
+
+  return False
 
 
 def GetCLActionCount(change, configs, action, action_history,

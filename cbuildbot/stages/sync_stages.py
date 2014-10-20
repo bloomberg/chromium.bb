@@ -1111,11 +1111,18 @@ class PreCQLauncherStage(SyncStage):
     """
     # Get change status.
     status_map = {}
-    _, db = self._run.GetCIDBHandle()
+    build_id, db = self._run.GetCIDBHandle()
     action_history = db.GetActionsForChanges(changes)
     for change in changes:
       status = clactions.GetCLPreCQStatus(change, action_history)
       status_map[change] = status
+      # Detect changes that have been re-queued by the developer, and mark
+      # them as such in cidb.
+      was_requeued = clactions.WasChangeRequeued(change, action_history)
+      if was_requeued:
+        action = clactions.CLAction.FromGerritPatchAndAction(
+            change, constants.CL_ACTION_REQUEUED)
+        db.InsertCLActions(build_id, [action])
 
     # Launch trybots for manifest changes.
     for plan in self.GetDisjointTransactionsToTest(pool, changes, status_map):
