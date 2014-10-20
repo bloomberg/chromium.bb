@@ -18,12 +18,12 @@ console-uncaught-promise.html:1 Unhandled promise rejection Promise
         [[PromiseStatus]]: "rejected"
         [[PromiseValue]]: Error: inspector.err1
         console-uncaught-promise.html:9 runPromises
-        console-uncaught-promise.html:40 timeout
+        console-uncaught-promise.html:47 timeout
 
     console-uncaught-promise.html:27 Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: inspector.err2}
         __proto__: Promise
         [[PromiseStatus]]: "rejected"
         [[PromiseValue]]: Error: inspector.err2
         console-uncaught-promise.html:27 runPromises
-        console-uncaught-promise.html:40 timeout
+        console-uncaught-promise.html:47 timeout
 

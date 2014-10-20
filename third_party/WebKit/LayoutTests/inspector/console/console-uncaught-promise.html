@@ -30,7 +30,14 @@ function runPromises(source)
 function onload()
 {
     runPromises("onload");
-    runTest();
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    // Run tests after all microtasks.
+    setTimeout(runTest, 0);
 }
 
 function runPromisesFromInspector()
