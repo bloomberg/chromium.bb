@@ -40,16 +40,17 @@ PendingScript::~PendingScript()
 void PendingScript::watchForLoad(ScriptResourceClient* client)
 {
     ASSERT(!m_watchingForLoad);
-    ASSERT(!isReady());
+    // addClient() will call notifyFinished() if the load is complete. Callers
+    // who do not expect to be re-entered from this call should not call
+    // watchForLoad for a PendingScript which isReady. We also need to set
+    // m_watchingForLoad early, since addClient() can result in calling
+    // notifyFinished and further stopWatchingForLoad().
+    m_watchingForLoad = true;
     if (m_streamer) {
         m_streamer->addClient(client);
     } else {
-        // addClient() will call notifyFinished() if the load is
-        // complete. Callers do not expect to be re-entered from this call, so
-        // they should not become a client of an already-loaded Resource.
         resource()->addClient(client);
     }
-    m_watchingForLoad = true;
 }
 
 void PendingScript::stopWatchingForLoad(ScriptResourceClient* client)
@@ -58,9 +59,7 @@ void PendingScript::stopWatchingForLoad(ScriptResourceClient* client)
         return;
     ASSERT(resource());
     if (m_streamer) {
-        m_streamer->cancel();
         m_streamer->removeClient(client);
-        m_streamer.clear();
     } else {
         resource()->removeClient(client);
     }
@@ -72,6 +71,8 @@ PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
     setScriptResource(0);
     m_watchingForLoad = false;
     m_startingPosition = TextPosition::belowRangePosition();
+    if (m_streamer)
+        m_streamer->cancel();
     m_streamer.release();
     return m_element.release();
 }

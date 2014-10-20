@@ -219,6 +219,7 @@ TEST_F(ScriptStreamingTest, CancellingStreaming)
     // away).
     EXPECT_FALSE(client.finished());
     pendingScript().stopWatchingForLoad(&client);
+    pendingScript().releaseElementAndClear();
     m_pendingScript = PendingScriptWrapper::create(); // This will destroy m_resource.
     m_resource = 0;
 
