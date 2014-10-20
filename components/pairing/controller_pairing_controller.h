@@ -35,7 +35,7 @@ class ControllerPairingController {
     STAGE_WAITING_FOR_CREDENTIALS,
     STAGE_HOST_ENROLLMENT_IN_PROGRESS,
     STAGE_HOST_ENROLLMENT_ERROR,
-    STAGE_PAIRING_DONE,
+    STAGE_HOST_ENROLLMENT_SUCCESS,
     STAGE_FINISHED
   };
 
@@ -101,7 +101,7 @@ class ControllerPairingController {
                                     const std::string& auth_token) = 0;
 
   // Installs app and starts session.
-  // Can be called only on |STAGE_PAIRING_DONE| stage.
+  // Can be called only on |STAGE_HOST_ENROLLMENT_SUCCESS| stage.
   virtual void StartSession() = 0;
 
   virtual void AddObserver(Observer* observer) = 0;

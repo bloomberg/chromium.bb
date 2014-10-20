@@ -219,7 +219,7 @@ void FakeControllerPairingController::OnAuthenticationDone(
 }
 
 void FakeControllerPairingController::StartSession() {
-  CHECK(current_stage_ == STAGE_PAIRING_DONE);
+  CHECK(current_stage_ == STAGE_HOST_ENROLLMENT_SUCCESS);
   ChangeStage(STAGE_FINISHED);
 }
 
@@ -315,7 +315,7 @@ void FakeControllerPairingController::PairingStageChanged(Stage new_stage) {
         enrollment_should_fail_ = false;
         next_stage = STAGE_HOST_ENROLLMENT_ERROR;
       } else {
-        next_stage = STAGE_PAIRING_DONE;
+        next_stage = STAGE_HOST_ENROLLMENT_SUCCESS;
       }
       break;
     }

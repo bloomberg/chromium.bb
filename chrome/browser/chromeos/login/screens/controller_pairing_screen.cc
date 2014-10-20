@@ -113,6 +113,11 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       desired_page = kPageEnrollmentIntroduction;
       break;
     }
+    case ControllerPairingController::STAGE_INITIALIZATION_ERROR: {
+      // TODO(achuith, dzhioev, zork): Handle this better.
+      LOG(WARNING) << "Bluetooth initialization error";
+      break;
+    }
     default:
       NOTREACHED();
   }

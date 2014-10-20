@@ -348,7 +348,7 @@ void BluetoothControllerPairingController::OnAuthenticationDone(
 }
 
 void BluetoothControllerPairingController::StartSession() {
-  DCHECK_EQ(current_stage_, STAGE_PAIRING_DONE);
+  DCHECK_EQ(current_stage_, STAGE_HOST_ENROLLMENT_SUCCESS);
   ChangeStage(STAGE_FINISHED);
 }
 
@@ -385,7 +385,7 @@ void BluetoothControllerPairingController::CompleteSetup() {
       ProtoDecoder::SendCompleteSetup(complete_setup, &size));
 
   SendBuffer(io_buffer, size);
-  ChangeStage(STAGE_PAIRING_DONE);
+  ChangeStage(STAGE_HOST_ENROLLMENT_SUCCESS);
 }
 
 void BluetoothControllerPairingController::OnConfigureHostMessage(

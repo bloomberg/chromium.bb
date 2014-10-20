@@ -235,7 +235,6 @@ void BluetoothHostPairingController::OnAccept(
   controller_socket_ = socket;
   service_socket_ = NULL;
 
-  // TODO: Update Host. (http://crbug.com/405754)
   SendHostStatus();
 
   controller_socket_->Receive(
