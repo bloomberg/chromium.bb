@@ -599,19 +599,18 @@ jboolean CheckLibraryLoadFromApkSupport(JNIEnv* env, jclass clazz,
       __FUNCTION__, apkfile_name_c_str);
   void* address = mmap(NULL, PAGE_SIZE, PROT_EXEC, MAP_PRIVATE, fd, 0);
 
-  jboolean success;
+  jboolean status;
   if (address == MAP_FAILED) {
-    success = false;
+    status = false;
   } else {
-    success = true;
+    status = true;
     munmap(address, PAGE_SIZE);
   }
 
   close(fd);
 
-  LOG_INFO("  %ssupported\n", success ? "" : "NOT ");
-  return success;
-
+  LOG_INFO("%s: %s\n", __FUNCTION__, status ? "Supported" : "NOT supported");
+  return status;
 }
 
 const JNINativeMethod kNativeMethods[] = {
