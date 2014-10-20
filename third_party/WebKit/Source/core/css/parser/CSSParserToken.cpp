@@ -71,39 +71,33 @@ void CSSParserToken::convertToPercentage()
 // FIXME - This doesn't cover all possible Token types, but it's enough for current testing.
 String CSSParserToken::textForUnitTests() const
 {
-    char buffer[std::numeric_limits<float>::digits];
     if (!m_value.isNull())
         return m_value;
     if (m_type == LeftParenthesisToken)
-        return String("(");
+        return "(";
     if (m_type == RightParenthesisToken)
-        return String(")");
+        return ")";
     if (m_type == ColonToken)
-        return String(":");
+        return ":";
     if (m_type == WhitespaceToken)
-        return String(" ");
+        return " ";
+    if (m_delimiter)
+        return String("'") + m_delimiter + '\'';
 
-    if (m_delimiter) {
-        sprintf(buffer, "'%c'", m_delimiter);
-        return String(buffer, strlen(buffer));
-    }
     if (m_numericValue) {
-        static const unsigned maxUnitBufferLength = 6;
-        char unitBuffer[maxUnitBufferLength] = {0};
+        String unit;
         if (m_unit == CSSPrimitiveValue::CSS_PERCENTAGE)
-            sprintf(unitBuffer, "%s", "%");
+            unit = "%";
         else if (m_unit == CSSPrimitiveValue::CSS_PX)
-            sprintf(unitBuffer, "%s", "px");
+            unit = "px";
         else if (m_unit == CSSPrimitiveValue::CSS_EMS)
-            sprintf(unitBuffer, "%s", "em");
+            unit = "em";
         else if (m_unit != CSSPrimitiveValue::CSS_NUMBER)
-            sprintf(unitBuffer, "%s", "other");
+            unit = "other";
         if (m_numericValueType == IntegerValueType)
-            sprintf(buffer, "%d%s", static_cast<int>(m_numericValue), unitBuffer);
-        else
-            sprintf(buffer, "%f%s", m_numericValue, unitBuffer);
-
-        return String(buffer, strlen(buffer));
+            return String::number(static_cast<int>(m_numericValue)) + unit;
+        const unsigned fractionalDigits = 6;
+        return String::numberToStringFixedWidth(m_numericValue, fractionalDigits) + unit;
     }
     return String();
 }
