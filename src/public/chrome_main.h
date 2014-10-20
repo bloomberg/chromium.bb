@@ -80,6 +80,17 @@ struct NaClChromeMainArgs {
    */
   struct NaClDesc *irt_desc;
 
+  /*
+   * If true, then attempt to load the irt_desc/irt_fd, but do not error-out
+   * if the nexe does not have a segment gap.  This is transitional, and
+   * allows the PNaCl translator to transition to requiring an IRT, while
+   * allowing some drift between its version and chrome's version.
+   * TODO(jvoung): remove once all PNaCl translator nexes use the IRT. See:
+   * https://code.google.com/p/nativeclient/issues/detail?id=3914.
+   * Boolean.
+   */
+  int irt_load_optional;
+
   /* Whether to enable untrusted hardware exception handling.  Boolean. */
   int enable_exception_handling;
 

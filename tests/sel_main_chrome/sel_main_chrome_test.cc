@@ -29,9 +29,19 @@
 #include "native_client/src/trusted/validator/validation_cache.h"
 
 // A global variable that specifies whether the module should be loaded via
-// SRPC. Its value is controlled by a command line flag; see
-// NaClHandleLoadModuleArg() for where it's set.
-bool g_load_module_srpc;
+// SRPC. Its value is controlled by a command line flag kNoSrpcLoadModule.
+bool g_load_module_srpc = true;
+const char kNoSrpcLoadModule[] = "--no_srpc_load_module";
+
+// A global variable that specifies whether or not the test should set
+// the irt_load_optional flag in NaClChromeMainArgs.
+bool g_irt_load_optional = false;
+const char kIrtLoadOptional[] = "--irt_load_optional";
+
+// A global variable that specifies whether or not to test validation
+// caching of the main nexe.
+bool g_test_validation_cache = false;
+const char kTestValidationCache[] = "--test_validation_cache";
 
 int OpenFileReadOnly(const char *filename) {
 #if NACL_WINDOWS
@@ -187,24 +197,37 @@ struct NaClDesc *MakeExampleDesc() {
   return NaClDescMakeCustomDesc(NULL, &funcs);
 }
 
-void NaClHandleLoadModuleArg(int *argc_p, char ***argv_p) {
-  static const char kNoSrpcLoadModule[] = "--no_srpc_load_module";
-  int argc = *argc_p;
-  char **argv = *argv_p;
-  char *argv0;
-
-  g_load_module_srpc = true;
-  CHECK(argc >= 1);
-
-  argv0 = argv[0];
-  if (strcmp(argv[1], kNoSrpcLoadModule) == 0) {
-    g_load_module_srpc = false;
-    --argc;
-    ++argv;
+// Process commandline options and return the index where non-option
+// commandline arguments begin. Assumes all options are in the front.
+int NaClHandleArguments(int argc, char **argv) {
+  static const struct TestArguments {
+    const char *flag_name;
+    bool *flag_reference;
+    bool value_to_set;
+  } long_opts[] = {
+    {kNoSrpcLoadModule, &g_load_module_srpc, false},
+    {kIrtLoadOptional, &g_irt_load_optional, true},
+    {kTestValidationCache, &g_test_validation_cache, true},
+    {NULL, NULL, false}
+  };
+  int cur_arg = 1;
+  while (cur_arg < argc) {
+    int i = 0;
+    bool matched = false;
+    while (long_opts[i].flag_name != NULL) {
+      if (strcmp(long_opts[i].flag_name, argv[cur_arg]) == 0) {
+        *long_opts[i].flag_reference = long_opts[i].value_to_set;
+        ++cur_arg;
+        matched = true;
+        break;
+      }
+      ++i;
+    }
+    if (!matched) {
+      return cur_arg;
+    }
   }
-  *argc_p = argc;
-  *argv_p = argv;
-  (*argv_p)[0] = argv0;
+  return cur_arg;
 }
 
 int main(int argc, char **argv) {
@@ -216,20 +239,35 @@ int main(int argc, char **argv) {
   struct ThreadArgs thread_args;
 
   NaClHandleBootstrapArgs(&argc, &argv);
-  NaClHandleLoadModuleArg(&argc, &argv);
+  int last_option_index = NaClHandleArguments(argc, argv);
 #if NACL_LINUX
   args->prereserved_sandbox_size = g_prereserved_sandbox_size;
 #endif
+  // There should be two more arguments after parsing the optional ones.
+  if (last_option_index + 2 != argc) {
+    NaClLog(
+        LOG_FATAL,
+        "NaClHandleArguments stopped at opt %d (expected %d == argc(%d)-2\n",
+        last_option_index, argc - 2, argc);
+  }
+  const char *irt_filename = argv[last_option_index];
+  const char *nexe_filename = argv[last_option_index + 1];
 
-  CHECK(argc == 3 || argc == 4);
+  NaClLog(LOG_INFO,
+          "SelMainChromeTest configuration:\n"
+          "g_load_module_srpc: %d\n"
+          "g_irt_load_optional: %d\n"
+          "g_test_validation_cache: %d\n",
+           g_load_module_srpc, g_irt_load_optional, g_test_validation_cache);
 
-  args->irt_fd = OpenFileReadOnly(argv[1]);
+  args->irt_fd = OpenFileReadOnly(irt_filename);
+  args->irt_load_optional = g_irt_load_optional;
   CHECK(args->irt_fd >= 0);
 
   memset(&thread_args.file_info, 0, sizeof thread_args.file_info);
-  thread_args.file_info.desc = OpenFileReadOnly(argv[2]);
+  thread_args.file_info.desc = OpenFileReadOnly(nexe_filename);
   CHECK(thread_args.file_info.desc >= 0);
-  NaClFileNameForValgrind(argv[2]);
+  NaClFileNameForValgrind(nexe_filename);
 
   NaClHandle socketpair[2];
   CHECK(NaClSocketPair(socketpair) == 0);
@@ -242,12 +280,11 @@ int main(int argc, char **argv) {
   // Set up mock validation cache.
   struct TestValidationHandle test_handle;
   struct NaClValidationCache test_cache;
-  if (argc == 4) {
-    CHECK(strcmp(argv[3], "-vcache") == 0);
+  if (g_test_validation_cache) {
     test_handle.expected_token_lo = 0xabcdef123456789LL;
     test_handle.expected_token_hi = 0x101010101010101LL;
-    test_handle.expected_file_handle = OpenFileHandleReadExec(argv[2]);
-    test_handle.expected_file_path = strdup(argv[2]);
+    test_handle.expected_file_handle = OpenFileHandleReadExec(nexe_filename);
+    test_handle.expected_file_path = strdup(nexe_filename);
     test_cache.handle = &test_handle;
     test_cache.CreateQuery = &TestCreateQuery;
     test_cache.AddData = &TestAddData;
@@ -262,11 +299,11 @@ int main(int argc, char **argv) {
   }
   if (!g_load_module_srpc) {
     NaClFileInfo info;
-    info.desc = OpenFileHandleReadExec(argv[2]);
+    info.desc = OpenFileHandleReadExec(nexe_filename);
 #if NACL_WINDOWS
     info.desc = _open_osfhandle(info.desc, _O_RDONLY | _O_BINARY);
 #endif
-    if (argc == 4) {
+    if (g_test_validation_cache) {
       info.file_token.lo = test_handle.expected_token_lo;
       info.file_token.hi = test_handle.expected_token_hi;
     } else {

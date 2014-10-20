@@ -86,6 +86,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
   args->irt_fd = -1;
   args->irt_desc = NULL;
+  args->irt_load_optional = 0;
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
   args->enable_dyncode_syscalls = 1;
@@ -123,14 +124,15 @@ static struct NaClDesc *IrtDescFromFd(int irt_fd) {
   struct NaClDesc *irt_desc;
 
   if (irt_fd == -1) {
-    NaClLog(LOG_FATAL, "NaClLoadIrt: Integrated runtime (IRT) not present.\n");
+    NaClLog(LOG_FATAL,
+            "IrtDescFromFd: Integrated runtime (IRT) not present.\n");
   }
 
   /* Takes ownership of the FD. */
   irt_desc = NaClDescIoDescFromDescAllocCtor(irt_fd, NACL_ABI_O_RDONLY);
   if (NULL == irt_desc) {
     NaClLog(LOG_FATAL,
-            "NaClLoadIrt: failed to construct NaClDesc object from"
+            "IrtDescFromFd: failed to construct NaClDesc object from"
             " descriptor\n");
   }
 
@@ -341,16 +343,25 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
   /*
    * Load the integrated runtime (IRT) library.
+   * Skip if irt_load_optional and the nexe doesn't have the usual 256MB
+   * segment gap. PNaCl's disabling of the segment gap doesn't actually
+   * disable the segment gap. It only only reduces it drastically.
    */
-  if (args->irt_fd != -1) {
-    CHECK(args->irt_desc == NULL);
-    args->irt_desc = IrtDescFromFd(args->irt_fd);
-    args->irt_fd = -1;
-  }
-  if (args->irt_desc != NULL) {
-    NaClLoadIrt(nap, args->irt_desc);
-    NaClDescUnref(args->irt_desc);
-    args->irt_desc = NULL;
+  if (args->irt_load_optional && nap->dynamic_text_end < 0x10000000) {
+    NaClLog(1,
+            "Skipped NaClLoadIrt, irt_load_optional with dynamic_text_end: %"
+            NACL_PRIxPTR"\n", nap->dynamic_text_end);
+  } else {
+    if (args->irt_fd != -1) {
+      CHECK(args->irt_desc == NULL);
+      args->irt_desc = IrtDescFromFd(args->irt_fd);
+      args->irt_fd = -1;
+    }
+    if (args->irt_desc != NULL) {
+      NaClLoadIrt(nap, args->irt_desc);
+      NaClDescUnref(args->irt_desc);
+      args->irt_desc = NULL;
+    }
   }
 
   if (has_bootstrap_channel) {
