@@ -19,6 +19,7 @@
 #include "chrome/grit/google_chrome_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -53,6 +54,9 @@ void AppListServiceLinux::CreateShortcut() {
 void AppListServiceLinux::OnActivationChanged(views::Widget* /*widget*/,
                                               bool active) {
   if (active)
+    return;
+
+  if (app_list::switches::ShouldNotDismissOnBlur())
     return;
 
   // Dismiss the app list asynchronously. This must be done asynchronously

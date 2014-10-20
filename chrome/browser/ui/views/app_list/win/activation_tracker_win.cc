@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -59,9 +60,13 @@ bool ActivationTrackerWin::ShouldDismissAppList() {
   // necessary to allow the launcher to be pinned or closed via the taskbar
   // context menu. This will return true to dismiss the app launcher unless one
   // of the following conditions are met:
+  // - the switch preventing app list dismissal on blur is active, or
   // - the app launcher is focused, or
   // - the taskbar's jump list is focused, or
   // - the taskbar is focused with the right mouse button pressed.
+
+  if (app_list::switches::ShouldNotDismissOnBlur())
+    return false;
 
   // Remember if the taskbar had focus without the right mouse button being
   // down.

@@ -16,6 +16,11 @@ const char kCustomLauncherPage[] = "custom-launcher-page";
 // If set, the app info context menu item is not available in the app list UI.
 const char kDisableAppInfo[] = "disable-app-list-app-info";
 
+// If set, the app list will not be dismissed when it loses focus. This is
+// useful when testing the app list or a custom launcher page. It can still be
+// dismissed via the other methods (like the Esc key).
+const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
+
 // If set, Drive apps will not be shown side-by-side with Chrome apps.
 const char kDisableDriveAppsInAppList[] = "disable-drive-apps-in-app-list";
 
@@ -74,6 +79,11 @@ bool IsExperimentalAppListEnabled() {
 bool IsCenteredAppListEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnableCenteredAppList) ||
          IsExperimentalAppListEnabled();
+}
+
+bool ShouldNotDismissOnBlur() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableAppListDismissOnBlur);
 }
 
 bool IsDriveAppsInAppListEnabled() {
