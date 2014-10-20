@@ -1178,6 +1178,11 @@ void AppsGridView::MoveSelected(int page_delta,
 }
 
 void AppsGridView::CalculateIdealBounds() {
+  // TODO(calamity): This fixes http://crbug.com/422604 on ChromeOS but it's
+  // unclear why. This should be investigated to fix the issue on Linux Ash.
+  if (GetContentsBounds().IsEmpty())
+    return;
+
   gfx::Size grid_size = GetTileGridSize();
 
   // Page size including padding pixels. A tile.x + page_width means the same
