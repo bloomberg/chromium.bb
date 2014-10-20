@@ -10123,6 +10123,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ImportantFile.TempFileFailures" enum="TempFileFailure">
+  <owner>rvargas@chromium.org</owner>
+  <summary>
+    Count of various failures in ImportantFileWrite when manipulating a temp
+    file to write to before moving it into place (replacing another file).
+  </summary>
+</histogram>
+
 <histogram name="InertialSensor.AccelerometerAndroidAvailable"
     enum="BooleanAvailable">
   <owner>timvolodine@chromium.org</owner>
@@ -53050,6 +53058,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Fast Connect + Read Failed"/>
   <int value="11" label="Slow Connect + Read Failed"/>
   <int value="12" label="Previously Failed"/>
+</enum>
+
+<enum name="TempFileFailure" type="int">
+  <int value="0" label="Creating"/>
+  <int value="1" label="Opening"/>
+  <int value="2" label="Closing"/>
+  <int value="3" label="Writing"/>
+  <int value="4" label="Renaming"/>
 </enum>
 
 <enum name="TileMemoryBudget" type="int">
