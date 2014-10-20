@@ -20,10 +20,6 @@
     "channel": "stable",
     "extension_types": ["shared_module"]
   },
-  "app": {
-    "channel": "stable",
-    "extension_types": ["legacy_packaged_app", "hosted_app", "platform_app"]
-  },
   "app.isolation": {
     "channel": "stable",
     // Platform apps always have isolated storage, thus they cannot specify it
@@ -170,10 +166,6 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "key": {
-    "channel": "stable",
-    "extension_types": "all"
-  },
   "mime_types": {
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ],
@@ -202,32 +194,6 @@
     "channel": "stable",
     "extension_types": [
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-    ]
-  },
-  "oauth2": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "platform_app"
-    ]
-  },
-  "oauth2.auto_approve": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "platform_app"
-    ],
-    "whitelist": [
-      "mdbihdcgjmagbcapkhhkjbbdlkflmbfo",  // unit_tests
-      "pafkbggdmjlpgkdkcbjmhmfcdpncadgh",  // Google Now
-      "nmmhkkegccagdldgiimedpiccmgmieda",  // In-app payments support app.
-      "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C",
-      "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA",
-      "1A26E32DE447A17CBE5E9750CDBA78F58539B39C",  // TODO(rockot): Kill these.
-      "E61F841D8210B6A9891E5384CB665FBED31FCD7B",  // http://crbug.com/281715
-
-      // TODO(joaodasilva): remove these two once we have the new policy to
-      // grant auto approval by ID. http://crbug.com/399392
-      "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B",
-      "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8"
     ]
   },
   "omnibox": {

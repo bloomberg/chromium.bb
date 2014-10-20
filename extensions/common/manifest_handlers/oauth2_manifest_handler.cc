@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
+#include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"

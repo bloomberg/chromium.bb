@@ -7,7 +7,6 @@
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
@@ -55,7 +54,6 @@ void RegisterChromeManifestHandlers() {
 #endif
   (new MimeTypesHandlerParser)->Register();
   (new MinimumChromeVersionChecker)->Register();
-  (new OAuth2ManifestHandler)->Register();
   (new OmniboxHandler)->Register();
   (new OptionsPageManifestHandler)->Register();
   (new PluginsHandler)->Register();

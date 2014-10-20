@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/test/values_test_util.h"
-#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
+#include "extensions/common/manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -25,7 +25,7 @@ const char kAutoApproveNotAllowedWarning[] =
 
 }  // namespace
 
-class OAuth2ManifestTest : public ChromeManifestTest {
+class OAuth2ManifestTest : public ManifestTest {
  protected:
   enum AutoApproveValue {
     AUTO_APPROVE_NOT_SET,
@@ -296,7 +296,6 @@ TEST_F(OAuth2ManifestTest, ComponentWithChromeClientId) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest, extensions::Manifest::COMPONENT);
     EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).client_id.empty());
-
   }
 
   {
@@ -306,7 +305,6 @@ TEST_F(OAuth2ManifestTest, ComponentWithChromeClientId) {
     scoped_refptr<extensions::Extension> extension =
         LoadAndExpectSuccess(manifest, extensions::Manifest::COMPONENT);
     EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).client_id.empty());
-
   }
 }
 

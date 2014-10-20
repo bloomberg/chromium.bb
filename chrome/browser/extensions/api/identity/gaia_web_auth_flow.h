@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
+#include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 
 namespace extensions {
