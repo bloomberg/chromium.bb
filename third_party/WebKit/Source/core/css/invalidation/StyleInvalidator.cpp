@@ -18,6 +18,12 @@
 
 namespace blink {
 
+// StyleInvalidator methods are super sensitive to performance benchmarks.
+// We easily get 1% regression per additional if statement on recursive
+// invalidate methods.
+// To minimize performance impact, we wrap trace events with a lookup of
+// cached flag. The cached flag is made "static const" and is not shared
+// with DescendantInvalidationSet to avoid additional GOT lookup cost.
 static const unsigned char* s_tracingEnabled = nullptr;
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element, reason) \
