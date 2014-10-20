@@ -15,7 +15,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
 
 namespace athena {
 namespace {
@@ -24,33 +23,10 @@ namespace {
 // device after shutdown dialog is shown.
 const int kShutdownTimeoutMs = 4000;
 
-class ModalWidgetDelegate : public views::WidgetDelegate {
- public:
-  explicit ModalWidgetDelegate(views::View* contents_view)
-      : contents_view_(contents_view) {}
-  virtual ~ModalWidgetDelegate() {}
-
-  // Overridden from WidgetDelegate:
-  virtual views::Widget* GetWidget() override {
-    return contents_view_->GetWidget();
-  }
-  virtual const views::Widget* GetWidget() const override {
-    return contents_view_->GetWidget();
-  }
-  virtual views::View* GetContentsView() override { return contents_view_; }
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_SYSTEM;
-  }
-
- private:
-  views::View* contents_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
-};
-
 }  // namespace
 
-ShutdownDialog::ShutdownDialog() : state_(STATE_OTHER) {
+ShutdownDialog::ShutdownDialog(aura::Window* dialog_container)
+    : warning_message_container_(dialog_container), state_(STATE_OTHER) {
   InputManager::Get()->AddPowerButtonObserver(this);
 }
 
@@ -60,6 +36,13 @@ ShutdownDialog::~ShutdownDialog() {
 
 void ShutdownDialog::ShowShutdownWarningDialog() {
   state_ = STATE_SHUTDOWN_WARNING_VISIBLE;
+
+  shutdown_warning_message_.reset(new views::Widget);
+
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = warning_message_container_;
+  shutdown_warning_message_->Init(params);
 
   views::Label* label =
       new views::Label(l10n_util::GetStringUTF16(IDS_ATHENA_SHUTDOWN_WARNING));
@@ -76,18 +59,9 @@ void ShutdownDialog::ShowShutdownWarningDialog() {
       views::Background::CreateSolidBackground(SK_ColorWHITE));
   container->SetBorder(views::Border::CreateSolidBorder(1, SK_ColorBLACK));
 
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.delegate = new ModalWidgetDelegate(container);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.context = ScreenManager::Get()->GetContext();
-  // Use top most modal container.
-  params.keep_on_top = true;
-
-  shutdown_warning_message_.reset(new views::Widget);
-  shutdown_warning_message_->Init(params);
-  shutdown_warning_message_->Show();
+  shutdown_warning_message_->SetContentsView(container);
   shutdown_warning_message_->CenterWindow(container->GetPreferredSize());
-
+  shutdown_warning_message_->Show();
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kShutdownTimeoutMs),
                this,

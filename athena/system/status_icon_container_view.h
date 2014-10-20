@@ -9,12 +9,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/view.h"
 
+namespace aura {
+class Window;
+}
+
 namespace athena {
 
 // View which displays the system tray icons.
 class StatusIconContainerView : public views::View {
  public:
-  StatusIconContainerView(SystemUI::ColorScheme color_scheme);
+  StatusIconContainerView(SystemUI::ColorScheme color_scheme,
+                          aura::Window* popup_container);
   virtual ~StatusIconContainerView();
 
  private:
@@ -22,6 +27,9 @@ class StatusIconContainerView : public views::View {
   virtual bool OnMousePressed(const ui::MouseEvent& event) override;
   virtual void OnGestureEvent(ui::GestureEvent* event) override;
   virtual void ChildPreferredSizeChanged(views::View* child) override;
+
+  // Parent container that the "select network" dialog should use.
+  aura::Window* system_modal_container_;
 
   class PowerStatus;
   scoped_ptr<PowerStatus> power_status_;

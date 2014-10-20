@@ -8,7 +8,6 @@
 
 #include "athena/screen/public/screen_manager.h"
 #include "athena/test/base/athena_test_base.h"
-#include "athena/test/base/test_windows.h"
 #include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/public/window_manager.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -34,6 +33,18 @@ scoped_ptr<aura::Window> CreateWindow(aura::Window* parent,
   window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
   if (parent)
     parent->AddChild(window.get());
+  return window.Pass();
+}
+
+scoped_ptr<aura::Window> CreateTransientWindow(aura::Window* transient_parent,
+                                               aura::WindowDelegate* delegate,
+                                               ui::wm::WindowType window_type) {
+  scoped_ptr<aura::Window> window(new aura::Window(delegate));
+  window->SetType(window_type);
+  window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  wm::AddTransientChild(transient_parent, window.get());
+  aura::client::ParentWindowWithContext(
+      window.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
   return window.Pass();
 }
 
@@ -105,8 +116,8 @@ TEST_F(WindowListProviderImplTest, StackingOrder) {
   scoped_ptr<WindowListProvider> list_provider(
       new WindowListProviderImpl(container.get()));
 
-  scoped_ptr<aura::Window> first = test::CreateWindowWithType(
-      &delegate, container.get(), ui::wm::WINDOW_TYPE_NORMAL);
+  scoped_ptr<aura::Window> first =
+      CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> second =
       CreateWindow(container.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   scoped_ptr<aura::Window> third =
@@ -296,12 +307,12 @@ TEST_F(WindowListProviderImplTest, TransientWindows) {
 
   scoped_ptr<WindowListObserver> observer(
       new WindowListObserver(list_provider));
-  scoped_ptr<aura::Window> w1 = test::CreateNormalWindow(&delegate, NULL);
+  scoped_ptr<aura::Window> w1 = CreateTestWindow(&delegate, gfx::Rect());
   w1->Show();
-  scoped_ptr<aura::Window> w2 = test::CreateNormalWindow(&delegate, NULL);
+  scoped_ptr<aura::Window> w2 = CreateTestWindow(&delegate, gfx::Rect());
   w2->Show();
-  scoped_ptr<aura::Window> t1 = test::CreateTransientWindow(
-      &delegate, w1.get(), ui::MODAL_TYPE_NONE, false);
+  scoped_ptr<aura::Window> t1 =
+      CreateTransientWindow(w1.get(), &delegate, ui::wm::WINDOW_TYPE_NORMAL);
   t1->Show();
 
   EXPECT_EQ(2u, list_provider->GetWindowList().size());

@@ -6,7 +6,6 @@
 
 #include "athena/screen/public/screen_manager.h"
 #include "athena/test/base/athena_test_base.h"
-#include "athena/test/base/test_windows.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/test/window_manager_impl_test_api.h"
 #include "base/memory/scoped_vector.h"
@@ -103,7 +102,7 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   ScopedVector<aura::Window> windows;
   const int kNumWindows = 6;
   for (size_t i = 0; i < kNumWindows; ++i) {
-    scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
+    scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
     windows.push_back(window.release());
     windows[i]->Hide();
   }
@@ -195,7 +194,7 @@ TEST_F(SplitViewControllerTest, ScrollDragHandle) {
   ScopedVector<aura::Window> windows;
   const int kNumWindows = 2;
   for (size_t i = 0; i < kNumWindows; ++i) {
-    scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
+    scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
     windows.push_back(window.release());
     windows[i]->Hide();
   }
@@ -291,7 +290,7 @@ TEST_F(SplitViewControllerTest, LandscapeOnly) {
   ScopedVector<aura::Window> windows;
   const int kNumWindows = 2;
   for (size_t i = 0; i < kNumWindows; ++i) {
-    scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
+    scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
     window->Hide();
     windows.push_back(window.release());
   }
