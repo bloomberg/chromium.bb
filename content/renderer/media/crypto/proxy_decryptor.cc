@@ -10,14 +10,10 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "content/renderer/media/crypto/content_decryption_module_factory.h"
 #include "media/base/cdm_callback_promise.h"
+#include "media/base/cdm_factory.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/key_system_names.h"
-
-#if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
-#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
@@ -30,30 +26,17 @@ namespace content {
 // EME API.
 const int kSessionClosedSystemCode = 29127;
 
-ProxyDecryptor::ProxyDecryptor(
-#if defined(ENABLE_PEPPER_CDMS)
-    const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(ENABLE_BROWSER_CDMS)
-    RendererCdmManager* manager,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-    const KeyAddedCB& key_added_cb,
-    const KeyErrorCB& key_error_cb,
-    const KeyMessageCB& key_message_cb)
-    :
-#if defined(ENABLE_PEPPER_CDMS)
-      create_pepper_cdm_cb_(create_pepper_cdm_cb),
-#elif defined(ENABLE_BROWSER_CDMS)
-      manager_(manager),
-      cdm_id_(RendererCdmManager::kInvalidCdmId),
-#endif  // defined(ENABLE_PEPPER_CDMS)
-      key_added_cb_(key_added_cb),
+ProxyDecryptor::ProxyDecryptor(const KeyAddedCB& key_added_cb,
+                               const KeyErrorCB& key_error_cb,
+                               const KeyMessageCB& key_message_cb)
+    : key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
       is_clear_key_(false),
-      weak_ptr_factory_(this) {
-#if defined(ENABLE_PEPPER_CDMS)
-  DCHECK(!create_pepper_cdm_cb_.is_null());
+#if defined(ENABLE_BROWSER_CDMS)
+      cdm_id_(RendererCdmManager::kInvalidCdmId),
 #endif  // defined(ENABLE_PEPPER_CDMS)
+      weak_ptr_factory_(this) {
   DCHECK(!key_added_cb_.is_null());
   DCHECK(!key_error_cb_.is_null());
   DCHECK(!key_message_cb_.is_null());
@@ -74,12 +57,13 @@ int ProxyDecryptor::GetCdmId() {
 }
 #endif
 
-bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
+bool ProxyDecryptor::InitializeCDM(media::CdmFactory* cdm_factory,
+                                   const std::string& key_system,
                                    const GURL& security_origin) {
   DVLOG(1) << "InitializeCDM: key_system = " << key_system;
 
   DCHECK(!media_keys_);
-  media_keys_ = CreateMediaKeys(key_system, security_origin);
+  media_keys_ = CreateMediaKeys(cdm_factory, key_system, security_origin);
   if (!media_keys_)
     return false;
 
@@ -223,29 +207,22 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& web_session_id) {
 }
 
 scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
+    media::CdmFactory* cdm_factory,
     const std::string& key_system,
     const GURL& security_origin) {
-  return ContentDecryptionModuleFactory::Create(
+  base::WeakPtr<ProxyDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
+  return cdm_factory->Create(
       key_system,
       security_origin,
-#if defined(ENABLE_PEPPER_CDMS)
-      create_pepper_cdm_cb_,
-#elif defined(ENABLE_BROWSER_CDMS)
-      manager_,
+#if defined(ENABLE_BROWSER_CDMS)
       &cdm_id_,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-      base::Bind(&ProxyDecryptor::OnSessionMessage,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::OnSessionReady,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::OnSessionClosed,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::OnSessionError,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::OnSessionKeysChange,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::OnSessionExpirationUpdate,
-                 weak_ptr_factory_.GetWeakPtr()));
+#endif
+      base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
+      base::Bind(&ProxyDecryptor::OnSessionReady, weak_this),
+      base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),
+      base::Bind(&ProxyDecryptor::OnSessionError, weak_this),
+      base::Bind(&ProxyDecryptor::OnSessionKeysChange, weak_this),
+      base::Bind(&ProxyDecryptor::OnSessionExpirationUpdate, weak_this));
 }
 
 void ProxyDecryptor::OnSessionMessage(const std::string& web_session_id,

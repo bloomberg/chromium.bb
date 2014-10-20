@@ -25,6 +25,7 @@
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_frame_impl.h"
@@ -1515,7 +1516,6 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   if (current_key_system_.empty()) {
     if (!proxy_decryptor_) {
       proxy_decryptor_.reset(new ProxyDecryptor(
-          cdm_manager_,
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnKeyError,
@@ -1525,8 +1525,11 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     }
 
     GURL security_origin(frame_->document().securityOrigin().toString());
-    if (!proxy_decryptor_->InitializeCDM(key_system, security_origin))
+    RenderCdmFactory cdm_factory(cdm_manager_);
+    if (!proxy_decryptor_->InitializeCDM(&cdm_factory, key_system,
+                                         security_origin)) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    }
 
     if (!decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)

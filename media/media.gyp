@@ -255,6 +255,8 @@
         'base/byte_queue.h',
         'base/cdm_callback_promise.cc',
         'base/cdm_callback_promise.h',
+        'base/cdm_factory.cc',
+        'base/cdm_factory.h',
         'base/cdm_promise.cc',
         'base/cdm_promise.h',
         'base/channel_mixer.cc',

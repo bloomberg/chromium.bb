@@ -73,6 +73,7 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/crypto/encrypted_media_player_support_impl.h"
+#include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/midi_dispatcher.h"
@@ -153,7 +154,9 @@
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #endif
 
-#if defined(ENABLE_BROWSER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS)
+#include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
+#elif defined(ENABLE_BROWSER_CDMS)
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif
 
@@ -1703,14 +1706,17 @@ RenderFrameImpl::createContentDecryptionModule(
     const blink::WebSecurityOrigin& security_origin,
     const blink::WebString& key_system) {
   DCHECK(!frame_ || frame_ == frame);
-  return WebContentDecryptionModuleImpl::Create(
+
+  RenderCdmFactory cdm_factory(
 #if defined(ENABLE_PEPPER_CDMS)
-      frame,
+      base::Bind(&PepperCdmWrapperImpl::Create, frame)
 #elif defined(ENABLE_BROWSER_CDMS)
-      GetCdmManager(),
+      GetCdmManager()
 #endif
-      security_origin,
-      key_system);
+  );
+
+  return WebContentDecryptionModuleImpl::Create(&cdm_factory, security_origin,
+                                                key_system);
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(

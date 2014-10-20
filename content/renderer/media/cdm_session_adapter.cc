@@ -8,12 +8,16 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/crypto/content_decryption_module_factory.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_BROWSER_CDMS)
+#include "content/renderer/media/crypto/renderer_cdm_manager.h"
+#endif  // defined(ENABLE_BROWSER_CDMS)
 
 namespace content {
 
@@ -22,29 +26,26 @@ const char kDot[] = ".";
 
 CdmSessionAdapter::CdmSessionAdapter() :
 #if defined(ENABLE_BROWSER_CDMS)
-    cdm_id_(0),
+    // TODO(xhwang): Move kInvalidCdmId to src/media.
+    cdm_id_(RendererCdmManager::kInvalidCdmId),
 #endif
     weak_ptr_factory_(this) {}
 
 CdmSessionAdapter::~CdmSessionAdapter() {}
 
-bool CdmSessionAdapter::Initialize(
-#if defined(ENABLE_PEPPER_CDMS)
-    const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(ENABLE_BROWSER_CDMS)
-    RendererCdmManager* manager,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-    const std::string& key_system,
-    const GURL& security_origin) {
+bool CdmSessionAdapter::Initialize(media::CdmFactory* cdm_factory,
+                                   const std::string& key_system,
+                                   const GURL& security_origin) {
+  // TODO(xhwang): This is why we need to include "key_systems.h". Move
+  // KeySystemNameForUMA out of src/content so we can move CdmSessionAdapter to
+  // src/media.
   key_system_uma_prefix_ = kMediaEME + KeySystemNameForUMA(key_system) + kDot;
+
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
-  media_keys_ = ContentDecryptionModuleFactory::Create(
+  media_keys_ = cdm_factory->Create(
       key_system,
       security_origin,
-#if defined(ENABLE_PEPPER_CDMS)
-      create_pepper_cdm_cb,
-#elif defined(ENABLE_BROWSER_CDMS)
-      manager,
+#if defined(ENABLE_BROWSER_CDMS)
       &cdm_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),

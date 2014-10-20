@@ -15,17 +15,13 @@
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 
-#if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
-#endif
-
 class GURL;
 
-namespace content {
+namespace media {
+class CdmFactory;
+}
 
-#if defined(ENABLE_BROWSER_CDMS)
-class RendererCdmManager;
-#endif
+namespace content {
 
 class WebContentDecryptionModuleSessionImpl;
 
@@ -38,14 +34,9 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   CdmSessionAdapter();
 
   // Returns true on success.
-  bool Initialize(
-#if defined(ENABLE_PEPPER_CDMS)
-      const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(ENABLE_BROWSER_CDMS)
-      RendererCdmManager* manager,
-#endif
-      const std::string& key_system,
-      const GURL& security_origin);
+  bool Initialize(media::CdmFactory* cdm_factory,
+                  const std::string& key_system,
+                  const GURL& security_origin);
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server.

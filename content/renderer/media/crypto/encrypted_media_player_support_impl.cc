@@ -13,8 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
-#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/blink/encrypted_media_player_support.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
@@ -26,6 +26,8 @@
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
+#elif defined(ENABLE_BROWSER_CDMS)
+#error Browser side CDM in WMPI for prefixed EME API not supported yet.
 #endif
 
 using blink::WebMediaPlayer;
@@ -39,7 +41,6 @@ namespace content {
 
 #define BIND_TO_RENDER_LOOP1(function, arg1)     \
   (media::BindToCurrentLoop(base::Bind(function, AsWeakPtr(), arg1)))
-
 
 // Prefix for histograms related to Encrypted Media Extensions.
 static const char* kMediaEme = "Media.EME.";
@@ -159,7 +160,6 @@ EncryptedMediaPlayerSupportImpl::GenerateKeyRequest(
   return e;
 }
 
-
 WebMediaPlayer::MediaKeyException
 EncryptedMediaPlayerSupportImpl::GenerateKeyRequestInternal(
     blink::WebLocalFrame* frame,
@@ -173,21 +173,23 @@ EncryptedMediaPlayerSupportImpl::GenerateKeyRequestInternal(
   if (current_key_system_.empty()) {
     if (!proxy_decryptor_) {
       proxy_decryptor_.reset(new ProxyDecryptor(
-#if defined(ENABLE_PEPPER_CDMS)
-          // Create() must be called synchronously as |frame| may not be
-          // valid afterwards.
-          base::Bind(&PepperCdmWrapperImpl::Create, frame),
-#elif defined(ENABLE_BROWSER_CDMS)
-#error Browser side CDM in WMPI for prefixed EME API not supported yet.
-#endif
           BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupportImpl::OnKeyAdded),
           BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupportImpl::OnKeyError),
           BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupportImpl::OnKeyMessage)));
     }
 
     GURL security_origin(frame->document().securityOrigin().toString());
-    if (!proxy_decryptor_->InitializeCDM(key_system, security_origin))
+
+    RenderCdmFactory cdm_factory(
+#if defined(ENABLE_PEPPER_CDMS)
+        base::Bind(&PepperCdmWrapperImpl::Create, frame)
+#endif
+    );
+
+    if (!proxy_decryptor_->InitializeCDM(&cdm_factory, key_system,
+                                         security_origin)) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    }
 
     if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)
