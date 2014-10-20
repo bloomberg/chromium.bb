@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -179,15 +180,13 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     old_rwhv_ = rvh()->GetView();
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
-    rwhv_mac_ = new RenderWidgetHostViewMac(rvh());
+    rwhv_mac_ = new RenderWidgetHostViewMac(rvh(), false);
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();
-    pool_.Recycle();
-    base::MessageLoop::current()->RunUntilIdle();
-    pool_.Recycle();
+    RecycleAndWait();
 
     // See comment in SetUp().
     test_rvh()->SetView(static_cast<RenderWidgetHostViewBase*>(old_rwhv_));
@@ -195,6 +194,12 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     if (IsDelegatedRendererEnabled())
       ImageTransportFactory::Terminate();
     RenderViewHostImplTestHarness::TearDown();
+  }
+
+  void RecycleAndWait() {
+    pool_.Recycle();
+    base::MessageLoop::current()->RunUntilIdle();
+    pool_.Recycle();
   }
  protected:
  private:
@@ -268,7 +273,7 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE, false);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
 
   view->InitAsFullscreen(rwhv_mac_);
 
@@ -301,7 +306,7 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE, false);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
 
   view->InitAsFullscreen(rwhv_mac_);
 
@@ -655,7 +660,7 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
   // Owned by its |cocoa_view()|.
   MockRenderWidgetHostImpl* rwh = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
 
   base::scoped_nsobject<CocoaTestHelperWindow> window(
       [[CocoaTestHelperWindow alloc] init]);
@@ -701,7 +706,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // Send an initial wheel event with NSEventPhaseBegan to the view.
   NSEvent* event1 = MockScrollWheelEventWithPhase(@selector(phaseBegan), 0);
@@ -741,7 +746,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // Add a delegate to the view.
   base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
@@ -781,6 +786,47 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
 
   // Clean up.
   host->Shutdown();
+}
+
+// Tests that when view initiated shutdown happens (i.e. RWHView is deleted
+// before RWH), we clean up properly and don't leak the RWHVGuest.
+TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
+  MockRenderWidgetHostDelegate delegate;
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+
+  // Owned by its |cocoa_view()|.
+  MockRenderWidgetHostImpl* rwh = new MockRenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, true);
+
+  // Add a delegate to the view.
+  base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
+      [[MockRenderWidgetHostViewMacDelegate alloc] init]);
+  view->SetDelegate(view_delegate.get());
+
+  base::WeakPtr<RenderWidgetHostViewBase> guest_rwhv_weak =
+      (new RenderWidgetHostViewGuest(
+           rwh, NULL, view->GetWeakPtr()))->GetWeakPtr();
+
+  // Remove the cocoa_view() so |view| also goes away before |rwh|.
+  {
+    base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa;
+    rwhv_cocoa.reset([view->cocoa_view() retain]);
+  }
+  RecycleAndWait();
+
+  // Clean up.
+  rwh->Shutdown();
+
+  // Let |guest_rwhv_weak| have a chance to delete itself.
+  base::RunLoop run_loop;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_FALSE(guest_rwhv_weak.get());
 }
 
 }  // namespace content

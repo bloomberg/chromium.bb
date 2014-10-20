@@ -762,7 +762,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 TEST_F(RenderWidgetHostTest, Background) {
   scoped_ptr<RenderWidgetHostViewBase> view;
 #if defined(USE_AURA)
-  view.reset(new RenderWidgetHostViewAura(host_.get()));
+  view.reset(new RenderWidgetHostViewAura(host_.get(), false));
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
   view->InitAsChild(NULL);
 #elif defined(OS_ANDROID)

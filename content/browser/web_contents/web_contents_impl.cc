@@ -1531,7 +1531,7 @@ void WebContentsImpl::CreateNewWindow(
 
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
-      new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
+      new_view->CreateViewForWidget(new_contents->GetRenderViewHost(), false);
     }
     // Save the created window associated with the route so we can show it
     // later.
@@ -4092,7 +4092,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
         new RenderWidgetHostViewChildFrame(render_view_host);
     rwh_view = rwh_view_child;
   } else {
-    rwh_view = view_->CreateViewForWidget(render_view_host);
+    rwh_view = view_->CreateViewForWidget(render_view_host, false);
   }
 
   // Now that the RenderView has been created, we need to tell it its size.

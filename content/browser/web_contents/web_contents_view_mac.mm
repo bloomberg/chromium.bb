@@ -284,7 +284,7 @@ void WebContentsViewMac::CreateView(
 }
 
 RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
+    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -297,7 +297,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   }
 
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(
-      render_widget_host);
+      render_widget_host, is_guest_view_hack);
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate> >
         rw_delegate(
@@ -331,7 +331,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return new RenderWidgetHostViewMac(render_widget_host);
+  return new RenderWidgetHostViewMac(render_widget_host, false);
 }
 
 void WebContentsViewMac::SetPageTitle(const base::string16& title) {

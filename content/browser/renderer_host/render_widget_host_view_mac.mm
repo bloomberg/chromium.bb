@@ -521,7 +521,8 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
-RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
+RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
+                                                 bool is_guest_view_hack)
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
@@ -529,6 +530,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
           new BrowserCompositorViewPlaceholderMac),
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
+      is_guest_view_hack_(is_guest_view_hack),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
@@ -552,7 +554,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 
   gfx::Screen::GetScreenFor(cocoa_view_)->AddObserver(this);
 
-  render_widget_host_->SetView(this);
+  if (!is_guest_view_hack_)
+    render_widget_host_->SetView(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -570,8 +573,13 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
   // RenderWidgetHost does we need to tell it not to hold a stale pointer to
   // us.
-  if (render_widget_host_)
-    render_widget_host_->SetView(NULL);
+  if (render_widget_host_) {
+    // If this is a RenderWidgetHostViewGuest's platform_view_, we're not the
+    // RWH's view, the RenderWidgetHostViewGuest is. So don't reset the RWH's
+    // view, the RenderWidgetHostViewGuest will do it.
+    if (!is_guest_view_hack_)
+      render_widget_host_->SetView(NULL);
+  }
 }
 
 void RenderWidgetHostViewMac::SetDelegate(

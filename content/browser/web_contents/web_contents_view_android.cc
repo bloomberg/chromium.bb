@@ -121,7 +121,7 @@ void WebContentsViewAndroid::CreateView(
 }
 
 RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
+    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that

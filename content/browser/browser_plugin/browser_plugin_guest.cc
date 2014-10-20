@@ -544,7 +544,7 @@ void BrowserPluginGuest::Attach(
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     if (!web_contents()->GetRenderViewHost()->GetView()) {
       web_contents_view->CreateViewForWidget(
-          web_contents()->GetRenderViewHost());
+          web_contents()->GetRenderViewHost(), true);
     }
   }
 

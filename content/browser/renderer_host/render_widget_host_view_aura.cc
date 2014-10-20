@@ -428,7 +428,8 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
 
-RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
+RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
+                                                   bool is_guest_view_hack)
     : host_(RenderWidgetHostImpl::From(host)),
       window_(new aura::Window(this)),
       delegated_frame_host_(new DelegatedFrameHost(this)),
@@ -453,8 +454,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 #endif
       has_snapped_to_boundary_(false),
       touch_editing_client_(NULL),
+      is_guest_view_hack_(is_guest_view_hack),
       weak_ptr_factory_(this) {
-  host_->SetView(this);
+  if (!is_guest_view_hack_)
+    host_->SetView(this);
+
   window_observer_.reset(new WindowObserver(this));
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
@@ -1765,7 +1769,10 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroyed(aura::Window* window) {
-  host_->ViewDestroyed();
+  // Ask the RWH to drop reference to us.
+  if (!is_guest_view_hack_)
+    host_->ViewDestroyed();
+
   delete this;
 }
 

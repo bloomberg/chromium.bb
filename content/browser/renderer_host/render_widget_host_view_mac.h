@@ -210,7 +210,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
   // deleted it will delete this out from under the caller.
-  explicit RenderWidgetHostViewMac(RenderWidgetHost* widget);
+  //
+  // When |is_guest_view_hack| is true, this view isn't really the view for
+  // the |widget|, a RenderWidgetHostViewGuest is.
+  // TODO(lazyboy): Remove |is_guest_view_hack| once BrowserPlugin has migrated
+  // to use RWHVChildFrame (http://crbug.com/330264).
+  RenderWidgetHostViewMac(RenderWidgetHost* widget, bool is_guest_view_hack);
   virtual ~RenderWidgetHostViewMac();
 
   RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
@@ -476,6 +481,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // The text to be shown in the tooltip, supplied by the renderer.
   base::string16 tooltip_text_;
+
+  // True when this view acts as a platform view hack for a
+  // RenderWidgetHostViewGuest.
+  bool is_guest_view_hack_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

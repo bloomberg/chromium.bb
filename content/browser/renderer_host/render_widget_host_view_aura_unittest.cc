@@ -18,6 +18,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -221,8 +222,10 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 
 class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
  public:
-  FakeRenderWidgetHostViewAura(RenderWidgetHost* widget)
-      : RenderWidgetHostViewAura(widget), has_resize_lock_(false) {}
+  FakeRenderWidgetHostViewAura(RenderWidgetHost* widget,
+                               bool is_guest_view_hack)
+      : RenderWidgetHostViewAura(widget, is_guest_view_hack),
+        has_resize_lock_(false) {}
 
   virtual ~FakeRenderWidgetHostViewAura() {}
 
@@ -325,7 +328,9 @@ class MockWindowObserver : public aura::WindowObserver {
 class RenderWidgetHostViewAuraTest : public testing::Test {
  public:
   RenderWidgetHostViewAuraTest()
-      : browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
+      : widget_host_uses_shutdown_to_destroy_(false),
+        is_guest_view_hack_(false),
+        browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
 
   void SetUpEnvironment() {
     ImageTransportFactory::InitializeForUnitTests(
@@ -343,7 +348,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     parent_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host_, MSG_ROUTING_NONE, false);
-    parent_view_ = new RenderWidgetHostViewAura(parent_host_);
+    parent_view_ = new RenderWidgetHostViewAura(parent_host_,
+                                                is_guest_view_hack_);
     parent_view_->InitAsChild(NULL);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),
@@ -352,7 +358,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host_, MSG_ROUTING_NONE, false);
     widget_host_->Init();
-    view_ = new FakeRenderWidgetHostViewAura(widget_host_);
+    view_ = new FakeRenderWidgetHostViewAura(widget_host_, is_guest_view_hack_);
   }
 
   void TearDownEnvironment() {
@@ -360,7 +366,11 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     process_host_ = NULL;
     if (view_)
       view_->Destroy();
-    delete widget_host_;
+
+    if (widget_host_uses_shutdown_to_destroy_)
+      widget_host_->Shutdown();
+    else
+      delete widget_host_;
 
     parent_view_->Destroy();
     delete parent_host_;
@@ -373,11 +383,20 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     ImageTransportFactory::Terminate();
   }
 
-  virtual void SetUp() { SetUpEnvironment(); }
+  virtual void SetUp() override { SetUpEnvironment(); }
 
-  virtual void TearDown() { TearDownEnvironment(); }
+  virtual void TearDown() override { TearDownEnvironment(); }
+
+  void set_widget_host_uses_shutdown_to_destroy(bool use) {
+    widget_host_uses_shutdown_to_destroy_ = use;
+  }
 
  protected:
+  // If true, then calls RWH::Shutdown() instead of deleting RWH.
+  bool widget_host_uses_shutdown_to_destroy_;
+
+  bool is_guest_view_hack_;
+
   base::MessageLoopForUI message_loop_;
   BrowserThreadImpl browser_thread_for_ui_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
@@ -399,6 +418,40 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
+};
+
+// Helper class to instantiate RenderWidgetHostViewGuest which is backed
+// by an aura platform view.
+class RenderWidgetHostViewGuestAuraTest : public RenderWidgetHostViewAuraTest {
+ public:
+  RenderWidgetHostViewGuestAuraTest() {
+    // Use RWH::Shutdown to destroy RWH, instead of deleting.
+    // This will ensure that the RenderWidgetHostViewGuest is not leaked and
+    // is deleted properly upon RWH going away.
+    set_widget_host_uses_shutdown_to_destroy(true);
+  }
+
+  // We explicitly invoke SetUp to allow gesture debounce customization.
+  virtual void SetUp() {
+    is_guest_view_hack_ = true;
+
+    RenderWidgetHostViewAuraTest::SetUp();
+
+    guest_view_weak_ = (new RenderWidgetHostViewGuest(
+        widget_host_, NULL, view_->GetWeakPtr()))->GetWeakPtr();
+  }
+
+  virtual void TearDown() {
+    // Internal override to do nothing, we clean up ourselves in the test body.
+    // This helps us test that |guest_view_weak_| does not leak.
+  }
+
+ protected:
+  base::WeakPtr<RenderWidgetHostViewBase> guest_view_weak_;
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestAuraTest);
 };
 
 class RenderWidgetHostViewAuraOverscrollTest
@@ -1579,7 +1632,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     hosts[i] = new RenderWidgetHostImpl(
         &delegate_, process_host_, MSG_ROUTING_NONE, false);
     hosts[i]->Init();
-    views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
     aura::client::ParentWindowWithContext(
         views[i]->GetNativeView(),
@@ -1741,7 +1794,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
     hosts[i] = new RenderWidgetHostImpl(
         &delegate_, process_host_, MSG_ROUTING_NONE, false);
     hosts[i]->Init();
-    views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
     aura::client::ParentWindowWithContext(
         views[i]->GetNativeView(),
@@ -2851,6 +2904,13 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
   EXPECT_EQ(3U, sink_->message_count());
+}
+
+// Tests that when view initiated shutdown happens (i.e. RWHView is deleted
+// before RWH), we clean up properly and don't leak the RWHVGuest.
+TEST_F(RenderWidgetHostViewGuestAuraTest, GuestViewDoesNotLeak) {
+  TearDownEnvironment();
+  ASSERT_FALSE(guest_view_weak_.get());
 }
 
 }  // namespace content

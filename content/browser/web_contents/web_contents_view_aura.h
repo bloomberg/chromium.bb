@@ -117,7 +117,7 @@ class WebContentsViewAura
   virtual void CreateView(
       const gfx::Size& initial_size, gfx::NativeView context) override;
   virtual RenderWidgetHostViewBase* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host) override;
+      RenderWidgetHost* render_widget_host, bool is_guest_view_hack) override;
   virtual RenderWidgetHostViewBase* CreateViewForPopupWidget(
       RenderWidgetHost* render_widget_host) override;
   virtual void SetPageTitle(const base::string16& title) override;

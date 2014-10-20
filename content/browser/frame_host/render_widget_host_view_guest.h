@@ -39,9 +39,10 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       public ui::GestureConsumer,
       public ui::GestureEventHelper {
  public:
-  RenderWidgetHostViewGuest(RenderWidgetHost* widget,
-                            BrowserPluginGuest* guest,
-                            RenderWidgetHostViewBase* platform_view);
+  RenderWidgetHostViewGuest(
+      RenderWidgetHost* widget,
+      BrowserPluginGuest* guest,
+      base::WeakPtr<RenderWidgetHostViewBase> platform_view);
   virtual ~RenderWidgetHostViewGuest();
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message,
@@ -176,7 +177,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
   // compositing, the rest are directly forwared to this |platform_view_|.
-  RenderWidgetHostViewBase* platform_view_;
+  base::WeakPtr<RenderWidgetHostViewBase> platform_view_;
 #if defined(USE_AURA)
   scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
 #endif

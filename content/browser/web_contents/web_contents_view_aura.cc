@@ -1113,7 +1113,7 @@ void WebContentsViewAura::CreateView(
 }
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
+    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -1126,7 +1126,7 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
   }
 
   RenderWidgetHostViewAura* view =
-      new RenderWidgetHostViewAura(render_widget_host);
+      new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack);
   view->InitAsChild(NULL);
   GetNativeView()->AddChild(view->GetNativeView());
 
@@ -1155,7 +1155,7 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return new RenderWidgetHostViewAura(render_widget_host);
+  return new RenderWidgetHostViewAura(render_widget_host, false);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {

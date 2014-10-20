@@ -34,7 +34,8 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE, false);
     view_ = new RenderWidgetHostViewGuest(
-        widget_host_, NULL, new TestRenderWidgetHostView(widget_host_));
+        widget_host_, NULL,
+        (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
   }
 
   virtual void TearDown() {

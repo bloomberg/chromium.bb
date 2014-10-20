@@ -581,7 +581,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   WebContentsView* wcv =
       static_cast<WebContentsImpl*>(web_contents())->GetView();
   RenderWidgetHostViewBase* view =
-      wcv->CreateViewForWidget(render_view_host_);
+      wcv->CreateViewForWidget(render_view_host_, false);
   render_view_host_->SetView(view);
   render_view_host_->AllowBindings(BINDINGS_POLICY_DOM_AUTOMATION);
 

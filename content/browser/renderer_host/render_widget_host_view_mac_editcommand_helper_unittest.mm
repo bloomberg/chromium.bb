@@ -133,7 +133,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
 
   // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.
   RenderWidgetHostViewMac* rwhv_mac = new RenderWidgetHostViewMac(
-      render_widget);
+      render_widget, false);
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
       [rwhv_mac->cocoa_view() retain]);
 

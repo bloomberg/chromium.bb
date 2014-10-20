@@ -140,7 +140,7 @@ void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
 }
 
 RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
+    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -153,11 +153,11 @@ RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(
   }
 
   RenderWidgetHostViewBase* platform_widget =
-      platform_view_->CreateViewForWidget(render_widget_host);
+      platform_view_->CreateViewForWidget(render_widget_host, true);
 
   return new RenderWidgetHostViewGuest(render_widget_host,
                                        guest_,
-                                       platform_widget);
+                                       platform_widget->GetWeakPtr());
 }
 
 RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForPopupWidget(

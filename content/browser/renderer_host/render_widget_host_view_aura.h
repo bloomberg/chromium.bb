@@ -130,7 +130,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     touch_editing_client_ = client;
   }
 
-  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
+  // When |is_guest_view_hack| is true, this view isn't really the view for
+  // the |widget|, a RenderWidgetHostViewGuest is.
+  //
+  // TODO(lazyboy): Remove |is_guest_view_hack| once BrowserPlugin has migrated
+  // to use RWHVChildFrame (http://crbug.com/330264).
+  RenderWidgetHostViewAura(RenderWidgetHost* host, bool is_guest_view_hack);
 
   // RenderWidgetHostView implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) override;
@@ -618,6 +623,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   std::vector<ui::LatencyInfo> software_latency_info_;
 
   scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
+
+  // True when this view acts as a platform view hack for a
+  // RenderWidgetHostViewGuest.
+  bool is_guest_view_hack_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

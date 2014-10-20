@@ -76,8 +76,12 @@ class SpellCheckObserver : public content::WebContentsObserver {
   self = [super init];
   if (self) {
     renderWidgetHost_ = renderWidgetHost;
-    NSView* nativeView = renderWidgetHost_->GetView()->GetNativeView();
-    view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER);
+    // if |renderWidgetHost_| belongs to a BrowserPluginGuest, then it won't
+    // have a view yet.
+    if (renderWidgetHost_->GetView()) {
+      NSView* nativeView = renderWidgetHost_->GetView()->GetNativeView();
+      view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER);
+    }
 
     if (renderWidgetHost_->IsRenderView()) {
       spellingObserver_.reset(

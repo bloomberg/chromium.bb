@@ -46,7 +46,7 @@ blink::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,
-    RenderWidgetHostViewBase* platform_view)
+    base::WeakPtr<RenderWidgetHostViewBase> platform_view)
     : RenderWidgetHostViewChildFrame(widget_host),
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
@@ -177,7 +177,8 @@ void RenderWidgetHostViewGuest::Destroy() {
   // The RenderWidgetHost's destruction led here, so don't call it.
   DestroyGuestView();
 
-  platform_view_->Destroy();
+  if (platform_view_)  // The platform view might have been destroyed already.
+    platform_view_->Destroy();
 }
 
 gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
@@ -419,7 +420,7 @@ void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
       // Vertical offset from guest's top to embedder's bottom edge.
       embedder_bounds.bottom() - guest_bounds.y());
 
-  RenderWidgetHostViewMacDictionaryHelper helper(platform_view_);
+  RenderWidgetHostViewMacDictionaryHelper helper(platform_view_.get());
   helper.SetTargetView(rwhv);
   helper.set_offset(guest_offset);
   helper.ShowDefinitionForSelection();
