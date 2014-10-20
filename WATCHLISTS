@@ -569,6 +569,9 @@
     'remoting': {
       'filepath': 'remoting/',
     },
+    'safe_browsing': {
+      'filepath': 'chrome/(browser|common|renderer)/safe_browsing/',
+    },
     'search': {
       'filepath': 'chrome/browser/ui/search/',
     },
@@ -800,7 +803,7 @@
     'base_allocator': ['dmikurube+memory@chromium.org',
                        'wfh+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
-    'base_win': ['wfh+watch@chromium.org'],
+    'base_win': ['grt+watch@chromium.org', 'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
     'bookmarks': ['tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
@@ -953,6 +956,7 @@
                'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
+    'safe_browsing': ['grt+watch@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'service_worker': ['tzik@chromium.org',
                        'kinuko+serviceworker@chromium.org',
