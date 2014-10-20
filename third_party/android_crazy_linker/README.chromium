@@ -47,3 +47,5 @@ Local Modifications:
 - Fix typo in LOG() call, added in arm64 packed relative relocations change.
 
 - Add an error message for failures where no shared RELRO pages are swapped.
+
+- Remove excess newline from the message added above.

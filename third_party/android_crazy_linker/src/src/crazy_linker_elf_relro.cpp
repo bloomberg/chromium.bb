@@ -218,7 +218,7 @@ bool SharedRelro::InitFrom(size_t relro_start,
       (size - similar_size) / 4096);
 
   if (similar_size == 0) {
-    error->Format("No pages were swapped into RELRO ashmem\n");
+    error->Format("No pages were swapped into RELRO ashmem");
     return false;
   }
 
