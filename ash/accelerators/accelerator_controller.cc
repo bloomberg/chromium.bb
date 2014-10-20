@@ -180,14 +180,15 @@ bool HandleMagnifyScreen(int delta_index) {
 
     ash::Shell::GetInstance()->magnification_controller()->
         SetScale(std::pow(kMagnificationScaleFactor, new_scale_index), true);
+    return true;
   } else if (ash::Shell::GetInstance()->
              partial_magnification_controller()->is_enabled()) {
     float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;
     ash::Shell::GetInstance()->partial_magnification_controller()->
         SetScale(scale);
+    return true;
   }
-
-  return true;
+  return false;
 }
 
 bool HandleMediaNextTrack() {
@@ -356,8 +357,13 @@ bool HandleScaleReset() {
 
   base::RecordAction(UserMetricsAction("Accel_Scale_Ui_Reset"));
 
-  display_manager->SetDisplayUIScale(display_id, 1.0f);
-  return true;
+  float ui_scale =
+      display_manager->GetDisplayInfo(display_id).configured_ui_scale();
+  if (ui_scale != 1.0f) {
+    display_manager->SetDisplayUIScale(display_id, 1.0f);
+    return true;
+  }
+  return false;
 }
 
 bool HandleScaleUI(bool up) {
@@ -393,7 +399,7 @@ bool HandleShowKeyboardOverlay() {
   return true;
 }
 
-void HandleShowMessageCenterBubble() {
+bool HandleShowMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
   RootWindowController* controller =
       RootWindowController::ForTargetRootWindow();
@@ -402,9 +408,12 @@ void HandleShowMessageCenterBubble() {
   if (status_area_widget) {
     WebNotificationTray* notification_tray =
       status_area_widget->web_notification_tray();
-    if (notification_tray->visible())
+    if (notification_tray->visible()) {
       notification_tray->ShowMessageCenterBubble();
+      return true;
+    }
   }
+  return false;
 }
 
 bool HandleShowSystemTrayBubble() {
@@ -1012,8 +1021,7 @@ bool AcceleratorController::PerformAction(int action,
     case SHOW_SYSTEM_TRAY_BUBBLE:
       return HandleShowSystemTrayBubble();
     case SHOW_MESSAGE_CENTER_BUBBLE:
-      HandleShowMessageCenterBubble();
-      break;
+      return HandleShowMessageCenterBubble();
     case SHOW_TASK_MANAGER:
       return HandleShowTaskManager();
     case NEXT_IME:
