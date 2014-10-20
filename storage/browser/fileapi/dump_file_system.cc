@@ -9,6 +9,8 @@
 // ./out/Release/dump_file_system [options] <filesystem dir> [origin]...
 //
 // If no origin is specified, this dumps all origins in the profile dir.
+// For Chrome App, which has a separate storage directory, specify "primary"
+// as the origin name.
 //
 // Available options:
 //
@@ -42,6 +44,7 @@
 #include "storage/browser/fileapi/sandbox_directory_database.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/browser/fileapi/sandbox_origin_database.h"
+#include "storage/browser/fileapi/sandbox_prioritized_origin_database.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 
@@ -131,8 +134,14 @@ static void DumpDirectoryTree(const std::string& origin_name,
   }
 }
 
-static void DumpOrigin(const base::FilePath& file_system_dir,
-                       const std::string& origin_name) {
+static base::FilePath GetOriginDir(const base::FilePath& file_system_dir,
+                                   const std::string& origin_name) {
+  if (base::PathExists(file_system_dir.Append(
+          SandboxPrioritizedOriginDatabase::kPrimaryOriginFile))) {
+    return base::FilePath(
+        SandboxPrioritizedOriginDatabase::kPrimaryOriginFile);
+  }
+
   SandboxOriginDatabase origin_db(file_system_dir, NULL);
   base::FilePath origin_dir;
   if (!origin_db.HasOriginPath(origin_name)) {
@@ -144,6 +153,13 @@ static void DumpOrigin(const base::FilePath& file_system_dir,
     ShowMessageAndExit("Failed to get path of origin " + origin_name +
                        " in " + FilePathToString(file_system_dir));
   }
+
+  return origin_dir;
+}
+
+static void DumpOrigin(const base::FilePath& file_system_dir,
+                       const std::string& origin_name) {
+  base::FilePath origin_dir = GetOriginDir(file_system_dir, origin_name);
   DumpDirectoryTree(origin_name, file_system_dir.Append(origin_dir));
 }
 

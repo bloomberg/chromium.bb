@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/sandbox_origin_database_interface.h"
 
@@ -24,6 +25,9 @@ class SandboxOriginDatabase;
 class STORAGE_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
+  static const base::FilePath::CharType* kPrimaryDirectory;
+  static const base::FilePath::CharType* kPrimaryOriginFile;
+
   SandboxPrioritizedOriginDatabase(const base::FilePath& file_system_directory,
                                    leveldb::Env* env_override);
   virtual ~SandboxPrioritizedOriginDatabase();
