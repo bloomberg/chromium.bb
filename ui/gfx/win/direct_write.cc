@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/win/dpi.h"
@@ -37,6 +38,20 @@ bool ShouldUseDirectWrite() {
   // Can't use GDI on HiDPI.
   if (gfx::GetDPIScale() > 1.0f)
     return true;
+
+  // We have logic in renderer_font_platform_win.cc for falling back to safe
+  // font list if machine has more than 1750 fonts installed. Users have
+  // complained about this as safe font list is usually not sufficient.
+  // We now disable direct write (gdi) if we encounter more number
+  // of fonts than a threshold (currently 1750).
+  // Refer: crbug.com/421305
+  const wchar_t kWindowsFontsRegistryKey[] =
+      L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
+  base::win::RegistryValueIterator reg_iterator(HKEY_LOCAL_MACHINE,
+                                                kWindowsFontsRegistryKey);
+  const DWORD kMaxAllowedFontsBeforeFallbackToGDI = 1750;
+  if (reg_iterator.ValueCount() >= kMaxAllowedFontsBeforeFallbackToGDI)
+    return false;
 
   // Otherwise, check the field trial.
   const std::string group_name =
