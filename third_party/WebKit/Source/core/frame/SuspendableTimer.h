@@ -48,7 +48,6 @@ private:
 
     double m_nextFireInterval;
     double m_repeatInterval;
-    bool m_active;
 #if ENABLE(ASSERT)
     bool m_suspended;
 #endif

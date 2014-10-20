@@ -29,11 +29,15 @@
 
 namespace blink {
 
+namespace {
+// The lowest value returned by TimerBase::nextUnalignedFireInterval is 0.0
+const double kNextFireIntervalInvalid = -1.0;
+}
+
 SuspendableTimer::SuspendableTimer(ExecutionContext* context)
     : ActiveDOMObject(context)
-    , m_nextFireInterval(0)
+    , m_nextFireInterval(kNextFireIntervalInvalid)
     , m_repeatInterval(0)
-    , m_active(false)
 #if ENABLE(ASSERT)
     , m_suspended(false)
 #endif
@@ -51,6 +55,7 @@ bool SuspendableTimer::hasPendingActivity() const
 
 void SuspendableTimer::stop()
 {
+    m_nextFireInterval = kNextFireIntervalInvalid;
     TimerBase::stop();
 }
 
@@ -60,9 +65,9 @@ void SuspendableTimer::suspend()
     ASSERT(!m_suspended);
     m_suspended = true;
 #endif
-    m_active = isActive();
-    if (m_active) {
+    if (isActive()) {
         m_nextFireInterval = nextUnalignedFireInterval();
+        ASSERT(m_nextFireInterval >= 0.0);
         m_repeatInterval = repeatInterval();
         TimerBase::stop();
     }
@@ -74,9 +79,12 @@ void SuspendableTimer::resume()
     ASSERT(m_suspended);
     m_suspended = false;
 #endif
-    // FIXME: FROM_HERE is wrong here.
-    if (m_active)
-        start(m_nextFireInterval, m_repeatInterval, FROM_HERE);
+    if (m_nextFireInterval >= 0.0) {
+        // start() was called before, therefore location() is already set.
+        // m_nextFireInterval is only set in suspend() if the Timer was active.
+        start(m_nextFireInterval, m_repeatInterval, location());
+        m_nextFireInterval = kNextFireIntervalInvalid;
+    }
 }
 
 } // namespace blink
