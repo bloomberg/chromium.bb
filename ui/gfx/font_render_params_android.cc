@@ -32,9 +32,9 @@ FontRenderParams LoadDefaults() {
 
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
-  // Customized font rendering settings are not supported, only defaults.
-  if (!query.is_empty() || family_out)
+  if (family_out)
     NOTIMPLEMENTED();
+  // Customized font rendering settings are not supported, only defaults.
   CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params, (LoadDefaults()));
   return params;
 }

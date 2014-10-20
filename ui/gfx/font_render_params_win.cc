@@ -75,9 +75,9 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
 
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
-  // Customized font rendering settings are not supported, only defaults.
-  if (!query.is_empty() || family_out)
+  if (family_out)
     NOTIMPLEMENTED();
+  // Customized font rendering settings are not supported, only defaults.
   return CachedFontRenderParams::GetInstance()->GetParams(
       query.for_web_contents);
 }
