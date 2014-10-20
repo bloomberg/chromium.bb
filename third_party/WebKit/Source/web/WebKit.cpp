@@ -133,7 +133,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Scheduler::shared()->postTask(FROM_HERE, bind(function, context));
+    Platform::current()->callOnMainThread(function, context);
 }
 
 void initializeWithoutV8(Platform* platform)
