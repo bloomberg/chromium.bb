@@ -32,6 +32,8 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
+        '<(DEPTH)/extensions/shell/browser/api/api_registration.gyp:shell_api_registration',
+        '<(DEPTH)/extensions/shell/common/api/api.gyp:shell_api',
         '<(DEPTH)/mojo/edk/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -47,6 +49,8 @@
       'sources': [
         'app/shell_main_delegate.cc',
         'app/shell_main_delegate.h',
+        'browser/api/shell_identity/shell_identity_api.cc',
+        'browser/api/shell_identity/shell_identity_api.h',
         'browser/default_shell_browser_main_delegate.cc',
         'browser/default_shell_browser_main_delegate.h',
         'browser/desktop_controller.cc',
@@ -228,6 +232,7 @@
       ],
       'sources': [
         '../test/extensions_unittests_main.cc',
+        'browser/api/shell_identity/shell_identity_api_unittest.cc',
         'browser/shell_audio_controller_chromeos_unittest.cc',
         'browser/shell_desktop_controller_unittest.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',
