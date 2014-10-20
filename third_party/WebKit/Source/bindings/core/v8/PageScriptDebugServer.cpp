@@ -160,7 +160,7 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, Page* 
 
 void PageScriptDebugServer::interruptAndRun(PassOwnPtr<Task> task)
 {
-    ScriptDebugServer::interruptAndRun(task, s_mainThreadIsolate);
+    ScriptDebugServer::interruptAndRun(s_mainThreadIsolate, task);
 }
 
 void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> clientMessageLoop)

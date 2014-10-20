@@ -126,7 +126,7 @@ void ScriptController::clearScriptObjects()
         // to it, so that if a plugin fails to release it properly we will
         // only leak the NPObject wrapper, not the object, its document, or
         // anything else they reference.
-        disposeUnderlyingV8Object(m_windowScriptNPObject, m_isolate);
+        disposeUnderlyingV8Object(m_isolate, m_windowScriptNPObject);
         _NPN_ReleaseObject(m_windowScriptNPObject);
         m_windowScriptNPObject = 0;
     }
@@ -386,7 +386,7 @@ static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
     LocalDOMWindow* window = frame->domWindow();
     v8::Handle<v8::Value> global = toV8(window, scriptState->context()->Global(), scriptState->isolate());
     ASSERT(global->IsObject());
-    return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(global), window, isolate);
+    return npCreateV8ScriptObject(isolate, 0, v8::Handle<v8::Object>::Cast(global), window);
 }
 
 NPObject* ScriptController::windowScriptNPObject()
@@ -424,7 +424,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
     if (!v8plugin->IsObject())
         return createNoScriptObject();
 
-    return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(v8plugin), window, scriptState->isolate());
+    return npCreateV8ScriptObject(scriptState->isolate(), 0, v8::Handle<v8::Object>::Cast(v8plugin), window);
 }
 
 void ScriptController::clearWindowProxy()

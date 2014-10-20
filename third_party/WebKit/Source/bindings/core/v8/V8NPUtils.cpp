@@ -70,7 +70,7 @@ void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NP
         STRINGN_TO_NPVARIANT(utf8Chars, length-1, *result);
     } else if (object->IsObject()) {
         LocalDOMWindow* window = currentDOMWindow(isolate);
-        NPObject* npobject = npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(object), window, isolate);
+        NPObject* npobject = npCreateV8ScriptObject(isolate, 0, v8::Handle<v8::Object>::Cast(object), window);
         if (npobject)
             _NPN_RegisterObject(npobject, owner);
         OBJECT_TO_NPVARIANT(npobject, *result);

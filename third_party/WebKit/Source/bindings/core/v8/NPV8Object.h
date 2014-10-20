@@ -66,7 +66,7 @@ struct PrivateIdentifier {
     bool isString;
 };
 
-NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, LocalDOMWindow*, v8::Isolate*);
+NPObject* npCreateV8ScriptObject(v8::Isolate*, NPP, v8::Handle<v8::Object>, LocalDOMWindow*);
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object>);
 
@@ -76,7 +76,7 @@ V8NPObject* npObjectToV8NPObject(NPObject*);
 
 ScriptWrappableBase* npObjectToScriptWrappableBase(NPObject*);
 
-void disposeUnderlyingV8Object(NPObject*, v8::Isolate*);
+void disposeUnderlyingV8Object(v8::Isolate*, NPObject*);
 
 } // namespace blink
 

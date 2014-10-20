@@ -322,7 +322,7 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
         result->Set(i, v8::Number::New(isolate, data[i]));
 
     LocalDOMWindow* window = currentDOMWindow(isolate);
-    return npCreateV8ScriptObject(0, result, window, isolate);
+    return npCreateV8ScriptObject(isolate, 0, result, window);
 }
 
 static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isolate* isolate)
@@ -333,7 +333,7 @@ static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isola
         result->Set(i, v8String(isolate, data[i]));
 
     LocalDOMWindow* window = currentDOMWindow(isolate);
-    return npCreateV8ScriptObject(0, result, window, isolate);
+    return npCreateV8ScriptObject(isolate, 0, result, window);
 }
 
 bool WebBindings::getRange(NPObject* range, WebRange* webRange)

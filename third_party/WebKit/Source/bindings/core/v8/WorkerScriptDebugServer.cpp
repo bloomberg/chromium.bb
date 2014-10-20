@@ -86,7 +86,7 @@ void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
 
 void WorkerScriptDebugServer::interruptAndRunTask(PassOwnPtr<Task> task)
 {
-    interruptAndRun(task, m_isolate);
+    interruptAndRun(m_isolate, task);
 }
 
 ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context>)

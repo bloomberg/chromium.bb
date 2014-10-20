@@ -26,7 +26,7 @@ void postMessageMethodCommon(const char* interfaceName, Type* instance, const v8
     ArrayBufferArray arrayBuffers;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
-        if (!SerializedScriptValue::extractTransferables(info[transferablesArgIndex], transferablesArgIndex, ports, arrayBuffers, exceptionState, info.GetIsolate())) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, ports, arrayBuffers, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }

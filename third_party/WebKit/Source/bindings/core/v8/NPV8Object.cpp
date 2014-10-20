@@ -73,7 +73,7 @@ static NPObject* allocV8NPObject(NPP, NPClass*)
 static void freeV8NPObject(NPObject* npObject)
 {
     V8NPObject* v8NpObject = reinterpret_cast<V8NPObject*>(npObject);
-    disposeUnderlyingV8Object(npObject, v8::Isolate::GetCurrent());
+    disposeUnderlyingV8Object(v8::Isolate::GetCurrent(), npObject);
     free(v8NpObject);
 }
 
@@ -132,7 +132,7 @@ bool isWrappedNPObject(v8::Handle<v8::Object> object)
     return false;
 }
 
-NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, LocalDOMWindow* root, v8::Isolate* isolate)
+NPObject* npCreateV8ScriptObject(v8::Isolate* isolate, NPP npp, v8::Handle<v8::Object> object, LocalDOMWindow* root)
 {
     // Check to see if this object is already wrapped.
     if (isWrappedNPObject(object)) {
@@ -190,7 +190,7 @@ ScriptWrappableBase* npObjectToScriptWrappableBase(NPObject* npObject)
     return reinterpret_cast<ScriptWrappableBase*>(npObject);
 }
 
-void disposeUnderlyingV8Object(NPObject* npObject, v8::Isolate* isolate)
+void disposeUnderlyingV8Object(v8::Isolate* isolate, NPObject* npObject)
 {
     ASSERT(npObject);
     V8NPObject* v8NpObject = npObjectToV8NPObject(npObject);

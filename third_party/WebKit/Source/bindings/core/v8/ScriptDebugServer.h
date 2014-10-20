@@ -86,7 +86,7 @@ public:
         virtual ~Task() { }
         virtual void run() = 0;
     };
-    static void interruptAndRun(PassOwnPtr<Task>, v8::Isolate*);
+    static void interruptAndRun(v8::Isolate*, PassOwnPtr<Task>);
     void runPendingTasks();
 
     bool isPaused();

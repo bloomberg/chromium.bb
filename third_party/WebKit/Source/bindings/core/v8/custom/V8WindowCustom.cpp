@@ -269,7 +269,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
-        if (!SerializedScriptValue::extractTransferables(info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState, info.GetIsolate())) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, portArray, arrayBufferArray, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
