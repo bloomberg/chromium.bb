@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/sessions/serialized_navigation_entry.h"
+#include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
@@ -17,11 +18,11 @@ namespace sessions {
 void SerializedNavigationEntryTestHelper::ExpectNavigationEquals(
     const SerializedNavigationEntry& expected,
     const SerializedNavigationEntry& actual) {
-  EXPECT_EQ(expected.referrer_.url, actual.referrer_.url);
-  EXPECT_EQ(expected.referrer_.policy, actual.referrer_.policy);
+  EXPECT_EQ(expected.referrer_url_, actual.referrer_url_);
+  EXPECT_EQ(expected.referrer_policy_, actual.referrer_policy_);
   EXPECT_EQ(expected.virtual_url_, actual.virtual_url_);
   EXPECT_EQ(expected.title_, actual.title_);
-  EXPECT_EQ(expected.page_state_, actual.page_state_);
+  EXPECT_EQ(expected.encoded_page_state_, actual.encoded_page_state_);
   EXPECT_EQ(expected.transition_type_, actual.transition_type_);
   EXPECT_EQ(expected.has_post_data_, actual.has_post_data_);
   EXPECT_EQ(expected.original_request_url_, actual.original_request_url_);
@@ -35,13 +36,11 @@ SerializedNavigationEntry SerializedNavigationEntryTestHelper::CreateNavigation(
     const std::string& title) {
   SerializedNavigationEntry navigation;
   navigation.index_ = 0;
-  navigation.referrer_ =
-      content::Referrer(GURL("http://www.referrer.com"),
-                        blink::WebReferrerPolicyDefault);
+  navigation.referrer_url_ = GURL("http://www.referrer.com");
+  navigation.referrer_policy_ = blink::WebReferrerPolicyDefault;
   navigation.virtual_url_ = GURL(virtual_url);
   navigation.title_ = base::UTF8ToUTF16(title);
-  navigation.page_state_ =
-      content::PageState::CreateFromEncodedData("fake_state");
+  navigation.encoded_page_state_ = "fake state";
   navigation.timestamp_ = base::Time::Now();
   navigation.http_status_code_ = 200;
   return navigation;
@@ -51,7 +50,7 @@ SerializedNavigationEntry SerializedNavigationEntryTestHelper::CreateNavigation(
 void SerializedNavigationEntryTestHelper::SetPageState(
     const content::PageState& page_state,
     SerializedNavigationEntry* navigation) {
-  navigation->page_state_ = page_state;
+  navigation->encoded_page_state_ = page_state.ToEncodedData();
 }
 
 // static

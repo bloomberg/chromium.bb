@@ -48,6 +48,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_state.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/network_change_notifier.h"
@@ -1053,7 +1054,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // Set up the file access rights for the selected navigation entry.
     const int id = web_contents->GetRenderProcessHost()->GetID();
     const content::PageState& page_state =
-        tab.navigations.at(selected_index).page_state();
+        content::PageState::CreateFromEncodedData(
+            tab.navigations.at(selected_index).encoded_page_state());
     const std::vector<base::FilePath>& file_paths =
         page_state.GetReferencedFiles();
     for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();

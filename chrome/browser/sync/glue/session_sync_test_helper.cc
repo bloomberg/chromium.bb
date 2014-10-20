@@ -82,7 +82,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
       ASSERT_EQ(kAppId, tab->extension_app_id);
       ASSERT_EQ(1U, tab->navigations.size());
       ASSERT_EQ(tab->navigations[0].virtual_url(), GURL(kVirtualUrl));
-      ASSERT_EQ(tab->navigations[0].referrer().url, GURL(kReferrer));
+      ASSERT_EQ(tab->navigations[0].referrer_url(), GURL(kReferrer));
       ASSERT_EQ(tab->navigations[0].title(),
                 base::ASCIIToUTF16(kTitle));
       ASSERT_EQ(tab->navigations[0].transition_type(),

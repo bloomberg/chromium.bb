@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
@@ -29,13 +30,11 @@ namespace {
 
 const int kIndex = 3;
 const int kUniqueID = 50;
-const content::Referrer kReferrer =
-    content::Referrer(GURL("http://www.referrer.com"),
-                      blink::WebReferrerPolicyAlways);
+const GURL kReferrerURL = GURL("http://www.referrer.com");
+const int kReferrerPolicy = blink::WebReferrerPolicyAlways;
 const GURL kVirtualURL("http://www.virtual-url.com");
 const base::string16 kTitle = base::ASCIIToUTF16("title");
-const content::PageState kPageState =
-    content::PageState::CreateFromEncodedData("page state");
+const std::string kEncodedPageState = "page state";
 const ui::PageTransition kTransitionType =
     ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_AUTO_SUBFRAME |
@@ -59,10 +58,13 @@ const int kPageID = 10;
 scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   scoped_ptr<content::NavigationEntry> navigation_entry(
       content::NavigationEntry::Create());
-  navigation_entry->SetReferrer(kReferrer);
+  navigation_entry->SetReferrer(content::Referrer(
+      kReferrerURL,
+      static_cast<blink::WebReferrerPolicy>(kReferrerPolicy)));
   navigation_entry->SetVirtualURL(kVirtualURL);
   navigation_entry->SetTitle(kTitle);
-  navigation_entry->SetPageState(kPageState);
+  navigation_entry->SetPageState(
+      content::PageState::CreateFromEncodedData(kEncodedPageState));
   navigation_entry->SetTransitionType(kTransitionType);
   navigation_entry->SetHasPostData(kHasPostData);
   navigation_entry->SetPostID(kPostID);
@@ -85,10 +87,10 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
 sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_pb::TabNavigation sync_data;
   sync_data.set_virtual_url(kVirtualURL.spec());
-  sync_data.set_referrer(kReferrer.url.spec());
+  sync_data.set_referrer(kReferrerURL.spec());
   sync_data.set_referrer_policy(blink::WebReferrerPolicyOrigin);
   sync_data.set_title(base::UTF16ToUTF8(kTitle));
-  sync_data.set_state(kPageState.ToEncodedData());
+  sync_data.set_state(kEncodedPageState);
   sync_data.set_page_transition(
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
   sync_data.set_unique_id(kUniqueID);
@@ -108,11 +110,11 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   const SerializedNavigationEntry navigation;
   EXPECT_EQ(-1, navigation.index());
   EXPECT_EQ(0, navigation.unique_id());
-  EXPECT_EQ(GURL(), navigation.referrer().url);
-  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer().policy);
+  EXPECT_EQ(GURL(), navigation.referrer_url());
+  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer_policy());
   EXPECT_EQ(GURL(), navigation.virtual_url());
   EXPECT_TRUE(navigation.title().empty());
-  EXPECT_FALSE(navigation.page_state().IsValid());
+  EXPECT_EQ(std::string(), navigation.encoded_page_state());
   EXPECT_EQ(ui::PAGE_TRANSITION_TYPED, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());
@@ -137,11 +139,11 @@ TEST(SerializedNavigationEntryTest, FromNavigationEntry) {
   EXPECT_EQ(kIndex, navigation.index());
 
   EXPECT_EQ(navigation_entry->GetUniqueID(), navigation.unique_id());
-  EXPECT_EQ(kReferrer.url, navigation.referrer().url);
-  EXPECT_EQ(kReferrer.policy, navigation.referrer().policy);
+  EXPECT_EQ(kReferrerURL, navigation.referrer_url());
+  EXPECT_EQ(kReferrerPolicy, navigation.referrer_policy());
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(kPageState, navigation.page_state());
+  EXPECT_EQ(kEncodedPageState, navigation.encoded_page_state());
   EXPECT_EQ(kTransitionType, navigation.transition_type());
   EXPECT_EQ(kHasPostData, navigation.has_post_data());
   EXPECT_EQ(kPostID, navigation.post_id());
@@ -167,11 +169,11 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
 
   EXPECT_EQ(kIndex, navigation.index());
   EXPECT_EQ(kUniqueID, navigation.unique_id());
-  EXPECT_EQ(kReferrer.url, navigation.referrer().url);
-  EXPECT_EQ(blink::WebReferrerPolicyOrigin, navigation.referrer().policy);
+  EXPECT_EQ(kReferrerURL, navigation.referrer_url());
+  EXPECT_EQ(blink::WebReferrerPolicyOrigin, navigation.referrer_policy());
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(kPageState, navigation.page_state());
+  EXPECT_EQ(kEncodedPageState, navigation.encoded_page_state());
   EXPECT_EQ(kTransitionType, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());
@@ -202,11 +204,11 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   EXPECT_EQ(kIndex, new_navigation.index());
 
   EXPECT_EQ(0, new_navigation.unique_id());
-  EXPECT_EQ(kReferrer.url, new_navigation.referrer().url);
-  EXPECT_EQ(kReferrer.policy, new_navigation.referrer().policy);
+  EXPECT_EQ(kReferrerURL, new_navigation.referrer_url());
+  EXPECT_EQ(kReferrerPolicy, new_navigation.referrer_policy());
   EXPECT_EQ(kVirtualURL, new_navigation.virtual_url());
   EXPECT_EQ(kTitle, new_navigation.title());
-  EXPECT_FALSE(new_navigation.page_state().IsValid());
+  EXPECT_EQ(std::string(), new_navigation.encoded_page_state());
   EXPECT_EQ(kTransitionType, new_navigation.transition_type());
   EXPECT_EQ(kHasPostData, new_navigation.has_post_data());
   EXPECT_EQ(-1, new_navigation.post_id());
@@ -233,11 +235,12 @@ TEST(SerializedNavigationEntryTest, ToNavigationEntry) {
   const scoped_ptr<content::NavigationEntry> new_navigation_entry(
       navigation.ToNavigationEntry(kPageID, NULL));
 
-  EXPECT_EQ(kReferrer.url, new_navigation_entry->GetReferrer().url);
-  EXPECT_EQ(kReferrer.policy, new_navigation_entry->GetReferrer().policy);
+  EXPECT_EQ(kReferrerURL, new_navigation_entry->GetReferrer().url);
+  EXPECT_EQ(kReferrerPolicy, new_navigation_entry->GetReferrer().policy);
   EXPECT_EQ(kVirtualURL, new_navigation_entry->GetVirtualURL());
   EXPECT_EQ(kTitle, new_navigation_entry->GetTitle());
-  EXPECT_EQ(kPageState, new_navigation_entry->GetPageState());
+  EXPECT_EQ(kEncodedPageState,
+            new_navigation_entry->GetPageState().ToEncodedData());
   EXPECT_EQ(kPageID, new_navigation_entry->GetPageID());
   EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
             new_navigation_entry->GetTransitionType());
@@ -270,7 +273,7 @@ TEST(SerializedNavigationEntryTest, ToSyncData) {
   const sync_pb::TabNavigation sync_data = navigation.ToSyncData();
 
   EXPECT_EQ(kVirtualURL.spec(), sync_data.virtual_url());
-  EXPECT_EQ(kReferrer.url.spec(), sync_data.referrer());
+  EXPECT_EQ(kReferrerURL.spec(), sync_data.referrer());
   EXPECT_EQ(kTitle, base::ASCIIToUTF16(sync_data.title()));
   EXPECT_TRUE(sync_data.state().empty());
   EXPECT_EQ(sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME,
@@ -366,11 +369,11 @@ TEST(SerializedNavigationEntryTest, Sanitize) {
 
   EXPECT_EQ(kIndex, navigation.index());
   EXPECT_EQ(kUniqueID, navigation.unique_id());
-  EXPECT_EQ(GURL(), navigation.referrer().url);
-  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer().policy);
+  EXPECT_EQ(GURL(), navigation.referrer_url());
+  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer_policy());
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(page_state, navigation.page_state());
+  EXPECT_EQ(page_state.ToEncodedData(), navigation.encoded_page_state());
   EXPECT_EQ(kTransitionType, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());

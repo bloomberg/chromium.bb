@@ -14,8 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/sessions/sessions_export.h"
-#include "content/public/common/page_state.h"
-#include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -97,11 +95,12 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   int unique_id() const { return unique_id_; }
   const GURL& virtual_url() const { return virtual_url_; }
   const base::string16& title() const { return title_; }
-  const content::PageState& page_state() const { return page_state_; }
+  const std::string& encoded_page_state() const { return encoded_page_state_; }
   const base::string16& search_terms() const { return search_terms_; }
   const GURL& favicon_url() const { return favicon_url_; }
   int http_status_code() const { return http_status_code_; }
-  const content::Referrer& referrer() const { return referrer_; }
+  const GURL& referrer_url() const { return referrer_url_; }
+  int referrer_policy() const { return referrer_policy_; }
   ui::PageTransition transition_type() const {
     return transition_type_;
   }
@@ -134,6 +133,13 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
  private:
   friend class SerializedNavigationEntryTestHelper;
 
+  // Returns the default referrer policy.
+  int GetDefaultReferrerPolicy() const;
+
+  // Returns a sanitized version of |encoded_page_state_| suitable for writing
+  // to disk.
+  std::string GetSanitizedPageStateForPickle() const;
+
   // Sanitizes the data in this class to be more robust against faulty data
   // written by older versions.
   void Sanitize();
@@ -143,10 +149,11 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
 
   // Member variables corresponding to NavigationEntry fields.
   int unique_id_;
-  content::Referrer referrer_;
+  GURL referrer_url_;
+  int referrer_policy_;
   GURL virtual_url_;
   base::string16 title_;
-  content::PageState page_state_;
+  std::string encoded_page_state_;
   ui::PageTransition transition_type_;
   bool has_post_data_;
   int64 post_id_;

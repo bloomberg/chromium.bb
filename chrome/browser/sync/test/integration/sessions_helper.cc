@@ -289,11 +289,11 @@ bool NavigationEquals(const sessions::SerializedNavigationEntry& expected,
                << ", actual " << actual.virtual_url();
     return false;
   }
-  if (expected.referrer().url != actual.referrer().url) {
+  if (expected.referrer_url() != actual.referrer_url()) {
     LOG(ERROR) << "Expected referrer "
-               << expected.referrer().url
+               << expected.referrer_url()
                << ", actual "
-               << actual.referrer().url;
+               << actual.referrer_url();
     return false;
   }
   if (expected.title() != actual.title()) {

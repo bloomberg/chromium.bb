@@ -64,7 +64,7 @@ TEST(SessionTab, FromSyncData) {
   ASSERT_EQ(5u, tab.navigations.size());
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(i, tab.navigations[i].index());
-    EXPECT_EQ(GURL("referrer"), tab.navigations[i].referrer().url);
+    EXPECT_EQ(GURL("referrer"), tab.navigations[i].referrer_url());
     EXPECT_EQ(base::ASCIIToUTF16("title"),tab.navigations[i].title());
     EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
               tab.navigations[i].transition_type());

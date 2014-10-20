@@ -9,6 +9,8 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/page_state.h"
+#include "content/public/common/referrer.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -28,7 +30,9 @@ SerializedNavigationEntry::SerializedNavigationEntry()
       is_overriding_user_agent_(false),
       http_status_code_(0),
       is_restored_(false),
-      blocked_state_(STATE_INVALID) {}
+      blocked_state_(STATE_INVALID) {
+  referrer_policy_ = GetDefaultReferrerPolicy();
+}
 
 SerializedNavigationEntry::~SerializedNavigationEntry() {}
 
@@ -39,10 +43,11 @@ SerializedNavigationEntry SerializedNavigationEntry::FromNavigationEntry(
   SerializedNavigationEntry navigation;
   navigation.index_ = index;
   navigation.unique_id_ = entry.GetUniqueID();
-  navigation.referrer_ = entry.GetReferrer();
+  navigation.referrer_url_ = entry.GetReferrer().url;
+  navigation.referrer_policy_ = entry.GetReferrer().policy;
   navigation.virtual_url_ = entry.GetVirtualURL();
   navigation.title_ = entry.GetTitle();
-  navigation.page_state_ = entry.GetPageState();
+  navigation.encoded_page_state_ = entry.GetPageState().ToEncodedData();
   navigation.transition_type_ = entry.GetTransitionType();
   navigation.has_post_data_ = entry.GetHasPostData();
   navigation.post_id_ = entry.GetPostID();
@@ -68,13 +73,11 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   SerializedNavigationEntry navigation;
   navigation.index_ = index;
   navigation.unique_id_ = sync_data.unique_id();
-  navigation.referrer_ = content::Referrer(
-      GURL(sync_data.referrer()),
-      static_cast<blink::WebReferrerPolicy>(sync_data.referrer_policy()));
+  navigation.referrer_url_ = GURL(sync_data.referrer());
+  navigation.referrer_policy_ = sync_data.referrer_policy();
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
   navigation.title_ = base::UTF8ToUTF16(sync_data.title());
-  navigation.page_state_ =
-      content::PageState::CreateFromEncodedData(sync_data.state());
+  navigation.encoded_page_state_ = sync_data.state();
 
   uint32 transition = 0;
   if (sync_data.has_page_transition()) {
@@ -210,13 +213,14 @@ enum TypeMask {
 // index_
 // virtual_url_
 // title_
-// page_state_
+// encoded_page_state_
 // transition_type_
 //
 // Added on later:
 //
 // type_mask (has_post_data_)
-// referrer_
+// referrer_url_
+// referrer_policy_
 // original_request_url_
 // is_overriding_user_agent_
 // timestamp_
@@ -234,12 +238,8 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
 
   WriteString16ToPickle(pickle, &bytes_written, max_size, title_);
 
-  content::PageState page_state = page_state_;
-  if (has_post_data_)
-    page_state = page_state.RemovePasswordData();
-
-  WriteStringToPickle(pickle, &bytes_written, max_size,
-                      page_state.ToEncodedData());
+  const std::string encoded_page_state = GetSanitizedPageStateForPickle();
+  WriteStringToPickle(pickle, &bytes_written, max_size, encoded_page_state);
 
   pickle->WriteInt(transition_type_);
 
@@ -248,9 +248,9 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
 
   WriteStringToPickle(
       pickle, &bytes_written, max_size,
-      referrer_.url.is_valid() ? referrer_.url.spec() : std::string());
+      referrer_url_.is_valid() ? referrer_url_.spec() : std::string());
 
-  pickle->WriteInt(referrer_.policy);
+  pickle->WriteInt(referrer_policy_);
 
   // Save info required to override the user agent.
   WriteStringToPickle(
@@ -267,16 +267,15 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
 
 bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
   *this = SerializedNavigationEntry();
-  std::string virtual_url_spec, page_state_data;
+  std::string virtual_url_spec;
   int transition_type_int = 0;
   if (!iterator->ReadInt(&index_) ||
       !iterator->ReadString(&virtual_url_spec) ||
       !iterator->ReadString16(&title_) ||
-      !iterator->ReadString(&page_state_data) ||
+      !iterator->ReadString(&encoded_page_state_) ||
       !iterator->ReadInt(&transition_type_int))
     return false;
   virtual_url_ = GURL(virtual_url_spec);
-  page_state_ = content::PageState::CreateFromEncodedData(page_state_data);
   transition_type_ = ui::PageTransitionFromInt(transition_type_int);
 
   // type_mask did not always exist in the written stream. As such, we
@@ -291,15 +290,12 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
     std::string referrer_spec;
     if (!iterator->ReadString(&referrer_spec))
       referrer_spec = std::string();
+    referrer_url_ = GURL(referrer_spec);
+
     // The "referrer policy" property was added even later, so we fall back to
     // the default policy if the property is not present.
-    int policy_int;
-    blink::WebReferrerPolicy policy;
-    if (iterator->ReadInt(&policy_int))
-      policy = static_cast<blink::WebReferrerPolicy>(policy_int);
-    else
-      policy = blink::WebReferrerPolicyDefault;
-    referrer_ = content::Referrer(GURL(referrer_spec), policy);
+    if (!iterator->ReadInt(&referrer_policy_))
+      referrer_policy_ = GetDefaultReferrerPolicy();
 
     // If the original URL can't be found, leave it empty.
     std::string original_request_url_spec;
@@ -339,7 +335,9 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
   scoped_ptr<NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(
           virtual_url_,
-          referrer_,
+          content::Referrer(
+              referrer_url_,
+              static_cast<blink::WebReferrerPolicy>(referrer_policy_)),
           // Use a transition type of reload so that we don't incorrectly
           // increase the typed count.
           ui::PAGE_TRANSITION_RELOAD,
@@ -349,7 +347,8 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
           browser_context));
 
   entry->SetTitle(title_);
-  entry->SetPageState(page_state_);
+  entry->SetPageState(
+      content::PageState::CreateFromEncodedData(encoded_page_state_));
   entry->SetPageID(page_id);
   entry->SetHasPostData(has_post_data_);
   entry->SetPostID(post_id_);
@@ -372,8 +371,8 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
 sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_pb::TabNavigation sync_data;
   sync_data.set_virtual_url(virtual_url_.spec());
-  sync_data.set_referrer(referrer_.url.spec());
-  sync_data.set_referrer_policy(referrer_.policy);
+  sync_data.set_referrer(referrer_url_.spec());
+  sync_data.set_referrer_policy(referrer_policy_);
   sync_data.set_title(base::UTF16ToUTF8(title_));
 
   // Page transition core.
@@ -509,16 +508,42 @@ std::vector<NavigationEntry*> SerializedNavigationEntry::ToNavigationEntries(
   return entries;
 }
 
+// TODO(rohitrao): Move this content-specific code into a
+// SerializedNavigationEntryHelper class.
+int SerializedNavigationEntry::GetDefaultReferrerPolicy() const {
+  return blink::WebReferrerPolicyDefault;
+}
+
+// TODO(rohitrao): Move this content-specific code into a
+// SerializedNavigationEntryHelper class.
+std::string SerializedNavigationEntry::GetSanitizedPageStateForPickle() const {
+  content::PageState page_state =
+      content::PageState::CreateFromEncodedData(encoded_page_state_);
+  if (has_post_data_)
+    page_state = page_state.RemovePasswordData();
+
+  return page_state.ToEncodedData();
+}
+
+// TODO(rohitrao): Move this content-specific code into a
+// SerializedNavigationEntryHelper class.
 void SerializedNavigationEntry::Sanitize() {
+  content::Referrer old_referrer(
+      referrer_url_,
+      static_cast<blink::WebReferrerPolicy>(referrer_policy_));
   content::Referrer new_referrer =
-      content::Referrer::SanitizeForRequest(virtual_url_, referrer_);
+      content::Referrer::SanitizeForRequest(virtual_url_, old_referrer);
 
   // No need to compare the policy, as it doesn't change during
   // sanitization. If there has been a change, the referrer needs to be
   // stripped from the page state as well.
-  if (referrer_.url != new_referrer.url) {
-    referrer_ = content::Referrer();
-    page_state_ = page_state_.RemoveReferrer();
+  if (referrer_url_ != new_referrer.url) {
+    referrer_url_ = GURL();
+    referrer_policy_ = GetDefaultReferrerPolicy();
+    encoded_page_state_ =
+        content::PageState::CreateFromEncodedData(encoded_page_state_)
+            .RemoveReferrer()
+            .ToEncodedData();
   }
 }
 

@@ -822,7 +822,8 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
 
   // Expected: the HTTP body was removed from the page state of the POST
   // navigation with passwords.
-  EXPECT_NE(page_state, windows[0]->tabs[0]->navigations[0].page_state());
+  EXPECT_NE(page_state.ToEncodedData(),
+            windows[0]->tabs[0]->navigations[0].encoded_page_state());
 }
 
 // This test is only applicable to chromeos.
