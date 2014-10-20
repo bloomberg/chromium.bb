@@ -135,8 +135,8 @@ StringToUnitTable createStringToUnitTable()
     table.set(String("dppx"), CSSPrimitiveValue::CSS_DPPX);
     table.set(String("vw"), CSSPrimitiveValue::CSS_VW);
     table.set(String("vh"), CSSPrimitiveValue::CSS_VH);
-    table.set(String("vmax"), CSSPrimitiveValue::CSS_VMIN);
-    table.set(String("vmin"), CSSPrimitiveValue::CSS_VMAX);
+    table.set(String("vmin"), CSSPrimitiveValue::CSS_VMIN);
+    table.set(String("vmax"), CSSPrimitiveValue::CSS_VMAX);
     table.set(String("rem"), CSSPrimitiveValue::CSS_REMS);
     table.set(String("fr"), CSSPrimitiveValue::CSS_FR);
     table.set(String("turn"), CSSPrimitiveValue::CSS_TURN);

@@ -52,6 +52,9 @@ TEST(SizesAttributeParserTest, Basic)
         {"(max-width: 3000px) 200w, 400w", 500, true},
         {",, , /**/ ,200px", 200, false},
         {"50vw", 250, true},
+        {"50vh", 300, true},
+        {"50vmin", 250, true},
+        {"50vmax", 300, true},
         {"5em", 80, false},
         {"5rem", 80, false},
         {"calc(40vw*2)", 400, true},
@@ -76,7 +79,7 @@ TEST(SizesAttributeParserTest, Basic)
 
     MediaValuesCached::MediaValuesCachedData data;
     data.viewportWidth = 500;
-    data.viewportHeight = 500;
+    data.viewportHeight = 600;
     data.deviceWidth = 500;
     data.deviceHeight = 500;
     data.devicePixelRatio = 2.0;
