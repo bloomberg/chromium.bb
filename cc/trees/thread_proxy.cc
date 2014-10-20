@@ -107,7 +107,6 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
       next_frame_is_newly_committed_frame(false),
       inside_draw(false),
       input_throttled_until_commit(false),
-      animations_frozen_until_next_draw(false),
       did_commit_after_animating(false),
       smoothness_priority_expiration_notifier(
           proxy->ImplThreadTaskRunner(),
@@ -188,8 +187,6 @@ void ThreadProxy::UpdateBackgroundAnimateTicking() {
       impl().layer_tree_host_impl->active_tree()->root_layer();
   impl().layer_tree_host_impl->UpdateBackgroundAnimateTicking(
       should_background_tick);
-  if (should_background_tick)
-    impl().animations_frozen_until_next_draw = false;
 }
 
 void ThreadProxy::DidLoseOutputSurface() {
@@ -767,8 +764,6 @@ void ThreadProxy::BeginMainFrame(
   layer_tree_host()->BeginMainFrame(begin_main_frame_state->begin_frame_args);
   layer_tree_host()->AnimateLayers(
       begin_main_frame_state->begin_frame_args.frame_time);
-  blocked_main().last_monotonic_frame_begin_time =
-      begin_main_frame_state->begin_frame_args.frame_time;
 
   // Unlink any backings that the impl thread has evicted, so that we know to
   // re-paint them in UpdateLayers.
@@ -939,10 +934,8 @@ void ThreadProxy::ScheduledActionAnimate() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionAnimate");
   DCHECK(IsImplThread());
 
-  if (!impl().animations_frozen_until_next_draw) {
-    impl().animation_time =
-        impl().layer_tree_host_impl->CurrentBeginFrameArgs().frame_time;
-  }
+  impl().animation_time =
+      impl().layer_tree_host_impl->CurrentBeginFrameArgs().frame_time;
   impl().layer_tree_host_impl->Animate(impl().animation_time);
   impl().did_commit_after_animating = false;
 }
@@ -958,10 +951,6 @@ void ThreadProxy::ScheduledActionCommit() {
   impl().current_resource_update_controller->Finalize();
   impl().current_resource_update_controller = nullptr;
 
-  if (impl().animations_frozen_until_next_draw) {
-    impl().animation_time = std::max(
-        impl().animation_time, blocked_main().last_monotonic_frame_begin_time);
-  }
   impl().did_commit_after_animating = true;
 
   blocked_main().main_thread_inside_commit = true;
@@ -1064,17 +1053,6 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
     impl().layer_tree_host_impl->DrawLayers(
         &frame, impl().scheduler->LastBeginImplFrameTime());
     result = DRAW_SUCCESS;
-    impl().animations_frozen_until_next_draw = false;
-  } else if (result == DRAW_ABORTED_CHECKERBOARD_ANIMATIONS &&
-             !impl().layer_tree_host_impl->settings().impl_side_painting) {
-    // Without impl-side painting, the animated layer that is checkerboarding
-    // will continue to checkerboard until the next commit. If this layer
-    // continues to move during the commit, it may continue to checkerboard
-    // after the commit since the region rasterized during the commit will not
-    // match the region that is currently visible; eventually this
-    // checkerboarding will be displayed when we force a draw. To avoid this,
-    // we freeze animations until we successfully draw.
-    impl().animations_frozen_until_next_draw = true;
   } else {
     DCHECK_NE(DRAW_SUCCESS, result);
   }

@@ -90,8 +90,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
     LayerTreeHost* layer_tree_host;
     bool commit_waits_for_activation;
     bool main_thread_inside_commit;
-
-    base::TimeTicks last_monotonic_frame_begin_time;
   };
 
   struct CompositorThreadOnly {
@@ -129,8 +127,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
     bool input_throttled_until_commit;
 
-    // Set when we freeze animations to avoid checkerboarding.
-    bool animations_frozen_until_next_draw;
     base::TimeTicks animation_time;
 
     // Whether a commit has been completed since the last time animations were
