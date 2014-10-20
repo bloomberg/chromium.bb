@@ -610,17 +610,8 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
 
 void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
                                              const std::string& frame_name) {
-  // It is possible that while a new RenderFrameHost was committed, the
-  // RenderFrame corresponding to this host sent an IPC message to create a
-  // frame and it is delivered after this host is swapped out.
-  // Ignore such messages, as we know this RenderFrameHost is going away.
-  if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT)
-    return;
-
   RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
-      frame_tree_node_, GetProcess()->GetID(), new_routing_id, frame_name);
-  if (!new_frame)
-    return;
+      frame_tree_node_, new_routing_id, frame_name);
 
   // We know that the RenderFrame has been created in this case, immediately
   // after the CreateChildFrame IPC was sent.

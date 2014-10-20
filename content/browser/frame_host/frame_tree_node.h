@@ -41,9 +41,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool IsMainFrame() const;
 
-  void AddChild(scoped_ptr<FrameTreeNode> child,
-                int process_id,
-                int frame_routing_id);
+  void AddChild(scoped_ptr<FrameTreeNode> child, int frame_routing_id);
   void RemoveChild(FrameTreeNode* child);
 
   // Clears process specific-state in this node to prepare for a new process.

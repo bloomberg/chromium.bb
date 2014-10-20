@@ -148,29 +148,6 @@ class RenderViewHostDeletedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDeletedObserver);
 };
 
-// This observer keeps track of the last created RenderFrameHost to allow tests
-// to ensure that no RenderFrameHost objects are created when not expected.
-class RenderFrameHostCreatedObserver : public WebContentsObserver {
- public:
-  RenderFrameHostCreatedObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        created_(false) {
-  }
-
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    created_ = true;
-  }
-
-  bool created() {
-    return created_;
-  }
-
- private:
-  bool created_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
-};
-
 // This observer keeps track of the last deleted RenderFrameHost to avoid
 // accessing it and causing use-after-free condition.
 class RenderFrameHostDeletedObserver : public WebContentsObserver {
@@ -200,6 +177,7 @@ class RenderFrameHostDeletedObserver : public WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostDeletedObserver);
 };
+
 
 // This observer is used to check whether IPC messages are being filtered for
 // swapped out RenderFrameHost objects. It observes the plugin crash and favicon
@@ -587,47 +565,6 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rfh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
-}
-
-// Ensure that frames aren't added to the frame tree, if the message is coming
-// from a process different than the parent frame's current RenderFrameHost
-// process. Otherwise it is possible to have collisions of routing ids, as they
-// are scoped per process. See https://crbug.com/415059.
-TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
-  const GURL kUrl1("http://foo.com");
-  const GURL kUrl2("http://www.google.com/");
-
-  // Navigate to the first site.
-  NavigateActiveAndCommit(kUrl1);
-  TestRenderFrameHost* initial_rfh = contents()->GetMainFrame();
-  {
-    RenderFrameHostCreatedObserver observer(contents());
-    initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(), std::string());
-    EXPECT_TRUE(observer.created());
-  }
-
-  // Create one more frame in the same SiteInstance where initial_rfh
-  // exists so that initial_rfh doesn't get deleted on navigation to another
-  // site.
-  initial_rfh->GetSiteInstance()->increment_active_frame_count();
-
-  // Navigate to a cross-site URL.
-  NavigateActiveAndCommit(kUrl2);
-  EXPECT_TRUE(initial_rfh->is_swapped_out());
-
-  TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
-  ASSERT_TRUE(dest_rfh);
-  EXPECT_NE(initial_rfh, dest_rfh);
-
-  {
-    // Since the old RFH is now swapped out, it shouldn't process any messages
-    // to create child frames.
-    RenderFrameHostCreatedObserver observer(contents());
-    initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(), std::string());
-    EXPECT_FALSE(observer.created());
-  }
 }
 
 TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
