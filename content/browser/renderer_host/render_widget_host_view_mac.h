@@ -434,8 +434,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual bool BrowserCompositorViewShouldAckImmediately() const override;
   virtual void BrowserCompositorViewFrameSwapped(
       const std::vector<ui::LatencyInfo>& latency_info) override;
-  virtual NSView* BrowserCompositorSuperview() override;
-  virtual ui::Layer* BrowserCompositorRootLayer() override;
 
  private:
   friend class RenderWidgetHostViewMacTest;

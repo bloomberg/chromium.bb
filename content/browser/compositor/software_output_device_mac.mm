@@ -6,7 +6,7 @@
 
 #include "content/browser/compositor/software_output_device_mac.h"
 
-#include "content/browser/compositor/browser_compositor_view_mac.h"
+#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {
@@ -20,7 +20,7 @@ SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
 
 void SoftwareOutputDeviceMac::EndPaint(cc::SoftwareFrameData* frame_data) {
   SoftwareOutputDevice::EndPaint(frame_data);
-  BrowserCompositorViewMac::GotSoftwareFrame(
+  BrowserCompositorCALayerTreeMacGotSoftwareFrame(
       compositor_->widget(), frame_data, scale_factor_, canvas_.get());
 }
 

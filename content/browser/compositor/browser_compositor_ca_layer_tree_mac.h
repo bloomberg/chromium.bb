@@ -7,13 +7,19 @@
 
 #include <IOSurface/IOSurfaceAPI.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
+
+#if defined(__OBJC__)
+#include <Cocoa/Cocoa.h>
+#include "base/mac/scoped_nsobject.h"
 #include "content/browser/compositor/io_surface_layer_mac.h"
 #include "content/browser/compositor/software_layer_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#endif  // __OBJC__
 
 namespace content {
+
+#if defined(__OBJC__)
 
 // BrowserCompositorCALayerTreeMac owns tree of CALayer and a ui::Compositor
 // that is used to draw the layers. The CALayer tree can be attached to the
@@ -26,8 +32,8 @@ class BrowserCompositorCALayerTreeMac
   static BrowserCompositorCALayerTreeMac* FromAcceleratedWidget(
       gfx::AcceleratedWidget widget);
 
-  void SetClient(BrowserCompositorViewMacClient* client);
-  void ResetClient();
+  void SetView(BrowserCompositorViewMac* view);
+  void ResetView();
 
   ui::Compositor* compositor() const { return compositor_.get(); }
 
@@ -75,9 +81,8 @@ private:
       base::scoped_nsobject<IOSurfaceLayer> io_surface_layer);
   void DestroySoftwareLayer();
 
-  // The client of the BrowserCompositorViewMac that is using this as its
-  // internals.
-  BrowserCompositorViewMacClient* client_;
+  // The BrowserCompositorViewMac that is using this as its internals.
+  BrowserCompositorViewMac* view_;
 
   // A phony NSView handle used to identify this.
   gfx::AcceleratedWidget native_widget_;
@@ -112,6 +117,19 @@ private:
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;
 };
+
+#endif  // __OBJC__
+
+void BrowserCompositorCALayerTreeMacGotAcceleratedFrame(
+    gfx::AcceleratedWidget widget,
+    uint64 surface_handle, int surface_id,
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::Size pixel_size, float scale_factor,
+    bool* disable_throttling, int* renderer_id);
+
+void BrowserCompositorCALayerTreeMacGotSoftwareFrame(
+    gfx::AcceleratedWidget widget,
+    cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
 
 }  // namespace content
 

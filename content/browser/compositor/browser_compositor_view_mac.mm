@@ -28,7 +28,12 @@ base::LazyInstance<scoped_ptr<BrowserCompositorCALayerTreeMac>>
 }  // namespace
 
 BrowserCompositorViewMac::BrowserCompositorViewMac(
-    BrowserCompositorViewMacClient* client) : client_(client) {
+    BrowserCompositorViewMacClient* client,
+    NSView* native_view,
+    ui::Layer* ui_root_layer)
+      : client_(client),
+        native_view_(native_view),
+        ui_root_layer_(ui_root_layer) {
   // Try to use the recyclable BrowserCompositorCALayerTreeMac if there is one,
   // otherwise allocate a new one.
   // TODO(ccameron): If there exists a frame in flight (swap has been called
@@ -37,12 +42,12 @@ BrowserCompositorViewMac::BrowserCompositorViewMac(
   ca_layer_tree_ = g_recyclable_ca_layer_tree.Get().Pass();
   if (!ca_layer_tree_)
     ca_layer_tree_.reset(new BrowserCompositorCALayerTreeMac);
-  ca_layer_tree_->SetClient(client_);
+  ca_layer_tree_->SetView(this);
 }
 
 BrowserCompositorViewMac::~BrowserCompositorViewMac() {
   // Make this BrowserCompositorCALayerTreeMac recyclable for future instances.
-  ca_layer_tree_->ResetClient();
+  ca_layer_tree_->ResetView();
   g_recyclable_ca_layer_tree.Get() = ca_layer_tree_.Pass();
 
   // If there are no placeholders allocated, destroy the recyclable
@@ -71,45 +76,6 @@ void BrowserCompositorViewMac::BeginPumpingFrames() {
 void BrowserCompositorViewMac::EndPumpingFrames() {
   if (ca_layer_tree_)
     ca_layer_tree_->EndPumpingFrames();
-}
-
-// static
-void BrowserCompositorViewMac::GotAcceleratedFrame(
-    gfx::AcceleratedWidget widget,
-    uint64 surface_handle, int surface_id,
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::Size pixel_size, float scale_factor,
-    int gpu_host_id, int gpu_route_id) {
-  BrowserCompositorCALayerTreeMac* ca_layer_tree =
-      BrowserCompositorCALayerTreeMac::FromAcceleratedWidget(widget);
-  bool disable_throttling = false;
-  int renderer_id = 0;
-  if (ca_layer_tree) {
-    ca_layer_tree->GotAcceleratedFrame(
-        surface_handle, surface_id, latency_info, pixel_size, scale_factor);
-    disable_throttling = ca_layer_tree->IsRendererThrottlingDisabled();
-    renderer_id = ca_layer_tree->GetRendererID();
-  }
-
-  // Acknowledge the swap, now that it has been processed.
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.disable_throttling = disable_throttling;
-  ack_params.renderer_id = renderer_id;
-  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
-  if (ui_shim) {
-    ui_shim->Send(new AcceleratedSurfaceMsg_BufferPresented(
-        gpu_route_id, ack_params));
-  }
-}
-
-// static
-void BrowserCompositorViewMac::GotSoftwareFrame(
-    gfx::AcceleratedWidget widget,
-    cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas) {
-  BrowserCompositorCALayerTreeMac* ca_layer_tree =
-      BrowserCompositorCALayerTreeMac::FromAcceleratedWidget(widget);
-  if (ca_layer_tree)
-    ca_layer_tree->GotSoftwareFrame(frame_data, scale_factor, canvas);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -501,14 +501,6 @@ void RenderWidgetHostViewMac::BrowserCompositorViewFrameSwapped(
   }
 }
 
-NSView* RenderWidgetHostViewMac::BrowserCompositorSuperview() {
-  return cocoa_view_;
-}
-
-ui::Layer* RenderWidgetHostViewMac::BrowserCompositorRootLayer() {
-  return root_layer_.get();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewBase, public:
 
@@ -601,7 +593,8 @@ void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::EnsureBrowserCompositorView");
 
-  browser_compositor_view_.reset(new BrowserCompositorViewMac(this));
+  browser_compositor_view_.reset(
+      new BrowserCompositorViewMac(this, cocoa_view_, root_layer_.get()));
   delegated_frame_host_->AddedToWindow();
   delegated_frame_host_->WasShown(ui::LatencyInfo());
 }

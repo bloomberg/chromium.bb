@@ -32,7 +32,7 @@ base::LazyInstance<WidgetToInternalsMap> g_widget_to_internals_map;
 // BrowserCompositorCALayerTreeMac
 
 BrowserCompositorCALayerTreeMac::BrowserCompositorCALayerTreeMac()
-    : client_(NULL),
+    : view_(NULL),
       accelerated_output_surface_id_(0) {
   // Disable the fade-in animation as the layers are added.
   ScopedCAActionDisabler disabler;
@@ -64,28 +64,28 @@ BrowserCompositorCALayerTreeMac::BrowserCompositorCALayerTreeMac()
 }
 
 BrowserCompositorCALayerTreeMac::~BrowserCompositorCALayerTreeMac() {
-  DCHECK(!client_);
+  DCHECK(!view_);
   g_widget_to_internals_map.Pointer()->erase(native_widget_);
 }
 
-void BrowserCompositorCALayerTreeMac::SetClient(
-    BrowserCompositorViewMacClient* client) {
+void BrowserCompositorCALayerTreeMac::SetView(
+    BrowserCompositorViewMac* view) {
   // Disable the fade-in animation as the view is added.
   ScopedCAActionDisabler disabler;
 
-  DCHECK(client && !client_);
-  client_ = client;
-  compositor_->SetRootLayer(client_->BrowserCompositorRootLayer());
+  DCHECK(view && !view_);
+  view_ = view;
+  compositor_->SetRootLayer(view_->ui_root_layer());
 
-  CALayer* background_layer = [client_->BrowserCompositorSuperview() layer];
+  CALayer* background_layer = [view_->native_view() layer];
   DCHECK(background_layer);
   [flipped_layer_ setBounds:[background_layer bounds]];
   [background_layer addSublayer:flipped_layer_];
   compositor_->SetVisible(true);
 }
 
-void BrowserCompositorCALayerTreeMac::ResetClient() {
-  if (!client_)
+void BrowserCompositorCALayerTreeMac::ResetView() {
+  if (!view_)
     return;
 
   // Disable the fade-out animation as the view is removed.
@@ -102,7 +102,7 @@ void BrowserCompositorCALayerTreeMac::ResetClient() {
   compositor_->SetVisible(false);
   compositor_->SetScaleAndSize(1.0, gfx::Size(0, 0));
   compositor_->SetRootLayer(NULL);
-  client_ = NULL;
+  view_ = NULL;
 }
 
 bool BrowserCompositorCALayerTreeMac::HasFrameOfSize(
@@ -117,8 +117,8 @@ int BrowserCompositorCALayerTreeMac::GetRendererID() const {
 }
 
 bool BrowserCompositorCALayerTreeMac::IsRendererThrottlingDisabled() const {
-  if (client_)
-    return client_->BrowserCompositorViewShouldAckImmediately();
+  if (view_)
+    return view_->client()->BrowserCompositorViewShouldAckImmediately();
   return false;
 }
 
@@ -140,8 +140,8 @@ void BrowserCompositorCALayerTreeMac::GotAcceleratedFrame(
   accelerated_latency_info_.insert(accelerated_latency_info_.end(),
                                    latency_info.begin(), latency_info.end());
 
-  // If there is no client and therefore no superview to draw into, early-out.
-  if (!client_) {
+  // If there is no view and therefore no superview to draw into, early-out.
+  if (!view_) {
     IOSurfaceLayerDidDrawFrame();
     return;
   }
@@ -274,7 +274,7 @@ void BrowserCompositorCALayerTreeMac::GotSoftwareFrame(
     cc::SoftwareFrameData* frame_data,
     float scale_factor,
     SkCanvas* canvas) {
-  if (!frame_data || !canvas || !client_)
+  if (!frame_data || !canvas || !view_)
     return;
 
   // Disable the fade-in or fade-out effect if we create or remove layers.
@@ -330,11 +330,11 @@ void BrowserCompositorCALayerTreeMac::DestroySoftwareLayer() {
 
 bool BrowserCompositorCALayerTreeMac::IOSurfaceLayerShouldAckImmediately()
     const {
-  // If there is no client then the accelerated layer is not in the hierarchy
+  // If there is no view then the accelerated layer is not in the hierarchy
   // and will never draw.
-  if (!client_)
+  if (!view_)
     return true;
-  return client_->BrowserCompositorViewShouldAckImmediately();
+  return view_->client()->BrowserCompositorViewShouldAckImmediately();
 }
 
 void BrowserCompositorCALayerTreeMac::IOSurfaceLayerDidDrawFrame() {
@@ -344,8 +344,10 @@ void BrowserCompositorCALayerTreeMac::IOSurfaceLayerDidDrawFrame() {
     accelerated_output_surface_id_ = 0;
   }
 
-  if (client_)
-    client_->BrowserCompositorViewFrameSwapped(accelerated_latency_info_);
+  if (view_) {
+    view_->client()->BrowserCompositorViewFrameSwapped(
+        accelerated_latency_info_);
+  }
 
   accelerated_latency_info_.clear();
 }
@@ -371,6 +373,34 @@ BrowserCompositorCALayerTreeMac* BrowserCompositorCALayerTreeMac::
   if (found == g_widget_to_internals_map.Pointer()->end())
     return NULL;
   return found->second;
+}
+
+void BrowserCompositorCALayerTreeMacGotAcceleratedFrame(
+    gfx::AcceleratedWidget widget,
+    uint64 surface_handle, int surface_id,
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::Size pixel_size, float scale_factor,
+    bool* disable_throttling, int* renderer_id) {
+  BrowserCompositorCALayerTreeMac* ca_layer_tree =
+      BrowserCompositorCALayerTreeMac::FromAcceleratedWidget(widget);
+  if (ca_layer_tree) {
+    ca_layer_tree->GotAcceleratedFrame(
+        surface_handle, surface_id, latency_info, pixel_size, scale_factor);
+    *disable_throttling = ca_layer_tree->IsRendererThrottlingDisabled();
+    *renderer_id = ca_layer_tree->GetRendererID();
+  } else {
+    *disable_throttling = false;
+    *renderer_id = 0;
+  }
+}
+
+void BrowserCompositorCALayerTreeMacGotSoftwareFrame(
+    gfx::AcceleratedWidget widget,
+    cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas) {
+  BrowserCompositorCALayerTreeMac* ca_layer_tree =
+      BrowserCompositorCALayerTreeMac::FromAcceleratedWidget(widget);
+  if (ca_layer_tree)
+    ca_layer_tree->GotSoftwareFrame(frame_data, scale_factor, canvas);
 }
 
 }  // namespace content
