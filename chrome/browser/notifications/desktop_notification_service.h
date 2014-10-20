@@ -87,7 +87,7 @@ class DesktopNotificationService : public PermissionContextBase
   void RequestNotificationPermission(
       content::WebContents* web_contents,
       const PermissionRequestID& request_id,
-      const GURL& requesting_frame,
+      const GURL& requesting_origin,
       bool user_gesture,
       const NotificationPermissionCallback& callback);
 

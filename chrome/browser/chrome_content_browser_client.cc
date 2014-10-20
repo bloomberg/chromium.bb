@@ -229,7 +229,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
-#include "extensions/browser/suggest_permission_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -1829,35 +1828,6 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
       render_frame_host->GetSiteInstance()->GetBrowserContext());
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
-#if defined(ENABLE_EXTENSIONS)
-  InfoMap* extension_info_map =
-      extensions::ExtensionSystem::Get(profile)->info_map();
-  const Extension* extension = NULL;
-  if (extension_info_map) {
-    extensions::ExtensionSet extensions;
-    extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-        source_origin,
-        render_frame_host->GetProcess()->GetID(),
-        extensions::APIPermission::kNotifications,
-        &extensions);
-    for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
-         iter != extensions.end(); ++iter) {
-      if (notification_service->IsNotifierEnabled(NotifierId(
-              NotifierId::APPLICATION, (*iter)->id()))) {
-        extension = iter->get();
-        break;
-      }
-    }
-  }
-  if (IsExtensionWithPermissionOrSuggestInConsole(
-          APIPermission::kNotifications,
-          extension,
-          render_frame_host->GetRenderViewHost())) {
-    callback.Run(blink::WebNotificationPermissionAllowed);
-    return;
-  }
-#endif
-
   WebContents* web_contents = WebContents::FromRenderFrameHost(
       render_frame_host);
   int render_process_id = render_frame_host->GetProcess()->GetID();

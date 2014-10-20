@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/content_settings/core/common/permission_request_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
@@ -42,6 +43,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/suggest_permission_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -138,14 +140,44 @@ DesktopNotificationService::~DesktopNotificationService() {
 void DesktopNotificationService::RequestNotificationPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& request_id,
-    const GURL& requesting_frame,
+    const GURL& requesting_origin,
     bool user_gesture,
     const NotificationPermissionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+#if defined(ENABLE_EXTENSIONS)
+  extensions::InfoMap* extension_info_map =
+      extensions::ExtensionSystem::Get(profile_)->info_map();
+  const extensions::Extension* extension = NULL;
+  if (extension_info_map) {
+    extensions::ExtensionSet extensions;
+    extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+        requesting_origin,
+        request_id.render_process_id(),
+        extensions::APIPermission::kNotifications,
+        &extensions);
+    for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
+         iter != extensions.end(); ++iter) {
+      if (IsNotifierEnabled(NotifierId(
+              NotifierId::APPLICATION, (*iter)->id()))) {
+        extension = iter->get();
+        break;
+      }
+    }
+  }
+  if (IsExtensionWithPermissionOrSuggestInConsole(
+          extensions::APIPermission::kNotifications,
+          extension,
+          web_contents->GetRenderViewHost())) {
+    callback.Run(blink::WebNotificationPermissionAllowed);
+    return;
+  }
+#endif
+
   RequestPermission(
       web_contents,
       request_id,
-      requesting_frame,
+      requesting_origin,
       user_gesture,
       base::Bind(&DesktopNotificationService::OnNotificationPermissionRequested,
                  weak_factory_.GetWeakPtr(),
