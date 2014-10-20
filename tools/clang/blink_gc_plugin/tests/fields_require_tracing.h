@@ -10,6 +10,16 @@
 namespace blink {
 
 class HeapObject;
+class PartObject;
+
+class PartBObject {
+    DISALLOW_ALLOCATION();
+public:
+    void trace(Visitor*);
+private:
+    HeapHashSet<PartBObject> m_set;
+    HeapVector<PartBObject> m_vector;
+};
 
 class PartObject {
     DISALLOW_ALLOCATION();
@@ -19,6 +29,8 @@ private:
     Member<HeapObject> m_obj1;
     Member<HeapObject> m_obj2;
     Member<HeapObject> m_obj3;
+
+    HeapVector<PartBObject> m_parts;
 };
 
 class HeapObject : public GarbageCollected<HeapObject> {

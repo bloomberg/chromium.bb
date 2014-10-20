@@ -572,6 +572,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
 class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
  public:
   typedef std::vector<FieldPoint*> RootPath;
+  typedef std::set<RecordInfo*> VisitingSet;
   typedef std::vector<RootPath> Errors;
 
   CheckGCRootsVisitor() {}
@@ -594,6 +595,11 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
     if (edge->value()->record()->isUnion())
       return;
 
+    // Prevent infinite regress for cyclic part objects.
+    if (visiting_set_.find(edge->value()) != visiting_set_.end())
+      return;
+
+    visiting_set_.insert(edge->value());
     // If the value is a part object, then continue checking for roots.
     for (Context::iterator it = context().begin();
          it != context().end();
@@ -602,6 +608,7 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
         return;
     }
     ContainsGCRoots(edge->value());
+    visiting_set_.erase(edge->value());
   }
 
   void VisitPersistent(Persistent* edge) override {
@@ -615,6 +622,7 @@ class CheckGCRootsVisitor : public RecursiveEdgeVisitor {
 
  protected:
   RootPath current_;
+  VisitingSet visiting_set_;
   Errors gc_roots_;
 };
 

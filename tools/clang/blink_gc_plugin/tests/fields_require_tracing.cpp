@@ -10,6 +10,12 @@ void PartObject::trace(Visitor* visitor) {
     m_obj1->trace(visitor); // Don't allow direct tracing.
     visitor->trace(m_obj2);
     // Missing visitor->trace(m_obj3);
+    visitor->trace(m_parts);
+}
+
+void PartBObject::trace(Visitor* visitor) {
+  // Missing visitor->trace(m_set);
+  visitor->trace(m_vector);
 }
 
 void HeapObject::trace(Visitor* visitor) {
