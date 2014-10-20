@@ -21,6 +21,24 @@
 
 namespace content {
 
+namespace {
+
+// Method to check if any of the data in |audio_source| has energy.
+bool HasDataEnergy(const media::AudioBus& audio_source) {
+  for (int ch = 0; ch < audio_source.channels(); ++ch) {
+    const float* channel_ptr = audio_source.channel(ch);
+    for (int frame = 0; frame < audio_source.frames(); ++frame) {
+      if (channel_ptr[frame] != 0)
+        return true;
+    }
+  }
+
+  // All the data is zero.
+  return false;
+}
+
+}  // namespace
+
 // Reference counted container of WebRtcLocalAudioTrack delegate.
 // TODO(xians): Switch to MediaStreamAudioSinkOwner.
 class WebRtcAudioCapturer::TrackOwner
@@ -33,14 +51,16 @@ class WebRtcAudioCapturer::TrackOwner
                base::TimeDelta delay,
                double volume,
                bool key_pressed,
-               bool need_audio_processing) {
+               bool need_audio_processing,
+               bool force_report_nonzero_energy) {
     base::AutoLock lock(lock_);
     if (delegate_) {
       delegate_->Capture(audio_data,
                          delay,
                          volume,
                          key_pressed,
-                         need_audio_processing);
+                         need_audio_processing,
+                         force_report_nonzero_energy);
     }
   }
 
@@ -487,6 +507,12 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
     (*it)->SetAudioProcessor(audio_processor_);
   }
 
+  // Figure out if the pre-processed data has any energy or not, the
+  // information will be passed to the track to force the calculator
+  // to report energy in case the post-processed data is zeroed by the audio
+  // processing.
+  const bool force_report_nonzero_energy = HasDataEnergy(*audio_source);
+
   // Push the data to the processor for processing.
   audio_processor_->PushCaptureData(audio_source);
 
@@ -500,7 +526,7 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
     for (TrackList::ItemList::const_iterator it = tracks.begin();
          it != tracks.end(); ++it) {
       (*it)->Capture(output, audio_delay, current_volume, key_pressed,
-                     need_audio_processing);
+                     need_audio_processing, force_report_nonzero_energy);
     }
 
     if (new_volume) {

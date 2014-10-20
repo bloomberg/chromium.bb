@@ -292,7 +292,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     for (uint32 i = 0; i < buffers; ++i)
       native_track()->Capture(source_data(),
                              base::TimeDelta::FromMilliseconds(0), 1, false,
-                             false);
+                             false, false);
   }
 
   // Used to simulate a problem with sockets.

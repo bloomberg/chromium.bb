@@ -38,9 +38,11 @@ MediaStreamAudioLevelCalculator::MediaStreamAudioLevelCalculator()
 MediaStreamAudioLevelCalculator::~MediaStreamAudioLevelCalculator() {
 }
 
-int MediaStreamAudioLevelCalculator::Calculate(const int16* audio_data,
-                                               int number_of_channels,
-                                               int number_of_frames) {
+int MediaStreamAudioLevelCalculator::Calculate(
+    const int16* audio_data,
+    int number_of_channels,
+    int number_of_frames,
+    bool force_report_nonzero_energy) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // |level_| is updated every 10 callbacks. For the case where callback comes
   // every 10ms, |level_| will be updated approximately every 100ms.
@@ -50,7 +52,8 @@ int MediaStreamAudioLevelCalculator::Calculate(const int16* audio_data,
   max_amplitude_ = std::max(max_amplitude_, max);
 
   if (counter_++ == kUpdateFrequency) {
-    level_ = max_amplitude_;
+    level_ = (max_amplitude_ == 0 ?
+        force_report_nonzero_energy : max_amplitude_);
 
     // Decay the absolute maximum amplitude by 1/4.
     max_amplitude_ >>= 2;

@@ -127,7 +127,7 @@ void WebAudioCapturerSource::consumeAudio(
                                 params_.bits_per_sample() / 8,
                                 audio_data_.get());
     track_->Capture(audio_data_.get(), delay, volume, key_pressed,
-                    need_audio_processing);
+                    need_audio_processing, false);
   }
 }
 

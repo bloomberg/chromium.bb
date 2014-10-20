@@ -70,7 +70,8 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
                base::TimeDelta delay,
                int volume,
                bool key_pressed,
-               bool need_audio_processing);
+               bool need_audio_processing,
+               bool force_report_nonzero_energy);
 
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..

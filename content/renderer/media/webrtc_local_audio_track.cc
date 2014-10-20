@@ -42,13 +42,14 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
                                     base::TimeDelta delay,
                                     int volume,
                                     bool key_pressed,
-                                    bool need_audio_processing) {
+                                    bool need_audio_processing,
+                                    bool force_report_nonzero_energy) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
 
   // Calculate the signal level regardless if the track is disabled or enabled.
   int signal_level = level_calculator_->Calculate(
       audio_data, audio_parameters_.channels(),
-      audio_parameters_.frames_per_buffer());
+      audio_parameters_.frames_per_buffer(), force_report_nonzero_energy);
   adapter_->SetSignalLevel(signal_level);
 
   scoped_refptr<WebRtcAudioCapturer> capturer;
