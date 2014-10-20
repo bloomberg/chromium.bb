@@ -188,7 +188,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::UsageStats)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType,
-                          NTP_NUM_EVENT_TYPES)
+                          NTP_EVENT_TYPE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(WebApplicationInfo::MobileCapable,
                           WebApplicationInfo::MOBILE_CAPABLE_APPLE)

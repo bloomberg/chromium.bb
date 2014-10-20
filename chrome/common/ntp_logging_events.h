@@ -8,7 +8,7 @@
 // The different types of events that are logged from the NTP. This enum is used
 // to transfer information from the NTP javascript to the renderer and is not
 // used as a UMA enum histogram's logged value.
-// Note: Keep in sync with browser/resources/local_ntp/most_visited_utils.js
+// Note: Keep in sync with browser/resources/local_ntp/most_visited_util.js
 enum NTPLoggingEventType {
   // The suggestion is coming from the server.
   NTP_SERVER_SIDE_SUGGESTION = 0,
@@ -43,7 +43,7 @@ enum NTPLoggingEventType {
   // The user moused over an NTP tile or title.
   NTP_MOUSEOVER = 9,
 
-  NTP_NUM_EVENT_TYPES
+  NTP_EVENT_TYPE_LAST = NTP_MOUSEOVER
 };
 
 #endif  // CHROME_COMMON_NTP_LOGGING_EVENTS_H_

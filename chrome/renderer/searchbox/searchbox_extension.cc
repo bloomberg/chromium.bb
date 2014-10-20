@@ -971,7 +971,7 @@ void SearchBoxExtensionWrapper::LogEvent(
 
   DVLOG(1) << render_view << " LogEvent";
 
-  if (args[0]->Uint32Value() < NTP_NUM_EVENT_TYPES) {
+  if (args[0]->Uint32Value() <= NTP_EVENT_TYPE_LAST) {
     NTPLoggingEventType event =
         static_cast<NTPLoggingEventType>(args[0]->Uint32Value());
     SearchBox::Get(render_view)->LogEvent(event);
