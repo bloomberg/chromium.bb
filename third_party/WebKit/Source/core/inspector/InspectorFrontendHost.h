@@ -75,13 +75,14 @@ public:
 
     Page* frontendPage() { return m_frontendPage; }
 
+    void clearMenuProvider() { m_menuProvider = nullptr; }
+
 private:
-    friend class FrontendMenuProvider;
     InspectorFrontendHost(InspectorFrontendClient* client, Page* frontendPage);
 
     InspectorFrontendClient* m_client;
     RawPtrWillBeMember<Page> m_frontendPage;
-    FrontendMenuProvider* m_menuProvider;
+    RawPtrWillBeMember<FrontendMenuProvider> m_menuProvider;
 };
 
 } // namespace blink

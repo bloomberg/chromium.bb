@@ -69,7 +69,7 @@ public:
     virtual float minimumPageScaleFactor() override;
     virtual float maximumPageScaleFactor() override;
     virtual void setPageScaleFactor(float) override;
-    virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) override;
+    virtual void showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>) override;
 
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) override;

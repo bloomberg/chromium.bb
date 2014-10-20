@@ -62,6 +62,7 @@ PassOwnPtrWillBeRawPtr<ContextMenuController> ContextMenuController::create(Page
 
 void ContextMenuController::trace(Visitor* visitor)
 {
+    visitor->trace(m_menuProvider);
     visitor->trace(m_hitTestResult);
 }
 
@@ -115,7 +116,7 @@ void ContextMenuController::handleContextMenuEvent(Event* event)
     showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenu(Event* event, PassRefPtr<ContextMenuProvider> menuProvider)
+void ContextMenuController::showContextMenu(Event* event, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
 {
     m_menuProvider = menuProvider;
 
@@ -129,7 +130,7 @@ void ContextMenuController::showContextMenu(Event* event, PassRefPtr<ContextMenu
     showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
 {
     m_menuProvider = menuProvider;
 

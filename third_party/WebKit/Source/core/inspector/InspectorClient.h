@@ -71,7 +71,7 @@ public:
     virtual float minimumPageScaleFactor() { return 1; }
     virtual float maximumPageScaleFactor() { return 1; }
     virtual void setPageScaleFactor(float) { }
-    virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) { }
+    virtual void showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>) { }
 
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) { }

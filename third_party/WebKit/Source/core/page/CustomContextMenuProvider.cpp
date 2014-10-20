@@ -29,6 +29,14 @@ CustomContextMenuProvider::~CustomContextMenuProvider()
 {
 }
 
+void CustomContextMenuProvider::trace(Visitor* visitor)
+{
+    visitor->trace(m_menu);
+    visitor->trace(m_subjectElement);
+    visitor->trace(m_menuItems);
+    ContextMenuProvider::trace(visitor);
+}
+
 void CustomContextMenuProvider::populateContextMenu(ContextMenu* menu)
 {
     populateContextMenuItems(*m_menu, *menu);

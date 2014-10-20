@@ -367,7 +367,7 @@ void InspectorController::setInjectedScriptForOrigin(const String& origin, const
         inspectorAgent->setInjectedScriptForOrigin(origin, source);
 }
 
-void InspectorController::showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+void InspectorController::showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
 {
     if (!m_inspectorClient)
         return;

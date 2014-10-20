@@ -31,6 +31,7 @@
 #ifndef ContextMenuProvider_h
 #define ContextMenuProvider_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -38,15 +39,16 @@ namespace blink {
 class ContextMenu;
 class ContextMenuItem;
 
-class ContextMenuProvider : public RefCounted<ContextMenuProvider> {
+class ContextMenuProvider : public RefCountedWillBeGarbageCollectedFinalized<ContextMenuProvider> {
 public:
-    virtual ~ContextMenuProvider() { };
+    virtual ~ContextMenuProvider() { }
+    virtual void trace(Visitor*) { }
 
     virtual void populateContextMenu(ContextMenu*) = 0;
     virtual void contextMenuItemSelected(const ContextMenuItem*) = 0;
     virtual void contextMenuCleared() = 0;
 };
 
-}
+} // namespace blink
 
 #endif // ContextMenuProvider_h

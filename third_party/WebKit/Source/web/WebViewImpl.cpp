@@ -1418,7 +1418,7 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
 }
 #endif
 
-void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;

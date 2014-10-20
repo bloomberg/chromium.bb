@@ -88,7 +88,7 @@ public:
     void setInspectorFrontendClient(InspectorFrontendClient*);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
-    void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>);
+    void showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>);
 
     void dispatchMessageFromFrontend(const String& message);
 

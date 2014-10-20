@@ -155,7 +155,7 @@ void InspectorClientImpl::setPageScaleFactor(float pageScaleFactor)
     m_inspectedWebView->setPageScaleFactor(pageScaleFactor);
 }
 
-void InspectorClientImpl::showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
+void InspectorClientImpl::showContextMenu(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
 {
     m_inspectedWebView->showContextMenuAtPoint(x, y, menuProvider);
 }
