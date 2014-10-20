@@ -46,6 +46,8 @@ public:
 
     ScriptLoader* loader() const { return m_loader.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
@@ -74,7 +76,7 @@ private:
 
     virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
 
-    OwnPtr<ScriptLoader> m_loader;
+    OwnPtrWillBeMember<ScriptLoader> m_loader;
 };
 
 } // namespace blink

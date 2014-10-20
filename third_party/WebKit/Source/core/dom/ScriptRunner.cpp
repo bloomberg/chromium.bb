@@ -42,13 +42,15 @@ ScriptRunner::ScriptRunner(Document* document)
 
 ScriptRunner::~ScriptRunner()
 {
+#if !ENABLE(OILPAN)
     // Make sure that ScriptLoaders don't keep their PendingScripts alive.
-    for (size_t i = 0; i < m_scriptsToExecuteInOrder.size(); ++i)
-        m_scriptsToExecuteInOrder[i]->detach();
-    for (size_t i = 0; i < m_scriptsToExecuteSoon.size(); ++i)
-        m_scriptsToExecuteSoon[i]->detach();
-    for (HashSet<ScriptLoader*>::iterator it = m_pendingAsyncScripts.begin(); it != m_pendingAsyncScripts.end(); ++it)
-        (*it)->detach();
+    for (ScriptLoader* scriptLoader : m_scriptsToExecuteInOrder)
+        scriptLoader->detach();
+    for (ScriptLoader* scriptLoader : m_scriptsToExecuteSoon)
+        scriptLoader->detach();
+    for (ScriptLoader* scriptLoader : m_pendingAsyncScripts)
+        scriptLoader->detach();
+#endif
 }
 
 void ScriptRunner::addPendingAsyncScript(ScriptLoader* scriptLoader)
@@ -131,7 +133,7 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
 
     RefPtrWillBeRawPtr<Document> protect(m_document.get());
 
-    Vector<ScriptLoader*> scriptLoaders;
+    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > scriptLoaders;
     scriptLoaders.swap(m_scriptsToExecuteSoon);
 
     size_t numInOrderScriptsToExecute = 0;
