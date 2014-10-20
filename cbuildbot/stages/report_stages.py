@@ -25,6 +25,7 @@ from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 
@@ -487,13 +488,20 @@ class ReportStage(generic_stages.BuilderStage,
         archive_urls.update(run_archive_urls)
         # Check if the builder_run is tied to any boards and if so get all
         # upload urls.
-        archive = builder_run.GetArchive()
-        upload_urls = self._GetUploadUrls('LATEST-*', builder_run=builder_run)
         if final_status == constants.FINAL_STATUS_PASSED:
           # Update the LATEST files if the build passed.
-          archive.UpdateLatestMarkers(builder_run.manifest_branch,
-                                      builder_run.debug,
-                                      upload_urls=upload_urls)
+          try:
+            upload_urls = self._GetUploadUrls(
+                'LATEST-*', builder_run=builder_run)
+          except portage_util.MissingOverlayException as e:
+            # If the build failed prematurely, some overlays might be
+            # missing. Ignore them in this stage.
+            logging.warning(e)
+          else:
+            archive = builder_run.GetArchive()
+            archive.UpdateLatestMarkers(builder_run.manifest_branch,
+                                        builder_run.debug,
+                                        upload_urls=upload_urls)
 
     version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,

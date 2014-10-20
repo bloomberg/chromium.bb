@@ -99,13 +99,17 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
     Args:
       repo: The repo name to look up.
       optional: If |repo| does not exist, return False, else
-        throw a KeyError exception.
+        raise an MissingOverlayException.
 
     Returns:
       True if |repo| was found.
     """
-    if optional and repo not in overlays:
-      return False
+    if repo not in overlays:
+      if optional:
+        return False
+      else:
+        raise MissingOverlayException('%s was not found' % repo)
+
     for master in overlays[repo]['masters'] + [repo]:
       if master not in seen:
         seen.add(master)

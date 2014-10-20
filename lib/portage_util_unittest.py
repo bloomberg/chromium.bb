@@ -414,6 +414,15 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.assertTrue(portage_util.EBuild.GitRepoHasChanges(self.tempdir))
 
 
+class ListOverlaysTest(cros_test_lib.MockTempDirTestCase):
+  """Tests related to listing overlays."""
+  def testMissingOverlays(self):
+    """Tests that exceptions are raised when an overlay is missing."""
+    self.assertRaises(portage_util.MissingOverlayException,
+                      portage_util._ListOverlays,
+                      board='foo', buildroot=self.tempdir)
+
+
 class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to finding overlays."""
 
