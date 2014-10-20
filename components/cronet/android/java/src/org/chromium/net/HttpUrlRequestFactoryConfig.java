@@ -111,6 +111,10 @@ public class HttpUrlRequestFactoryConfig {
     public HttpUrlRequestFactoryConfig addQuicHint(String host,
                                                    int port,
                                                    int alternatePort) {
+        if (host.contains("/")) {
+            throw new IllegalArgumentException("Illegal QUIC Hint Host: " +
+                                               host);
+        }
         try {
             JSONArray quicHints = mConfig.optJSONArray(
                     UrlRequestContextConfig.QUIC_HINTS);

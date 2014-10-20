@@ -58,4 +58,17 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
                            "HttpUrlConnection/\\d+\\.\\d+\\.\\d+\\.\\d+@\\w+",
                            factory.getName()));
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testQuicHintHost() {
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        config.addQuicHint("www.google.com", 443, 443);
+        try {
+            config.addQuicHint("https://www.google.com", 443, 443);
+        } catch (IllegalArgumentException e) {
+            return;
+        }
+        fail("IllegalArgumentException must be thrown");
+    }
 }

@@ -13,6 +13,7 @@
 #include "components/cronet/url_request_context_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log_logger.h"
+#include "net/base/net_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -173,6 +174,14 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
         continue;
       }
 
+      url::CanonHostInfo host_info;
+      std::string canon_host(net::CanonicalizeHost(quic_hint.host, &host_info));
+      if (!host_info.IsIPAddress() &&
+          !net::IsCanonicalizedHostCompliant(canon_host)) {
+        LOG(ERROR) << "Invalid QUIC hint host: " << quic_hint.host;
+        continue;
+      }
+
       if (quic_hint.port <= std::numeric_limits<uint16>::min() ||
           quic_hint.port > std::numeric_limits<uint16>::max()) {
         LOG(ERROR) << "Invalid QUIC hint port: "
@@ -187,7 +196,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
         continue;
       }
 
-      net::HostPortPair quic_hint_host_port_pair(quic_hint.host,
+      net::HostPortPair quic_hint_host_port_pair(canon_host,
                                                  quic_hint.port);
       context_->http_server_properties()->SetAlternateProtocol(
           quic_hint_host_port_pair,
