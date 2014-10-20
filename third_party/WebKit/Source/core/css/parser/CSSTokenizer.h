@@ -35,6 +35,7 @@ private:
     CSSParserToken consumeStringTokenUntil(UChar);
 
     void consumeUntilNonWhitespace();
+    void consumeSingleWhitespaceIfNext();
     bool consumeUntilCommentEndFound();
 
     bool consumeIfNext(UChar);

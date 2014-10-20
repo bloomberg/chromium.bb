@@ -395,6 +395,16 @@ void CSSTokenizer::consumeUntilNonWhitespace()
         consume();
 }
 
+void CSSTokenizer::consumeSingleWhitespaceIfNext()
+{
+    // We check for \r\n and HTML spaces since we don't do preprocessing
+    UChar c = m_input.nextInputChar();
+    if (c == '\r' && m_input.peek(1) == '\n')
+        consume(2);
+    else if (isHTMLSpace(c))
+        consume();
+}
+
 bool CSSTokenizer::consumeUntilCommentEndFound()
 {
     UChar c = consume();
@@ -456,6 +466,7 @@ UChar CSSTokenizer::consumeEscape()
             hexChars.append(cc);
             consumedHexDigits++;
         };
+        consumeSingleWhitespaceIfNext();
         bool ok = false;
         UChar codePoint = hexChars.toString().toUIntStrict(&ok, 16);
         if (!ok)

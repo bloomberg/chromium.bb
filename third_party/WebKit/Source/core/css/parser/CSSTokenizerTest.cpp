@@ -62,6 +62,11 @@ TEST(CSSTokenizerTest, Basic)
         { "5.", "5'.'" },
         { "5.0e-1", "0.500000" },
         { "5.e-1", "5'.'e-1" },
+        { "hel\\6co", "hello" },
+        { "wor\\6c d", "world" },
+        { "wor\\6c\r\nd wor\\6c\n\rd", "world worl d" },
+        { "cod\\65point esca\\70\fe \\74\test", "codepoint escape test" },
+        { "esca\\70\f\te \\74 \nest", "escap e t est" },
         { 0, 0 } // Do not remove the terminator line.
     };
 
