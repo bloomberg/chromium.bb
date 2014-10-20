@@ -121,12 +121,14 @@ void MidiMessageFilter::HandleSessionStarted(
 
   if (result == media::MIDI_OK) {
     // Add the client's input and output ports.
+    const bool active = true;
     for (size_t i = 0; i < inputs.size(); ++i) {
       client->didAddInputPort(
           base::UTF8ToUTF16(inputs[i].id),
           base::UTF8ToUTF16(inputs[i].manufacturer),
           base::UTF8ToUTF16(inputs[i].name),
-          base::UTF8ToUTF16(inputs[i].version));
+          base::UTF8ToUTF16(inputs[i].version),
+          active);
     }
 
     for (size_t i = 0; i < outputs.size(); ++i) {
@@ -134,7 +136,8 @@ void MidiMessageFilter::HandleSessionStarted(
           base::UTF8ToUTF16(outputs[i].id),
           base::UTF8ToUTF16(outputs[i].manufacturer),
           base::UTF8ToUTF16(outputs[i].name),
-          base::UTF8ToUTF16(outputs[i].version));
+          base::UTF8ToUTF16(outputs[i].version),
+          active);
     }
   }
   std::string error;
