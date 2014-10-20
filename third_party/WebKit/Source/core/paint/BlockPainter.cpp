@@ -20,6 +20,7 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContextCullSaver.h"
@@ -158,7 +159,9 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
     // 1. paint background, borders etc
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderBlock.style()->visibility() == VISIBLE) {
         if (m_renderBlock.hasBoxDecorationBackground()) {
-            PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+            // The document element is specified to paint its background infinitely.
+            PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase,
+                m_renderBlock.isDocumentElement() ? m_renderBlock.view()->backgroundRect(&m_renderBlock) : bounds);
             m_renderBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
         }
         if (m_renderBlock.hasColumns() && !paintInfo.paintRootBackgroundOnly()) {
