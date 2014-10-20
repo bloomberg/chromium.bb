@@ -11,6 +11,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/keyboard_evdev.h"
 
 struct input_event;
 
@@ -22,8 +23,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
   KeyEventConverterEvdev(int fd,
                          base::FilePath path,
                          int id,
-                         EventModifiersEvdev* modifiers,
-                         const EventDispatchCallback& dispatch);
+                         KeyboardEvdev* keyboard);
   virtual ~KeyEventConverterEvdev();
 
   // EventConverterEvdev:
@@ -32,16 +32,11 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
   void ProcessEvents(const struct input_event* inputs, int count);
 
  private:
-  // Callback for dispatching events.
-  EventDispatchCallback callback_;
-
-  // Shared modifier state.
-  EventModifiersEvdev* modifiers_;
-
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
-  void ConvertKeyEvent(int key, int value);
+  // Shared keyboard state.
+  KeyboardEvdev* keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyEventConverterEvdev);
 };

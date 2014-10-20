@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -70,14 +71,17 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // Task runner for event dispatch.
   scoped_refptr<base::TaskRunner> ui_task_runner_;
 
+  // Dispatch callback for events.
+  EventDispatchCallback dispatch_callback_;
+
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;
 
+  // Keyboard state.
+  KeyboardEvdev keyboard_;
+
   // Cursor movement.
   CursorDelegateEvdev* cursor_;
-
-  // Dispatch callback for events.
-  EventDispatchCallback dispatch_callback_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;

@@ -48,6 +48,7 @@ struct OpenInputDeviceParams {
 
   // State shared between devices. Must not be dereferenced on worker thread.
   EventModifiersEvdev* modifiers;
+  KeyboardEvdev* keyboard;
   CursorDelegateEvdev* cursor;
 };
 
@@ -86,8 +87,8 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
         fd, params.path, params.id, devinfo, params.dispatch_callback));
 
   // Everything else: use KeyEventConverterEvdev.
-  return make_scoped_ptr<EventConverterEvdev>(new KeyEventConverterEvdev(
-      fd, params.path, params.id, params.modifiers, params.dispatch_callback));
+  return make_scoped_ptr<EventConverterEvdev>(
+      new KeyEventConverterEvdev(fd, params.path, params.id, params.keyboard));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -146,10 +147,11 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
                                      DeviceManager* device_manager)
     : last_device_id_(0),
       device_manager_(device_manager),
-      cursor_(cursor),
       dispatch_callback_(
           base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
                      base::Unretained(this))),
+      keyboard_(&modifiers_, dispatch_callback_),
+      cursor_(cursor),
       weak_ptr_factory_(this) {
   DCHECK(device_manager_);
 }
@@ -193,6 +195,7 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
       params->path = event.path();
       params->dispatch_callback = dispatch_callback_;
       params->modifiers = &modifiers_;
+      params->keyboard = &keyboard_;
       params->cursor = cursor_;
 
       OpenInputDeviceReplyCallback reply_callback =
