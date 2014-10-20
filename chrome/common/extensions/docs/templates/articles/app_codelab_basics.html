@@ -6,7 +6,7 @@
 <p>In this step, you will learn:</p>
 
 <ul>
-  <li>The basic building blocks of a Chrome App package, including the manifest file and background scripts.</li>
+  <li>The basic building blocks of a Chrome App, including the manifest file and background scripts.</li>
   <li>How to install, run, and debug a Chrome App.</li>
 </ul>
 
@@ -16,12 +16,9 @@
   To preview what you will complete in this step, <a href="#launch">jump down to the bottom of this page &#8595;</a>.
 </p>
 
-<h2 id="app-components">Get familiar with Chrome App packages</h2>
+<h2 id="app-components">Get familiar with Chrome Apps</h2>
 
-<p>Chrome Apps are structured similarly to Chrome extensions
-so current extension developers will find this process to be familiar.</p>
-
-<p>A packaged Chrome App contains these components:</p>
+<p>A Chrome App contains these components:</p>
 
 <ul>
   <li>The <strong>manifest</strong> specifies the meta information of your app. 
@@ -29,9 +26,9 @@ so current extension developers will find this process to be familiar.</p>
   <li>The <strong>event page</strong>, also called a <strong>background script</strong>, is 
     responsible for managing the app life cycle.
     The background script is where you register listeners for specific app events such as the launching and closing of the app's window.</li>
-  <li>All <strong>code files</strong> must be included in the Chrome App package. 
+  <li>All <strong>code files</strong> must be packaged in the Chrome App. 
     This includes HTML, CSS, JS, and Native Client modules.</li>
-  <li><strong>Assets</strong>, including app icons, should be included in the package as well.</li>
+  <li><strong>Assets</strong>, including app icons, should be packaged in the Chrome App as well.</li>
 </ul>
 
 <h3 id="manifest">Create a manifest</h3>
@@ -56,7 +53,8 @@ so current extension developers will find this process to be familiar.</p>
 }
 </pre>
 
-<p>Notice how this manifest describes a background script named <em>background.js</em>. We'll create that file next.</p>
+<p>Notice how this manifest describes a background script named <em>background.js</em>.
+You will create that file next.</p>
 
 <pre>
 "background": {
@@ -64,7 +62,7 @@ so current extension developers will find this process to be familiar.</p>
 }
 </pre>
 
-<p>We'll also supply you with an app icon later in this step:</p>
+<p>We'll supply you with an app icon later in this step:</p>
 
 <pre>
 "icons": {
@@ -102,7 +100,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 <p>When the Chrome App is launched, 
 <a href="/apps/app_window.html#method-create">chrome.app.window.create()</a>
-will create a new window using a basic HTML page (<em>index.html</em>) as the source. We'll create the HTML view in the next step.</p>
+will create a new window using a basic HTML page (<em>index.html</em>) as the source.
+You will create the HTML view in the next step.</p>
 
 <pre>
 <b>chrome.app.window.create</b>('<b>index.html</b>', {
@@ -139,7 +138,7 @@ additional packaged JavaScript, CSS, or assets.</p>
 
 <p align="center"><img src="{{static}}/images/app_codelab/icon_128.png" alt="Chrome App icon for this codelab" /></p>
 
-<p>We will use this PNG as our application's icon that users will see in the launch menu. <!-- For more detailed information about app icons, refer to <a href="/apps/manifest/icons">Manifest - Icons</a> in the docs. --></p>
+<p>You will use this PNG as our application's icon that users will see in the launch menu. <!-- For more detailed information about app icons, refer to <a href="/apps/manifest/icons">Manifest - Icons</a> in the docs. --></p>
 
 <h3 id="confirm-files">Confirm that you have created all your files</h3>
 
@@ -201,7 +200,7 @@ You can easily test an API call before adding it to your code:</p>
   <img src="{{static}}/images/app_codelab/console-log.png" alt="DevTools console log"/>
 </figure>
 
-<h2 id="recap">Recap APIs referenced in this step</h2>
+<h2 id="recap">For more information</h2>
 
 <p>For more detailed information about some of the APIs introduced in this step, refer to:</p>
 

@@ -20,29 +20,28 @@
   To preview what you will complete in this step, <a href="#launch">jump down to the bottom of this page &#8595;</a>.
 </p>
 
-<h2 id="csp-compliance">Learn how CSP affects the use of external web resources</h2>
+<h2 id="csp-compliance">How CSP affects the use of external resources</h2>
 
 <p>The Chrome Apps platform forces your app to be fully compliant with Content 
-Security Policies (CSP). This includes not being able to directly load DOM 
-resources like images, fonts, and CSS from outside of your packaged app.</p>
+Security Policies (CSP). You can't directly load DOM 
+resources like images, fonts, and CSS from outside of your Chrome App package.</p>
 
 <p>If you want to show an external image in your app, you need to request it via <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">XMLHttpRequest</a>, 
-transform it into a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a>, and create an <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL.createObjectURL">ObjectURL</a>. This ObjectURL can then be 
-added to the DOM because it refers to an in-memory item in the context of the 
-app.</p>
+transform it into a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a>, and create an <a href="https://developer.mozilla.org/en-US/docs/Web/API/URL.createObjectURL">ObjectURL</a>. This <code>ObjectURL</code> can be added to the DOM
+because it refers to an in-memory item in the context of the app.</p>
 
 <h2 id="show-images">Show thumbnail images for todo items</h2>
 
-<p>Let's change our app to look for image URLs in a todo item. If the URL 
-looks like an image (e.g. ends with .png, .jpg, .svg, or .gif), we will apply the
-process mentioned above in order to show an image thumbnail next to the URL.</p>
+<p>Let's change our app to look for image URLs in a todo item.
+If the URL looks like an image (for example, ends with .png, .jpg, .svg, or .gif),
+apply the process mentioned above in order to show an image thumbnail next to the URL.</p>
 
 <h3 id="update-permissions">Update permissions</h3>
 
-<p>In a Chrome App you can make XMLHttpRequest calls to any URL as long as you 
-whitelist its domain in the manifest. Since we won't know 
+<p>In a Chrome App, you can make XMLHttpRequest calls to any URL as long as you 
+whitelist its domain in the manifest. Since you won't know 
 beforehand what image URL the user will type, 
-we will ask permission to make requests to <code>"&lt;all_urls&gt;"</code>.</p>
+ask permission to make requests to <code>"&lt;all_urls&gt;"</code>.</p>
 
 <p>In <strong><em>manifest.json</em></strong>, request the "&lt;all_urls&gt;" permission:</p>
 
@@ -64,7 +63,7 @@ Controller.prototype._createObjectURL = function(blob) {
 };
 </pre>
 
-<p>ObjectURLs hold memory so, when you no longer need the ObjectURL, you 
+<p>ObjectURLs hold memory, so when you no longer need the ObjectURL, you 
 should revoke them. Add this 
 <code>_clearObjectURL()</code> method to <em>controller.js</em> to handle that:</p>
 
@@ -101,8 +100,8 @@ Controller.prototype._requestRemoteImageAndAppend = function(imageUrl, element) 
 };
 </pre>
 
-<p>On XHR load, this method will create an ObjectURL from the XHR's response,
-and add an <code>&lt;img&gt;</code> element with this ObjectURL to the DOM.</p>
+<p>On XHR load, this method creates an <code>ObjectURL</code> from the XHR's response,
+and adds an <code>&lt;img&gt;</code> element with this <code>ObjectURL</code> to the DOM.</p>
 
 <h3 id="parse-urls">Parse for image URLs in todo items</h3>
 
@@ -181,8 +180,8 @@ Controller.prototype.editItem = function (id, label) {
 
 <h3 id="css">Constrain the displayed image dimensions</h3>
 
-<p>Finally, in <strong></em>bower_components/todomvc-common/base.css</strong></em>, add a CSS rule to limit 
-   the size of the image:</p>
+<p>Finally, in <strong><em>bower_components/todomvc-common/base.css</strong></em>,
+add a CSS rule to limit the size of the image:</p>
 
 <pre data-filename="base.css">
 .thumbnail img[data-src] {
@@ -207,7 +206,7 @@ offline cache and dozens of simultaneous resource downloads, we have created
 <a href="https://github.com/GoogleChrome/apps-resource-loader#readme">a helper library</a>
 to handle some common use cases.</p>
 
-<h2 id="recap">Recap APIs referenced in this step</h2>
+<h2 id="recap">For more information</h2>
 
 <p>For more detailed information about some of the APIs introduced in this step, refer to:</p>
 

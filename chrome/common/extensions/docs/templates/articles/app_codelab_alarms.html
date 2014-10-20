@@ -23,15 +23,14 @@
 
 <h2 id="overview">Enhance your Todo app with reminders</h2>
 
-<p>Let's enhance our Todo app by adding functionality to remind the user if they have open todos &mdash; even when the 
-app is closed.</p>
+<p>Enhance the Todo app by adding functionality to remind the user if they have open todos &mdash; even when the app is closed.</p>
 
-<p>First, we must add a way for our app to regularly check for uncompleted todos. Next, we need to display a message to the user, even if the Todo app window is closed. To accomplish this, we will learn about implementing alarms and notifications in Chrome Apps.</p>
+<p>First, you need to add a way for the app to regularly check for uncompleted todos. Next, the app needs to display a message to the user, even if the Todo app window is closed. To accomplish this, you need to understand how alarms and notifications work in Chrome Apps.</p>
 
 <h2 id="alarms">Add alarms</h2>
 
 <p>Use <a href="/apps/alarms.html"><code>chrome.alarms</code></a>
-to set a wake up interval. As long as Chrome is running, the alarm listener will be called at 
+to set a wake up interval. As long as Chrome is running, the alarm listener is called at 
 approximately the interval set.</p>
 
 <h3 id="update-permissions-alarms">Update app permissions</h3>
@@ -70,8 +69,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
 &lt;/footer&gt;
 </pre>
 
-<p>We now need to write the JavaScript event handler for this new button but recall from <a href="/apps/app_codelab_import_todomvc#csp-compliance">Step 2</a> that one of the most common CSP non-compliances is caused by inline JavaScript. Still in <em>index.html</em>, add this line to import a new <em>alarms.js</em>
-file we will create in the following step:</p>
+<p>You now need to write the JavaScript event handler for this new button.
+Recall from <a href="/apps/app_codelab_import_todomvc#csp-compliance">Step 2</a>
+that one of the most common CSP non-compliances is caused by inline JavaScript.
+In <em>index.html</em>, add this line to import a new <em>alarms.js</em>
+file which you will create in the following step:</p>
 
 <pre data-filename="index.html">
   &lt;/footer&gt;
@@ -161,20 +163,22 @@ in the Console every time the alarm "rings":</p>
 
 <h3 id="create-alarms">Create alarms</h3>
 
-<p>In <code>createAlarm()</code>, we use the <a href="/apps/alarms#method-create"><code>chrome.alarms.create()</code></a> API to create an alarm when <strong>Activate alarm</strong> is toggled.</p>
+<p>In <code>createAlarm()</code>, use the <a href="/apps/alarms#method-create"><code>chrome.alarms.create()</code></a> API to create an alarm when <strong>Activate alarm</strong> is toggled.</p>
 
 <pre data-filename="alarms.js">
 chrome.alarms.create(alarmName, {delayInMinutes: 0.1, periodInMinutes: 0.1});
 </pre>
 
-<p>The first parameter is an optional string identifying an unique name for your alarm. In our case, the alarm name is <code>remindme</code>. (Note: You need to set an alarm name in order to cancel it by name.)</p>
+<p>The first parameter is an optional string identifying an unique name for your alarm,
+for example, <code>remindme</code>.
+(Note: You need to set an alarm name in order to cancel it by name.)</p>
 
 <p>The second parameter is an <code>alarmInfo</code> object. Valid properties for <code>alarmInfo</code> include <code>when</code> or <code>delayInMinutes</code>, and <code>periodInMinutes</code>. In order to reduce the load on the user's machine, Chrome limits alarms to once every minute.
 We are using small values (0.1 of a minute) here for demo purposes only.</p>
 
 <h3 id="clear-alarms">Clear alarms</h3>
 
-<p>In <code>cancelAlarm()</code>, we use the <a href="/apps/alarms#method-clear"><code>chrome.alarms.clear()</code></a> API to cancel an alarm when <strong>Cancel alarm</strong> is toggled.</p>
+<p>In <code>cancelAlarm()</code>, use the <a href="/apps/alarms#method-clear"><code>chrome.alarms.clear()</code></a> API to cancel an alarm when <strong>Cancel alarm</strong> is toggled.</p>
 
 <pre data-filename="alarms.js">
 chrome.alarms.clear(alarmName);
@@ -188,7 +192,7 @@ chrome.alarms.clear(alarmName);
 
 <h3 id="get-alarms">Get alarms</h3>
 
-<p>In <code>checkAlarm()</code>, we use the <a href="/apps/alarms#method-getAll"><code>chrome.alarms.getAll()</code></a> API to get an array of all created alarms in order to update the UI state of the toggle button.</p>
+<p>In <code>checkAlarm()</code>, use the <a href="/apps/alarms#method-getAll"><code>chrome.alarms.getAll()</code></a> API to get an array of all created alarms in order to update the UI state of the toggle button.</p>
 
 <p><code>getAll()</code> accepts a callback function that passes in an array of <code>Alarm</code> objects. To see what's in an <code>Alarm</code>, you can inspect running alarms in the DevTools Console like so:</p>
 
@@ -207,19 +211,19 @@ chrome.alarms.getAll(function(alarms) {
 
 <h3 id="next-section">Get ready for the next section</h3>
 
-<p>Now that we have alarms in place to poll our app at regular intervals, we can use it as a base for adding visual notifications &mdash; which is exactly what we'll do in the next section.</p>
+<p>Now that alarms are in place to poll the app at regular intervals, use this as a base for adding visual notifications.</p>
 
 <h2 id="notifications">Add notifications</h2>
 
 <p>Let's change the alarm notification to something the user can easily notice. 
-For that purpose, we will use <a href="/apps/notifications"><code>chrome.notifications</code></a>
+Use <a href="/apps/notifications"><code>chrome.notifications</code></a>
 to show a desktop  notification like the one below:</p>
 
 <figure>
   <img src="{{static}}/images/app_codelab/notification-example.png" alt="Our Todo app notification"/>
 </figure>
 
-<p>When the user clicks on the notification, we will bring the Todo app window into view.</p>
+<p>When the user clicks on the notification, the Todo app window should come into view.</p>
 
 <h3 id="update-permissions-notifications">Update app permissions</h3>
 
@@ -231,7 +235,7 @@ to show a desktop  notification like the one below:</p>
 
 <h3 id="update-background-script-notifications">Update background scripts</h3>
 
-<p>In <strong><em>background.js</em></strong>, refactor the <code>chrome.app.window.create()</code> callback into a standalone method so we can reuse it:</p>
+<p>In <strong><em>background.js</em></strong>, refactor the <code>chrome.app.window.create()</code> callback into a standalone method so you can reuse it:</p>
 
 <pre data-filename="background.js">
 <strike>chrome.app.runtime.onLaunched.addListener(function() {</strike>
@@ -248,13 +252,13 @@ to show a desktop  notification like the one below:</p>
 
 <h3 id="update-alarm-listener">Update alarm listener</h3>
 
-<p>At the top of the <em>background.js</em>, add a variable for a database name that we'll use in our alarm listener:</p>
+<p>At the top of the <em>background.js</em>, add a variable for a database name that's used in the alarm listener:</p>
 
 <pre data-filename="background.js">
 <b>var dbName = 'todos-vanillajs';</b>
 </pre>
 
-<p>The value of <code>dbName</code> is the same database name we set in line 17 of <em>js/app.js</em>:</p>
+<p>The value of <code>dbName</code> is the same database name set in line 17 of <em>js/app.js</em>:</p>
 
 <pre data-filename="app.js">
 var todo = new Todo('todos-vanillajs');
@@ -263,8 +267,8 @@ var todo = new Todo('todos-vanillajs');
 <h3 id="create-notification">Create a notification</h3>
 
 <p>Instead of simply logging a new alarm to the Console, update the <code>onAlarm</code> listener
-to get stored data via <code>chrome.storage.local.get()</code> and call a <code>showNotification()</code>
-method that we'll make in the following step:</p>
+to get stored data via <code>chrome.storage.local.get()</code> and
+call a <code>showNotification()</code> method:</p>
 
 <pre data-filename="background.js">
 chrome.alarms.onAlarm.addListener(function( alarm ) {
@@ -326,34 +330,21 @@ function(string notificationId) {...};
 });</b>
 </pre>
 
-<p>The event handler callback simply calls the <code>launch()</code> method that we refactored earlier. <code>chrome.app.window.create()</code> will either create a new Chrome App window if one doesn't already exist, or bring into focus the currently open window that has the window id of <code>main</code>.</p>
-
-<!-- <h3 id="clear-notification">Clear the notification</h3>
-
-<p style="color: red;">You might notice that the notification popup does not go away after we click on it. The <code>onClicked</code> event handler callback passes along the id name of the popup that was interacted with. Use that, in combination with <a href=""><code>chrome.notifications.clear()</code></a>, to dismiss the notification:</p>
-
-<pre data-filename="background.js">
-chrome.notifications.onClicked.addListener(
-  function(<b> notificationId </b>) {
-    launch();
-    <b>chrome.notifications.clear(notificationId, function() {});</b>
-  }
-);
-</pre> -->
-
-<!-- <h3 id="rich-notifications">Learn more about rich notifications</h3>
-
-<p>For additional information about notifications, refer to <a href="/apps/desktop_notifications">Rich Notifications</a> in the docs.</p> -->
+<p>The event handler callback simply calls the <code>launch()</code> method.
+<code>chrome.app.window.create()</code> either creates a new Chrome App window
+if one doesn't already exist,
+or brings into focus the currently open window
+that has the window id of <code>main</code>.</p>
 
 <h2 id="launch">Launch your finished Todo app</h2>
 
-<p>You are done Step 3! Reload your app and you should now have a Todo app with reminders.</p>
+<p>You are done Step 3! Reload your Todo app now with reminders.</p>
 
 <figure>
   <img src="{{static}}/images/app_codelab/step3-completed.gif" alt="The Todo app with notifications"/>
 </figure>
 
-<p>You should notice that:</p>
+<p>Check these behaviors work as expected:</p>
 
 <ul>
   <li>If you don't have any uncompleted todo items, there are no popup notifications.</li>
@@ -369,14 +360,14 @@ higher.  If notifications still don't show up, check for error messages in the
 DevTools Console on both the main window (<strong>right click > Inspect Element</strong>) and the 
 background page (<strong>right click > Inspect Background Page</strong>).</p>
 
-<h2 id="recap">Recap APIs referenced in this step</h2>
+<h2 id="recap">For more information</h2>
 
 <p>For more detailed information about some of the APIs introduced in this step, refer to:</p>
 
 <ul>
   <li>
     <a href="/apps/declare_permissions" title="Read 'Declare Permissions' in the Chrome developer docs">Declare Permissions</a>
-    <a href="#update-permissions-alarms" class="anchor-link-icon" title="This feature mentioned in 'Update app permissions for alarms'">&#8593;</a> <a href="#update-permissions-notifications" class="anchor-link-icon" title="This feature mentioned in 'Update app permissions for notifications'">&#8593;</a>
+    <a href="#update-permissions-alarms" class="anchor-link-icon" title="This feature mentioned in 'Update app permissions for alarms'">&#8593;</a>
   </li>
   <li>
     <a href="/apps/alarms.html" title="Read 'chrome.alarms' in the Chrome developer docs">chrome.alarms</a>

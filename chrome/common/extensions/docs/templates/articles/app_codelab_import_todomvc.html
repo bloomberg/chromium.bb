@@ -13,7 +13,7 @@
 <ul>
   <li>How to adapt an existing web application for the Chrome Apps platform.</li>
   <li>How to make your app scripts Content Security Policy (CSP) compliant.</li>
-  <li>How to implement local storage using the <code>chrome.storage.local</code> API.</li>
+  <li>How to implement local storage using the <a href="/apps/storage" title="Read 'chrome.storage.local' in the Chrome developer docs">chrome.storage.local</a>.</li>
 </ul>
 
 <p>
@@ -24,8 +24,8 @@
 
 <h2 id="todomvc">Import an existing Todo app</h2>
 
-<p>As a starting point, we will import the <a href="http://todomvc.com/vanilla-examples/vanillajs/">vanilla 
-JavaScript version</a> of <a href="http://todomvc.com/">TodoMVC</a>, a common benchmark app, into our project.</p>
+<p>As a starting point, import the <a href="http://todomvc.com/vanilla-examples/vanillajs/">vanilla 
+JavaScript version</a> of <a href="http://todomvc.com/">TodoMVC</a>, a common benchmark app, into your project.</p>
 
 <p>We've included a version of the TodoMVC app in the
 <a href="https://github.com/mangini/io13-codelab/archive/master.zip">reference code zip</a> in the <strong><em>todomvc</em></strong> folder. 
@@ -107,11 +107,11 @@ JavaScript and instead include <em>js/bootstrap.js</em>:</p>
 window.app = {};
 </pre>
 
-<p>You'll still have a non-working Todo app if you reload the app now but we're getting there.</p>
+<p>You'll still have a non-working Todo app if you reload the app now but you're getting closer.</p>
 
 <h2 id="convert-storage">Convert localStorage to chrome.storage.local</h2>
 
-<p>If you open the DevTools Console now, the previous error should be gone. However there is a new error about <code>window.localStorage</code> not being available:</p>
+<p>If you open the DevTools Console now, the previous error should be gone. There is a new error, however, about <code>window.localStorage</code> not being available:</p>
 
 <figure>
   <img src="{{static}}/images/app_codelab/localStorage-console-error.png" alt="Todo app with localStorage console log error">
@@ -123,20 +123,21 @@ window.app = {};
   -->
 </figure>
 
-<p><a href="http://dev.w3.org/html5/webstorage/#the-localstorage-attribute"><code>LocalStorage</code></a>
-is not supported in Chrome Apps because <code>LocalStorage</code> is 
-synchronous. Synchronous access to blocking resources (I/O) in a single threaded 
-runtime could make your app become unresponsive.</p>
+<p>Chrome Apps do not support
+<a href="http://dev.w3.org/html5/webstorage/#the-localstorage-attribute"><code>localStorage</code></a>
+as <code>localStorage</code> is synchronous. 
+Synchronous access to blocking resources (I/O) in a single-threaded runtime
+could make your app unresponsive.</p>
 
 <p>Chrome Apps have an equivalent API that can store objects asynchronously. 
 This will help avoid the sometimes costly object->string->object serialization process.</p>
 
-<p>To address the error message in our app, we will need to convert <code>LocalStorage</code> to 
-<code>chrome.storage.local</code>.</p>
+<p>To address the error message in our app, you need to convert <code>localStorage</code> to 
+<a href="/apps/storage" title="Read 'chrome.storage.local' in the Chrome developer docs">chrome.storage.local</a>.</p>
 
 <h3 id="update-permissions">Update app permissions</h3>
 
-<p>In order to use <code>chrome.storage.local</code>, we need to request the <code>storage</code> permission. In <strong><em>manifest.json</em></strong>, add <code>"storage"</code> to the <code>permissions</code> array:</p>
+<p>In order to use <code>chrome.storage.local</code>, you need to request the <code>storage</code> permission. In <strong><em>manifest.json</em></strong>, add <code>"storage"</code> to the <code>permissions</code> array:</p>
 
 <pre data-filename="manifest.json">
 "permissions": [<b>"storage"</b>],
@@ -144,9 +145,10 @@ This will help avoid the sometimes costly object->string->object serialization p
 
 <h3 id="get-and-set">Learn about local.storage.set() and local.storage.get()</h3>
 
-<p>To save and retrieve todo items, we'll need to know a bit about the <code>set()</code> and <code>get()</code> methods of the <code>chrome.storage</code> API.</p>
+<p>To save and retrieve todo items, you need to know about the <code>set()</code> and <code>get()</code> methods of the <code>chrome.storage</code> API.</p>
 
-<p>The <code>set()</code> method accepts an object of key-value pairs as its first parameter. An optional callback function is the second parameter. For example:</p>
+<p>The <a href="/apps/storage#method-StorageArea-set" title="Read 'chrome.storage.local.set()' in the Chrome developer docs">set()</a>
+method accepts an object of key-value pairs as its first parameter. An optional callback function is the second parameter. For example:</p>
 
 <pre>
 chrome.storage.local.set({secretMessage:'Psst!',timeSet:Date.now()}, function() {
@@ -154,7 +156,7 @@ chrome.storage.local.set({secretMessage:'Psst!',timeSet:Date.now()}, function() 
 }); 
 </pre>
 
-<p>The <code>get()</code> method accepts an optional first parameter for the datastore keys you wish to retreive. A single key can be passed as a string; multiple keys can be arranged into an array of strings or a dictionary object.</p>
+<p>The <a href="/apps/storage#method-StorageArea-get" title="Read 'chrome.storage.local.get()' in the Chrome developer docs">get()</a> method accepts an optional first parameter for the datastore keys you wish to retreive. A single key can be passed as a string; multiple keys can be arranged into an array of strings or a dictionary object.</p>
 
 <p>The second parameter, which is required, is a callback function. In the returned object, use the keys requested in the first parameter to access the stored values. For example:</p>
 
@@ -173,7 +175,7 @@ chrome.storage.local.get(function(data) {
 }); 
 </pre>
 
-<p>Unlike <code>localStorage</code>, you won't be able to inspect locally stored items using the DevTools Resources panel. However, you can interact with <code>chrome.storage</code> from the JavaScript Console like so:</p>
+<p>Unlike <code>localStorage</code>, you won't be able to inspect locally stored items using the DevTools Resources panel. You can, however, interact with <code>chrome.storage</code> from the JavaScript Console like so:</p>
 
 <figure>
   <img src="{{static}}/images/app_codelab/get-set-in-console.png" alt="Use the Console to debug chrome.storage">
@@ -181,9 +183,9 @@ chrome.storage.local.get(function(data) {
 
 <h3 id="preview-changes">Preview required API changes</h3>
 
-<p>There are many remaining steps in converting the Todo app however they are all small changes to 
-the API calls. Changing all the places where <code>localStorage</code> is currently being used 
-will be time-consuming and error-prone &mdash; but required.</p>
+<p>Most of the remaining steps in converting the Todo app are small changes
+to the API calls. Changing all the places where <code>localStorage</code>
+is currently being used, though time-consuming and error-prone, is required.</p>
 
 <p class="note">
   To maximize your fun with this codelab, it'll be best if you overwrite your 
@@ -197,7 +199,7 @@ will be time-consuming and error-prone &mdash; but required.</p>
 
 <ul>
   <li>
-    Instead of writing to <code>localStorage</code> using simple assignment, we need to use <code>chrome.storage.local.set()</code> with optional callbacks.
+    Instead of writing to <code>localStorage</code> using simple assignment, you need to use <code>chrome.storage.local.set()</code> with optional callbacks.
 <pre>
 var data = { todos: [] };
 localStorage[dbName] = JSON.stringify(data);
@@ -212,7 +214,7 @@ chrome.storage.local.set( storage, function() {
 </pre>
   </li>
   <li>
-    Instead of accessing <code>localStorage[myStorageName]</code> directly, we need to use <code>chrome.storage.local.get(myStorageName,function(storage){...})</code> and then parse the returned <code>storage</code> object in the callback function.
+    Instead of accessing <code>localStorage[myStorageName]</code> directly, you need to use <code>chrome.storage.local.get(myStorageName,function(storage){...})</code> and then parse the returned <code>storage</code> object in the callback function.
 <pre>
 var todos = JSON.parse(localStorage[dbName]).todos;
 </pre>
@@ -224,7 +226,7 @@ chrome.storage.local.get(dbName, function(storage) {
 </pre>
   </li>
   <li>
-    The use of <code>.bind(this)</code> is being used on all callbacks to ensure <code>this</code> refers to the <code>this</code> of the <code>Store</code> prototype. (More info on bound functions can be found on the MDN docs: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">Function.prototype.bind()</a>.)
+    The function <code>.bind(this)</code> is used on all callbacks to ensure <code>this</code> refers to the <code>this</code> of the <code>Store</code> prototype. (More info on bound functions can be found on the MDN docs: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind">Function.prototype.bind()</a>.)
 <pre>
 function Store() {
   this.scope = 'inside Store';
@@ -247,13 +249,15 @@ new Store();
   </li>
 </ul>
 
-<p>Keep these key differences in mind as we go over retrieving, saving, and removing todo items in the following sections.</p>
+<p>Keep these key differences in mind as we cover retrieving, saving, and removing todo items in the following sections.</p>
 
-<h3 id="retrieve-items">Retrieve todos items</h3>
+<h3 id="retrieve-items">Retrieve todo items</h3>
 
 Let's update the Todo app in order to retrieve todo items:
 
-<p>1. The <code>Store</code> constructor method takes care of initializing the Todo app with all the existing todo items from the datastore. If this is the first time the app has been loaded, the datastore might not exist so the method checks if the datastore exists first. If it doesn't, it'll create an empty array of <code>todos</code> and save it to the datastore so there are no runtime read errors.</p>
+<p>1. The <code>Store</code> constructor method takes care of initializing the Todo app with all the existing todo items from the datastore.
+The method first checks if the datastore exists.
+If it doesn't, it'll create an empty array of <code>todos</code> and save it to the datastore so there are no runtime read errors.</p>
 
 <p>In <strong><em>js/store.js</em></strong>, convert the use of <code>localStorage</code> in the constructor method to instead use 
 <code>chrome.storage.local</code>:</p>
@@ -445,11 +449,12 @@ Store.prototype.save = function (id, updateData, callback) {
 
 <h3 id="complete-items">Mark todo items as complete</h3>
 
-<p>Now that we are operating on arrays, we'll need to change how we handle a user clicking on the <b>Clear completed (#)</b> button:</p>
+<p>Now that app is operating on arrays, you need to change how the app handles a user clicking on the <b>Clear completed (#)</b> button:</p>
 
 <p>1. In <strong><em>controller.js</em></strong>, update <code>toggleAll()</code> to call <code>toggleComplete()</code>
 only once with an array of todos instead of marking a todo as completed 
-one by one. Also delete the call to <code>_filter()</code> since we'll be adjusting <code>toggleComplete</code>'s <code>_filter()</code>.</p>
+one by one. Also delete the call to <code>_filter()</code> since you'll be adjusting
+the <code>toggleComplete</code> <code>_filter()</code>.</p>
 
 <pre data-filename="controller.js">
 Controller.prototype.toggleAll = function (e) {
@@ -471,7 +476,7 @@ Controller.prototype.toggleAll = function (e) {
 };
 </pre>
 
-<p>2. Now we need to update <code>toggleComplete()</code> to accept both a single todo or an array of todos. This includes moving <code>filter()</code> to be inside the <code>update()</code>, instead of outside.</p>
+<p>2. Now update <code>toggleComplete()</code> to accept both a single todo or an array of todos. This includes moving <code>filter()</code> to be inside the <code>update()</code>, instead of outside.</p>
 
 <pre data-filename="controller.js">
 Controller.prototype.toggleComplete = function (<strike>id</strike> <b>ids</b>, checkbox, silent) {
@@ -507,7 +512,7 @@ Controller.prototype.toggleComplete = function (<strike>id</strike> <b>ids</b>, 
 
 <h3 id="count-items">Count todo items</h3>
 
-<p>After switching to async storage, there is a minor bug that shows up when getting the number of todos. We'll need to wrap the count operation in a callback function:</p>
+<p>After switching to async storage, there is a minor bug that shows up when getting the number of todos. You'll need to wrap the count operation in a callback function:</p>
 
 <p>1. In <strong><em>model.js</em></strong>, update <code>getCount()</code> to accept a callback:</p>
 
@@ -553,19 +558,19 @@ Controller.prototype._updateCount = function () {
 };
 </pre>
 
-<p>We are almost there! If you reload the app now, you will be able to insert new 
+<p>You are almost there! If you reload the app now, you will be able to insert new 
 todos without any console errors.</p>
 
 <h3 id="remove-items">Remove todos items</h3>
 
-<p>Now that we can save todo items, we're close to being done!
-However we get errors when we attempt to <em>remove</em> our todo items:</p>
+<p>Now that the app can save todo items, you're close to being done!
+You still get errors when you attempt to <em>remove</em> todo items:</p>
 
 <figure>
   <img src="{{static}}/images/app_codelab/remove-todo-console-error.png" alt="Todo app with localStorage console log error">
 </figure>
 
-<p>1. In <strong><em>store.js</em></strong>, we'll need to convert all the <code>localStorage</code> instances to use <code>chrome.storage.local</code>:</p>
+<p>1. In <strong><em>store.js</em></strong>, convert all the <code>localStorage</code> instances to use <code>chrome.storage.local</code>:</p>
 
 <p>a) To start off, wrap everything already inside <code>remove()</code> with a <code>get()</code> callback:</p>
 
@@ -614,7 +619,7 @@ Store.prototype.remove = function (id, callback) {
 </pre>
 
 <p>2. The same Read-After-Write data hazard issue previously present in the 
-<code>save()</code> method is also present when removing items so we'll need
+<code>save()</code> method is also present when removing items so you will need
 to update a few more places to allow for batch operations on a list of todo IDs.</p>
 
 <p>a) Still in <em>store.js</em>, update <code>remove()</code>:</p>
@@ -705,7 +710,7 @@ a fully working Chrome packaged version of TodoMVC.</p>
   Remember to always check the DevTools Console to see if there are any error messages.
 </p>
 
-<h2 id="recap">Recap APIs referenced in this step</h2>
+<h2 id="recap">For more information</h2>
 
 <p>For more detailed information about some of the APIs introduced in this step, refer to:</p>
 
@@ -724,12 +729,10 @@ a fully working Chrome packaged version of TodoMVC.</p>
   </li>
   <li>
     <a href="/apps/storage#method-StorageArea-get" title="Read 'chrome.storage.local.get()' in the Chrome developer docs">chrome.storage.local.get()</a>
-    <a href="#get-and-set" class="anchor-link-icon" title="This feature mentioned in 'Learn about local.storage.set() and local.storage.get()'">&#8593;</a>
     <a href="#retrieve-items" class="anchor-link-icon" title="This feature mentioned in 'Retrieve todos items'">&#8593;</a>
   </li>
   <li>
     <a href="/apps/storage#method-StorageArea-set" title="Read 'chrome.storage.local.set()' in the Chrome developer docs">chrome.storage.local.set()</a>
-    <a href="/apps/storage#method-StorageArea-get" title="Read 'chrome.storage.local.get()' in the Chrome developer docs">chrome.storage.local.get()</a>
     <a href="#save-items" class="anchor-link-icon" title="This feature mentioned in 'Save todos items'">&#8593;</a>
   </li>
   <li>
