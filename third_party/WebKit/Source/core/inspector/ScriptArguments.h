@@ -51,7 +51,7 @@ public:
 
     ScriptState* scriptState() const { return m_scriptState.get(); }
 
-    bool getFirstArgumentAsString(WTF::String& result, bool checkForNullOrUndefined = false);
+    bool getFirstArgumentAsString(String&) const;
 
     void trace(Visitor*) { }
 

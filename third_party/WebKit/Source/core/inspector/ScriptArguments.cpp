@@ -181,16 +181,13 @@ const ScriptValue &ScriptArguments::argumentAt(size_t index) const
     return m_arguments[index];
 }
 
-bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNullOrUndefined)
+bool ScriptArguments::getFirstArgumentAsString(String& result) const
 {
     if (!argumentCount())
         return false;
 
     const ScriptValue& value = argumentAt(0);
     ScriptState::Scope scope(m_scriptState.get());
-    if (checkForNullOrUndefined && (value.isNull() || value.isUndefined()))
-        return false;
-
     result = V8ValueStringBuilder::toString(value.v8Value(), value.isolate());
     return true;
 }
