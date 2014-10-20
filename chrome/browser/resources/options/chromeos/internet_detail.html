@@ -72,7 +72,8 @@
                   <input id="prefer-network-wifi" type="checkbox">
                   <span>
                     <span i18n-content="inetPreferredNetwork">
-                    <span class="controlled-setting-indicator"></span>
+                    <span class="controlled-setting-indicator"
+                          managed="Priority"></span>
                   </span>
                 </label>
               </div>
@@ -86,7 +87,7 @@
                   <span>
                     <span i18n-content="inetAutoConnectNetwork">
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect"></span>
+                          managed="AutoConnect"></span>
                   </span>
                 </label>
               </div>
@@ -156,7 +157,7 @@
                   <span>
                     <span i18n-content="inetAutoConnectNetwork"></span>
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect"></span>
+                          managed="AutoConnect"></span>
                   </span>
                 </label>
               </div>
@@ -205,7 +206,7 @@
                   <span>
                     <span i18n-content="inetAutoConnectNetwork"></span>
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect"></span>
+                          managed="AutoConnect"></span>
                   </span>
                 </label>
               </div>
@@ -219,8 +220,8 @@
             <td class="option-name" i18n-content="inetServerHostname"></td>
             <td>
               <input class="option-value" id="inet-server-hostname"></input>
-              <span class="controlled-setting-indicator" managed="VPN.Host">
-              </span>
+              <span class="controlled-setting-indicator"
+                    managed="VPN.Host"></span>
             </td>
           </tr>
           <tr>
@@ -281,8 +282,8 @@
                 <option value="-1" i18n-content="cellularApnOther">
                 </option>
               </select>
-              <span class="controlled-setting-indicator" data="providerApnList">
-              </span>
+              <span class="controlled-setting-indicator"
+                    managed="Cellular.APN"></span>
             </td>
           </tr>
           <tr class="gsm-only apn-details-view">
@@ -322,7 +323,7 @@
                   <span>
                     <span i18n-content="inetAutoConnectNetwork"></span>
                     <span class="controlled-setting-indicator"
-                        managed="AutoConnect"></span>
+                          managed="AutoConnect"></span>
                   </span>
                 </label>
               </div>
@@ -407,8 +408,8 @@
                 type="checkbox">
             <span>
               <span i18n-content="ipAutomaticConfiguration"></span>
-              <span class="controlled-setting-indicator" data="ipconfigDHCP">
-              </span>
+              <span class="controlled-setting-indicator"
+                    managed="StaticIPConfig.IPAddress"></span>
             </span>
           </label>
         </div>
@@ -495,7 +496,8 @@
               <input id="sim-card-lock-enabled" type="checkbox">
               <span>
                 <span i18n-content="lockSimCard"></span>
-                <span class="controlled-setting-indicator"></span>
+                <span class="controlled-setting-indicator"
+                      managed="Cellular.SIMLockStatus.LockEnabled"></span>
               </span>
             </label>
           </div>
@@ -504,7 +506,7 @@
           <div id="change-pin-area">
             <button id="change-pin" i18n-content="changePinButton"></button>
             <span class="controlled-setting-indicator"
-                data="simCardLockEnabled"></span>
+                  managed="Cellular.SIMLockStatus.LockType"></span>
           </div>
         </section>
       </div>
