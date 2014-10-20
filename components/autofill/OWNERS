@@ -2,7 +2,7 @@ estade@chromium.org
 isherman@chromium.org
 
 # Owners for password autofill/generation only.
-per-file *password*=gcasto@chromium.org
-per-file *password*=vabr@chromium.org
-per-file autofill_param_traits_macros.h=gcasto@chromium.org
-per-file autofill_param_traits_macros.h=vabr@chromium.org
+# TODO(gcasto): Change to per-file ownership after http://crbug.com/235756
+# is fixed.
+gcasto@chromium.org
+vabr@chromium.org
