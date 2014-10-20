@@ -18,6 +18,7 @@ if env.Bit('nacl_glibc'):
 
 env.Append(CFLAGS=['-std=c99', '-O2'])
 env.Append(CCFLAGS=['-O2'])
+env.Prepend(CPPPATH=['${MAIN_DIR}/src'])
 
 nexe = env.ComponentProgram(
     'benchmark_test',
@@ -29,6 +30,7 @@ nexe = env.ComponentProgram(
      'benchmark_nbody.cc',
      'benchmark_nbody_c.c',
      'framework.cc',
+     'main.cc',
      'thread_pool.cc'],
     EXTRA_LIBS=['${NONIRT_LIBS}',
                 '${PTHREAD_LIBS}',
@@ -46,4 +48,3 @@ node = env.CommandSelLdrTestNacl(
     capture_output=False)
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_benchmark_test',
                        is_broken=is_broken)
-

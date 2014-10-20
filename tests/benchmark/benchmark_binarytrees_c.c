@@ -5,5 +5,6 @@
  */
 
 #define main main_binarytrees
-#include "native_client/src/third_party/computer_language_benchmarks_game/binarytrees.c"
+/* EXEMPTION[include,cpplint] */
+#include "third_party/computer_language_benchmarks_game/binarytrees.c"
 #undef main

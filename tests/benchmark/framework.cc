@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#include "native_client/tests/benchmark/framework.h"
-
+// @EXEMPTION[include]
+#include "./framework.h"
 
 namespace {
 
@@ -70,10 +70,4 @@ int BenchmarkSuite::Run(const char *description) {
   }
   printf("Done running benchmark suite.\n");
   return ret;
-}
-
-int main(int argc, char **argv) {
-  const char *description = argc >= 2 ? argv[1] : "time";
-  setlinebuf(stdout);
-  return BenchmarkSuite::Run(description);
 }

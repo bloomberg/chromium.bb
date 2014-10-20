@@ -5,5 +5,6 @@
  */
 
 #define main main_nbody
-#include "native_client/src/third_party/computer_language_benchmarks_game/nbody.c"
+/* EXEMPTION[include,cpplint] */
+#include "third_party/computer_language_benchmarks_game/nbody.c"
 #undef main

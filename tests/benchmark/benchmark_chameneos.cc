@@ -10,8 +10,8 @@
 
 #include <string>
 
-#include "native_client/tests/benchmark/framework.h"
-
+// @EXEMPTION[include]
+#include "./framework.h"
 
 extern "C" {
   int main_chameneos(int argc, const char* argv[]);
