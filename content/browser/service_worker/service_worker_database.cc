@@ -215,9 +215,6 @@ ServiceWorkerDatabase::Status ParseRegistrationData(
   if (!scope_url.is_valid() ||
       !script_url.is_valid() ||
       scope_url.GetOrigin() != script_url.GetOrigin()) {
-    DLOG(ERROR) << "Scope URL '" << data.scope_url() << "' and/or script url '"
-                << data.script_url()
-                << "' are invalid or have mismatching origins.";
     return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
   }
 

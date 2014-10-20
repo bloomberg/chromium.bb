@@ -35,7 +35,6 @@ class STORAGE_EXPORT QuotaClient {
     kDatabase = 1 << 2,
     kAppcache = 1 << 3,
     kIndexedDatabase = 1 << 4,
-    kServiceWorker = 1 << 5,
     kAllClientsMask = -1,
   };
 

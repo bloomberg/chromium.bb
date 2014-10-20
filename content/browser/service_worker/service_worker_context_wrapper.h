@@ -71,17 +71,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& pattern,
       const GURL& script_url,
       const ResultCallback& continuation) override;
-  virtual void UnregisterServiceWorker(
-      const GURL& pattern,
-      const ResultCallback& continuation) override;
+  virtual void UnregisterServiceWorker(const GURL& pattern,
+                                       const ResultCallback& continuation)
+      override;
   virtual void Terminate() override;
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
   virtual void DeleteForOrigin(const GURL& origin_url) override;
-
-  // DeleteForOrigin with completion callback.  Does not exit early, and returns
-  // false if one or more of the deletions fail.
-  virtual void DeleteForOrigin(const GURL& origin_url,
-                               const ResultCallback& done);
 
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
@@ -102,7 +97,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
   friend class EmbeddedWorkerTestHelper;
   friend class ServiceWorkerProcessManager;
-
   virtual ~ServiceWorkerContextWrapper();
 
   void InitInternal(
@@ -118,6 +112,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void DidGetAllRegistrationsForGetAllOrigins(
       const GetUsageInfoCallback& callback,
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
+  void DidGetAllRegistrationsForDeleteForOrigin(
+      const GURL& origin,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >

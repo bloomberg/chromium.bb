@@ -233,8 +233,7 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
     quota_client_mask |= storage::QuotaClient::kAppcache;
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
     quota_client_mask |= storage::QuotaClient::kIndexedDatabase;
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
-    quota_client_mask |= storage::QuotaClient::kServiceWorker;
+  // TODO(jsbell): StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
 
   return quota_client_mask;
 }

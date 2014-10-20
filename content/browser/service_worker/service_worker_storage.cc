@@ -479,16 +479,6 @@ void ServiceWorkerStorage::StoreRegistration(
                             callback)));
 
   registration->set_is_deleted(false);
-
-  // TODO(dmurph): Add correct byte delta.
-  if (quota_manager_proxy_.get()) {
-    // Can be nullptr in tests.
-    quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClient::kServiceWorker,
-        registration->pattern().GetOrigin(),
-        storage::StorageType::kStorageTypeTemporary,
-        0);
-  }
 }
 
 void ServiceWorkerStorage::UpdateToActiveState(

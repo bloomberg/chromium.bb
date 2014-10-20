@@ -4,9 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 
-#include "base/barrier_closure.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -26,25 +23,6 @@
 #include "url/gurl.h"
 
 namespace content {
-namespace {
-void SuccessCollectorCallback(const base::Closure& done_closure,
-                              bool* overall_success,
-                              ServiceWorkerStatusCode status) {
-  if (status != ServiceWorkerStatusCode::SERVICE_WORKER_OK) {
-    *overall_success = false;
-  }
-  done_closure.Run();
-}
-
-void SuccessReportingCallback(
-    const bool* success,
-    const ServiceWorkerContextCore::UnregistrationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool result = *success;
-  callback.Run(result ? ServiceWorkerStatusCode::SERVICE_WORKER_OK
-                      : ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_FAILED);
-}
-}  // namespace
 
 const base::FilePath::CharType
     ServiceWorkerContextCore::kServiceWorkerDirectory[] =
@@ -234,45 +212,6 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
                  AsWeakPtr(),
                  pattern,
                  callback));
-}
-
-void ServiceWorkerContextCore::UnregisterServiceWorkers(
-    const GURL& origin,
-    const UnregistrationCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (storage()->IsDisabled()) {
-    // Not posting as new task to match implementations above.
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-
-  storage()->GetAllRegistrations(base::Bind(
-      &ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin,
-      AsWeakPtr(),
-      callback,
-      origin));
-}
-
-void ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin(
-    const UnregistrationCallback& result,
-    const GURL& origin,
-    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
-  std::set<GURL> scopes;
-  for (const auto& registration_info : registrations) {
-    if (origin == registration_info.pattern.GetOrigin()) {
-      scopes.insert(registration_info.pattern);
-    }
-  }
-  bool* overall_success = new bool(true);
-  base::Closure barrier = base::BarrierClosure(
-      scopes.size(),
-      base::Bind(
-          &SuccessReportingCallback, base::Owned(overall_success), result));
-
-  for (const GURL& scope : scopes) {
-    UnregisterServiceWorker(
-        scope, base::Bind(&SuccessCollectorCallback, barrier, overall_success));
-  }
 }
 
 void ServiceWorkerContextCore::UpdateServiceWorker(

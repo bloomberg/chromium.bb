@@ -1201,8 +1201,6 @@
       'browser/service_worker/service_worker_process_manager.h',
       'browser/service_worker/service_worker_provider_host.cc',
       'browser/service_worker/service_worker_provider_host.h',
-      'browser/service_worker/service_worker_quota_client.cc',
-      'browser/service_worker/service_worker_quota_client.h',
       'browser/service_worker/service_worker_read_from_cache_job.cc',
       'browser/service_worker/service_worker_read_from_cache_job.h',
       'browser/service_worker/service_worker_register_job_base.h',

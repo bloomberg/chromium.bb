@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/barrier_closure.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -14,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
-#include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -185,26 +183,35 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
 }
 
 namespace {
-void StatusCodeToBoolCallbackAdapter(
-    const ServiceWorkerContext::ResultCallback& callback,
-    ServiceWorkerStatusCode code) {
-  callback.Run(code == ServiceWorkerStatusCode::SERVICE_WORKER_OK);
-}
 
 void EmptySuccessCallback(bool success) {
 }
+
 }  // namespace
 
-void ServiceWorkerContextWrapper::DeleteForOrigin(
-    const GURL& origin_url,
-    const ResultCallback& result) {
+void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_core_->UnregisterServiceWorkers(
-      origin_url, base::Bind(&StatusCodeToBoolCallbackAdapter, result));
+  context_core_->storage()->GetAllRegistrations(base::Bind(
+      &ServiceWorkerContextWrapper::DidGetAllRegistrationsForDeleteForOrigin,
+      this,
+      origin_url));
 }
 
-void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin_url) {
-  DeleteForOrigin(origin_url, base::Bind(&EmptySuccessCallback));
+void ServiceWorkerContextWrapper::DidGetAllRegistrationsForDeleteForOrigin(
+    const GURL& origin,
+    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (std::vector<ServiceWorkerRegistrationInfo>::const_iterator it =
+           registrations.begin();
+       it != registrations.end();
+       ++it) {
+    const ServiceWorkerRegistrationInfo& registration_info = *it;
+    if (origin == registration_info.pattern.GetOrigin()) {
+      UnregisterServiceWorker(registration_info.pattern,
+                              base::Bind(&EmptySuccessCallback));
+    }
+  }
 }
 
 void ServiceWorkerContextWrapper::AddObserver(
@@ -251,9 +258,6 @@ void ServiceWorkerContextWrapper::InitInternal(
     return;
   }
   DCHECK(!context_core_);
-  if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
-  }
   context_core_.reset(new ServiceWorkerContextCore(user_data_directory,
                                                    stores_task_runner,
                                                    database_task_manager.Pass(),
