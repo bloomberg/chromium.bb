@@ -840,13 +840,14 @@ def _FindUprevCandidates(files):
 def BuildEBuildDictionary(overlays, use_all, packages):
   """Build a dictionary of the ebuilds in the specified overlays.
 
-  overlays: A map which maps overlay directories to arrays of stable EBuilds
-    inside said directories.
-  use_all: Whether to include all ebuilds in the specified directories.
-    If true, then we gather all packages in the directories regardless
-    of whether they are in our set of packages.
-  packages: A set of the packages we want to gather.  If use_all is
-    True, this argument is ignored, and should be None.
+  Args:
+    overlays: A map which maps overlay directories to arrays of stable EBuilds
+      inside said directories.
+    use_all: Whether to include all ebuilds in the specified directories.
+      If true, then we gather all packages in the directories regardless
+      of whether they are in our set of packages.
+    packages: A set of the packages we want to gather.  If use_all is
+      True, this argument is ignored, and should be None.
   """
   for overlay in overlays:
     for package_dir, _dirs, files in os.walk(overlay):
@@ -863,7 +864,8 @@ def BuildEBuildDictionary(overlays, use_all, packages):
 def RegenCache(overlay):
   """Regenerate the cache of the specified overlay.
 
-  overlay: The tree to regenerate the cache for.
+  Args:
+    overlay: The tree to regenerate the cache for.
   """
   repo_name = GetOverlayName(overlay)
   if not repo_name:
@@ -934,6 +936,9 @@ def SplitEbuildPath(path):
 
   Example: For /any/path/chromeos-base/power_manager/power_manager-9999.ebuild,
   returns ('chromeos-base', 'power_manager', 'power_manager-9999').
+
+  Args:
+    path: Path to the ebuild.
 
   Returns:
     $CATEGORY, $PN, $P
