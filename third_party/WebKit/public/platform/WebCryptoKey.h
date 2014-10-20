@@ -89,6 +89,8 @@ class WebCryptoKeyHandle;
 // methods on it (other than destruction, assignment, or isNull()).
 class WebCryptoKey {
 public:
+    // Constructs a "null" key (One for which isNull() returns true).
+    WebCryptoKey() { }
     ~WebCryptoKey() { reset(); }
 
     WebCryptoKey(const WebCryptoKey& other) { assign(other); }
@@ -119,7 +121,6 @@ public:
     BLINK_PLATFORM_EXPORT bool isNull() const;
 
 private:
-    WebCryptoKey() { }
     BLINK_PLATFORM_EXPORT void assign(const WebCryptoKey& other);
     BLINK_PLATFORM_EXPORT void reset();
 
