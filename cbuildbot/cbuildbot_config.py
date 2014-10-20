@@ -1055,9 +1055,6 @@ brillo_non_testable = brillo.derive(
   # Disable all the tests!
   build_tests=False,
   factory_toolkit=False,
-  signer_tests=False,
-  hw_tests=[],
-  vm_tests=[],
 
   # Since it doesn't generate test images, payloads can't be tested.
   paygen_skip_testing=True,
