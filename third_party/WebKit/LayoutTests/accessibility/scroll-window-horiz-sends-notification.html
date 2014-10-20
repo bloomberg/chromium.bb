@@ -29,8 +29,8 @@ if (window.testRunner && window.accessibilityController) {
     shouldBe("window.pageXOffset", "0");
 
     accessibilityController.addNotificationListener(function (target, notification) {
-        if (target.role == 'AXRole: AXScrollArea') {
-            debug('Got notification on scroll area');
+        if (target.role == 'AXRole: AXWebArea' && notification == 'ScrollPositionChanged') {
+            debug('Got notification on web area');
             accessibilityController.removeNotificationListener();
             shouldBe("window.pageXOffset", "500");
             finishJSTest();

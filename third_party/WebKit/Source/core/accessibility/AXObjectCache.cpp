@@ -1036,9 +1036,13 @@ void AXObjectCache::handleScrolledToAnchor(const Node* anchorNode)
     postPlatformNotification(AXObject::firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
 }
 
-void AXObjectCache::handleScrollPositionChanged(FrameView* scrollView)
+void AXObjectCache::handleScrollPositionChanged(FrameView* frameView)
 {
-    postPlatformNotification(getOrCreate(scrollView), AXScrollPositionChanged);
+    // Prefer to fire the scroll position changed event on the frame view's child web area, if possible.
+    AXObject* targetAXObject = getOrCreate(frameView);
+    if (targetAXObject && !targetAXObject->children().isEmpty())
+        targetAXObject = targetAXObject->children()[0].get();
+    postPlatformNotification(targetAXObject, AXScrollPositionChanged);
 }
 
 void AXObjectCache::handleScrollPositionChanged(RenderObject* renderObject)
