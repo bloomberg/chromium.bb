@@ -75,24 +75,11 @@ class FakeMidiManagerClient : public MidiManagerClient {
   int client_id() const { return client_id_; }
   MidiResult result() const { return result_; }
 
-  void HandleContinuationMessage() {
-    // Stop posting a dummy message once CompleteStartSession() is invoked.
-    if (!wait_for_result_)
-      return;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeMidiManagerClient::HandleContinuationMessage,
-                   base::Unretained(this)));
-  }
-
-
   MidiResult WaitForResult() {
-    base::RunLoop run_loop;
-    // Post a dummy task not to stop the following event loop.
-    HandleContinuationMessage();
-    // CompleteStartSession() is called inside the message loop on the same
-    // thread. Protection for |wait_for_result_| is not needed.
-    run_loop.RunUntilIdle();
+    while (wait_for_result_) {
+      base::RunLoop run_loop;
+      run_loop.RunUntilIdle();
+    }
     return result();
   }
 
