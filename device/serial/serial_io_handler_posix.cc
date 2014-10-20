@@ -11,7 +11,13 @@
 
 #if defined(OS_LINUX)
 #include <linux/serial.h>
-#endif
+#if defined(OS_CHROMEOS)
+#include "base/bind.h"
+#include "base/sys_info.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/permission_broker_client.h"
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
 namespace {
 
@@ -123,8 +129,41 @@ namespace device {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop) {
-  return new SerialIoHandlerPosix(file_thread_message_loop);
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop) {
+  return new SerialIoHandlerPosix(file_thread_message_loop,
+                                  ui_thread_message_loop);
+}
+
+void SerialIoHandlerPosix::RequestAccess(
+    const std::string& port,
+    scoped_refptr<base::MessageLoopProxy> file_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    chromeos::PermissionBrokerClient* client =
+        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+    if (!client) {
+      DVLOG(1) << "Could not get permission_broker client.";
+      OnRequestAccessComplete(port, false /* failure */);
+      return;
+    }
+    // PermissionBrokerClient should be called on the UI thread.
+    ui_message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &chromeos::PermissionBrokerClient::RequestPathAccess,
+            base::Unretained(client),
+            port,
+            -1,
+            base::Bind(&SerialIoHandler::OnRequestAccessComplete, this, port)));
+  } else {
+    OnRequestAccessComplete(port, true /* success */);
+    return;
+  }
+#else
+  OnRequestAccessComplete(port, true /* success */);
+#endif  // defined(OS_LINUX) && defined(OS_CHROMEOS)
 }
 
 void SerialIoHandlerPosix::ReadImpl() {
@@ -158,8 +197,9 @@ void SerialIoHandlerPosix::CancelWriteImpl() {
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop)
-    : SerialIoHandler(file_thread_message_loop),
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop)
+    : SerialIoHandler(file_thread_message_loop, ui_thread_message_loop),
       is_watching_reads_(false),
       is_watching_writes_(false) {
 }

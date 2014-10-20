@@ -24,10 +24,12 @@ class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
   virtual ~SerialServiceImpl();
 
   static void Create(scoped_refptr<base::MessageLoopProxy> io_message_loop,
+                     scoped_refptr<base::MessageLoopProxy> ui_message_loop,
                      mojo::InterfaceRequest<serial::SerialService> request);
   static void CreateOnMessageLoop(
       scoped_refptr<base::MessageLoopProxy> message_loop,
       scoped_refptr<base::MessageLoopProxy> io_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_message_loop,
       mojo::InterfaceRequest<serial::SerialService> request);
 
   // mojo::InterfaceImpl<SerialService> overrides.

@@ -113,7 +113,7 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
 
 TEST_F(SerialServiceTest, GetDevices) {
   mojo::InterfacePtr<serial::SerialService> service;
-  SerialServiceImpl::Create(NULL, mojo::GetProxy(&service));
+  SerialServiceImpl::Create(NULL, NULL, mojo::GetProxy(&service));
   service.set_error_handler(this);
   mojo::Array<serial::DeviceInfoPtr> result;
   service->GetDevices(

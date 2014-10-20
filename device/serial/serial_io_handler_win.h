@@ -31,7 +31,8 @@ class SerialIoHandlerWin : public SerialIoHandler,
   friend class SerialIoHandler;
 
   explicit SerialIoHandlerWin(
-      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop);
   virtual ~SerialIoHandlerWin();
 
   // base::MessageLoopForIO::IOHandler implementation.

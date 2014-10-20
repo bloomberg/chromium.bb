@@ -12,8 +12,10 @@
 namespace device {
 
 SerialIoHandler::SerialIoHandler(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop)
-    : file_thread_message_loop_(file_thread_message_loop) {
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop)
+    : file_thread_message_loop_(file_thread_message_loop),
+      ui_thread_message_loop_(ui_thread_message_loop) {
 }
 
 SerialIoHandler::~SerialIoHandler() {
@@ -27,12 +29,36 @@ void SerialIoHandler::Open(const std::string& port,
   DCHECK(open_complete_.is_null());
   open_complete_ = callback;
   DCHECK(file_thread_message_loop_.get());
-  file_thread_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&SerialIoHandler::StartOpen,
-                 this,
-                 port,
-                 base::MessageLoopProxy::current()));
+  DCHECK(ui_thread_message_loop_.get());
+  RequestAccess(port, file_thread_message_loop_, ui_thread_message_loop_);
+}
+
+void SerialIoHandler::RequestAccess(
+    const std::string& port,
+    scoped_refptr<base::MessageLoopProxy> file_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+  OnRequestAccessComplete(port, true /* success */);
+}
+
+void SerialIoHandler::OnRequestAccessComplete(const std::string& port,
+                                              bool success) {
+  DCHECK(CalledOnValidThread());
+  if (success) {
+    DCHECK(file_thread_message_loop_.get());
+    file_thread_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&SerialIoHandler::StartOpen,
+                   this,
+                   port,
+                   base::MessageLoopProxy::current()));
+    return;
+  } else {
+    DCHECK(!open_complete_.is_null());
+    OpenCompleteCallback callback = open_complete_;
+    open_complete_.Reset();
+    callback.Run(false);
+    return;
+  }
 }
 
 void SerialIoHandler::StartOpen(

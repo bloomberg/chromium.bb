@@ -204,7 +204,9 @@ SerialConnection::SerialConnection(const std::string& port,
       paused_(false),
       io_handler_(device::SerialIoHandler::Create(
           content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::FILE))) {
+              content::BrowserThread::FILE),
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::UI))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

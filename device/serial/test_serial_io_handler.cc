@@ -12,7 +12,7 @@
 namespace device {
 
 TestSerialIoHandler::TestSerialIoHandler()
-    : SerialIoHandler(NULL),
+    : SerialIoHandler(NULL, NULL),
       opened_(false),
       dtr_(false),
       rts_(false),

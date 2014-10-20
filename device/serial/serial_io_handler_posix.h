@@ -24,13 +24,18 @@ class SerialIoHandlerPosix : public SerialIoHandler,
       const serial::HostControlSignals& control_signals) override;
   virtual bool ConfigurePort(const serial::ConnectionOptions& options) override;
   virtual serial::ConnectionInfoPtr GetPortInfo() const override;
+  virtual void RequestAccess(
+      const std::string& port,
+      scoped_refptr<base::MessageLoopProxy> file_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_message_loop) override;
   virtual bool PostOpen() override;
 
  private:
   friend class SerialIoHandler;
 
   SerialIoHandlerPosix(
-      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop);
   virtual ~SerialIoHandlerPosix();
 
   // base::MessageLoopForIO::Watcher implementation.

@@ -28,10 +28,12 @@ SerialServiceImpl::~SerialServiceImpl() {
 // static
 void SerialServiceImpl::Create(
     scoped_refptr<base::MessageLoopProxy> io_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_message_loop,
     mojo::InterfaceRequest<serial::SerialService> request) {
   mojo::BindToRequest(new SerialServiceImpl(new SerialConnectionFactory(
                           base::Bind(SerialIoHandler::Create,
-                                     base::MessageLoopProxy::current()),
+                                     base::MessageLoopProxy::current(),
+                                     ui_message_loop),
                           io_message_loop)),
                       &request);
 }
@@ -40,11 +42,13 @@ void SerialServiceImpl::Create(
 void SerialServiceImpl::CreateOnMessageLoop(
     scoped_refptr<base::MessageLoopProxy> message_loop,
     scoped_refptr<base::MessageLoopProxy> io_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ui_message_loop,
     mojo::InterfaceRequest<serial::SerialService> request) {
-  message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &SerialServiceImpl::Create, io_message_loop, base::Passed(&request)));
+  message_loop->PostTask(FROM_HERE,
+                         base::Bind(&SerialServiceImpl::Create,
+                                    io_message_loop,
+                                    ui_message_loop,
+                                    base::Passed(&request)));
 }
 
 void SerialServiceImpl::GetDevices(

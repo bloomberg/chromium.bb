@@ -24,13 +24,17 @@ class SerialIoHandler : public base::NonThreadSafe,
  public:
   // Constructs an instance of some platform-specific subclass.
   static scoped_refptr<SerialIoHandler> Create(
-      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop);
 
   typedef base::Callback<void(bool success)> OpenCompleteCallback;
 
   // Initiates an asynchronous Open of the device.
   virtual void Open(const std::string& port,
                     const OpenCompleteCallback& callback);
+
+  // Signals that the access request for |port| is complete.
+  void OnRequestAccessComplete(const std::string& port, bool success);
 
   // Performs an async Read operation. Behavior is undefined if this is called
   // while a Read is already pending. Otherwise, the Done or DoneWithError
@@ -79,7 +83,8 @@ class SerialIoHandler : public base::NonThreadSafe,
 
  protected:
   explicit SerialIoHandler(
-      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop);
   virtual ~SerialIoHandler();
 
   // Performs a platform-specific read operation. This must guarantee that
@@ -92,7 +97,7 @@ class SerialIoHandler : public base::NonThreadSafe,
   // Performs a platform-specific write operation. This must guarantee that
   // WriteCompleted is called when the underlying async operation is completed
   // or the SerialIoHandler instance will leak.
-  // NOTE: Implementations of Writempl should never call WriteCompleted
+  // NOTE: Implementations of WriteImpl should never call WriteCompleted
   // directly. Use QueueWriteCompleted instead to avoid reentrancy.
   virtual void WriteImpl() = 0;
 
@@ -101,6 +106,12 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Platform-specific write cancelation.
   virtual void CancelWriteImpl() = 0;
+
+  // Requests access to the underlying serial device, if needed.
+  virtual void RequestAccess(
+      const std::string& port,
+      scoped_refptr<base::MessageLoopProxy> file_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ui_message_loop);
 
   // Performs platform-specific, one-time port configuration on open.
   virtual bool PostOpen();
@@ -187,6 +198,8 @@ class SerialIoHandler : public base::NonThreadSafe,
   OpenCompleteCallback open_complete_;
 
   scoped_refptr<base::MessageLoopProxy> file_thread_message_loop_;
+  // On Chrome OS, PermissionBrokerClient should be called on the UI thread.
+  scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandler);
 };
