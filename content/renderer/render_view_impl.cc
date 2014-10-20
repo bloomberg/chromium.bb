@@ -1006,6 +1006,11 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAntialiased2dCanvasEnabled(
       !prefs.antialiased_2d_canvas_disabled);
 
+  // Enabled antialiasing of clips for 2d canvas if requested on the command
+  // line.
+  settings->setAntialiasedClips2dCanvasEnabled(
+      prefs.antialiased_clips_2d_canvas_enabled);
+
   // Set MSAA sample count for 2d canvas if requested on the command line (or
   // default value if not).
   settings->setAccelerated2dCanvasMSAASampleCount(

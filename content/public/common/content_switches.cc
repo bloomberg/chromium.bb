@@ -278,6 +278,9 @@ const char kDisableZeroCopy[]               = "disable-zero-copy";
 // based tests.
 const char kDomAutomationController[]       = "dom-automation";
 
+// Enable antialiasing on 2d canvas clips (as opposed to draw operations)
+const char kEnable2dCanvasClipAntialiasing[] = "enable-2d-canvas-clip-aa";
+
 // Enable partially decoding jpeg images using the GPU.
 // At least YUV decoding will be accelerated when using this flag.
 // Has no effect unless GPU rasterization is enabled.

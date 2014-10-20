@@ -89,6 +89,7 @@ WebPreferences::WebPreferences()
       accelerated_2d_canvas_enabled(false),
       minimum_accelerated_2d_canvas_size(257 * 256),
       antialiased_2d_canvas_disabled(false),
+      antialiased_clips_2d_canvas_enabled(false),
       accelerated_2d_canvas_msaa_sample_count(0),
       accelerated_filters_enabled(false),
       deferred_filters_enabled(false),

@@ -380,6 +380,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
   prefs.antialiased_2d_canvas_disabled =
       command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
+  prefs.antialiased_clips_2d_canvas_enabled =
+      command_line.HasSwitch(switches::kEnable2dCanvasClipAntialiasing);
   prefs.accelerated_2d_canvas_msaa_sample_count =
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
