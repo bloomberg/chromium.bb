@@ -360,7 +360,8 @@ void ServiceWorkerWriteToCacheJob::OnReadCompleted(
     net::URLRequest* request,
     int bytes_read) {
   DCHECK_EQ(net_request_, request);
-  if (!request->status().is_success()) {
+  if (bytes_read < 0) {
+    DCHECK(!request->status().is_success());
     AsyncNotifyDoneHelper(request->status());
     return;
   }
@@ -368,18 +369,20 @@ void ServiceWorkerWriteToCacheJob::OnReadCompleted(
     WriteDataToCache(bytes_read);
     return;
   }
-  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
-                               "ServiceWorkerWriteToCacheJob::ExecutingJob",
-                               this,
-                               "WriteHeadersToCache");
-  // We're done with all.
-  AsyncNotifyDoneHelper(request->status());
-  return;
+  // No more data to process, the job is complete.
+  DCHECK(request->status().is_success());
+  io_buffer_ = NULL;
+  version_->script_cache_map()->NotifyFinishedCaching(
+      url_, net::URLRequestStatus());
+  did_notify_finished_ = true;
+  SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
+  NotifyReadComplete(0);
 }
 
 void ServiceWorkerWriteToCacheJob::AsyncNotifyDoneHelper(
     const net::URLRequestStatus& status) {
   DCHECK(!status.is_io_pending());
+  DCHECK(!did_notify_finished_);
   version_->script_cache_map()->NotifyFinishedCaching(url_, status);
   did_notify_finished_ = true;
   SetStatus(status);
