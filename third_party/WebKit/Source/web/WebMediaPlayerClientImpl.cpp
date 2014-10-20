@@ -123,11 +123,6 @@ void WebMediaPlayerClientImpl::keyMessage(const WebString& keySystem, const WebS
     HTMLMediaElementEncryptedMedia::keyMessage(mediaElement(), keySystem, sessionId, message, messageLength, defaultURL);
 }
 
-void WebMediaPlayerClientImpl::keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength)
-{
-    HTMLMediaElementEncryptedMedia::encrypted(mediaElement(), contentType, initData, initDataLength);
-}
-
 void WebMediaPlayerClientImpl::encrypted(const WebString& initDataType, const unsigned char* initData, unsigned initDataLength)
 {
     HTMLMediaElementEncryptedMedia::encrypted(mediaElement(), initDataType, initData, initDataLength);
