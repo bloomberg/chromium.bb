@@ -213,15 +213,12 @@ BPF_TEST_C(BaselinePolicy, EPERM_getcwd, BaselinePolicy) {
   BPF_ASSERT_EQ(EPERM, errno);
 }
 
-// TODO(jorgelo): re-enable this after crbug.com/424973 is fixed.
-#if !defined(OS_CHROMEOS)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  SIGSYS_InvalidSyscall,
                  DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   Syscall::InvalidCall();
 }
-#endif
 
 // A failing test using this macro could be problematic since we perform
 // system calls by passing "0" as every argument.
