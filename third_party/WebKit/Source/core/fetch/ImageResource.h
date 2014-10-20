@@ -121,7 +121,7 @@ private:
     void updateImage(bool allDataReceived);
     void clearImage();
     // If not null, changeRect is the changed part of the image.
-    void notifyObservers(const IntRect* changeRect = 0);
+    void notifyObservers(const IntRect* changeRect = nullptr);
 
     virtual void switchClientsToRevalidatedResource() override;
 

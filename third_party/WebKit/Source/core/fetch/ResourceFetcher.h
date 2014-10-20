@@ -118,7 +118,7 @@ public:
     void setDocument(RawPtr<Document> document) { m_document = document; }
 
     DocumentLoader* documentLoader() const { return m_documentLoader; }
-    void clearDocumentLoader() { m_documentLoader = 0; }
+    void clearDocumentLoader() { m_documentLoader = nullptr; }
 
     void garbageCollectDocumentResources();
 

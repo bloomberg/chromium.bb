@@ -120,7 +120,7 @@ void ImageResource::switchClientsToRevalidatedResource()
     ASSERT(resourceToRevalidate()->isImage());
     // Pending container size requests need to be transferred to the revalidated resource.
     if (!m_pendingContainerSizeRequests.isEmpty()) {
-        // A copy of pending size requests is needed as they are deleted during Resource::switchClientsToRevalidateResouce().
+        // A copy of pending size requests is needed as they are deleted during Resource::switchClientsToRevalidateResource().
         ContainerSizeRequests switchContainerSizeRequests;
         for (const auto& containerSizeRequest : m_pendingContainerSizeRequests)
             switchContainerSizeRequests.set(containerSizeRequest.key, containerSizeRequest.value);
@@ -341,7 +341,7 @@ inline void ImageResource::clearImage()
     // If our Image has an observer, it's always us so we need to clear the back pointer
     // before dropping our reference.
     if (m_image)
-        m_image->setImageObserver(0);
+        m_image->setImageObserver(nullptr);
     m_image.clear();
 }
 
@@ -387,7 +387,7 @@ void ImageResource::updateImage(bool allDataReceived)
 
 void ImageResource::updateBitmapImages(HashSet<ImageResource*>& images, bool redecodeImages)
 {
-    for (const auto& imageResource : images) {
+    for (ImageResource* imageResource : images) {
         if (!imageResource->hasImage() || imageResource->image()->isNull())
             continue;
         BitmapImage* image = toBitmapImage(imageResource->image());

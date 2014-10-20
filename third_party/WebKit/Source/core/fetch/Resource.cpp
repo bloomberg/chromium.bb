@@ -447,7 +447,7 @@ bool Resource::hasOneHandle() const
 CachedMetadata* Resource::cachedMetadata(unsigned dataTypeID) const
 {
     if (!m_cachedMetadata || m_cachedMetadata->dataTypeID() != dataTypeID)
-        return 0;
+        return nullptr;
     return m_cachedMetadata.get();
 }
 
@@ -693,7 +693,7 @@ void Resource::switchClientsToRevalidatedResource()
     m_resourceToRevalidate->m_identifier = m_identifier;
 
     m_switchingClientsToRevalidatedResource = true;
-    for (const auto& handle : m_handlesToRevalidate) {
+    for (ResourcePtrBase* handle : m_handlesToRevalidate) {
         handle->m_resource = m_resourceToRevalidate;
         m_resourceToRevalidate->registerHandle(handle);
         --m_handleCount;
@@ -702,12 +702,10 @@ void Resource::switchClientsToRevalidatedResource()
     m_handlesToRevalidate.clear();
 
     Vector<ResourceClient*> clientsToMove;
-    for (const auto& clientHash : m_clients) {
-        unsigned count = clientHash.value;
-        while (count) {
-            clientsToMove.append(clientHash.key);
-            --count;
-        }
+    for (const auto& clientHashEntry : m_clients) {
+        unsigned count = clientHashEntry.value;
+        while (count--)
+            clientsToMove.append(clientHashEntry.key);
     }
 
     unsigned moveCount = clientsToMove.size();
@@ -907,7 +905,7 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const
 void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
 {
     Vector<ResourcePtr<Resource>> resources;
-    for (const auto& resource : m_resourcesWithPendingClients)
+    for (Resource* resource : m_resourcesWithPendingClients)
         resources.append(resource);
     m_resourcesWithPendingClients.clear();
 

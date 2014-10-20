@@ -165,7 +165,7 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     blink::WebString charset;
     RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(blink::Platform::current()->parseDataURL(url, mimetype, charset));
     if (!data)
-        return 0;
+        return nullptr;
     ResourceResponse response(url, mimetype, data->size(), charset, String());
 
     Resource* resource = createResource(Resource::Image, request, charset);
@@ -263,7 +263,7 @@ ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
 
 ResourceFetcher::~ResourceFetcher()
 {
-    m_documentLoader = 0;
+    m_documentLoader = nullptr;
     m_document = nullptr;
 
     clearPreloads();
@@ -688,16 +688,16 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     url = MemoryCache::removeFragmentIdentifierIfNeeded(url);
 
     if (!url.isValid())
-        return 0;
+        return nullptr;
 
     if (!canRequest(type, request.resourceRequest(), url, request.options(), request.forPreload(), request.originRestriction()))
-        return 0;
+        return nullptr;
 
     if (LocalFrame* f = frame())
         f->loader().client()->dispatchWillRequestResource(&request);
 
     if (!request.forPreload()) {
-        V8DOMActivityLogger* activityLogger = 0;
+        V8DOMActivityLogger* activityLogger = nullptr;
         if (request.options().initiatorInfo.name == FetchInitiatorTypeNames::xmlhttprequest)
             activityLogger = V8DOMActivityLogger::currentActivityLogger();
         else
@@ -731,7 +731,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     }
 
     if (!resource)
-        return 0;
+        return nullptr;
 
     if (!resource->hasClients())
         m_deadStatsRecorder.update(policy);
@@ -756,7 +756,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         if (!shouldLoadNewResource(type)) {
             if (memoryCache()->contains(resource.get()))
                 memoryCache()->remove(resource.get());
-            return 0;
+            return nullptr;
         }
 
         if (!m_documentLoader || !m_documentLoader->scheduleArchiveLoad(resource.get(), request.resourceRequest()))
@@ -771,7 +771,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         if (resource->errorOccurred()) {
             if (memoryCache()->contains(resource.get()))
                 memoryCache()->remove(resource.get());
-            return request.options().synchronousPolicy == RequestSynchronously ? resource : 0;
+            return request.options().synchronousPolicy == RequestSynchronously ? resource : nullptr;
         }
     }
 
@@ -1272,7 +1272,7 @@ bool ResourceFetcher::isPreloaded(const String& urlString) const
     const KURL& url = m_document->completeURL(urlString);
 
     if (m_preloads) {
-        for (const auto& resource : *m_preloads) {
+        for (Resource* resource : *m_preloads) {
             if (resource->url() == url)
                 return true;
         }
@@ -1289,7 +1289,7 @@ void ResourceFetcher::clearPreloads()
     if (!m_preloads)
         return;
 
-    for (const auto& resource : *m_preloads) {
+    for (Resource* resource : *m_preloads) {
         resource->decreasePreloadCount();
         bool deleted = resource->deleteIfPossible();
         if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced)
@@ -1463,7 +1463,7 @@ void ResourceFetcher::printPreloadStats()
     unsigned stylesheetMisses = 0;
     unsigned images = 0;
     unsigned imageMisses = 0;
-    for (const auto& resource : *m_preloads) {
+    for (Resource* resource : *m_preloads) {
         if (resource->preloadResult() == Resource::PreloadNotReferenced)
             printf("!! UNREFERENCED PRELOAD %s\n", resource->url().string().latin1().data());
         else if (resource->preloadResult() == Resource::PreloadReferencedWhileComplete)
