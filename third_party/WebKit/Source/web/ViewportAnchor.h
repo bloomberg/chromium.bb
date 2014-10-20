@@ -42,7 +42,6 @@ namespace blink {
 
 class EventHandler;
 class FrameView;
-class IntSize;
 class Node;
 
 // ViewportAnchor provides a way to anchor a viewport origin to a DOM node.

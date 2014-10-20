@@ -46,9 +46,6 @@
 
 namespace blink {
 
-class WebLocalFrameImpl;
-class WebSettings;
-
 namespace FrameTestHelpers {
 
 class TestWebFrameClient;

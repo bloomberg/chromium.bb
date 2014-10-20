@@ -45,7 +45,6 @@ namespace blink {
 class AudioSourceProviderClient;
 class HTMLMediaElement;
 class WebAudioSourceProvider;
-class WebContentDecryptionModule;
 class WebMediaPlayer;
 
 // This class serves as a bridge between MediaPlayer and

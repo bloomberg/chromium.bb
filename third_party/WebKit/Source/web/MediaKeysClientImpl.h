@@ -11,7 +11,6 @@
 namespace blink {
 
 class WebContentDecryptionModule;
-class WebViewImpl;
 
 class MediaKeysClientImpl final : public MediaKeysClient {
 public:

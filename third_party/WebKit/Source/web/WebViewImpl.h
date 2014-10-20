@@ -75,7 +75,6 @@ class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentPrivate;
 class WebLocalFrameImpl;
-class WebRemoteFrameImpl;
 class WebImage;
 class WebPagePopupImpl;
 class WebPlugin;

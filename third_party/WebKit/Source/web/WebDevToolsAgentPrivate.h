@@ -38,7 +38,6 @@ namespace blink {
 class Page;
 class WebLocalFrameImpl;
 class WebInputEvent;
-struct WebSize;
 
 class WebDevToolsAgentPrivate : public WebDevToolsAgent {
 public:

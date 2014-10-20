@@ -41,7 +41,6 @@
 namespace blink {
 
 class WebLocalFrameImpl;
-class WebPluginContainerImpl;
 class WebPluginLoadObserver;
 
 class FrameLoaderClientImpl final : public FrameLoaderClient {

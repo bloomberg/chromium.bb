@@ -37,8 +37,6 @@
 namespace blink {
 
 class ExecutionContext;
-class WebFrame;
-class WebPermissionCallbacks;
 class WebString;
 class WebWorkerPermissionClientProxy;
 

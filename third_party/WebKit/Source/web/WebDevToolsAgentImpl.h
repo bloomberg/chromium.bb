@@ -44,25 +44,15 @@
 
 namespace blink {
 
-class Document;
 class LocalFrame;
-class FrameView;
-class GraphicsContext;
 class InspectorClient;
 class InspectorController;
-class Node;
 class Page;
 class PlatformKeyboardEvent;
 class WebDevToolsAgentClient;
-class WebFrame;
 class WebLocalFrameImpl;
 class WebString;
-class WebURLRequest;
-class WebURLResponse;
 class WebViewImpl;
-struct WebMemoryUsageInfo;
-struct WebURLError;
-struct WebDevToolsMessageData;
 
 class WebDevToolsAgentImpl final
     : public WebDevToolsAgentPrivate

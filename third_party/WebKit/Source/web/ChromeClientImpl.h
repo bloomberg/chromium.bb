@@ -45,7 +45,6 @@ class AXObject;
 class ColorChooser;
 class ColorChooserClient;
 class Element;
-class Event;
 class FileChooser;
 class GraphicsLayerFactory;
 class HTMLFormControlElement;
@@ -54,13 +53,10 @@ class KeyboardEvent;
 class PagePopup;
 class PagePopupClient;
 class PopupMenuClient;
-class RenderBox;
-class SecurityOrigin;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class WebViewImpl;
 struct WebCursorInfo;
-struct WebPopupMenuInfo;
 struct WindowFeatures;
 
 // Handles window-level notifications from WebCore on behalf of a WebView.

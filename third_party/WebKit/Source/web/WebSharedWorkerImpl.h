@@ -49,15 +49,11 @@
 namespace blink {
 
 class ConsoleMessage;
-class ResourceResponse;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebWorkerClient;
-class WebSecurityOrigin;
 class WebString;
 class WebURL;
 class WebView;
-class WebWorker;
 class WebSharedWorkerClient;
 class WorkerInspectorProxy;
 

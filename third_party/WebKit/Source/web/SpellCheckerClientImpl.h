@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class LocalFrame;
-class HTMLInputElement;
 class WebViewImpl;
 
 class SpellCheckerClientImpl final : public SpellCheckerClient, public TextCheckerClient {

@@ -37,10 +37,8 @@ namespace blink {
 class GraphicsContext;
 class GraphicsLayer;
 class GraphicsLayerClient;
-class OverlayGraphicsLayerClientImpl;
 class WebPageOverlay;
 class WebViewImpl;
-struct WebRect;
 
 class PageOverlay {
 public:

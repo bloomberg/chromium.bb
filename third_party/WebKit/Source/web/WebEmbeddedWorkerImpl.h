@@ -43,7 +43,6 @@ class ServiceWorkerGlobalScopeProxy;
 class WebServiceWorkerNetworkProvider;
 class WebView;
 class WorkerInspectorProxy;
-class WorkerScriptLoader;
 class WorkerThread;
 
 class WebEmbeddedWorkerImpl final

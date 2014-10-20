@@ -42,8 +42,6 @@ namespace blink {
 class DisplayList;
 class Node;
 class RenderLayer;
-class RenderObject;
-struct WebFloatRect;
 struct WebRect;
 class WebViewImpl;
 

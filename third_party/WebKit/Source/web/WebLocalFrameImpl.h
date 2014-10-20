@@ -47,18 +47,12 @@ namespace blink {
 
 class ChromePrintContext;
 class GeolocationClientProxy;
-class GraphicsContext;
-class HTMLInputElement;
-class HistoryItem;
 class IntSize;
 class KURL;
-class Node;
 class Range;
 class SharedWorkerRepositoryClientImpl;
-class SubstituteData;
 class TextFinder;
 class WebDataSourceImpl;
-class WebInputElement;
 class WebFrameClient;
 class WebPerformance;
 class WebPlugin;
@@ -67,7 +61,6 @@ class WebView;
 class WebViewImpl;
 struct FrameLoadRequest;
 struct WebPrintParams;
-struct WindowFeatures;
 
 template <typename T> class WebVector;
 

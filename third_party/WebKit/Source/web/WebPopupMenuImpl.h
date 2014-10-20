@@ -40,20 +40,13 @@
 #include "wtf/RefCounted.h"
 
 namespace blink {
-class LocalFrame;
-class KeyboardEvent;
-class Page;
-class PlatformKeyboardEvent;
-class Range;
 class WebContentLayer;
 class WebGestureEvent;
 class WebKeyboardEvent;
 class WebLayerTreeView;
 class WebMouseEvent;
 class WebMouseWheelEvent;
-class WebRange;
 class WebTouchEvent;
-class Widget;
 struct WebRect;
 
 class WebPopupMenuImpl : public WebPopupMenu, public PopupContainerClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {

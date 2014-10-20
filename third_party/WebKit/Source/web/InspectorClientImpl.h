@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class WebDevToolsAgentClient;
 class WebDevToolsAgentImpl;
 class WebViewImpl;
 

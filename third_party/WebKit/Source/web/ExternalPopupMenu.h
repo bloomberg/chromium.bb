@@ -40,7 +40,6 @@
 namespace blink {
 
 class FloatQuad;
-class IntRect;
 class IntSize;
 class LocalFrame;
 class PopupMenuClient;

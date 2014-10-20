@@ -37,7 +37,6 @@
 namespace blink {
 
 class LocalFrame;
-class HTMLInputElement;
 class WebViewImpl;
 
 class EditorClientImpl final : public EditorClient {

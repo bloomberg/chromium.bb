@@ -19,7 +19,6 @@ namespace blink {
 class FrameHost;
 class FrameOwner;
 class RemoteFrame;
-class WebViewImpl;
 
 // FIXME: This is just a placeholder frame owner to supply to RemoteFrame when
 // the parent is also a remote frame. Strictly speaking, this shouldn't be
