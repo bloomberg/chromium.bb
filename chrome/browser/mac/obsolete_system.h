@@ -45,9 +45,7 @@ class ObsoleteSystemMac {
 
   // true if this is the final release that will run on 32-bit-only systems.
   static bool Is32BitEndOfTheLine() {
-    // TODO(mark): Change to true immediately prior to the final build that
-    // supports 32-bit-only systems.
-    return false;
+    return true;
   }
 
  private:
