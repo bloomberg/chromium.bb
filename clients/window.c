@@ -133,6 +133,7 @@ struct display {
 
 	int has_rgb565;
 	int seat_version;
+	int data_device_manager_version;
 };
 
 struct window_output {
@@ -5148,9 +5149,12 @@ input_destroy(struct input *input)
 	if (input->selection_offer)
 		data_offer_destroy(input->selection_offer);
 
-	if (input->data_device)
-		wl_data_device_destroy(input->data_device);
-
+	if (input->data_device) {
+		if(input->display->data_device_manager_version >= 2)
+			wl_data_device_release(input->data_device);
+		else
+			wl_data_device_destroy(input->data_device);
+	}
 	if (input->display->seat_version >= 3) {
 		if (input->pointer)
 			wl_pointer_release(input->pointer);
@@ -5234,9 +5238,11 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 		d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
 		wl_shm_add_listener(d->shm, &shm_listener, d);
 	} else if (strcmp(interface, "wl_data_device_manager") == 0) {
+		d->data_device_manager_version = MIN(version, 2);
 		d->data_device_manager =
 			wl_registry_bind(registry, id,
-					 &wl_data_device_manager_interface, 1);
+					 &wl_data_device_manager_interface,
+					 d->data_device_manager_version);
 	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->xdg_shell = wl_registry_bind(registry, id,
 						&xdg_shell_interface, 1);
