@@ -11165,31 +11165,22 @@
         "boards": [
             "gizmo"
         ],
-        "build_tests": false,
         "build_type": "full",
+        "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Full Builds",
-        "factory_toolkit": false,
         "git_sync": true,
         "image_test": true,
         "images": [
             "base",
-            "dev"
+            "test",
+            "factory_install"
         ],
         "name": "gizmo-full",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
-        "paygen_skip_testing": true,
-        "sync_chrome": false,
-        "tests_supported": false,
+        "prebuilts": "public",
         "trybot_list": true,
-        "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
-        "vm_tests": []
+        "usepkg_toolchain": false
     },
     "gizmo-paladin": {
         "boards": [
@@ -12639,31 +12630,19 @@
         "boards": [
             "kayle"
         ],
-        "build_tests": false,
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "dev_manifest": "kayle.xml",
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "image_test": true,
-        "images": [
-            "base",
-            "dev"
-        ],
         "internal": true,
         "manifest": "kayle.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
         "name": "kayle-paladin",
         "overlays": "both",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
         "paladin_builder_name": "kayle paladin",
-        "paygen_skip_testing": true,
         "prebuilts": "private",
         "sync_chrome": false,
         "tests_supported": false,
@@ -16707,24 +16686,17 @@
         "boards": [
             "mipsel-o32-generic"
         ],
-        "build_tests": false,
         "build_type": "full",
         "chroot_replace": true,
         "description": "Full Builds",
-        "factory_toolkit": false,
         "git_sync": true,
         "image_test": true,
         "images": [
             "base",
-            "dev"
+            "test",
+            "factory_install"
         ],
         "name": "mipsel-o32-generic-full",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
-        "paygen_skip_testing": true,
         "sync_chrome": false,
         "tests_supported": false,
         "trybot_list": true,
@@ -16737,25 +16709,12 @@
         "boards": [
             "mipsel-o32-generic"
         ],
-        "build_tests": false,
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
-        "factory_toolkit": false,
-        "image_test": true,
-        "images": [
-            "base",
-            "dev"
-        ],
         "manifest_version": true,
         "name": "mipsel-o32-generic-paladin",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
         "paladin_builder_name": "mipsel-o32-generic paladin",
-        "paygen_skip_testing": true,
         "prebuilts": "public",
         "sync_chrome": false,
         "tests_supported": false,
@@ -16788,18 +16747,17 @@
         "boards": [
             "mipsel-o32-generic"
         ],
-        "build_tests": false,
         "build_type": "canary",
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Release Builds (canary) (internal)",
         "dev_installer_prebuilts": true,
-        "factory_toolkit": false,
         "hwqual": true,
         "image_test": true,
         "images": [
             "base",
-            "dev"
+            "test",
+            "factory_install"
         ],
         "internal": true,
         "manifest": "official.xml",
@@ -16807,17 +16765,14 @@
         "manifest_version": true,
         "name": "mipsel-o32-generic-release",
         "overlays": "both",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
         "paygen": true,
         "paygen_skip_delta_payloads": true,
-        "paygen_skip_testing": true,
         "push_image": true,
+        "signer_tests": true,
         "sync_chrome": false,
+        "tests_supported": false,
         "trybot_list": true,
+        "unittests": false,
         "upload_symbols": true,
         "useflags": [
             "chrome_internal",
@@ -20554,6 +20509,7 @@
         "paygen_skip_delta_payloads": true,
         "paygen_skip_testing": true,
         "push_image": true,
+        "signer_tests": true,
         "trybot_list": true,
         "upload_symbols": true,
         "useflags": [
@@ -30740,16 +30696,9 @@
         "boards": [
             "storm"
         ],
-        "build_tests": false,
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
-        "factory_toolkit": false,
-        "image_test": true,
-        "images": [
-            "base",
-            "dev"
-        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30757,13 +30706,7 @@
         "manifest_version": true,
         "name": "storm-paladin",
         "overlays": "both",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
         "paladin_builder_name": "storm paladin",
-        "paygen_skip_testing": true,
         "prebuilts": "private",
         "sync_chrome": false,
         "tests_supported": false,
@@ -31886,6 +31829,7 @@
         "paygen_skip_delta_payloads": true,
         "paygen_skip_testing": true,
         "push_image": true,
+        "signer_tests": true,
         "trybot_list": true,
         "upload_symbols": true,
         "useflags": [
@@ -32952,29 +32896,16 @@
         "boards": [
             "urara"
         ],
-        "build_tests": false,
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
-        "factory_toolkit": false,
-        "image_test": true,
-        "images": [
-            "base",
-            "dev"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
         "name": "urara-paladin",
         "overlays": "both",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
         "paladin_builder_name": "urara paladin",
-        "paygen_skip_testing": true,
         "prebuilts": "private",
         "sync_chrome": false,
         "tests_supported": false,
@@ -34130,29 +34061,16 @@
         "boards": [
             "whirlwind"
         ],
-        "build_tests": false,
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
-        "factory_toolkit": false,
-        "image_test": true,
-        "images": [
-            "base",
-            "dev"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
         "name": "whirlwind-paladin",
         "overlays": "both",
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "chromeos-base/chromeos-initramfs"
-        ],
         "paladin_builder_name": "whirlwind paladin",
-        "paygen_skip_testing": true,
         "prebuilts": "private",
         "sync_chrome": false,
         "tests_supported": false,

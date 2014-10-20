@@ -182,9 +182,10 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Verify image_test build is only enabled with 'base' in images."""
     for build_name, config in cbuildbot_config.config.iteritems():
       if config.get('image_test', False):
-        self.assertTrue('base' in config['images'],
-                        'Build %s runs image_test but does not have base img' %
-                        build_name)
+        self.assertTrue(
+            'base' in config['images'],
+            'Build %s runs image_test but does not have base image' %
+            build_name)
 
   def testBuildType(self):
     """Verifies that all configs use valid build types."""

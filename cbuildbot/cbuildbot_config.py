@@ -1032,7 +1032,6 @@ internal = _config(
 brillo = _config(
   sync_chrome=False,
   chrome_sdk=False,
-  signer_tests=False,
   # TODO(gauravsh): crbug.com/356414 Start running tests on Brillo configs.
   vm_tests=[],
   hw_tests=[],
@@ -1043,34 +1042,11 @@ moblab = brillo.derive(
   chrome_sdk=True,
 )
 
-brillo_non_testable = brillo.derive(
-  # Literally build the minimal possible. chromeos-initramfs is
-  # required to create the recovery image. If it is not built in
-  # BuildPackages, ArchiveStage will emerge it, causing race condition
-  # with DebugSymbolsStage.
-  packages=['virtual/target-os', 'virtual/target-os-dev',
-            'chromeos-base/chromeos-initramfs'],
-  images=['base', 'dev'],
-
-  # Disable all the tests!
-  build_tests=False,
-  factory_toolkit=False,
-
-  # Since it doesn't generate test images, payloads can't be tested.
-  paygen_skip_testing=True,
-  image_test=True,
-)
-
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
 
-brillo_public_full = full.derive(non_testable_builder,
-                                 brillo_non_testable)
-
-brillo_public_full.add_config('gizmo-full',
-  boards=['gizmo'],
-)
-
-brillo_public_full.add_config('mipsel-o32-generic-full',
+full.add_config('mipsel-o32-generic-full',
+  brillo,
+  non_testable_builder,
   boards=['mipsel-o32-generic'],
 )
 
@@ -1176,7 +1152,7 @@ paladin.add_config('x86-generic-asan-paladin',
 )
 
 paladin.add_config('mipsel-o32-generic-paladin',
-  brillo_non_testable,
+  brillo,
   non_testable_builder,
   boards=['mipsel-o32-generic'],
   important=False,
@@ -2082,7 +2058,7 @@ internal_notest_paladin.add_config('daisy_spring-paladin',
 )
 
 internal_notest_paladin.add_config('kayle-paladin',
-  brillo_non_testable,
+  brillo,
   boards=['kayle'],
   paladin_builder_name='kayle paladin',
   important=False,
@@ -2112,13 +2088,13 @@ internal_notest_paladin.add_config('rush_ryu-paladin',
 )
 
 internal_notest_paladin.add_config('storm-paladin',
-  brillo_non_testable,
+  brillo,
   boards=['storm'],
   paladin_builder_name='storm paladin',
 )
 
 internal_notest_paladin.add_config('urara-paladin',
-  brillo_non_testable,
+  brillo,
   boards=['urara'],
   paladin_builder_name='urara paladin',
   important=False,
@@ -2128,7 +2104,7 @@ internal_notest_paladin.add_config('urara-paladin',
 )
 
 internal_notest_paladin.add_config('whirlwind-paladin',
-  brillo_non_testable,
+  brillo,
   boards=['whirlwind'],
   paladin_builder_name='whirlwind paladin',
   important=False
@@ -2489,6 +2465,7 @@ _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
   afdo_use=False,
   signer_tests=True,
+  image_test=True,
 )
 
 _brillo_release.add_config('duck-release',
@@ -2582,11 +2559,12 @@ _non_testable_brillo_release.add_config('whirlwind-release',
   # Hw Lab can't test whirlwind, yet.
   paygen_skip_testing=True,
   important=False,
-  signer_tests=False
+  signer_tests=False,
 )
 
 _release.add_config('mipsel-o32-generic-release',
-  brillo_non_testable,
+  brillo,
+  non_testable_builder,
   boards=['mipsel-o32-generic'],
   paygen_skip_delta_payloads=True,
   afdo_use=False,
