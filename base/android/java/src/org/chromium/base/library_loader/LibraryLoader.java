@@ -307,6 +307,12 @@ public class LibraryLoader {
     }
 
     // Called after all native initializations are complete.
+    public static void onNativeInitializationComplete(Context context) {
+        onNativeInitializationComplete();
+    }
+
+    // Called after all native initializations are complete.
+    @Deprecated
     public static void onNativeInitializationComplete() {
         recordBrowserProcessHistogram();
         nativeRecordNativeLibraryHack(sNativeLibraryHackWasUsed);
