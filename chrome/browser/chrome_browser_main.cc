@@ -402,9 +402,16 @@ void RegisterComponentsForUpdate() {
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
   RegisterWidevineCdmComponent(cus);
-#if !defined(DISABLE_NACL)
-  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
 #endif
+
+#if !defined(DISABLE_NACL) && !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+  // PNaCl on Chrome OS is on rootfs and there is no need to download it. But
+  // Chrome4ChromeOS on Linux doesn't contain PNaCl so enable component
+  // installer when ruining on Linux. See crbug.com/422121 for more details.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+#endif
+    g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
 #endif
 
   if (translate::CldDataSource::ShouldRegisterForComponentUpdates()) {
