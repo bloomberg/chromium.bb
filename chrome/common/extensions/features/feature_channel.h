@@ -23,18 +23,13 @@ chrome::VersionInfo::Channel GetDefaultChannel();
 // Scoped channel setter. Use for tests.
 class ScopedCurrentChannel {
  public:
-  explicit ScopedCurrentChannel(chrome::VersionInfo::Channel channel)
-      : original_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
-    original_channel_ = GetCurrentChannel();
-    SetCurrentChannel(channel);
-  }
-
-  ~ScopedCurrentChannel() {
-    SetCurrentChannel(original_channel_);
-  }
+  explicit ScopedCurrentChannel(chrome::VersionInfo::Channel channel);
+  ~ScopedCurrentChannel();
 
  private:
   chrome::VersionInfo::Channel original_channel_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCurrentChannel);
 };
 
 }  // namespace extensions

@@ -27,4 +27,14 @@ VersionInfo::Channel GetDefaultChannel() {
   return kDefaultChannel;
 }
 
+ScopedCurrentChannel::ScopedCurrentChannel(VersionInfo::Channel channel)
+    : original_channel_(VersionInfo::CHANNEL_UNKNOWN) {
+  original_channel_ = GetCurrentChannel();
+  SetCurrentChannel(channel);
+}
+
+ScopedCurrentChannel::~ScopedCurrentChannel() {
+  SetCurrentChannel(original_channel_);
+}
+
 }  // namespace extensions
