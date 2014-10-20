@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 
+#include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -716,6 +717,34 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
         shadows.append(ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color));
     }
     return ShadowList::adopt(shadows);
+}
+
+PassRefPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return nullptr;
+    }
+
+    if (value->isImageValue() || value->isImageGeneratorValue() || value->isImageSetValue())
+        return ShapeValue::createImageValue(state.styleImage(CSSPropertyShapeOutside, value));
+
+    RefPtr<BasicShape> shape;
+    CSSBoxType cssBox = BoxMissing;
+    CSSValueList* valueList = toCSSValueList(value);
+    for (unsigned i = 0; i < valueList->length(); ++i) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(valueList->item(i));
+        if (primitiveValue->isShape())
+            shape = basicShapeForValue(state, primitiveValue->getShapeValue());
+        else
+            cssBox = CSSBoxType(*primitiveValue);
+    }
+
+    if (shape)
+        return ShapeValue::createShapeValue(shape.release(), cssBox);
+
+    ASSERT(cssBox != BoxMissing);
+    return ShapeValue::createBoxShapeValue(cssBox);
 }
 
 float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue* value)

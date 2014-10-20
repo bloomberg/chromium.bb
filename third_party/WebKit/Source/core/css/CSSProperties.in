@@ -243,7 +243,7 @@ right animatable, initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
 shape-image-threshold animatable, type_name=float
 shape-margin animatable, converter=convertLength
-shape-outside animatable, custom_value
+shape-outside animatable, converter=convertShapeValue
 shape-rendering inherited, svg
 size custom_all
 speak inherited
