@@ -792,6 +792,11 @@ int KernelProxy::truncate(const char* path, off_t len) {
     return -1;
   }
 
+  // Directories cannot be truncated.
+  if (node->IsaDir()) {
+    return EISDIR;
+  }
+
   if (!node->CanOpen(O_WRONLY)) {
     errno = EACCES;
     return -1;

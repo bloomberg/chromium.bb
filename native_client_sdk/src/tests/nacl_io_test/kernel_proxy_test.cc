@@ -549,6 +549,18 @@ TEST_F(KernelProxyTest, Lstat) {
   EXPECT_EQ(0, ki_lstat("/foo", &buf));
 }
 
+TEST_F(KernelProxyTest, OpenDirectory) {
+  // Opening a directory for read should succeed.
+  int fd = ki_open("/", O_RDONLY, 0);
+  ASSERT_GT(fd, -1);
+
+  // Opening a directory for write should fail.
+  EXPECT_EQ(-1, ki_open("/", O_RDWR, 0));
+  EXPECT_EQ(errno, EISDIR);
+  EXPECT_EQ(-1, ki_open("/", O_WRONLY, 0));
+  EXPECT_EQ(errno, EISDIR);
+}
+
 TEST_F(KernelProxyTest, OpenWithMode) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR, 0723);
   ASSERT_GT(fd, -1);
@@ -585,6 +597,9 @@ TEST_F(KernelProxyTest, Utimes) {
 
   // utime should work if the file is write-only.
   EXPECT_EQ(0, ki_utimes("/dummy", times));
+
+  // utime should work on directories (which can never be opened for write)
+  EXPECT_EQ(0, ki_utimes("/", times));
 
   // or if the file is read-only.
   EXPECT_EQ(0, ki_chmod("/dummy", 0444));

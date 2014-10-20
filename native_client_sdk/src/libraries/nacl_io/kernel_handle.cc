@@ -44,6 +44,11 @@ Error KernelHandle::Init(int open_flags) {
     return EACCES;
   }
 
+  // Directories can only be opened read-only.
+  if ((open_flags & 3) != O_RDONLY && node_->IsaDir()) {
+    return EISDIR;
+  }
+
   if (open_flags & O_APPEND) {
     Error error = node_->GetSize(&handle_attr_.offs);
     if (error)

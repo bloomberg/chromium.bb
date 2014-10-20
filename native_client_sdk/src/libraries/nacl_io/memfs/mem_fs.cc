@@ -105,10 +105,6 @@ Error MemFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
   } else {
     // Opening an existing file.
 
-    // Directories can only be opened read-only.
-    if (node->IsaDir() && (open_flags & 3) != O_RDONLY)
-      return EISDIR;
-
     // If we were expected to create it exclusively, fail
     if (open_flags & O_EXCL)
       return EEXIST;

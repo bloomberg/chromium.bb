@@ -77,9 +77,6 @@ TEST(FilesystemTest, Sanity) {
   EXPECT_EQ(0, fs.Open(Path("/"), O_RDONLY, &root));
   ASSERT_EQ(0, root->GetStat(&buf));
   ASSERT_EQ(S_IRWXU, buf.st_mode & S_IRWXU);
-  // Opening a directory for write should fail.
-  EXPECT_EQ(EISDIR, fs.Open(Path("/"), O_RDWR, &root));
-  EXPECT_EQ(2, fs.num_nodes());
 
   // Open the root directory, should not create a new file
   EXPECT_EQ(0, fs.Open(Path("/"), O_RDONLY, &root));
