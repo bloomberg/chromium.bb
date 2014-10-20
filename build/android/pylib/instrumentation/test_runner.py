@@ -358,8 +358,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     cmd = ['am', 'instrument', '-r']
     for k, v in self._GetInstrumentationArgs().iteritems():
-      cmd.extend(['-e', k, "'%s'" % v])
-    cmd.extend(['-e', 'class', "'%s'" % test])
+      cmd.extend(['-e', k, v])
+    cmd.extend(['-e', 'class', test])
     cmd.extend(['-w', instrumentation_path])
     return self.device.RunShellCommand(cmd, timeout=timeout, retries=0)
 

@@ -176,13 +176,11 @@ class AdbWrapper(object):
         ['shell', actual_command], timeout, retries, check_error=False)
     if expect_rc is not None:
       output_end = output.rstrip().rfind('\n') + 1
-      rc = output[output_end:].strip()
+      rc = int(output[output_end:].strip())
       output = output[:output_end]
-      if int(rc) != expect_rc:
-        raise device_errors.AdbCommandFailedError(
-            ['shell', command],
-            'shell command exited with code: %s' % rc,
-            self._device_serial)
+      if rc != expect_rc:
+        raise device_errors.AdbShellCommandFailedError(
+            command, rc, output, self._device_serial)
     return output
 
   def Logcat(self, filter_spec=None, timeout=_DEFAULT_TIMEOUT,

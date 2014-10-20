@@ -9,6 +9,7 @@ import os
 import pipes
 import select
 import signal
+import string
 import StringIO
 import subprocess
 import time
@@ -18,6 +19,52 @@ try:
   import fcntl
 except ImportError:
   fcntl = None
+
+_SafeShellChars = frozenset(string.ascii_letters + string.digits + '@%_-+=:,./')
+
+def SingleQuote(s):
+  """Return an shell-escaped version of the string using single quotes.
+
+  Reliably quote a string which may contain unsafe characters (e.g. space,
+  quote, or other special characters such as '$').
+
+  The returned value can be used in a shell command line as one token that gets
+  to be interpreted literally.
+
+  Args:
+    s: The string to quote.
+
+  Return:
+    The string quoted using single quotes.
+  """
+  return pipes.quote(s)
+
+def DoubleQuote(s):
+  """Return an shell-escaped version of the string using double quotes.
+
+  Reliably quote a string which may contain unsafe characters (e.g. space
+  or quote characters), while retaining some shell features such as variable
+  interpolation.
+
+  The returned value can be used in a shell command line as one token that gets
+  to be further interpreted by the shell.
+
+  The set of characters that retain their special meaning may depend on the
+  shell implementation. This set usually includes: '$', '`', '\', '!', '*',
+  and '@'.
+
+  Args:
+    s: The string to quote.
+
+  Return:
+    The string quoted using double quotes.
+  """
+  if not s:
+    return '""'
+  elif all(c in _SafeShellChars for c in s):
+    return s
+  else:
+    return '"' + s.replace('"', '\\"') + '"'
 
 
 def Popen(args, stdout=None, stderr=None, shell=None, cwd=None, env=None):
@@ -88,7 +135,7 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   elif shell:
     raise Exception('array args must be run with shell=False')
   else:
-    args_repr = ' '.join(map(pipes.quote, args))
+    args_repr = ' '.join(map(SingleQuote, args))
 
   s = '[host]'
   if cwd:

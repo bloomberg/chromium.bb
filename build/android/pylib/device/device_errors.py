@@ -24,8 +24,21 @@ class AdbCommandFailedError(CommandFailedError):
 
   def __init__(self, cmd, msg, device=None):
     super(AdbCommandFailedError, self).__init__(
-        'adb command \'%s\' failed with message: \'%s\'' % (' '.join(cmd), msg),
+        'adb command %r failed with message: %s' % (' '.join(cmd), msg),
         device=device)
+
+
+class AdbShellCommandFailedError(AdbCommandFailedError):
+  """Exception for adb shell command failing with non-zero return code."""
+
+  def __init__(self, cmd, return_code, output, device=None):
+    super(AdbShellCommandFailedError, self).__init__(
+        ['shell'],
+        'command %r on device failed with return code %d and output %r'
+        % (cmd, return_code, output),
+        device=device)
+    self.return_code = return_code
+    self.output = output
 
 
 class CommandTimeoutError(BaseError):
