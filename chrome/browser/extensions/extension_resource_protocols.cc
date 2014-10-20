@@ -35,6 +35,9 @@ class ExtensionResourcesJob : public net::URLRequestFileJob {
 
   virtual void Start() override;
 
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) override;
+
  protected:
   virtual ~ExtensionResourcesJob() {}
 
@@ -55,6 +58,11 @@ void ExtensionResourcesJob::Start() {
       base::Bind(&ResolvePath, request()->url()),
       base::Bind(&ExtensionResourcesJob::ResolvePathDone,
           weak_ptr_factory_.GetWeakPtr()));
+}
+
+bool ExtensionResourcesJob::IsRedirectResponse(GURL* location,
+                                               int* http_status_code) {
+  return false;
 }
 
 void ExtensionResourcesJob::ResolvePathDone(
