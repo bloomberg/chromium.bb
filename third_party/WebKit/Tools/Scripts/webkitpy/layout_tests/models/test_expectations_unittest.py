@@ -51,20 +51,16 @@ class Base(unittest.TestCase):
         self._exp = None
         unittest.TestCase.__init__(self, testFunc)
 
-    def get_test(self, test_name):
-        # FIXME: Remove this routine and just reference test names directly.
-        return test_name
-
     def get_basic_tests(self):
-        return [self.get_test('failures/expected/text.html'),
-                self.get_test('failures/expected/image_checksum.html'),
-                self.get_test('failures/expected/crash.html'),
-                self.get_test('failures/expected/needsrebaseline.html'),
-                self.get_test('failures/expected/needsmanualrebaseline.html'),
-                self.get_test('failures/expected/missing_text.html'),
-                self.get_test('failures/expected/image.html'),
-                self.get_test('failures/expected/timeout.html'),
-                self.get_test('passes/text.html')]
+        return ['failures/expected/text.html',
+                'failures/expected/image_checksum.html',
+                'failures/expected/crash.html',
+                'failures/expected/needsrebaseline.html',
+                'failures/expected/needsmanualrebaseline.html',
+                'failures/expected/missing_text.html',
+                'failures/expected/image.html',
+                'failures/expected/timeout.html',
+                'passes/text.html']
 
 
     def get_basic_expectations(self):
@@ -88,7 +84,7 @@ Bug(test) failures/expected/image.html [ WontFix Mac ]
         self._exp = TestExpectations(self._port, self.get_basic_tests(), expectations_dict=expectations_to_lint, is_lint_mode=is_lint_mode)
 
     def assert_exp_list(self, test, results):
-        self.assertEqual(self._exp.get_expectations(self.get_test(test)), set(results))
+        self.assertEqual(self._exp.get_expectations(test), set(results))
 
     def assert_exp(self, test, result):
         self.assert_exp_list(test, [result])
@@ -109,9 +105,7 @@ class BasicTests(Base):
 class MiscTests(Base):
     def test_multiple_results(self):
         self.parse_exp('Bug(x) failures/expected/text.html [ Crash Failure ]')
-        self.assertEqual(self._exp.get_expectations(
-            self.get_test('failures/expected/text.html')),
-            set([FAIL, CRASH]))
+        self.assertEqual(self._exp.get_expectations('failures/expected/text.html'), set([FAIL, CRASH]))
 
     def test_result_was_expected(self):
         # test basics
@@ -156,16 +150,14 @@ class MiscTests(Base):
         exp_str = 'Bug(x) failures/expected [ WontFix ]'
         self.parse_exp(exp_str)
         test_name = 'failures/expected/unknown-test.html'
-        unknown_test = self.get_test(test_name)
+        unknown_test = test_name
         self.assertRaises(KeyError, self._exp.get_expectations,
                           unknown_test)
         self.assert_exp_list('failures/expected/crash.html', [WONTFIX, SKIP])
 
     def test_get_expectations_string(self):
         self.parse_exp(self.get_basic_expectations())
-        self.assertEqual(self._exp.get_expectations_string(
-                          self.get_test('failures/expected/text.html')),
-                          'FAIL')
+        self.assertEqual(self._exp.get_expectations_string('failures/expected/text.html'), 'FAIL')
 
     def test_expectation_to_string(self):
         # Normal cases are handled by other tests.
@@ -177,9 +169,7 @@ class MiscTests(Base):
         # Handle some corner cases for this routine not covered by other tests.
         self.parse_exp(self.get_basic_expectations())
         s = self._exp.get_test_set(WONTFIX)
-        self.assertEqual(s,
-            set([self.get_test('failures/expected/crash.html'),
-                 self.get_test('failures/expected/image_checksum.html')]))
+        self.assertEqual(s, set(['failures/expected/crash.html', 'failures/expected/image_checksum.html']))
 
     def test_needs_rebaseline_reftest(self):
         try:
@@ -200,7 +190,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
         try:
             filesystem = self._port.host.filesystem
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')
-            self.get_test('disabled-test.html-disabled'),
+            'disabled-test.html-disabled',
             self.parse_exp("Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n"
                 "Bug(user) non-existent-test.html [ Failure ]\n"
                 "Bug(user) disabled-test.html-disabled [ ImageOnlyFailure ]", is_lint_mode=True)
@@ -250,7 +240,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
     def test_pixel_tests_flag(self):
         def match(test, result, pixel_tests_enabled):
             return self._exp.matches_an_expected_result(
-                self.get_test(test), result, pixel_tests_enabled, sanitizer_is_enabled=False)
+                test, result, pixel_tests_enabled, sanitizer_is_enabled=False)
 
         self.parse_exp(self.get_basic_expectations())
         self.assertTrue(match('failures/expected/text.html', FAIL, True))
@@ -269,7 +259,7 @@ expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseli
     def test_sanitizer_flag(self):
         def match(test, result):
             return self._exp.matches_an_expected_result(
-                self.get_test(test), result, pixel_tests_are_enabled=False, sanitizer_is_enabled=True)
+                test, result, pixel_tests_are_enabled=False, sanitizer_is_enabled=True)
 
         self.parse_exp("""
 Bug(test) failures/expected/crash.html [ Crash ]
@@ -300,8 +290,8 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self._port.expectations_dict = lambda: expectations_dict
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
-        self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([IMAGE]))
-        self.assertEqual(expectations.get_expectations(self.get_test(test_name2)), set([SLOW]))
+        self.assertEqual(expectations.get_expectations(test_name1), set([IMAGE]))
+        self.assertEqual(expectations.get_expectations(test_name2), set([SLOW]))
 
         def bot_expectations():
             return {test_name1: ['PASS', 'TIMEOUT'], test_name2: ['CRASH']}
@@ -309,8 +299,8 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self._port._options.ignore_flaky_tests = 'unexpected'
 
         expectations = TestExpectations(self._port, self.get_basic_tests())
-        self.assertEqual(expectations.get_expectations(self.get_test(test_name1)), set([PASS, IMAGE, TIMEOUT]))
-        self.assertEqual(expectations.get_expectations(self.get_test(test_name2)), set([CRASH, SLOW]))
+        self.assertEqual(expectations.get_expectations(test_name1), set([PASS, IMAGE, TIMEOUT]))
+        self.assertEqual(expectations.get_expectations(test_name2), set([CRASH, SLOW]))
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False, expected_results=[WONTFIX, SKIP, FAIL]):
