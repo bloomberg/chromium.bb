@@ -588,7 +588,7 @@ void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v
     {% if reachable_node_function %}
     // The {{reachable_node_function}}() method may return a reference or a pointer.
     if (Node* owner = WTF::getPtr(impl->{{reachable_node_function}}())) {
-        Node* root = V8GCController::opaqueRootForGC(owner, isolate);
+        Node* root = V8GCController::opaqueRootForGC(isolate, owner);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }

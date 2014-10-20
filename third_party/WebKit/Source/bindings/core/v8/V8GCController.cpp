@@ -73,7 +73,7 @@ static void addReferencesForNodeWithEventListeners(v8::Isolate* isolate, Node* n
     }
 }
 
-Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
+Node* V8GCController::opaqueRootForGC(v8::Isolate*, Node* node)
 {
     ASSERT(node);
     // FIXME: Remove the special handling for image elements.
@@ -277,7 +277,7 @@ public:
             Node* node = V8Node::toImpl(*wrapper);
             if (node->hasEventListeners())
                 addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
-            Node* root = V8GCController::opaqueRootForGC(node, m_isolate);
+            Node* root = V8GCController::opaqueRootForGC(m_isolate, node);
             m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);

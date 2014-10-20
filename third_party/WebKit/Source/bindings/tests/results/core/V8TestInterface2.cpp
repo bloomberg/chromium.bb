@@ -417,7 +417,7 @@ void V8TestInterface2::visitDOMWrapper(ScriptWrappableBase* internalPointer, con
     TestInterface2* impl = internalPointer->toImpl<TestInterface2>();
     // The ownerNode() method may return a reference or a pointer.
     if (Node* owner = WTF::getPtr(impl->ownerNode())) {
-        Node* root = V8GCController::opaqueRootForGC(owner, isolate);
+        Node* root = V8GCController::opaqueRootForGC(isolate, owner);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }

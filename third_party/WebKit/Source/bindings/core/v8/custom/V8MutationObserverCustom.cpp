@@ -72,7 +72,7 @@ void V8MutationObserver::visitDOMWrapper(ScriptWrappableBase* internalPointer, c
     MutationObserver* observer = internalPointer->toImpl<MutationObserver>();
     WillBeHeapHashSet<RawPtrWillBeMember<Node> > observedNodes = observer->getObservedNodes();
     for (WillBeHeapHashSet<RawPtrWillBeMember<Node> >::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it) {
-        v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(*it, isolate)));
+        v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(isolate, *it)));
         isolate->SetReferenceFromGroup(id, wrapper);
     }
 }
