@@ -33,6 +33,7 @@ enum TempFileFailure {
   FAILED_CLOSING,
   FAILED_WRITING,
   FAILED_RENAMING,
+  FAILED_FLUSHING,
   TEMP_FILE_FAILURE_MAX
 };
 
@@ -69,12 +70,18 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   CHECK_LE(data.length(), static_cast<size_t>(kint32max));
   int bytes_written = tmp_file.Write(0, data.data(),
                                      static_cast<int>(data.length()));
-  tmp_file.Flush();  // Ignore return value.
+  bool flush_success = tmp_file.Flush();
   tmp_file.Close();
 
   if (bytes_written < static_cast<int>(data.length())) {
     LogFailure(path, FAILED_WRITING, "error writing, bytes_written=" +
                IntToString(bytes_written));
+    base::DeleteFile(tmp_file_path, false);
+    return false;
+  }
+
+  if (!flush_success) {
+    LogFailure(path, FAILED_FLUSHING, "error flushing");
     base::DeleteFile(tmp_file_path, false);
     return false;
   }
