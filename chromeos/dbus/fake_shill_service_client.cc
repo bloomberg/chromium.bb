@@ -400,6 +400,9 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
     properties->SetWithoutPathExpansion(
         shill::kSecurityProperty,
         new base::StringValue(shill::kSecurityNone));
+    properties->SetWithoutPathExpansion(
+        shill::kModeProperty,
+        new base::StringValue(shill::kModeManaged));
   }
   return properties;
 }
@@ -441,11 +444,13 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   dict->MergeDictionary(&new_properties);
 
   // Add or update the profile entry.
+  ShillProfileClient::TestInterface* profile_test =
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
   if (property == shill::kProfileProperty) {
     std::string profile_path;
     if (value.GetAsString(&profile_path)) {
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
-          AddService(profile_path, service_path);
+      if (!profile_path.empty())
+        profile_test->AddService(profile_path, service_path);
     } else {
       LOG(ERROR) << "Profile value is not a String!";
     }
@@ -453,8 +458,7 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
     std::string profile_path;
     if (dict->GetStringWithoutPathExpansion(
             shill::kProfileProperty, &profile_path) && !profile_path.empty()) {
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
-          UpdateService(profile_path, service_path);
+      profile_test->UpdateService(profile_path, service_path);
     }
   }
 

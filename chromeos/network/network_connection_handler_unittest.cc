@@ -434,10 +434,11 @@ TEST_F(NetworkConnectionHandlerTest,
 namespace {
 
 const char* kConfigUnmanagedSharedConnected =
-    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"online\" }";
+    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"online\", "
+    "  \"Security\": \"wpa\" }";
 const char* kConfigManagedSharedConnectable =
     "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"idle\", "
-    "  \"Connectable\": true }";
+    "  \"Connectable\": true, \"Security\": \"wpa\" }";
 
 const char* kPolicy =
     "[ { \"GUID\": \"wifi1\","
@@ -452,12 +453,13 @@ const char* kPolicy =
 
 }  // namespace
 
-TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginEarlyPolicyLoading) {
+TEST_F(NetworkConnectionHandlerTest, ReconnectOnCertLoading) {
   EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));
   EXPECT_TRUE(Configure(kConfigManagedSharedConnectable));
   test_manager_client_->SetBestServiceToConnect("wifi1");
 
-  // User login shouldn't trigger any change because policy is not loaded yet.
+  // User login shouldn't trigger any change until the certificates and policy
+  // are loaded.
   LoginToRegularUser();
   EXPECT_EQ(shill::kStateOnline,
             GetServiceStringProperty("wifi0", shill::kStateProperty));
@@ -485,7 +487,36 @@ TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginEarlyPolicyLoading) {
             GetServiceStringProperty("wifi1", shill::kStateProperty));
 }
 
-TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginLatePolicyLoading) {
+TEST_F(NetworkConnectionHandlerTest, DisconnectOnPolicyLoading) {
+  EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));
+  EXPECT_TRUE(Configure(kConfigManagedSharedConnectable));
+
+  // User login and certificate loading shouldn't trigger any change until the
+  // policy is loaded.
+  LoginToRegularUser();
+  StartCertLoader();
+  EXPECT_EQ(shill::kStateOnline,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
+
+  base::DictionaryValue global_config;
+  global_config.SetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      true);
+
+  // Applying the policy which restricts autoconnect should disconnect from the
+  // shared, unmanaged network.
+  // Because no best service is set, the fake implementation of
+  // ConnectToBestServices will be a no-op.
+  SetupPolicy(kPolicy, global_config, false /* load as device policy */);
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
+}
+
+TEST_F(NetworkConnectionHandlerTest, ReconnectOnEmptyPolicyLoading) {
   EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));
   EXPECT_TRUE(Configure(kConfigManagedSharedConnectable));
   test_manager_client_->SetBestServiceToConnect("wifi1");
@@ -499,13 +530,8 @@ TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginLatePolicyLoading) {
   EXPECT_EQ(shill::kStateIdle,
             GetServiceStringProperty("wifi1", shill::kStateProperty));
 
-  // Applying the policy which restricts autoconnect should disconnect from the
-  // shared, unmanaged network.
+  // Apply an empty policy should trigger connecting to the 'best' network.
   base::DictionaryValue global_config;
-  global_config.SetBooleanWithoutPathExpansion(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
-      true);
-
   SetupPolicy(kPolicy, global_config, false /* load as device policy */);
   EXPECT_EQ(shill::kStateIdle,
             GetServiceStringProperty("wifi0", shill::kStateProperty));

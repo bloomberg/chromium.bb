@@ -215,6 +215,10 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // when the device policy is changed.
   void DisconnectIfPolicyRequires();
 
+  // Disconnects from all unmanaged and shared WiFi networks that are currently
+  // connected or connecting.
+  void DisconnectFromUnmanagedSharedWiFiNetworks();
+
   // Requests a connect to the 'best' available network once after login and
   // after any disconnect required by policy is executed (see
   // DisconnectIfPolicyRequires()). To include networks with client
