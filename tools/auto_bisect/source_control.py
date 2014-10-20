@@ -59,7 +59,7 @@ def GetRevisionList(end_revision_hash, start_revision_hash, cwd=None):
 
 def SyncToRevision(revision, sync_client=None):
   if not sync_client:
-    _, return_code = bisect_utils.RunGit(['checkout', revision])[1]
+    _, return_code = bisect_utils.RunGit(['checkout', revision])
   elif sync_client == 'gclient':
     return_code = SyncToRevisionWithGClient(revision)
   elif sync_client == 'repo':
