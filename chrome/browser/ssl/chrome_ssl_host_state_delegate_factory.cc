@@ -10,6 +10,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace {
 
