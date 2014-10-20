@@ -517,7 +517,7 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
-  context_->process_.SetProcessBackgrounded(background);
+  context_->SetProcessBackgrounded(background);
 }
 
 void ChildProcessLauncher::SetTerminateChildOnShutdown(
