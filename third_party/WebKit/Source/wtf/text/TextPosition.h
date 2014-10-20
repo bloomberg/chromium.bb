@@ -44,8 +44,8 @@ public:
     int zeroBasedInt() const { return m_zeroBasedValue; }
     int oneBasedInt() const { return m_zeroBasedValue + 1; }
 
-    bool operator==(OrdinalNumber other) { return m_zeroBasedValue == other.m_zeroBasedValue; }
-    bool operator!=(OrdinalNumber other) { return !((*this) == other); }
+    bool operator==(OrdinalNumber other) const { return m_zeroBasedValue == other.m_zeroBasedValue; }
+    bool operator!=(OrdinalNumber other) const { return !((*this) == other); }
 
     static OrdinalNumber first() { return OrdinalNumber(0); }
     static OrdinalNumber beforeFirst() { return OrdinalNumber(-1); }
@@ -66,8 +66,8 @@ public:
     {
     }
     TextPosition() { }
-    bool operator==(const TextPosition& other) { return m_line == other.m_line && m_column == other.m_column; }
-    bool operator!=(const TextPosition& other) { return !((*this) == other); }
+    bool operator==(const TextPosition& other) const { return m_line == other.m_line && m_column == other.m_column; }
+    bool operator!=(const TextPosition& other) const { return !((*this) == other); }
     WTF_EXPORT OrdinalNumber toOffset(const Vector<unsigned>&);
 
     // A 'minimum' value of position, used as a default value.

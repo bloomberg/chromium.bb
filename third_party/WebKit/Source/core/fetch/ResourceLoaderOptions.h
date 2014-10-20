@@ -158,7 +158,7 @@ struct CrossThreadResourceLoaderOptionsData {
         , mixedContentBlockingTreatment(options.mixedContentBlockingTreatment)
         , synchronousPolicy(options.synchronousPolicy)
         , corsEnabled(options.corsEnabled)
-        , securityOrigin(options.securityOrigin) { }
+        , securityOrigin(options.securityOrigin ? options.securityOrigin->isolatedCopy() : nullptr) { }
 
     operator ResourceLoaderOptions() const
     {
