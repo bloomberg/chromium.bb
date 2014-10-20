@@ -270,7 +270,9 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
     public:
         DOMNodeWrapperVisitor(WrappedNodeVisitor* visitor, v8::Isolate* isolate)
             : m_visitor(visitor)
+#if ENABLE(ASSERT)
             , m_isolate(isolate)
+#endif
         {
         }
 
@@ -278,17 +280,23 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
         {
             if (classId != WrapperTypeInfo::NodeClassId)
                 return;
-            // Casting to Handle is safe here, since the Persistent cannot get
-            // GCd during visiting.
-            v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-            ASSERT_UNUSED(m_isolate, V8Node::hasInstance(*wrapper, m_isolate));
-            ASSERT((*wrapper)->IsObject());
-            m_visitor->visitNode(V8Node::toImpl(*wrapper));
+
+#if ENABLE(ASSERT)
+            {
+                v8::HandleScope scope(m_isolate);
+                v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
+                ASSERT(V8Node::hasInstance(wrapper, m_isolate));
+                ASSERT(wrapper->IsObject());
+            }
+#endif
+            m_visitor->visitNode(toScriptWrappableBase(v8::Persistent<v8::Object>::Cast(*value))->toImpl<Node>());
         }
 
     private:
         WrappedNodeVisitor* m_visitor;
+#if ENABLE(ASSERT)
         v8::Isolate* m_isolate;
+#endif
     } wrapperVisitor(visitor, isolate);
 
     v8::V8::VisitHandlesWithClassIds(isolate, &wrapperVisitor);

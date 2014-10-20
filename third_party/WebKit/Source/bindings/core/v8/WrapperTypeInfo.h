@@ -208,6 +208,11 @@ inline T* getInternalField(v8::Handle<v8::Object> wrapper)
     return static_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
 }
 
+inline ScriptWrappableBase* toScriptWrappableBase(const v8::Persistent<v8::Object>& wrapper)
+{
+    return getInternalField<ScriptWrappableBase, v8DOMWrapperObjectIndex>(wrapper);
+}
+
 inline ScriptWrappableBase* toScriptWrappableBase(v8::Handle<v8::Object> wrapper)
 {
     return getInternalField<ScriptWrappableBase, v8DOMWrapperObjectIndex>(wrapper);
