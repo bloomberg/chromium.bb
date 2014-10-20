@@ -87,6 +87,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoVisited:
     case CSSSelector::PseudoAny:
     case CSSSelector::PseudoAnyLink:
+    case CSSSelector::PseudoAutofill:
     case CSSSelector::PseudoHover:
     case CSSSelector::PseudoDrag:
     case CSSSelector::PseudoFocus:
@@ -151,7 +152,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoFirstLine:
     case CSSSelector::PseudoFirstLetter:
-    case CSSSelector::PseudoAutofill:
     case CSSSelector::PseudoFullPageMedia:
     case CSSSelector::PseudoResizer:
     case CSSSelector::PseudoWindowInactive:
@@ -295,16 +295,17 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
     if (selector.match() == CSSSelector::PseudoClass) {
         switch (selector.pseudoType()) {
         case CSSSelector::PseudoEmpty:
+        case CSSSelector::PseudoLink:
+        case CSSSelector::PseudoVisited:
+        case CSSSelector::PseudoAutofill:
         case CSSSelector::PseudoHover:
-        case CSSSelector::PseudoActive:
         case CSSSelector::PseudoFocus:
+        case CSSSelector::PseudoActive:
         case CSSSelector::PseudoChecked:
         case CSSSelector::PseudoEnabled:
         case CSSSelector::PseudoDisabled:
         case CSSSelector::PseudoIndeterminate:
-        case CSSSelector::PseudoLink:
         case CSSSelector::PseudoTarget:
-        case CSSSelector::PseudoVisited:
             return &ensurePseudoInvalidationSet(selector.pseudoType());
         default:
             break;

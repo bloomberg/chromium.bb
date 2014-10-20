@@ -206,7 +206,7 @@ void HTMLFormControlElement::setAutofilled(bool autofilled)
         return;
 
     m_isAutofilled = autofilled;
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
+    pseudoStateChanged(CSSSelector::PseudoAutofill);
 }
 
 static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)
