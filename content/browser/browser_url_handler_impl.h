@@ -46,6 +46,7 @@ class CONTENT_EXPORT BrowserURLHandlerImpl : public BrowserURLHandler {
 
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, BasicRewriteAndReverse);
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, NullHandlerReverse);
+  FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, ViewSourceReverse);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserURLHandlerImpl);
 };

@@ -79,4 +79,19 @@ TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
   ASSERT_EQ("foo://foo", url.spec());
 }
 
+// Verify that the reverse handler for view-source does not duplicate query
+// parameters.
+TEST_F(BrowserURLHandlerImplTest, ViewSourceReverse) {
+  TestBrowserContext browser_context;
+  BrowserURLHandlerImpl handler;
+
+  GURL url("http://foo/?a=1");
+  GURL original_url("view-source:http://some_url");
+  bool reversed = handler.ReverseURLRewrite(&url,
+                                            original_url,
+                                            &browser_context);
+  ASSERT_TRUE(reversed);
+  ASSERT_EQ("view-source:http://foo/?a=1", url.spec());
+}
+
 }  // namespace content
