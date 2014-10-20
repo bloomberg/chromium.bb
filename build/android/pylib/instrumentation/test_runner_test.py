@@ -261,8 +261,8 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     self.instance._RunTest('test.package.TestClass#testMethod', 100)
     self.instance.device.RunShellCommand.assert_called_with(
         ['am', 'instrument', '-r',
-         '-e', 'test_arg_key', "'test_arg_value'",
-         '-e', 'class', "'test.package.TestClass#testMethod'",
+         '-e', 'test_arg_key', 'test_arg_value',
+         '-e', 'class', 'test.package.TestClass#testMethod',
          '-w', 'test.package/MyTestRunner'],
         timeout=100, retries=0)
 
