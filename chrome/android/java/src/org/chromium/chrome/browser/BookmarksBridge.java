@@ -276,7 +276,6 @@ public class BookmarksBridge {
     /**
      * @return Id representing the special "other" folder from bookmark model.
      */
-    @VisibleForTesting
     public BookmarkId getOtherFolderId() {
         assert mIsNativeBookmarkModelLoaded;
         return nativeGetOtherFolderId(mNativeBookmarksBridge);
