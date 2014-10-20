@@ -117,8 +117,8 @@ public:
 
     RefPtr<StyleReflection> m_boxReflect;
 
-    OwnPtrWillBePersistent<CSSAnimationData> m_animations;
-    OwnPtrWillBePersistent<CSSTransitionData> m_transitions;
+    OwnPtr<CSSAnimationData> m_animations;
+    OwnPtr<CSSTransitionData> m_transitions;
 
     FillLayer m_mask;
     NinePieceImage m_maskBoxImage;
