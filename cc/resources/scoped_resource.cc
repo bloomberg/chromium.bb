@@ -59,8 +59,4 @@ void ScopedResource::Free() {
   set_id(0);
 }
 
-void ScopedResource::Leak() {
-  set_id(0);
-}
-
 }  // namespace cc

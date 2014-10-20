@@ -32,7 +32,6 @@ class CC_EXPORT ScopedResource : public Resource {
                        GLenum target,
                        ResourceFormat format);
   void Free();
-  void Leak();
 
  protected:
   explicit ScopedResource(ResourceProvider* provider);
