@@ -138,16 +138,19 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     results = self.GetResults(metric, model, renderer_main.parent,
                               [_GetInteractionRecord(10, 30)])
 
-
-    # Test a couple specific results.
-    assert_results = {
-      timeline.ThreadCpuTimeResultName('renderer_main') : 9.75,
-      timeline.ThreadDetailResultName('renderer_main','cat1') : 9.5,
-      timeline.ThreadDetailResultName('renderer_main','cat2') : 0.5,
-      timeline.ThreadDetailResultName('renderer_main','idle') : 0
-    }
-    for name, value in assert_results.iteritems():
-      results.AssertHasPageSpecificScalarValue(name, 'ms', value)
+    # Test for the results we expect.
+    main_thread = "renderer_main"
+    cc_thread = 'renderer_compositor'
+    assert_results = [
+      (timeline.ThreadCpuTimeResultName(main_thread), 'ms', 9.75),
+      (timeline.ThreadTasksResultName(main_thread), 'tasks', 0.5),
+      (timeline.ThreadMeanFrameTimeResultName(cc_thread), 'ms', 10.0),
+      (timeline.ThreadDetailResultName(main_thread,'cat1'), 'ms', 9.5),
+      (timeline.ThreadDetailResultName(main_thread,'cat2'), 'ms', 0.5),
+      (timeline.ThreadDetailResultName(main_thread,'idle'), 'ms', 0)
+    ]
+    for name, unit, value in assert_results:
+      results.AssertHasPageSpecificScalarValue(name, unit, value)
 
   def testOverheadIsRemoved(self):
     model = model_module.TimelineModel()

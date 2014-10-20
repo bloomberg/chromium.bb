@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import collections
+from telemetry.util.statistics import DivideIfPossibleOrZero
 
 from telemetry.web_perf.metrics import timeline_based_metric
 from telemetry.value import scalar
@@ -100,6 +101,8 @@ OverheadTraceName = "overhead"
 FrameTraceName = "::SwapBuffers"
 FrameTraceThreadName = "renderer_compositor"
 
+def Rate(numerator, denominator):
+  return DivideIfPossibleOrZero(numerator, denominator)
 
 def ClockOverheadForEvent(event):
   if (event.category == OverheadTraceCategory and
@@ -124,11 +127,15 @@ def ThreadCategoryName(thread_name):
     thread_category = TimelineThreadCategories[thread_name]
   return thread_category
 
-def ThreadTimeResultName(thread_category):
-  return "thread_" + thread_category + "_clock_time_per_frame"
-
 def ThreadCpuTimeResultName(thread_category):
+  # This isn't a good name, but I don't want to change it and lose continuity.
   return "thread_" + thread_category + "_cpu_time_per_frame"
+
+def ThreadTasksResultName(thread_category):
+  return "tasks_per_frame_" + thread_category
+
+def ThreadMeanFrameTimeResultName(thread_category):
+  return "mean_frame_time_" + thread_category
 
 def ThreadDetailResultName(thread_category, detail):
   detail_sanitized = detail.replace('.','_')
@@ -142,6 +149,8 @@ class ResultsForThread(object):
     self.all_slices = []
     self.name = name
     self.record_ranges = record_ranges
+    self.all_action_time = \
+        sum([record_range.bounds for record_range in self.record_ranges])
 
   @property
   def clock_time(self):
@@ -179,11 +188,26 @@ class ResultsForThread(object):
     self.all_slices.extend(self.SlicesInActions(thread.all_slices))
     self.toplevel_slices.extend(self.SlicesInActions(thread.toplevel_slices))
 
+  # Currently we report cpu-time per frame, tasks per frame, and possibly
+  # the mean frame (if there is a trace specified to find it).
   def AddResults(self, num_frames, results):
-    cpu_per_frame = (float(self.cpu_time) / num_frames) if num_frames else 0
+    cpu_per_frame = Rate(self.cpu_time, num_frames)
+    tasks_per_frame = Rate(len(self.toplevel_slices), num_frames)
     results.AddValue(scalar.ScalarValue(
         results.current_page, ThreadCpuTimeResultName(self.name),
         'ms', cpu_per_frame))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, ThreadTasksResultName(self.name),
+        'tasks', tasks_per_frame))
+    # Report mean frame time if this is the thread we are using for normalizing
+    # other results. We could report other frame rates (eg. renderer_main) but
+    # this might get confusing.
+    if self.name == FrameTraceThreadName:
+      num_frames = self.CountTracesWithName(FrameTraceName)
+      mean_frame_time = Rate(self.all_action_time, num_frames)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, ThreadMeanFrameTimeResultName(self.name),
+          'ms', mean_frame_time))
 
   def AddDetailedResults(self, num_frames, results):
     slices_by_category = collections.defaultdict(list)
@@ -198,14 +222,18 @@ class ResultsForThread(object):
           results.current_page, ThreadDetailResultName(self.name, category),
           'ms', self_time_result))
     all_measured_time = sum(all_self_times)
-    all_action_time = \
-        sum([record_range.bounds for record_range in self.record_ranges])
-    idle_time = max(0, all_action_time - all_measured_time)
+    idle_time = max(0, self.all_action_time - all_measured_time)
     idle_time_result = (float(idle_time) / num_frames) if num_frames else 0
     results.AddValue(scalar.ScalarValue(
         results.current_page, ThreadDetailResultName(self.name, "idle"),
         'ms', idle_time_result))
 
+  def CountTracesWithName(self, substring):
+    count = 0
+    for event in self.all_slices:
+      if substring in event.name:
+        count += 1
+    return count
 
 class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
   def __init__(self):
@@ -213,13 +241,6 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
     # Minimal traces, for minimum noise in CPU-time measurements.
     self.results_to_report = AllThreads
     self.details_to_report = NoThreads
-
-  def CountSlices(self, slices, substring):
-    count = 0
-    for event in slices:
-      if substring in event.name:
-        count += 1
-    return count
 
   def AddResults(self, model, _, interaction_records, results):
     # Set up each thread category for consistant results.
@@ -243,8 +264,8 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
         thread_category_results['total_fast_path'].AppendThreadSlices(thread)
 
     # Calculate the number of frames.
-    frame_slices = thread_category_results[FrameTraceThreadName].all_slices
-    num_frames = self.CountSlices(frame_slices, FrameTraceName)
+    frame_rate_thread = thread_category_results[FrameTraceThreadName]
+    num_frames = frame_rate_thread.CountTracesWithName(FrameTraceName)
 
     # Report the desired results and details.
     for thread_results in thread_category_results.values():
