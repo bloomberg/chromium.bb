@@ -304,6 +304,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/415472
 "deadlock:base::debug::TraceLog::GetCategoryGroupEnabled\n"
 
+// http://crbug.com/425057
+"deadlock:webrtc::ViEChannelManagerScoped::ViEChannelManagerScoped\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
