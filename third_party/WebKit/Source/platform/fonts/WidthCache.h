@@ -130,7 +130,7 @@ public:
 
     WidthCacheEntry* add(const TextRun& run, WidthCacheEntry entry)
     {
-        if (run.length() > SmallStringKey::capacity())
+        if (static_cast<unsigned>(run.length()) > SmallStringKey::capacity())
             return 0;
 
         if (m_countdown > 0) {
@@ -150,7 +150,7 @@ public:
 private:
     WidthCacheEntry* addSlowCase(const TextRun& run, WidthCacheEntry entry)
     {
-        unsigned length = run.length();
+        int length = run.length();
         bool isNewEntry;
         WidthCacheEntry *value;
         if (length == 1) {

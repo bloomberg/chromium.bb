@@ -175,8 +175,8 @@ public:
     const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
 
     bool is8Bit() const { return m_is8Bit; }
-    unsigned length() const { return m_len; }
-    unsigned charactersLength() const { return m_charactersLength; }
+    int length() const { return m_len; }
+    int charactersLength() const { return m_charactersLength; }
 
     bool normalizeSpace() const { return m_normalizeSpace; }
     void setNormalizeSpace(bool normalizeSpace) { m_normalizeSpace = normalizeSpace; }
@@ -218,7 +218,7 @@ public:
 
         virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) = 0;
         virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const = 0;
-        virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, unsigned& charsConsumed, Glyph& glyphId) const = 0;
+        virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const = 0;
     };
 
     RenderingContext* renderingContext() const { return m_renderingContext.get(); }
@@ -271,8 +271,8 @@ public:
     }
 
     const TextRun& run;
-    unsigned from;
-    unsigned to;
+    int from;
+    int to;
     FloatRect bounds;
     RefPtr<const SkTextBlob>* cachedTextBlob;
 };

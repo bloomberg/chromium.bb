@@ -67,7 +67,7 @@ static inline RenderObject* renderObjectFromRun(const TextRun& run)
     return 0;
 }
 
-float SVGTextRunRenderingContext::floatWidthUsingSVGFont(const Font& font, const TextRun& run, unsigned& charsConsumed, Glyph& glyphId) const
+float SVGTextRunRenderingContext::floatWidthUsingSVGFont(const Font& font, const TextRun& run, int& charsConsumed, Glyph& glyphId) const
 {
     SimpleShaper it(&font, run);
     GlyphBuffer glyphBuffer;

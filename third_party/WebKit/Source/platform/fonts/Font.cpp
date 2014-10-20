@@ -259,7 +259,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-float Font::width(const TextRun& run, unsigned& charsConsumed, Glyph& glyphId) const
+float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
 {
 #if ENABLE(SVG_FONTS)
     if (TextRun::RenderingContext* renderingContext = run.renderingContext())
@@ -337,8 +337,6 @@ static inline FloatRect pixelSnappedSelectionRect(FloatRect rect)
 FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point, int h, int from, int to, bool accountForGlyphBounds) const
 {
     to = (to == -1 ? run.length() : to);
-    ASSERT(from >= 0);
-    ASSERT(to >= 0);
 
     TextRunPaintInfo runInfo(run);
     runInfo.from = from;

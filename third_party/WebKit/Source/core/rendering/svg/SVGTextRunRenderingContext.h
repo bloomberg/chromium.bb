@@ -41,11 +41,11 @@ public:
 #if ENABLE(SVG_FONTS)
     virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) override;
     virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const override;
-    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, unsigned& charsConsumed, Glyph& glyphId) const override;
+    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const override;
 #else
     virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, SimpleShaper&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) override { return 0; }
     virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const override { }
-    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, unsigned& charsConsumed, Glyph& glyphId) const override { return 0; }
+    virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const override { return 0; }
 #endif
 
 private:

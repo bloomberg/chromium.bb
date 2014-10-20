@@ -50,11 +50,14 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* textRenderer, const TextRun&
     ASSERT(scalingFactor);
 
     const Font& scaledFont = textRenderer->scaledFont();
-    m_length = 0;
+    int length = 0;
 
     // Calculate width/height using the scaled font, divide this result by the scalingFactor afterwards.
-    m_width = scaledFont.width(run, m_length, m_glyph) / scalingFactor;
+    m_width = scaledFont.width(run, length, m_glyph) / scalingFactor;
     m_height = scaledFont.fontMetrics().floatHeight() / scalingFactor;
+
+    ASSERT(length >= 0);
+    m_length = static_cast<unsigned>(length);
 }
 
 TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length)

@@ -58,7 +58,7 @@ public:
 
     HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = 0);
 
-    void setDrawRange(unsigned from, unsigned to);
+    void setDrawRange(int from, int to);
     bool shape(GlyphBuffer* = 0);
     float totalWidth() { return m_totalWidth; }
     int offsetForPosition(float targetX);
