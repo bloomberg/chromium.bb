@@ -393,21 +393,9 @@ RenderText::~RenderText() {
 }
 
 RenderText* RenderText::CreateInstance() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHarfBuzzRenderText)) {
-    return new RenderTextHarfBuzz;
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableHarfBuzzRenderText)) {
-    return CreateNativeInstance();
-  }
-
-// Disable on Chrome OS. Blocked on http://crbug.com/423791
-#if defined(OS_CHROMEOS)
-  return CreateNativeInstance();
-#else
-  return new RenderTextHarfBuzz;
-#endif
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHarfBuzzRenderText) ? CreateNativeInstance() :
+      new RenderTextHarfBuzz;
 }
 
 void RenderText::SetText(const base::string16& text) {
