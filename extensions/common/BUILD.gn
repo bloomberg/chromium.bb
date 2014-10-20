@@ -11,6 +11,20 @@ mojom("mojo") {
   ]
 }
 
+# GYP version: extensions/extensions.gyp:extensions_common_constants
+source_set("common_constants") {
+  sources = [
+    "constants.cc",
+    "constants.h",
+  ]
+
+  if (is_win) {
+    cflags = [
+      "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    ]
+  }
+}
+
 # GYP version: extensions/extensions.gyp:extensions_common
 source_set("common") {
   sources = [
@@ -29,8 +43,6 @@ source_set("common") {
     "api/sockets/sockets_manifest_permission.h",
     "common_manifest_handlers.cc",
     "common_manifest_handlers.h",
-    "constants.cc",
-    "constants.h",
     "csp_validator.cc",
     "csp_validator.h",
     "dom_action_types.h",
@@ -201,6 +213,7 @@ source_set("common") {
   ]
 
   deps = [
+    ":common_constants",
     ":mojo",
     # TODO(benwells): figure out what to do with the api target and
     # api resources compiled into the chrome resource bundle.

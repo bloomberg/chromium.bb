@@ -23,6 +23,22 @@
     },
     {
       # GN version: //extensions/common
+      'target_name': 'extensions_common_constants',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'common/constants.cc',
+        'common/constants.h',
+      ],
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
+      # GN version: //extensions/common
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [
@@ -40,6 +56,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
+        'extensions_common_constants',
         'extensions_common_mojo',
       ],
       'include_dirs': [
@@ -63,8 +80,6 @@
         'common/api/sockets/sockets_manifest_permission.h',
         'common/common_manifest_handlers.cc',
         'common/common_manifest_handlers.h',
-        'common/constants.cc',
-        'common/constants.h',
         'common/csp_validator.cc',
         'common/csp_validator.h',
         'common/dom_action_types.h',
