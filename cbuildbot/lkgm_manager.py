@@ -455,7 +455,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def GetLatestCandidate(self, dashboard_url=None, timeout=3 * 60):
+  def GetLatestCandidate(self, dashboard_url=None, timeout=10 * 60):
     """Gets and syncs to the next candiate manifest.
 
     Args:

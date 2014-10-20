@@ -395,7 +395,7 @@ class BuilderStatus(object):
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
 
-  SLEEP_TIMEOUT = 2 * 60
+  SLEEP_TIMEOUT = 1 * 60
 
   def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
