@@ -54,6 +54,7 @@ class InspectorStyleSheetBase;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<CSSRule> > CSSRuleVector;
 typedef String ErrorString;
+typedef Vector<unsigned> LineEndings;
 
 class InspectorCSSId {
 public:
@@ -168,8 +169,8 @@ protected:
     InspectorStyleSheetBase(const String& id, Listener*);
 
     Listener* listener() const { return m_listener; }
-    void fireStyleSheetChanged();
-    PassOwnPtr<Vector<unsigned> > lineEndings();
+    void onStyleSheetTextChanged();
+    const LineEndings* lineEndings();
 
     virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) = 0;
     virtual unsigned ruleCount() = 0;
@@ -183,6 +184,7 @@ private:
 
     String m_id;
     Listener* m_listener;
+    OwnPtr<LineEndings> m_lineEndings;
 };
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {

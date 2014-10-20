@@ -496,7 +496,7 @@ enum MediaListSource {
     MediaListSourceImportRule
 };
 
-static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const SourceRange& range, Vector<unsigned>* lineEndings)
+static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const SourceRange& range, const LineEndings* lineEndings)
 {
     if (!lineEndings)
         return nullptr;
@@ -547,7 +547,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle() con
 
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (sourceData)
-        result->setRange(buildSourceRangeObject(sourceData->ruleBodyRange, m_parentStyleSheet->lineEndings().get()));
+        result->setRange(buildSourceRangeObject(sourceData->ruleBodyRange, m_parentStyleSheet->lineEndings()));
 
     return result.release();
 }
@@ -694,7 +694,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     RefPtr<Array<TypeBuilder::CSS::CSSProperty> > propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
     RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
     HashSet<String> foundShorthands;
-    OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = extractSourceData();
 
     WillBeHeapVector<InspectorStyleProperty> properties;
@@ -718,7 +717,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
         if (propertyEntry.important)
             property->setImportant(true);
         if (it->hasSource) {
-            property->setRange(buildSourceRangeObject(propertyEntry.range, lineEndings.get()));
+            property->setRange(buildSourceRangeObject(propertyEntry.range, m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : nullptr));
             if (!propertyEntry.disabled) {
                 ASSERT_UNUSED(sourceData, sourceData);
                 property->setImplicit(false);
@@ -859,6 +858,7 @@ void InspectorStyle::trace(Visitor* visitor)
 InspectorStyleSheetBase::InspectorStyleSheetBase(const String& id, Listener* listener)
     : m_id(id)
     , m_listener(listener)
+    , m_lineEndings(adoptPtr(new LineEndings()))
 {
 }
 
@@ -880,8 +880,9 @@ bool InspectorStyleSheetBase::getStyleText(const InspectorCSSId& id, String* tex
     return inspectorStyle->styleText(text);
 }
 
-void InspectorStyleSheetBase::fireStyleSheetChanged()
+void InspectorStyleSheetBase::onStyleSheetTextChanged()
 {
+    m_lineEndings = adoptPtrWillBeNoop(new LineEndings());
     if (listener())
         listener()->styleSheetChanged(this);
 }
@@ -915,17 +916,19 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForSt
     return result.release();
 }
 
-PassOwnPtr<Vector<unsigned> > InspectorStyleSheetBase::lineEndings()
+const LineEndings* InspectorStyleSheetBase::lineEndings()
 {
+    if (m_lineEndings->size() > 0)
+        return m_lineEndings.get();
     String text;
-    if (!getText(&text))
-        return PassOwnPtr<Vector<unsigned> >();
-    return WTF::lineEndings(text);
+    if (getText(&text))
+        m_lineEndings = WTF::lineEndings(text);
+    return m_lineEndings.get();
 }
 
 bool InspectorStyleSheetBase::lineNumberAndColumnToOffset(unsigned lineNumber, unsigned columnNumber, unsigned* offset)
 {
-    OwnPtr<Vector<unsigned> > endings = lineEndings();
+    const LineEndings* endings = lineEndings();
     if (lineNumber >= endings->size())
         return false;
     unsigned charactersInLine = lineNumber > 0 ? endings->at(lineNumber) - endings->at(lineNumber - 1) - 1 : endings->at(0);
@@ -1037,7 +1040,7 @@ bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionS
 
     if (listener())
         listener()->didReparseStyleSheet();
-    fireStyleSheetChanged();
+    onStyleSheetTextChanged();
     m_pageStyleSheet->ownerDocument()->styleResolverChanged(FullStyleUpdate);
     return true;
 }
@@ -1075,7 +1078,7 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
     String sheetText = m_parsedStyleSheet->text();
     sheetText.replace(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length(), selector);
     updateText(sheetText);
-    fireStyleSheetChanged();
+    onStyleSheetTextChanged();
     return true;
 }
 
@@ -1211,10 +1214,10 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceR
 
     text.insert(ruleText, location.start);
 
-    m_parsedStyleSheet->setText(text);
+    updateText(text);
     m_flatRules.clear();
 
-    fireStyleSheetChanged();
+    onStyleSheetTextChanged();
     return styleRule;
 }
 
@@ -1261,9 +1264,9 @@ bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, const String& old
     if (exceptionState.hadException())
         return false;
 
-    m_parsedStyleSheet->setText(oldText);
+    updateText(oldText);
     m_flatRules.clear();
-    fireStyleSheetChanged();
+    onStyleSheetTextChanged();
     return true;
 }
 
@@ -1274,7 +1277,6 @@ void InspectorStyleSheet::updateText(const String& newText)
         m_pageAgent->addEditedResourceContent(finalURL(), newText);
     m_parsedStyleSheet->setText(newText);
 }
-
 
 CSSStyleRule* InspectorStyleSheet::ruleForId(const InspectorCSSId& id) const
 {
@@ -1329,7 +1331,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > InspectorStyleSheet:
 
         RefPtr<TypeBuilder::CSS::Selector> simpleSelector = TypeBuilder::CSS::Selector::create()
             .setValue(selector.stripWhiteSpace());
-        simpleSelector->setRange(buildSourceRangeObject(range, lineEndings().get()));
+        simpleSelector->setRange(buildSourceRangeObject(range, lineEndings()));
         result->addItem(simpleSelector.release());
     }
     return result.release();
@@ -1418,7 +1420,7 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceR
     if (index == kNotFound || index >= m_parsedStyleSheet->ruleCount())
         return nullptr;
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = m_parsedStyleSheet->ruleSourceDataAt(static_cast<unsigned>(index));
-    return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get());
+    return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings());
 }
 
 PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValueSourceRange(const CSSRule* rule, size_t mediaQueryIndex, size_t mediaQueryExpIndex)
@@ -1435,7 +1437,7 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValu
     RefPtrWillBeRawPtr<CSSMediaQuerySourceData> mediaQueryData = sourceData->mediaSourceData->queryData.at(mediaQueryIndex);
     if (mediaQueryExpIndex >= mediaQueryData->expData.size())
         return nullptr;
-    return buildSourceRangeObject(mediaQueryData->expData.at(mediaQueryExpIndex).valueRange, lineEndings().get());
+    return buildSourceRangeObject(mediaQueryData->expData.at(mediaQueryExpIndex).valueRange, lineEndings());
 }
 
 PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const InspectorCSSId& id)
@@ -1653,7 +1655,7 @@ bool InspectorStyleSheet::setStyleText(const InspectorCSSId& id, const String& t
     style->setCSSText(text, exceptionState);
     if (!exceptionState.hadException()) {
         updateText(patchedStyleSheetText);
-        fireStyleSheetChanged();
+        onStyleSheetTextChanged();
     }
 
     return !exceptionState.hadException();
@@ -1759,8 +1761,6 @@ bool InspectorStyleSheetForInlineStyle::setText(const String& text, ExceptionSta
     bool success = setStyleText(InspectorCSSId(id(), 0), text);
     if (!success)
         exceptionState.throwDOMException(SyntaxError, "Style sheet text is invalid.");
-    else
-        fireStyleSheetChanged();
     return success;
 }
 
@@ -1790,7 +1790,7 @@ bool InspectorStyleSheetForInlineStyle::setStyleText(const InspectorCSSId& id, c
         m_styleText = text;
         m_isStyleTextValid = true;
         m_ruleSourceData.clear();
-        fireStyleSheetChanged();
+        onStyleSheetTextChanged();
     }
     return !exceptionState.hadException();
 }

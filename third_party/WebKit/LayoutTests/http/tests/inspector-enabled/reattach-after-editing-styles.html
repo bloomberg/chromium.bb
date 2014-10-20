@@ -44,9 +44,9 @@ function test()
     function testFirstOpen()
     {
         InspectorTest.addResult("Dump initial styles:");
-        dump(step2);
-        
-        function step2()
+        dump(onStylesDumped);
+
+        function onStylesDumped()
         {
             treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
             treeElement.startEditing();
@@ -57,14 +57,29 @@ function test()
             treeElement.valueElement.textContent = "green";
             treeElement.valueElement.firstChild.select();
             treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.runAfterPendingDispatches(step3);
+            InspectorTest.waitForStyleApplied(onPropertyEdited);
         }
 
-        function step3()
+        function onPropertyEdited()
+        {
+            InspectorTest.addNewRule("#testDiv, my-custom-tag", onFirstRuleAdded);
+        }
+
+        function onFirstRuleAdded()
+        {
+            InspectorTest.addNewRule("#testDiv, another-custom-tag", onSecondRuleAdded);
+        }
+
+        function onSecondRuleAdded()
+        {
+            WebInspector.domModel.undo(onRuleRemoved);
+        }
+
+        function onRuleRemoved()
         {
             InspectorTest.selectNodeAndWaitForStyles("other", step4);
         }
-        
+
         function step4()
         {
             InspectorTest.addResult("Dump styles after editing:");
@@ -81,7 +96,7 @@ function test()
     function dump(callback)
     {
         InspectorTest.selectNodeAndWaitForStyles("testDiv", step2);
-        
+
         function step2()
         {
             InspectorTest.dumpSelectedElementStyles(true);
