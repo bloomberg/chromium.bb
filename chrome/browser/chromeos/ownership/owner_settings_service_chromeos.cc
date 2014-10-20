@@ -65,10 +65,21 @@ void LoadPrivateKeyByPublicKey(
                               const scoped_refptr<PrivateKey>& private_key)>&
         callback) {
   crypto::EnsureNSSInit();
-  crypto::ScopedPK11Slot slot =
+  crypto::ScopedPK11Slot public_slot =
       crypto::GetPublicSlotForChromeOSUser(username_hash);
-  scoped_refptr<PrivateKey> private_key(new PrivateKey(
-      owner_key_util->FindPrivateKeyInSlot(public_key->data(), slot.get())));
+  crypto::ScopedPK11Slot private_slot = crypto::GetPrivateSlotForChromeOSUser(
+      username_hash, base::Callback<void(crypto::ScopedPK11Slot)>());
+
+  // If private slot is already available, this will check it. If not,
+  // we'll get called again later when the TPM Token is ready, and the
+  // slot will be available then.
+  scoped_refptr<PrivateKey> private_key(
+      new PrivateKey(owner_key_util->FindPrivateKeyInSlot(public_key->data(),
+                                                          private_slot.get())));
+  if (!private_key->key()) {
+    private_key = new PrivateKey(owner_key_util->FindPrivateKeyInSlot(
+        public_key->data(), public_slot.get()));
+  }
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(callback, public_key, private_key));

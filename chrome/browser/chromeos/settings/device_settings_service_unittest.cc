@@ -531,6 +531,42 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForNonOwner) {
   EXPECT_FALSE(is_owner_);
 }
 
+TEST_F(DeviceSettingsServiceTest, OwnerPrivateKeyInTPMToken) {
+  owner_key_util_->Clear();
+
+  EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
+  EXPECT_FALSE(device_settings_service_.GetPublicKey().get());
+  EXPECT_EQ(DeviceSettingsService::OWNERSHIP_UNKNOWN,
+            device_settings_service_.GetOwnershipStatus());
+
+  const std::string& user_id = device_policy_.policy_data().username();
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
+  InitOwner(user_id, false);
+  OwnerSettingsServiceChromeOS* service =
+      OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());
+  ASSERT_TRUE(service);
+  ReloadDeviceSettings();
+
+  EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
+  ASSERT_TRUE(device_settings_service_.GetPublicKey().get());
+  ASSERT_TRUE(device_settings_service_.GetPublicKey()->is_loaded());
+  std::vector<uint8> key;
+  ASSERT_TRUE(device_policy_.GetSigningKey()->ExportPublicKey(&key));
+  EXPECT_EQ(device_settings_service_.GetPublicKey()->data(), key);
+  EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN,
+            device_settings_service_.GetOwnershipStatus());
+
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
+  service->OnTPMTokenReady(true /* is ready */);
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());
+  ASSERT_TRUE(device_settings_service_.GetPublicKey().get());
+  ASSERT_TRUE(device_settings_service_.GetPublicKey()->is_loaded());
+  ASSERT_TRUE(device_policy_.GetSigningKey()->ExportPublicKey(&key));
+  EXPECT_EQ(device_settings_service_.GetPublicKey()->data(), key);
+}
+
 TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
   owner_key_util_->Clear();
 
