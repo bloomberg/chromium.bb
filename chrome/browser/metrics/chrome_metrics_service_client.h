@@ -168,12 +168,6 @@ class ChromeMetricsServiceClient
   GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
-  // The SigninStatusMetricsProvider instance that was registered with
-  // MetricsService. Has the same lifetime as |metrics_service_|.
-  SigninStatusMetricsProvider* signin_status_metrics_provider_;
-#endif
-
   // Callback that is called when initial metrics gathering is complete.
   base::Closure finished_gathering_initial_metrics_callback_;
 

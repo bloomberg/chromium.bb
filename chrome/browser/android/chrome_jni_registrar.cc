@@ -18,6 +18,7 @@
 #include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
 #include "chrome/browser/android/enhanced_bookmarks/enhanced_bookmarks_bridge.h"
 #include "chrome/browser/android/favicon_helper.h"
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
@@ -144,6 +145,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       prerender::ExternalPrerenderHandlerAndroid::
       RegisterExternalPrerenderHandlerAndroid },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
+  { "FeatureUtilities", RegisterFeatureUtilities },
   { "FeedbackReporter", dom_distiller::android::RegisterFeedbackReporter },
   { "FindInPageBridge", FindInPageBridge::RegisterFindInPageBridge },
   { "FontSizePrefsAndroid", FontSizePrefsAndroid::Register },

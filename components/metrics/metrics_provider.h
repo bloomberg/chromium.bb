@@ -48,7 +48,8 @@ class MetricsProvider {
   virtual void ClearSavedStabilityMetrics();
 
   // Provides general metrics that are neither system profile nor stability
-  // metrics.
+  // metrics. May also be used to add histograms when final metrics are
+  // collected right before upload.
   virtual void ProvideGeneralMetrics(
       ChromeUserMetricsExtension* uma_proto);
 

@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -37,6 +38,13 @@ AndroidMetricsProvider::AndroidMetricsProvider(PrefService* local_state)
 AndroidMetricsProvider::~AndroidMetricsProvider() {
 }
 
+void AndroidMetricsProvider::ProvideGeneralMetrics(
+    metrics::ChromeUserMetricsExtension* uma_proto) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "DocumentActivity.Enabled",
+      chrome::android::GetDocumentModeValue(),
+      chrome::android::RUNNING_MODE_MAX);
+}
 
 void AndroidMetricsProvider::ProvideStabilityMetrics(
     metrics::SystemProfileProto* system_profile_proto) {

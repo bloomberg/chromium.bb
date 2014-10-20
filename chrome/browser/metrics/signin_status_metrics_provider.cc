@@ -71,7 +71,8 @@ SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {
     factory->RemoveObserver(this);
 }
 
-void SigninStatusMetricsProvider::RecordSigninStatusHistogram() {
+void SigninStatusMetricsProvider::ProvideGeneralMetrics(
+    metrics::ChromeUserMetricsExtension* uma_proto) {
   UMA_HISTOGRAM_ENUMERATION(
       "UMA.ProfileSignInStatus", signin_status_, SIGNIN_STATUS_MAX);
   // After a histogram value is recorded, a new UMA session will be started, so
@@ -201,7 +202,7 @@ void SigninStatusMetricsProvider::UpdateStatusWhenBrowserAdded(bool signed_in) {
       (signin_status_ == ALL_PROFILES_SIGNED_IN && !signed_in)) {
     SetSigninStatus(MIXED_SIGNIN_STATUS);
   } else if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
-    // If when function RecordSigninStatusHistogram() is called, Chrome is
+    // If when function ProvideGeneralMetrics() is called, Chrome is
     // running in the background with no browser window opened, |signin_status_|
     // will be reset to |UNKNOWN_SIGNIN_STATUS|. Then this newly added browser
     // is the only opened browser/profile and its signin status represents

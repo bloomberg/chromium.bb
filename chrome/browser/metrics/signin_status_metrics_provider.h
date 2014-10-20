@@ -16,9 +16,14 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 
 class Browser;
+class ChromeUserMetricsExtension;
 
 namespace base {
 class FilePath;
+}
+
+namespace metrics {
+class ChromeUserMetricsExtension;
 }
 
 // Collect login status of all opened profiles during one UMA session and record
@@ -31,10 +36,9 @@ class SigninStatusMetricsProvider : public metrics::MetricsProvider,
  public:
   virtual ~SigninStatusMetricsProvider();
 
-  // Record the collected sign-in status into a histogram and re-check current
-  // sign-in status to get prepared for the next UMA session. Called by
-  // MetricsServiceClient when it is collecting final metrics.
-  void RecordSigninStatusHistogram();
+  // metrics::MetricsProvider:
+  void ProvideGeneralMetrics(
+      metrics::ChromeUserMetricsExtension* uma_proto) override;
 
   // Factory method, creates a new instance of this class.
   static SigninStatusMetricsProvider* CreateInstance();
