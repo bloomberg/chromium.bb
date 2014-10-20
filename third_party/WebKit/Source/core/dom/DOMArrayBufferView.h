@@ -15,6 +15,8 @@ namespace blink {
 class DOMArrayBufferView : public RefCounted<DOMArrayBufferView>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    virtual ~DOMArrayBufferView() { }
+
     PassRefPtr<DOMArrayBuffer> buffer() const
     {
         if (!m_domArrayBuffer)
