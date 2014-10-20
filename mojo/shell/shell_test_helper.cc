@@ -9,8 +9,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "mojo/shell/filename_util.h"
 #include "mojo/shell/init.h"
-#include "net/base/filename_util.h"
 
 namespace mojo {
 namespace shell {
@@ -29,8 +29,7 @@ void ShellTestHelper::Init() {
       new ApplicationManager::TestAPI(context_.application_manager()));
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-  context_.mojo_url_resolver()->SetBaseURL(
-      net::FilePathToFileURL(service_dir));
+  context_.mojo_url_resolver()->SetBaseURL(FilePathToFileURL(service_dir));
 }
 
 void ShellTestHelper::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,

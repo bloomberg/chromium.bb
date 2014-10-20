@@ -10,8 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "net/base/filename_util.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "mojo/shell/filename_util.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -26,11 +25,8 @@ ShellTestBase::~ShellTestBase() {
 
 void ShellTestBase::SetUp() {
   shell_context_.Init();
-  test_server_.reset(new net::test_server::EmbeddedTestServer());
-  ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-  test_server_->ServeFilesFromDirectory(service_dir);
 }
 
 ScopedMessagePipeHandle ShellTestBase::ConnectToService(
@@ -43,7 +39,7 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
   shell_context_.mojo_url_resolver()->SetBaseURL(
-      net::FilePathToFileURL(service_dir));
+      FilePathToFileURL(service_dir));
 
   return shell_context_.ConnectToServiceByName(
       application_url, service_name).Pass();
@@ -52,9 +48,6 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
 ScopedMessagePipeHandle ShellTestBase::ConnectToServiceViaNetwork(
     const GURL& application_url,
     const std::string& service_name) {
-  shell_context_.mojo_url_resolver()->SetBaseURL(
-      test_server_->base_url());
-
   return shell_context_.ConnectToServiceByName(
       application_url, service_name).Pass();
 }

@@ -6,7 +6,7 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/dynamic_application_loader.h"
 #include "mojo/shell/dynamic_service_runner.h"
-#include "net/base/filename_util.h"
+#include "mojo/shell/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -81,7 +81,7 @@ TEST_F(DynamicApplicationLoaderTest, DoesNotExist) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath nonexistent_file(FILE_PATH_LITERAL("nonexistent.txt"));
-  GURL url(net::FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
+  GURL url(FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
   MessagePipe pipe;
   scoped_refptr<ApplicationLoader::SimpleLoadCallbacks> callbacks(
       new ApplicationLoader::SimpleLoadCallbacks(pipe.handle0.Pass()));

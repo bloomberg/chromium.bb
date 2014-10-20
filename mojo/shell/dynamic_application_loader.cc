@@ -11,12 +11,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "mojo/shell/context.h"
+#include "mojo/shell/filename_util.h"
 #include "mojo/shell/switches.h"
-#include "net/base/filename_util.h"
+#include "url/url_util.h"
 
 namespace mojo {
 namespace shell {
@@ -92,8 +94,17 @@ class DynamicApplicationLoader::LocalLoader : public Loader {
                load_callbacks,
                loader_complete_callback),
         weak_ptr_factory_(this) {
-    base::FilePath path;
-    net::FileURLToFilePath(url, &path);
+    DCHECK(url.SchemeIsFile());
+    url::RawCanonOutputW<1024> output;
+    url::DecodeURLEscapeSequences(
+        url.path().data(), static_cast<int>(url.path().length()), &output);
+    base::string16 decoded_path =
+        base::string16(output.data(), output.length());
+#if defined(OS_WIN)
+    base::FilePath path(decoded_path);
+#else
+    base::FilePath path(base::UTF16ToUTF8(decoded_path));
+#endif
 
     // Async for consistency with network case.
     base::MessageLoop::current()->PostTask(

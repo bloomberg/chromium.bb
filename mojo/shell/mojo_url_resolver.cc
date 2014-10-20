@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "net/base/filename_util.h"
+#include "mojo/shell/filename_util.h"
 #include "url/url_util.h"
 
 namespace mojo {
@@ -55,7 +55,7 @@ MojoURLResolver::MojoURLResolver() {
   // By default, resolve mojo URLs to files living alongside the shell.
   base::FilePath path;
   PathService::Get(base::DIR_MODULE, &path);
-  default_base_url_ = AddTrailingSlashIfNeeded(net::FilePathToFileURL(path));
+  default_base_url_ = AddTrailingSlashIfNeeded(FilePathToFileURL(path));
 }
 
 MojoURLResolver::~MojoURLResolver() {
