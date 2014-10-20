@@ -525,7 +525,11 @@ class Changelist(object):
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
     if not self.branch:
-      self.branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
+      branchref = RunGit(['symbolic-ref', 'HEAD'],
+                         stderr=subprocess2.VOID, error_ok=True).strip()
+      if not branchref:
+        return None
+      self.branchref = branchref
       self.branch = ShortBranchName(self.branchref)
     return self.branch
 
@@ -696,8 +700,10 @@ or verify this branch is set up to track another (via the --track argument to
       # If we're on a branch then get the server potentially associated
       # with that branch.
       if self.GetIssue():
-        self.rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
-            ['config', self._RietveldServer()], error_ok=True).strip())
+        rietveld_server_config = self._RietveldServer()
+        if rietveld_server_config:
+          self.rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
+              ['config', rietveld_server_config], error_ok=True).strip())
       if not self.rietveld_server:
         self.rietveld_server = settings.GetDefaultServerUrl()
     return self.rietveld_server
@@ -942,7 +948,10 @@ or verify this branch is set up to track another (via the --track argument to
 
   def _RietveldServer(self):
     """Returns the git setting that stores this change's rietveld server."""
-    return 'branch.%s.rietveldserver' % self.GetBranch()
+    branch = self.GetBranch()
+    if branch:
+      return 'branch.%s.rietveldserver' % branch
+    return None
 
 
 def GetCodereviewSettingsInteractively():
