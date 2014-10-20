@@ -27,6 +27,7 @@
 #include "media/base/channel_layout.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
@@ -46,6 +47,7 @@
 #endif
 
 struct FontDescriptor;
+struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct ViewHostMsg_CreateWindow_Params;
 
 namespace blink {
@@ -288,10 +290,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 #endif
 
   void OnAddNavigationTransitionData(
-    int render_frame_id,
-    const std::string& allowed_destination_host_pattern,
-    const std::string& selector,
-    const std::string& markup);
+      FrameHostMsg_AddNavigationTransitionData_Params params);
 
   void OnAllocateGpuMemoryBuffer(uint32 width,
                                  uint32 height,

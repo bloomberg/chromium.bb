@@ -2499,13 +2499,41 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
+// TODO(zhenw): This will be removed once the blink side implementation is done.
 void RenderFrameImpl::addNavigationTransitionData(
     const blink::WebString& allowed_destination_host_pattern,
     const blink::WebString& selector,
     const blink::WebString& markup) {
-  Send(new FrameHostMsg_AddNavigationTransitionData(
-      routing_id_, allowed_destination_host_pattern.utf8(), selector.utf8(),
-      markup.utf8()));
+  FrameHostMsg_AddNavigationTransitionData_Params params;
+  params.render_frame_id = routing_id_;
+  params.allowed_destination_host_pattern =
+      allowed_destination_host_pattern.utf8();
+  params.selector = selector.utf8();
+  params.markup = markup.utf8();
+
+  Send(new FrameHostMsg_AddNavigationTransitionData(params));
+}
+
+void RenderFrameImpl::addNavigationTransitionData(
+    const blink::WebString& allowed_destination_host_pattern,
+    const blink::WebString& selector,
+    const blink::WebString& markup,
+    const blink::WebVector<blink::WebString>& web_names,
+    const blink::WebVector<blink::WebRect>& web_rects) {
+  FrameHostMsg_AddNavigationTransitionData_Params params;
+  params.render_frame_id = routing_id_;
+  params.allowed_destination_host_pattern =
+      allowed_destination_host_pattern.utf8();
+  params.selector = selector.utf8();
+  params.markup = markup.utf8();
+  for (size_t i = 0; i < web_names.size(); i++) {
+    params.names.push_back(web_names[i].utf8());
+  }
+  for (size_t i = 0; i < web_rects.size(); i++) {
+    params.rects.push_back(gfx::Rect(web_rects[i]));
+  }
+
+  Send(new FrameHostMsg_AddNavigationTransitionData(params));
 }
 
 void RenderFrameImpl::didChangeThemeColor() {

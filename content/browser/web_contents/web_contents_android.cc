@@ -151,13 +151,11 @@ void WebContentsAndroid::SetHasPendingNavigationTransitionForTesting(
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&TransitionRequestManager::AddPendingTransitionRequestData,
-                 base::Unretained(TransitionRequestManager::GetInstance()),
-                 frame->GetProcess()->GetID(),
-                 frame->GetRoutingID(),
-                 "*",
-                 "",
-                 ""));
+      base::Bind(
+          &TransitionRequestManager::AddPendingTransitionRequestDataForTesting,
+          base::Unretained(TransitionRequestManager::GetInstance()),
+          frame->GetProcess()->GetID(),
+          frame->GetRoutingID()));
 }
 
 void WebContentsAndroid::SetupTransitionView(JNIEnv* env,

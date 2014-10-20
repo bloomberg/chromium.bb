@@ -36,6 +36,7 @@
 
 class GURL;
 class TransportDIB;
+struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct FrameMsg_Navigate_Params;
 struct FrameMsg_RequestNavigation_Params;
 
@@ -372,9 +373,15 @@ class CONTENT_EXPORT RenderFrameImpl
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void addNavigationTransitionData(
+        const blink::WebString& allowedDestinationOrigin,
+        const blink::WebString& selector,
+        const blink::WebString& markup);
+  virtual void addNavigationTransitionData(
       const blink::WebString& allowedDestinationOrigin,
       const blink::WebString& selector,
-      const blink::WebString& markup);
+      const blink::WebString& markup,
+      const blink::WebVector<blink::WebString>& web_names,
+      const blink::WebVector<blink::WebRect>& web_rects);
   virtual void didChangeThemeColor();
   virtual void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,

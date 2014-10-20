@@ -262,6 +262,15 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
   IPC_STRUCT_MEMBER(std::string, frame_to_navigate)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(FrameHostMsg_AddNavigationTransitionData_Params)
+  IPC_STRUCT_MEMBER(int, render_frame_id)
+  IPC_STRUCT_MEMBER(std::string, allowed_destination_host_pattern)
+  IPC_STRUCT_MEMBER(std::string, selector)
+  IPC_STRUCT_MEMBER(std::string, markup)
+  IPC_STRUCT_MEMBER(std::vector<std::string>, names)
+  IPC_STRUCT_MEMBER(std::vector<gfx::Rect>, rects)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
@@ -738,11 +747,8 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
 
 // Notifies the browser that the renderer has a pending navigation transition.
 // The string parameters are all UTF8.
-IPC_MESSAGE_CONTROL4(FrameHostMsg_AddNavigationTransitionData,
-                     int /* render_frame_id */,
-                     std::string  /* allowed_destination_host_pattern */,
-                     std::string  /* selector */,
-                     std::string  /* markup */)
+IPC_MESSAGE_CONTROL1(FrameHostMsg_AddNavigationTransitionData,
+                     FrameHostMsg_AddNavigationTransitionData_Params)
 
 // PlzNavigate
 // Tells the browser to perform a navigation.

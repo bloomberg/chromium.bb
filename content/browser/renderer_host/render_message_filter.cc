@@ -1227,13 +1227,15 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 #endif
 
 void RenderMessageFilter::OnAddNavigationTransitionData(
-    int render_frame_id,
-    const std::string& allowed_destination_host_pattern,
-    const std::string& selector,
-    const std::string& markup) {
+    FrameHostMsg_AddNavigationTransitionData_Params params) {
   TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
-      render_process_id_, render_frame_id, allowed_destination_host_pattern,
-      selector, markup);
+      render_process_id_,
+      params.render_frame_id,
+      params.allowed_destination_host_pattern,
+      params.selector,
+      params.markup,
+      params.names,
+      params.rects);
 }
 
 void RenderMessageFilter::OnAllocateGpuMemoryBuffer(

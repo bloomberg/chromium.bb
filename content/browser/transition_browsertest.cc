@@ -64,8 +64,9 @@ class TransitionBrowserTestObserver
         ResourceRequestInfoImpl::ForRequest(request_);
 
     if (is_transition_request_) {
-      TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
-          info->GetChildID(), info->GetRenderFrameID(), "*", "", "");
+      TransitionRequestManager::GetInstance(
+          )->AddPendingTransitionRequestDataForTesting(
+              info->GetChildID(), info->GetRenderFrameID());
     }
   }
 
