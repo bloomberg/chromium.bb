@@ -15,7 +15,6 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
   // Map from event name to event listener function name.  It is common for
   // event listeners to be named onEventName.
   var eventListenerMap = {
-    'needkey': 'onNeedKey',
     'encrypted': 'onEncrypted',
     'webkitneedkey': 'onWebkitNeedKey',
     'webkitkeymessage': 'onWebkitKeyMessage',
@@ -38,7 +37,7 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
 };
 
 PlayerUtils.registerEMEEventListeners = function(player) {
-  var encrypted_handler = function(message) {
+  player.video.addEventListener('encrypted', function(message) {
 
     function addMediaKeySessionListeners(mediaKeySession) {
       mediaKeySession.addEventListener('message', function(message) {
@@ -54,11 +53,8 @@ PlayerUtils.registerEMEEventListeners = function(player) {
       });
     }
 
-    // TODO(sandersd): Stop checking contentType once we complete the switch to
-    // using the 'encrypted' event.
-    var init_data_type = message.initDataType || message.contentType;
     Utils.timeLog('Creating new media key session for initDataType: ' +
-                  init_data_type + ', initData: ' +
+                  message.initDataType + ', initData: ' +
                   Utils.getHexString(new Uint8Array(message.initData)));
     try {
       if (message.target.mediaKeys.createSession.length == 0) {
@@ -66,13 +62,13 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         // uses the new API.
         var session = message.target.mediaKeys.createSession();
         addMediaKeySessionListeners(session);
-        session.generateRequest(init_data_type, message.initData)
+        session.generateRequest(message.initDataType, message.initData)
           .catch(function(error) {
             Utils.failTest(error, KEY_ERROR);
           });
       } else {
         var session = message.target.mediaKeys.createSession(
-            init_data_type, message.initData);
+            message.initDataType, message.initData);
         session.then(addMediaKeySessionListeners)
             .catch(function(error) {
               Utils.failTest(error, KEY_ERROR);
@@ -81,12 +77,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     } catch (e) {
       Utils.failTest(e);
     }
-  }
-
-  // TODO(sandersd): Stop registering 'needkey' after it is renamed to
-  // 'encrypted'.
-  player.video.addEventListener('encrypted', encrypted_handler);
-  player.video.addEventListener('needkey', encrypted_handler);
+  });
 
   this.registerDefaultEventListeners(player);
   try {
