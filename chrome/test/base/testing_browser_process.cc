@@ -8,7 +8,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -25,6 +24,10 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#endif
+
+#if defined(ENABLE_BACKGROUND)
+#include "chrome/browser/background/background_mode_manager.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

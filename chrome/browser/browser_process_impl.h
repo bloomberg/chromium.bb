@@ -222,7 +222,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<StatusTray> status_tray_;
 
+#if defined(ENABLE_BACKGROUND)
   scoped_ptr<BackgroundModeManager> background_mode_manager_;
+#endif
 
   bool created_safe_browsing_service_;
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
