@@ -2314,7 +2314,7 @@ SpdySerializedFrame* SpdyFramer::SerializeData(
     }
     builder.WriteBytes(data_ir.data().data(), data_ir.data().length());
     if (data_ir.padding_payload_len() > 0) {
-      string padding = string(data_ir.padding_payload_len(), '0');
+      string padding(data_ir.padding_payload_len(), 0);
       builder.WriteBytes(padding.data(), padding.length());
     }
     DCHECK_EQ(size_with_padding, builder.length());
