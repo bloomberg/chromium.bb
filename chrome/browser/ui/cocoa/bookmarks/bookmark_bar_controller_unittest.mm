@@ -348,12 +348,17 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
     ASSERT_TRUE(browser());
     AddCommandLineSwitches();
 
-    bar_.reset(
-      [[BookmarkBarControllerNoOpen alloc]
+    // In OSX 10.10, the owner of a nib file is retain/autoreleased during the
+    // initialization of the nib. Wrapping the constructor in an
+    // autoreleasepool ensures that tests can control the destruction timing of
+    // |bar_|.
+    @autoreleasepool {
+      bar_.reset([[BookmarkBarControllerNoOpen alloc]
           initWithBrowser:browser()
              initialWidth:NSWidth([parent_view_ frame])
                  delegate:nil
            resizeDelegate:resizeDelegate_.get()]);
+    }
 
     InstallAndToggleBar(bar_.get());
   }
