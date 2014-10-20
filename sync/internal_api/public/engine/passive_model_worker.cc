@@ -18,7 +18,6 @@ PassiveModelWorker::~PassiveModelWorker() {
 }
 
 void PassiveModelWorker::RegisterForLoopDestruction() {
-  base::MessageLoop::current()->AddDestructionObserver(this);
   SetWorkingLoopToCurrent();
 }
 

@@ -133,7 +133,13 @@ class SYNC_EXPORT ModelSafeWorker
   // observation from sync thread when shutting down sync.
   base::Lock working_loop_lock_;
   base::MessageLoop* working_loop_;
-  base::WaitableEvent working_loop_set_wait_;
+
+  // Callback passed with UnregisterForLoopDestruction. Normally this
+  // remains unset/unused and is stored only if |working_loop_| isn't
+  // initialized by the time UnregisterForLoopDestruction is called.
+  // It is safe to copy and thread safe.
+  // See comments in model_safe_worker.cc for more details.
+  base::Callback<void(ModelSafeGroup)> unregister_done_callback_;
 };
 
 // A map that details which ModelSafeGroup each ModelType
