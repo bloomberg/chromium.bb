@@ -146,7 +146,7 @@ void PluginThread::OnCreateChannel(int renderer_id,
 #if defined(OS_POSIX)
     // On POSIX, pass the renderer-side FD.
     channel_handle.socket =
-        base::FileDescriptor(channel->TakeRendererFileDescriptor(), true);
+        base::FileDescriptor(channel->TakeRendererFileDescriptor());
 #endif
     channel->set_incognito(incognito);
   }

@@ -557,12 +557,12 @@ int ChannelPosix::GetClientFileDescriptor() const {
   return client_pipe_.get();
 }
 
-int ChannelPosix::TakeClientFileDescriptor() {
+base::ScopedFD ChannelPosix::TakeClientFileDescriptor() {
   base::AutoLock lock(client_pipe_lock_);
   if (!client_pipe_.is_valid())
-    return -1;
+    return base::ScopedFD();
   PipeMap::GetInstance()->Remove(pipe_name_);
-  return client_pipe_.release();
+  return client_pipe_.Pass();
 }
 
 void ChannelPosix::CloseClientFileDescriptor() {

@@ -122,7 +122,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 #if defined(OS_POSIX) && !defined(OS_NACL)
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor();
-  int TakeClientFileDescriptor();
+  base::ScopedFD TakeClientFileDescriptor();
 #endif  // defined(OS_POSIX)
 
  protected:

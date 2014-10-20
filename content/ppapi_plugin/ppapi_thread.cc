@@ -492,7 +492,7 @@ bool PpapiThread::SetupRendererChannel(base::ProcessId renderer_pid,
   // On POSIX, transfer ownership of the renderer-side (client) FD.
   // This ensures this process will be notified when it is closed even if a
   // connection is not established.
-  handle->socket = base::FileDescriptor(dispatcher->TakeRendererFD(), true);
+  handle->socket = base::FileDescriptor(dispatcher->TakeRendererFD());
   if (handle->socket.fd == -1)
     return false;
 #endif

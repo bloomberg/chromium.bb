@@ -51,7 +51,7 @@ class PluginChannel : public NPChannelBase {
   void set_incognito(bool value) { incognito_ = value; }
 
 #if defined(OS_POSIX)
-  int TakeRendererFileDescriptor() {
+  base::ScopedFD TakeRendererFileDescriptor() {
     return channel_->TakeClientFileDescriptor();
   }
 #endif

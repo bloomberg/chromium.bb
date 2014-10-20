@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 
 #include "base/environment.h"
+#include "base/files/scoped_file.h"
 #include "base/process/process.h"
-
 #include "content/common/content_export.h"
 
 #if defined(OS_MACOSX)
@@ -64,7 +64,7 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
   virtual base::EnvironmentMap GetEnvironment();
 
   // Return the file descriptor for the IPC channel.
-  virtual int GetIpcFd() = 0;
+  virtual base::ScopedFD TakeIpcFd() = 0;
 
 #if defined(OS_MACOSX)
   // Gets the Mac SandboxType to enforce on the process. Return

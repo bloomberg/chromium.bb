@@ -26,7 +26,7 @@ IPC::ChannelHandle NaClTrustedListener::TakeClientChannelHandle() {
   IPC::ChannelHandle handle = channel_handle_;
 #if defined(OS_POSIX)
   handle.socket =
-      base::FileDescriptor(channel_->TakeClientFileDescriptor(), true);
+      base::FileDescriptor(channel_->TakeClientFileDescriptor());
 #endif
   return handle;
 }

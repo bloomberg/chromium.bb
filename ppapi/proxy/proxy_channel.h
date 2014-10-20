@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_PROXY_CHANNEL_H_
 #define PPAPI_PROXY_PROXY_CHANNEL_H_
 
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "ipc/ipc_listener.h"
@@ -81,7 +82,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   }
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
-  int TakeRendererFD();
+  base::ScopedFD TakeRendererFD();
 #endif
 
  protected:

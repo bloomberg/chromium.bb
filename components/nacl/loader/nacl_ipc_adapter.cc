@@ -460,7 +460,7 @@ NaClDesc* NaClIPCAdapter::MakeNaClDesc() {
 }
 
 #if defined(OS_POSIX)
-int NaClIPCAdapter::TakeClientFileDescriptor() {
+base::ScopedFD NaClIPCAdapter::TakeClientFileDescriptor() {
   return io_thread_data_.channel_->TakeClientFileDescriptor();
 }
 #endif

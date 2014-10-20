@@ -12,6 +12,7 @@
 #endif
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
 #include "base/process/process.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
@@ -189,7 +190,7 @@ class IPC_EXPORT Channel : public Sender {
   // Same as GetClientFileDescriptor, but transfers the ownership of the
   // file descriptor to the caller.
   // This method can be called on any thread.
-  virtual int TakeClientFileDescriptor() = 0;
+  virtual base::ScopedFD TakeClientFileDescriptor() = 0;
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Returns true if a named server channel is initialized on the given channel

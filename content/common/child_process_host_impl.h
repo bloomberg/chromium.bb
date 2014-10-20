@@ -61,7 +61,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   virtual bool IsChannelOpening() override;
   virtual void AddFilter(IPC::MessageFilter* filter) override;
 #if defined(OS_POSIX)
-  virtual int TakeClientFileDescriptor() override;
+  virtual base::ScopedFD TakeClientFileDescriptor() override;
 #endif
 
  private:

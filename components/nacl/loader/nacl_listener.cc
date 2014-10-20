@@ -146,7 +146,7 @@ scoped_refptr<NaClIPCAdapter> SetUpIPCAdapter(
   ipc_adapter->ConnectChannel();
 #if defined(OS_POSIX)
   handle->socket =
-      base::FileDescriptor(ipc_adapter->TakeClientFileDescriptor(), true);
+      base::FileDescriptor(ipc_adapter->TakeClientFileDescriptor());
 #endif
 
   // Pass a NaClDesc to the untrusted side. This will hold a ref to the

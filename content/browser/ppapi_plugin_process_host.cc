@@ -76,15 +76,15 @@ class PpapiPluginSandboxedProcessLauncherDelegate
         .GetSwitchValueNative(switches::kPpapiPluginLauncher);
     return !is_broker_ && plugin_launcher.empty() && info_.is_sandboxed;
   }
-  virtual int GetIpcFd() override {
-    return ipc_fd_;
+  virtual base::ScopedFD TakeIpcFd() override {
+    return ipc_fd_.Pass();
   }
 #endif  // OS_WIN
 
  private:
 #if defined(OS_POSIX)
   const PepperPluginInfo& info_;
-  int ipc_fd_;
+  base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX
   bool is_broker_;
 

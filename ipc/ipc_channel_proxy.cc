@@ -446,7 +446,7 @@ int ChannelProxy::GetClientFileDescriptor() {
   return channel->GetClientFileDescriptor();
 }
 
-int ChannelProxy::TakeClientFileDescriptor() {
+base::ScopedFD ChannelProxy::TakeClientFileDescriptor() {
   DCHECK(CalledOnValidThread());
 
   Channel* channel = context_.get()->channel_.get();

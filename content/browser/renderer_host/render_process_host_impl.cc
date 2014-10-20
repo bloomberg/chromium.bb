@@ -307,7 +307,7 @@ class RendererSandboxedProcessLauncherDelegate
  public:
   explicit RendererSandboxedProcessLauncherDelegate(IPC::ChannelProxy* channel)
 #if defined(OS_POSIX)
-       : ipc_fd_(channel->TakeClientFileDescriptor())
+      : ipc_fd_(channel->TakeClientFileDescriptor())
 #endif  // OS_POSIX
   {}
 
@@ -328,14 +328,14 @@ class RendererSandboxedProcessLauncherDelegate
         browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
     return renderer_prefix.empty();
   }
-  virtual int GetIpcFd() override {
-    return ipc_fd_;
+  virtual base::ScopedFD TakeIpcFd() override {
+    return ipc_fd_.Pass();
   }
 #endif  // OS_WIN
 
  private:
 #if defined(OS_POSIX)
-  int ipc_fd_;
+  base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX
 };
 

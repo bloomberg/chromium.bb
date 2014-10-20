@@ -250,8 +250,8 @@ class GpuSandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
 
-  virtual int GetIpcFd() override {
-    return ipc_fd_;
+  virtual base::ScopedFD TakeIpcFd() override {
+    return ipc_fd_.Pass();
   }
 #endif  // OS_WIN
 
@@ -259,7 +259,7 @@ class GpuSandboxedProcessLauncherDelegate
 #if defined(OS_WIN)
   base::CommandLine* cmd_line_;
 #elif defined(OS_POSIX)
-  int ipc_fd_;
+  base::ScopedFD ipc_fd_;
 #endif  // OS_WIN
 };
 

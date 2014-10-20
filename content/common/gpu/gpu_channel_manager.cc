@@ -197,9 +197,9 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
 #if defined(OS_POSIX)
   // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
   // that it gets closed after it has been sent.
-  int renderer_fd = channel->TakeRendererFileDescriptor();
-  DCHECK_NE(-1, renderer_fd);
-  channel_handle.socket = base::FileDescriptor(renderer_fd, true);
+  base::ScopedFD renderer_fd = channel->TakeRendererFileDescriptor();
+  DCHECK(renderer_fd.is_valid());
+  channel_handle.socket = base::FileDescriptor(renderer_fd.Pass());
 #endif
 
   gpu_channels_.set(client_id, channel.Pass());

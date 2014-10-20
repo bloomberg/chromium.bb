@@ -246,9 +246,8 @@ TEST_F(IPCChannelPosixTest, SendHangTest) {
   IPC::ChannelHandle in_handle("IN");
   scoped_ptr<IPC::ChannelPosix> in_chan(new IPC::ChannelPosix(
       in_handle, IPC::Channel::MODE_SERVER, &in_listener));
-  base::FileDescriptor out_fd(
-      in_chan->TakeClientFileDescriptor(), false);
-  IPC::ChannelHandle out_handle("OUT", out_fd);
+  IPC::ChannelHandle out_handle(
+      "OUT", base::FileDescriptor(in_chan->TakeClientFileDescriptor()));
   scoped_ptr<IPC::ChannelPosix> out_chan(new IPC::ChannelPosix(
       out_handle, IPC::Channel::MODE_CLIENT, &out_listener));
   ASSERT_TRUE(in_chan->Connect());
@@ -272,9 +271,8 @@ TEST_F(IPCChannelPosixTest, AcceptHangTest) {
   IPC::ChannelHandle in_handle("IN");
   scoped_ptr<IPC::ChannelPosix> in_chan(new IPC::ChannelPosix(
       in_handle, IPC::Channel::MODE_SERVER, &in_listener));
-  base::FileDescriptor out_fd(
-      in_chan->TakeClientFileDescriptor(), false);
-  IPC::ChannelHandle out_handle("OUT", out_fd);
+  IPC::ChannelHandle out_handle(
+      "OUT", base::FileDescriptor(in_chan->TakeClientFileDescriptor()));
   scoped_ptr<IPC::ChannelPosix> out_chan(new IPC::ChannelPosix(
       out_handle, IPC::Channel::MODE_CLIENT, &out_listener));
   ASSERT_TRUE(in_chan->Connect());

@@ -100,9 +100,9 @@ int TestSink::GetClientFileDescriptor() const {
   return -1;
 }
 
-int TestSink::TakeClientFileDescriptor() {
+base::ScopedFD TestSink::TakeClientFileDescriptor() {
   NOTREACHED();
-  return -1;
+  return base::ScopedFD();
 }
 
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)

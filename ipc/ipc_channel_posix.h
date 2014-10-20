@@ -65,7 +65,7 @@ class IPC_EXPORT ChannelPosix : public Channel,
   virtual base::ProcessId GetPeerPID() const override;
   virtual base::ProcessId GetSelfPID() const override;
   virtual int GetClientFileDescriptor() const override;
-  virtual int TakeClientFileDescriptor() override;
+  virtual base::ScopedFD TakeClientFileDescriptor() override;
 
   // Returns true if the channel supports listening for connections.
   bool AcceptsConnections() const;

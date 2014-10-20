@@ -51,7 +51,7 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   int GetClientFileDescriptor() const;
-  int TakeClientFileDescriptor();
+  base::ScopedFD TakeClientFileDescriptor();
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
  protected:

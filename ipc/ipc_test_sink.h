@@ -85,7 +85,7 @@ class TestSink : public Channel {
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   virtual int GetClientFileDescriptor() const override;
-  virtual int TakeClientFileDescriptor() override;
+  virtual base::ScopedFD TakeClientFileDescriptor() override;
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Used by the source of the messages to send the message to the sink. This

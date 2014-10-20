@@ -65,8 +65,8 @@ class UtilitySandboxedProcessLauncherDelegate
   virtual base::EnvironmentMap GetEnvironment() override {
     return env_;
   }
-  virtual int GetIpcFd() override {
-    return ipc_fd_;
+  virtual base::ScopedFD TakeIpcFd() override {
+    return ipc_fd_.Pass();
   }
 #endif  // OS_WIN
 
@@ -79,7 +79,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #elif defined(OS_POSIX)
   base::EnvironmentMap env_;
   bool no_sandbox_;
-  int ipc_fd_;
+  base::ScopedFD ipc_fd_;
 #endif  // OS_WIN
 };
 

@@ -213,7 +213,7 @@ int ChannelMojo::GetClientFileDescriptor() const {
   return bootstrap_->GetClientFileDescriptor();
 }
 
-int ChannelMojo::TakeClientFileDescriptor() {
+base::ScopedFD ChannelMojo::TakeClientFileDescriptor() {
   return bootstrap_->TakeClientFileDescriptor();
 }
 

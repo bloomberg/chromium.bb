@@ -211,7 +211,7 @@ int MojoBootstrap::GetClientFileDescriptor() const {
   return channel_->GetClientFileDescriptor();
 }
 
-int MojoBootstrap::TakeClientFileDescriptor() {
+base::ScopedFD MojoBootstrap::TakeClientFileDescriptor() {
   return channel_->TakeClientFileDescriptor();
 }
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)

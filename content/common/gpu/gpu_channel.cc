@@ -456,10 +456,10 @@ std::string GpuChannel::GetChannelName() {
 }
 
 #if defined(OS_POSIX)
-int GpuChannel::TakeRendererFileDescriptor() {
+base::ScopedFD GpuChannel::TakeRendererFileDescriptor() {
   if (!channel_) {
     NOTREACHED();
-    return -1;
+    return base::ScopedFD();
   }
   return channel_->TakeClientFileDescriptor();
 }

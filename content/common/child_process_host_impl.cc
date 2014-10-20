@@ -188,7 +188,7 @@ bool ChildProcessHostImpl::IsChannelOpening() {
 }
 
 #if defined(OS_POSIX)
-int ChildProcessHostImpl::TakeClientFileDescriptor() {
+base::ScopedFD ChildProcessHostImpl::TakeClientFileDescriptor() {
   return channel_->TakeClientFileDescriptor();
 }
 #endif

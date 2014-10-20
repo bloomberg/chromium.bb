@@ -72,7 +72,7 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   std::string GetChannelName();
 
 #if defined(OS_POSIX)
-  int TakeRendererFileDescriptor();
+  base::ScopedFD TakeRendererFileDescriptor();
 #endif  // defined(OS_POSIX)
 
   base::ProcessId renderer_pid() const { return channel_->GetPeerPID(); }

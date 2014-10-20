@@ -98,7 +98,7 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel,
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   virtual int GetClientFileDescriptor() const override;
-  virtual int TakeClientFileDescriptor() override;
+  virtual base::ScopedFD TakeClientFileDescriptor() override;
 
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.

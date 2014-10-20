@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -106,7 +107,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   NaClDesc* MakeNaClDesc();
 
 #if defined(OS_POSIX)
-  int TakeClientFileDescriptor();
+  base::ScopedFD TakeClientFileDescriptor();
 #endif
 
   // Listener implementation.

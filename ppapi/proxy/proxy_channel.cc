@@ -53,7 +53,7 @@ void ProxyChannel::OnChannelError() {
 }
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
-int ProxyChannel::TakeRendererFD() {
+base::ScopedFD ProxyChannel::TakeRendererFD() {
   DCHECK(channel());
   return channel()->TakeClientFileDescriptor();
 }

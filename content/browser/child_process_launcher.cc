@@ -87,7 +87,7 @@ class ChildProcessLauncher::Context
     // We need to close the client end of the IPC channel to reliably detect
     // child termination. We will close this fd after we create the child
     // process which is asynchronous on Android.
-    ipcfd_ = delegate->GetIpcFd();
+    ipcfd_.reset(delegate->TakeIpcFd().release());
 #endif
     BrowserThread::PostTask(
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
@@ -189,14 +189,14 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
     bool launch_elevated = delegate->ShouldLaunchElevated();
 #elif defined(OS_ANDROID)
-    int ipcfd = delegate->GetIpcFd();
+    // Uses |ipcfd_| instead of |ipcfd| on Android.
 #elif defined(OS_MACOSX)
     base::EnvironmentMap env = delegate->GetEnvironment();
-    int ipcfd = delegate->GetIpcFd();
+    base::ScopedFD ipcfd = delegate->TakeIpcFd();
 #elif defined(OS_POSIX)
     bool use_zygote = delegate->ShouldUseZygote();
     base::EnvironmentMap env = delegate->GetEnvironment();
-    int ipcfd = delegate->GetIpcFd();
+    base::ScopedFD ipcfd = delegate->TakeIpcFd();
 #endif
     scoped_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
     base::TimeTicks begin_launch_time = base::TimeTicks::Now();
@@ -215,7 +215,12 @@ class ChildProcessLauncher::Context
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
     scoped_ptr<FileDescriptorInfo> files_to_register(
         FileDescriptorInfoImpl::Create());
-    files_to_register->Share(kPrimaryIPCChannel, ipcfd);
+
+#if defined(OS_ANDROID)
+    files_to_register->Share(kPrimaryIPCChannel, this_object->ipcfd_.get());
+#else
+    files_to_register->Transfer(kPrimaryIPCChannel, ipcfd.Pass());
+#endif
     base::StatsTable* stats_table = base::StatsTable::current();
     if (stats_table &&
         base::SharedMemory::IsHandleValid(
@@ -247,7 +252,6 @@ class ChildProcessLauncher::Context
     base::ProcessHandle handle = base::kNullProcessHandle;
     // We need to close the client end of the IPC channel to reliably detect
     // child termination.
-    base::ScopedFD ipcfd_closer(ipcfd);
 
 #if !defined(OS_MACOSX)
     GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
@@ -345,7 +349,7 @@ class ChildProcessLauncher::Context
       base::Process process) {
 #if defined(OS_ANDROID)
     // Finally close the ipcfd
-    base::ScopedFD ipcfd_closer(ipcfd_);
+    base::ScopedFD ipcfd_closer = ipcfd_.Pass();
 #endif
     starting_ = false;
     process_ = process.Pass();
@@ -433,7 +437,7 @@ class ChildProcessLauncher::Context
   bool terminate_child_on_shutdown_;
 #if defined(OS_ANDROID)
   // The fd to close after creating the process.
-  int ipcfd_;
+  base::ScopedFD ipcfd_;
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
   bool zygote_;
 #endif

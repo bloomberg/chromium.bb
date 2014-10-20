@@ -450,7 +450,7 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
 #if defined(OS_POSIX)
   base::FileHandleMappingVector ipc_file_list;
   ipc_file_list.push_back(std::make_pair(
-      startup_channel_->TakeClientFileDescriptor(),
+      startup_channel_->TakeClientFileDescriptor().release(),
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
   base::LaunchOptions options;
   options.fds_to_remap = &ipc_file_list;
