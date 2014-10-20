@@ -1860,3 +1860,7 @@ pdf.dll!pp::InputEvent_HandleEvent
 ppapi_proxy.dll!ppapi::CallWhileUnlocked<>
 ppapi_proxy.dll!ppapi::proxy::PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent
 
+UNADDRESSABLE ACCESS
+name=bug_425097
+...
+*!ash::test::ShelfViewTest_CheckDragAndDropFromOverflowBubbleToShelf_Test::TestBody
