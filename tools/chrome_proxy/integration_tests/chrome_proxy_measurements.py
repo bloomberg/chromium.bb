@@ -112,8 +112,18 @@ class ChromeProxyBypass(ChromeProxyValidation):
     self._metrics.AddResultsForBypass(tab, results)
 
 
+class ChromeProxyFallback(ChromeProxyValidation):
+  """Correctness measurement for proxy fallback responses."""
+
+  def __init__(self):
+    super(ChromeProxyFallback, self).__init__(restart_after_each_page=True)
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForFallback(tab, results)
+
+
 class ChromeProxyCorsBypass(ChromeProxyValidation):
-  """Correctness measurement for bypass responses."""
+  """Correctness measurement for bypass responses for CORS requests."""
 
   def __init__(self):
     super(ChromeProxyCorsBypass, self).__init__(restart_after_each_page=True)
@@ -123,7 +133,7 @@ class ChromeProxyCorsBypass(ChromeProxyValidation):
     # finishes.
     tab.WaitForJavaScriptExpression('window.xhrRequestCompleted', 15000)
     super(ChromeProxyCorsBypass,
-          self).ValidateAndMeasurePag1Ge(page, tab, results)
+          self).ValidateAndMeasurePage(page, tab, results)
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForCorsBypass(tab, results)
@@ -163,7 +173,8 @@ _TEST_SERVER_DEFAULT_URL = 'http://' + _TEST_SERVER + '/default'
 #
 # The test server allow request to override response status, headers, and
 # body through query parameters. See GetResponseOverrideURL.
-def GetResponseOverrideURL(url, respStatus=0, respHeader="", respBody=""):
+def GetResponseOverrideURL(url=_TEST_SERVER_DEFAULT_URL, respStatus=0,
+                           respHeader="", respBody=""):
   """ Compose the request URL with query parameters to override
   the chromeproxy-test server response.
   """
@@ -201,7 +212,6 @@ class ChromeProxyHTTPFallbackProbeURL(ChromeProxyValidation):
     # Use the test server probe URL which returns the response
     # body as specified by respBody.
     probe_url = GetResponseOverrideURL(
-        _TEST_SERVER_DEFAULT_URL,
         respBody='not OK')
     options.AppendExtraBrowserArgs(
         '--data-reduction-proxy-probe-url=%s' % probe_url)
@@ -282,6 +292,49 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHTTPToDirectFallback(tab, results)
+
+
+class ChromeProxyExplicitBypass(ChromeProxyValidation):
+  """Correctness measurement for explicit proxy bypasses.
+
+  In this test, the configured proxy is the chromeproxy-test server which
+  will send back a response without the expected Via header. Chrome is
+  expected to use the fallback proxy and add the configured proxy to the
+  bad proxy list.
+  """
+
+  def __init__(self):
+    super(ChromeProxyExplicitBypass, self).__init__(
+        restart_after_each_page=True)
+
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyExplicitBypass,
+          self).CustomizeBrowserOptions(options)
+    options.AppendExtraBrowserArgs('--ignore-certificate-errors')
+    options.AppendExtraBrowserArgs(
+        '--spdy-proxy-auth-origin=http://%s' % _TEST_SERVER)
+    options.AppendExtraBrowserArgs(
+        '--spdy-proxy-auth-value=%s' % _FAKE_PROXY_AUTH_VALUE)
+
+  def AddResults(self, tab, results):
+    bad_proxies = [{
+        'proxy': _TEST_SERVER + ':80',
+        'retry_seconds_low': self._page.bypass_seconds_low,
+        'retry_seconds_high': self._page.bypass_seconds_high
+    }]
+    if self._page.num_bypassed_proxies == 2:
+      bad_proxies.append({
+          'proxy': self._metrics.effective_proxies['fallback'],
+          'retry_seconds_low': self._page.bypass_seconds_low,
+          'retry_seconds_high': self._page.bypass_seconds_high
+      })
+    else:
+      # Even if the test page only causes the primary proxy to be bypassed,
+      # Chrome will attempt to fetch the favicon for the test server through
+      # the data reduction proxy, which will cause a "block=0" bypass.
+      bad_proxies.append({'proxy': self._metrics.effective_proxies['fallback']})
+
+    self._metrics.AddResultsForExplicitBypass(tab, results, bad_proxies)
 
 
 class ChromeProxySmoke(ChromeProxyValidation):

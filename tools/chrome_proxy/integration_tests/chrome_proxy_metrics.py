@@ -169,6 +169,11 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'version_test', 'count', 1))
 
+  def ProxyListForDev(self, proxies):
+    return [self.effective_proxies['proxy-dev']
+            if proxy == self.effective_proxies['proxy']
+            else proxy for proxy in proxies]
+
 
   def IsProxyBypassed(self, tab):
     """Get whether all configured proxies are bypassed.
@@ -191,8 +196,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     proxies = [self.effective_proxies['proxy'],
                self.effective_proxies['fallback']]
     proxies.sort()
-    proxies_dev = [self.effective_proxies['proxy-dev'],
-                   self.effective_proxies['fallback']]
+    proxies_dev = self.ProxyListForDev(proxies)
     proxies_dev.sort()
     if bad_proxies == proxies:
       return True, proxies
@@ -200,38 +204,54 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       return True, proxies_dev
     return False, []
 
-  @staticmethod
-  def VerifyBadProxies(
-      badProxies, expected_proxies,
-      retry_seconds_low = DEFAULT_BYPASS_MIN_SECONDS,
-      retry_seconds_high = DEFAULT_BYPASS_MAX_SECONDS):
-    """Verify the bad proxy list and their retry times are expected. """
-    if not badProxies or (len(badProxies) != len(expected_proxies)):
-      return False
+  def VerifyBadProxies(self, bad_proxies, expected_bad_proxies):
+    """Verify the bad proxy list and their retry times are expected.
 
-    # Check all expected proxies.
-    proxies = [p['proxy'] for p in badProxies]
-    expected_proxies.sort()
-    proxies.sort()
-    if not expected_proxies == proxies:
-      raise ChromeProxyMetricException, (
-          'Bad proxies: got %s want %s' % (
-              str(badProxies), str(expected_proxies)))
+    Args:
+        bad_proxies: the list of actual bad proxies and their retry times.
+        expected_bad_proxies: a list of dictionaries in the form:
 
-    # Check retry time
-    for p in badProxies:
+            {'proxy': <proxy origin>,
+             'retry_seconds_low': <minimum bypass duration in seconds>,
+             'retry_seconds_high': <maximum bypass duration in seconds>}
+
+            If an element in the list is missing either the 'retry_seconds_low'
+            entry or the 'retry_seconds_high' entry, the default bypass minimum
+            and maximum durations respectively will be used for that element.
+    """
+    if not bad_proxies:
+      bad_proxies = []
+
+    # Check that each of the proxy origins and retry times match.
+    for bad_proxy, expected_bad_proxy in map(None, bad_proxies,
+                                             expected_bad_proxies):
+      # Check if the proxy origins match, allowing for the proxy-dev origin in
+      # the place of the HTTPS proxy origin.
+      if (bad_proxy['proxy'] != expected_bad_proxy['proxy'] and
+          bad_proxy['proxy'] != expected_bad_proxy['proxy'].replace(
+              self.effective_proxies['proxy'],
+              self.effective_proxies['proxy-dev'])):
+        raise ChromeProxyMetricException, (
+            'Actual and expected bad proxies should match: %s vs. %s' % (
+                str(bad_proxy), str(expected_bad_proxy)))
+
+      # Check that the retry times match.
+      retry_seconds_low = expected_bad_proxy.get('retry_seconds_low',
+                                                 DEFAULT_BYPASS_MIN_SECONDS)
+      retry_seconds_high = expected_bad_proxy.get('retry_seconds_high',
+                                                  DEFAULT_BYPASS_MAX_SECONDS)
       retry_time_low = (datetime.datetime.now() +
                         datetime.timedelta(seconds=retry_seconds_low))
       retry_time_high = (datetime.datetime.now() +
-                        datetime.timedelta(seconds=retry_seconds_high))
-      got_retry_time = datetime.datetime.fromtimestamp(int(p['retry'])/1000)
+                         datetime.timedelta(seconds=retry_seconds_high))
+      got_retry_time = datetime.datetime.fromtimestamp(
+          int(bad_proxy['retry'])/1000)
       if not ProxyRetryTimeInRange(
           got_retry_time, retry_time_low, retry_time_high):
         raise ChromeProxyMetricException, (
             'Bad proxy %s retry time (%s) should be within range (%s-%s).' % (
-                p['proxy'], str(got_retry_time), str(retry_time_low),
+                bad_proxy['proxy'], str(got_retry_time), str(retry_time_low),
                 str(retry_time_high)))
-    return True
 
   def VerifyAllProxiesBypassed(self, tab):
     if tab:
@@ -243,7 +263,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       if not is_bypassed:
         raise ChromeProxyMetricException, (
             'Chrome proxy should be bypassed. proxy info: %s' % info)
-      self.VerifyBadProxies(info['badProxies'], expected_bad_proxies)
+      self.VerifyBadProxies(info['badProxies'],
+                            [{'proxy': p} for p in expected_bad_proxies])
 
   def AddResultsForBypass(self, tab, results):
     bypass_count = 0
@@ -256,6 +277,31 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       bypass_count += 1
 
     self.VerifyAllProxiesBypassed(tab)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'bypass', 'count', bypass_count))
+
+  def AddResultsForFallback(self, tab, results):
+    via_proxy_count = 0
+    bypass_count = 0
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        via_proxy_count += 1
+      elif resp.ShouldHaveChromeProxyViaHeader():
+        bypass_count += 1
+
+    if bypass_count != 1:
+      raise ChromeProxyMetricException, (
+          'Only the triggering response should have bypassed all proxies.')
+
+    info = GetProxyInfoFromNetworkInternals(tab)
+    if not 'enabled' in info or not info['enabled']:
+      raise ChromeProxyMetricException, (
+          'Chrome proxy should be enabled. proxy info: %s' % info)
+    self.VerifyBadProxies(info['badProxies'],
+                          [{'proxy': self.effective_proxies['proxy']}])
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'via_proxy', 'count', via_proxy_count))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
 
@@ -352,11 +398,6 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
           'Safebrowsing failed (count=%d, safebrowsing_count=%d)\n' % (
               count, safebrowsing_count))
 
-  def ProxyListForDev(self, proxies):
-    return [self.effective_proxies['proxy-dev']
-            if proxy == self.effective_proxies['proxy']
-            else proxy for proxy in proxies]
-
   def VerifyProxyInfo(self, tab, expected_proxies, expected_bad_proxies):
     info = GetProxyInfoFromNetworkInternals(tab)
     if not 'enabled' in info or not info['enabled']:
@@ -395,3 +436,22 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     self.VerifyAllProxiesBypassed(tab)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'direct_fallback', 'boolean', True))
+
+  def AddResultsForExplicitBypass(self, tab, results, expected_bad_proxies):
+    """Verify results for an explicit bypass test.
+
+    Args:
+        tab: the tab for the test.
+        results: the results object to add the results values to.
+        expected_bad_proxies: A list of dictionary objects representing
+            expected bad proxies and their expected retry time windows.
+            See the definition of VerifyBadProxies for details.
+    """
+    info = GetProxyInfoFromNetworkInternals(tab)
+    if not 'enabled' in info or not info['enabled']:
+      raise ChromeProxyMetricException, (
+          'Chrome proxy should be enabled. proxy info: %s' % info)
+    self.VerifyBadProxies(info['badProxies'],
+                          expected_bad_proxies)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'explicit_bypass', 'boolean', True))
