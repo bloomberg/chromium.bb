@@ -11,7 +11,7 @@ import os
 import re
 import sys
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
+sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 
 from chromite.cros.commands import cros_bootstrap_overlay
 from chromite.lib import cros_build_lib
