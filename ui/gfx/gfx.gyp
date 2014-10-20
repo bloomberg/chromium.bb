@@ -52,7 +52,6 @@
         'geometry/scroll_offset.h',
         'geometry/size.cc',
         'geometry/size.h',
-        'geometry/size_base.h',
         'geometry/size_conversions.cc',
         'geometry/size_conversions.h',
         'geometry/size_f.cc',

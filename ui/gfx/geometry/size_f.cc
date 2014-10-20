@@ -8,7 +8,23 @@
 
 namespace gfx {
 
-template class SizeBase<SizeF, float>;
+float SizeF::GetArea() const {
+  return width() * height();
+}
+
+void SizeF::Enlarge(float grow_width, float grow_height) {
+  SetSize(width() + grow_width, height() + grow_height);
+}
+
+void SizeF::SetToMin(const SizeF& other) {
+  width_ = width() <= other.width() ? width() : other.width();
+  height_ = height() <= other.height() ? height() : other.height();
+}
+
+void SizeF::SetToMax(const SizeF& other) {
+  width_ = width() >= other.width() ? width() : other.width();
+  height_ = height() >= other.height() ? height() : other.height();
+}
 
 std::string SizeF::ToString() const {
   return base::StringPrintf("%fx%f", width(), height());

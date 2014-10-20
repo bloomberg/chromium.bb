@@ -40,7 +40,6 @@ component("geometry") {
     "scroll_offset.h",
     "size.cc",
     "size.h",
-    "size_base.h",
     "size_conversions.cc",
     "size_conversions.h",
     "size_f.cc",
