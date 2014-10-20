@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/stl_util.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -84,6 +85,11 @@ AccountIds AccountTracker::FindAccountIdsByGaiaId(const std::string& gaia_id) {
 }
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
+  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedProfile tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::OnRefreshTokenAvailable"));
+
   TRACE_EVENT1("identity",
                "AccountTracker::OnRefreshTokenAvailable",
                "account_key",
