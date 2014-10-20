@@ -175,6 +175,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   int last_file_handle_;
   base::CancelableTaskTracker tracker_;
   ObserverList<ProvidedFileSystemObserver> observers_;
+  ObservedEntries observed_entries_;
 
   base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);

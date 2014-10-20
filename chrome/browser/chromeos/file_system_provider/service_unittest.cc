@@ -83,7 +83,7 @@ class LoggingObserver : public Observer {
 };
 
 // Creates a fake extension with the specified |extension_id|.
-scoped_refptr<extensions::Extension> createFakeExtension(
+scoped_refptr<extensions::Extension> CreateFakeExtension(
     const std::string& extension_id) {
   base::DictionaryValue manifest;
   std::string error;
@@ -99,13 +99,15 @@ scoped_refptr<extensions::Extension> createFakeExtension(
                                        &error);
 }
 
-// Stores a provided file system information in preferences.
+// Stores a provided file system information in preferences together with a
+// fake observed entry.
 void RememberFakeFileSystem(TestingProfile* profile,
                             const std::string& extension_id,
                             const std::string& file_system_id,
                             const std::string& display_name,
                             bool writable,
-                            bool supports_notify_tag) {
+                            bool supports_notify_tag,
+                            const ObservedEntry& observed_entry) {
   TestingPrefServiceSyncable* const pref_service =
       profile->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
@@ -121,6 +123,21 @@ void RememberFakeFileSystem(TestingProfile* profile,
                                               supports_notify_tag);
   file_systems->SetWithoutPathExpansion(kFileSystemId, file_system);
   extensions.SetWithoutPathExpansion(kExtensionId, file_systems);
+
+  // Remember observed entries.
+  base::DictionaryValue* const observed_entries = new base::DictionaryValue();
+  file_system->SetWithoutPathExpansion(kPrefKeyObservedEntries,
+                                       observed_entries);
+  base::DictionaryValue* const observed_entry_value =
+      new base::DictionaryValue();
+  observed_entries->SetWithoutPathExpansion(observed_entry.entry_path.value(),
+                                            observed_entry_value);
+  observed_entry_value->SetStringWithoutPathExpansion(
+      kPrefKeyObservedEntryEntryPath, observed_entry.entry_path.value());
+  observed_entry_value->SetBooleanWithoutPathExpansion(
+      kPrefKeyObservedEntryRecursive, observed_entry.recursive);
+  observed_entry_value->SetStringWithoutPathExpansion(
+      kPrefKeyObservedEntryLastTag, observed_entry.last_tag);
 
   pref_service->Set(prefs::kFileSystemProviderMounted, extensions);
 }
@@ -145,7 +162,11 @@ class FileSystemProviderServiceTest : public testing::Test {
     service_.reset(new Service(profile_, extension_registry_.get()));
     service_->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
-    extension_ = createFakeExtension(kExtensionId);
+    extension_ = CreateFakeExtension(kExtensionId);
+    fake_observed_entry_.entry_path =
+        base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
+    fake_observed_entry_.recursive = true;
+    fake_observed_entry_.last_tag = "hello-world";
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -156,6 +177,7 @@ class FileSystemProviderServiceTest : public testing::Test {
   scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
   scoped_ptr<Service> service_;
   scoped_refptr<extensions::Extension> extension_;
+  ObservedEntry fake_observed_entry_;
 };
 
 TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
@@ -340,7 +362,8 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
                          kFileSystemId,
                          kDisplayName,
                          true /* writable */,
-                         true /* supports_notify_tag */);
+                         true /* supports_notify_tag */,
+                         fake_observed_entry_);
 
   // Create a new service instance in order to load remembered file systems
   // from preferences.
@@ -370,18 +393,41 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
       new_service->GetProvidedFileSystemInfoList();
   ASSERT_EQ(1u, file_system_info_list.size());
 
+  ProvidedFileSystemInterface* const file_system =
+      new_service->GetProvidedFileSystem(kExtensionId, kFileSystemId);
+  ASSERT_TRUE(file_system);
+
+  const ObservedEntries* const observed_entries =
+      file_system->GetObservedEntries();
+  ASSERT_TRUE(observed_entries);
+  ASSERT_EQ(1u, observed_entries->size());
+
+  const ObservedEntries::const_iterator restored_observed_entry_it =
+      observed_entries->find(fake_observed_entry_.entry_path);
+  ASSERT_NE(observed_entries->end(), restored_observed_entry_it);
+
+  EXPECT_EQ(fake_observed_entry_.entry_path,
+            restored_observed_entry_it->second.entry_path);
+  EXPECT_EQ(fake_observed_entry_.recursive,
+            restored_observed_entry_it->second.recursive);
+  EXPECT_EQ(fake_observed_entry_.last_tag,
+            restored_observed_entry_it->second.last_tag);
+
   new_service->RemoveObserver(&observer);
 }
 
-TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
-  LoggingObserver observer;
-  service_->AddObserver(&observer);
-
+TEST_F(FileSystemProviderServiceTest, RememberFileSystem) {
   MountOptions options(kFileSystemId, kDisplayName);
   options.writable = true;
   options.supports_notify_tag = true;
-  EXPECT_TRUE(service_->MountFileSystem(kExtensionId, options));
-  ASSERT_EQ(1u, observer.mounts.size());
+
+  ProvidedFileSystemInfo file_system_info(
+      kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
+
+  ObservedEntries observed_entries;
+  observed_entries[fake_observed_entry_.entry_path] = fake_observed_entry_;
+
+  service_->RememberFileSystem(file_system_info, observed_entries);
 
   TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
@@ -421,6 +467,51 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   EXPECT_TRUE(file_system->GetBooleanWithoutPathExpansion(
       kPrefKeySupportsNotifyTag, &supports_notify_tag));
   EXPECT_TRUE(supports_notify_tag);
+
+  const base::DictionaryValue* observed_entries_value = NULL;
+  ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(
+      kPrefKeyObservedEntries, &observed_entries_value));
+
+  const base::DictionaryValue* observed_entry = NULL;
+  ASSERT_TRUE(observed_entries_value->GetDictionaryWithoutPathExpansion(
+      fake_observed_entry_.entry_path.value(), &observed_entry));
+
+  std::string entry_path;
+  EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
+      kPrefKeyObservedEntryEntryPath, &entry_path));
+  EXPECT_EQ(fake_observed_entry_.entry_path.value(), entry_path);
+
+  bool recursive = false;
+  EXPECT_TRUE(observed_entry->GetBooleanWithoutPathExpansion(
+      kPrefKeyObservedEntryRecursive, &recursive));
+  EXPECT_EQ(fake_observed_entry_.recursive, recursive);
+
+  std::string last_tag;
+  EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
+      kPrefKeyObservedEntryLastTag, &last_tag));
+  EXPECT_EQ(fake_observed_entry_.last_tag, last_tag);
+}
+
+TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
+  LoggingObserver observer;
+  service_->AddObserver(&observer);
+
+  TestingPrefServiceSyncable* const pref_service =
+      profile_->GetTestingPrefService();
+  ASSERT_TRUE(pref_service);
+
+  EXPECT_TRUE(service_->MountFileSystem(
+      kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
+  ASSERT_EQ(1u, observer.mounts.size());
+
+  const base::DictionaryValue* extensions =
+      pref_service->GetDictionary(prefs::kFileSystemProviderMounted);
+  ASSERT_TRUE(extensions);
+
+  const base::DictionaryValue* file_systems = NULL;
+  ASSERT_TRUE(extensions->GetDictionaryWithoutPathExpansion(kExtensionId,
+                                                            &file_systems));
+  EXPECT_EQ(1u, file_systems->size());
 
   service_->RemoveObserver(&observer);
 }

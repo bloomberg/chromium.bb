@@ -348,8 +348,7 @@ RequestManager* FakeProvidedFileSystem::GetRequestManager() {
 }
 
 ObservedEntries* FakeProvidedFileSystem::GetObservedEntries() {
-  NOTREACHED();
-  return NULL;
+  return &observed_entries_;
 }
 
 void FakeProvidedFileSystem::AddObserver(ProvidedFileSystemObserver* observer) {

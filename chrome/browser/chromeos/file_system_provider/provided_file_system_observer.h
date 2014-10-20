@@ -51,13 +51,13 @@ class ProvidedFileSystemObserver {
       const ChildChanges& child_changes,
       const base::Closure& callback) = 0;
 
-  // Called when tag value is updated for the observed entry.
+  // Called after the tag value is updated for the observed entry.
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
       const base::FilePath& observed_path,
       const std::string& tag) = 0;
 
-  // Called when list of observed entries is changed.
+  // Called after the list of observed entries is changed.
   virtual void OnObservedEntryListChanged(
       const ProvidedFileSystemInfo& file_system_info,
       const ObservedEntries& observed_entries) = 0;

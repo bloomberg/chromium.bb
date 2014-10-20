@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
@@ -43,6 +44,10 @@ extern const char kPrefKeyFileSystemId[];
 extern const char kPrefKeyDisplayName[];
 extern const char kPrefKeyWritable[];
 extern const char kPrefKeySupportsNotifyTag[];
+extern const char kPrefKeyObservedEntries[];
+extern const char kPrefKeyObservedEntryEntryPath[];
+extern const char kPrefKeyObservedEntryRecursive[];
+extern const char kPrefKeyObservedEntryLastTag[];
 
 class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
@@ -145,6 +150,8 @@ class Service : public KeyedService,
       const ObservedEntries& observed_entries) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FileSystemProviderServiceTest, RememberFileSystem);
+
   // Key is a pair of an extension id and file system id, which makes it
   // unique among the entire service instance.
   typedef std::pair<std::string, std::string> FileSystemKey;
@@ -160,7 +167,8 @@ class Service : public KeyedService,
 
   // Remembers the file system in preferences, in order to remount after a
   // reboot.
-  void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info);
+  void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
+                          const ObservedEntries& observed_entries);
 
   // Removes the file system from preferences, so it is not remounmted anymore
   // after a reboot.
