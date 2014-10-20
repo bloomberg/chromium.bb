@@ -317,6 +317,18 @@ const wchar_t* kRestrictedFontSet[] = {
   L"comici.ttf",    // IDS_CURSIVE_FONT_FAMILY
   L"comicz.ttf",    // IDS_CURSIVE_FONT_FAMILY
   L"impact.ttf",    // IDS_FANTASY_FONT_FAMILY
+  L"georgia.ttf",
+  L"georgiab.ttf",
+  L"georgiai.ttf",
+  L"georgiaz.ttf",
+  L"trebuc.ttf",
+  L"trebucbd.ttf",
+  L"trebucbi.ttf",
+  L"trebucit.ttf",
+  L"verdana.ttf",
+  L"verdanab.ttf",
+  L"verdanai.ttf",
+  L"verdanaz.ttf",
   L"segoeui.ttf",   // IDS_PICTOGRAPH_FONT_FAMILY
   L"segoeuib.ttf",  // IDS_PICTOGRAPH_FONT_FAMILY
   L"segoeuii.ttf",  // IDS_PICTOGRAPH_FONT_FAMILY
