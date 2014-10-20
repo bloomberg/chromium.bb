@@ -20,7 +20,6 @@ component("geometry") {
     "point.h",
     "point3_f.cc",
     "point3_f.h",
-    "point_base.h",
     "point_conversions.cc",
     "point_conversions.h",
     "point_f.cc",

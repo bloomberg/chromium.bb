@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <string>
 
-#include "ui/gfx/geometry/point_base.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gfx_export.h"
@@ -25,10 +24,10 @@ typedef struct tagPOINT POINT;
 namespace gfx {
 
 // A point has an x and y coordinate.
-class GFX_EXPORT Point : public PointBase<Point, int, Vector2d> {
+class GFX_EXPORT Point {
  public:
-  Point() : PointBase<Point, int, Vector2d>(0, 0) {}
-  Point(int x, int y) : PointBase<Point, int, Vector2d>(x, y) {}
+  Point() : x_(0), y_(0) {}
+  Point(int x, int y) : x_(x), y_(y) {}
 #if defined(OS_WIN)
   // |point| is a DWORD value that contains a coordinate.  The x-coordinate is
   // the low-order short and the y-coordinate is the high-order short.  This
@@ -37,7 +36,7 @@ class GFX_EXPORT Point : public PointBase<Point, int, Vector2d> {
   explicit Point(const POINT& point);
   Point& operator=(const POINT& point);
 #elif defined(OS_MACOSX)
-  explicit Point(const CGPoint& point);
+  explicit Point(const CGPoint& point) : x_(point.x), y_(point.y) {}
 #endif
 
   ~Point() {}
@@ -45,8 +44,50 @@ class GFX_EXPORT Point : public PointBase<Point, int, Vector2d> {
 #if defined(OS_WIN)
   POINT ToPOINT() const;
 #elif defined(OS_MACOSX)
-  CGPoint ToCGPoint() const;
+  CGPoint ToCGPoint() const { return CGPointMake(x(), y()); }
 #endif
+
+  int x() const { return x_; }
+  int y() const { return y_; }
+  void set_x(int x) { x_ = x; }
+  void set_y(int y) { y_ = y; }
+
+  void SetPoint(int x, int y) {
+    x_ = x;
+    y_ = y;
+  }
+
+  void Offset(int delta_x, int delta_y) {
+    x_ += delta_x;
+    y_ += delta_y;
+  }
+
+  void operator+=(const Vector2d& vector) {
+    x_ += vector.x();
+    y_ += vector.y();
+  }
+
+  void operator-=(const Vector2d& vector) {
+    x_ -= vector.x();
+    y_ -= vector.y();
+  }
+
+  void SetToMin(const Point& other);
+  void SetToMax(const Point& other);
+
+  bool IsOrigin() const { return x_ == 0 && y_ == 0; }
+
+  Vector2d OffsetFromOrigin() const { return Vector2d(x_, y_); }
+
+  // A point is less than another point if its y-value is closer
+  // to the origin. If the y-values are the same, then point with
+  // the x-value closer to the origin is considered less than the
+  // other.
+  // This comparison is required to use Point in sets, or sorted
+  // vectors.
+  bool operator<(const Point& rhs) const {
+    return (y_ == rhs.y_) ? (x_ < rhs.x_) : (y_ < rhs.y_);
+  }
 
   operator PointF() const {
     return PointF(x(), y());
@@ -54,6 +95,10 @@ class GFX_EXPORT Point : public PointBase<Point, int, Vector2d> {
 
   // Returns a string representation of point.
   std::string ToString() const;
+
+ private:
+  int x_;
+  int y_;
 };
 
 inline bool operator==(const Point& lhs, const Point& rhs) {
@@ -83,10 +128,6 @@ inline Vector2d operator-(const Point& lhs, const Point& rhs) {
 inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {
   return Point(offset_from_origin.x(), offset_from_origin.y());
 }
-
-#if !defined(COMPILER_MSVC) && !defined(__native_client__)
-extern template class PointBase<Point, int, Vector2d>;
-#endif
 
 // This is declared here for use in gtest-based unit tests but is defined in
 // the gfx_test_support target. Depend on that to use this in your unit test.

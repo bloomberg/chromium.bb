@@ -8,7 +8,15 @@
 
 namespace gfx {
 
-template class PointBase<PointF, float, Vector2dF>;
+void PointF::SetToMin(const PointF& other) {
+  x_ = x_ <= other.x_ ? x_ : other.x_;
+  y_ = y_ <= other.y_ ? y_ : other.y_;
+}
+
+void PointF::SetToMax(const PointF& other) {
+  x_ = x_ >= other.x_ ? x_ : other.x_;
+  y_ = y_ >= other.y_ ? y_ : other.y_;
+}
 
 std::string PointF::ToString() const {
   return base::StringPrintf("%f,%f", x(), y());

@@ -8,18 +8,59 @@
 #include <iosfwd>
 #include <string>
 
-#include "ui/gfx/geometry/point_base.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
 // A floating version of gfx::Point.
-class GFX_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
+class GFX_EXPORT PointF {
  public:
-  PointF() : PointBase<PointF, float, Vector2dF>(0, 0) {}
-  PointF(float x, float y) : PointBase<PointF, float, Vector2dF>(x, y) {}
+  PointF() : x_(0.f), y_(0.f) {}
+  PointF(float x, float y) : x_(x), y_(y) {}
   ~PointF() {}
+
+  float x() const { return x_; }
+  float y() const { return y_; }
+  void set_x(float x) { x_ = x; }
+  void set_y(float y) { y_ = y; }
+
+  void SetPoint(float x, float y) {
+    x_ = x;
+    y_ = y;
+  }
+
+  void Offset(float delta_x, float delta_y) {
+    x_ += delta_x;
+    y_ += delta_y;
+  }
+
+  void operator+=(const Vector2dF& vector) {
+    x_ += vector.x();
+    y_ += vector.y();
+  }
+
+  void operator-=(const Vector2dF& vector) {
+    x_ -= vector.x();
+    y_ -= vector.y();
+  }
+
+  void SetToMin(const PointF& other);
+  void SetToMax(const PointF& other);
+
+  bool IsOrigin() const { return x_ == 0 && y_ == 0; }
+
+  Vector2dF OffsetFromOrigin() const { return Vector2dF(x_, y_); }
+
+  // A point is less than another point if its y-value is closer
+  // to the origin. If the y-values are the same, then point with
+  // the x-value closer to the origin is considered less than the
+  // other.
+  // This comparison is required to use PointF in sets, or sorted
+  // vectors.
+  bool operator<(const PointF& rhs) const {
+    return (y_ == rhs.y_) ? (x_ < rhs.x_) : (y_ < rhs.y_);
+  }
 
   void Scale(float scale) {
     Scale(scale, scale);
@@ -31,6 +72,10 @@ class GFX_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
 
   // Returns a string representation of point.
   std::string ToString() const;
+
+ private:
+  float x_;
+  float y_;
 };
 
 inline bool operator==(const PointF& lhs, const PointF& rhs) {
@@ -66,10 +111,6 @@ GFX_EXPORT PointF ScalePoint(const PointF& p, float x_scale, float y_scale);
 inline PointF ScalePoint(const PointF& p, float scale) {
   return ScalePoint(p, scale, scale);
 }
-
-#if !defined(COMPILER_MSVC) && !defined(__native_client__)
-extern template class PointBase<PointF, float, Vector2dF>;
-#endif
 
 // This is declared here for use in gtest-based unit tests but is defined in
 // the gfx_test_support target. Depend on that to use this in your unit test.

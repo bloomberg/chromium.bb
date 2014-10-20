@@ -32,7 +32,6 @@
         'geometry/point.h',
         'geometry/point3_f.cc',
         'geometry/point3_f.h',
-        'geometry/point_base.h',
         'geometry/point_conversions.cc',
         'geometry/point_conversions.h',
         'geometry/point_f.cc',
