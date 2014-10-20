@@ -473,9 +473,9 @@ void RenderLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 
 void RenderLayer::updatePagination()
 {
-    if (compositingState() != NotComposited || !parent())
-        return; // FIXME: We will have to deal with paginated compositing layers someday.
-                // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
+    bool usesRegionBasedColumns = useRegionBasedColumns();
+    if ((!usesRegionBasedColumns && compositingState() != NotComposited) || !parent())
+        return; // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
 
     // The main difference between the paginated booleans for the old column code and the new column code
     // is that each paginated layer has to paint on its own with the new code. There is no
@@ -484,14 +484,13 @@ void RenderLayer::updatePagination()
     // genuinely know if it is going to have to split itself up when painting only its contents (and not any other descendant
     // layers). We track an enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
     // to that layer easily.
-    bool regionBasedColumnsUsed = useRegionBasedColumns();
-    if (regionBasedColumnsUsed && renderer()->isRenderFlowThread()) {
+    if (usesRegionBasedColumns && renderer()->isRenderFlowThread()) {
         m_enclosingPaginationLayer = this;
         return;
     }
 
     if (m_stackingNode->isNormalFlowOnly()) {
-        if (regionBasedColumnsUsed) {
+        if (usesRegionBasedColumns) {
             // Content inside a transform is not considered to be paginated, since we simply
             // paint the transform multiple times in each column, so we don't have to use
             // fragments for the transformed content.
@@ -506,7 +505,7 @@ void RenderLayer::updatePagination()
 
     // For the new columns code, we want to walk up our containing block chain looking for an enclosing layer. Once
     // we find one, then we just check its pagination status.
-    if (regionBasedColumnsUsed) {
+    if (usesRegionBasedColumns) {
         RenderView* view = renderer()->view();
         RenderBlock* containingBlock;
         for (containingBlock = renderer()->containingBlock();
