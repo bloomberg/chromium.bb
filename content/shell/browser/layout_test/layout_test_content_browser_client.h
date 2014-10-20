@@ -23,6 +23,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   LayoutTestNotificationManager* GetLayoutTestNotificationManager();
 
   // ContentBrowserClient overrides.
+  virtual void RenderProcessWillLaunch(RenderProcessHost* host) override;
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       RenderFrameHost* render_frame_host,

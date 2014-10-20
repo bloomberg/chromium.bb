@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_SHELL_MESSAGE_FILTER_H_
-#define CONTENT_SHELL_BROWSER_SHELL_MESSAGE_FILTER_H_
+#ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_MESSAGE_FILTER_H_
+#define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_MESSAGE_FILTER_H_
 
 #include <string>
 #include <vector>
@@ -28,15 +28,15 @@ class DatabaseTracker;
 
 namespace content {
 
-class ShellMessageFilter : public BrowserMessageFilter {
+class LayoutTestMessageFilter : public BrowserMessageFilter {
  public:
-  ShellMessageFilter(int render_process_id,
+  LayoutTestMessageFilter(int render_process_id,
                      storage::DatabaseTracker* database_tracker,
                      storage::QuotaManager* quota_manager,
                      net::URLRequestContextGetter* request_context_getter);
 
  private:
-  virtual ~ShellMessageFilter();
+  virtual ~LayoutTestMessageFilter();
 
   // BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(const IPC::Message& message,
@@ -63,9 +63,9 @@ class ShellMessageFilter : public BrowserMessageFilter {
   storage::QuotaManager* quota_manager_;
   net::URLRequestContextGetter* request_context_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(LayoutTestMessageFilter);
 };
 
 }  // namespace content
 
-#endif // CONTENT_SHELL_BROWSER_SHELL_MESSAGE_FILTER_H_
+#endif // CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_MESSAGE_FILTER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/shell_message_filter.h"
+#include "content/shell/browser/layout_test/layout_test_message_filter.h"
 
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,7 +23,7 @@
 
 namespace content {
 
-ShellMessageFilter::ShellMessageFilter(
+LayoutTestMessageFilter::LayoutTestMessageFilter(
     int render_process_id,
     storage::DatabaseTracker* database_tracker,
     storage::QuotaManager* quota_manager,
@@ -35,18 +35,18 @@ ShellMessageFilter::ShellMessageFilter(
       request_context_getter_(request_context_getter) {
 }
 
-ShellMessageFilter::~ShellMessageFilter() {
+LayoutTestMessageFilter::~LayoutTestMessageFilter() {
 }
 
-void ShellMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
-                                                  BrowserThread::ID* thread) {
+void LayoutTestMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message, BrowserThread::ID* thread) {
   if (message.type() == ShellViewHostMsg_ClearAllDatabases::ID)
     *thread = BrowserThread::FILE;
 }
 
-bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message) {
+bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ShellMessageFilter, message)
+  IPC_BEGIN_MESSAGE_MAP(LayoutTestMessageFilter, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ReadFileToString, OnReadFileToString)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)
@@ -66,13 +66,13 @@ bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ShellMessageFilter::OnReadFileToString(const base::FilePath& local_file,
-                                            std::string* contents) {
+void LayoutTestMessageFilter::OnReadFileToString(
+    const base::FilePath& local_file, std::string* contents) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ReadFileToString(local_file, contents);
 }
 
-void ShellMessageFilter::OnRegisterIsolatedFileSystem(
+void LayoutTestMessageFilter::OnRegisterIsolatedFileSystem(
     const std::vector<base::FilePath>& absolute_filenames,
     std::string* filesystem_id) {
   storage::IsolatedContext::FileInfoSet files;
@@ -88,20 +88,20 @@ void ShellMessageFilter::OnRegisterIsolatedFileSystem(
   policy->GrantReadFileSystem(render_process_id_, *filesystem_id);
 }
 
-void ShellMessageFilter::OnClearAllDatabases() {
+void LayoutTestMessageFilter::OnClearAllDatabases() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   database_tracker_->DeleteDataModifiedSince(
       base::Time(), net::CompletionCallback());
 }
 
-void ShellMessageFilter::OnSetDatabaseQuota(int quota) {
+void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
   quota_manager_->SetTemporaryGlobalOverrideQuota(
       quota * storage::QuotaManager::kPerHostTemporaryPortion,
       storage::QuotaCallback());
 }
 
-void ShellMessageFilter::OnCheckWebNotificationPermission(const GURL& origin,
-                                                          int* result) {
+void LayoutTestMessageFilter::OnCheckWebNotificationPermission(
+    const GURL& origin, int* result) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
@@ -110,7 +110,7 @@ void ShellMessageFilter::OnCheckWebNotificationPermission(const GURL& origin,
     *result = blink::WebNotificationPermissionAllowed;
 }
 
-void ShellMessageFilter::OnGrantWebNotificationPermission(
+void LayoutTestMessageFilter::OnGrantWebNotificationPermission(
     const GURL& origin, bool permission_granted) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
@@ -121,18 +121,18 @@ void ShellMessageFilter::OnGrantWebNotificationPermission(
   }
 }
 
-void ShellMessageFilter::OnClearWebNotificationPermissions() {
+void LayoutTestMessageFilter::OnClearWebNotificationPermissions() {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
     manager->ClearPermissions();
 }
 
-void ShellMessageFilter::OnAcceptAllCookies(bool accept) {
+void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {
   ShellNetworkDelegate::SetAcceptAllCookies(accept);
 }
 
-void ShellMessageFilter::OnDeleteAllCookies() {
+void LayoutTestMessageFilter::OnDeleteAllCookies() {
   request_context_getter_->GetURLRequestContext()->cookie_store()
       ->GetCookieMonster()
       ->DeleteAllAsync(net::CookieMonster::DeleteCallback());

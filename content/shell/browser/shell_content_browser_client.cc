@@ -23,7 +23,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
-#include "content/shell/browser/shell_message_filter.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
@@ -130,9 +129,6 @@ ShellContentBrowserClient::ShellContentBrowserClient()
     : shell_browser_main_parts_(NULL) {
   DCHECK(!g_browser_client);
   g_browser_client = this;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return;
-  webkit_source_dir_ = GetWebKitRootDirFilePath();
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
@@ -152,17 +148,6 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kExposeIpcEcho))
     host->AddFilter(new IPCEchoMessageFilter());
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    return;
-  host->AddFilter(new ShellMessageFilter(
-      host->GetID(),
-      BrowserContext::GetDefaultStoragePartition(browser_context())
-          ->GetDatabaseTracker(),
-      BrowserContext::GetDefaultStoragePartition(browser_context())
-          ->GetQuotaManager(),
-      BrowserContext::GetDefaultStoragePartition(browser_context())
-          ->GetURLRequestContext()));
-  host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
 }
 
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
