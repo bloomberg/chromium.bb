@@ -50,7 +50,6 @@ sys.path.append(os.path.join(
     os.path.dirname(__file__), os.path.pardir, 'telemetry'))
 
 from bisect_results import BisectResults
-from bisect_results import ConfidenceScore
 import bisect_utils
 import builder
 import math_utils
@@ -170,9 +169,6 @@ MAX_LINUX_BUILD_TIME = 14400
 
 # The percentage at which confidence is considered high.
 HIGH_CONFIDENCE = 95
-# The confidence percentage we require to consider the initial range a
-# regression based on the test results of the inital good and bad revisions.
-REGRESSION_CONFIDENCE = 95
 
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting
@@ -2475,19 +2471,6 @@ class BisectPerformanceMetrics(object):
           return results
         print message, "Therefore we continue to bisect."
 
-      # Check how likely it is that the good and bad results are different
-      # beyond chance-induced variation.
-      if not self.opts.debug_ignore_regression_confidence:
-        regression_confidence = ConfidenceScore(known_bad_value['values'],
-                                                known_good_value['values'])
-        if regression_confidence < REGRESSION_CONFIDENCE:
-          results.error = ('We could not reproduce the regression with this '
-                           'test/metric/platform combination with enough '
-                           'confidence. There\'s still a chance that this is '
-                           'actually a regression, but you may need to bisect '
-                           'a different platform.')
-          return results
-
       # Can just mark the good and bad revisions explicitly here since we
       # already know the results.
       bad_revision_data = revision_data[revision_list[0]]
@@ -2985,7 +2968,6 @@ class BisectOptions(object):
     self.debug_ignore_build = None
     self.debug_ignore_sync = None
     self.debug_ignore_perf_test = None
-    self.debug_ignore_regression_confidence = None
     self.debug_fake_first_test_mean = 0
     self.gs_bucket = None
     self.target_arch = 'ia32'
@@ -3153,10 +3135,6 @@ class BisectOptions(object):
     group.add_option('--debug_ignore_perf_test',
                      action='store_true',
                      help='DEBUG: Don\'t perform performance tests.')
-    group.add_option('--debug_ignore_regression_confidence',
-                     action='store_true',
-                     help='DEBUG: Don\'t score the confidence of the initial '
-                          'good and bad revisions\' test results.')
     group.add_option('--debug_fake_first_test_mean',
                      type='int',
                      default='0',
