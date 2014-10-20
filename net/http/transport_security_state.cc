@@ -552,7 +552,7 @@ bool DecodeHSTSPreloadRaw(const std::string& hostname,
           return false;
         }
 
-        if (bit_offset <= jump_delta) {
+        if (bit_offset < jump_delta) {
           return false;
         }
 
@@ -598,8 +598,8 @@ bool DecodeHSTSPreload(const std::string& hostname,
                        PreloadResult* out) {
   bool found;
   if (!DecodeHSTSPreloadRaw(hostname, &found, out)) {
-    LOG(ERROR) << "Internal error in DecodeHSTSPreloadRaw for hostname "
-               << hostname;
+    DCHECK(false) << "Internal error in DecodeHSTSPreloadRaw for hostname "
+                  << hostname;
     return false;
   }
 

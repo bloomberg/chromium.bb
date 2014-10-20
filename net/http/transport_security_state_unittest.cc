@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
+#include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
@@ -90,6 +91,28 @@ TEST_F(TransportSecurityStateTest, MatchesCase1) {
   bool include_subdomains = false;
   state.AddHSTS("YAhoo.coM", expiry, include_subdomains);
   EXPECT_TRUE(state.GetDynamicDomainState("yahoo.com", &domain_state));
+}
+
+TEST_F(TransportSecurityStateTest, Fuzz) {
+  TransportSecurityState state;
+  TransportSecurityState::DomainState domain_state;
+
+  EnableStaticPins(&state);
+
+  for (size_t i = 0; i < 128; i++) {
+    std::string hostname;
+
+    for (;;) {
+      if (base::RandInt(0, 16) == 7) {
+        break;
+      }
+      if (i > 0 && base::RandInt(0, 7) == 7) {
+        hostname.append(1, '.');
+      }
+      hostname.append(1, 'a' + base::RandInt(0, 25));
+    }
+    state.GetStaticDomainState(hostname, &domain_state);
+  }
 }
 
 TEST_F(TransportSecurityStateTest, MatchesCase2) {
