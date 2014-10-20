@@ -181,3 +181,37 @@ interface MyIFaceStringifiers {
 interface MyExtendedAttributeInterface {
   [Attr, MethodIdentList=(Foo, Bar)] void method();
 };
+
+/* TREE
+ *Interface(MyIfacePromise)
+ *  Operation(method1)
+ *    Arguments()
+ *    Type()
+ *      Promise(Promise)
+ *        Type()
+ *          PrimitiveType(void)
+ *  Operation(method2)
+ *    Arguments()
+ *    Type()
+ *      Promise(Promise)
+ *        Type()
+ *          PrimitiveType(long)
+ *  Operation(method3)
+ *    Arguments()
+ *    Type()
+ *      Promise(Promise)
+ *        Type()
+ *          Any()
+ *  Operation(method4)
+ *    Arguments()
+ *    Type()
+ *      Promise(Promise)
+ *        Type()
+ *          Any()
+ */
+interface MyIfacePromise {
+  Promise<void> method1();
+  Promise<long> method2();
+  Promise<any> method3();
+  Promise method4();
+};

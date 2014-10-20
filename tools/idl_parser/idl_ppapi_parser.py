@@ -124,18 +124,15 @@ class IDLPPAPIParser(IDLParser):
     """StructMember : ExtendedAttributeList Type identifier ';'"""
     p[0] = self.BuildNamed('Member', p, 3, ListFromConcat(p[1], p[2]))
 
-  # [24]
   def p_Typedef(self, p):
     """Typedef : TYPEDEF ExtendedAttributeListNoComments Type identifier ';'"""
     p[0] = self.BuildNamed('Typedef', p, 4, ListFromConcat(p[2], p[3]))
 
-  # [24.1]
   def p_TypedefFunc(self, p):
     """Typedef : TYPEDEF ExtendedAttributeListNoComments ReturnType identifier '(' ArgumentList ')' ';'"""
     args = self.BuildProduction('Arguments', p, 5, p[6])
     p[0] = self.BuildNamed('Callback', p, 4, ListFromConcat(p[2], p[3], args))
 
-  # [27]
   def p_ConstValue(self, p):
     """ConstValue : integer
                   | integer LSHIFT integer
@@ -157,12 +154,10 @@ class IDLPPAPIParser(IDLParser):
                   | BooleanLiteral """
     p[0] = p[1]
 
-  # [21]
   def p_EnumValueList(self, p):
     """EnumValueList : EnumValue EnumValues"""
     p[0] = ListFromConcat(p[1], p[2])
 
-  # [22]
   def p_EnumValues(self, p):
     """EnumValues : ',' EnumValue EnumValues
                   |"""
@@ -175,6 +170,13 @@ class IDLPPAPIParser(IDLParser):
     p[0] = self.BuildNamed('EnumItem', p, 2, p[1])
     if len(p) > 3:
       p[0].AddChildren(p[4])
+
+  # Omit PromiseType, as it is a JS type.
+  def p_NonAnyType(self, p):
+    """NonAnyType : PrimitiveType TypeSuffix
+                  | identifier TypeSuffix
+                  | SEQUENCE '<' Type '>' Null"""
+    IDLParser.p_NonAnyType(self, p)
 
   def p_PrimitiveType(self, p):
     """PrimitiveType : IntegerType
@@ -200,13 +202,11 @@ class IDLPPAPIParser(IDLParser):
                   | PP_FILEHANDLE"""
     p[0] = p[1]
 
-  # [66]
   def p_FloatType(self, p):
     """FloatType : FLOAT_T
                  | DOUBLE_T"""
     p[0] = p[1]
 
-  # [67]
   def p_UnsignedIntegerType(self, p):
     """UnsignedIntegerType : UINT8_T
                            | UINT16_T
@@ -215,7 +215,6 @@ class IDLPPAPIParser(IDLParser):
     p[0] = p[1]
 
 
-  # [68]
   def p_IntegerType(self, p):
     """IntegerType : CHAR
                    | INT8_T
@@ -234,6 +233,10 @@ class IDLPPAPIParser(IDLParser):
     pass
 
   def p_null(self, p):
+    """ """
+    pass
+
+  def p_PromiseType(self, p):
     """ """
     pass
 
@@ -272,7 +275,6 @@ class IDLPPAPIParser(IDLParser):
     if len(p) > 1:
       p[0] = p[1]
 
-  # [76]
   def p_ExtendedAttributeIdentConst(self, p):
     """ExtendedAttributeIdentConst : identifier '=' ConstValue"""
     p[0] = self.BuildNamed('ExtAttribute', p, 1, p[3])

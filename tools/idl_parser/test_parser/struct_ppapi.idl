@@ -42,6 +42,9 @@ symatics should exist.  This is an exact match.
  *      ExtAttribute(fake_attribute)
  *    Type()
  *      PrimitiveType(str_t)
+ *  Member(z)
+ *    Type()
+ *      Typeref(Promise)
  *  ExtAttributes()
  *    ExtAttribute(union)
  */
@@ -49,4 +52,5 @@ symatics should exist.  This is an exact match.
   uint32_t x;
   uint64_t y;
   [fake_attribute] str_t string;
+  Promise z;
 };

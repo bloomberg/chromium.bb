@@ -59,8 +59,8 @@ class IDLPPAPILexer(IDLLexer):
 
     # Remove JS types
     self._DelKeywords(['boolean', 'byte', 'ByteString', 'Date', 'DOMString',
-                       'double', 'float', 'long', 'object', 'octet', 'RegExp',
-                       'short', 'unsigned'])
+                       'double', 'float', 'long', 'object', 'octet', 'Promise',
+                       'RegExp', 'short', 'unsigned'])
 
 
 # If run by itself, attempt to build the lexer
