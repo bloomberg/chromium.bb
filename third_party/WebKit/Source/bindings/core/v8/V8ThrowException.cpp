@@ -73,6 +73,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     ASSERT(!error.IsEmpty());
     ASSERT(exception->IsObject());
     exception->ToObject()->SetAccessor(v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error);
+    V8HiddenValue::setHiddenValue(isolate, exception->ToObject(), V8HiddenValue::error(isolate), error);
 
     return exception;
 }

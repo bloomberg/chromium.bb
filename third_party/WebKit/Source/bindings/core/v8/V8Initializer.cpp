@@ -256,6 +256,17 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage message)
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
         callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
 
+    if (!callStack && V8DOMWrapper::isDOMWrapper(message.GetValue())) {
+        // Try to get the stack from a wrapped exception object (e.g. DOMException).
+        v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(message.GetValue());
+        v8::Handle<v8::Value> error = V8HiddenValue::getHiddenValue(isolate, obj, V8HiddenValue::error(isolate));
+        if (!error.IsEmpty()) {
+            stackTrace = v8::Exception::GetStackTrace(error);
+            if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
+                callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+        }
+    }
+
     ScriptState* scriptState = ScriptState::from(context);
     promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), callStack));
 }
