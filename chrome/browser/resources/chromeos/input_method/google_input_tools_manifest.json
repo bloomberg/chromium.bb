@@ -574,6 +574,24 @@
       "language": ["my"],
       "layouts": ["us"],
       "input_view": "inputview.html#id=m17n:my_myansan&language=my&passwordLayout=us&name=keyboard_myanmar_myansan"
+    },
+    {
+      "name": "__MSG_keyboard_russian_phonetic_aatseel__",
+      "type": "ime",
+      "id": "vkd_ru_phone_aatseel",
+      "description": "",
+      "language": ["ru"],
+      "layouts": ["us"],
+      "input_view": "inputview.html#id=m17n:ru_phone_aatseel&language=ru&passwordLayout=us&name=keyboard_russian_phonetic_aatseel"
+    },
+    {
+      "name": "__MSG_keyboard_russian_phonetic_yazhert__",
+      "type": "ime",
+      "id": "vkd_ru_phone_yazhert",
+      "description": "",
+      "language": ["ru"],
+      "layouts": ["us"],
+      "input_view": "inputview.html#id=m17n:ru_phone_yazhert&language=ru&passwordLayout=us&name=keyboard_russian_phonetic_yazhert"
     }
   ],
   "manifest_version": 2

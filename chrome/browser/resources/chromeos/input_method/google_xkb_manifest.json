@@ -633,6 +633,16 @@
       "layouts": ["ie"],
       "input_view": "inputview.html#id=ie.compact.qwerty&language=ga&passwordLayout=ie.compact.qwerty&name=keyboard_irish",
       "options_page": "hmm_options.html?code=xkb:ie::ga"
+    },
+    {
+      "name": "__MSG_keyboard_maltese__",
+      "type": "ime",
+      "id": "xkb:mt::mlt",
+      "description": "",
+      "language": ["mt"],
+      "layouts": ["mt"],
+      "input_view": "inputview.html#id=mt&language=mt&passwordLayout=mt&name=keyboard_maltese",
+      "options_page": "hmm_options.html?code=xkb:mt::mlt"
     }
   ],
   "manifest_version": 2

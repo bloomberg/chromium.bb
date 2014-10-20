@@ -4643,6 +4643,9 @@ Battery full
   <message name="IDS_IME_NAME_KEYBOARD_LITHUANIAN" desc="The input method name shows in system tray menu, this shows [Lithuanian keyboard].">
     Lithuanian keyboard
   </message>
+  <message name="IDS_IME_NAME_KEYBOARD_MALTESE" desc="The input method name shows in system tray menu, this shows [Maltese keyboard].">
+    Maltese keyboard
+  </message>
   <message name="IDS_IME_NAME_KEYBOARD_MONGOLIAN" desc="The input method name shows in system tray menu, this shows [Mongolian keyboard].">
     Mongolian keyboard
   </message>
@@ -4663,6 +4666,12 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_RUSSIAN_PHONETIC" desc="The input method name shows in system tray menu, this shows [Russian Phonetic keyboard].">
     Russian Phonetic keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_RUSSIAN_PHONETIC_AATSEEL" desc="The input method name shows in system tray menu, this shows [Russian Phonetic (AATSEEL) keyboard].">
+    Russian Phonetic (AATSEEL) keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_RUSSIAN_PHONETIC_YAZHERT" desc="The input method name shows in system tray menu, this shows [Russian Phonetic (YaZHert) keyboard].">
+    Russian Phonetic (YaZHert) keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_SERBIAN" desc="The input method name shows in system tray menu, this shows [Serbian keyboard].">
     Serbian keyboard
