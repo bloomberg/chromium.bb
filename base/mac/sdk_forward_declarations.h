@@ -211,11 +211,10 @@ BASE_EXPORT extern "C" NSString* const NSWindowWillExitFullScreenNotification;
 BASE_EXPORT extern "C" NSString* const NSWindowDidEnterFullScreenNotification;
 BASE_EXPORT extern "C" NSString* const NSWindowDidExitFullScreenNotification;
 
-BASE_EXPORT extern "C" NSString* const
-    NSWindowDidFailToEnterFullScreenNotification;
-
-BASE_EXPORT extern "C" NSString* const
-    NSWindowDidFailToExitFullScreenNotification;
+@protocol NSWindowDelegateFullScreenAdditions
+- (void)windowDidFailToEnterFullScreen:(NSWindow*)window;
+- (void)windowDidFailToExitFullScreen:(NSWindow*)window;
+@end
 
 #endif  // MAC_OS_X_VERSION_10_7
 

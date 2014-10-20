@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/foundation_util.h"
+#import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -534,6 +535,9 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteForward) {
 // by the Widget code or elsewhere (e.g. by the user).
 TEST_F(BridgedNativeWidgetTest, FullscreenSynchronousState) {
   EXPECT_FALSE(widget_->IsFullscreen());
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   // Allow user-initiated fullscreen changes on the Window.
   [test_window()
       setCollectionBehavior:[test_window() collectionBehavior] |
@@ -594,6 +598,12 @@ TEST_F(BridgedNativeWidgetTest, FullscreenEnterAndExit) {
   // Ensure this works without having to change collection behavior as for the
   // test above.
   widget_->SetFullscreen(true);
+  if (base::mac::IsOSSnowLeopard()) {
+    // On Snow Leopard, SetFullscreen() isn't implemented. But shouldn't crash.
+    EXPECT_FALSE(widget_->IsFullscreen());
+    return;
+  }
+
   EXPECT_TRUE(widget_->IsFullscreen());
   EXPECT_EQ(restored_bounds, widget_->GetRestoredBounds());
 
@@ -625,6 +635,9 @@ typedef BridgedNativeWidgetTestBase BridgedNativeWidgetSimulateFullscreenTest;
 // mashing Ctrl+Left/Right to keep OSX in a transition between Spaces to cause
 // the fullscreen transition to fail.
 TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
   base::scoped_nsobject<NSWindow> owned_window(
       [[BridgedNativeWidgetTestFullScreenWindow alloc]
           initWithContentRect:NSMakeRect(50, 50, 400, 300)
@@ -657,9 +670,11 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
   EXPECT_EQ(1, [window ignoredToggleFullScreenCount]);
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 
-  // Cocoa follows up with a failure notification.
-  [center postNotificationName:NSWindowDidFailToEnterFullScreenNotification
-                        object:window];
+  // Cocoa follows up with a failure message sent to the NSWindowDelegate (there
+  // is no equivalent notification for failure). Called via id so that this
+  // compiles on 10.6.
+  id window_delegate = [window delegate];
+  [window_delegate windowDidFailToEnterFullScreen:window];
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 
   // Now perform a successful fullscreen operation.
@@ -675,10 +690,9 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
                         object:window];
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 
-  // On a failure, Cocoa sends a failure notification, but then just dumps the
-  // Window out of fullscreen anyway (in that order).
-  [center postNotificationName:NSWindowDidFailToExitFullScreenNotification
-                        object:window];
+  // On a failure, Cocoa sends a failure message, but then just dumps the window
+  // out of fullscreen anyway (in that order).
+  [window_delegate windowDidFailToExitFullScreen:window];
   EXPECT_FALSE(bridge()->target_fullscreen_state());
   [center postNotificationName:NSWindowDidExitFullScreenNotification
                         object:window];
