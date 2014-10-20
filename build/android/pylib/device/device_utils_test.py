@@ -218,73 +218,6 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
         '0123456789abcdef', default_timeout=1, default_retries=0)
 
 
-class Args:
-  def __init__(self, *args, **kwargs):
-    self.args = args
-    self.kwargs = kwargs
-
-  def __eq__(self, other):
-    return (self.args, self.kwargs) == (other.args, other.kwargs)
-
-  def __repr__(self):
-    return '%s(%s)' % (type(self).__name__, str(self))
-
-  def __str__(self):
-    toks = (['%r' % v for v in self.args] +
-            ['%s=%r' % (k, self.kwargs[k]) for k in sorted(self.kwargs)])
-    return ', '.join(toks)
-
-
-class MockCallSequence(object):
-  def __init__(self, test_case, obj, method, calls):
-    def assert_and_return(*args, **kwargs):
-      received_args = Args(*args, **kwargs)
-      test_case.assertTrue(
-          self._calls,
-          msg=('Unexpected call\n'
-               '  received: %s(%s)\n' % (self._method, received_args)))
-      expected_args, return_value = self._calls.pop(0)
-      test_case.assertTrue(
-          received_args == expected_args,
-          msg=('Call does not match expected args\n'
-               '  received: %s(%s)\n'
-               '  expected: %s(%s)\n'
-               % (self._method, received_args,
-                  self._method, expected_args)))
-      if isinstance(return_value, Exception):
-        raise return_value
-      else:
-        return return_value
-
-    self._calls = list(calls)
-    self._test_case = test_case
-    self._method = method
-    self._patched = mock.patch.object(obj, self._method,
-                                      side_effect=assert_and_return)
-
-  def __enter__(self):
-    return self._patched.__enter__()
-
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    self._patched.__exit__(exc_type, exc_val, exc_tb)
-    if exc_type is None:
-      missing = ''.join('  expected: %s(%s)\n'
-                        % (self._method, expected_args)
-                        for expected_args, _ in self._calls)
-      self._test_case.assertTrue(
-          not missing,
-          msg=('Expected calls not found\n' + missing))
-
-
-class _ShellError:
-  def __init__(self, output=None, return_code=1):
-    if output is None:
-      self.output = 'Permission denied\r\n'
-    else:
-      self.output = output
-    self.return_code = return_code
-
-
 class DeviceUtilsNewImplTest(unittest.TestCase):
 
   def setUp(self):
@@ -294,28 +227,6 @@ class DeviceUtilsNewImplTest(unittest.TestCase):
     self.adb.GetDeviceSerial.return_value = test_serial
     self.device = device_utils.DeviceUtils(
         self.adb, default_timeout=1, default_retries=0)
-
-  def assertShellCallSequence(self, calls):
-    '''Assert that we expect a sequence of calls to adb.Shell.
-
-    Args:
-      calls: a sequence of (cmd, return_value) pairs, where |cmd| is the
-        expected shell command to run on the device (with any quoting already
-        applied), and |return_value| is either a string to give as mock output
-        or a _ShellError object to raise an AdbShellCommandFailedError.
-    '''
-    def mk_expected_call(cmd, return_value):
-      expected_args = Args(cmd, expect_rc=0)
-      if isinstance(return_value, _ShellError):
-        return_value = device_errors.AdbShellCommandFailedError(cmd,
-            return_value.return_code, return_value.output, str(self.device))
-      return (expected_args, return_value)
-
-    expected_calls = (mk_expected_call(a, r) for a, r in calls)
-    return MockCallSequence(self, self.adb, 'Shell', expected_calls)
-
-  def assertShellCall(self, cmd, return_value=''):
-    return self.assertShellCallSequence([(cmd, return_value)])
 
 
 class DeviceUtilsHybridImplTest(DeviceUtilsOldImplTest):
@@ -337,14 +248,16 @@ class DeviceUtilsIsOnlineTest(DeviceUtilsOldImplTest):
       self.assertFalse(self.device.IsOnline())
 
 
-class DeviceUtilsHasRootTest(DeviceUtilsNewImplTest):
+class DeviceUtilsHasRootTest(DeviceUtilsOldImplTest):
 
   def testHasRoot_true(self):
-    with self.assertShellCall('ls /root', 'foo\r\n'):
+    with self.assertCalls("adb -s 0123456789abcdef shell 'ls /root'",
+                                 'foo\r\n'):
       self.assertTrue(self.device.HasRoot())
 
   def testHasRoot_false(self):
-    with self.assertShellCall('ls /root', _ShellError()):
+    with self.assertCalls("adb -s 0123456789abcdef shell 'ls /root'",
+                                 'Permission denied\r\n'):
       self.assertFalse(self.device.HasRoot())
 
 
@@ -390,17 +303,19 @@ class DeviceUtilsIsUserBuildTest(DeviceUtilsOldImplTest):
       self.assertFalse(self.device.IsUserBuild())
 
 
-class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsOldImplTest):
 
   def testGetExternalStoragePath_succeeds(self):
     fakeStoragePath = '/fake/storage/path'
-    with self.assertShellCall('echo $EXTERNAL_STORAGE',
-                              '%s\r\n' % fakeStoragePath):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'",
+        '%s\r\n' % fakeStoragePath):
       self.assertEquals(fakeStoragePath,
                         self.device.GetExternalStoragePath())
 
   def testGetExternalStoragePath_fails(self):
-    with self.assertShellCall('echo $EXTERNAL_STORAGE', '\r\n'):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'", '\r\n'):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.GetExternalStoragePath()
 
@@ -629,156 +544,101 @@ class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
           self.device.Install('/fake/test/app.apk', retries=0)
 
 
-class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
+class DeviceUtilsRunShellCommandTest(DeviceUtilsOldImplTest):
+
   def testRunShellCommand_commandAsList(self):
-    with self.assertShellCall('pm list packages'):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'pm list packages'",
+        'pacakge:android\r\n'):
       self.device.RunShellCommand(['pm', 'list', 'packages'])
 
-  def testRunShellCommand_commandAsListQuoted(self):
-    with self.assertShellCall("echo 'hello world' '$10'"):
-      self.device.RunShellCommand(['echo', 'hello world', '$10'])
-
   def testRunShellCommand_commandAsString(self):
-    with self.assertShellCall('echo "$VAR"'):
-      self.device.RunShellCommand('echo "$VAR"')
-
-  def testNewRunShellImpl_withEnv(self):
-    with self.assertShellCall('VAR=some_string echo "$VAR"'):
-      self.device.RunShellCommand('echo "$VAR"', env={'VAR': 'some_string'})
-
-  def testNewRunShellImpl_withEnvQuoted(self):
-    with self.assertShellCall('PATH="$PATH:/other/path" run_this'):
-      self.device.RunShellCommand('run_this', env={'PATH': '$PATH:/other/path'})
-
-  def testNewRunShellImpl_withEnv_failure(self):
-    with self.assertRaises(KeyError):
-      self.device.RunShellCommand('some_cmd', env={'INVALID NAME': 'value'})
-
-  def testNewRunShellImpl_withCwd(self):
-    with self.assertShellCall('cd /some/test/path && ls'):
-      self.device.RunShellCommand('ls', cwd='/some/test/path')
-
-  def testNewRunShellImpl_withCwdQuoted(self):
-    with self.assertShellCall("cd '/some test/path with/spaces' && ls"):
-      self.device.RunShellCommand('ls', cwd='/some test/path with/spaces')
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'dumpsys wifi'",
+        'Wi-Fi is enabled\r\n'):
+      self.device.RunShellCommand('dumpsys wifi')
 
   def testRunShellCommand_withSu(self):
-    with self.assertShellCallSequence([
-        ('ls /root', _ShellError()),
-        ('su -c setprop service.adb.root 0', '')]):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
+        ("adb -s 0123456789abcdef shell 'su -c setprop service.adb.root 0'",
+         '')]):
       self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
   def testRunShellCommand_withRoot(self):
-    with self.assertShellCallSequence([
-        ('ls /root', '\r\n'),
-        ('setprop service.adb.root 0', '')]):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'hello\r\nworld\r\n'),
+        ("adb -s 0123456789abcdef shell 'setprop service.adb.root 0'", '')]):
       self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
-  def testRunShellCommand_manyLines(self):
-    cmd = 'ls /some/path'
-    with self.assertShellCall(cmd, 'file1\r\nfile2\r\nfile3\r\n'):
-      self.assertEquals(['file1', 'file2', 'file3'],
-                        self.device.RunShellCommand(cmd))
-
-  def testRunShellCommand_singleLine_success(self):
-    cmd = 'echo $VALUE'
-    with self.assertShellCall(cmd, 'some value\r\n'):
-      self.assertEquals('some value',
-                        self.device.RunShellCommand(cmd, single_line=True))
-
-  def testRunShellCommand_singleLine_successEmptyLine(self):
-    cmd = 'echo $VALUE'
-    with self.assertShellCall(cmd, '\r\n'):
-      self.assertEquals('',
-                        self.device.RunShellCommand(cmd, single_line=True))
-
-  def testRunShellCommand_singleLine_successWithoutEndLine(self):
-    cmd = 'echo -n $VALUE'
-    with self.assertShellCall(cmd, 'some value'):
-      self.assertEquals('some value',
-                        self.device.RunShellCommand(cmd, single_line=True))
-
-  def testRunShellCommand_singleLine_failNoLines(self):
-    cmd = 'echo $VALUE'
-    with self.assertShellCall(cmd, ''):
-      with self.assertRaises(device_errors.CommandFailedError):
-        self.device.RunShellCommand(cmd, single_line=True)
-
-  def testRunShellCommand_singleLine_failTooManyLines(self):
-    cmd = 'echo $VALUE'
-    with self.assertShellCall(cmd, 'some value\r\nanother value\r\n'):
-      with self.assertRaises(device_errors.CommandFailedError):
-        self.device.RunShellCommand(cmd, single_line=True)
-
   def testRunShellCommand_checkReturn_success(self):
-    cmd = 'echo $ANDROID_DATA'
-    output = '/data\r\n'
-    with self.assertShellCall(cmd, output):
-      self.assertEquals([output.rstrip()],
-                        self.device.RunShellCommand(cmd, check_return=True))
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo $ANDROID_DATA; echo %$?'",
+        '/data\r\n%0\r\n'):
+      self.device.RunShellCommand('echo $ANDROID_DATA', check_return=True)
 
   def testRunShellCommand_checkReturn_failure(self):
-    cmd = 'ls /root'
-    output = 'opendir failed, Permission denied\r\n'
-    with self.assertShellCall(cmd, _ShellError(output)):
-      with self.assertRaises(device_errors.AdbShellCommandFailedError):
-        self.device.RunShellCommand(cmd, check_return=True)
-
-  def testRunShellCommand_checkReturn_disabled(self):
-    cmd = 'ls /root'
-    output = 'opendir failed, Permission denied\r\n'
-    with self.assertShellCall(cmd, _ShellError(output)):
-      self.assertEquals([output.rstrip()],
-                        self.device.RunShellCommand(cmd, check_return=False))
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo $ANDROID_DATA; echo %$?'",
+        '\r\n%1\r\n'):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.RunShellCommand('echo $ANDROID_DATA', check_return=True)
 
 
-class DeviceUtilsKillAllTest(DeviceUtilsNewImplTest):
+class DeviceUtilsKillAllTest(DeviceUtilsOldImplTest):
 
   def testKillAll_noMatchingProcesses(self):
-    output = 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-    with self.assertShellCallSequence([('ps', output)]):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
+        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.KillAll('test_process')
 
   def testKillAll_nonblocking(self):
-    with self.assertShellCallSequence([
-        ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-               'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-               'this.is.a.test.process\r\n'),
-        ('kill -9 1234', '')]):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ps'",
+         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+              'this.is.a.test.process\r\n'),
+        ("adb -s 0123456789abcdef shell 'kill -9 1234'", '')]):
       self.assertEquals(1,
           self.device.KillAll('this.is.a.test.process', blocking=False))
 
   def testKillAll_blocking(self):
     with mock.patch('time.sleep'):
-      with self.assertShellCallSequence([
-        ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-               'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-               'this.is.a.test.process\r\n'),
-        ('kill -9 1234', ''),
-        ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-               'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-               'this.is.a.test.process\r\n'),
-        ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n')]):
+      with self.assertCallsSequence([
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'kill -9 1234'", ''),
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n')]):
         self.assertEquals(1,
             self.device.KillAll('this.is.a.test.process', blocking=True))
 
   def testKillAll_root(self):
-    with self.assertShellCallSequence([
-        ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-               'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-               'this.is.a.test.process\r\n'),
-        ('ls /root', _ShellError()),
-        ('su -c kill -9 1234', '')]):
+    with self.assertCallsSequence([
+          ("adb -s 0123456789abcdef shell 'ps'",
+           'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+           'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+                'this.is.a.test.process\r\n'),
+          ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
+          ("adb -s 0123456789abcdef shell 'su -c kill -9 1234'", '')]):
       self.assertEquals(1,
           self.device.KillAll('this.is.a.test.process', as_root=True))
 
   def testKillAll_sigterm(self):
-    with self.assertShellCallSequence([
-        ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
-               'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
-               'this.is.a.test.process\r\n'),
-        ('kill -15 1234', '')]):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ps'",
+         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+         'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
+              'this.is.a.test.process\r\n'),
+        ("adb -s 0123456789abcdef shell 'kill -15 1234'", '')]):
       self.assertEquals(1,
           self.device.KillAll('this.is.a.test.process', signum=signal.SIGTERM))
 
@@ -1084,11 +944,10 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
     self.assertEqual(2, self.device._RunShellCommandImpl.call_count)
     self.device._RunShellCommandImpl.assert_any_call(
         ['unzip', '/test/device/external_dir/tmp.zip'],
-        as_root=True,
-        env={'PATH': '$PATH:/data/local/tmp/bin'},
-        check_return=True)
+        as_root=True, check_return=True,
+        env={'PATH': '$PATH:/data/local/tmp/bin'})
     self.device._RunShellCommandImpl.assert_any_call(
-        ['rm', '/test/device/external_dir/tmp.zip'], check_return=True)
+        ['rm', '/test/device/external_dir/tmp.zip'])
 
   def testPushChangedFilesZipped_multiple(self):
     test_files = [('/test/host/path/file1', '/test/device/path/file1'),
@@ -1112,11 +971,10 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
     self.assertEqual(2, self.device._RunShellCommandImpl.call_count)
     self.device._RunShellCommandImpl.assert_any_call(
         ['unzip', '/test/device/external_dir/tmp.zip'],
-        as_root=True,
-        env={'PATH': '$PATH:/data/local/tmp/bin'},
-        check_return=True)
+        as_root=True, check_return=True,
+        env={'PATH': '$PATH:/data/local/tmp/bin'})
     self.device._RunShellCommandImpl.assert_any_call(
-        ['rm', '/test/device/external_dir/tmp.zip'], check_return=True)
+        ['rm', '/test/device/external_dir/tmp.zip'])
 
 
 class DeviceUtilsFileExistsTest(DeviceUtilsOldImplTest):
@@ -1344,22 +1202,44 @@ class DeviceUtilsWriteFileTest(DeviceUtilsOldImplTest):
       self.device.WriteFile('/test/file/no.permissions.to.write',
                             'new test file contents', as_root=True)
 
-class DeviceUtilsWriteTextFileTest(DeviceUtilsNewImplTest):
+class DeviceUtilsWriteTextFileTest(DeviceUtilsOldImplTest):
 
   def testWriteTextFileTest_basic(self):
-    with self.assertShellCall('echo some.string > /test/file/to.write'):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo some.string"
+        " > /test/file/to.write; echo %$?'", '%0\r\n'):
       self.device.WriteTextFile('/test/file/to.write', 'some.string')
 
-  def testWriteTextFileTest_quoted(self):
-    with self.assertShellCall(
-        "echo 'some other string' > '/test/file/to write'"):
-      self.device.WriteTextFile('/test/file/to write', 'some other string')
+  def testWriteTextFileTest_stringWithSpaces(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'echo '\\''some other string'\\''"
+        " > /test/file/to.write; echo %$?'", '%0\r\n'):
+      self.device.WriteTextFile('/test/file/to.write', 'some other string')
 
-  def testWriteTextFileTest_asRoot(self):
-    with self.assertShellCallSequence([
-        ('ls /root', _ShellError()),
-        ('su -c echo string > /test/file', '')]):
-      self.device.WriteTextFile('/test/file', 'string', as_root=True)
+  def testWriteTextFileTest_asRoot_withSu(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
+        ("adb -s 0123456789abcdef shell 'su -c echo some.string"
+          " > /test/file/to.write; echo %$?'", '%0\r\n')]):
+      self.device.WriteTextFile('/test/file/to.write', 'some.string',
+                                as_root=True)
+
+  def testWriteTextFileTest_asRoot_withRoot(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'hello\r\nworld\r\n'),
+        ("adb -s 0123456789abcdef shell 'echo some.string"
+          " > /test/file/to.write; echo %$?'", '%0\r\n')]):
+      self.device.WriteTextFile('/test/file/to.write', 'some.string',
+                                as_root=True)
+
+  def testWriteTextFileTest_asRoot_rejected(self):
+    with self.assertCallsSequence([
+        ("adb -s 0123456789abcdef shell 'ls /root'", 'Permission denied\r\n'),
+        ("adb -s 0123456789abcdef shell 'su -c echo some.string"
+          " > /test/file/to.write; echo %$?'", '%1\r\n')]):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.WriteTextFile('/test/file/to.write', 'some.string',
+                                  as_root=True)
 
 class DeviceUtilsLsTest(DeviceUtilsOldImplTest):
 
@@ -1516,26 +1396,26 @@ class DeviceUtilsSetPropTest(DeviceUtilsOldImplTest):
       self.device.SetProp('this.is.a.test.property', 'test_property_value')
 
 
-class DeviceUtilsGetPidsTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGetPidsTest(DeviceUtilsOldImplTest):
 
   def testGetPids_noMatches(self):
-    with self.assertShellCall(
-        'ps',
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
         'user  1000    100   1024 1024   ffffffff 00000000 no.match\r\n'):
       self.assertEqual({}, self.device.GetPids('does.not.match'))
 
   def testGetPids_oneMatch(self):
-    with self.assertShellCall(
-        'ps',
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
         'user  1000    100   1024 1024   ffffffff 00000000 not.a.match\r\n'
         'user  1001    100   1024 1024   ffffffff 00000000 one.match\r\n'):
       self.assertEqual({'one.match': '1001'}, self.device.GetPids('one.match'))
 
   def testGetPids_mutlipleMatches(self):
-    with self.assertShellCall(
-        'ps',
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
         'user  1000    100   1024 1024   ffffffff 00000000 not\r\n'
         'user  1001    100   1024 1024   ffffffff 00000000 one.match\r\n'
@@ -1546,8 +1426,8 @@ class DeviceUtilsGetPidsTest(DeviceUtilsNewImplTest):
           self.device.GetPids('match'))
 
   def testGetPids_exactMatch(self):
-    with self.assertShellCall(
-        'ps',
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
         'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
         'user  1000    100   1024 1024   ffffffff 00000000 not.exact.match\r\n'
         'user  1234    100   1024 1024   ffffffff 00000000 exact.match\r\n'):
