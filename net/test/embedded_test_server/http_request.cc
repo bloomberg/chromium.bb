@@ -89,6 +89,7 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
     base::SplitString(header_line, ' ', &header_line_tokens);
     DCHECK_EQ(3u, header_line_tokens.size());
     // Method.
+    http_request_->method_string = header_line_tokens[0];
     http_request_->method = GetMethodType(base::StringToLowerASCII(
         header_line_tokens[0]));
     // Address.

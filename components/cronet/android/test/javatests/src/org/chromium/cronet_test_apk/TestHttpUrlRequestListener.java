@@ -17,10 +17,14 @@ import org.chromium.net.HttpUrlRequestListener;
 
 public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
     public static final String TAG = "TestHttpUrlRequestListener";
+
     public int mHttpStatusCode = 0;
+    public String mNegotiatedProtocol;
+
     public String mUrl;
     public byte[] mResponseAsBytes;
-    public String mNegotiatedProtocol;
+    public String mResponseAsString;
+    public Exception mException;
 
     private ConditionVariable mComplete = new ConditionVariable();
 
@@ -40,6 +44,8 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
     public void onRequestComplete(HttpUrlRequest request) {
         mUrl = request.getUrl();
         mResponseAsBytes = request.getResponseAsBytes();
+        mResponseAsString = new String(mResponseAsBytes);
+        mException = request.getException();
         mComplete.open();
         Log.i(TAG, "****** Request Complete, status code is " +
                 request.getHttpStatusCode());

@@ -21,7 +21,8 @@ WrappedChannelElementReader::~WrappedChannelElementReader() {
 }
 
 int WrappedChannelElementReader::Init(const net::CompletionCallback& callback) {
-  offset_ = 0;
+  if (offset_ != 0)
+    return net::ERR_UPLOAD_STREAM_REWIND_NOT_SUPPORTED;
   return net::OK;
 }
 

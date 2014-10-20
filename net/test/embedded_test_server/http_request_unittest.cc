@@ -35,6 +35,7 @@ TEST(HttpRequestTest, ParseRequest) {
   {
     scoped_ptr<HttpRequest> request = parser.GetRequest();
     EXPECT_EQ("/foobar.html", request->relative_url);
+    EXPECT_EQ("POST", request->method_string);
     EXPECT_EQ(METHOD_POST, request->method);
     EXPECT_EQ("1234567890", request->content);
     ASSERT_EQ(3u, request->headers.size());
@@ -74,6 +75,20 @@ TEST(HttpRequestTest, ParseRequestWithoutBody) {
   ASSERT_EQ(HttpRequestParser::ACCEPTED, parser.ParseRequest());
 
   scoped_ptr<HttpRequest> request = parser.GetRequest();
+  EXPECT_EQ("", request->content);
+  EXPECT_FALSE(request->has_content);
+}
+
+TEST(HttpRequestTest, ParseGet) {
+  HttpRequestParser parser;
+
+  parser.ProcessChunk("GET /foobar.html HTTP/1.1\r\n\r\n");
+  ASSERT_EQ(HttpRequestParser::ACCEPTED, parser.ParseRequest());
+
+  scoped_ptr<HttpRequest> request = parser.GetRequest();
+  EXPECT_EQ("/foobar.html", request->relative_url);
+  EXPECT_EQ("GET", request->method_string);
+  EXPECT_EQ(METHOD_GET, request->method);
   EXPECT_EQ("", request->content);
   EXPECT_FALSE(request->has_content);
 }

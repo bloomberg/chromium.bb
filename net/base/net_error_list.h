@@ -99,6 +99,10 @@ NET_ERROR(SOCKET_IS_CONNECTED, -23)
 // The error can be emitted by code in chrome/browser/policy/policy_helpers.cc.
 NET_ERROR(BLOCKED_ENROLLMENT_CHECK_PENDING, -24)
 
+// The upload failed because the upload stream needed to be re-read, due to a
+// retry or a redirect, but the upload stream doesn't support that operation.
+NET_ERROR(UPLOAD_STREAM_REWIND_NOT_SUPPORTED, -25)
+
 // A connection was closed (corresponding to a TCP FIN).
 NET_ERROR(CONNECTION_CLOSED, -100)
 
