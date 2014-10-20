@@ -654,7 +654,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // created in the FrameTree skipping the subtree of the navigating frame.
 // TODO(nasko): Test is disabled on Android, because it times out. It should
 // be fixed together with CrossSiteIframe on that platform.
-#if defined(OS_ANDROID)
+//
+// Disabled on Mac due to flakiness on ASAN. http://crbug.com/425248
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_ProxyCreationSkipsSubtree DISABLED_ProxyCreationSkipsSubtree
 #else
 #define MAYBE_ProxyCreationSkipsSubtree ProxyCreationSkipsSubtree
