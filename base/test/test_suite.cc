@@ -32,8 +32,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if defined(OS_IOS)
 #include "base/test/test_listener_ios.h"
-#else
-#include "base/test/mock_chrome_application_mac.h"
 #endif  // OS_IOS
 #endif  // OS_MACOSX
 
@@ -285,11 +283,6 @@ void TestSuite::Initialize() {
           switches::kWaitForDebugger)) {
     base::debug::WaitForDebugger(60, true);
   }
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Some of the app unit tests spin runloops.
-  mock_cr_app::RegisterMockCrApp();
 #endif
 
 #if defined(OS_IOS)

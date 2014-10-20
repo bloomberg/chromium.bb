@@ -19,6 +19,7 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/bundle_locations.h"
+#include "base/test/mock_chrome_application_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -62,6 +63,8 @@ void UIBaseTestSuite::Initialize() {
   PathService::Get(base::DIR_EXE, &exe_path);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+  mock_cr_app::RegisterMockCrApp();
+
   // On Mac, a test Framework bundle is created that links locale.pak and
   // chrome_100_percent.pak at the appropriate places to ui_test.pak.
   base::mac::SetOverrideFrameworkBundlePath(

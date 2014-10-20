@@ -12,7 +12,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+#include "base/test/mock_chrome_application_mac.h"
+#else
 #include "ui/gl/gl_surface.h"
 #endif
 
@@ -24,7 +26,9 @@ class MessageCenterTestSuite : public base::TestSuite {
 
  protected:
   virtual void Initialize() override {
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+    mock_cr_app::RegisterMockCrApp();
+#else
     gfx::GLSurface::InitializeOneOffForTests();
 #endif
     base::TestSuite::Initialize();

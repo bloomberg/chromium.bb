@@ -17,6 +17,10 @@
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/test/mock_chrome_application_mac.h"
+#endif
+
 namespace {
 
 class GfxTestSuite : public base::TestSuite {
@@ -29,6 +33,10 @@ class GfxTestSuite : public base::TestSuite {
 
 #if defined(OS_ANDROID)
     gfx::android::RegisterJni(base::android::AttachCurrentThread());
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    mock_cr_app::RegisterMockCrApp();
 #endif
 
     ui::RegisterPathProvider();

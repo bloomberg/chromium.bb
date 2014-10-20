@@ -7,6 +7,7 @@
 #include "base/debug/debugger.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/test/mock_chrome_application_mac.h"
 #include "base/test/test_timeouts.h"
 
 namespace {
@@ -16,6 +17,11 @@ namespace {
 // to flag intentional leaks without having to suppress all calls to
 // potentially leaky functions.
 void NOINLINE ForceSystemLeaks() {
+  // If a test suite hasn't already initialized NSApp, register the mock one
+  // now.
+  if (!NSApp)
+    mock_cr_app::RegisterMockCrApp();
+
   // First NSCursor push always leaks.
   [[NSCursor openHandCursor] push];
   [NSCursor pop];
