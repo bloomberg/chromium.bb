@@ -9,11 +9,9 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/streams/ReadableStream.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Deque.h"
-#include "wtf/Forward.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,10 +35,10 @@ public:
 };
 
 template<>
-class ReadableStreamChunkTypeTraits<ArrayBuffer> {
+class ReadableStreamChunkTypeTraits<DOMArrayBuffer> {
 public:
-    typedef RefPtr<ArrayBuffer> HoldType;
-    typedef PassRefPtr<ArrayBuffer> PassType;
+    typedef RefPtr<DOMArrayBuffer> HoldType;
+    typedef PassRefPtr<DOMArrayBuffer> PassType;
 
     static size_t size(const PassType& value) { return value->byteLength(); }
     static size_t size(const HoldType& value) { return value->byteLength(); }
@@ -112,4 +110,3 @@ ScriptValue ReadableStreamImpl<ChunkTypeTraits>::read(ScriptState* scriptState, 
 } // namespace blink
 
 #endif // ReadableStreamImpl_h
-

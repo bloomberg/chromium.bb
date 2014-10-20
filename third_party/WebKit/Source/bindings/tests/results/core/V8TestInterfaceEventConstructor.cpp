@@ -15,7 +15,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
-#include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -110,7 +110,7 @@ static void initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGet
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toImpl(holder);
-    RefPtr<Uint8Array> cppValue(impl->initializedByEventConstructorReadonlyUint8ArrayAttribute());
+    RefPtr<DOMUint8Array> cppValue(impl->initializedByEventConstructorReadonlyUint8ArrayAttribute());
     if (cppValue && DOMDataStore::setReturnValueFromWrapper<V8Uint8Array>(info.GetReturnValue(), cppValue.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
@@ -372,7 +372,6 @@ TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toImplWithTypeCh
 {
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceEventConstructor>() : 0;
 }
-
 
 void V8TestInterfaceEventConstructor::refObject(ScriptWrappableBase* internalPointer)
 {

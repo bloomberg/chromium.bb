@@ -29,12 +29,12 @@
 #define MessageEvent_h
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
-#include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "wtf/ArrayBuffer.h"
 
 namespace blink {
 
@@ -74,7 +74,7 @@ public:
     {
         return adoptRefWillBeNoop(new MessageEvent(data, origin));
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<ArrayBuffer> data, const String& origin = String())
+    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String())
     {
         return adoptRefWillBeNoop(new MessageEvent(data, origin));
     }
@@ -103,7 +103,7 @@ public:
     SerializedScriptValue* dataAsSerializedScriptValue() const { ASSERT(m_dataType == DataTypeScriptValue || m_dataType == DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
     String dataAsString() const { ASSERT(m_dataType == DataTypeString); return m_dataAsString; }
     Blob* dataAsBlob() const { ASSERT(m_dataType == DataTypeBlob); return m_dataAsBlob.get(); }
-    ArrayBuffer* dataAsArrayBuffer() const { ASSERT(m_dataType == DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
+    DOMArrayBuffer* dataAsArrayBuffer() const { ASSERT(m_dataType == DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
 
     void setSerializedData(PassRefPtr<SerializedScriptValue> data)
     {
@@ -126,13 +126,13 @@ private:
 
     MessageEvent(const String& data, const String& origin);
     MessageEvent(Blob* data, const String& origin);
-    MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin);
+    MessageEvent(PassRefPtr<DOMArrayBuffer> data, const String& origin);
 
     DataType m_dataType;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
     PersistentWillBeMember<Blob> m_dataAsBlob;
-    RefPtr<ArrayBuffer> m_dataAsArrayBuffer;
+    RefPtr<DOMArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;
     RefPtrWillBeMember<EventTarget> m_source;

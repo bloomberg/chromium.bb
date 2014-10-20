@@ -23,16 +23,21 @@ namespace blink {
                                   if parent_interface else '0' %}
 {% set wrapper_type_prototype = 'WrapperTypeExceptionPrototype' if is_exception else
                                 'WrapperTypeObjectPrototype' %}
+{% set dom_template = '%s::domTemplate' % v8_class if not is_array_buffer_or_view else '0' %}
 
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 {% if is_script_wrappable %}
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
+{% if is_typed_array_type %}
+template<>
+{% endif %}
 const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperTypeInfo;
 
 {% endif %}
+{% if not is_array_buffer_or_view %}
 namespace {{cpp_class}}V8Internal {
 
 {# Constants #}
@@ -229,6 +234,7 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 
 {% endif %}
 {% endblock %}
+{% endif %}{# not is_array_buffer_or_view #}
 {##############################################################################}
 {% block named_constructor %}{% endblock %}
 {% block initialize_event %}{% endblock %}
@@ -236,6 +242,7 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% block configure_shadow_object_template %}{% endblock %}
 {##############################################################################}
 {% block install_dom_template %}
+{% if not is_array_buffer_or_view %}
 {% from 'methods.cpp' import install_custom_signature with context %}
 {% from 'constants.cpp' import install_constants with context %}
 static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
@@ -306,7 +313,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {{install_constants() | indent}}
     {% endif %}
     {# Special operations #}
-    {# V8 has access-check callback API and it's used on Window instead of
+    {# V8 has access-check callback API and it is used on Window instead of
        deleters or enumerators; see ObjectTemplate::SetAccessCheckCallbacks.
        In addition, the getter should be set on the prototype template, to get
        the implementation straight out of the Window prototype, regardless of
@@ -400,10 +407,12 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
 }
 
+{% endif %}{# not is_array_buffer_or_view #}
 {% endblock %}
 {##############################################################################}
 {% block get_dom_template %}{% endblock %}
 {% block has_instance %}{% endblock %}
+{% block to_impl %}{% endblock %}
 {% block to_impl_with_type_check %}{% endblock %}
 {##############################################################################}
 {% block install_conditional_attributes %}

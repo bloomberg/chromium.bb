@@ -27,11 +27,10 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/crypto/Crypto.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
@@ -48,11 +47,11 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     if (!V8ArrayBufferView::hasInstance(buffer, info.GetIsolate())) {
         exceptionState.throwTypeError("First argument is not an ArrayBufferView");
     } else {
-        ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(buffer));
+        DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(buffer));
         ASSERT(arrayBufferView);
 
         Crypto* crypto = V8Crypto::toImpl(info.Holder());
-        crypto->getRandomValues(arrayBufferView, exceptionState);
+        crypto->getRandomValues(arrayBufferView->view(), exceptionState);
     }
 
     if (exceptionState.throwIfNeeded())

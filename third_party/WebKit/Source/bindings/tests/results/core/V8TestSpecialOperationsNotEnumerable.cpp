@@ -110,7 +110,6 @@ TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toImpl
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestSpecialOperationsNotEnumerable>() : 0;
 }
 
-
 void V8TestSpecialOperationsNotEnumerable::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestSpecialOperationsNotEnumerable>()->ref();

@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
@@ -166,7 +167,7 @@ void Body::didFinishLoading()
 
     switch (m_responseType) {
     case ResponseAsArrayBuffer:
-        m_resolver->resolve(m_loader->arrayBufferResult());
+        m_resolver->resolve(DOMArrayBuffer::create(m_loader->arrayBufferResult()));
         break;
     case ResponseAsBlob: {
         ASSERT(blobDataHandle()->size() == kuint64max);

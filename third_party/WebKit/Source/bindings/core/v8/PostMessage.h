@@ -9,8 +9,8 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
-#include "wtf/ArrayBuffer.h"
 #include <v8.h>
 
 namespace blink {

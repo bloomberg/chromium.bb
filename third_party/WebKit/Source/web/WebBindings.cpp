@@ -33,13 +33,13 @@
 
 #include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8NPObject.h"
 #include "bindings/core/v8/V8NPUtils.h"
 #include "bindings/core/v8/V8Range.h"
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/core/v8/npruntime_impl.h"
 #include "bindings/core/v8/npruntime_priv.h"
 #include "core/dom/Range.h"
@@ -49,7 +49,6 @@
 #include "public/web/WebArrayBufferView.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebRange.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
@@ -286,11 +285,11 @@ static bool getArrayBufferImpl(NPObject* object, WebArrayBuffer* arrayBuffer, v8
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    ArrayBuffer* native = V8ArrayBuffer::hasInstance(v8Object, isolate) ? V8ArrayBuffer::toImpl(v8Object) : 0;
-    if (!native)
+    DOMArrayBuffer* impl = V8ArrayBuffer::hasInstance(v8Object, isolate) ? V8ArrayBuffer::toImpl(v8Object) : 0;
+    if (!impl)
         return false;
 
-    *arrayBuffer = WebArrayBuffer(native);
+    *arrayBuffer = WebArrayBuffer(impl->buffer());
     return true;
 }
 
@@ -307,11 +306,11 @@ static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBu
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    ArrayBufferView* native = V8ArrayBufferView::hasInstance(v8Object, isolate) ? V8ArrayBufferView::toImpl(v8Object) : 0;
-    if (!native)
+    DOMArrayBufferView* impl = V8ArrayBufferView::hasInstance(v8Object, isolate) ? V8ArrayBufferView::toImpl(v8Object) : 0;
+    if (!impl)
         return false;
 
-    *arrayBufferView = WebArrayBufferView(native);
+    *arrayBufferView = WebArrayBufferView(impl->view());
     return true;
 }
 

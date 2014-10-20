@@ -26,6 +26,8 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 
+#include "core/dom/DOMArrayBuffer.h"
+
 namespace blink {
 
 MediaKeyMessageEventInit::MediaKeyMessageEventInit()

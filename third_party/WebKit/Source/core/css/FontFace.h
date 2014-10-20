@@ -47,6 +47,8 @@ namespace blink {
 
 class CSSFontFace;
 class CSSValueList;
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class Dictionary;
 class Document;
 class ExceptionState;
@@ -59,8 +61,8 @@ class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, pub
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const FontFaceDescriptors&);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<ArrayBufferView>, const FontFaceDescriptors&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);
+    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBufferView>, const FontFaceDescriptors&);
     static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
     static PassRefPtrWillBeRawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
 

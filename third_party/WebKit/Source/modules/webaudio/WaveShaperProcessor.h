@@ -25,10 +25,10 @@
 #ifndef WaveShaperProcessor_h
 #define WaveShaperProcessor_h
 
+#include "core/dom/DOMTypedArray.h"
+#include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
-#include "modules/webaudio/AudioNode.h"
-#include "wtf/Float32Array.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
@@ -52,15 +52,15 @@ public:
 
     virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 
-    void setCurve(Float32Array*);
-    Float32Array* curve() { return m_curve.get(); }
+    void setCurve(DOMFloat32Array*);
+    DOMFloat32Array* curve() { return m_curve.get(); }
 
     void setOversample(OverSampleType);
     OverSampleType oversample() const { return m_oversample; }
 
 private:
     // m_curve represents the non-linear shaping curve.
-    RefPtr<Float32Array> m_curve;
+    RefPtr<DOMFloat32Array> m_curve;
 
     OverSampleType m_oversample;
 };

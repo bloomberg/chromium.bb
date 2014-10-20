@@ -26,6 +26,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentParser.h"
@@ -339,7 +340,7 @@ Blob* XMLHttpRequest::responseBlob()
     return m_responseBlob.get();
 }
 
-ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
+DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 {
     ASSERT(m_responseTypeCode == ResponseTypeArrayBuffer);
 
@@ -348,7 +349,7 @@ ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 
     if (!m_responseArrayBuffer) {
         if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
-            m_responseArrayBuffer = m_binaryResponseBuilder->getAsArrayBuffer();
+            m_responseArrayBuffer = DOMArrayBuffer::create(m_binaryResponseBuilder->getAsArrayBuffer());
             if (!m_responseArrayBuffer) {
                 // m_binaryResponseBuilder failed to allocate an ArrayBuffer.
                 // We need to crash the renderer since there's no way defined in
@@ -357,7 +358,7 @@ ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
             }
             m_binaryResponseBuilder.clear();
         } else {
-            m_responseArrayBuffer = ArrayBuffer::create(static_cast<void*>(0), 0);
+            m_responseArrayBuffer = DOMArrayBuffer::create(static_cast<void*>(0), 0);
         }
     }
 
@@ -1568,10 +1569,10 @@ void XMLHttpRequest::didReceiveData(const char* data, unsigned len)
         m_responseLegacyStream->addData(data, len);
     } else if (m_responseTypeCode == ResponseTypeStream) {
         if (!m_responseStream) {
-            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> >(executionContext(), new ReadableStreamSource(this));
+            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >(executionContext(), new ReadableStreamSource(this));
             m_responseStream->didSourceStart();
         }
-        m_responseStream->enqueue(ArrayBuffer::create(data, len));
+        m_responseStream->enqueue(DOMArrayBuffer::create(data, len));
     }
 
     if (m_blobLoader) {

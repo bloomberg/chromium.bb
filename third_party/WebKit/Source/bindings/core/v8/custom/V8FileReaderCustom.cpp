@@ -31,8 +31,8 @@
 #include "config.h"
 #include "bindings/core/v8/V8FileReader.h"
 
+#include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/ExecutionContext.h"
 
 namespace blink {
@@ -42,7 +42,7 @@ void V8FileReader::resultAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
     v8::Handle<v8::Object> holder = info.Holder();
     FileReader* impl = V8FileReader::toImpl(holder);
     if (impl->readType() == FileReaderLoader::ReadAsArrayBuffer) {
-        v8SetReturnValueFast(info, impl->arrayBufferResult(), impl);
+        v8SetReturnValueFast(info, DOMArrayBuffer::create(impl->arrayBufferResult()), impl);
         return;
     }
     v8SetReturnValueStringOrNull(info, impl->stringResult(), info.GetIsolate());

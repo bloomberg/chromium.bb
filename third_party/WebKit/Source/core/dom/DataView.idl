@@ -23,10 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://www.khronos.org/registry/typedarray/specs/latest/#DATAVIEW
+
 [
-    Custom=Wrap,
-    CustomConstructor(ArrayBuffer buffer, optional unsigned long byteOffset, optional unsigned long byteLength),
     Exposed=(Window,Worker),
+    ImplementedAs=DOMDataView,
     TypeChecking=Interface,
 ] interface DataView : ArrayBufferView {
     // All these methods raise an exception if they would read or write beyond the end of the view.

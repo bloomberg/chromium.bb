@@ -37,12 +37,13 @@
 #include "platform/AsyncMethodRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebSourceBufferClient.h"
-#include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class ExceptionState;
 class FileReaderLoader;
 class GenericEventQueue;
@@ -69,8 +70,8 @@ public:
     PassRefPtrWillBeRawPtr<TimeRanges> buffered(ExceptionState&) const;
     double timestampOffset() const;
     void setTimestampOffset(double, ExceptionState&);
-    void appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState&);
-    void appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState&);
+    void appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState&);
+    void appendBuffer(PassRefPtr<DOMArrayBufferView> data, ExceptionState&);
     void appendStream(PassRefPtrWillBeRawPtr<Stream>, ExceptionState&);
     void appendStream(PassRefPtrWillBeRawPtr<Stream>, unsigned long long maxSize, ExceptionState&);
     void abort(ExceptionState&);

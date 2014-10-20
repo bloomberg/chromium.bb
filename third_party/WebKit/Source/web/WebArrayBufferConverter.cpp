@@ -31,9 +31,7 @@
 #include "config.h"
 #include "public/web/WebArrayBufferConverter.h"
 
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/PassOwnPtr.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
 
 namespace blink {
 
@@ -41,16 +39,15 @@ v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer,
 {
     if (!buffer)
         return v8::Handle<v8::Value>();
-    return toV8(*buffer, creationContext, isolate);
+    return toV8(DOMArrayBuffer::create(*buffer), creationContext, isolate);
 }
 
 WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     if (!V8ArrayBuffer::hasInstance(value, isolate))
         return 0;
-    ArrayBuffer* buffer = V8ArrayBuffer::toImpl(value->ToObject());
-    return new WebArrayBuffer(buffer);
+    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value->ToObject());
+    return new WebArrayBuffer(buffer->buffer());
 }
 
 } // namespace blink
-

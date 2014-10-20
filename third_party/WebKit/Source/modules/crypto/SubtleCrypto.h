@@ -33,8 +33,8 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Handle.h"
-#include "wtf/ArrayPiece.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -50,20 +50,20 @@ public:
         return new SubtleCrypto();
     }
 
-    ScriptPromise encrypt(ScriptState*, const Dictionary&, CryptoKey*, const ArrayPiece&);
-    ScriptPromise decrypt(ScriptState*, const Dictionary&, CryptoKey*, const ArrayPiece&);
-    ScriptPromise sign(ScriptState*, const Dictionary&, CryptoKey*, const ArrayPiece&);
+    ScriptPromise encrypt(ScriptState*, const Dictionary&, CryptoKey*, const DOMArrayPiece&);
+    ScriptPromise decrypt(ScriptState*, const Dictionary&, CryptoKey*, const DOMArrayPiece&);
+    ScriptPromise sign(ScriptState*, const Dictionary&, CryptoKey*, const DOMArrayPiece&);
     // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
-    ScriptPromise verifySignature(ScriptState*, const Dictionary&, CryptoKey*, const ArrayPiece& signature, const ArrayPiece& data);
-    ScriptPromise digest(ScriptState*, const Dictionary&, const ArrayPiece& data);
+    ScriptPromise verifySignature(ScriptState*, const Dictionary&, CryptoKey*, const DOMArrayPiece& signature, const DOMArrayPiece& data);
+    ScriptPromise digest(ScriptState*, const Dictionary&, const DOMArrayPiece& data);
 
     ScriptPromise generateKey(ScriptState*, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
-    ScriptPromise importKey(ScriptState*, const String&, const ArrayPiece&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
+    ScriptPromise importKey(ScriptState*, const String&, const DOMArrayPiece&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
     ScriptPromise importKey(ScriptState*, const String&, const Dictionary&, const Dictionary&, bool extractable, const Vector<String>& keyUsages);
     ScriptPromise exportKey(ScriptState*, const String&, CryptoKey*);
 
     ScriptPromise wrapKey(ScriptState*, const String&, CryptoKey*, CryptoKey*, const Dictionary&);
-    ScriptPromise unwrapKey(ScriptState*, const String&, const ArrayPiece&, CryptoKey*, const Dictionary&, const Dictionary&, bool, const Vector<String>&);
+    ScriptPromise unwrapKey(ScriptState*, const String&, const DOMArrayPiece&, CryptoKey*, const Dictionary&, const Dictionary&, bool, const Vector<String>&);
 
     void trace(Visitor*) { }
 

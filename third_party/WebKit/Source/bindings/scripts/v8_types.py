@@ -55,23 +55,28 @@ NON_WRAPPER_TYPES = frozenset([
     'NodeFilter',
     'SerializedScriptValue',
 ])
-TYPED_ARRAYS = {
-    # (cpp_type, v8_type), used by constructor templates
-    'ArrayBuffer': None,
-    'ArrayBufferView': None,
-    'Float32Array': ('float', 'v8::kExternalFloatArray'),
-    'Float64Array': ('double', 'v8::kExternalDoubleArray'),
-    'Int8Array': ('signed char', 'v8::kExternalByteArray'),
-    'Int16Array': ('short', 'v8::kExternalShortArray'),
-    'Int32Array': ('int', 'v8::kExternalIntArray'),
-    'Uint8Array': ('unsigned char', 'v8::kExternalUnsignedByteArray'),
-    'Uint8ClampedArray': ('unsigned char', 'v8::kExternalPixelArray'),
-    'Uint16Array': ('unsigned short', 'v8::kExternalUnsignedShortArray'),
-    'Uint32Array': ('unsigned int', 'v8::kExternalUnsignedIntArray'),
-}
+TYPED_ARRAY_TYPES = frozenset([
+    'Float32Array',
+    'Float64Array',
+    'Int8Array',
+    'Int16Array',
+    'Int32Array',
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'Uint16Array',
+    'Uint32Array',
+])
+ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
+    'ArrayBuffer',
+    'ArrayBufferView',
+    'DataView',
+]))
 
-IdlType.is_typed_array_element_type = property(
-    lambda self: self.base_type in TYPED_ARRAYS)
+IdlType.is_array_buffer_or_view = property(
+    lambda self: self.base_type in ARRAY_BUFFER_AND_VIEW_TYPES)
+
+IdlType.is_typed_array = property(
+    lambda self: self.base_type in TYPED_ARRAY_TYPES)
 
 IdlType.is_wrapper_type = property(
     lambda self: (self.is_interface_type and
@@ -176,8 +181,8 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
 
-    if idl_type.is_typed_array_element_type and raw_type:
-        return base_idl_type + '*'
+    if idl_type.is_array_buffer_or_view and raw_type:
+        return idl_type.implemented_as + '*'
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
         if raw_type:
@@ -361,8 +366,6 @@ def includes_for_type(idl_type):
         return INCLUDES_FOR_TYPE[base_idl_type]
     if idl_type.is_basic_type:
         return set()
-    if idl_type.is_typed_array_element_type:
-        return set(['bindings/core/v8/custom/V8%sCustom.h' % base_idl_type])
     if base_idl_type.endswith('ConstructorConstructor'):
         # FIXME: rename to NamedConstructor
         # FIXME: replace with a [NamedConstructorAttribute] extended attribute
@@ -528,7 +531,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
-    elif idl_type.is_typed_array_element_type:
+    elif idl_type.is_array_buffer_or_view:
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')

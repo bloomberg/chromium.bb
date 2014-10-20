@@ -25,10 +25,10 @@
 #ifndef WaveShaperNode_h
 #define WaveShaperNode_h
 
+#include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioBasicProcessorNode.h"
 #include "modules/webaudio/BiquadProcessor.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -43,8 +43,8 @@ public:
     }
 
     // setCurve() is called on the main thread.
-    void setCurve(Float32Array*);
-    Float32Array* curve();
+    void setCurve(DOMFloat32Array*);
+    DOMFloat32Array* curve();
 
     void setOversample(const String& , ExceptionState&);
     String oversample() const;

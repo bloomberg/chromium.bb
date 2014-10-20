@@ -27,8 +27,6 @@
 #include "core/html/canvas/DataView.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/custom/V8DataViewCustom.h"
-#include "bindings/core/v8/custom/V8TypedArrayCustom.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/CheckedInt.h"
 #include "wtf/CPU.h"
@@ -238,11 +236,6 @@ void DataView::setFloat32(unsigned byteOffset, float value, bool littleEndian, E
 void DataView::setFloat64(unsigned byteOffset, double value, bool littleEndian, ExceptionState& exceptionState)
 {
     setData<double>(byteOffset, value, littleEndian, exceptionState);
-}
-
-v8::Handle<v8::Object> DataView::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return V8TypedArray<DataView>::wrap(this, creationContext, isolate);
 }
 
 void DataView::neuter()

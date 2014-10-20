@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class ExecutionContext;
 class MediaKeySession;
 class ScriptState;
@@ -52,8 +54,8 @@ public:
 
     MediaKeySession* createSession(ScriptState*, const String& sessionType);
 
-    ScriptPromise setServerCertificate(ScriptState*, ArrayBuffer* serverCertificate);
-    ScriptPromise setServerCertificate(ScriptState*, ArrayBufferView* serverCertificate);
+    ScriptPromise setServerCertificate(ScriptState*, DOMArrayBuffer* serverCertificate);
+    ScriptPromise setServerCertificate(ScriptState*, DOMArrayBufferView* serverCertificate);
 
     static bool isTypeSupported(const String& keySystem, const String& contentType);
 

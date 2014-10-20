@@ -31,8 +31,8 @@
 #ifndef MIDIOutput_h
 #define MIDIOutput_h
 
+#include "core/dom/DOMTypedArray.h"
 #include "modules/webmidi/MIDIPort.h"
-#include "wtf/Uint8Array.h"
 
 namespace blink {
 
@@ -45,11 +45,12 @@ public:
     static MIDIOutput* create(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIOutput();
 
+    void send(DOMUint8Array*, double timestamp, ExceptionState&);
     void send(Uint8Array*, double timestamp, ExceptionState&);
     void send(Vector<unsigned>, double timestamp, ExceptionState&);
 
     // send() without optional |timestamp|.
-    void send(Uint8Array*, ExceptionState&);
+    void send(DOMUint8Array*, ExceptionState&);
     void send(Vector<unsigned>, ExceptionState&);
 
     virtual void trace(Visitor*) override;

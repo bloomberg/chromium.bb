@@ -55,7 +55,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return true;
 }
 
-bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtr<ArrayBufferView>& data, int& payloadLength)
+bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtr<ArrayBufferView> data, int& payloadLength)
 {
     ASSERT(data);
     unsigned long long entitySize = data->byteLength();

@@ -26,6 +26,7 @@
 #ifndef MediaEncryptedEvent_h
 #define MediaEncryptedEvent_h
 
+#include "core/dom/DOMTypedArray.h"
 #include "modules/EventModules.h"
 #include "wtf/ArrayBuffer.h"
 
@@ -35,7 +36,7 @@ struct MediaEncryptedEventInit : public EventInit {
     MediaEncryptedEventInit();
 
     String initDataType;
-    RefPtr<ArrayBuffer> initData;
+    RefPtr<DOMArrayBuffer> initData;
 };
 
 class MediaEncryptedEvent final : public Event {
@@ -56,7 +57,7 @@ public:
     virtual const AtomicString& interfaceName() const override;
 
     String initDataType() const { return m_initDataType; }
-    ArrayBuffer* initData() const { return m_initData.get(); }
+    DOMArrayBuffer* initData() const { return m_initData.get(); }
 
     virtual void trace(Visitor*) override;
 
@@ -65,7 +66,7 @@ private:
     MediaEncryptedEvent(const AtomicString& type, const MediaEncryptedEventInit& initializer);
 
     String m_initDataType;
-    RefPtr<ArrayBuffer> m_initData;
+    RefPtr<DOMArrayBuffer> m_initData;
 };
 
 } // namespace blink

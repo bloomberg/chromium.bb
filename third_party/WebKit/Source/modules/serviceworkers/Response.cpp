@@ -7,11 +7,11 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
 #include "modules/serviceworkers/ResponseInit.h"
 #include "public/platform/WebServiceWorkerResponse.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -75,19 +75,19 @@ Response* Response::create(ExecutionContext* context, const String& body, const 
     return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
 }
 
-Response* Response::create(ExecutionContext* context, const ArrayBuffer* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, const DOMArrayBuffer* body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendArrayBuffer(body);
+    blobData->appendArrayBuffer(body->buffer());
     const long long length = blobData->length();
     Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
     return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
 }
 
-Response* Response::create(ExecutionContext* context, const ArrayBufferView* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+Response* Response::create(ExecutionContext* context, const DOMArrayBufferView* body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
-    blobData->appendArrayBufferView(body);
+    blobData->appendArrayBufferView(body->view());
     const long long length = blobData->length();
     Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
     return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);

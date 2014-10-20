@@ -26,6 +26,7 @@
 #define AudioContext_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
@@ -99,7 +100,7 @@ public:
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Asynchronous audio file data decoding.
-    void decodeAudioData(ArrayBuffer*, AudioBufferCallback*, AudioBufferCallback*, ExceptionState&);
+    void decodeAudioData(DOMArrayBuffer*, AudioBufferCallback*, AudioBufferCallback*, ExceptionState&);
 
     AudioListener* listener() { return m_listener.get(); }
 
@@ -126,7 +127,7 @@ public:
     ChannelMergerNode* createChannelMerger(ExceptionState&);
     ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
     OscillatorNode* createOscillator();
-    PeriodicWave* createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState&);
+    PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
 
     // When a source node has no more processing to do (has finished playing), then it tells the context to dereference it.
     void notifyNodeFinishedProcessing(AudioNode*);

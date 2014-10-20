@@ -66,10 +66,12 @@ public:
 
     ~ArrayBuffer() { }
 
+protected:
+    inline explicit ArrayBuffer(ArrayBufferContents&);
+
 private:
     static inline PassRefPtr<ArrayBuffer> create(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy);
 
-    inline ArrayBuffer(ArrayBufferContents&);
     inline PassRefPtr<ArrayBuffer> sliceImpl(unsigned begin, unsigned end) const;
     inline unsigned clampIndex(int index) const;
     static inline int clampValue(int x, int left, int right);

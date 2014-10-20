@@ -33,12 +33,11 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 
-class ScriptPromise;
-class ScriptState;
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
@@ -73,15 +72,15 @@ public:
     double expiration() const { return m_expiration; }
     ScriptPromise closed(ScriptState*);
 
-    ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBuffer* initData);
-    ScriptPromise generateRequest(ScriptState*, const String& initDataType, ArrayBufferView* initData);
+    ScriptPromise generateRequest(ScriptState*, const String& initDataType, DOMArrayBuffer* initData);
+    ScriptPromise generateRequest(ScriptState*, const String& initDataType, DOMArrayBufferView* initData);
     ScriptPromise load(ScriptState*, const String& sessionId);
 
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
 
-    ScriptPromise update(ScriptState*, ArrayBuffer* response);
-    ScriptPromise update(ScriptState*, ArrayBufferView* response);
+    ScriptPromise update(ScriptState*, DOMArrayBuffer* response);
+    ScriptPromise update(ScriptState*, DOMArrayBufferView* response);
     ScriptPromise close(ScriptState*);
     ScriptPromise remove(ScriptState*);
 

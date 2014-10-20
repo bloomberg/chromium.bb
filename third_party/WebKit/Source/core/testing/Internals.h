@@ -35,7 +35,6 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/heap/Handle.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -45,9 +44,9 @@ namespace blink {
 class CanvasRenderingContext2D;
 class ClientRect;
 class ClientRectList;
+class DOMArrayBuffer;
 class DOMPoint;
 class DOMStringList;
-class LocalDOMWindow;
 class DictionaryTest;
 class Document;
 class DocumentFragment;
@@ -63,6 +62,7 @@ class InternalRuntimeFlags;
 class InternalSettings;
 class Iterator;
 class LayerRectList;
+class LocalDOMWindow;
 class LocalFrame;
 class Node;
 class Page;
@@ -71,9 +71,9 @@ class PrivateScriptTest;
 class Range;
 class SerializedScriptValue;
 class ShadowRoot;
+class TypeConversions;
 template <typename NodeType> class StaticNodeTypeList;
 typedef StaticNodeTypeList<Node> StaticNodeList;
-class TypeConversions;
 
 class Internals final : public GarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
@@ -274,8 +274,8 @@ public:
     PassRefPtrWillBeRawPtr<ClientRectList> draggableRegions(Document*, ExceptionState&);
     PassRefPtrWillBeRawPtr<ClientRectList> nonDraggableRegions(Document*, ExceptionState&);
 
-    PassRefPtr<ArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
-    PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<ArrayBuffer>) const;
+    PassRefPtr<DOMArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
+    PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<DOMArrayBuffer>) const;
 
     String getCurrentCursorInfo(Document*, ExceptionState&);
 

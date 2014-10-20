@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -653,9 +654,8 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
 
 TEST_F(ReadableStreamTest, ReadableArrayBufferCompileTest)
 {
-    // This test tests if ReadableStreamImpl<ArrayBuffer> can be instantiated.
-    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> >(scriptState()->executionContext(), m_underlyingSource);
+    // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be instantiated.
+    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >(scriptState()->executionContext(), m_underlyingSource);
 }
 
 } // namespace blink
-

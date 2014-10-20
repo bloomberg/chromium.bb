@@ -145,7 +145,6 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefP
     return wrapper;
 }
 
-
 void V8TestInterfaceNotScriptWrappable::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceNotScriptWrappable>()->ref();

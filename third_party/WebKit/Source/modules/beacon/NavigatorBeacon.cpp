@@ -6,6 +6,7 @@
 #include "modules/beacon/NavigatorBeacon.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -15,7 +16,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DOMFormData.h"
 #include "core/loader/BeaconLoader.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
@@ -104,19 +104,19 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
     return beaconResult(context, result, bytes);
 }
 
-bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, PassRefPtr<ArrayBufferView> data, ExceptionState& exceptionState)
+bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, PassRefPtr<DOMArrayBufferView> data, ExceptionState& exceptionState)
 {
     return NavigatorBeacon::from(navigator).sendBeacon(context, urlstring, data, exceptionState);
 }
 
-bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstring, PassRefPtr<ArrayBufferView> data, ExceptionState& exceptionState)
+bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstring, PassRefPtr<DOMArrayBufferView> data, ExceptionState& exceptionState)
 {
     KURL url = context->completeURL(urlstring);
     if (!canSendBeacon(context, url, exceptionState))
         return false;
 
     int bytes = 0;
-    bool result = BeaconLoader::sendBeacon(m_navigator.frame(), maxAllowance(), url, data, bytes);
+    bool result = BeaconLoader::sendBeacon(m_navigator.frame(), maxAllowance(), url, data->view(), bytes);
     return beaconResult(context, result, bytes);
 }
 

@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaKeyError.h"
@@ -22,7 +23,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Functional.h"
-#include "wtf/Uint8Array.h"
 
 namespace blink {
 
@@ -292,7 +292,7 @@ static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(const String& initData
 {
     MediaEncryptedEventInit initializer;
     initializer.initDataType = initDataType;
-    initializer.initData = ArrayBuffer::create(initData, initDataLength);
+    initializer.initData = DOMArrayBuffer::create(initData, initDataLength);
     initializer.bubbles = false;
     initializer.cancelable = false;
 
@@ -305,19 +305,19 @@ static PassRefPtrWillBeRawPtr<Event> createWebkitNeedKeyEvent(const unsigned cha
     MediaKeyEventInit webkitInitializer;
     webkitInitializer.keySystem = String();
     webkitInitializer.sessionId = String();
-    webkitInitializer.initData = Uint8Array::create(initData, initDataLength);
+    webkitInitializer.initData = DOMUint8Array::create(initData, initDataLength);
     webkitInitializer.bubbles = false;
     webkitInitializer.cancelable = false;
 
     return MediaKeyEvent::create(EventTypeNames::webkitneedkey, webkitInitializer);
 }
 
-void HTMLMediaElementEncryptedMedia::webkitGenerateKeyRequest(HTMLMediaElement& element, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::webkitGenerateKeyRequest(HTMLMediaElement& element, const String& keySystem, PassRefPtr<DOMUint8Array> initData, ExceptionState& exceptionState)
 {
     HTMLMediaElementEncryptedMedia::from(element).generateKeyRequest(element.webMediaPlayer(), keySystem, initData, exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::generateKeyRequest(WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::generateKeyRequest(WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<DOMUint8Array> initData, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::webkitGenerateKeyRequest");
 
@@ -349,15 +349,15 @@ void HTMLMediaElementEncryptedMedia::generateKeyRequest(WebMediaPlayer* webMedia
 
 void HTMLMediaElementEncryptedMedia::webkitGenerateKeyRequest(HTMLMediaElement& mediaElement, const String& keySystem, ExceptionState& exceptionState)
 {
-    webkitGenerateKeyRequest(mediaElement, keySystem, Uint8Array::create(0), exceptionState);
+    webkitGenerateKeyRequest(mediaElement, keySystem, DOMUint8Array::create(0), exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::webkitAddKey(HTMLMediaElement& element, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::webkitAddKey(HTMLMediaElement& element, const String& keySystem, PassRefPtr<DOMUint8Array> key, PassRefPtr<DOMUint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
 {
     HTMLMediaElementEncryptedMedia::from(element).addKey(element.webMediaPlayer(), keySystem, key, initData, sessionId, exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::addKey(WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::addKey(WebMediaPlayer* webMediaPlayer, const String& keySystem, PassRefPtr<DOMUint8Array> key, PassRefPtr<DOMUint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::webkitAddKey");
 
@@ -397,9 +397,9 @@ void HTMLMediaElementEncryptedMedia::addKey(WebMediaPlayer* webMediaPlayer, cons
     throwExceptionIfMediaKeyExceptionOccurred(keySystem, sessionId, result, exceptionState);
 }
 
-void HTMLMediaElementEncryptedMedia::webkitAddKey(HTMLMediaElement& mediaElement, const String& keySystem, PassRefPtr<Uint8Array> key, ExceptionState& exceptionState)
+void HTMLMediaElementEncryptedMedia::webkitAddKey(HTMLMediaElement& mediaElement, const String& keySystem, PassRefPtr<DOMUint8Array> key, ExceptionState& exceptionState)
 {
-    webkitAddKey(mediaElement, keySystem, key, Uint8Array::create(0), String(), exceptionState);
+    webkitAddKey(mediaElement, keySystem, key, DOMUint8Array::create(0), String(), exceptionState);
 }
 
 void HTMLMediaElementEncryptedMedia::webkitCancelKeyRequest(HTMLMediaElement& element, const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
@@ -491,7 +491,7 @@ void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const
     MediaKeyEventInit initializer;
     initializer.keySystem = keySystem;
     initializer.sessionId = sessionId;
-    initializer.message = Uint8Array::create(message, messageLength);
+    initializer.message = DOMUint8Array::create(message, messageLength);
     initializer.defaultURL = KURL(defaultURL);
     initializer.bubbles = false;
     initializer.cancelable = false;

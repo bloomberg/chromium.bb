@@ -43,12 +43,16 @@ public:
 
     {% endif %}
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
+    {% if is_array_buffer_or_view %}
+    static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object);
+    {% else %}
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object)
     {
         return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
     }
+    {% endif %}
     static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);

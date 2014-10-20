@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/html/canvas/WebGLGetInfo.h"
 
-
 namespace blink {
 
 WebGLGetInfo::WebGLGetInfo(bool value)
@@ -109,7 +108,7 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLBuffer> value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(PassRefPtr<Float32Array> value)
+WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMFloat32Array> value)
     : m_type(kTypeWebGLFloatArray)
     , m_bool(false)
     , m_float(0)
@@ -129,7 +128,7 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLFramebuffer> value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(PassRefPtr<Int32Array> value)
+WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMInt32Array> value)
     : m_type(kTypeWebGLIntArray)
     , m_bool(false)
     , m_float(0)
@@ -169,7 +168,7 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLTexture> value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(PassRefPtr<Uint8Array> value)
+WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMUint8Array> value)
     : m_type(kTypeWebGLUnsignedByteArray)
     , m_bool(false)
     , m_float(0)
@@ -179,7 +178,7 @@ WebGLGetInfo::WebGLGetInfo(PassRefPtr<Uint8Array> value)
 {
 }
 
-WebGLGetInfo::WebGLGetInfo(PassRefPtr<Uint32Array> value)
+WebGLGetInfo::WebGLGetInfo(PassRefPtr<DOMUint32Array> value)
     : m_type(kTypeWebGLUnsignedIntArray)
     , m_bool(false)
     , m_float(0)
@@ -246,7 +245,7 @@ PassRefPtrWillBeRawPtr<WebGLBuffer> WebGLGetInfo::getWebGLBuffer() const
     return m_webglBuffer;
 }
 
-PassRefPtr<Float32Array> WebGLGetInfo::getWebGLFloatArray() const
+PassRefPtr<DOMFloat32Array> WebGLGetInfo::getWebGLFloatArray() const
 {
     ASSERT(getType() == kTypeWebGLFloatArray);
     return m_webglFloatArray;
@@ -258,7 +257,7 @@ PassRefPtrWillBeRawPtr<WebGLFramebuffer> WebGLGetInfo::getWebGLFramebuffer() con
     return m_webglFramebuffer;
 }
 
-PassRefPtr<Int32Array> WebGLGetInfo::getWebGLIntArray() const
+PassRefPtr<DOMInt32Array> WebGLGetInfo::getWebGLIntArray() const
 {
     ASSERT(getType() == kTypeWebGLIntArray);
     return m_webglIntArray;
@@ -282,13 +281,13 @@ PassRefPtrWillBeRawPtr<WebGLTexture> WebGLGetInfo::getWebGLTexture() const
     return m_webglTexture;
 }
 
-PassRefPtr<Uint8Array> WebGLGetInfo::getWebGLUnsignedByteArray() const
+PassRefPtr<DOMUint8Array> WebGLGetInfo::getWebGLUnsignedByteArray() const
 {
     ASSERT(getType() == kTypeWebGLUnsignedByteArray);
     return m_webglUnsignedByteArray;
 }
 
-PassRefPtr<Uint32Array> WebGLGetInfo::getWebGLUnsignedIntArray() const
+PassRefPtr<DOMUint32Array> WebGLGetInfo::getWebGLUnsignedIntArray() const
 {
     ASSERT(getType() == kTypeWebGLUnsignedIntArray);
     return m_webglUnsignedIntArray;

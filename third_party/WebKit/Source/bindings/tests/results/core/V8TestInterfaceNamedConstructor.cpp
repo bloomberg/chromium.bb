@@ -179,7 +179,6 @@ ActiveDOMObject* V8TestInterfaceNamedConstructor::toActiveDOMObject(v8::Handle<v
     return toImpl(wrapper);
 }
 
-
 void V8TestInterfaceNamedConstructor::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceNamedConstructor>()->ref();

@@ -35,13 +35,13 @@
 #include "modules/encoding/TextDecodeOptions.h"
 #include "modules/encoding/TextDecoderOptions.h"
 #include "platform/heap/Handle.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class DOMArrayBufferView;
 class ExceptionState;
 
 class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>, public ScriptWrappable {
@@ -54,7 +54,7 @@ public:
     String encoding() const;
     bool fatal() const { return m_fatal; }
     bool ignoreBOM() const { return m_ignoreBOM; }
-    String decode(ArrayBufferView*, const TextDecodeOptions&, ExceptionState&);
+    String decode(DOMArrayBufferView*, const TextDecodeOptions&, ExceptionState&);
     String decode(ExceptionState&);
 
     void trace(Visitor*) { }

@@ -32,12 +32,10 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "core/dom/DOMTypedArray.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebString.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
@@ -266,7 +264,7 @@ private:
 //     typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
 //
 // FIXME: Currently only supports ArrayBufferView.
-bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyName, bool& hasProperty, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, AlgorithmError* error)
+bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyName, bool& hasProperty, RefPtr<DOMArrayBufferView>& buffer, const ErrorContext& context, AlgorithmError* error)
 {
     if (!DictionaryHelper::get(raw, propertyName, buffer)) {
         hasProperty = false;
@@ -288,7 +286,7 @@ bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyN
 //     typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
 //
 // FIXME: Currently only supports ArrayBufferView.
-bool getCryptoOperationData(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, AlgorithmError* error)
+bool getCryptoOperationData(const Dictionary& raw, const char* propertyName, RefPtr<DOMArrayBufferView>& buffer, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasProperty;
     bool ok = getOptionalCryptoOperationData(raw, propertyName, hasProperty, buffer, context, error);
@@ -299,7 +297,7 @@ bool getCryptoOperationData(const Dictionary& raw, const char* propertyName, Ref
     return ok;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, AlgorithmError* error)
+bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<DOMUint8Array>& array, const ErrorContext& context, AlgorithmError* error)
 {
     if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
         setSyntaxError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
@@ -311,14 +309,14 @@ bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8
 // Defined by the WebCrypto spec as:
 //
 //     typedef Uint8Array BigInteger;
-bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, AlgorithmError* error)
+bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<DOMUint8Array>& array, const ErrorContext& context, AlgorithmError* error)
 {
     if (!getUint8Array(raw, propertyName, array, context, error))
         return false;
 
     if (!array->byteLength()) {
         // Empty BigIntegers represent 0 according to the spec
-        array = Uint8Array::create(1);
+        array = DOMUint8Array::create(1);
     }
 
     return true;
@@ -407,7 +405,7 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
 //    };
 bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    RefPtr<ArrayBufferView> iv;
+    RefPtr<DOMArrayBufferView> iv;
     if (!getCryptoOperationData(raw, "iv", iv, context, error))
         return false;
 
@@ -519,7 +517,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithm
     if (!getUint32(raw, "modulusLength", modulusLength, context, error))
         return false;
 
-    RefPtr<Uint8Array> publicExponent;
+    RefPtr<DOMUint8Array> publicExponent;
     if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
         return false;
 
@@ -539,7 +537,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithm
 //    };
 bool parseAesCtrParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    RefPtr<ArrayBufferView> counter;
+    RefPtr<DOMArrayBufferView> counter;
     if (!getCryptoOperationData(raw, "counter", counter, context, error))
         return false;
 
@@ -560,12 +558,12 @@ bool parseAesCtrParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
 //     }
 bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
-    RefPtr<ArrayBufferView> iv;
+    RefPtr<DOMArrayBufferView> iv;
     if (!getCryptoOperationData(raw, "iv", iv, context, error))
         return false;
 
     bool hasAdditionalData;
-    RefPtr<ArrayBufferView> additionalData;
+    RefPtr<DOMArrayBufferView> additionalData;
     if (!getOptionalCryptoOperationData(raw, "additionalData", hasAdditionalData, additionalData, context, error))
         return false;
 
@@ -592,7 +590,7 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
 bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     bool hasLabel;
-    RefPtr<ArrayBufferView> label;
+    RefPtr<DOMArrayBufferView> label;
     if (!getOptionalCryptoOperationData(raw, "label", hasLabel, label, context, error))
         return false;
 

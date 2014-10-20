@@ -284,6 +284,7 @@ class IdlInterface(object):
         self.is_partial = node.GetProperty('Partial') or False
         self.idl_name = idl_name
         self.name = node.GetName()
+        self.idl_type = IdlType(self.name)
 
         children = node.GetChildren()
         for child in children:
@@ -350,6 +351,7 @@ class IdlException(IdlInterface):
         self.is_partial = False
         self.idl_name = idl_name
         self.name = node.GetName()
+        self.idl_type = IdlType(self.name)
 
         children = node.GetChildren()
         for child in children:

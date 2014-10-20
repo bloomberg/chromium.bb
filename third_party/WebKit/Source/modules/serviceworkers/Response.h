@@ -12,11 +12,12 @@
 #include "modules/serviceworkers/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 
 class Blob;
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class ExceptionState;
 class ResponseInit;
 class WebServiceWorkerResponse;
@@ -27,8 +28,8 @@ public:
     virtual ~Response() { }
     static Response* create(ExecutionContext*, Blob*, const Dictionary&, ExceptionState&);
     static Response* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
-    static Response* create(ExecutionContext*, const ArrayBuffer*, const Dictionary&, ExceptionState&);
-    static Response* create(ExecutionContext*, const ArrayBufferView*, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, const DOMArrayBuffer*, const Dictionary&, ExceptionState&);
+    static Response* create(ExecutionContext*, const DOMArrayBufferView*, const Dictionary&, ExceptionState&);
     static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
     static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);

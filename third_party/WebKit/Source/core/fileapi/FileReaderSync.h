@@ -33,16 +33,16 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class Blob;
+class DOMArrayBuffer;
 class ExceptionState;
-class FileReaderLoader;
 class ExecutionContext;
+class FileReaderLoader;
 
 class FileReaderSync final : public GarbageCollected<FileReaderSync>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -52,7 +52,7 @@ public:
         return new FileReaderSync();
     }
 
-    PassRefPtr<ArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
+    PassRefPtr<DOMArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
     String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);
     String readAsText(ExecutionContext* executionContext, Blob* blob, ExceptionState& ec)
     {

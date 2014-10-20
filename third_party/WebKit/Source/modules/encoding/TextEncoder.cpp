@@ -72,7 +72,7 @@ String TextEncoder::encoding() const
     return name;
 }
 
-PassRefPtr<Uint8Array> TextEncoder::encode(const String& input)
+PassRefPtr<DOMUint8Array> TextEncoder::encode(const String& input)
 {
     CString result;
     if (input.is8Bit())
@@ -83,7 +83,7 @@ PassRefPtr<Uint8Array> TextEncoder::encode(const String& input)
     const char* buffer = result.data();
     const unsigned char* unsignedBuffer = reinterpret_cast<const unsigned char*>(buffer);
 
-    return Uint8Array::create(unsignedBuffer, result.length());
+    return DOMUint8Array::create(unsignedBuffer, result.length());
 }
 
 } // namespace blink

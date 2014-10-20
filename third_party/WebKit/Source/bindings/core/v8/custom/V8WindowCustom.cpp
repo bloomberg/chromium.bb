@@ -45,6 +45,7 @@
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/DOMTimer.h"
@@ -62,7 +63,6 @@
 #include "core/storage/Storage.h"
 #include "platform/PlatformScreen.h"
 #include "platform/graphics/media/MediaPlayer.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 

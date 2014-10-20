@@ -30,7 +30,7 @@
 #include "core/html/ImageData.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/custom/V8Uint8ClampedArrayCustom.h"
+#include "bindings/core/v8/V8Uint8ClampedArray.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -59,7 +59,7 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size, PassRef
         || static_cast<unsigned>(dataSize.unsafeGet()) > byteArray->length())
         return nullptr;
 
-    return adoptRefWillBeNoop(new ImageData(size, byteArray));
+    return adoptRefWillBeNoop(new ImageData(size, DOMUint8ClampedArray::create(byteArray)));
 }
 
 PassRefPtrWillBeRawPtr<ImageData> ImageData::create(unsigned width, unsigned height, ExceptionState& exceptionState)
@@ -86,7 +86,7 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(unsigned width, unsigned hei
     return imageData.release();
 }
 
-PassRefPtrWillBeRawPtr<ImageData> ImageData::create(Uint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ImageData> ImageData::create(DOMUint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)
 {
     if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
         exceptionState.throwTypeError("Illegal constructor");
@@ -131,7 +131,7 @@ v8::Handle<v8::Object> ImageData::associateWithWrapper(const WrapperTypeInfo* wr
 
     if (!wrapper.IsEmpty()) {
         // Create a V8 Uint8ClampedArray object.
-        v8::Handle<v8::Value> pixelArray = toV8(data(), wrapper, isolate);
+        v8::Handle<v8::Value> pixelArray = toV8(m_data.get(), wrapper, isolate);
         // Set the "data" property of the ImageData object to
         // the created v8 object, eliminating the C++ callback
         // when accessing the "data" property.
@@ -143,11 +143,11 @@ v8::Handle<v8::Object> ImageData::associateWithWrapper(const WrapperTypeInfo* wr
 
 ImageData::ImageData(const IntSize& size)
     : m_size(size)
-    , m_data(Uint8ClampedArray::create(size.width() * size.height() * 4))
+    , m_data(DOMUint8ClampedArray::create(size.width() * size.height() * 4))
 {
 }
 
-ImageData::ImageData(const IntSize& size, PassRefPtr<Uint8ClampedArray> byteArray)
+ImageData::ImageData(const IntSize& size, PassRefPtr<DOMUint8ClampedArray> byteArray)
     : m_size(size)
     , m_data(byteArray)
 {

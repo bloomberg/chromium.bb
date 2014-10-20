@@ -27,11 +27,11 @@
 #include "bindings/modules/v8/IDBBindingUtilities.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMStringList.h"
 #include "bindings/core/v8/V8HiddenValue.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
-#include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
 #include "bindings/modules/v8/V8IDBCursorWithValue.h"
 #include "bindings/modules/v8/V8IDBDatabase.h"
@@ -46,7 +46,6 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
@@ -90,7 +89,7 @@ static v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creati
     case IDBKey::StringType:
         return v8String(isolate, key->string());
     case IDBKey::BinaryType:
-        return toV8(Uint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
+        return toV8(DOMUint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
     case IDBKey::DateType:
         return v8::Date::New(isolate, key->date());
     case IDBKey::ArrayType:
@@ -184,7 +183,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
     if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
         // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
         // input type is constrained to Uint8Array to match the output type.
-        ArrayBufferView* view = blink::V8ArrayBufferView::toImpl(value->ToObject());
+        DOMArrayBufferView* view = blink::V8ArrayBufferView::toImpl(value->ToObject());
         const char* start = static_cast<const char*>(view->baseAddress());
         size_t length = view->byteLength();
         return IDBKey::createBinary(SharedBuffer::create(start, length));

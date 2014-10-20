@@ -89,7 +89,6 @@ TestInterfaceCustomConstructor* V8TestInterfaceCustomConstructor::toImplWithType
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceCustomConstructor>() : 0;
 }
 
-
 void V8TestInterfaceCustomConstructor::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterfaceCustomConstructor>()->ref();

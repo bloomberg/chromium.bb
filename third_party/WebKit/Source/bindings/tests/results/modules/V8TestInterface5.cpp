@@ -858,7 +858,6 @@ ActiveDOMObject* V8TestInterface5::toActiveDOMObject(v8::Handle<v8::Object> wrap
     return toImpl(wrapper);
 }
 
-
 void V8TestInterface5::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestInterface5Implementation>()->ref();

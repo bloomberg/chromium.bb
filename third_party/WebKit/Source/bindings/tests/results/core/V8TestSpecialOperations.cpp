@@ -200,7 +200,6 @@ TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate*
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestSpecialOperations>() : 0;
 }
 
-
 void V8TestSpecialOperations::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<TestSpecialOperations>()->ref();

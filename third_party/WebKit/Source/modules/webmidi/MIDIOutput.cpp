@@ -189,6 +189,14 @@ MIDIOutput::~MIDIOutput()
 {
 }
 
+void MIDIOutput::send(DOMUint8Array* array, double timestamp, ExceptionState& exceptionState)
+{
+    if (!array)
+        return;
+
+    send(array->view(), timestamp, exceptionState);
+}
+
 void MIDIOutput::send(Uint8Array* array, double timestamp, ExceptionState& exceptionState)
 {
     if (timestamp == 0.0)
@@ -220,7 +228,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
     send(array.get(), timestamp, exceptionState);
 }
 
-void MIDIOutput::send(Uint8Array* data, ExceptionState& exceptionState)
+void MIDIOutput::send(DOMUint8Array* data, ExceptionState& exceptionState)
 {
     send(data, 0.0, exceptionState);
 }

@@ -43,7 +43,7 @@ DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx, double sy, double sz,
     return DOMMatrix::create(this)->scaleNonUniformSelf(sx, sy, sz, ox, oy, oz);
 }
 
-PassRefPtr<Float32Array> DOMMatrixReadOnly::toFloat32Array() const
+PassRefPtr<DOMFloat32Array> DOMMatrixReadOnly::toFloat32Array() const
 {
     float array[] = {
         m_matrix.m11(), m_matrix.m12(), m_matrix.m13(), m_matrix.m14(),
@@ -52,10 +52,10 @@ PassRefPtr<Float32Array> DOMMatrixReadOnly::toFloat32Array() const
         m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44()
     };
 
-    return Float32Array::create(array, 16);
+    return DOMFloat32Array::create(array, 16);
 }
 
-PassRefPtr<Float64Array> DOMMatrixReadOnly::toFloat64Array() const
+PassRefPtr<DOMFloat64Array> DOMMatrixReadOnly::toFloat64Array() const
 {
     double array[] = {
         m_matrix.m11(), m_matrix.m12(), m_matrix.m13(), m_matrix.m14(),
@@ -64,7 +64,7 @@ PassRefPtr<Float64Array> DOMMatrixReadOnly::toFloat64Array() const
         m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44()
     };
 
-    return Float64Array::create(array, 16);
+    return DOMFloat64Array::create(array, 16);
 }
 
 } // namespace blink

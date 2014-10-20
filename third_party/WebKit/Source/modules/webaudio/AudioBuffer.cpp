@@ -34,7 +34,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
+#include "core/dom/DOMArrayBufferDeallocationObserver.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioContext.h"
 #include "platform/audio/AudioBus.h"
@@ -174,7 +174,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     }
 }
 
-PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& exceptionState)
+PassRefPtr<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& exceptionState)
 {
     if (channelIndex >= m_channels.size()) {
         exceptionState.throwDOMException(IndexSizeError, "channel index (" + String::number(channelIndex) + ") exceeds number of channels (" + String::number(m_channels.size()) + ")");
@@ -182,7 +182,7 @@ PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, Exce
     }
 
     Float32Array* channelData = m_channels[channelIndex].get();
-    return Float32Array::create(channelData->buffer(), channelData->byteOffset(), channelData->length());
+    return DOMFloat32Array::create(channelData->buffer(), channelData->byteOffset(), channelData->length());
 }
 
 Float32Array* AudioBuffer::getChannelData(unsigned channelIndex)
@@ -212,7 +212,7 @@ v8::Handle<v8::Object> AudioBuffer::associateWithWrapper(const WrapperTypeInfo* 
         // GC, and until the object is exposed to JavaScript, V8 GC doesn't
         // affect it.
         for (unsigned i = 0, n = numberOfChannels(); i < n; ++i) {
-            getChannelData(i)->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
+            getChannelData(i)->buffer()->setDeallocationObserver(DOMArrayBufferDeallocationObserver::instance());
         }
     }
     return wrapper;

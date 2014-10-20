@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
@@ -43,7 +44,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
@@ -117,7 +117,7 @@ void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType, const Web
 void CryptoResultImpl::completeWithBuffer(const WebArrayBuffer& buffer)
 {
     if (m_resolver)
-        m_resolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
+        m_resolver->resolve(DOMArrayBuffer::create(buffer));
 }
 
 void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)

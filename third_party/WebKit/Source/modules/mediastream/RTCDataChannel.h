@@ -34,6 +34,8 @@
 namespace blink {
 
 class Blob;
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class ExceptionState;
 class RTCPeerConnection;
 class WebRTCDataChannelHandler;
@@ -70,8 +72,8 @@ public:
     void setBinaryType(const String&, ExceptionState&);
 
     void send(const String&, ExceptionState&);
-    void send(PassRefPtr<ArrayBuffer>, ExceptionState&);
-    void send(PassRefPtr<ArrayBufferView>, ExceptionState&);
+    void send(PassRefPtr<DOMArrayBuffer>, ExceptionState&);
+    void send(PassRefPtr<DOMArrayBufferView>, ExceptionState&);
     void send(Blob*, ExceptionState&);
 
     void close();

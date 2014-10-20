@@ -193,27 +193,27 @@ SubtleCrypto::SubtleCrypto()
 {
 }
 
-ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationEncrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationDecrypt, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationSign, ArrayPiece(), data);
 }
 
-ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& signature, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& signature, const DOMArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationVerify, signature, data);
 }
 
-ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const Dictionary& rawAlgorithm, const ArrayPiece& data)
+ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const Dictionary& rawAlgorithm, const DOMArrayPiece& data)
 {
     return startCryptoOperation(scriptState, rawAlgorithm, 0, WebCryptoOperationDigest, ArrayPiece(), data);
 }
@@ -238,7 +238,7 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictiona
     return promise;
 }
 
-ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& rawFormat, const ArrayPiece& keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::importKey(ScriptState* scriptState, const String& rawFormat, const DOMArrayPiece& keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -361,7 +361,7 @@ ScriptPromise SubtleCrypto::wrapKey(ScriptState* scriptState, const String& rawF
     return promise;
 }
 
-ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& rawFormat, const ArrayPiece& wrappedKey, CryptoKey* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
+ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& rawFormat, const DOMArrayPiece& wrappedKey, CryptoKey* unwrappingKey, const Dictionary& rawUnwrapAlgorithm, const Dictionary& rawUnwrappedKeyAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();

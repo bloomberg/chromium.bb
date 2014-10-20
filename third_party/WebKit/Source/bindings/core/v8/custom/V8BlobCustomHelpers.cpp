@@ -33,10 +33,11 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/DateMath.h"
 
 namespace blink {
@@ -117,13 +118,13 @@ bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndings
             return false;
 
         if (V8ArrayBuffer::hasInstance(item, isolate)) {
-            ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(item));
+            DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
-            blobData.appendArrayBuffer(arrayBuffer);
+            blobData.appendArrayBuffer(arrayBuffer->buffer());
         } else if (V8ArrayBufferView::hasInstance(item, isolate)) {
-            ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(item));
+            DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
-            blobData.appendArrayBufferView(arrayBufferView);
+            blobData.appendArrayBufferView(arrayBufferView->view());
         } else if (V8Blob::hasInstance(item, isolate)) {
             Blob* blob = V8Blob::toImpl(v8::Handle<v8::Object>::Cast(item));
             ASSERT(blob);

@@ -32,7 +32,6 @@
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface AudioContext : EventTarget {
-    
     // All rendered audio ultimately connects to destination, which represents the audio hardware.
     readonly attribute AudioDestinationNode destination;
 

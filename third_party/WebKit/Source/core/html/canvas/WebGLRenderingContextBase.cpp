@@ -28,6 +28,8 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"
@@ -84,9 +86,7 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
-
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Uint32Array.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -1263,7 +1263,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target, long long size, GLenum
     bufferDataImpl(target, size, 0, usage);
 }
 
-void WebGLRenderingContextBase::bufferData(GLenum target, ArrayBuffer* data, GLenum usage)
+void WebGLRenderingContextBase::bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage)
 {
     if (isContextLost())
         return;
@@ -1274,7 +1274,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target, ArrayBuffer* data, GLe
     bufferDataImpl(target, data->byteLength(), data->data(), usage);
 }
 
-void WebGLRenderingContextBase::bufferData(GLenum target, ArrayBufferView* data, GLenum usage)
+void WebGLRenderingContextBase::bufferData(GLenum target, DOMArrayBufferView* data, GLenum usage)
 {
     if (isContextLost())
         return;
@@ -1298,7 +1298,7 @@ void WebGLRenderingContextBase::bufferSubDataImpl(GLenum target, long long offse
     webContext()->bufferSubData(target, static_cast<GLintptr>(offset), size, data);
 }
 
-void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, ArrayBuffer* data)
+void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data)
 {
     if (isContextLost())
         return;
@@ -1307,7 +1307,7 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, A
     bufferSubDataImpl(target, offset, data->byteLength(), data->data());
 }
 
-void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, ArrayBufferView* data)
+void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, DOMArrayBufferView* data)
 {
     if (isContextLost())
         return;
@@ -1407,7 +1407,7 @@ void WebGLRenderingContextBase::compileShader(WebGLShader* shader)
     webContext()->compileShader(objectOrZero(shader));
 }
 
-void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, ArrayBufferView* data)
+void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, DOMArrayBufferView* data)
 {
     if (isContextLost())
         return;
@@ -1441,7 +1441,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     tex->setLevelInfo(target, level, internalformat, width, height, GL_UNSIGNED_BYTE);
 }
 
-void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, ArrayBufferView* data)
+void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, DOMArrayBufferView* data)
 {
     if (isContextLost())
         return;
@@ -2295,7 +2295,7 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
     case GL_COLOR_WRITEMASK:
         return getBooleanArrayParameter(pname);
     case GL_COMPRESSED_TEXTURE_FORMATS:
-        return WebGLGetInfo(Uint32Array::create(m_compressedTextureFormats.data(), m_compressedTextureFormats.size()));
+        return WebGLGetInfo(DOMUint32Array::create(m_compressedTextureFormats.data(), m_compressedTextureFormats.size()));
     case GL_CULL_FACE:
         return getBooleanParameter(pname);
     case GL_CULL_FACE_MODE:
@@ -2807,14 +2807,14 @@ WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const 
                     webContext()->getUniformfv(objectOrZero(program), location, value);
                     if (length == 1)
                         return WebGLGetInfo(value[0]);
-                    return WebGLGetInfo(Float32Array::create(value, length));
+                    return WebGLGetInfo(DOMFloat32Array::create(value, length));
                 }
                 case GL_INT: {
                     GLint value[4] = {0};
                     webContext()->getUniformiv(objectOrZero(program), location, value);
                     if (length == 1)
                         return WebGLGetInfo(value[0]);
-                    return WebGLGetInfo(Int32Array::create(value, length));
+                    return WebGLGetInfo(DOMInt32Array::create(value, length));
                 }
                 case GL_BOOL: {
                     GLint value[4] = {0};
@@ -2887,7 +2887,7 @@ WebGLGetInfo WebGLRenderingContextBase::getVertexAttrib(GLuint index, GLenum pna
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
         return WebGLGetInfo(state.type);
     case GL_CURRENT_VERTEX_ATTRIB:
-        return WebGLGetInfo(Float32Array::create(m_vertexAttribValue[index].value, 4));
+        return WebGLGetInfo(DOMFloat32Array::create(m_vertexAttribValue[index].value, 4));
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getVertexAttrib", "invalid parameter name");
         return WebGLGetInfo();
@@ -3064,7 +3064,7 @@ void WebGLRenderingContextBase::polygonOffset(GLfloat factor, GLfloat units)
     webContext()->polygonOffset(factor, units);
 }
 
-void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView* pixels)
+void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost())
         return;
@@ -3458,7 +3458,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, i
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum internalformat,
     GLsizei width, GLsizei height, GLint border,
-    GLenum format, GLenum type, ArrayBufferView* pixels, ExceptionState& exceptionState)
+    GLenum format, GLenum type, DOMArrayBufferView* pixels, ExceptionState& exceptionState)
 {
     if (isContextLost() || !validateTexFuncData("texImage2D", level, width, height, format, type, pixels, NullAllowed)
         || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, border, format, type, 0, 0))
@@ -3715,7 +3715,7 @@ void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GL
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
     GLsizei width, GLsizei height,
-    GLenum format, GLenum type, ArrayBufferView* pixels, ExceptionState& exceptionState)
+    GLenum format, GLenum type, DOMArrayBufferView* pixels, ExceptionState& exceptionState)
 {
     if (isContextLost() || !validateTexFuncData("texSubImage2D", level, width, height, format, type, pixels, NullNotAllowed)
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceArrayBufferView, target, level, format, width, height, 0, format, type, xoffset, yoffset))
@@ -3821,7 +3821,7 @@ void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location, 
     webContext()->uniform1f(location->location(), x);
 }
 
-void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location, Float32Array* v)
+void WebGLRenderingContextBase::uniform1fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform1fv", location, v, 1))
         return;
@@ -3850,7 +3850,7 @@ void WebGLRenderingContextBase::uniform1i(const WebGLUniformLocation* location, 
     webContext()->uniform1i(location->location(), x);
 }
 
-void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location, Int32Array* v)
+void WebGLRenderingContextBase::uniform1iv(const WebGLUniformLocation* location, DOMInt32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform1iv", location, v, 1))
         return;
@@ -3879,7 +3879,7 @@ void WebGLRenderingContextBase::uniform2f(const WebGLUniformLocation* location, 
     webContext()->uniform2f(location->location(), x, y);
 }
 
-void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location, Float32Array* v)
+void WebGLRenderingContextBase::uniform2fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform2fv", location, v, 2))
         return;
@@ -3908,7 +3908,7 @@ void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location, 
     webContext()->uniform2i(location->location(), x, y);
 }
 
-void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location, Int32Array* v)
+void WebGLRenderingContextBase::uniform2iv(const WebGLUniformLocation* location, DOMInt32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform2iv", location, v, 2))
         return;
@@ -3937,7 +3937,7 @@ void WebGLRenderingContextBase::uniform3f(const WebGLUniformLocation* location, 
     webContext()->uniform3f(location->location(), x, y, z);
 }
 
-void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location, Float32Array* v)
+void WebGLRenderingContextBase::uniform3fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform3fv", location, v, 3))
         return;
@@ -3966,7 +3966,7 @@ void WebGLRenderingContextBase::uniform3i(const WebGLUniformLocation* location, 
     webContext()->uniform3i(location->location(), x, y, z);
 }
 
-void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location, Int32Array* v)
+void WebGLRenderingContextBase::uniform3iv(const WebGLUniformLocation* location, DOMInt32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform3iv", location, v, 3))
         return;
@@ -3995,7 +3995,7 @@ void WebGLRenderingContextBase::uniform4f(const WebGLUniformLocation* location, 
     webContext()->uniform4f(location->location(), x, y, z, w);
 }
 
-void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location, Float32Array* v)
+void WebGLRenderingContextBase::uniform4fv(const WebGLUniformLocation* location, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform4fv", location, v, 4))
         return;
@@ -4024,7 +4024,7 @@ void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location, 
     webContext()->uniform4i(location->location(), x, y, z, w);
 }
 
-void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location, Int32Array* v)
+void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location, DOMInt32Array* v)
 {
     if (isContextLost() || !validateUniformParameters("uniform4iv", location, v, 4))
         return;
@@ -4040,7 +4040,7 @@ void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
     webContext()->uniform4iv(location->location(), size >> 2, v);
 }
 
-void WebGLRenderingContextBase::uniformMatrix2fv(const WebGLUniformLocation* location, GLboolean transpose, Float32Array* v)
+void WebGLRenderingContextBase::uniformMatrix2fv(const WebGLUniformLocation* location, GLboolean transpose, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix2fv", location, transpose, v, 4))
         return;
@@ -4054,7 +4054,7 @@ void WebGLRenderingContextBase::uniformMatrix2fv(const WebGLUniformLocation* loc
     webContext()->uniformMatrix2fv(location->location(), size >> 2, transpose, v);
 }
 
-void WebGLRenderingContextBase::uniformMatrix3fv(const WebGLUniformLocation* location, GLboolean transpose, Float32Array* v)
+void WebGLRenderingContextBase::uniformMatrix3fv(const WebGLUniformLocation* location, GLboolean transpose, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix3fv", location, transpose, v, 9))
         return;
@@ -4068,7 +4068,7 @@ void WebGLRenderingContextBase::uniformMatrix3fv(const WebGLUniformLocation* loc
     webContext()->uniformMatrix3fv(location->location(), size / 9, transpose, v);
 }
 
-void WebGLRenderingContextBase::uniformMatrix4fv(const WebGLUniformLocation* location, GLboolean transpose, Float32Array* v)
+void WebGLRenderingContextBase::uniformMatrix4fv(const WebGLUniformLocation* location, GLboolean transpose, DOMFloat32Array* v)
 {
     if (isContextLost() || !validateUniformMatrixParameters("uniformMatrix4fv", location, transpose, v, 16))
         return;
@@ -4115,7 +4115,7 @@ void WebGLRenderingContextBase::vertexAttrib1f(GLuint index, GLfloat v0)
     vertexAttribfImpl("vertexAttrib1f", index, 1, v0, 0.0f, 0.0f, 1.0f);
 }
 
-void WebGLRenderingContextBase::vertexAttrib1fv(GLuint index, Float32Array* v)
+void WebGLRenderingContextBase::vertexAttrib1fv(GLuint index, DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib1fv", index, v, 1);
 }
@@ -4130,7 +4130,7 @@ void WebGLRenderingContextBase::vertexAttrib2f(GLuint index, GLfloat v0, GLfloat
     vertexAttribfImpl("vertexAttrib2f", index, 2, v0, v1, 0.0f, 1.0f);
 }
 
-void WebGLRenderingContextBase::vertexAttrib2fv(GLuint index, Float32Array* v)
+void WebGLRenderingContextBase::vertexAttrib2fv(GLuint index, DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib2fv", index, v, 2);
 }
@@ -4145,7 +4145,7 @@ void WebGLRenderingContextBase::vertexAttrib3f(GLuint index, GLfloat v0, GLfloat
     vertexAttribfImpl("vertexAttrib3f", index, 3, v0, v1, v2, 1.0f);
 }
 
-void WebGLRenderingContextBase::vertexAttrib3fv(GLuint index, Float32Array* v)
+void WebGLRenderingContextBase::vertexAttrib3fv(GLuint index, DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib3fv", index, v, 3);
 }
@@ -4160,7 +4160,7 @@ void WebGLRenderingContextBase::vertexAttrib4f(GLuint index, GLfloat v0, GLfloat
     vertexAttribfImpl("vertexAttrib4f", index, 4, v0, v1, v2, v3);
 }
 
-void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, Float32Array* v)
+void WebGLRenderingContextBase::vertexAttrib4fv(GLuint index, DOMFloat32Array* v)
 {
     vertexAttribfvImpl("vertexAttrib4fv", index, v, 4);
 }
@@ -4434,7 +4434,7 @@ WebGLGetInfo WebGLRenderingContextBase::getWebGLFloatArrayParameter(GLenum pname
     default:
         notImplemented();
     }
-    return WebGLGetInfo(Float32Array::create(value, length));
+    return WebGLGetInfo(DOMFloat32Array::create(value, length));
 }
 
 WebGLGetInfo WebGLRenderingContextBase::getWebGLIntArrayParameter(GLenum pname)
@@ -4454,7 +4454,7 @@ WebGLGetInfo WebGLRenderingContextBase::getWebGLIntArrayParameter(GLenum pname)
     default:
         notImplemented();
     }
-    return WebGLGetInfo(Int32Array::create(value, length));
+    return WebGLGetInfo(DOMInt32Array::create(value, length));
 }
 
 void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionName, bool prepareToDraw)
@@ -4812,7 +4812,7 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView* pixels, NullDisposition disposition)
+bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (!pixels) {
@@ -4851,7 +4851,7 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
     case GL_HALF_FLOAT_OES: // OES_texture_half_float
         // As per the specification, ArrayBufferView should be null or a Uint16Array when
         // OES_texture_half_float is enabled.
-        if (pixels && pixels->type() != ArrayBufferView::TypeUint16) {
+        if (pixels->type() != ArrayBufferView::TypeUint16) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type HALF_FLOAT_OES but ArrayBufferView is not NULL and not Uint16Array");
             return false;
         }
@@ -4885,7 +4885,7 @@ bool WebGLRenderingContextBase::validateCompressedTexFormat(GLenum format)
     return m_compressedTextureFormats.contains(format);
 }
 
-bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLenum format, ArrayBufferView* pixels)
+bool WebGLRenderingContextBase::validateCompressedTexFuncData(const char* functionName, GLsizei width, GLsizei height, GLenum format, DOMArrayBufferView* pixels)
 {
     if (!pixels) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no pixels");
@@ -5198,7 +5198,7 @@ bool WebGLRenderingContextBase::validateCapability(const char* functionName, GLe
     }
 }
 
-bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, Float32Array* v, GLsizei requiredMinSize)
+bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, DOMFloat32Array* v, GLsizei requiredMinSize)
 {
     if (!v) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
@@ -5207,7 +5207,7 @@ bool WebGLRenderingContextBase::validateUniformParameters(const char* functionNa
     return validateUniformMatrixParameters(functionName, location, false, v->data(), v->length(), requiredMinSize);
 }
 
-bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, Int32Array* v, GLsizei requiredMinSize)
+bool WebGLRenderingContextBase::validateUniformParameters(const char* functionName, const WebGLUniformLocation* location, DOMInt32Array* v, GLsizei requiredMinSize)
 {
     if (!v) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
@@ -5221,7 +5221,7 @@ bool WebGLRenderingContextBase::validateUniformParameters(const char* functionNa
     return validateUniformMatrixParameters(functionName, location, false, v, size, requiredMinSize);
 }
 
-bool WebGLRenderingContextBase::validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation* location, GLboolean transpose, Float32Array* v, GLsizei requiredMinSize)
+bool WebGLRenderingContextBase::validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation* location, GLboolean transpose, DOMFloat32Array* v, GLsizei requiredMinSize)
 {
     if (!v) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
@@ -5444,7 +5444,7 @@ void WebGLRenderingContextBase::vertexAttribfImpl(const char* functionName, GLui
     attribValue.value[3] = v3;
 }
 
-void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, Float32Array* v, GLsizei expectedSize)
+void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, DOMFloat32Array* v, GLsizei expectedSize)
 {
     if (isContextLost())
         return;

@@ -46,6 +46,8 @@
 namespace blink {
 
 class Blob;
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class ExceptionState;
 
 class DOMWebSocket : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<DOMWebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
@@ -72,8 +74,8 @@ public:
     void connect(const String& url, const Vector<String>& protocols, ExceptionState&);
 
     void send(const String& message, ExceptionState&);
-    void send(ArrayBuffer*, ExceptionState&);
-    void send(ArrayBufferView*, ExceptionState&);
+    void send(DOMArrayBuffer*, ExceptionState&);
+    void send(DOMArrayBufferView*, ExceptionState&);
     void send(Blob*, ExceptionState&);
 
     // To distinguish close method call with the code parameter from one

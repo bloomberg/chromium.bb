@@ -34,7 +34,9 @@ namespace WTF {
 
 template <typename T>
 class TypedArrayBase : public ArrayBufferView {
-  public:
+public:
+    typedef T ValueType;
+
     T* data() const { return static_cast<T*>(baseAddress()); }
 
     bool set(TypedArrayBase<T>* array, unsigned offset)

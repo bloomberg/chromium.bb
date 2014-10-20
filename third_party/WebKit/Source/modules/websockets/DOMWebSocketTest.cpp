@@ -3,19 +3,17 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "modules/websockets/DOMWebSocket.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
 #include "wtf/testing/WTFTestHelpers.h"
 #include "wtf/text/WTFString.h"
@@ -546,7 +544,7 @@ TEST_F(DOMWebSocketTest, sendStringSuccess)
 
 TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 {
-    RefPtr<ArrayBufferView> view = Uint8Array::create(8);
+    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -565,7 +563,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 
 TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
 {
-    RefPtr<ArrayBufferView> view = Uint8Array::create(8);
+    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -587,7 +585,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
 TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
 {
     Checkpoint checkpoint;
-    RefPtr<ArrayBufferView> view = Uint8Array::create(8);
+    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
@@ -609,11 +607,11 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
 
 TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
 {
-    RefPtr<ArrayBufferView> view = Uint8Array::create(8);
+    RefPtr<DOMArrayBufferView> view = DOMUint8Array::create(8);
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8));
+        EXPECT_CALL(channel(), send(Ref(*view->view()->buffer()), 0, 8));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 

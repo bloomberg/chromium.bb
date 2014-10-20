@@ -30,6 +30,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
@@ -48,8 +50,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "wtf/ASCIICType.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferView.h"
 #include <cmath>
 #include <limits>
 
@@ -417,13 +417,13 @@ ScriptPromise MediaKeySession::closed(ScriptState* scriptState)
     return m_closedPromise->promise(scriptState->world());
 }
 
-ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, ArrayBuffer* initData)
+ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBuffer* initData)
 {
     RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->data(), initData->byteLength());
     return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
 }
 
-ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, ArrayBufferView* initData)
+ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBufferView* initData)
 {
     RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->baseAddress(), initData->byteLength());
     return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
@@ -549,13 +549,13 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     return promise;
 }
 
-ScriptPromise MediaKeySession::update(ScriptState* scriptState, ArrayBuffer* response)
+ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBuffer* response)
 {
     RefPtr<ArrayBuffer> responseCopy = ArrayBuffer::create(response->data(), response->byteLength());
     return updateInternal(scriptState, responseCopy.release());
 }
 
-ScriptPromise MediaKeySession::update(ScriptState* scriptState, ArrayBufferView* response)
+ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBufferView* response)
 {
     RefPtr<ArrayBuffer> responseCopy = ArrayBuffer::create(response->baseAddress(), response->byteLength());
     return updateInternal(scriptState, responseCopy.release());
@@ -878,7 +878,7 @@ void MediaKeySession::message(const unsigned char* message, size_t messageLength
     MediaKeyMessageEventInit init;
     init.bubbles = false;
     init.cancelable = false;
-    init.message = ArrayBuffer::create(static_cast<const void*>(message), messageLength);
+    init.message = DOMArrayBuffer::create(static_cast<const void*>(message), messageLength);
     init.destinationURL = destinationURL.string();
 
     RefPtrWillBeRawPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);

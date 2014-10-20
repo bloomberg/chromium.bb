@@ -32,25 +32,25 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8DataView.h"
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8FileList.h"
+#include "bindings/core/v8/V8Float32Array.h"
+#include "bindings/core/v8/V8Float64Array.h"
 #include "bindings/core/v8/V8ImageData.h"
+#include "bindings/core/v8/V8Int16Array.h"
+#include "bindings/core/v8/V8Int32Array.h"
+#include "bindings/core/v8/V8Int8Array.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8Uint16Array.h"
+#include "bindings/core/v8/V8Uint32Array.h"
+#include "bindings/core/v8/V8Uint8Array.h"
+#include "bindings/core/v8/V8Uint8ClampedArray.h"
 #include "bindings/core/v8/WorkerScriptController.h"
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
-#include "bindings/core/v8/custom/V8DataViewCustom.h"
-#include "bindings/core/v8/custom/V8Float32ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Float64ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Int16ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Int32ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Int8ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Uint16ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Uint32ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
-#include "bindings/core/v8/custom/V8Uint8ClampedArrayCustom.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "core/dom/ExceptionCode.h"
@@ -914,7 +914,7 @@ static v8::Handle<v8::Object> toV8Object(MessagePort* impl, v8::Handle<v8::Objec
     return wrapper.As<v8::Object>();
 }
 
-static v8::Handle<v8::ArrayBuffer> toV8Object(ArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Handle<v8::ArrayBuffer> toV8Object(DOMArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
         return v8::Handle<v8::ArrayBuffer>();
@@ -1376,7 +1376,7 @@ private:
     StateBase* writeAndGreyArrayBufferView(v8::Handle<v8::Object> object, StateBase* next)
     {
         ASSERT(!object.IsEmpty());
-        ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
+        DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
         if (!arrayBufferView)
             return 0;
         if (!arrayBufferView->buffer())
@@ -1387,7 +1387,7 @@ private:
         StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
         if (stateOut)
             return stateOut;
-        m_writer.writeArrayBufferView(*arrayBufferView);
+        m_writer.writeArrayBufferView(*arrayBufferView->view());
         // This should be safe: we serialize something that we know to be a wrapper (see
         // the toV8 call above), so the call to doSerializeArrayBuffer should neither
         // cause the system stack to overflow nor should it have potential to reach
@@ -1404,19 +1404,19 @@ private:
 
     StateBase* writeArrayBuffer(v8::Handle<v8::Value> value, StateBase* next)
     {
-        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+        DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
         if (!arrayBuffer)
             return 0;
         if (arrayBuffer->isNeutered())
             return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
         ASSERT(!m_transferredArrayBuffers.contains(value.As<v8::Object>()));
-        m_writer.writeArrayBuffer(*arrayBuffer);
+        m_writer.writeArrayBuffer(*arrayBuffer->buffer());
         return 0;
     }
 
     StateBase* writeTransferredArrayBuffer(v8::Handle<v8::Value> value, uint32_t index, StateBase* next)
     {
-        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+        DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
         if (!arrayBuffer)
             return 0;
         if (arrayBuffer->isNeutered())
@@ -2037,10 +2037,8 @@ private:
         if (m_position + byteLength > m_length)
             return nullptr;
         const void* bufferStart = m_buffer + m_position;
-        RefPtr<ArrayBuffer> arrayBuffer = ArrayBuffer::create(bufferStart, byteLength);
-        arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
         m_position += byteLength;
-        return arrayBuffer.release();
+        return ArrayBuffer::create(bufferStart, byteLength);
     }
 
     bool readArrayBuffer(v8::Handle<v8::Value>* value)
@@ -2048,7 +2046,7 @@ private:
         RefPtr<ArrayBuffer> arrayBuffer = doReadArrayBuffer();
         if (!arrayBuffer)
             return false;
-        *value = toV8(arrayBuffer.release(), m_scriptState->context()->Global(), isolate());
+        *value = toV8(DOMArrayBuffer::create(arrayBuffer.release()), m_scriptState->context()->Global(), isolate());
         return true;
     }
 
@@ -2057,7 +2055,7 @@ private:
         ArrayBufferViewSubTag subTag;
         uint32_t byteOffset;
         uint32_t byteLength;
-        RefPtr<ArrayBuffer> arrayBuffer;
+        RefPtr<DOMArrayBuffer> arrayBuffer;
         v8::Handle<v8::Value> arrayBufferV8Value;
         if (!readArrayBufferViewSubTag(&subTag))
             return false;
@@ -2076,58 +2074,58 @@ private:
         v8::Handle<v8::Object> creationContext = m_scriptState->context()->Global();
         switch (subTag) {
         case ByteArrayTag:
-            *value = toV8(Int8Array::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+            *value = toV8(DOMInt8Array::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
             break;
         case UnsignedByteArrayTag:
-            *value = toV8(Uint8Array::create(arrayBuffer.release(), byteOffset, byteLength), creationContext,  isolate());
+            *value = toV8(DOMUint8Array::create(arrayBuffer.release(), byteOffset, byteLength), creationContext,  isolate());
             break;
         case UnsignedByteClampedArrayTag:
-            *value = toV8(Uint8ClampedArray::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+            *value = toV8(DOMUint8ClampedArray::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
             break;
         case ShortArrayTag: {
             uint32_t shortLength = byteLength / sizeof(int16_t);
             if (shortLength * sizeof(int16_t) != byteLength)
                 return false;
-            *value = toV8(Int16Array::create(arrayBuffer.release(), byteOffset, shortLength), creationContext, isolate());
+            *value = toV8(DOMInt16Array::create(arrayBuffer.release(), byteOffset, shortLength), creationContext, isolate());
             break;
         }
         case UnsignedShortArrayTag: {
             uint32_t shortLength = byteLength / sizeof(uint16_t);
             if (shortLength * sizeof(uint16_t) != byteLength)
                 return false;
-            *value = toV8(Uint16Array::create(arrayBuffer.release(), byteOffset, shortLength), creationContext, isolate());
+            *value = toV8(DOMUint16Array::create(arrayBuffer.release(), byteOffset, shortLength), creationContext, isolate());
             break;
         }
         case IntArrayTag: {
             uint32_t intLength = byteLength / sizeof(int32_t);
             if (intLength * sizeof(int32_t) != byteLength)
                 return false;
-            *value = toV8(Int32Array::create(arrayBuffer.release(), byteOffset, intLength), creationContext, isolate());
+            *value = toV8(DOMInt32Array::create(arrayBuffer.release(), byteOffset, intLength), creationContext, isolate());
             break;
         }
         case UnsignedIntArrayTag: {
             uint32_t intLength = byteLength / sizeof(uint32_t);
             if (intLength * sizeof(uint32_t) != byteLength)
                 return false;
-            *value = toV8(Uint32Array::create(arrayBuffer.release(), byteOffset, intLength), creationContext, isolate());
+            *value = toV8(DOMUint32Array::create(arrayBuffer.release(), byteOffset, intLength), creationContext, isolate());
             break;
         }
         case FloatArrayTag: {
             uint32_t floatLength = byteLength / sizeof(float);
             if (floatLength * sizeof(float) != byteLength)
                 return false;
-            *value = toV8(Float32Array::create(arrayBuffer.release(), byteOffset, floatLength), creationContext, isolate());
+            *value = toV8(DOMFloat32Array::create(arrayBuffer.release(), byteOffset, floatLength), creationContext, isolate());
             break;
         }
         case DoubleArrayTag: {
             uint32_t floatLength = byteLength / sizeof(double);
             if (floatLength * sizeof(double) != byteLength)
                 return false;
-            *value = toV8(Float64Array::create(arrayBuffer.release(), byteOffset, floatLength), creationContext, isolate());
+            *value = toV8(DOMFloat64Array::create(arrayBuffer.release(), byteOffset, floatLength), creationContext, isolate());
             break;
         }
         case DataViewTag:
-            *value = toV8(DataView::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
+            *value = toV8(DOMDataView::create(arrayBuffer.release(), byteOffset, byteLength), creationContext, isolate());
             break;
         default:
             return false;
@@ -2703,11 +2701,9 @@ public:
             return false;
         v8::Handle<v8::Object> result = m_arrayBuffers.at(index);
         if (result.IsEmpty()) {
-            RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(m_arrayBufferContents->at(index));
-            buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
+            RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(m_arrayBufferContents->at(index));
             v8::Isolate* isolate = m_reader.scriptState()->isolate();
             v8::Handle<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
-            isolate->AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
             result = toV8Object(buffer.get(), creationContext, isolate);
             m_arrayBuffers[index] = result;
         }
@@ -2887,7 +2883,7 @@ SerializedScriptValue::SerializedScriptValue()
 {
 }
 
-static void neuterArrayBufferInAllWorlds(ArrayBuffer* object)
+static void neuterArrayBufferInAllWorlds(DOMArrayBuffer* object)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (isMainThread()) {
@@ -2922,7 +2918,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
     OwnPtr<ArrayBufferContentsArray> contents = adoptPtr(new ArrayBufferContentsArray(arrayBuffers.size()));
 
-    HashSet<ArrayBuffer*> visited;
+    HashSet<DOMArrayBuffer*> visited;
     for (size_t i = 0; i < arrayBuffers.size(); i++) {
         if (visited.contains(arrayBuffers[i].get()))
             continue;
@@ -3042,7 +3038,7 @@ bool SerializedScriptValue::extractTransferables(v8::Local<v8::Value> value, int
             }
             ports.append(port.release());
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
-            RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(transferrable));
+            RefPtr<DOMArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(arrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
                 return false;

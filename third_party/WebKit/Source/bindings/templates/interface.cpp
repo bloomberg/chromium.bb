@@ -727,11 +727,13 @@ V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8
 
 {##############################################################################}
 {% block get_dom_template %}
+{% if not is_array_buffer_or_view %}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {
     return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), install{{v8_class}}Template);
 }
 
+{% endif %}
 {% endblock %}
 
 
@@ -739,14 +741,98 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {% block has_instance %}
 bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
+    {% if is_array_buffer_or_view %}
+    return v8Value->Is{{interface_name}}();
+    {% else %}
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
+    {% endif %}
 }
 
+{% if not is_array_buffer_or_view %}
 v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block to_impl %}
+{% if interface_name == 'ArrayBuffer' %}
+{{cpp_class}}* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
+{
+    ASSERT(object->IsArrayBuffer());
+    v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
+    if (v8buffer->IsExternal()) {
+        const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
+        RELEASE_ASSERT(wrapperTypeInfo);
+        RELEASE_ASSERT(wrapperTypeInfo->ginEmbedder == gin::kEmbedderBlink);
+        return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
+    }
+
+    v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
+    // This special way to create ArrayBuffer via ArrayBufferContents makes the
+    // underlying ArrayBufferContents not call ArrayBufferDeallocationObserver::
+    // blinkAllocatedMemory. The array buffer created by V8 already called it,
+    // so we shouldn't call it.
+    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), DOMArrayBufferDeallocationObserver::instance());
+    RefPtr<{{cpp_class}}> buffer = {{cpp_class}}::create(contents);
+    buffer->associateWithWrapper(buffer->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
+
+    return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
+}
+
+{% elif interface_name == 'ArrayBufferView' %}
+{{cpp_class}}* V8ArrayBufferView::toImpl(v8::Handle<v8::Object> object)
+{
+    ASSERT(object->IsArrayBufferView());
+    ScriptWrappableBase* internalPointer = blink::toScriptWrappableBase(object);
+    if (internalPointer)
+        return internalPointer->toImpl<{{cpp_class}}>();
+
+    if (object->IsInt8Array())
+        return V8Int8Array::toImpl(object);
+    if (object->IsInt16Array())
+        return V8Int16Array::toImpl(object);
+    if (object->IsInt32Array())
+        return V8Int32Array::toImpl(object);
+    if (object->IsUint8Array())
+        return V8Uint8Array::toImpl(object);
+    if (object->IsUint8ClampedArray())
+        return V8Uint8ClampedArray::toImpl(object);
+    if (object->IsUint16Array())
+        return V8Uint16Array::toImpl(object);
+    if (object->IsUint32Array())
+        return V8Uint32Array::toImpl(object);
+    if (object->IsFloat32Array())
+        return V8Float32Array::toImpl(object);
+    if (object->IsFloat64Array())
+        return V8Float64Array::toImpl(object);
+    if (object->IsDataView())
+        return V8DataView::toImpl(object);
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+{% elif is_array_buffer_or_view %}
+{{cpp_class}}* {{v8_class}}::toImpl(v8::Handle<v8::Object> object)
+{
+    ASSERT(object->Is{{interface_name}}());
+    ScriptWrappableBase* internalPointer = blink::toScriptWrappableBase(object);
+    if (internalPointer)
+        return internalPointer->toImpl<{{cpp_class}}>();
+
+    v8::Handle<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
+    RefPtr<{{cpp_class}}> typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
+    typedArray->associateWithWrapper(typedArray->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
+
+    return typedArray->toImpl<{{cpp_class}}>();
+}
+
+{% endif %}
 {% endblock %}
 
 
@@ -754,7 +840,11 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 {% block to_impl_with_type_check %}
 {{cpp_class}}* {{v8_class}}::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
+    {% if is_array_buffer_or_view %}
+    return hasInstance(value, isolate) ? toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
+    {% else %}
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<{{cpp_class}}>() : 0;
+    {% endif %}
 }
 
 {% endblock %}
@@ -855,7 +945,6 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
 
 {##############################################################################}
 {% block deref_object_and_to_v8_no_inline %}
-
 void {{v8_class}}::refObject(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}

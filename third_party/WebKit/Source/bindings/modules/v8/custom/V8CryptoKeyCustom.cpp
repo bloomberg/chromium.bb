@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/custom/V8Uint8ArrayCustom.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/Uint8Array.h"
 
@@ -43,8 +43,7 @@ public:
 
     virtual void setUint8Array(const char* propertyName, const blink::WebVector<unsigned char>& vector)
     {
-        RefPtr<Uint8Array> uint8Array = Uint8Array::create(vector.data(), vector.size());
-        m_dictionary.set(propertyName, toV8(uint8Array.get(), m_holder, m_isolate));
+        m_dictionary.set(propertyName, toV8(DOMUint8Array::create(vector.data(), vector.size()), m_holder, m_isolate));
     }
 
     const Dictionary& dictionary() const { return m_dictionary; }

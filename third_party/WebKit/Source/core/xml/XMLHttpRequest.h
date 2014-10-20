@@ -34,6 +34,7 @@
 #include "platform/network/FormData.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringBuilder.h"
@@ -42,6 +43,7 @@ namespace blink {
 
 class Blob;
 class BlobDataHandle;
+class DOMArrayBuffer;
 class DOMFormData;
 class Document;
 class DocumentParser;
@@ -143,7 +145,7 @@ public:
     String responseURL();
 
     // response attribute has custom getter.
-    ArrayBuffer* responseArrayBuffer();
+    DOMArrayBuffer* responseArrayBuffer();
 
     void setLastSendLineNumber(unsigned lineNumber) { m_lastSendLineNumber = lineNumber; }
     void setLastSendURL(const String& url) { m_lastSendURL = url; }
@@ -255,7 +257,7 @@ private:
     unsigned long m_timeoutMilliseconds;
     PersistentWillBeMember<Blob> m_responseBlob;
     RefPtrWillBeMember<Stream> m_responseLegacyStream;
-    PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<ArrayBuffer> > > m_responseStream;
+    PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> > > m_responseStream;
     PersistentWillBeMember<UnderlyingSource> m_streamSource;
 
     RefPtr<ThreadableLoader> m_loader;
@@ -274,7 +276,7 @@ private:
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
     long long m_lengthDownloadedToFile;
 
-    RefPtr<ArrayBuffer> m_responseArrayBuffer;
+    RefPtr<DOMArrayBuffer> m_responseArrayBuffer;
 
     // Used for onprogress tracking
     long long m_receivedLength;

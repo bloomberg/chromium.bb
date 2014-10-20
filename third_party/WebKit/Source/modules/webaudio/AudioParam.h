@@ -30,13 +30,13 @@
 #define AudioParam_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioParamTimeline.h"
 #include "modules/webaudio/AudioSummingJunction.h"
-#include <sys/types.h>
-#include "wtf/Float32Array.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <sys/types.h>
 
 namespace blink {
 
@@ -95,9 +95,9 @@ public:
     {
         m_timeline.setTargetAtTime(target, time, timeConstant, exceptionState);
     }
-    void setValueCurveAtTime(Float32Array* curve, double time, double duration, ExceptionState& exceptionState)
+    void setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
     {
-        m_timeline.setValueCurveAtTime(curve, time, duration, exceptionState);
+        m_timeline.setValueCurveAtTime(curve->view(), time, duration, exceptionState);
     }
     void cancelScheduledValues(double startTime, ExceptionState& exceptionState)
     {

@@ -34,8 +34,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "platform/audio/FFTFrame.h"
-#include "platform/audio/HRTFPanner.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AnalyserNode.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -63,15 +61,15 @@
 #include "modules/webaudio/PeriodicWave.h"
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
+#include "platform/audio/FFTFrame.h"
+#include "platform/audio/HRTFPanner.h"
+#include "wtf/Atomics.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
 #endif
-
-#include "wtf/ArrayBuffer.h"
-#include "wtf/Atomics.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -229,7 +227,7 @@ AudioBuffer* AudioContext::createBuffer(unsigned numberOfChannels, size_t number
     return AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 }
 
-void AudioContext::decodeAudioData(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
+void AudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
 {
     if (!audioData) {
         exceptionState.throwDOMException(
@@ -237,7 +235,7 @@ void AudioContext::decodeAudioData(ArrayBuffer* audioData, AudioBufferCallback* 
             "invalid ArrayBuffer for audioData.");
         return;
     }
-    m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
+    m_audioDecoder.decodeAsync(audioData->buffer(), sampleRate(), successCallback, errorCallback);
 }
 
 AudioBufferSourceNode* AudioContext::createBufferSource()
@@ -485,7 +483,7 @@ OscillatorNode* AudioContext::createOscillator()
     return node;
 }
 
-PeriodicWave* AudioContext::createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState& exceptionState)
+PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -528,7 +526,7 @@ PeriodicWave* AudioContext::createPeriodicWave(Float32Array* real, Float32Array*
         return 0;
     }
 
-    return PeriodicWave::create(sampleRate(), real, imag);
+    return PeriodicWave::create(sampleRate(), real->view(), imag->view());
 }
 
 void AudioContext::notifyNodeFinishedProcessing(AudioNode* node)

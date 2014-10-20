@@ -114,7 +114,6 @@ EventTarget* V8TestInterfaceEventTarget::toEventTarget(v8::Handle<v8::Object> ob
     return toImpl(object);
 }
 
-
 void V8TestInterfaceEventTarget::refObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)

@@ -82,6 +82,25 @@ def interface_context(interface):
         header_includes.update(v8_types.includes_for_interface(parent_interface))
     extended_attributes = interface.extended_attributes
 
+    is_array_buffer_or_view = interface.idl_type.is_array_buffer_or_view
+    is_typed_array_type = interface.idl_type.is_typed_array
+    if is_array_buffer_or_view:
+        includes.add('bindings/core/v8/V8ArrayBuffer.h')
+    if interface.name == 'ArrayBuffer':
+        includes.add('core/dom/DOMArrayBufferDeallocationObserver.h')
+    if interface.name == 'ArrayBufferView':
+        includes.update((
+            'bindings/core/v8/V8Int8Array.h',
+            'bindings/core/v8/V8Int16Array.h',
+            'bindings/core/v8/V8Int32Array.h',
+            'bindings/core/v8/V8Uint8Array.h',
+            'bindings/core/v8/V8Uint8ClampedArray.h',
+            'bindings/core/v8/V8Uint16Array.h',
+            'bindings/core/v8/V8Uint32Array.h',
+            'bindings/core/v8/V8Float32Array.h',
+            'bindings/core/v8/V8Float64Array.h',
+            'bindings/core/v8/V8DataView.h'))
+
     # [ActiveDOMObject]
     is_active_dom_object = 'ActiveDOMObject' in extended_attributes
 
@@ -157,12 +176,14 @@ def interface_context(interface):
         'header_includes': header_includes,
         'interface_name': interface.name,
         'is_active_dom_object': is_active_dom_object,
+        'is_array_buffer_or_view': is_array_buffer_or_view,
         'is_check_security': is_check_security,
         'is_dependent_lifetime': is_dependent_lifetime,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_script_wrappable': is_script_wrappable,
+        'is_typed_array_type': is_typed_array_type,
         'iterator_method': iterator_method,
         'lifetime': 'Dependent'
             if (has_visit_dom_wrapper or

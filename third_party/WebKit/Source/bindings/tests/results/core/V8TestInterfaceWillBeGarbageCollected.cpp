@@ -214,7 +214,6 @@ EventTarget* V8TestInterfaceWillBeGarbageCollected::toEventTarget(v8::Handle<v8:
     return toImpl(object);
 }
 
-
 void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)

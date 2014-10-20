@@ -107,7 +107,6 @@ SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, 
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<SVGTestInterface>() : 0;
 }
 
-
 void V8SVGTestInterface::refObject(ScriptWrappableBase* internalPointer)
 {
     internalPointer->toImpl<SVGTestInterface>()->ref();

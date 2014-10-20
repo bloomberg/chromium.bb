@@ -44,13 +44,13 @@ WaveShaperNode::WaveShaperNode(AudioContext* context)
     initialize();
 }
 
-void WaveShaperNode::setCurve(Float32Array* curve)
+void WaveShaperNode::setCurve(DOMFloat32Array* curve)
 {
     ASSERT(isMainThread());
     waveShaperProcessor()->setCurve(curve);
 }
 
-Float32Array* WaveShaperNode::curve()
+DOMFloat32Array* WaveShaperNode::curve()
 {
     return waveShaperProcessor()->curve();
 }

@@ -229,7 +229,6 @@ EventTarget* V8TestNode::toEventTarget(v8::Handle<v8::Object> object)
     return toImpl(object);
 }
 
-
 void V8TestNode::refObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)

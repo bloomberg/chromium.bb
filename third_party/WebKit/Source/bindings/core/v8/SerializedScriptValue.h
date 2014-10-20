@@ -46,12 +46,13 @@ class ArrayBufferContents;
 namespace blink {
 
 class BlobDataHandle;
+class DOMArrayBuffer;
 class ExceptionState;
 class MessagePort;
 class WebBlobInfo;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
-typedef Vector<RefPtr<WTF::ArrayBuffer>, 1> ArrayBufferArray;
+typedef Vector<RefPtr<DOMArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle> > BlobDataHandleMap;
 typedef Vector<blink::WebBlobInfo> WebBlobInfoArray;
 

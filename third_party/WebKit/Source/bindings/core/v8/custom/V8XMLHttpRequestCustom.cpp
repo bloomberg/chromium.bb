@@ -33,6 +33,8 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8Document.h"
@@ -40,15 +42,12 @@
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8ReadableStream.h"
 #include "bindings/core/v8/V8Stream.h"
-#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/streams/ReadableStream.h"
 #include "core/streams/Stream.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XMLHttpRequest.h"
-#include "wtf/ArrayBuffer.h"
 #include <v8.h>
 
 namespace blink {
@@ -67,7 +66,7 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
     RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = XMLHttpRequest::create(context, securityOrigin);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8XMLHttpRequest>(xmlHttpRequest.release(), &wrapperTypeInfo, wrapper, info.GetIsolate());
+    xmlHttpRequest->associateWithWrapper(xmlHttpRequest->wrapperTypeInfo(), wrapper, info.GetIsolate());
     info.GetReturnValue().Set(wrapper);
 }
 
@@ -148,10 +147,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
 
     case XMLHttpRequest::ResponseTypeArrayBuffer:
         {
-            ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
-            if (arrayBuffer) {
-                arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
-            }
+            DOMArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
             v8SetReturnValueFast(info, arrayBuffer, xmlHttpRequest);
             return;
         }
@@ -240,14 +236,14 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
             xmlHttpRequest->send(domFormData, exceptionState);
         } else if (V8ArrayBuffer::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
-            ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(object);
+            DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(object);
             ASSERT(arrayBuffer);
-            xmlHttpRequest->send(arrayBuffer, exceptionState);
+            xmlHttpRequest->send(arrayBuffer->buffer(), exceptionState);
         } else if (V8ArrayBufferView::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
-            ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
+            DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
             ASSERT(arrayBufferView);
-            xmlHttpRequest->send(arrayBufferView, exceptionState);
+            xmlHttpRequest->send(arrayBufferView->view(), exceptionState);
         } else {
             TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, argString, arg);
             xmlHttpRequest->send(argString, exceptionState);
