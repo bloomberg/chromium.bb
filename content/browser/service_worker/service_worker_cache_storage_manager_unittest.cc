@@ -102,44 +102,6 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
-  bool CreateCache(const GURL& origin, const std::string& cache_name) {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    cache_manager_->CreateCache(
-        origin,
-        cache_name,
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheAndErrorCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
-    loop->Run();
-
-    bool error = callback_error_ !=
-                 ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
-    if (error)
-      EXPECT_TRUE(!callback_cache_.get());
-    else
-      EXPECT_TRUE(callback_cache_.get());
-    return !error;
-  }
-
-  bool Get(const GURL& origin, const std::string& cache_name) {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    cache_manager_->GetCache(
-        origin,
-        cache_name,
-        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheAndErrorCallback,
-                   base::Unretained(this),
-                   base::Unretained(loop.get())));
-    loop->Run();
-
-    bool error = callback_error_ !=
-                 ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
-    if (error)
-      EXPECT_TRUE(!callback_cache_.get());
-    else
-      EXPECT_TRUE(callback_cache_.get());
-    return !error;
-  }
-
   bool Open(const GURL& origin, const std::string& cache_name) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
     cache_manager_->OpenCache(
@@ -273,60 +235,38 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, TestsRunOnIOThread) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, CreateCache) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenCache) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
 }
 
-TEST_P(ServiceWorkerCacheStorageManagerTestP, CreateDuplicateCache) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_FALSE(CreateCache(origin1_, "foo"));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EXISTS,
-            callback_error_);
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP, CreateTwoCaches) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
+TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenTwoCaches) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "bar"));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, CachePointersDiffer) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
-  EXPECT_TRUE(cache.get() != callback_cache_.get());
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP, Create2CachesSameNameDiffSWs) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin2_, "foo"));
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP, GetCache) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
-  EXPECT_TRUE(Get(origin1_, "foo"));
-  EXPECT_TRUE(cache.get() == callback_cache_.get());
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP, GetNonExistent) {
-  EXPECT_FALSE(Get(origin1_, "foo"));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND,
-            callback_error_);
-}
-
-TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenNewCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
+  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_NE(callback_cache_.get(), cache.get());
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, Open2CachesSameNameDiffOrigins) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
+  EXPECT_TRUE(Open(origin2_, "foo"));
+  EXPECT_NE(cache.get(), callback_cache_.get());
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, OpenExistingCache) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
   EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(cache.get() == callback_cache_.get());
+  EXPECT_EQ(callback_cache_.get(), cache.get());
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, HasCache) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Has(origin1_, "foo"));
   EXPECT_TRUE(callback_bool_);
 }
@@ -336,15 +276,13 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, HasNonExistent) {
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteCache) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
-  EXPECT_FALSE(Get(origin1_, "foo"));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND,
-            callback_error_);
+  EXPECT_FALSE(Has(origin1_, "foo"));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteTwice) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_FALSE(Delete(origin1_, "foo"));
   EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND,
@@ -357,24 +295,24 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, EmptyKeys) {
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, SomeKeys) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
-  EXPECT_TRUE(CreateCache(origin2_, "baz"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(Open(origin2_, "baz"));
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(2u, callback_strings_.size());
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
   expected_keys.push_back("bar");
-  EXPECT_TRUE(expected_keys == callback_strings_);
+  EXPECT_EQ(expected_keys, callback_strings_);
   EXPECT_TRUE(Keys(origin2_));
   EXPECT_EQ(1u, callback_strings_.size());
   EXPECT_STREQ("baz", callback_strings_[0].c_str());
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeletedKeysGone) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
-  EXPECT_TRUE(CreateCache(origin2_, "baz"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(Open(origin2_, "baz"));
   EXPECT_TRUE(Delete(origin1_, "bar"));
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(1u, callback_strings_.size());
@@ -382,23 +320,23 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, DeletedKeysGone) {
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
-  EXPECT_TRUE(CreateCache(origin1_, "你好"));
+  EXPECT_TRUE(Open(origin1_, "你好"));
   scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
-  EXPECT_TRUE(Get(origin1_, "你好"));
-  EXPECT_TRUE(cache.get() == callback_cache_.get());
+  EXPECT_TRUE(Open(origin1_, "你好"));
+  EXPECT_EQ(callback_cache_.get(), cache.get());
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(1u, callback_strings_.size());
-  EXPECT_TRUE("你好" == callback_strings_[0]);
+  EXPECT_STREQ("你好", callback_strings_[0].c_str());
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
-  EXPECT_TRUE(CreateCache(origin1_, ""));
+  EXPECT_TRUE(Open(origin1_, ""));
   scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
-  EXPECT_TRUE(Get(origin1_, ""));
+  EXPECT_TRUE(Open(origin1_, ""));
   EXPECT_EQ(cache.get(), callback_cache_.get());
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(1u, callback_strings_.size());
-  EXPECT_TRUE("" == callback_strings_[0]);
+  EXPECT_STREQ("", callback_strings_[0].c_str());
   EXPECT_TRUE(Has(origin1_, ""));
   EXPECT_TRUE(Delete(origin1_, ""));
   EXPECT_TRUE(Keys(origin1_));
@@ -406,10 +344,10 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin1_, "bar"));
-  EXPECT_TRUE(CreateCache(origin1_, "baz"));
-  EXPECT_TRUE(CreateCache(origin2_, "raz"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(Open(origin1_, "baz"));
+  EXPECT_TRUE(Open(origin2_, "raz"));
   EXPECT_TRUE(Delete(origin1_, "bar"));
   cache_manager_ =
       ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
@@ -418,12 +356,12 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
   expected_keys.push_back("baz");
-  EXPECT_TRUE(expected_keys == callback_strings_);
+  EXPECT_EQ(expected_keys, callback_strings_);
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
-  EXPECT_TRUE(CreateCache(origin2_, "baz"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin2_, "baz"));
   cache_manager_ =
       ServiceWorkerCacheStorageManager::Create(cache_manager_.get());
   EXPECT_TRUE(Keys(origin1_));
@@ -434,7 +372,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, BadCacheName) {
   // Since the implementation writes cache names to disk, ensure that we don't
   // escape the directory.
   const std::string bad_name = "../../../../../../../../../../../../../../foo";
-  EXPECT_TRUE(CreateCache(origin1_, bad_name));
+  EXPECT_TRUE(Open(origin1_, bad_name));
   EXPECT_TRUE(Keys(origin1_));
   EXPECT_EQ(1u, callback_strings_.size());
   EXPECT_STREQ(bad_name.c_str(), callback_strings_[0].c_str());
@@ -444,7 +382,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, BadOriginName) {
   // Since the implementation writes origin names to disk, ensure that we don't
   // escape the directory.
   GURL bad_origin("../../../../../../../../../../../../../../foo");
-  EXPECT_TRUE(CreateCache(bad_origin, "foo"));
+  EXPECT_TRUE(Open(bad_origin, "foo"));
   EXPECT_TRUE(Keys(bad_origin));
   EXPECT_EQ(1u, callback_strings_.size());
   EXPECT_STREQ("foo", callback_strings_[0].c_str());
@@ -454,7 +392,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, BadOriginName) {
 // ServiceWorkerCache
 // it should be deleted.
 TEST_F(ServiceWorkerCacheStorageManagerTest, DropReference) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   base::WeakPtr<ServiceWorkerCache> cache = callback_cache_->AsWeakPtr();
   callback_cache_ = NULL;
   EXPECT_TRUE(!cache);
@@ -464,7 +402,7 @@ TEST_F(ServiceWorkerCacheStorageManagerTest, DropReference) {
 // calls delete.
 TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest,
        MemoryLosesReferenceOnlyAfterDelete) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   base::WeakPtr<ServiceWorkerCache> cache = callback_cache_->AsWeakPtr();
   callback_cache_ = NULL;
   EXPECT_TRUE(cache);
@@ -473,15 +411,15 @@ TEST_F(ServiceWorkerCacheStorageManagerMemoryOnlyTest,
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, RecreateCacheOnDemand) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, "bar"));
   callback_cache_ = NULL;
-  EXPECT_TRUE(Get(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CacheMatch(callback_cache_, "bar"));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {
-  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Delete(origin1_, "foo"));
   EXPECT_TRUE(callback_cache_->AsWeakPtr());
 }

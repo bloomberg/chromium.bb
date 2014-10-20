@@ -45,14 +45,6 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
 
   // Methods to support the CacheStorage spec. These methods call the
   // corresponding ServiceWorkerCacheStorage method on the appropriate thread.
-  void CreateCache(
-      const GURL& origin,
-      const std::string& cache_name,
-      const ServiceWorkerCacheStorage::CacheAndErrorCallback& callback);
-  void GetCache(
-      const GURL& origin,
-      const std::string& cache_name,
-      const ServiceWorkerCacheStorage::CacheAndErrorCallback& callback);
   void OpenCache(
       const GURL& origin,
       const std::string& cache_name,

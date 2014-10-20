@@ -189,15 +189,7 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
                     std::vector<int> /* sent_message_port_ids */)
 
 // CacheStorage operations in the browser.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageGet,
-                    int /* request_id */,
-                    base::string16 /* fetch_store_name */)
-
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageHas,
-                    int /* request_id */,
-                    base::string16 /* fetch_store_name */)
-
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageCreate,
                     int /* request_id */,
                     base::string16 /* fetch_store_name */)
 
@@ -365,14 +357,8 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
                      std::vector<int> /* client_ids */)
 
 // Sent via EmbeddedWorker at successful completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageGetSuccess,
-                     int /* request_id */,
-                     int /* fetch_store_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageHasSuccess,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageCreateSuccess,
-                     int /* request_id */,
-                     int /* fetch_store_id */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageOpenSuccess,
                      int /* request_id */,
                      int /* fetch_store_id */)
@@ -383,13 +369,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysSuccess,
                      std::vector<base::string16> /* keys */)
 
 // Sent via EmbeddedWorker at erroneous completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageGetError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageHasError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageCreateError,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageOpenError,

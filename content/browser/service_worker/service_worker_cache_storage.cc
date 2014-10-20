@@ -351,31 +351,6 @@ ServiceWorkerCacheStorage::ServiceWorkerCacheStorage(
 ServiceWorkerCacheStorage::~ServiceWorkerCacheStorage() {
 }
 
-void ServiceWorkerCacheStorage::CreateCache(
-    const std::string& cache_name,
-    const CacheAndErrorCallback& callback) {
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::CreateCache,
-                        weak_factory_.GetWeakPtr(),
-                        cache_name,
-                        callback));
-    return;
-  }
-
-  if (cache_map_.find(cache_name) != cache_map_.end()) {
-    callback.Run(scoped_refptr<ServiceWorkerCache>(),
-                 CACHE_STORAGE_ERROR_EXISTS);
-    return;
-  }
-
-  cache_loader_->CreateCache(
-      cache_name,
-      base::Bind(&ServiceWorkerCacheStorage::CreateCacheDidCreateCache,
-                 weak_factory_.GetWeakPtr(),
-                 cache_name,
-                 callback));
-}
-
 void ServiceWorkerCacheStorage::OpenCache(
     const std::string& cache_name,
     const CacheAndErrorCallback& callback) {
@@ -401,29 +376,6 @@ void ServiceWorkerCacheStorage::OpenCache(
                  weak_factory_.GetWeakPtr(),
                  cache_name,
                  callback));
-}
-
-void ServiceWorkerCacheStorage::GetCache(
-    const std::string& cache_name,
-    const CacheAndErrorCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!initialized_) {
-    LazyInit(base::Bind(&ServiceWorkerCacheStorage::GetCache,
-                        weak_factory_.GetWeakPtr(),
-                        cache_name,
-                        callback));
-    return;
-  }
-
-  scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
-  if (!cache.get()) {
-    callback.Run(scoped_refptr<ServiceWorkerCache>(),
-                 CACHE_STORAGE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
 void ServiceWorkerCacheStorage::HasCache(const std::string& cache_name,

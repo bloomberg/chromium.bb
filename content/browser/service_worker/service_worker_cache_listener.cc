@@ -87,12 +87,8 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerCacheListener, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageGet,
-                        OnCacheStorageGet)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageHas,
                         OnCacheStorageHas)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageCreate,
-                        OnCacheStorageCreate)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageOpen,
                         OnCacheStorageOpen)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageDelete,
@@ -116,19 +112,6 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
   return handled;
 }
 
-void ServiceWorkerCacheListener::OnCacheStorageGet(
-    int request_id,
-    const base::string16& cache_name) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerCacheListener::OnCacheStorageGet");
-  context_->cache_manager()->GetCache(
-      version_->scope().GetOrigin(),
-      base::UTF16ToUTF8(cache_name),
-      base::Bind(&ServiceWorkerCacheListener::OnCacheStorageGetCallback,
-                 weak_factory_.GetWeakPtr(),
-                 request_id));
-}
-
 void ServiceWorkerCacheListener::OnCacheStorageHas(
     int request_id,
     const base::string16& cache_name) {
@@ -138,19 +121,6 @@ void ServiceWorkerCacheListener::OnCacheStorageHas(
       version_->scope().GetOrigin(),
       base::UTF16ToUTF8(cache_name),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageHasCallback,
-                 weak_factory_.GetWeakPtr(),
-                 request_id));
-}
-
-void ServiceWorkerCacheListener::OnCacheStorageCreate(
-    int request_id,
-    const base::string16& cache_name) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerCacheListener::OnCacheStorageCreate");
-  context_->cache_manager()->CreateCache(
-      version_->scope().GetOrigin(),
-      base::UTF16ToUTF8(cache_name),
-      base::Bind(&ServiceWorkerCacheListener::OnCacheStorageCreateCallback,
                  weak_factory_.GetWeakPtr(),
                  request_id));
 }
@@ -314,20 +284,6 @@ void ServiceWorkerCacheListener::Send(const IPC::Message& message) {
   version_->embedded_worker()->SendMessage(message);
 }
 
-void ServiceWorkerCacheListener::OnCacheStorageGetCallback(
-    int request_id,
-    const scoped_refptr<ServiceWorkerCache>& cache,
-    ServiceWorkerCacheStorage::CacheStorageError error) {
-  if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
-    Send(ServiceWorkerMsg_CacheStorageGetError(
-        request_id, ToWebServiceWorkerCacheError(error)));
-    return;
-  }
-
-  CacheID cache_id = StoreCacheReference(cache);
-  Send(ServiceWorkerMsg_CacheStorageGetSuccess(request_id, cache_id));
-}
-
 void ServiceWorkerCacheListener::OnCacheStorageHasCallback(
     int request_id,
     bool has_cache,
@@ -344,19 +300,6 @@ void ServiceWorkerCacheListener::OnCacheStorageHasCallback(
     return;
   }
   Send(ServiceWorkerMsg_CacheStorageHasSuccess(request_id));
-}
-
-void ServiceWorkerCacheListener::OnCacheStorageCreateCallback(
-    int request_id,
-    const scoped_refptr<ServiceWorkerCache>& cache,
-    ServiceWorkerCacheStorage::CacheStorageError error) {
-  if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
-    Send(ServiceWorkerMsg_CacheStorageCreateError(
-        request_id, ToWebServiceWorkerCacheError(error)));
-    return;
-  }
-  CacheID cache_id = StoreCacheReference(cache);
-  Send(ServiceWorkerMsg_CacheStorageCreateSuccess(request_id, cache_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageOpenCallback(
