@@ -18,7 +18,6 @@
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/test_scheme_classifier.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -90,10 +89,6 @@ class AutocompleteResultTest : public testing::Test  {
   }
 
   virtual void SetUp() override {
-#if defined(OS_ANDROID)
-    TemplateURLPrepopulateData::InitCountryCode(
-        std::string() /* unknown country code */);
-#endif
     template_url_service_.reset(new TemplateURLService(NULL, 0));
     template_url_service_->Load();
   }

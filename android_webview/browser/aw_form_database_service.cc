@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/aw_form_database_service.h"
+
+#include "base/android/locale_utils.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util_android.h"
 
 using base::WaitableEvent;
 using content::BrowserThread;
@@ -32,7 +33,7 @@ AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
   web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new autofill::AutofillTable(
-          l10n_util::GetDefaultLocale())));
+          base::android::GetDefaultLocale())));
   web_database_->LoadDatabase();
 
   autofill_data_ = new autofill::AutofillWebDataService(

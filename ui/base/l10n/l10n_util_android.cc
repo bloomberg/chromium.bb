@@ -23,13 +23,6 @@ jint GetFirstStrongCharacterDirection(JNIEnv* env, jclass clazz,
       base::android::ConvertJavaStringToUTF16(env, string));
 }
 
-std::string GetDefaultLocale() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> locale = Java_LocalizationUtils_getDefaultLocale(
-      env);
-  return ConvertJavaStringToUTF8(locale);
-}
-
 bool IsLayoutRtl() {
   static bool is_layout_rtl_cached = false;
   static bool layout_rtl_cache;

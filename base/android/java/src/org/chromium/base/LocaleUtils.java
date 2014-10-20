@@ -20,6 +20,7 @@ public class LocaleUtils {
      * @return the default locale, translating Android deprecated
      * language codes into the modern ones used by Chromium.
      */
+    @CalledByNative
     public static String getDefaultLocale() {
         Locale locale = Locale.getDefault();
         String language = locale.getLanguage();
@@ -38,4 +39,17 @@ public class LocaleUtils {
         }
         return country.isEmpty() ? language : language + "-" + country;
     }
+
+    /**
+     * Get the default country code set during install.
+     * @return country code.
+     */
+    @CalledByNative
+    private static String getDefaultCountryCode() {
+        CommandLine commandLine = CommandLine.getInstance();
+        return commandLine.hasSwitch(BaseSwitches.DEFAULT_COUNTRY_CODE_AT_INSTALL) ?
+                commandLine.getSwitchValue(BaseSwitches.DEFAULT_COUNTRY_CODE_AT_INSTALL) :
+                Locale.getDefault().getCountry();
+    }
+
 }

@@ -19,6 +19,7 @@
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
+#include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
 #include "base/path_service.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
@@ -34,7 +35,6 @@
 #include "net/android/network_library.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
-#include "ui/base/l10n/l10n_util_android.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -155,7 +155,7 @@ void CancelProtectedMediaIdentifierPermissionRequests(
 
 std::string AwContentBrowserClient::GetAcceptLangsImpl() {
   // Start with the currnet locale.
-  std::string langs = l10n_util::GetDefaultLocale();
+  std::string langs = base::android::GetDefaultLocale();
 
   // If we're not en-US, add in en-US which will be
   // used with a lower q-value.
@@ -259,7 +259,7 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string AwContentBrowserClient::GetApplicationLocale() {
-  return l10n_util::GetDefaultLocale();
+  return base::android::GetDefaultLocale();
 }
 
 std::string AwContentBrowserClient::GetAcceptLangs(

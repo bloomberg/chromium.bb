@@ -33,6 +33,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/android/locale_utils.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -62,7 +63,6 @@
 #include "net/base/auth.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
@@ -252,7 +252,7 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
   ContentAutofillDriver::CreateForWebContentsAndDelegate(
       web_contents,
       AwAutofillClient::FromWebContents(web_contents),
-      l10n_util::GetDefaultLocale(),
+      base::android::GetDefaultLocale(),
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 

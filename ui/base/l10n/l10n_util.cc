@@ -33,6 +33,7 @@
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/locale_utils.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #endif
 
@@ -447,7 +448,7 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 #elif defined(OS_ANDROID)
 
   // On Android, query java.util.Locale for the default locale.
-  candidates.push_back(GetDefaultLocale());
+  candidates.push_back(base::android::GetDefaultLocale());
 
 #elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
 

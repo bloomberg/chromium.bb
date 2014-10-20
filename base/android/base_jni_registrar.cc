@@ -16,6 +16,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
+#include "base/android/locale_utils.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
@@ -42,6 +43,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
   { "ImportantFileWriterAndroid",
     base::android::RegisterImportantFileWriterAndroid },
   { "JNIUtils", base::android::RegisterJNIUtils },
+  { "LocaleUtils", base::android::RegisterLocaleUtils },
   { "MemoryPressureListenerAndroid",
       base::android::MemoryPressureListenerAndroid::Register },
   { "JavaHandlerThread", base::android::JavaHandlerThread::RegisterBindings },

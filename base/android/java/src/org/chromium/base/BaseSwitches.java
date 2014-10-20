@@ -23,6 +23,9 @@ public abstract class BaseSwitches {
     // Adds additional thread idle time information into the trace event output.
     public static final String ENABLE_IDLE_TRACING = "enable-idle-tracing";
 
+    // Default country code to be used for search engine localization.
+    public static final String DEFAULT_COUNTRY_CODE_AT_INSTALL = "default-country-code";
+
     // Prevent instantiation.
     private BaseSwitches() {}
 }

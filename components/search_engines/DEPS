@@ -15,6 +15,7 @@ include_rules = [
   "+policy",
   "+sql",
   "+sync",
+  "+ui/base",
   "+ui/gfx",
 ]
 

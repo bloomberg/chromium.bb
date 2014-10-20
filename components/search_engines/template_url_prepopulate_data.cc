@@ -29,6 +29,10 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/locale_utils.h"
+#endif
+
 namespace TemplateURLPrepopulateData {
 
 
@@ -621,11 +625,11 @@ int GetCurrentCountryID() {
 
 #elif defined(OS_ANDROID)
 
-// Initialized by InitCountryCode().
-int g_country_code_at_install = kCountryIDUnknown;
-
 int GetCurrentCountryID() {
-  return g_country_code_at_install;
+  const std::string& country_code = base::android::GetDefaultCountryCode();
+  return (country_code.size() == 2) ?
+      CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]) :
+      kCountryIDUnknown;
 }
 
 #elif defined(OS_POSIX)
@@ -1185,18 +1189,6 @@ bool SameDomain(const GURL& given_url, const GURL& prepopulated_url) {
 
 
 // Global functions -----------------------------------------------------------
-
-#if defined(OS_ANDROID)
-void InitCountryCode(const std::string& country_code) {
-  if (country_code.size() != 2) {
-    DLOG(ERROR) << "Invalid country code: " << country_code;
-    g_country_code_at_install = kCountryIDUnknown;
-  } else {
-    g_country_code_at_install =
-        CountryCharsToCountryIDWithUpdate(country_code[0], country_code[1]);
-  }
-}
-#endif
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(

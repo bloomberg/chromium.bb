@@ -45,6 +45,8 @@
           'android/fifo_utils.h',
           'android/important_file_writer_android.cc',
           'android/important_file_writer_android.h',
+          'android/locale_utils.h',
+          'android/locale_utils.cc',
           'android/scoped_java_ref.cc',
           'android/scoped_java_ref.h',
           'android/jni_android.cc',

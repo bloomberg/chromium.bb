@@ -11,7 +11,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.LocaleUtils;
 
 import java.util.Locale;
 
@@ -29,16 +28,6 @@ public class LocalizationUtils {
     private static Boolean sIsLayoutRtl;
 
     private LocalizationUtils() { /* cannot be instantiated */ }
-
-    /**
-     * @return the default locale, translating Android deprecated
-     * language codes into the modern ones used by Chromium.
-     */
-    @CalledByNative
-    public static String getDefaultLocale() {
-        // TODO(vivekg): Native callers should use LocaleUtils directly instead of the redirection.
-        return LocaleUtils.getDefaultLocale();
-    }
 
     @CalledByNative
     private static Locale getJavaLocale(String language, String country, String variant) {

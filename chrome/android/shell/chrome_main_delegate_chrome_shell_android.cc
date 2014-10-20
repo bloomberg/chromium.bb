@@ -6,9 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "components/search_engines/template_url_prepopulate_data.h"
-
-static const char kDefaultCountryCode[] = "US";
 
 ChromeMainDelegateAndroid* ChromeMainDelegateAndroid::Create() {
   return new ChromeMainDelegateChromeShellAndroid();
@@ -22,7 +19,6 @@ ChromeMainDelegateChromeShellAndroid::~ChromeMainDelegateChromeShellAndroid() {
 
 bool ChromeMainDelegateChromeShellAndroid::BasicStartupComplete(
     int* exit_code) {
-  TemplateURLPrepopulateData::InitCountryCode(kDefaultCountryCode);
   return ChromeMainDelegateAndroid::BasicStartupComplete(exit_code);
 }
 
