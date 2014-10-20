@@ -15,7 +15,7 @@
 
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +35,6 @@ extern int mprotect(void *start, size_t length, int prot);
 }
 #endif
 
-#endif  // __native_client__
+#endif  // defined(NACL_IN_TOOLCHAIN_HEADERS)
 
 #endif

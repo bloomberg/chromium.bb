@@ -7,13 +7,13 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_DIRENT_H
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_DIRENT_H
 
-#ifdef __native_client__
-#include "native_client/src/trusted/service_runtime/include/sys/types.h"
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
+#include <sys/types.h>
 #else
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #endif
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 /* check the compiler toolchain */
 # ifdef NACL_ABI_MAXNAMLEN
 #  if NACL_ABI_MAXNAMLEN != 255
@@ -27,7 +27,7 @@
 # else
 #  define NACL_ABI_MAXNAMLEN 255
 # endif
-#else /* __native_client__ */
+#else /* defined(NACL_IN_TOOLCHAIN_HEADERS) */
 # define NACL_ABI_MAXNAMLEN 255
 #endif
 

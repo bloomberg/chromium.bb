@@ -11,7 +11,7 @@
 #ifndef _NATIVE_CLIENT_SRC_SERVICE_RUNTIME_INCLUDE_SYS_NACL_LIST_MAPPINGS_H_
 #define _NATIVE_CLIENT_SRC_SERVICE_RUNTIME_INCLUDE_SYS_NACL_LIST_MAPPINGS_H_ 1
 
-#if defined(__native_client__)
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 # include <stdint.h>
 #else
 # include "native_client/src/include/portability.h"

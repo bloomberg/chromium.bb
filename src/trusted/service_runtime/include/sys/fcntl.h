@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_FCNTL_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_FCNTL_H_
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 #include <sys/types.h>
 #endif
 
@@ -66,7 +66,7 @@
 #define NACL_ABI_F_UNLKSYS 4 /* remove remote locks for a given system */
 #endif  /* !_POSIX_SOURCE */
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 /* file segment locking set data type - information passed to system by user */
 struct flock {
   short l_type;
@@ -87,6 +87,6 @@ extern int fcntl(int, int, ...);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif  /* __cplusplus */
-#endif  /* __native_client__ */
+#endif  /* defined(NACL_IN_TOOLCHAIN_HEADERS) */
 
 #endif

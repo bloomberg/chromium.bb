@@ -18,14 +18,24 @@ import sys
 def ProcessStream(instr, outstr):
   """Read internal version of header file from instr, write exported
   version to outstr.  The transformations are:
-  1) remove nacl_abi_ prefixes (in its various incarnations)
-  2) change include directives from the Google coding style
+
+  1) Remove nacl_abi_ prefixes (in its various incarnations)
+
+  2) Change include directives from the Google coding style
      "native_client/include/foo/bar.h" to <foo/bar.h>, and from
      "native_client/src/trusted/service_runtime/include/baz/quux.h" to
      <baz/quux.h>.
-  3) change include guards from
+
+  3) Change include guards from
      "#ifdef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_FOO_H" to
      "#ifdef EXPORT_SRC_TRUSTED_SERVICE_RUNTIME_FOO_H"
+
+  4) Replace "defined(NACL_IN_TOOLCHAIN_HEADERS)" with "1", so that
+     the header can conditionalize based on whether it is being used
+     as headers for a toolchain.  Note that doing "#ifdef
+     __native_client__" in the headers is not good because untrusted
+     code can directly #include from service_runtime/include/ just as
+     trusted code can.
   """
 
   abi = r'\b(?:nacl_abi_|NaClAbi|NACL_ABI_)([A-Za-z0-9_]*)'
@@ -35,11 +45,14 @@ def ProcessStream(instr, outstr):
          r'/include/([^"]*)"')
   cinc = re.compile(inc)
 
+  in_toolchain_sym = re.compile(r'defined\(NACL_IN_TOOLCHAIN_HEADERS\)')
+
   inc_guard = r'^#\s*(ifndef|define)\s+_?NATIVE_CLIENT[A-Z_]+_H'
   cinc_guard = re.compile(inc_guard)
   include_guard_found = False
 
   for line in instr:
+    line = in_toolchain_sym.sub('(1 /* NACL_IN_TOOLCHAIN_HEADERS */)', line)
     if cinc.search(line):
       print >>outstr, cinc.sub(r'#include <\1>', line)
     elif cinc_guard.match(line):

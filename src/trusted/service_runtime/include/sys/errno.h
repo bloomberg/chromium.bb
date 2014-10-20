@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_ERRNO_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_ERRNO_H_
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 #include <sys/reent.h>
 
 #ifdef __cplusplus
@@ -34,7 +34,7 @@ extern __IMPORT int _sys_nerr;
 }
 #endif
 
-#endif  /* __native_client__ */
+#endif  /* defined(NACL_IN_TOOLCHAIN_HEADERS) */
 
 /*
  * NOTE: when adding new errnos here, check

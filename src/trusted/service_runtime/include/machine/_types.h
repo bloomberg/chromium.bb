@@ -12,7 +12,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_MACHINE__TYPES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_MACHINE__TYPES_H_
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 # include <stdint.h>
 # include <machine/_default_types.h>
 #else
@@ -29,7 +29,7 @@
 #ifndef nacl_abi___dev_t_defined
 #define nacl_abi___dev_t_defined
 typedef int64_t nacl_abi___dev_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi___dev_t nacl_abi_dev_t;
 #endif
 #endif
@@ -37,7 +37,7 @@ typedef nacl_abi___dev_t nacl_abi_dev_t;
 #ifndef nacl_abi___ino_t_defined
 #define nacl_abi___ino_t_defined
 typedef uint64_t nacl_abi___ino_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi___ino_t nacl_abi_ino_t;
 #endif
 #endif
@@ -45,7 +45,7 @@ typedef nacl_abi___ino_t nacl_abi_ino_t;
 #ifndef nacl_abi___mode_t_defined
 #define nacl_abi___mode_t_defined
 typedef uint32_t nacl_abi___mode_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi___mode_t nacl_abi_mode_t;
 #endif
 #endif
@@ -53,7 +53,7 @@ typedef nacl_abi___mode_t nacl_abi_mode_t;
 #ifndef nacl_abi___nlink_t_defined
 #define nacl_abi___nlink_t_defined
 typedef uint32_t nacl_abi___nlink_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi___nlink_t nacl_abi_nlink_t;
 #endif
 #endif
@@ -61,7 +61,7 @@ typedef nacl_abi___nlink_t nacl_abi_nlink_t;
 #ifndef nacl_abi___uid_t_defined
 #define nacl_abi___uid_t_defined
 typedef uint32_t nacl_abi___uid_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi___uid_t nacl_abi_uid_t;
 #endif
 #endif
@@ -69,7 +69,7 @@ typedef nacl_abi___uid_t nacl_abi_uid_t;
 #ifndef nacl_abi___gid_t_defined
 #define nacl_abi___gid_t_defined
 typedef uint32_t nacl_abi___gid_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi___gid_t nacl_abi_gid_t;
 #endif
 #endif
@@ -77,7 +77,7 @@ typedef nacl_abi___gid_t nacl_abi_gid_t;
 #ifndef nacl_abi___off_t_defined
 #define nacl_abi___off_t_defined
 typedef int64_t nacl_abi__off_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi__off_t nacl_abi_off_t;
 #endif
 #endif
@@ -85,13 +85,13 @@ typedef nacl_abi__off_t nacl_abi_off_t;
 #ifndef nacl_abi___off64_t_defined
 #define nacl_abi___off64_t_defined
 typedef int64_t nacl_abi__off64_t;
-#ifndef __native_client__
+#if !defined(NACL_IN_TOOLCHAIN_HEADERS)
 typedef nacl_abi__off64_t nacl_abi_off64_t;
 #endif
 #endif
 
 
-#if !(defined(__GLIBC__) && defined(__native_client__))
+#if !(defined(__GLIBC__) && defined(NACL_IN_TOOLCHAIN_HEADERS))
 
 #ifndef nacl_abi___blksize_t_defined
 #define nacl_abi___blksize_t_defined
@@ -118,7 +118,7 @@ typedef nacl_abi___time_t nacl_abi_time_t;
 #define nacl_abi___timespec_defined
 struct nacl_abi_timespec {
   nacl_abi_time_t tv_sec;
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
   long int        tv_nsec;
 #else
   int32_t         tv_nsec;

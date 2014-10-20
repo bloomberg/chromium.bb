@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_STAT_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_STAT_H_
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 #include <sys/types.h>
 #else
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
@@ -52,7 +52,7 @@ struct nacl_abi_stat {  /* must be renamed when ABI is exported */
   int64_t            nacl_abi_st_ctimensec; /* possibly just pad */
 };
 
-#ifdef __native_client__
+#if defined(NACL_IN_TOOLCHAIN_HEADERS)
 extern int stat(char const *path, struct nacl_abi_stat *stbuf);
 extern int fstat(int d, struct nacl_abi_stat *stbuf);
 extern int lstat(const char *path, struct nacl_abi_stat *stbuf);
