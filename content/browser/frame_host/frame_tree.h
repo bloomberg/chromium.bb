@@ -71,6 +71,7 @@ class CONTENT_EXPORT FrameTree {
 
   // Frame tree manipulation routines.
   RenderFrameHostImpl* AddFrame(FrameTreeNode* parent,
+                                int process_id,
                                 int new_routing_id,
                                 const std::string& frame_name);
   void RemoveFrame(FrameTreeNode* child);
