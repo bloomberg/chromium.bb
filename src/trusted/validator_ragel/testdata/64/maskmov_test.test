@@ -53,7 +53,7 @@
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
      6:	c5 f9 f7 d1                                  	vmaskmovdqu %xmm1,%xmm2
 @rdfa_output:
-  0: unrecognized instruction
+  6: unrecognized instruction
   return code: 1
 @spec:
   SAFE

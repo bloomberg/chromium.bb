@@ -190,6 +190,7 @@
 #       nacl-forbidden: instruction is not supported in NaCl sandbox
 #       nacl-ia32-forbidden: instruction is not supported in ia32 NaCl sandbox
 #       nacl-amd64-forbidden: instruction is not supported in amd64 NaCl sandbox
+#       disabled_untested: instruction is disabled because it is not tested yet.
 #
 #     Special marks:
 #       nacl-amd64-zero-extends: instruction can be used to zero-extend register
@@ -282,6 +283,7 @@ SUPPORTED_ATTRIBUTES = [
     'nacl-forbidden',
     'nacl-amd64-zero-extends',
     'nacl-amd64-modifiable',
+    'disabled_untested',
 
     # AT&T Decoder attributes.
     'att-show-name-suffix-b',

@@ -13,7 +13,7 @@ NaClCPUFeaturesX86 kValidatorCPUIDFeatures = {
     1, /* NaClCPUFeatureX86_CPUSupported */
     1, /* NaClCPUFeatureX86_3DNOW */  /* AMD-specific */
     0, /* NaClCPUFeatureX86_AES */
-    0, /* NaClCPUFeatureX86_AVX */
+    1, /* NaClCPUFeatureX86_AVX */
     0, /* NaClCPUFeatureX86_BMI1 */
     1, /* NaClCPUFeatureX86_CLFLUSH */
     0, /* NaClCPUFeatureX86_CLMUL */
@@ -23,8 +23,8 @@ NaClCPUFeaturesX86 kValidatorCPUIDFeatures = {
     1, /* NaClCPUFeatureX86_E3DNOW */ /* AMD-specific */
     1, /* NaClCPUFeatureX86_EMMX */   /* AMD-specific */
     0, /* NaClCPUFeatureX86_F16C */
-    0, /* NaClCPUFeatureX86_FMA */
-    0, /* NaClCPUFeatureX86_FMA4 */ /* AMD-specific */
+    1, /* NaClCPUFeatureX86_FMA */
+    1, /* NaClCPUFeatureX86_FMA4 */ /* AMD-specific */
     0, /* NaClCPUFeatureX86_FXSR */
     1, /* NaClCPUFeatureX86_LAHF */
     0, /* NaClCPUFeatureX86_LM */
@@ -46,6 +46,6 @@ NaClCPUFeaturesX86 kValidatorCPUIDFeatures = {
     0, /* NaClCPUFeatureX86_TBM */ /* AMD-specific */
     1, /* NaClCPUFeatureX86_TSC */
     1, /* NaClCPUFeatureX86_x87 */
-    0  /* NaClCPUFeatureX86_XOP */ /* AMD-specific */
+    1  /* NaClCPUFeatureX86_XOP */ /* AMD-specific */
   }
 };

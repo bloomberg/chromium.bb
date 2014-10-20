@@ -389,7 +389,10 @@
   vmaskmovdqu = ((0xc4 (VEX_RB & VEX_map00001) b_0_1111_0_01) |
                  (0xc5 b_X_1111_0_01)) 0xf7 @CPUFeature_AVX modrm_registers;
 
-  mmx_sse_rdi_instruction = maskmovq | maskmovdqu | vmaskmovdqu;
+  # this line should be: instruction = maskmovq | maskmovdqu | vmaskmovdqu
+  # when we are ready to include vmaskmovdqu in the list of allowed
+  # superinstructions.
+  mmx_sse_rdi_instruction = maskmovq | maskmovdqu;
 
   # Temporary fix: for string instructions combination of data16 and rep(ne)
   # prefixes is disallowed to mimic old validator behavior.
