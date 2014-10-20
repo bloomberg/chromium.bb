@@ -558,8 +558,6 @@ void WebsiteSettings::Init(Profile* profile,
         IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
         ASCIIToUTF16(ssl_version_str));
 
-    bool did_fallback = (ssl.connection_status &
-                         net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
     bool no_renegotiation =
         (ssl.connection_status &
         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
@@ -579,14 +577,19 @@ void WebsiteSettings::Init(Profile* profile,
           ASCIIToUTF16(cipher), ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
     }
 
+    if (ssl_version == net::SSL_CONNECTION_VERSION_SSL3 &&
+        site_connection_status_ < SITE_CONNECTION_STATUS_MIXED_CONTENT) {
+      site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
+    }
+
+    const bool did_fallback =
+        (ssl.connection_status & net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
     if (did_fallback) {
-      // For now, only SSLv3 fallback will trigger a warning icon.
-      if (site_connection_status_ < SITE_CONNECTION_STATUS_MIXED_CONTENT)
-        site_connection_status_ = SITE_CONNECTION_STATUS_MIXED_CONTENT;
       site_connection_details_ += ASCIIToUTF16("\n\n");
       site_connection_details_ += l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE);
     }
+
     if (no_renegotiation) {
       site_connection_details_ += ASCIIToUTF16("\n\n");
       site_connection_details_ += l10n_util::GetStringUTF16(

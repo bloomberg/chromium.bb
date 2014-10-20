@@ -36,6 +36,7 @@
 #include "net/base/net_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -141,6 +142,11 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
       }
       if (net::IsCertStatusError(ssl.cert_status)) {
         DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
+        return SECURITY_WARNING;
+      }
+      if (net::SSLConnectionStatusToVersion(ssl.connection_status) ==
+          net::SSL_CONNECTION_VERSION_SSL3) {
+        // SSLv3 will be removed in the future.
         return SECURITY_WARNING;
       }
       if ((ssl.cert_status & net::CERT_STATUS_IS_EV) && cert.get())
