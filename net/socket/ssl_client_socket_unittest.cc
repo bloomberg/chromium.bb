@@ -276,7 +276,7 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
   // If there is already a pending asynchronous read, the configured error
   // will not be returned until that asynchronous read has completed and Read()
   // is called again.
-  void SetNextReadError(Error error) {
+  void SetNextReadError(int error) {
     DCHECK_GE(0, error);
     have_read_error_ = true;
     pending_read_error_ = error;
@@ -286,7 +286,7 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
   // If there is already a pending asynchronous write, the configured error
   // will not be returned until that asynchronous write has completed and
   // Write() is called again.
-  void SetNextWriteError(Error error) {
+  void SetNextWriteError(int error) {
     DCHECK_GE(0, error);
     have_write_error_ = true;
     pending_write_error_ = error;
@@ -1811,6 +1811,78 @@ TEST_F(SSLClientSocketTest, Read_WithWriteError) {
   // the write error stops future reads.
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
 #endif
+}
+
+// Tests that SSLClientSocket fails the handshake if the underlying
+// transport is cleanly closed.
+TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  scoped_ptr<SynchronousErrorStreamSocket> transport(
+      new SynchronousErrorStreamSocket(real_transport.Pass()));
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+
+  SynchronousErrorStreamSocket* raw_transport = transport.get();
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+                            test_server.host_port_pair(),
+                            kDefaultSSLConfig));
+
+  raw_transport->SetNextReadError(0);
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, rv);
+  EXPECT_FALSE(sock->IsConnected());
+}
+
+// Tests that SSLClientSocket cleanly returns a Read of size 0 if the
+// underlying socket is cleanly closed.
+// This is a regression test for https://crbug.com/422246
+TEST_F(SSLClientSocketTest, Read_WithZeroReturn) {
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> real_transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  scoped_ptr<SynchronousErrorStreamSocket> transport(
+      new SynchronousErrorStreamSocket(real_transport.Pass()));
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+
+  // Disable TLS False Start to ensure the handshake has completed.
+  SSLConfig ssl_config;
+  ssl_config.false_start_enabled = false;
+
+  SynchronousErrorStreamSocket* raw_transport = transport.get();
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(transport.PassAs<StreamSocket>(),
+                            test_server.host_port_pair(),
+                            ssl_config));
+
+  rv = callback.GetResult(sock->Connect(callback.callback()));
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+
+  raw_transport->SetNextReadError(0);
+  scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+  rv = callback.GetResult(sock->Read(buf.get(), 4096, callback.callback()));
+  EXPECT_EQ(0, rv);
 }
 
 TEST_F(SSLClientSocketTest, Read_SmallChunks) {
