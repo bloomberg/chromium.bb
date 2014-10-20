@@ -5,27 +5,36 @@
 'use strict';
 
 installClass('PluginPlaceholderElement', function(PluginPlaceholderElementPrototype) {
-    PluginPlaceholderElementPrototype.createdCallback = function() {
-        // FIXME: Move style out of script and into CSS.
+    // FIXME: Load this from a .css file.
+    var styleSource =
+        '#plugin-placeholder {' +
+        '    width: 100%;' +
+        '    height: 100%;' +
+        '    overflow: hidden;' +
+        '    display: flex;' +
+        '    align-items: center;' +
+        '    background: gray;' +
+        '    font: 12px -webkit-control;' +
+        '}' +
+        '#plugin-placeholder-content {' +
+        '    text-align: center;' +
+        '    margin: auto;' +
+        '}';
 
+    PluginPlaceholderElementPrototype.createdCallback = function() {
         this.id = 'plugin-placeholder';
-        this.style.width = '100%';
-        this.style.height = '100%';
-        this.style.overflow = 'hidden';
-        this.style.display = 'flex';
-        this.style.alignItems = 'center';
-        this.style.backgroundColor = 'gray';
-        this.style.font = '12px -webkit-control';
+
+        var styleElement = document.createElement('style');
+        styleElement.textContent = styleSource;
 
         var contentElement = document.createElement('div');
         contentElement.id = 'plugin-placeholder-content';
-        contentElement.style.textAlign = 'center';
-        contentElement.style.margin = 'auto';
 
         var messageElement = document.createElement('div');
         messageElement.id = 'plugin-placeholder-message';
 
         contentElement.appendChild(messageElement);
+        this.appendChild(styleElement);
         this.appendChild(contentElement);
 
         this.messageElement = messageElement;

@@ -1,0 +1,20 @@
+.plugin {
+    display: block;
+    width: 300px;
+    height: 150px;
+}
+
+.plugin-placeholder {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    background-color: gray;
+    font: 12px -webkit-control;
+}
+
+.plugin-placeholder-content {
+    text-align: center;
+    margin: auto;
+}

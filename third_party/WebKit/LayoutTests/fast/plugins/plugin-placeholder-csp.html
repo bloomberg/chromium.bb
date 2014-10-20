@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+
+<!-- Forbid inline style. -->
+<meta http-equiv="Content-Security-Policy" content="style-src 'none'">
+
+<!-- The message inserted below should be shown with some suitable style. -->
+<embed type="application/x-fake-plugin"></embed>
+
+<script>
+var plugin = document.querySelector("embed");
+internals.forcePluginPlaceholder(plugin, { message: "This box should be styled despite CSP." });
+</script>

@@ -29,6 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLStyleElement.h"
@@ -141,6 +142,21 @@ void StyleElement::clearSheet(Element* ownerElement)
     m_sheet.release()->clearOwnerNode();
 }
 
+static bool shouldBypassMainWorldCSP(Element* element)
+{
+    // Main world CSP is bypassed within an isolated world.
+    LocalFrame* frame = element->document().frame();
+    if (frame && frame->script().shouldBypassMainWorldCSP())
+        return true;
+
+    // Main world CSP is bypassed for style elements in user agent shadow DOM.
+    ShadowRoot* root = element->containingShadowRoot();
+    if (root && root->type() == ShadowRoot::UserAgentShadowRoot)
+        return true;
+
+    return false;
+}
+
 void StyleElement::createSheet(Element* e, const String& text)
 {
     ASSERT(e);
@@ -149,13 +165,8 @@ void StyleElement::createSheet(Element* e, const String& text)
     if (m_sheet)
         clearSheet(e);
 
-    // Inline style added from an isolated world should bypass the main world's
-    // CSP just as an inline script would.
-    LocalFrame* frame = document.frame();
-    bool shouldBypassMainWorldCSP = frame && frame->script().shouldBypassMainWorldCSP();
-
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
-    bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP
+    bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP(e)
         || csp->allowStyleWithHash(text)
         || csp->allowStyleWithNonce(e->fastGetAttribute(HTMLNames::nonceAttr))
         || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line);
