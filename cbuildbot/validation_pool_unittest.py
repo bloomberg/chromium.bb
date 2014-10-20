@@ -31,6 +31,7 @@ from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
@@ -719,7 +720,7 @@ class ValidationFailureOrTimeout(MoxBase):
 
     self.PatchObject(
         validation_pool.ValidationPool, 'GetCLPreCQStatus',
-        return_value=validation_pool.ValidationPool.STATUS_PASSED)
+        return_value=constants.CL_STATUS_PASSED)
     self.PatchObject(
         validation_pool.CalculateSuspects, 'FindSuspects',
         return_value=self._patches)
@@ -1371,14 +1372,14 @@ class TestCLPreCQStatus(MoxBase):
         constants.WATERFALL_INTERNAL, 1, constants.PRE_CQ_LAUNCHER_CONFIG,
         'bot-hostname')
     validation_pool.ValidationPool.UpdateCLPreCQStatus(
-        change, validation_pool.ValidationPool.STATUS_WAITING, build_id)
+        change, constants.CL_STATUS_WAITING, build_id)
     self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     validation_pool.ValidationPool.STATUS_WAITING)
+                     constants.CL_STATUS_WAITING)
 
     validation_pool.ValidationPool.UpdateCLPreCQStatus(
-        change, validation_pool.ValidationPool.STATUS_INFLIGHT, build_id)
+        change, constants.CL_STATUS_INFLIGHT, build_id)
     self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     validation_pool.ValidationPool.STATUS_INFLIGHT)
+                     constants.CL_STATUS_INFLIGHT)
 
     # Updating to an invalid status should raise a KeyError, and leave status
     # unaffected.
@@ -1386,14 +1387,15 @@ class TestCLPreCQStatus(MoxBase):
       validation_pool.ValidationPool.UpdateCLPreCQStatus(
           change, 'invalid status', build_id)
     self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     validation_pool.ValidationPool.STATUS_INFLIGHT)
+                     constants.CL_STATUS_INFLIGHT)
 
     # Recording a cl action that is not a valid pre-cq status should leave
     # pre-cq status unaffected.
     self.fake_db.InsertCLActions(
-        build_id, [metadata_lib.GetCLActionTuple(change, 'unknown action')])
+        build_id,
+        [clactions.CLAction.FromGerritPatchAndAction(change, 'polenta')])
     self.assertEqual(validation_pool.ValidationPool.GetCLPreCQStatus(change),
-                     validation_pool.ValidationPool.STATUS_INFLIGHT)
+                     constants.CL_STATUS_INFLIGHT)
 
 
 class TestCLStatusCounter(MoxBase):
@@ -1426,16 +1428,20 @@ class TestCLStatusCounter(MoxBase):
     # actions from builders in validation_pool.CQ_PIPELINE_CONFIGS.
     self.fake_db.InsertCLActions(
         precq_build_id,
-        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_KICKED_OUT)])
+        [clactions.CLAction.FromGerritPatchAndAction(
+            c1p1, constants.CL_ACTION_KICKED_OUT)])
     self.fake_db.InsertCLActions(
         precq_build_id,
-        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_PICKED_UP)])
+        [clactions.CLAction.FromGerritPatchAndAction(
+            c1p1, constants.CL_ACTION_PICKED_UP)])
     self.fake_db.InsertCLActions(
         precq_build_id,
-        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_KICKED_OUT)])
+        [clactions.CLAction.FromGerritPatchAndAction(
+            c1p1, constants.CL_ACTION_KICKED_OUT)])
     self.fake_db.InsertCLActions(
         melon_build_id,
-        [metadata_lib.GetCLActionTuple(c1p1, constants.CL_ACTION_KICKED_OUT)])
+        [clactions.CLAction.FromGerritPatchAndAction(
+            c1p1, constants.CL_ACTION_KICKED_OUT)])
 
     # Clear action cache so that it gets refilled.
     validation_pool.ValidationPool.ClearActionCache()
@@ -1451,7 +1457,8 @@ class TestCLStatusCounter(MoxBase):
     # should be 3.
     self.fake_db.InsertCLActions(
         precq_build_id,
-        [metadata_lib.GetCLActionTuple(c1p2, constants.CL_ACTION_KICKED_OUT)])
+        [clactions.CLAction.FromGerritPatchAndAction(
+            c1p2, constants.CL_ACTION_KICKED_OUT)])
 
     validation_pool.ValidationPool.ClearActionCache()
 

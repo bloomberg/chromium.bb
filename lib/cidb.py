@@ -22,6 +22,7 @@ except ImportError:
 
 from chromite.cbuildbot import constants
 from chromite.lib import retry_util
+from chromite.lib import clactions
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
@@ -525,7 +526,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Args:
       build_id: primary key of build that performed these actions.
-      cl_actions: A list of cl_action tuples.
+      cl_actions: A list of CLAction objects.
 
     Returns:
       Number of actions inserted.
@@ -537,11 +538,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     # TODO(akeshet): Refactor to use either cl action tuples out of the
     # metadata dict (as now) OR CLActionTuple objects.
     for cl_action in cl_actions:
-      change_source = 'internal' if cl_action[0]['internal'] else 'external'
-      change_number = cl_action[0]['gerrit_number']
-      patch_number = cl_action[0]['patch_number']
-      action = cl_action[1]
-      reason = cl_action[3]
+      change_number = cl_action.change_number
+      patch_number = cl_action.patch_number
+      change_source = cl_action.change_source
+      action = cl_action.action
+      reason = cl_action.reason
       values.append({
           'build_id' : build_id,
           'change_source' : change_source,
@@ -672,7 +673,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Args:
       build_id: id of row to update.
       status: Final build status, one of
-              manifest_version.BuilderStatus.COMPLETED_STATUSES.
+              constants.BUILDER_COMPLETED_STATUSES.
       status_pickle: Pickled manifest_version.BuilderStatus.
       metadata_url: google storage url to metadata.json file for this build,
                     e.g. ('gs://chromeos-image-archive/master-paladin/'
@@ -730,21 +731,17 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
               specifying the change.
 
     Returns:
-      A list of actions, in timestamp order, each of which is a dict
-      with keys (id, build_id, action, build_config, change_number,
-                 patch_number, change_source, timestamp)
+      A list of CLAction instances, in timestamp order.
     """
     change_number = int(change.gerrit_number)
     change_source = 'internal' if change.internal else 'external'
     results = self._Execute(
-        'SELECT c.id, b.id, action, build_config, change_number, '
+        'SELECT c.id, b.id, action, c.reason, build_config, change_number, '
         'patch_number, change_source, timestamp FROM '
         'clActionTable c JOIN buildTable b ON build_id = b.id '
         'WHERE change_number = %s AND change_source = "%s"' % (
         change_number, change_source)).fetchall()
-    columns = ['id', 'build_id', 'action', 'build_config', 'change_number',
-               'patch_number', 'change_source', 'timestamp']
-    return [dict(zip(columns, values)) for values in results]
+    return [clactions.CLAction(*values) for values in results]
 
 
 class CIDBConnectionFactory(object):

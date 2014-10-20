@@ -26,10 +26,9 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
-from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -1341,12 +1340,6 @@ class ValidationPool(object):
   GLOBAL_DRYRUN = False
   MAX_TIMEOUT = 60 * 60 * 4
   SLEEP_TIMEOUT = 30
-  STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
-  STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
-  STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
-  STATUS_LAUNCHING = 'launching'
-  STATUS_WAITING = 'waiting'
-  STATUS_READY_TO_SUBMIT = 'ready-to-submit'
   INCONSISTENT_SUBMIT_MSG = ('Gerrit thinks that the change was not submitted, '
                              'even though we hit the submit button.')
 
@@ -1356,22 +1349,6 @@ class ValidationPool(object):
 
   # Cache for the action history of CLs.
   _CL_ACTION_HISTORY_CACHE = {}
-
-  # Bidirectional mapping between pre-cq status strings and CL action strings.
-  _PRECQ_STATUS_TO_ACTION = {
-      STATUS_INFLIGHT: constants.CL_ACTION_PRE_CQ_INFLIGHT,
-      STATUS_PASSED: constants.CL_ACTION_PRE_CQ_PASSED,
-      STATUS_FAILED: constants.CL_ACTION_PRE_CQ_FAILED,
-      STATUS_LAUNCHING: constants.CL_ACTION_PRE_CQ_LAUNCHING,
-      STATUS_WAITING: constants.CL_ACTION_PRE_CQ_WAITING,
-      STATUS_READY_TO_SUBMIT: constants.CL_ACTION_PRE_CQ_READY_TO_SUBMIT
-      }
-
-  _PRECQ_ACTION_TO_STATUS = dict(
-      (v, k) for k, v in _PRECQ_STATUS_TO_ACTION.items())
-
-  assert len(_PRECQ_STATUS_TO_ACTION) == len(_PRECQ_ACTION_TO_STATUS), \
-      '_PRECQ_STATUS_TO_ACTION values are not unique.'
 
 
   def __init__(self, overlays, build_root, build_number, builder_name,
@@ -2308,8 +2285,10 @@ class ValidationPool(object):
     if cidb.CIDBConnectionFactory.IsCIDBSetup():
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
-        db.InsertCLActions(build_id,
-            [metadata_lib.GetCLActionTuple(change, action, timestamp)])
+        db.InsertCLActions(
+            build_id,
+            [clactions.CLAction.FromGerritPatchAndAction(change, action,
+                                                         timestamp)])
 
   def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
@@ -2524,8 +2503,10 @@ class ValidationPool(object):
     msg = '%(queue)s successfully verified your change in %(build_log)s .'
     submit = all(ShouldSubmitChangeInPreCQ(self.build_root, change)
                  for change in self.changes)
-    new_status = self.STATUS_READY_TO_SUBMIT if submit else self.STATUS_PASSED
-    ok_statuses = (self.STATUS_PASSED, self.STATUS_READY_TO_SUBMIT)
+    new_status = (constants.CL_STATUS_READY_TO_SUBMIT if submit
+                  else constants.CL_STATUS_PASSED)
+    ok_statuses = (constants.CL_STATUS_PASSED,
+                   constants.CL_STATUS_READY_TO_SUBMIT)
 
     build_id = self._metadata.GetValue('build_id')
 
@@ -2703,7 +2684,8 @@ class ValidationPool(object):
     candidates = []
     for change in changes:
       # Pre-CQ ignores changes that were already verified.
-      if self.pre_cq and self.GetCLPreCQStatus(change) == self.STATUS_PASSED:
+      if (self.pre_cq and
+          self.GetCLPreCQStatus(change) == constants.CL_STATUS_PASSED):
         continue
       candidates.append(change)
 
@@ -2758,7 +2740,7 @@ class ValidationPool(object):
     """
     if self.pre_cq:
       status = self.GetCLPreCQStatus(change)
-      if status == self.STATUS_PASSED:
+      if status == constants.CL_STATUS_PASSED:
         return
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
@@ -2780,53 +2762,15 @@ class ValidationPool(object):
     """
     # Always refresh the action cache, so we get the latest status.
     cls._FillCLActionCache([change])
-
-    patch_number = int(change.patch_number)
-
-    # Filter out actions to other patch numbers and actions that are not
-    # pre-cq status actions.
-    actions_for_patch = [a for a in cls._CL_ACTION_HISTORY_CACHE[change]
-                         if a['patch_number'] == patch_number and
-                            a['action'] in cls._PRECQ_ACTION_TO_STATUS]
-
-    if not actions_for_patch:
-      logging.debug('No status yet for %s', change)
-      return None
-
-    return cls._TranslatePreCQActionToStatus(actions_for_patch[-1]['action'])
+    return clactions.GetCLPreCQStatus(change,
+                                      cls._CL_ACTION_HISTORY_CACHE[change])
 
 
   @classmethod
   def UpdateCLPreCQStatus(cls, change, status, build_id):
     """Update the pre-CQ |status| of |change|."""
-    action = ValidationPool._TranslatePreCQStatusToAction(status)
+    action = clactions.TranslatePreCQStatusToAction(status)
     ValidationPool._InsertCLActionToDatabase(build_id, change, action)
-
-
-  @classmethod
-  def _TranslatePreCQStatusToAction(cls, status):
-    """Translate a pre-cq |status| into a cl action.
-
-    Returns:
-      An action string suitable for use in cidb, for the given pre-cq status.
-
-    Raises:
-      KeyError if |status| is not a known pre-cq status.
-    """
-    return cls._PRECQ_STATUS_TO_ACTION[status]
-
-
-  @classmethod
-  def _TranslatePreCQActionToStatus(cls, action):
-    """Translate a cl |action| into a pre-cq status.
-
-    Returns:
-      A pre-cq status string corresponding to the given |action|.
-
-    Raises:
-      KeyError if |status| is not a known pre-cq status.
-    """
-    return cls._PRECQ_ACTION_TO_STATUS[action]
 
 
   @classmethod
@@ -2854,13 +2798,13 @@ class ValidationPool(object):
     actions_for_change = cls._CL_ACTION_HISTORY_CACHE[change]
 
     if actions_for_change and latest_patchset_only:
-      latest_patch_number = max(a['patch_number'] for a in actions_for_change)
+      latest_patch_number = max(a.patch_number for a in actions_for_change)
       actions_for_change = [a for a in actions_for_change
-                            if a['patch_number'] == latest_patch_number]
+                            if a.patch_number == latest_patch_number]
 
     actions_for_change = [a for a in actions_for_change
-                          if (a['build_config'] in configs and
-                              a['action'] == action)]
+                          if (a.build_config in configs and
+                              a.action == action)]
 
     return len(actions_for_change)
 

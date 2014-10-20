@@ -332,11 +332,11 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
   """Tests for the PreCQLauncherStage."""
 
   BOT_ID = constants.PRE_CQ_LAUNCHER_CONFIG
-  STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
-  STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
-  STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
-  STATUS_READY_TO_SUBMIT = validation_pool.ValidationPool.STATUS_READY_TO_SUBMIT
-  STATUS_INFLIGHT = validation_pool.ValidationPool.STATUS_INFLIGHT
+  STATUS_LAUNCHING = constants.CL_STATUS_LAUNCHING
+  STATUS_WAITING = constants.CL_STATUS_WAITING
+  STATUS_FAILED = constants.CL_STATUS_FAILED
+  STATUS_READY_TO_SUBMIT = constants.CL_STATUS_READY_TO_SUBMIT
+  STATUS_INFLIGHT = constants.CL_STATUS_INFLIGHT
 
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)

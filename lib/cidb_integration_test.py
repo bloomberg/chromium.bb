@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import metadata_lib
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -103,13 +104,13 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
     build_id = db.InsertBuild('my builder', 'chromiumos', 12, 'my config',
                               'my bot hostname')
 
-    a1 = metadata_lib.GetCLActionTuple(
+    a1 = clactions.CLAction.FromGerritPatchAndAction(
         metadata_lib.GerritPatchTuple(1, 1, True),
         constants.CL_ACTION_PICKED_UP)
-    a2 = metadata_lib.GetCLActionTuple(
+    a2 = clactions.CLAction.FromGerritPatchAndAction(
         metadata_lib.GerritPatchTuple(1, 1, True),
         constants.CL_ACTION_PICKED_UP)
-    a3 = metadata_lib.GetCLActionTuple(
+    a3 = clactions.CLAction.FromGerritPatchAndAction(
         metadata_lib.GerritPatchTuple(1, 1, True),
         constants.CL_ACTION_PICKED_UP)
 
@@ -123,8 +124,9 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
 
     # Test that all known CL action types can be inserted
     fakepatch = metadata_lib.GerritPatchTuple(1, 1, True)
-    all_actions_list = [metadata_lib.GetCLActionTuple(fakepatch, action)
-                        for action in constants.CL_ACTIONS]
+    all_actions_list = [
+        clactions.CLAction.FromGerritPatchAndAction(fakepatch, action)
+        for action in constants.CL_ACTIONS]
     db.InsertCLActions(build_id, all_actions_list)
 
 class CIDBAPITest(CIDBIntegrationTest):
@@ -263,15 +265,16 @@ class DataSeries0Test(CIDBIntegrationTest):
         metadata_lib.GerritChangeTuple(205535, False))
 
     self.assertEqual(len(actions_for_change), 60)
-    last_action = actions_for_change[-1]
-    last_action.pop('timestamp')
-    last_action.pop('id')
-    self.assertEqual(last_action, {'action': 'submitted',
-                                   'build_config': 'master-paladin',
-                                   'build_id': 511L,
-                                   'change_number': 205535L,
-                                   'change_source': 'external',
-                                   'patch_number': 1L})
+    last_action_dict = dict(actions_for_change[-1]._asdict())
+    last_action_dict.pop('timestamp')
+    last_action_dict.pop('id')
+    self.assertEqual(last_action_dict, {'action': 'submitted',
+                                        'build_config': 'master-paladin',
+                                        'build_id': 511L,
+                                        'change_number': 205535L,
+                                        'change_source': 'external',
+                                        'patch_number': 1L,
+                                        'reason': ''})
 
   def _start_and_finish_time_checks(self, db):
     """Sanity checks that correct data was recorded, and can be retrieved."""
@@ -479,7 +482,10 @@ def _SimulateCQBuildFinish(db, metadata, build_id):
               for r in stage_results[1:]]
     db.InsertBuildStages(stages)
 
-  db.InsertCLActions(build_id, metadata_dict['cl_actions'])
+  db.InsertCLActions(
+      build_id,
+      [clactions.CLAction.FromMetadataEntry(e)
+       for e in metadata_dict['cl_actions']])
 
   db.UpdateMetadata(build_id, metadata)
 

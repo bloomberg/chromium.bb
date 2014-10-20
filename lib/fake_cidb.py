@@ -10,7 +10,7 @@ import datetime
 import itertools
 
 from chromite.cbuildbot import constants
-
+from chromite.lib import clactions
 
 class FakeCIDBConnection(object):
   """Fake connection to a Continuous Integration database.
@@ -44,19 +44,19 @@ class FakeCIDBConnection(object):
 
     rows = []
     for cl_action in cl_actions:
-      change_source = 'internal' if cl_action[0]['internal'] else 'external'
-      change_number = cl_action[0]['gerrit_number']
-      patch_number = cl_action[0]['patch_number']
-      action = cl_action[1]
-      reason = cl_action[3]
+      change_number = cl_action.change_number
+      patch_number = cl_action.patch_number
+      change_source = cl_action.change_source
+      action = cl_action.action
+      reason = cl_action.reason
       rows.append({
           'build_id' : build_id,
           'change_source' : change_source,
-          'change_number': int(change_number),
-          'patch_number' : int(patch_number),
+          'change_number': change_number,
+          'patch_number' : patch_number,
           'action' : action,
-          'reason' : reason,
-          'timestamp': datetime.datetime.now()})
+          'timestamp': datetime.datetime.now(),
+          'reason' : reason})
 
     self.clActionTable.extend(rows)
     return len(rows)
@@ -65,8 +65,6 @@ class FakeCIDBConnection(object):
     """Gets all the actions for the given change."""
     change_number = int(change.gerrit_number)
     change_source = 'internal' if change.internal else 'external'
-    columns = ['id', 'build_id', 'action', 'build_config', 'change_number',
-               'patch_number', 'change_source', 'timestamp']
     values = []
     for item, action_id in zip(self.clActionTable, itertools.count()):
       if (item['change_number'] == change_number and
@@ -75,6 +73,7 @@ class FakeCIDBConnection(object):
             action_id,
             item['build_id'],
             item['action'],
+            item['reason'],
             self.buildTable[item['build_id']]['build_config'],
             item['change_number'],
             item['patch_number'],
@@ -82,4 +81,4 @@ class FakeCIDBConnection(object):
             item['timestamp'])
         values.append(row)
 
-    return [dict(zip(columns, row)) for row in values]
+    return [clactions.CLAction(*row) for row in values]

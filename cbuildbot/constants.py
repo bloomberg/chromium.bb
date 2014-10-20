@@ -54,6 +54,33 @@ CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
                          WATERFALL_RELEASE,
                          WATERFALL_BRANCH)
 
+# Builder status strings
+BUILDER_STATUS_FAILED = 'fail'
+BUILDER_STATUS_PASSED = 'pass'
+BUILDER_STATUS_INFLIGHT = 'inflight'
+BUILDER_STATUS_MISSING = 'missing'
+BUILDER_STATUS_ABORTED = 'aborted'
+BUILDER_COMPLETED_STATUSES = (BUILDER_STATUS_PASSED,
+                              BUILDER_STATUS_FAILED,
+                              BUILDER_STATUS_ABORTED)
+BUILDER_ALL_STATUSES = (BUILDER_STATUS_FAILED,
+                        BUILDER_STATUS_PASSED,
+                        BUILDER_STATUS_INFLIGHT,
+                        BUILDER_STATUS_MISSING,
+                        BUILDER_STATUS_ABORTED)
+
+# CL status strings
+CL_STATUS_FAILED = BUILDER_STATUS_FAILED
+CL_STATUS_INFLIGHT = BUILDER_STATUS_INFLIGHT
+CL_STATUS_PASSED = BUILDER_STATUS_PASSED
+CL_STATUS_LAUNCHING = 'launching'
+CL_STATUS_WAITING = 'waiting'
+CL_STATUS_READY_TO_SUBMIT = 'ready-to-submit'
+
+# Change sources
+CHANGE_SOURCE_INTERNAL = 'internal'
+CHANGE_SOURCE_EXTERNAL = 'external'
+
 # TODO: Eliminate these or merge with manifest_version.py:STATUS_PASSED
 # crbug.com/318930
 FINAL_STATUS_PASSED = 'passed'

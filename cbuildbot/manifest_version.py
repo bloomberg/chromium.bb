@@ -307,18 +307,6 @@ class VersionInfo(object):
 
 class BuilderStatus(object):
   """Object representing the status of a build."""
-  # Various statuses builds can be in.  These status values are retrieved from
-  # Google Storage, which each builder writes to.  The MISSING status is used
-  # for the status of any builder which has no value in Google Storage.
-  STATUS_FAILED = 'fail'
-  STATUS_PASSED = 'pass'
-  STATUS_INFLIGHT = 'inflight'
-  STATUS_MISSING = 'missing' # i.e. never started.
-  STATUS_ABORTED = 'aborted'
-  COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED, STATUS_ABORTED)
-  ALL_STATUSES = (STATUS_FAILED, STATUS_PASSED, STATUS_INFLIGHT,
-                  STATUS_MISSING, STATUS_ABORTED)
-
   MISSING_MESSAGE = ('Unknown run, it probably never started:'
                      ' %(builder)s, version %(version)s')
 
@@ -340,23 +328,23 @@ class BuilderStatus(object):
 
   def Failed(self):
     """Returns True if the Builder failed."""
-    return self.status == BuilderStatus.STATUS_FAILED
+    return self.status == constants.BUILDER_STATUS_FAILED
 
   def Passed(self):
     """Returns True if the Builder passed."""
-    return self.status == BuilderStatus.STATUS_PASSED
+    return self.status == constants.BUILDER_STATUS_PASSED
 
   def Inflight(self):
     """Returns True if the Builder is still inflight."""
-    return self.status == BuilderStatus.STATUS_INFLIGHT
+    return self.status == constants.BUILDER_STATUS_INFLIGHT
 
   def Missing(self):
     """Returns True if the Builder is missing any status."""
-    return self.status == BuilderStatus.STATUS_MISSING
+    return self.status == constants.BUILDER_STATUS_MISSING
 
   def Completed(self):
     """Returns True if the Builder has completed."""
-    return self.status in BuilderStatus.COMPLETED_STATUSES
+    return self.status in constants.BUILDER_COMPLETED_STATUSES
 
   @classmethod
   def GetCompletedStatus(cls, success):
@@ -366,9 +354,9 @@ class BuilderStatus(object):
       success: Whether the build was successful or not.
     """
     if success:
-      return cls.STATUS_PASSED
+      return constants.BUILDER_STATUS_PASSED
     else:
-      return cls.STATUS_FAILED
+      return constants.BUILDER_STATUS_FAILED
 
   def AsFlatDict(self):
     """Returns a flat json-able representation of this builder status.
@@ -506,10 +494,12 @@ class BuildSpecsManager(object):
     self.pass_dirs, self.fail_dirs = [], []
     for build_name in self.build_names:
       specs_for_build = specs_for_builder % {'builder': build_name}
-      self.pass_dirs.append(os.path.join(specs_for_build,
-                                         BuilderStatus.STATUS_PASSED, dir_pfx))
-      self.fail_dirs.append(os.path.join(specs_for_build,
-                                         BuilderStatus.STATUS_FAILED, dir_pfx))
+      self.pass_dirs.append(
+          os.path.join(specs_for_build, constants.BUILDER_STATUS_PASSED,
+                       dir_pfx))
+      self.fail_dirs.append(
+          os.path.join(specs_for_build, constants.BUILDER_STATUS_FAILED,
+                       dir_pfx))
 
     # Calculate the status of the latest build, and whether the build was
     # processed.
@@ -616,7 +606,7 @@ class BuildSpecsManager(object):
     try:
       output = ctx.Cat(url)
     except gs.GSNoSuchKey:
-      return BuilderStatus(BuilderStatus.STATUS_MISSING, None)
+      return BuilderStatus(constants.BUILDER_STATUS_MISSING, None)
 
     return BuildSpecsManager._UnpickleBuildStatus(output)
 
@@ -666,7 +656,7 @@ class BuildSpecsManager(object):
 
       latest_completed = set(
           [b for b, s in status_dict.iteritems() if s in
-           BuilderStatus.COMPLETED_STATUSES and b in builders_array])
+           constants.BUILDER_COMPLETED_STATUSES and b in builders_array])
       for builder in sorted(latest_completed - builders_completed):
         logging.info('Builder %s completed with status "%s".',
                      builder, status_dict[builder])
@@ -718,7 +708,7 @@ class BuildSpecsManager(object):
       # In addition to the exceptions listed in the doc, we've also observed
       # TypeError in the wild.
       logging.warning('Failed with %r to unpickle status file.', e)
-      return BuilderStatus(BuilderStatus.STATUS_FAILED, message=None)
+      return BuilderStatus(constants.BUILDER_STATUS_FAILED, message=None)
 
     return BuilderStatus(**status_dict)
 
@@ -869,7 +859,7 @@ class BuildSpecsManager(object):
   def SetInFlight(self, version, dashboard_url=None):
     """Marks the buildspec as inflight in Google Storage."""
     try:
-      self._UploadStatus(version, BuilderStatus.STATUS_INFLIGHT,
+      self._UploadStatus(version, constants.BUILDER_STATUS_INFLIGHT,
                          fail_if_exists=True,
                          dashboard_url=dashboard_url)
     except gs.GSContextPreconditionFailed:

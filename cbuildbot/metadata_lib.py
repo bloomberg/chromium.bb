@@ -14,12 +14,12 @@ import math
 import multiprocessing
 import os
 import re
-import time
 
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import parallel
@@ -45,39 +45,6 @@ CLActionTuple = collections.namedtuple('CLActionTuple',
                                         'reason'])
 CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
     ['change', 'action', 'timestamp', 'reason', 'bot_type', 'build'])
-
-
-def GetChangeAsSmallDictionary(change):
-  """Returns a small dictionary representation of a gerrit change.
-
-  Args:
-    change: A GerritPatch or GerritPatchTuple object.
-
-  Returns:
-    A dictionary of the form {'gerrit_number': change.gerrit_number,
-                              'patch_number': change.patch_number,
-                              'internal': change.internal}
-  """
-  return  {'gerrit_number': change.gerrit_number,
-           'patch_number': change.patch_number,
-           'internal': change.internal}
-
-
-def GetCLActionTuple(change, action, timestamp=None, reason=None):
-  """Returns a CLActionTuple suitable for recording in metadata or cidb.
-
-  Args:
-    change: A GerritPatch or GerritPatchTuple object.
-    action: The action taken, should be one of constants.CL_ACTIONS
-    timestamp: An integer timestamp such as int(time.time()) at which
-               the action was taken. Default: Now.
-    reason: Description of the reason the action was taken. Default: ''
-  """
-  return CLActionTuple(
-      GetChangeAsSmallDictionary(change),
-      action,
-      timestamp or int(time.time()),
-      reason)
 
 
 class _DummyLock(object):
@@ -266,8 +233,9 @@ class CBuildbotMetadata(object):
     Returns:
       self
     """
-    self._cl_action_list.append(
-        GetCLActionTuple(change, action, timestamp, reason))
+    cl_action = clactions.CLAction.FromGerritPatchAndAction(change, action,
+                                                            reason, timestamp)
+    self._cl_action_list.append(cl_action.AsMetadataEntry())
     return self
 
   @staticmethod

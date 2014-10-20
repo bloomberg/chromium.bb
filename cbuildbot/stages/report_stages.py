@@ -13,7 +13,6 @@ import sys
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import tree_status
@@ -516,9 +515,9 @@ class ReportStage(generic_stages.BuilderStage,
         # TODO(akeshet): Eliminate this status string translate once
         # these differing status strings are merged, crbug.com/318930
         if final_status == constants.FINAL_STATUS_PASSED:
-          status_for_db = manifest_version.BuilderStatus.STATUS_PASSED
+          status_for_db = constants.BUILDER_STATUS_PASSED
         else:
-          status_for_db = manifest_version.BuilderStatus.STATUS_FAILED
+          status_for_db = constants.BUILDER_STATUS_FAILED
 
         # TODO(akeshet): Consider uploading the status pickle to the database,
         # (by specifying that argument to FinishBuild), or come up with a

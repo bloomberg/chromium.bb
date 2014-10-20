@@ -34,9 +34,9 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
     self.committer = cros_best_revision.ChromeCommitter(self.tempdir, False)
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
     self.pass_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_PASSED, None)
+        constants.BUILDER_STATUS_PASSED, None)
     self.fail_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_FAILED, None)
+        constants.BUILDER_STATUS_FAILED, None)
 
 
 # pylint: disable=W0212

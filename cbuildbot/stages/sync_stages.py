@@ -702,7 +702,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     changes_to_test = []
     for change in changes:
       status = pool.GetCLPreCQStatus(change)
-      if status == validation_pool.ValidationPool.STATUS_PASSED:
+      if status == constants.CL_STATUS_PASSED:
         changes_to_test.append(change)
 
     # If we only see changes that weren't verified by Pre-CQ, try all of the
@@ -841,9 +841,9 @@ class PreCQSyncStage(SyncStage):
       for change in self.pool.changes:
         current_status = validation_pool.ValidationPool.GetCLPreCQStatus(
             change)
-        if current_status != validation_pool.ValidationPool.STATUS_PASSED:
+        if current_status != constants.CL_STATUS_PASSED:
           validation_pool.ValidationPool.UpdateCLPreCQStatus(
-              change, validation_pool.ValidationPool.STATUS_INFLIGHT,
+              change, constants.CL_STATUS_INFLIGHT,
               build_id)
 
 
@@ -851,22 +851,22 @@ class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
   # The CL is currently being tested by a Pre-CQ trybot.
-  STATUS_INFLIGHT = validation_pool.ValidationPool.STATUS_INFLIGHT
+  STATUS_INFLIGHT = constants.CL_STATUS_INFLIGHT
 
   # The CL has passed the Pre-CQ.
-  STATUS_PASSED = validation_pool.ValidationPool.STATUS_PASSED
+  STATUS_PASSED = constants.CL_STATUS_PASSED
 
   # The CL has failed the Pre-CQ.
-  STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
+  STATUS_FAILED = constants.CL_STATUS_FAILED
 
   # We have requested a Pre-CQ trybot but it has not started yet.
-  STATUS_LAUNCHING = validation_pool.ValidationPool.STATUS_LAUNCHING
+  STATUS_LAUNCHING = constants.CL_STATUS_LAUNCHING
 
   # The CL is ready to be retried.
-  STATUS_WAITING = validation_pool.ValidationPool.STATUS_WAITING
+  STATUS_WAITING = constants.CL_STATUS_WAITING
 
   # The CL has passed the Pre-CQ and is ready to be submitted.
-  STATUS_READY_TO_SUBMIT = validation_pool.ValidationPool.STATUS_READY_TO_SUBMIT
+  STATUS_READY_TO_SUBMIT = constants.CL_STATUS_READY_TO_SUBMIT
 
   # The number of minutes we allow before considering a launch attempt failed.
   # If this window isn't hit in a given launcher run, the window will start

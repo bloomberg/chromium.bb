@@ -252,8 +252,8 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
       osutils.Touch(m)
 
     # Fake BuilderStatus with status MISSING.
-    missing = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_MISSING, None)
+    missing = manifest_version.BuilderStatus(constants.BUILDER_STATUS_MISSING,
+                                             None)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
     manifest_version.CreateSymlink(m1, os.path.join(
@@ -341,9 +341,9 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     failed_msg = failures_lib.BuildFailureMessage(
         'you failed', ['traceback'], True, 'taco', 'bot')
     failed_input_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_FAILED, failed_msg)
+        constants.BUILDER_STATUS_FAILED, failed_msg)
     passed_input_status = manifest_version.BuilderStatus(
-        manifest_version.BuilderStatus.STATUS_PASSED, None)
+        constants.BUILDER_STATUS_PASSED, None)
 
     failed_output_status = self.manager._UnpickleBuildStatus(
         failed_input_status.AsPickledDict())
@@ -386,20 +386,20 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
 
   def testGetBuildersStatusBothFinished(self):
     """Tests GetBuilderStatus where both builds have finished."""
-    status_runs = [{'build1': manifest_version.BuilderStatus.STATUS_FAILED,
-                    'build2': manifest_version.BuilderStatus.STATUS_PASSED}]
+    status_runs = [{'build1': constants.BUILDER_STATUS_FAILED,
+                    'build2': constants.BUILDER_STATUS_PASSED}]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoop(self):
     """Tests GetBuilderStatus where builds are inflight."""
-    status_runs = [{'build1': manifest_version.BuilderStatus.STATUS_INFLIGHT,
-                    'build2': manifest_version.BuilderStatus.STATUS_MISSING},
-                   {'build1': manifest_version.BuilderStatus.STATUS_FAILED,
-                    'build2': manifest_version.BuilderStatus.STATUS_INFLIGHT},
-                   {'build1': manifest_version.BuilderStatus.STATUS_FAILED,
-                    'build2': manifest_version.BuilderStatus.STATUS_PASSED}]
+    status_runs = [{'build1': constants.BUILDER_STATUS_INFLIGHT,
+                    'build2': constants.BUILDER_STATUS_MISSING},
+                   {'build1': constants.BUILDER_STATUS_FAILED,
+                    'build2': constants.BUILDER_STATUS_INFLIGHT},
+                   {'build1': constants.BUILDER_STATUS_FAILED,
+                    'build2': constants.BUILDER_STATUS_PASSED}]
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
