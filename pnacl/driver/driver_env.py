@@ -136,6 +136,13 @@ INITIAL_ENV = {
                           '--uses_reverse_service ' +
                           '${USE_EMULATOR ? -Q -c -c --command_prefix ${EMULATOR}}',
 
+  'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
+  'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',
+  'IRT_STAGING_X8664'   : '${SCONS_OUT}/nacl_irt-x86-64/staging',
+  'IRT_STAGING_ARM'     : '${SCONS_OUT}/nacl_irt-arm/staging',
+  'IRT_STAGING_MIPS32'  : '${SCONS_OUT}/nacl_irt-mips32/staging',
+  'IRT_BLOB'            : '${IRT_STAGING}/irt_core.nexe',
+
   'EMULATOR'            : '${EMULATOR_%ARCH%}',
   'EMULATOR_X8632'      : '',
   'EMULATOR_X8664'      : '',

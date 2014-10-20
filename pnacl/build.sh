@@ -1900,17 +1900,19 @@ llvm-sb-install() {
     # Translate twice to get both nexes.
     arches="i686 x86_64"
   fi
-  translate-sb-tool ${toolname} "${arches}"
+  local have_segment_gap="false"
+  translate-sb-tool ${toolname} "${arches}" "${have_segment_gap}"
   install-sb-tool ${toolname} "${arches}"
   spopd
 }
 
-# translate-sb-tool <toolname> <arches>
+# translate-sb-tool <toolname> <arches> <have_segment_gap>
 #
 # Translate <toolname>.pexe to <toolname>.<arch>.nexe in the current directory.
 translate-sb-tool() {
   local toolname=$1
   local arches=$2
+  local have_segment_gap=$3
   local pexe="${toolname}.pexe"
   if ${PNACL_PRUNE}; then
     # Only strip debug, to preserve symbol names for testing. This is okay
@@ -1933,8 +1935,12 @@ translate-sb-tool() {
     # helps reduce the size a bit. If you want to use --gc-sections to test out:
     # http://code.google.com/p/nativeclient/issues/detail?id=1591
     # you will need to do a build without these flags.
-    "${PNACL_TRANSLATE}" -ffunction-sections -fdata-sections --gc-sections \
-      --allow-llvm-bitcode-input --noirt -arch ${tarch} "${pexe}" -o "${nexe}" &
+    local translate_flags="-ffunction-sections -fdata-sections --gc-sections \
+      --allow-llvm-bitcode-input -arch ${tarch} "
+    if ! ${have_segment_gap}; then
+      translate_flags+="--noirt "
+    fi
+    "${PNACL_TRANSLATE}" ${translate_flags} "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
   StepBanner "TRANSLATE" "Waiting for translation processes to finish"
@@ -2180,7 +2186,8 @@ binutils-gold-sb-install() {
   if [[ "${arch}" == "universal" ]]; then
     arches="${SBTC_ARCHES_ALL}"
   fi
-  translate-sb-tool ld "${arches}"
+  local have_segment_gap=true
+  translate-sb-tool ld "${arches}" ${have_segment_gap}
   install-sb-tool ld "${arches}"
   spopd
 }

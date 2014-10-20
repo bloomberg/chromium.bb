@@ -203,7 +203,7 @@ def RunLDSandboxed():
 
 
   Run('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-      '${SEL_UNIVERSAL_FLAGS} -- ${LD_SB}',
+      '${SEL_UNIVERSAL_FLAGS} -B ${IRT_BLOB} -- ${LD_SB}',
       stdin_contents=script,
       # stdout/stderr will be automatically dumped
       # upon failure
