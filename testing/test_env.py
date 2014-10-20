@@ -114,6 +114,8 @@ def get_asan_env(cmd, lsan):
     # Important note: when running ASan with leak detection enabled, we must use
     # the LSan symbolization options above.
     symbolization_options = ['symbolize=0']
+    # Set the path to llvm-symbolizer to be used by asan_symbolize.py
+    extra_env['LLVM_SYMBOLIZER_PATH'] = symbolizer_path
 
   asan_options.extend(symbolization_options)
 
