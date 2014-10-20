@@ -882,7 +882,7 @@ bool InspectorStyleSheetBase::getStyleText(const InspectorCSSId& id, String* tex
 
 void InspectorStyleSheetBase::onStyleSheetTextChanged()
 {
-    m_lineEndings = adoptPtrWillBeNoop(new LineEndings());
+    m_lineEndings = adoptPtr(new LineEndings());
     if (listener())
         listener()->styleSheetChanged(this);
 }
@@ -1868,4 +1868,3 @@ void InspectorStyleSheetForInlineStyle::trace(Visitor* visitor)
 }
 
 } // namespace blink
-
