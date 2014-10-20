@@ -396,6 +396,16 @@ void WebURLResponse::setWasFallbackRequiredByServiceWorker(bool value)
     m_private->m_resourceResponse->setWasFallbackRequiredByServiceWorker(value);
 }
 
+WebServiceWorkerResponseType WebURLResponse::serviceWorkerResponseType() const
+{
+    return m_private->m_resourceResponse->serviceWorkerResponseType();
+}
+
+void WebURLResponse::setServiceWorkerResponseType(WebServiceWorkerResponseType value)
+{
+    m_private->m_resourceResponse->setServiceWorkerResponseType(value);
+}
+
 bool WebURLResponse::isMultipartPayload() const
 {
     return m_private->m_resourceResponse->isMultipartPayload();

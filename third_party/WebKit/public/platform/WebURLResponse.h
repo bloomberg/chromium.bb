@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebPrivateOwnPtr.h"
+#include "WebServiceWorkerResponseType.h"
 
 namespace blink {
 
@@ -171,6 +172,10 @@ public:
     // required.
     BLINK_PLATFORM_EXPORT bool wasFallbackRequiredByServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setWasFallbackRequiredByServiceWorker(bool);
+
+    // The type of the response which was fetched by the ServiceWorker.
+    BLINK_PLATFORM_EXPORT WebServiceWorkerResponseType serviceWorkerResponseType() const;
+    BLINK_PLATFORM_EXPORT void setServiceWorkerResponseType(WebServiceWorkerResponseType);
 
     // Flag whether this request is part of a multipart response.
     BLINK_PLATFORM_EXPORT bool isMultipartPayload() const;
