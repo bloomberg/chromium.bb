@@ -45,12 +45,12 @@ function test()
 
     function step1()
     {
-        InspectorTest.addConsoleViewSniffer(addMessage, true);
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
+        InspectorTest.addConsoleViewSniffer(addMessage, true);
         InspectorTest.evaluateInPage("runPromisesFromInspector()", resumeExecution);
     }
 
