@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "web/WebFileChooserCompletionImpl.h"
+#include "platform/FileMetadata.h"
 
 namespace blink {
 
@@ -55,8 +56,17 @@ void WebFileChooserCompletionImpl::didChooseFile(const WebVector<WebString>& fil
 void WebFileChooserCompletionImpl::didChooseFile(const WebVector<SelectedFileInfo>& files)
 {
     Vector<FileChooserFileInfo> fileInfo;
-    for (size_t i = 0; i < files.size(); ++i)
-        fileInfo.append(FileChooserFileInfo(files[i].path, files[i].displayName));
+    for (size_t i = 0; i < files.size(); ++i) {
+        if (files[i].fileSystemURL.isEmpty()) {
+            fileInfo.append(FileChooserFileInfo(files[i].path, files[i].displayName));
+        } else {
+            FileMetadata metadata;
+            metadata.modificationTime = files[i].modificationTime;
+            metadata.length = files[i].length;
+            metadata.type = files[i].isDirectory ? FileMetadata::TypeDirectory : FileMetadata::TypeFile;
+            fileInfo.append(FileChooserFileInfo(files[i].fileSystemURL, metadata));
+        }
+    }
     m_fileChooser->chooseFiles(fileInfo);
     // This object is no longer needed.
     delete this;

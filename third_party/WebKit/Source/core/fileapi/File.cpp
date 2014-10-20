@@ -296,4 +296,21 @@ void File::appendTo(BlobData& blobData) const
     blobData.appendFile(m_path, 0, size, modificationTime);
 }
 
+bool File::hasSameSource(const File& other) const
+{
+    if (m_hasBackingFile != other.m_hasBackingFile)
+        return false;
+
+    if (m_hasBackingFile)
+        return m_path == other.m_path;
+
+    if (m_fileSystemURL.isEmpty() != other.m_fileSystemURL.isEmpty())
+        return false;
+
+    if (!m_fileSystemURL.isEmpty())
+        return m_fileSystemURL == other.m_fileSystemURL;
+
+    return uuid() == other.uuid();
+}
+
 } // namespace blink

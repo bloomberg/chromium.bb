@@ -30,7 +30,9 @@
 #ifndef FileChooser_h
 #define FileChooser_h
 
+#include "platform/FileMetadata.h"
 #include "platform/PlatformExport.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -46,8 +48,17 @@ struct FileChooserFileInfo {
     {
     }
 
+    FileChooserFileInfo(const KURL& fileSystemURL, const FileMetadata metadata) : fileSystemURL(fileSystemURL), metadata(metadata)
+    {
+    }
+
+    // Members for native files.
     const String path;
     const String displayName;
+
+    // Members for file system API files.
+    const KURL fileSystemURL;
+    const FileMetadata metadata;
 };
 
 struct FileChooserSettings {

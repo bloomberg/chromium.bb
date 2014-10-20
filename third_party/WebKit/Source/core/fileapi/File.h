@@ -135,6 +135,9 @@ public:
     // Returns true if this has a valid snapshot metadata (i.e. m_snapshotSize >= 0).
     bool hasValidSnapshotMetadata() const { return m_snapshotSize >= 0; }
 
+    // Returns true if the sources (file path, file system URL, or blob handler) of the file objects are same or not.
+    bool hasSameSource(const File& other) const;
+
 private:
     File(const String& path, ContentTypeLookupPolicy, UserVisibility);
     File(const String& path, const String& name, ContentTypeLookupPolicy, UserVisibility);

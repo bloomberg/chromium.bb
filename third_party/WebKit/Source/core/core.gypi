@@ -3594,6 +3594,7 @@
             'html/HTMLTextFormControlElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
+            'html/forms/FileInputTypeTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
             'html/parser/HTMLSrcsetParserTest.cpp',
             'html/track/vtt/BufferedLineReaderTest.cpp',

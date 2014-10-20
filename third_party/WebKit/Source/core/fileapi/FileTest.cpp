@@ -46,4 +46,40 @@ TEST(FileTest, fileSystemFileWithoutNativeSnapshot)
     EXPECT_EQ(url, file->fileSystemURL());
 }
 
+TEST(FileTest, hsaSameSource)
+{
+    File* const nativeFileA1 = File::create("/native/pathA");
+    File* const nativeFileA2 = File::create("/native/pathA");
+    File* const nativeFileB = File::create("/native/pathB");
+
+    const RefPtr<BlobDataHandle> blobDataA = BlobDataHandle::create();
+    const RefPtr<BlobDataHandle> blobDataB = BlobDataHandle::create();
+    File* const blobFileA1 = File::create("name", 0.0, blobDataA);
+    File* const blobFileA2 = File::create("name", 0.0, blobDataA);
+    File* const blobFileB = File::create("name", 0.0, blobDataB);
+
+    KURL urlA(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file-A");
+    KURL urlB(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file-B");
+    FileMetadata metadata;
+    File* const fileSystemFileA1 = File::createForFileSystemFile(urlA, metadata);
+    File* const fileSystemFileA2 = File::createForFileSystemFile(urlA, metadata);
+    File* const fileSystemFileB = File::createForFileSystemFile(urlB, metadata);
+
+    EXPECT_FALSE(nativeFileA1->hasSameSource(*blobFileA1));
+    EXPECT_FALSE(blobFileA1->hasSameSource(*fileSystemFileA1));
+    EXPECT_FALSE(fileSystemFileA1->hasSameSource(*nativeFileA1));
+
+    EXPECT_TRUE(nativeFileA1->hasSameSource(*nativeFileA1));
+    EXPECT_TRUE(nativeFileA1->hasSameSource(*nativeFileA2));
+    EXPECT_FALSE(nativeFileA1->hasSameSource(*nativeFileB));
+
+    EXPECT_TRUE(blobFileA1->hasSameSource(*blobFileA1));
+    EXPECT_TRUE(blobFileA1->hasSameSource(*blobFileA2));
+    EXPECT_FALSE(blobFileA1->hasSameSource(*blobFileB));
+
+    EXPECT_TRUE(fileSystemFileA1->hasSameSource(*fileSystemFileA1));
+    EXPECT_TRUE(fileSystemFileA1->hasSameSource(*fileSystemFileA2));
+    EXPECT_FALSE(fileSystemFileA1->hasSameSource(*fileSystemFileB));
+}
+
 } // namespace blink

@@ -47,6 +47,7 @@ public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
     virtual void trace(Visitor*) override;
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
+    static FileList* createFileList(const Vector<FileChooserFileInfo>& files, bool hasWebkitDirectoryAttr);
 
 private:
     FileInputType(HTMLInputElement&);
@@ -74,7 +75,6 @@ private:
     // FileChooserClient implementation.
     virtual void filesChosen(const Vector<FileChooserFileInfo>&) override;
 
-    FileList* createFileList(const Vector<FileChooserFileInfo>& files) const;
     void receiveDropForDirectoryUpload(const Vector<String>&);
 
     PersistentWillBeMember<FileList> m_fileList;
