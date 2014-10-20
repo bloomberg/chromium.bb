@@ -249,7 +249,8 @@ class BASE_EXPORT File {
   // doesn't exist, |false| is returned.
   bool SetLength(int64 length);
 
-  // Flushes the buffers.
+  // Instructs the filesystem to flush the file to disk. (POSIX: fsync, Windows:
+  // FlushFileBuffers).
   bool Flush();
 
   // Updates the file times.
