@@ -92,7 +92,6 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/scheduler_proxy_task_runner.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
@@ -849,13 +848,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(switches::kDisableBlinkScheduler)) {
-    main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
-  } else {
-    main_thread_compositor_task_runner_ =
-        make_scoped_refptr(new SchedulerProxyTaskRunner<
-            &blink::WebSchedulerProxy::postCompositorTask>());
-  }
+  main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
 
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {

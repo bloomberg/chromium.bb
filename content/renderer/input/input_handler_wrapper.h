@@ -9,7 +9,6 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/input_handler_proxy.h"
 #include "content/renderer/input/input_handler_proxy_client.h"
-#include "third_party/WebKit/public/platform/WebSchedulerProxy.h"
 
 namespace content {
 
@@ -43,7 +42,6 @@ class InputHandlerWrapper : public InputHandlerProxyClient {
   int routing_id_;
   InputHandlerProxy input_handler_proxy_;
   scoped_refptr<base::MessageLoopProxy> main_loop_;
-  blink::WebSchedulerProxy web_scheduler_proxy_;
 
   // Can only be accessed on the main thread.
   base::WeakPtr<RenderViewImpl> render_view_impl_;
