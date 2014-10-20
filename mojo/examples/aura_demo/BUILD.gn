@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 assert(use_aura)
 
-# GYP version mojo/mojo_examples.gypi:mojo_aura_demo
 shared_library("mojo_aura_demo") {
   output_name = "mojo_aura_demo"
 
@@ -34,7 +33,6 @@ shared_library("mojo_aura_demo") {
   datadeps = [ ":init" ]
 }
 
-# GYP version mojo/mojo_examples.gypi:mojo_aura_demo_init
 shared_library("init") {
   output_name = "mojo_aura_demo_init"
 

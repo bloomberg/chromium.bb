@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 if (use_aura) {
 
-# GYP version: mojo/mojo_examples.gypi:mojo_media_viewer
 shared_library("media_viewer") {
   output_name = "mojo_media_viewer"
 
@@ -34,7 +33,6 @@ shared_library("media_viewer") {
 
 }  # use_aura
 
-# GYP version: mojo/mojo_examples.gypi:mojo_media_viewer_bindings
 mojom("bindings") {
   sources = [
     "media_viewer.mojom",

@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(use_aura)
 
-# GYP version: mojo/mojo_examples.gypi:mojo_keyboard
 shared_library("keyboard") {
   output_name = "mojo_keyboard"
 
@@ -48,7 +47,6 @@ shared_library("keyboard") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_keyboard_bindings
 mojom("bindings") {
   sources = [ "keyboard.mojom" ]
 }

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_examples.gypi:mojo_png_viewer
 shared_library("png_viewer") {
   output_name = "mojo_png_viewer"
 

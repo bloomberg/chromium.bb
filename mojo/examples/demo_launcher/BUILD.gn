@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 assert(use_aura)
 
-# GYP version: mojo/mojo_examples.gypi:mojo_demo_launcher
 shared_library("demo_launcher") {
   output_name = "mojo_demo_launcher"
 

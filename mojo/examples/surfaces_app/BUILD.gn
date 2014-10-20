@@ -12,7 +12,6 @@ group("surfaces_app") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_app
 shared_library("parent_app") {
   output_name = "mojo_surfaces_app"
 
@@ -46,7 +45,6 @@ shared_library("parent_app") {
 }
 
 
-# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_child_app
 shared_library("child_app") {
   output_name = "mojo_surfaces_child_app"
 
@@ -78,7 +76,6 @@ shared_library("child_app") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_child_gl_app
 shared_library("child_gl_app") {
   output_name = "mojo_surfaces_child_gl_app"
 
@@ -130,7 +127,6 @@ source_set("util") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_surfaces_app_bindings
 mojom("bindings") {
   deps = [
     "//mojo/services/public/interfaces/geometry",

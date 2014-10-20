@@ -11,7 +11,6 @@ group("echo") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_echo_client
 shared_library("client") {
   output_name = "mojo_echo_client"
 
@@ -26,7 +25,6 @@ shared_library("client") {
   sources = [ "echo_client.cc" ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_echo_service
 shared_library("service") {
   output_name = "mojo_echo_service"
 
@@ -41,7 +39,6 @@ shared_library("service") {
   sources = [ "echo_service.cc" ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_echo_service_bindings
 mojom("bindings") {
   sources = [ "echo_service.mojom" ]
 }

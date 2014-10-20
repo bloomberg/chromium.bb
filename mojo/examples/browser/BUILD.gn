@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 assert(use_aura)
 
-# GYP version: mojo/mojo_examples.gypi:mojo_browser
 shared_library("browser") {
   output_name = "mojo_browser"
 

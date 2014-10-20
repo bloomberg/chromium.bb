@@ -13,7 +13,6 @@ group("apptest") {
   ]
 }
 
-# GYP version mojo/mojo_examples.gypi:mojo_example_service
 shared_library("service") {
   output_name = "mojo_example_service"
 
@@ -32,7 +31,6 @@ shared_library("service") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_example_apptests
 shared_library("apptests") {
   output_name = "mojo_example_apptests"
 
@@ -55,7 +53,6 @@ shared_library("apptests") {
    ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_example_service_bindings
 mojom("bindings") {
   sources = [ "example_service.mojom" ]
 }

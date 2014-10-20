@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 assert(use_aura)
 
-# GYP version: mojo/mojo_examples.gypi:mojo_window_manager
 shared_library("window_manager") {
   output_name = "mojo_window_manager"
 
@@ -46,7 +45,6 @@ shared_library("window_manager") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_window_manager_bindings
 mojom("bindings") {
   sources = [
     "window_manager.mojom",

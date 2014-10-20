@@ -16,7 +16,6 @@ group("wm_flow") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_wm
 shared_library("wm") {
   output_name = "mojo_wm_flow_wm"
 
@@ -41,7 +40,6 @@ shared_library("wm") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_init
 shared_library("init") {
   output_name = "mojo_wm_flow_init"
 
@@ -61,7 +59,6 @@ shared_library("init") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_app
 shared_library("app") {
   output_name = "mojo_wm_flow_app"
 
@@ -82,7 +79,6 @@ shared_library("app") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_embedded
 shared_library("embedded") {
   output_name = "mojo_wm_flow_embedded"
 
@@ -102,14 +98,12 @@ shared_library("embedded") {
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_embedder_bindings
 mojom("embedder_bindings") {
   sources = [
     "app/embedder.mojom",
   ]
 }
 
-# GYP version: mojo/mojo_examples.gypi:mojo_wm_flow_embeddee_bindings
 mojom("embeddee_bindings") {
   sources = [
     "embedded/embeddee.mojom",

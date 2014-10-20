@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: mojo/mojo_examples.gypi:mojo_nesting_app
 shared_library("nesting_app") {
   output_name = "mojo_nesting_app"
 
