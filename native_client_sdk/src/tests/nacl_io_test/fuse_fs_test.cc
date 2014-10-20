@@ -289,8 +289,8 @@ TEST_F(FuseFsTest, CreateWithMode) {
   ASSERT_EQ(0, fs_.OpenWithMode(Path("/hello"),
                                 O_RDWR | O_CREAT, 0723, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG, statbuf.st_mode & S_IFMT);
-  EXPECT_EQ(0723, statbuf.st_mode & ~S_IFMT);
+  EXPECT_TRUE(S_ISREG(statbuf.st_mode));
+  EXPECT_EQ(0723, statbuf.st_mode & S_MODEBITS);
 }
 
 TEST_F(FuseFsTest, CreateAndWrite) {
@@ -317,20 +317,20 @@ TEST_F(FuseFsTest, GetStat) {
 
   ASSERT_EQ(0, fs_.Open(Path("/hello"), O_RDONLY, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG, statbuf.st_mode & S_IFMT);
-  EXPECT_EQ(0666, statbuf.st_mode & ~S_IFMT);
+  EXPECT_TRUE(S_ISREG(statbuf.st_mode));
+  EXPECT_EQ(0666, statbuf.st_mode & S_MODEBITS);
   EXPECT_EQ(strlen(hello_world), statbuf.st_size);
 
   ASSERT_EQ(0, fs_.Open(Path("/"), O_RDONLY, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFDIR, statbuf.st_mode & S_IFMT);
-  EXPECT_EQ(0755, statbuf.st_mode & ~S_IFMT);
+  EXPECT_TRUE(S_ISDIR(statbuf.st_mode));
+  EXPECT_EQ(0755, statbuf.st_mode & S_MODEBITS);
 
   // Create a file and stat.
   ASSERT_EQ(0, fs_.Open(Path("/foobar"), O_RDWR | O_CREAT, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG, statbuf.st_mode & S_IFMT);
-  EXPECT_EQ(0666, statbuf.st_mode & ~S_IFMT);
+  EXPECT_TRUE(S_ISREG(statbuf.st_mode));
+  EXPECT_EQ(0666, statbuf.st_mode & S_MODEBITS);
   EXPECT_EQ(0, statbuf.st_size);
 }
 
@@ -394,12 +394,12 @@ TEST_F(FuseFsTest, Fchmod) {
 
   ASSERT_EQ(0, fs_.Open(Path("/hello"), O_RDONLY, &node));
   ASSERT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(0666, statbuf.st_mode & ~S_IFMT);
+  EXPECT_EQ(0666, statbuf.st_mode & S_MODEBITS);
 
   ASSERT_EQ(0, node->Fchmod(0777));
 
   ASSERT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(0777, statbuf.st_mode & ~S_IFMT);
+  EXPECT_EQ(0777, statbuf.st_mode & S_MODEBITS);
 }
 
 namespace {

@@ -22,6 +22,7 @@
 #define S_IRALL (S_IRUSR | S_IRGRP | S_IROTH)
 #define S_IWALL (S_IWUSR | S_IWGRP | S_IWOTH)
 #define S_IXALL (S_IXUSR | S_IXGRP | S_IXOTH)
+#define S_MODEBITS 07777
 
 namespace nacl_io {
 

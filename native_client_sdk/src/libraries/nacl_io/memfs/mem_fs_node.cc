@@ -135,7 +135,7 @@ Error MemFsNode::Futimens(const struct timespec times[2]) {
 
 Error MemFsNode::Fchmod(mode_t mode) {
   AUTO_LOCK(node_lock_);
-  SetMode(mode & ~S_IFMT);
+  SetMode(mode);
   return 0;
 }
 

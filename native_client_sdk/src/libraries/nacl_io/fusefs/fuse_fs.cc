@@ -90,7 +90,7 @@ Error FuseFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
       if (result < 0)
         return -result;
 
-      if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
+      if (S_ISDIR(statbuf.st_mode)) {
         // This is a directory. Don't try to open, just create a new node with
         // this path.
         ScopedNode node(new DirFuseFsNode(this, fuse_ops_, fi, path_cstr));
@@ -102,7 +102,7 @@ Error FuseFs::OpenWithMode(const Path& path, int open_flags, mode_t mode,
         return 0;
       }
       // Get mode.
-      mode = statbuf.st_mode & ~S_IFMT;
+      mode = statbuf.st_mode & S_MODEBITS;
     }
 
     // Existing file.
@@ -189,7 +189,7 @@ Error FuseFs::Remove(const Path& path) {
 
   node.reset();
 
-  if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
+  if (S_ISDIR(statbuf.st_mode)) {
     return Rmdir(path);
   } else {
     return Unlink(path);

@@ -243,7 +243,8 @@ TEST_P(HttpFsLargeFileTest, GetStat) {
 
   struct stat statbuf;
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG | S_IRUSR | S_IRGRP | S_IROTH, statbuf.st_mode);
+  EXPECT_TRUE(S_ISREG(statbuf.st_mode));
+  EXPECT_EQ(S_IRUSR | S_IRGRP | S_IROTH, statbuf.st_mode & S_MODEBITS);
   EXPECT_EQ(size, statbuf.st_size);
   // These are not currently set.
   EXPECT_EQ(0, statbuf.st_atime);

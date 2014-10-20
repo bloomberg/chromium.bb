@@ -189,7 +189,7 @@ int Node::GetLinks() {
 }
 
 int Node::GetMode() {
-  return stat_.st_mode & ~S_IFMT;
+  return stat_.st_mode & S_MODEBITS;
 }
 
 Error Node::GetSize(off_t* out_size) {
@@ -208,8 +208,8 @@ void Node::SetType(int type) {
 }
 
 void Node::SetMode(int mode) {
-  assert((mode & S_IFMT) == 0);
-  stat_.st_mode &= S_IFMT;
+  assert((mode & ~S_MODEBITS) == 0);
+  stat_.st_mode &= ~S_MODEBITS;
   stat_.st_mode |= mode;
 }
 

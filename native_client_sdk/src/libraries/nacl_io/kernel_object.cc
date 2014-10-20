@@ -162,7 +162,7 @@ mode_t KernelObject::GetUmask() {
 mode_t KernelObject::SetUmask(mode_t newmask) {
   AUTO_LOCK(umask_lock_);
   mode_t oldmask = umask_;
-  umask_ = newmask & 0777;
+  umask_ = newmask & S_MODEBITS;
   return oldmask;
 }
 

@@ -567,7 +567,7 @@ TEST_F(KernelProxyTest, OpenWithMode) {
 
   struct stat buf;
   EXPECT_EQ(0, ki_lstat("/foo", &buf));
-  EXPECT_EQ(0723, buf.st_mode & ~S_IFMT);
+  EXPECT_EQ(0723, buf.st_mode & 0777);
 }
 
 TEST_F(KernelProxyTest, CreateWronlyWithReadOnlyMode) {
@@ -663,10 +663,10 @@ TEST_F(KernelProxyTest, Umask) {
 
   struct stat buf;
   EXPECT_EQ(0, ki_stat("/foo", &buf));
-  EXPECT_EQ(0444, buf.st_mode & ~S_IFMT);
+  EXPECT_EQ(0444, buf.st_mode & 0777);
 
   EXPECT_EQ(0, ki_stat("/dir", &buf));
-  EXPECT_EQ(0555, buf.st_mode & ~S_IFMT);
+  EXPECT_EQ(0555, buf.st_mode & 0777);
 
   EXPECT_EQ(0222, ki_umask(0));
 }

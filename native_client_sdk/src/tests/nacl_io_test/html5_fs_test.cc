@@ -184,7 +184,7 @@ TEST_F(Html5FsTest, Mkdir) {
   ScopedNode node;
   ASSERT_EQ(0, fs->Open(path, O_RDONLY, &node));
   EXPECT_EQ(0, node->GetStat(&stat));
-  EXPECT_EQ(S_IFDIR, stat.st_mode & S_IFDIR);
+  EXPECT_TRUE(S_ISDIR(stat.st_mode));
 }
 
 TEST_F(Html5FsTest, Remove) {
@@ -388,8 +388,8 @@ TEST_F(Html5FsTest, GetStat) {
 
   struct stat statbuf;
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFREG, statbuf.st_mode & S_IFMT);
-  EXPECT_EQ(S_IRALL | S_IWALL | S_IXALL, statbuf.st_mode & ~S_IFMT);
+  EXPECT_TRUE(S_ISREG(statbuf.st_mode));
+  EXPECT_EQ(S_IRALL | S_IWALL | S_IXALL, statbuf.st_mode & S_MODEBITS);
   EXPECT_EQ(strlen(contents), statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
@@ -406,8 +406,8 @@ TEST_F(Html5FsTest, GetStat) {
   // GetStat on a directory...
   EXPECT_EQ(0, fs->Open(Path("/dir"), O_RDONLY, &node));
   EXPECT_EQ(0, node->GetStat(&statbuf));
-  EXPECT_EQ(S_IFDIR, statbuf.st_mode & S_IFMT);
-  EXPECT_EQ(S_IRALL | S_IWALL | S_IXALL, statbuf.st_mode & ~S_IFMT);
+  EXPECT_TRUE(S_ISDIR(statbuf.st_mode));
+  EXPECT_EQ(S_IRALL | S_IWALL | S_IXALL, statbuf.st_mode & S_MODEBITS);
   EXPECT_EQ(0, statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
