@@ -10,7 +10,7 @@
     '../build/common_untrusted.gypi',
   ],
   'conditions': [
-    ['disable_nacl==0', {
+    ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
           # Currently, nacl_helper_nonsfi is under development and the binary
@@ -47,10 +47,10 @@
             ],
           },
           'dependencies': [
-            '<(DEPTH)/base/base_nacl.gyp:base_nacl_nonsfi',
-            '<(DEPTH)/native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
-            '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+            '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
+            '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
+            '../native_client/tools.gyp:prep_toolchain',
           ],
         },
         # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.
