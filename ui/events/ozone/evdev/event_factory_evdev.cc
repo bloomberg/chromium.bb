@@ -72,11 +72,13 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
   if (UseGesturesLibraryForDevice(devinfo)) {
-    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
-        make_scoped_ptr(new GestureInterpreterLibevdevCros(
-            params.modifiers, params.cursor, params.dispatch_callback));
+    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp = make_scoped_ptr(
+        new GestureInterpreterLibevdevCros(params.modifiers,
+                                           params.cursor,
+                                           params.keyboard,
+                                           params.dispatch_callback));
     return make_scoped_ptr(new EventReaderLibevdevCros(
-        fd, params.path, params.id, gesture_interp.Pass()));
+          fd, params.path, params.id, gesture_interp.Pass()));
   }
 #endif
 

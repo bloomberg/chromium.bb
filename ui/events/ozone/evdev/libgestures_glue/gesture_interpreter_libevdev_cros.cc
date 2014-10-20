@@ -11,7 +11,9 @@
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+#include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
+#include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_timer_provider.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -81,11 +83,15 @@ const int kGestureSwipeFingerCount = 3;
 GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     EventModifiersEvdev* modifiers,
     CursorDelegateEvdev* cursor,
+    KeyboardEvdev* keyboard,
     const EventDispatchCallback& callback)
     : modifiers_(modifiers),
       cursor_(cursor),
+      keyboard_(keyboard),
       dispatch_callback_(callback),
-      interpreter_(NULL) {}
+      interpreter_(NULL) {
+  memset(&prev_key_state_, 0, sizeof(prev_key_state_));
+}
 
 GestureInterpreterLibevdevCros::~GestureInterpreterLibevdevCros() {
   if (interpreter_) {
@@ -118,6 +124,9 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosOpen(
 void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
                                                          EventStateRec* evstate,
                                                          const timeval& time) {
+  // If the device has keys no it, dispatch any presses/release.
+  DispatchChangedKeys(evdev, time);
+
   HardwareState hwstate;
   memset(&hwstate, 0, sizeof(hwstate));
   hwstate.timestamp = StimeFromTimeval(&time);
@@ -393,6 +402,27 @@ void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int modifier,
   modifiers_->UpdateModifier(modifier, down);
   MouseEvent event(type, loc, loc, modifiers_->GetModifierFlags() | flag, flag);
   Dispatch(&event);
+}
+
+void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
+                                                         const timeval& time) {
+  unsigned long key_state_diff[EVDEV_BITS_TO_LONGS(KEY_CNT)];
+
+  // Find changed keys.
+  for (unsigned long i = 0; i < arraysize(key_state_diff); ++i)
+    key_state_diff[i] = evdev->key_state_bitmask[i] ^ prev_key_state_[i];
+
+  // Dispatch events for changed keys.
+  for (unsigned long i = 0; i < KEY_CNT; ++i) {
+    if (EvdevBitIsSet(key_state_diff, i)) {
+      bool value = EvdevBitIsSet(evdev->key_state_bitmask, i);
+      keyboard_->OnKeyChange(i, value);
+    }
+  }
+
+  // Update internal key state.
+  for (unsigned long i = 0; i < EVDEV_BITS_TO_LONGS(KEY_CNT); ++i)
+    prev_key_state_[i] = evdev->key_state_bitmask[i];
 }
 
 }  // namespace ui

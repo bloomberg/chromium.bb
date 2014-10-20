@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+#include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h"
@@ -20,6 +21,7 @@ namespace ui {
 class EventDeviceInfo;
 class EventModifiersEvdev;
 class CursorDelegateEvdev;
+class KeyboardEvdev;
 
 // Convert libevdev-cros events to ui::Events using libgestures.
 //
@@ -39,6 +41,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
  public:
   GestureInterpreterLibevdevCros(EventModifiersEvdev* modifiers,
                                  CursorDelegateEvdev* cursor,
+                                 KeyboardEvdev* keyboard,
                                  const EventDispatchCallback& callback);
   virtual ~GestureInterpreterLibevdevCros();
 
@@ -67,6 +70,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   void Dispatch(Event* event);
   void DispatchMouseButton(unsigned int modifier, bool down);
+  void DispatchChangedKeys(Evdev* evdev, const timeval& time);
 
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
@@ -74,11 +78,17 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;
 
+  // Shared keyboard state.
+  KeyboardEvdev* keyboard_;
+
   // Callback for dispatching events.
   EventDispatchCallback dispatch_callback_;
 
   // Gestures interpretation state.
   gestures::GestureInterpreter* interpreter_;
+
+  // Last key state from libevdev.
+  unsigned long prev_key_state_[EVDEV_BITS_TO_LONGS(KEY_CNT)];
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreterLibevdevCros);
 };
