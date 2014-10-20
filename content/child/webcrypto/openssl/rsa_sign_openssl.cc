@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
 #include "content/child/webcrypto/openssl/rsa_key_openssl.h"
@@ -32,9 +33,42 @@ Status GetPKeyAndDigest(const blink::WebCryptoKey& key,
   return Status::Success();
 }
 
+// Sets the PSS parameters on |pctx| if the key is for RSA-PSS.
+//
+// Otherwise returns Success without doing anything.
+Status ApplyRsaPssOptions(const blink::WebCryptoKey& key,
+                          const EVP_MD* const mgf_digest,
+                          unsigned int salt_length_bytes,
+                          EVP_PKEY_CTX* pctx) {
+  // Only apply RSA-PSS options if the key is for RSA-PSS.
+  if (key.algorithm().id() != blink::WebCryptoAlgorithmIdRsaPss) {
+    DCHECK_EQ(0u, salt_length_bytes);
+    DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, key.algorithm().id());
+    return Status::Success();
+  }
+
+  // BoringSSL takes a signed int for the salt length, and interprets
+  // negative values in a special manner. Make sure not to silently underflow.
+  base::CheckedNumeric<int> salt_length_bytes_int(salt_length_bytes);
+  if (!salt_length_bytes_int.IsValid()) {
+    // TODO(eroman): Give a better error message.
+    return Status::OperationError();
+  }
+
+  if (1 != EVP_PKEY_CTX_set_rsa_padding(pctx, RSA_PKCS1_PSS_PADDING) ||
+      1 != EVP_PKEY_CTX_set_rsa_mgf1_md(pctx, mgf_digest) ||
+      1 != EVP_PKEY_CTX_set_rsa_pss_saltlen(
+               pctx, salt_length_bytes_int.ValueOrDie())) {
+    return Status::OperationError();
+  }
+
+  return Status::Success();
+}
+
 }  // namespace
 
 Status RsaSign(const blink::WebCryptoKey& key,
+               unsigned int pss_salt_length_bytes,
                const CryptoData& data,
                std::vector<uint8_t>* buffer) {
   if (key.type() != blink::WebCryptoKeyTypePrivate)
@@ -42,6 +76,7 @@ Status RsaSign(const blink::WebCryptoKey& key,
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   crypto::ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
+  EVP_PKEY_CTX* pctx = NULL;  // Owned by |ctx|.
 
   EVP_PKEY* private_key = NULL;
   const EVP_MD* digest = NULL;
@@ -54,8 +89,16 @@ Status RsaSign(const blink::WebCryptoKey& key,
   // the real one, which may be smaller.
   size_t sig_len = 0;
   if (!ctx.get() ||
-      !EVP_DigestSignInit(ctx.get(), NULL, digest, NULL, private_key) ||
-      !EVP_DigestSignUpdate(ctx.get(), data.bytes(), data.byte_length()) ||
+      !EVP_DigestSignInit(ctx.get(), &pctx, digest, NULL, private_key)) {
+    return Status::OperationError();
+  }
+
+  // Set PSS-specific options (if applicable).
+  status = ApplyRsaPssOptions(key, digest, pss_salt_length_bytes, pctx);
+  if (status.IsError())
+    return status;
+
+  if (!EVP_DigestSignUpdate(ctx.get(), data.bytes(), data.byte_length()) ||
       !EVP_DigestSignFinal(ctx.get(), NULL, &sig_len)) {
     return Status::OperationError();
   }
@@ -69,6 +112,7 @@ Status RsaSign(const blink::WebCryptoKey& key,
 }
 
 Status RsaVerify(const blink::WebCryptoKey& key,
+                 unsigned int pss_salt_length_bytes,
                  const CryptoData& signature,
                  const CryptoData& data,
                  bool* signature_match) {
@@ -77,6 +121,7 @@ Status RsaVerify(const blink::WebCryptoKey& key,
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   crypto::ScopedEVP_MD_CTX ctx(EVP_MD_CTX_create());
+  EVP_PKEY_CTX* pctx = NULL;  // Owned by |ctx|.
 
   EVP_PKEY* public_key = NULL;
   const EVP_MD* digest = NULL;
@@ -84,8 +129,13 @@ Status RsaVerify(const blink::WebCryptoKey& key,
   if (status.IsError())
     return status;
 
-  if (!EVP_DigestVerifyInit(ctx.get(), NULL, digest, NULL, public_key))
+  if (!EVP_DigestVerifyInit(ctx.get(), &pctx, digest, NULL, public_key))
     return Status::OperationError();
+
+  // Set PSS-specific options (if applicable).
+  status = ApplyRsaPssOptions(key, digest, pss_salt_length_bytes, pctx);
+  if (status.IsError())
+    return status;
 
   if (!EVP_DigestVerifyUpdate(ctx.get(), data.bytes(), data.byte_length()))
     return Status::OperationError();

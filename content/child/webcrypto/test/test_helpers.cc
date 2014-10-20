@@ -121,8 +121,6 @@ blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
     const blink::WebCryptoAlgorithmId hash_id,
     unsigned int modulus_length,
     const std::vector<uint8_t>& public_exponent) {
-  DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep);
   DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       algorithm_id,
@@ -206,8 +204,28 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   return ::testing::AssertionSuccess();
 }
 
-std::vector<uint8_t> GetBytesFromHexString(base::DictionaryValue* dict,
-                                           const char* property_name) {
+::testing::AssertionResult ReadJsonTestFileToDictionary(
+    const char* test_file_name,
+    scoped_ptr<base::DictionaryValue>* dict) {
+  // Read the JSON.
+  scoped_ptr<base::Value> json;
+  ::testing::AssertionResult result = ReadJsonTestFile(test_file_name, &json);
+  if (!result)
+    return result;
+
+  // Cast to an DictionaryValue.
+  base::DictionaryValue* dict_value = NULL;
+  if (!json->GetAsDictionary(&dict_value) || !dict_value)
+    return ::testing::AssertionFailure() << "The JSON was not a dictionary";
+
+  dict->reset(dict_value);
+  ignore_result(json.release());
+
+  return ::testing::AssertionSuccess();
+}
+
+std::vector<uint8_t> GetBytesFromHexString(const base::DictionaryValue* dict,
+                                           const std::string& property_name) {
   std::string hex_string;
   if (!dict->GetString(property_name, &hex_string)) {
     EXPECT_TRUE(false) << "Couldn't get string property: " << property_name;
@@ -217,7 +235,7 @@ std::vector<uint8_t> GetBytesFromHexString(base::DictionaryValue* dict,
   return HexStringToBytes(hex_string);
 }
 
-blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
+blink::WebCryptoAlgorithm GetDigestAlgorithm(const base::DictionaryValue* dict,
                                              const char* property_name) {
   std::string algorithm_name;
   if (!dict->GetString(property_name, &algorithm_name)) {

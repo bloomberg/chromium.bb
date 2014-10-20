@@ -118,8 +118,6 @@ blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
-  DCHECK(id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         id == blink::WebCryptoAlgorithmIdRsaOaep);
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       id, new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
 }
@@ -137,7 +135,8 @@ bool KeyUsageAllows(const blink::WebCryptoKey& key,
 
 bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id) {
   return alg_id == blink::WebCryptoAlgorithmIdRsaOaep ||
-         alg_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+         alg_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+         alg_id == blink::WebCryptoAlgorithmIdRsaPss;
 }
 
 // The WebCrypto spec defines the default value for the tag length, as well as

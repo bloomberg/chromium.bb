@@ -286,6 +286,7 @@
       'child/webcrypto/openssl/rsa_key_openssl.cc',
       'child/webcrypto/openssl/rsa_key_openssl.h',
       'child/webcrypto/openssl/rsa_oaep_openssl.cc',
+      'child/webcrypto/openssl/rsa_pss_openssl.cc',
       'child/webcrypto/openssl/rsa_sign_openssl.cc',
       'child/webcrypto/openssl/rsa_sign_openssl.h',
       'child/webcrypto/openssl/rsa_ssa_openssl.cc',

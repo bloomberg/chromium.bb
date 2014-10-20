@@ -5,6 +5,7 @@
 #include "content/child/webcrypto/openssl/rsa_key_openssl.h"
 #include "content/child/webcrypto/openssl/rsa_sign_openssl.h"
 #include "content/child/webcrypto/status.h"
+#include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 
 namespace content {
 
@@ -12,9 +13,9 @@ namespace webcrypto {
 
 namespace {
 
-class RsaSsaImplementation : public RsaHashedAlgorithm {
+class RsaPssImplementation : public RsaHashedAlgorithm {
  public:
-  RsaSsaImplementation()
+  RsaPssImplementation()
       : RsaHashedAlgorithm(blink::WebCryptoKeyUsageVerify,
                            blink::WebCryptoKeyUsageSign) {}
 
@@ -22,13 +23,13 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
       const blink::WebCryptoAlgorithmId hash) const override {
     switch (hash) {
       case blink::WebCryptoAlgorithmIdSha1:
-        return "RS1";
+        return "PS1";
       case blink::WebCryptoAlgorithmIdSha256:
-        return "RS256";
+        return "PS256";
       case blink::WebCryptoAlgorithmIdSha384:
-        return "RS384";
+        return "PS384";
       case blink::WebCryptoAlgorithmIdSha512:
-        return "RS512";
+        return "PS512";
       default:
         return NULL;
     }
@@ -38,7 +39,8 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
                       std::vector<uint8_t>* buffer) const override {
-    return RsaSign(key, 0, data, buffer);
+    return RsaSign(
+        key, algorithm.rsaPssParams()->saltLengthBytes(), data, buffer);
   }
 
   virtual Status Verify(const blink::WebCryptoAlgorithm& algorithm,
@@ -46,14 +48,18 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
                         const CryptoData& signature,
                         const CryptoData& data,
                         bool* signature_match) const override {
-    return RsaVerify(key, 0, signature, data, signature_match);
+    return RsaVerify(key,
+                     algorithm.rsaPssParams()->saltLengthBytes(),
+                     signature,
+                     data,
+                     signature_match);
   }
 };
 
 }  // namespace
 
-AlgorithmImplementation* CreatePlatformRsaSsaImplementation() {
-  return new RsaSsaImplementation;
+AlgorithmImplementation* CreatePlatformRsaPssImplementation() {
+  return new RsaPssImplementation;
 }
 
 }  // namespace webcrypto

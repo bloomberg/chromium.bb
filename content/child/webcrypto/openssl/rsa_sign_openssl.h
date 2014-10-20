@@ -20,13 +20,19 @@ namespace webcrypto {
 class CryptoData;
 class Status;
 
-// Helper functions for doing RSA-SSA signing and verification.
+// Helper functions for doing RSA-SSA signing and verification
+// (both PKCS1-v1_5 and PSS flavor).
+//
+// The salt length parameter is only relevant when the key is for RSA-PSS. In
+// other cases it should be set to zero.
 
 Status RsaSign(const blink::WebCryptoKey& key,
+               unsigned int pss_salt_length_bytes,
                const CryptoData& data,
                std::vector<uint8_t>* buffer);
 
 Status RsaVerify(const blink::WebCryptoKey& key,
+                 unsigned int pss_salt_length_bytes,
                  const CryptoData& signature,
                  const CryptoData& data,
                  bool* signature_match);

@@ -83,18 +83,22 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict);
 ::testing::AssertionResult ReadJsonTestFileToList(
     const char* test_file_name,
     scoped_ptr<base::ListValue>* list);
+// Same as ReadJsonTestFile(), but returns the value as a Dictionary.
+::testing::AssertionResult ReadJsonTestFileToDictionary(
+    const char* test_file_name,
+    scoped_ptr<base::DictionaryValue>* dict);
 
 // Reads a string property from the dictionary with path |property_name|
 // (which can include periods for nested dictionaries). Interprets the
 // string as a hex encoded string and converts it to a bytes list.
 //
 // Returns empty vector on failure.
-std::vector<uint8_t> GetBytesFromHexString(base::DictionaryValue* dict,
-                                           const char* property_name);
+std::vector<uint8_t> GetBytesFromHexString(const base::DictionaryValue* dict,
+                                           const std::string& property_name);
 
 // Reads a string property with path "property_name" and converts it to a
 // WebCryptoAlgorith. Returns null algorithm on failure.
-blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
+blink::WebCryptoAlgorithm GetDigestAlgorithm(const base::DictionaryValue* dict,
                                              const char* property_name);
 
 // Returns true if any of the vectors in the input list have identical content.
