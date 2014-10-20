@@ -12,6 +12,7 @@
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -163,6 +164,28 @@ class FullscreenObserver : public WebContentsObserver {
 
   ScopedCAActionDisabler disabler;
   [[self layer] setBackgroundColor:cgBackgroundColor];
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_TAB_CONTAINER;
+}
+
+- (BOOL)acceptsFirstResponder {
+  return [[self subviews] count] > 0 &&
+      [[[self subviews] objectAtIndex:0] acceptsFirstResponder];
+}
+
+// When receiving a click-to-focus in the solid color area surrounding the
+// WebContents' native view, immediately transfer focus to WebContents' native
+// view.
+- (BOOL)becomeFirstResponder {
+  if (![self acceptsFirstResponder])
+    return NO;
+  return [[self window] makeFirstResponder:[[self subviews] objectAtIndex:0]];
+}
+
+- (BOOL)canBecomeKeyView {
+  return NO;  // Tab/Shift-Tab should focus the subview, not this view.
 }
 
 @end  // @implementation TabContentsContainerView

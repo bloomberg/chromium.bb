@@ -37,7 +37,6 @@ class SpellCheckObserver;
 
 - (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost;
 
-- (void)viewGone:(NSView*)view;
 - (BOOL)handleEvent:(NSEvent*)event;
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
                       isValidItem:(BOOL*)valid;

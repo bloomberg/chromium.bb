@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
@@ -76,13 +75,6 @@ class SpellCheckObserver : public content::WebContentsObserver {
   self = [super init];
   if (self) {
     renderWidgetHost_ = renderWidgetHost;
-    // if |renderWidgetHost_| belongs to a BrowserPluginGuest, then it won't
-    // have a view yet.
-    if (renderWidgetHost_->GetView()) {
-      NSView* nativeView = renderWidgetHost_->GetView()->GetNativeView();
-      view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER);
-    }
-
     if (renderWidgetHost_->IsRenderView()) {
       spellingObserver_.reset(
           new ChromeRenderWidgetHostViewMacDelegateInternal::SpellCheckObserver(
@@ -97,10 +89,6 @@ class SpellCheckObserver : public content::WebContentsObserver {
 - (void)dealloc {
   [historySwiper_ setDelegate:nil];
   [super dealloc];
-}
-
-- (void)viewGone:(NSView*)view {
-  view_id_util::UnsetID(view);
 }
 
 // Handle an event. All incoming key and mouse events flow through this

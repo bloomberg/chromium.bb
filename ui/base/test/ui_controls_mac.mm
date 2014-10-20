@@ -389,4 +389,8 @@ void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
       FROM_HERE, base::Bind(&EventQueueWatcher, closure));
 }
 
+bool IsFullKeyboardAccessEnabled() {
+  return [NSApp isFullKeyboardAccessEnabled];
+}
+
 }  // namespace ui_controls

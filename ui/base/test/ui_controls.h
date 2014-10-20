@@ -97,6 +97,13 @@ class UIControlsAura;
 void InstallUIControlsAura(UIControlsAura* instance);
 #endif
 
+#if defined(OS_MACOSX)
+// Returns true when tests need to use extra Tab and Shift-Tab key events
+// to traverse to the desired item; because the application is configured to
+// traverse more elements for accessibility reasons.
+bool IsFullKeyboardAccessEnabled();
+#endif
+
 }  // namespace ui_controls
 
 #endif  // UI_BASE_TEST_UI_CONTROLS_H_

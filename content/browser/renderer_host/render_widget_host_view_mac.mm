@@ -1658,6 +1658,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
+    // TODO(miu): |takesFocusOnlyOnMouseDown_| is not used anymore and should be
+    // removed along with the exposed RWHV interface methods.
+    // http://crbug.com/424766
+    takesFocusOnlyOnMouseDown_ = NO;
     focusedPluginIdentifier_ = -1;
 
     // OpenGL support:

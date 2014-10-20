@@ -97,9 +97,22 @@ class BrowserFocusTest : public InProcessBrowserTest {
     for (size_t i = 0; i < 2; ++i) {
       SCOPED_TRACE(base::StringPrintf("focus outer loop: %" PRIuS, i));
       ASSERT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
+
       // Mac requires an extra Tab key press to traverse the app menu button
-      // iff "Full Keyboard Access" is enabled. This test code should probably
-      // check the setting via NSApplication's isFullKeyboardAccessEnabled.
+      // iff "Full Keyboard Access" is enabled. In reverse, four Tab key presses
+      // are required to traverse the back/forward buttons and the tab strip.
+#if defined(OS_MACOSX)
+      if (ui_controls::IsFullKeyboardAccessEnabled()) {
+        ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+            browser(), key, false, reverse, false, false));
+        if (reverse) {
+          for (int j = 0; j < 3; ++j) {
+            ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+                browser(), key, false, reverse, false, false));
+          }
+        }
+      }
+#endif
 
       for (size_t j = 0; j < arraysize(kExpectedIDs); ++j) {
         SCOPED_TRACE(base::StringPrintf("focus inner loop %" PRIuS, j));
