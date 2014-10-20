@@ -101,6 +101,8 @@ class AthenaStartPageViewTest : public test::AthenaTestBase {
     return view_->search_box_view_->search_box()->text();
   }
 
+  float layout_state() { return view_->layout_state_; }
+
   scoped_ptr<AthenaStartPageView> view_;
 
  private:
@@ -224,6 +226,22 @@ TEST_F(AthenaStartPageViewTest, SearchBox) {
   EXPECT_TRUE(IsLogoVisible());
   EXPECT_EQ(base_search_box_bounds.ToString(), GetSearchBoxBounds().ToString());
   EXPECT_TRUE(GetVisibleQuery().empty());
+}
+
+TEST_F(AthenaStartPageViewTest, SearchFromBottom) {
+  view_->SetLayoutState(0.0f);
+
+  const base::string16 query = base::UTF8ToUTF16("test");
+  SetSearchQuery(query);
+
+  EXPECT_FALSE(IsLogoVisible());
+  EXPECT_EQ(query, GetVisibleQuery());
+  EXPECT_EQ(1.0f, layout_state());
+
+  SetSearchQuery(base::string16());
+  EXPECT_TRUE(IsLogoVisible());
+  EXPECT_TRUE(GetVisibleQuery().empty());
+  EXPECT_EQ(1.0f, layout_state());
 }
 
 }  // namespace athena

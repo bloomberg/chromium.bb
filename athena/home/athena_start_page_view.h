@@ -7,6 +7,7 @@
 
 #include "athena/athena_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/view.h"
@@ -23,6 +24,11 @@ class ATHENA_EXPORT AthenaStartPageView
     : public views::View,
       public app_list::SearchBoxViewDelegate {
  public:
+  class Observer {
+   public:
+    virtual void OnLayoutStateChanged(float new_state) = 0;
+  };
+
   explicit AthenaStartPageView(app_list::AppListViewDelegate* delegate);
   virtual ~AthenaStartPageView();
 
@@ -36,6 +42,9 @@ class ATHENA_EXPORT AthenaStartPageView
   // animation.
   void SetLayoutStateWithAnimation(float layout_state,
                                    gfx::Tween::Type tween_type);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   friend class AthenaStartPageViewTest;
@@ -97,6 +106,8 @@ class ATHENA_EXPORT AthenaStartPageView
   // The state to specify how each of the subviews should be laid out, in the
   // range of [0, 1]. 0 means fully BOTTOM state, and 1 is fully CENTERED state.
   float layout_state_;
+
+  ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<AthenaStartPageView> weak_factory_;
 

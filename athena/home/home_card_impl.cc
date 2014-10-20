@@ -137,7 +137,8 @@ class HomeCardLayoutManager : public aura::LayoutManager {
 };
 
 // The container view of home card contents of each state.
-class HomeCardView : public views::WidgetDelegateView {
+class HomeCardView : public views::WidgetDelegateView,
+                     public AthenaStartPageView::Observer {
  public:
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                aura::Window* container,
@@ -149,8 +150,11 @@ class HomeCardView : public views::WidgetDelegateView {
     // the home card.
     // TODO(mukai): make it so after the detailed UI has been fixed.
     main_view_ = new AthenaStartPageView(view_delegate);
+    main_view_->AddObserver(this);
     AddChildView(main_view_);
   }
+
+  virtual ~HomeCardView() { main_view_->RemoveObserver(this); }
 
   void SetStateProgress(HomeCard::State from_state,
                         HomeCard::State to_state,
@@ -211,6 +215,12 @@ class HomeCardView : public views::WidgetDelegateView {
   // views::WidgetDelegate:
   virtual views::View* GetContentsView() override {
     return this;
+  }
+
+  // AthenaStartPageView::Observer:
+  virtual void OnLayoutStateChanged(float new_state) override {
+    if (new_state == 1.0f)
+      HomeCard::Get()->SetState(HomeCard::VISIBLE_CENTERED);
   }
 
   AthenaStartPageView* main_view_;

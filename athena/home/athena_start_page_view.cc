@@ -244,6 +244,7 @@ void AthenaStartPageView::RequestFocusOnSearchBox() {
 void AthenaStartPageView::SetLayoutState(float layout_state) {
   layout_state_ = layout_state;
   Layout();
+  FOR_EACH_OBSERVER(Observer, observers_, OnLayoutStateChanged(layout_state));
 }
 
 void AthenaStartPageView::SetLayoutStateWithAnimation(
@@ -266,6 +267,15 @@ void AthenaStartPageView::SetLayoutStateWithAnimation(
   controls.SetTweenType(tween_type);
 
   SetLayoutState(layout_state);
+}
+
+void AthenaStartPageView::AddObserver(AthenaStartPageView::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AthenaStartPageView::RemoveObserver(
+    AthenaStartPageView::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 AthenaStartPageView::LayoutData AthenaStartPageView::CreateBottomBounds(
@@ -319,11 +329,8 @@ void AthenaStartPageView::LayoutSearchResults(bool should_show_search_results) {
       search_results_view_->layer()->GetTargetVisibility()) {
     return;
   }
-  if (GetContentsBounds().height() <= kHomeCardHeight) {
-    search_results_view_->SetVisible(false);
-    Layout();
-    return;
-  }
+  if (should_show_search_results && layout_state_ != 1.0f)
+    SetLayoutState(1.0f);
 
   gfx::Rect search_box_bounds = search_box_container_->bounds();
   if (!search_results_view_->visible()) {
