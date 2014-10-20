@@ -78,7 +78,7 @@ def FindLogFiles(base_dir):
   Returns:
     Mapping of device_id to a sorted list of file paths for a given device
   """
-  logcat_filter = re.compile(r'^logcat_(\w+)_(\d+)$')
+  logcat_filter = re.compile(r'^logcat_(\S+)_(\d+)$')
   # list of tuples (<device_id>, <seq num>, <full file path>)
   filtered_list = []
   for cur_file in os.listdir(base_dir):

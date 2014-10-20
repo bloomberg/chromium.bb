@@ -83,7 +83,7 @@ def GetAttachedDevices(adb_cmd):
                                 stderr=subprocess.PIPE).communicate()
     if err:
       logging.warning('adb device error %s', err.strip())
-    return re.findall('^(\w+)\tdevice$', out, re.MULTILINE)
+    return re.findall('^(\S+)\tdevice$', out, re.MULTILINE)
   except TimeoutException:
     logging.warning('"adb devices" command timed out')
     return []
