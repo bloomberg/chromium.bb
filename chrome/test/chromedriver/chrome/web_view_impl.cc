@@ -489,7 +489,7 @@ Status WebViewImpl::EndProfile(scoped_ptr<base::Value>* profile_data) {
     }
   }
 
-  *profile_data = profile_result.PassAs<base::Value>();
+  *profile_data = profile_result.Pass();
   return status;
 }
 

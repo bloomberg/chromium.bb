@@ -158,7 +158,7 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/html");
     http_response->set_content(it->second);
-    return http_response.PassAs<net::test_server::HttpResponse>();
+    return http_response.Pass();
   }
 
   GURL GetURL(const std::string& host, const std::string& path) {

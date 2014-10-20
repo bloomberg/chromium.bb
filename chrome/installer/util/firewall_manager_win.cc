@@ -106,13 +106,13 @@ scoped_ptr<FirewallManager> FirewallManager::Create(
   scoped_ptr<FirewallManagerAdvancedImpl> manager(
       new FirewallManagerAdvancedImpl());
   if (manager->Init(dist->GetDisplayName(), chrome_path))
-    return manager.PassAs<FirewallManager>();
+    return manager.Pass();
 
   // Next try to connect to "Windows Firewall for Windows XP with SP2".
   scoped_ptr<FirewallManagerLegacyImpl> legacy_manager(
       new FirewallManagerLegacyImpl());
   if (legacy_manager->Init(dist->GetDisplayName(), chrome_path))
-    return legacy_manager.PassAs<FirewallManager>();
+    return legacy_manager.Pass();
 
   return scoped_ptr<FirewallManager>();
 }

@@ -1043,8 +1043,7 @@ class MockDevToolsEventListener : public DevToolsEventListener {
 
 scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
     std::list<std::string>* messages) {
-  return scoped_ptr<MockSyncWebSocket6>(new MockSyncWebSocket6(messages))
-      .PassAs<SyncWebSocket>();
+  return make_scoped_ptr(new MockSyncWebSocket6(messages));
 }
 
 }  // namespace

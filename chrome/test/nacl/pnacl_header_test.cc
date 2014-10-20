@@ -99,7 +99,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("");
     http_response->set_content_type("application/octet-stream");
-    return http_response.PassAs<HttpResponse>();
+    return http_response.Pass();
   }
 
   // Skip other non-pexe files and let ServeFilesFromDirectory handle it.
@@ -132,7 +132,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   http_response->set_code(net::HTTP_NOT_FOUND);
   http_response->set_content("PEXE ... not found");
   http_response->set_content_type("application/octet-stream");
-  return http_response.PassAs<HttpResponse>();
+  return http_response.Pass();
 }
 
 IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, TestHasPnaclHeader) {
