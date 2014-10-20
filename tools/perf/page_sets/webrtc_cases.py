@@ -1,6 +1,8 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import os
+
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
@@ -9,6 +11,10 @@ class WebrtcCasesPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(WebrtcCasesPage, self).__init__(url=url, page_set=page_set)
+
+    with open(os.path.join(os.path.dirname(__file__),
+                           'webrtc_track_peerconnections.js')) as javascript:
+      self.script_to_evaluate_on_commit = javascript.read()
 
 
 class Page1(WebrtcCasesPage):

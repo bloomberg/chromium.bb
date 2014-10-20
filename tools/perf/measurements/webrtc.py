@@ -5,6 +5,7 @@
 from metrics import cpu
 from metrics import memory
 from metrics import power
+from metrics import webrtc_stats
 from telemetry.page import page_test
 
 
@@ -16,6 +17,7 @@ class WebRTC(page_test.PageTest):
     self._cpu_metric = None
     self._memory_metric = None
     self._power_metric = None
+    self._webrtc_stats_metric = None
 
   def WillStartBrowser(self, platform):
     self._power_metric = power.PowerMetric(platform)
@@ -23,11 +25,13 @@ class WebRTC(page_test.PageTest):
   def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)
     self._memory_metric = memory.MemoryMetric(browser)
+    self._webrtc_stats_metric = webrtc_stats.WebRtcStatisticsMetric()
 
   def DidNavigateToPage(self, page, tab):
     self._cpu_metric.Start(page, tab)
     self._memory_metric.Start(page, tab)
     self._power_metric.Start(page, tab)
+    self._webrtc_stats_metric.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
@@ -45,3 +49,6 @@ class WebRTC(page_test.PageTest):
 
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)
+
+    self._webrtc_stats_metric.Stop(page, tab)
+    self._webrtc_stats_metric.AddResults(tab, results)
