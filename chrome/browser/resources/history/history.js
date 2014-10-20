@@ -183,7 +183,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var useMonthDate = propertyBag.useMonthDate || false;
   var focusless = propertyBag.focusless || false;
   var node = createElementWithClassName('li', 'entry');
-  var time = createElementWithClassName('label', 'time');
+  var time = createElementWithClassName('span', 'time');
   var entryBox = createElementWithClassName('div', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
@@ -196,9 +196,10 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     var checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = 'checkbox-' + this.id_;
+    checkbox.setAttribute('aria-label',
+                          loadTimeData.getString('removeFromHistory'));
     checkbox.time = this.date.getTime();
     checkbox.addEventListener('click', checkboxClicked);
-    time.setAttribute('for', checkbox.id);
     entryBox.appendChild(checkbox);
 
     if (focusless)
