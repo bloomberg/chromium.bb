@@ -16,18 +16,18 @@ namespace media {
 // shared with device manager.
 typedef int VideoCaptureSessionId;
 
-// Color formats from camera.
+// Color formats from camera. This list is sorted in order of preference.
 enum VideoPixelFormat {
-  PIXEL_FORMAT_UNKNOWN,  // Color format not set.
   PIXEL_FORMAT_I420,
-  PIXEL_FORMAT_YUY2,
+  PIXEL_FORMAT_YV12,
+  PIXEL_FORMAT_NV21,
   PIXEL_FORMAT_UYVY,
+  PIXEL_FORMAT_YUY2,
   PIXEL_FORMAT_RGB24,
   PIXEL_FORMAT_ARGB,
   PIXEL_FORMAT_MJPEG,
-  PIXEL_FORMAT_NV21,
-  PIXEL_FORMAT_YV12,
   PIXEL_FORMAT_TEXTURE,  // Capture format as a GL texture.
+  PIXEL_FORMAT_UNKNOWN,  // Color format not set.
   PIXEL_FORMAT_MAX,
 };
 

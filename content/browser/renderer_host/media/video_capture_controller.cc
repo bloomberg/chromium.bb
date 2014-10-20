@@ -636,9 +636,6 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
                                buffer_format.frame_size.height());
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate",
                          buffer_format.frame_rate);
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.PixelFormat",
-                              buffer_format.pixel_format,
-                              media::PIXEL_FORMAT_MAX);
     has_received_frames_ = true;
   }
 

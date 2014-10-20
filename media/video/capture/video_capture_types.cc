@@ -27,7 +27,7 @@ bool VideoCaptureFormat::IsValid() const {
          (frame_size.GetArea() < media::limits::kMaxCanvas) &&
          (frame_rate >= 0.0f) &&
          (frame_rate < media::limits::kMaxFramesPerSecond) &&
-         (pixel_format >= PIXEL_FORMAT_UNKNOWN) &&
+         (pixel_format >= 0) &&
          (pixel_format < PIXEL_FORMAT_MAX);
 }
 
