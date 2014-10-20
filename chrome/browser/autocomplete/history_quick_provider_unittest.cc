@@ -131,7 +131,9 @@ class HistoryQuickProviderTest : public testing::Test {
     return new TemplateURLService(
         profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
         scoped_ptr<TemplateURLServiceClient>(
-            new ChromeTemplateURLServiceClient(profile)),
+            new ChromeTemplateURLServiceClient(
+                HistoryServiceFactory::GetForProfile(
+                    profile, Profile::EXPLICIT_ACCESS))),
         NULL, NULL, base::Closure());
   }
 

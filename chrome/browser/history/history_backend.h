@@ -521,10 +521,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Notify HistoryBackendObserver that |transition| to |row| occurred at
   // |visit_time| following |redirects| (empty if there is no redirects).
-  void NotifyAddVisit(ui::PageTransition transition,
-                      const URLRow& row,
-                      const RedirectList& redirects,
-                      base::Time visit_time);
+  void NotifyURLVisited(ui::PageTransition transition,
+                        const URLRow& row,
+                        const RedirectList& redirects,
+                        base::Time visit_time);
 
  private:
   friend class base::RefCountedThreadSafe<HistoryBackend>;

@@ -16,26 +16,6 @@
 
 namespace history {
 
-// Details for NOTIFICATION_HISTORY_URL_VISITED.
-struct URLVisitedDetails : public HistoryDetails {
-  URLVisitedDetails();
-  virtual ~URLVisitedDetails();
-
-  ui::PageTransition transition;
-
-  // The affected URLRow. The ID will be set to the value that is currently in
-  // effect in the main history database.
-  URLRow row;
-
-  // A list of redirects leading up to the URL represented by this struct. If
-  // we have the redirect chain A -> B -> C and this struct represents visiting
-  // C, then redirects[0]=B and redirects[1]=A.  If there are no redirects,
-  // this will be an empty vector.
-  history::RedirectList redirects;
-
-  base::Time visit_time;
-};
-
 // Details for NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED.
 struct URLsModifiedDetails : public HistoryDetails {
   URLsModifiedDetails();

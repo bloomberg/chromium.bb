@@ -47,6 +47,7 @@ class AthenaTemplateURLServiceClient : public TemplateURLServiceClient {
 
  private:
   // TemplateURLServiceClient:
+  virtual void Shutdown() override {}
   virtual void SetOwner(TemplateURLService* owner) override {}
   virtual void DeleteAllSearchTermsForKeyword(TemplateURLID id) override {}
   virtual void SetKeywordSearchTermsForURL(

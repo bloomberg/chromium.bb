@@ -31,7 +31,7 @@ class ChromeHistoryClient : public history::HistoryClient,
 
   // TODO(sdefresne): once NOTIFICATION_HISTORY_URL* notifications are no
   // longer used, remove this reference to the HistoryService from the
-  // ChromeHistoryClient, http://crbug.com/42178
+  // ChromeHistoryClient, http://crbug.com/373326
   void SetHistoryService(HistoryService* history_service);
 
   // history::HistoryClient:
@@ -44,13 +44,6 @@ class ChromeHistoryClient : public history::HistoryClient,
 
   // KeyedService:
   virtual void Shutdown() override;
-
-  // HistoryServiceObserver:
-  virtual void OnURLVisited(HistoryService* history_service,
-                            ui::PageTransition transition,
-                            const history::URLRow& row,
-                            const history::RedirectList& redirects,
-                            base::Time visit_time) override;
 
   // TopSitesObserver:
   virtual void TopSitesLoaded(history::TopSites* top_sites) override;

@@ -6,11 +6,6 @@
 
 namespace history {
 
-URLVisitedDetails::URLVisitedDetails()
-    : transition(ui::PAGE_TRANSITION_LINK) {}
-
-URLVisitedDetails::~URLVisitedDetails() {}
-
 URLsModifiedDetails::URLsModifiedDetails() {}
 
 URLsModifiedDetails::~URLsModifiedDetails() {}

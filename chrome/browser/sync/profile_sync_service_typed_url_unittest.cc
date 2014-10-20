@@ -327,21 +327,26 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     EXPECT_CALL((*history_backend_.get()), DeleteURL(_)).Times(0);
   }
 
-  void SendNotificationAddVisit(ui::PageTransition transition,
-                                const history::URLRow& row) {
-    base::Time visit_time;
-    history::RedirectList redirects;
+  void SendNotification(const base::Closure& task) {
     history_thread_->task_runner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&HistoryBackendMock::NotifyAddVisit,
+        task,
+        base::Bind(&base::MessageLoop::QuitNow,
+                   base::Unretained(base::MessageLoop::current())));
+    base::MessageLoop::current()->Run();
+  }
+
+  void SendNotificationURLVisited(ui::PageTransition transition,
+                                  const history::URLRow& row) {
+    base::Time visit_time;
+    history::RedirectList redirects;
+    SendNotification(
+        base::Bind(&HistoryBackendMock::NotifyURLVisited,
                    base::Unretained(history_backend_.get()),
                    transition,
                    row,
                    redirects,
-                   visit_time),
-        base::Bind(&base::MessageLoop::QuitNow,
-                   base::Unretained(base::MessageLoop::current())));
-    base::MessageLoop::current()->Run();
+                   visit_time));
   }
 
   static bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
@@ -721,7 +726,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
-  SendNotificationAddVisit(ui::PAGE_TRANSITION_TYPED, added_entry);
+  SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, added_entry);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -753,7 +758,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
       WillOnce(DoAll(SetArgumentPointee<2>(updated_visits),
                            Return(true)));
 
-  SendNotificationAddVisit(ui::PAGE_TRANSITION_TYPED, updated_entry);
+  SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, updated_entry);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -787,7 +792,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
                                                   &updated_visits));
 
   // Should ignore this change because it's not TYPED.
-  SendNotificationAddVisit(ui::PAGE_TRANSITION_RELOAD, updated_entry);
+  SendNotificationURLVisited(ui::PAGE_TRANSITION_RELOAD, updated_entry);
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
   // Should be no changes to the sync DB from this notification.
@@ -799,7 +804,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   history::URLRow twelve_visits(MakeTypedUrlEntry("http://mine.com", "entry",
                                                   12, 15, false,
                                                   &updated_visits));
-  SendNotificationAddVisit(ui::PAGE_TRANSITION_TYPED, twelve_visits);
+  SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, twelve_visits);
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
   // Should be no changes to the sync DB from this notification.
@@ -811,7 +816,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   history::URLRow twenty_visits(MakeTypedUrlEntry("http://mine.com", "entry",
                                                   20, 15, false,
                                                   &updated_visits));
-  SendNotificationAddVisit(ui::PAGE_TRANSITION_TYPED, twenty_visits);
+  SendNotificationURLVisited(ui::PAGE_TRANSITION_TYPED, twenty_visits);
   GetTypedUrlsFromSyncDB(&new_sync_entries);
 
   ASSERT_EQ(1U, new_sync_entries.size());

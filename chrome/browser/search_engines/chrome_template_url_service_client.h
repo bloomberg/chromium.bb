@@ -5,22 +5,21 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_CHROME_TEMPLATE_URL_SERVICE_CLIENT_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_CHROME_TEMPLATE_URL_SERVICE_CLIENT_H_
 
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/search_engines/template_url_service_client.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class HistoryService;
-class Profile;
 
 // ChromeTemplateURLServiceClient provides keyword related history
 // functionality for TemplateURLService.
 class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
-                                       public content::NotificationObserver {
+                                       public history::HistoryServiceObserver {
  public:
-  explicit ChromeTemplateURLServiceClient(Profile* profile);
+  explicit ChromeTemplateURLServiceClient(HistoryService* history_service);
   virtual ~ChromeTemplateURLServiceClient();
 
   // TemplateURLServiceClient:
+  virtual void Shutdown() override;
   virtual void SetOwner(TemplateURLService* owner) override;
   virtual void DeleteAllSearchTermsForKeyword(
       history::KeywordID keyword_Id) override;
@@ -31,15 +30,16 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
   virtual void RestoreExtensionInfoIfNecessary(
       TemplateURL* template_url) override;
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  // history::HistoryServiceObserver:
+  virtual void OnURLVisited(HistoryService* history_service,
+                            ui::PageTransition transition,
+                            const history::URLRow& row,
+                            const history::RedirectList& redirects,
+                            base::Time visit_time) override;
 
  private:
-  Profile* profile_;
   TemplateURLService* owner_;
-  content::NotificationRegistrar notification_registrar_;
+  HistoryService* history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTemplateURLServiceClient);
 };

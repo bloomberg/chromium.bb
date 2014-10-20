@@ -50,8 +50,9 @@ KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
       scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
           profile, Profile::EXPLICIT_ACCESS),
-      scoped_ptr<TemplateURLServiceClient>(
-          new ChromeTemplateURLServiceClient(profile)),
+      scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
+          HistoryServiceFactory::GetForProfile(profile,
+                                               Profile::EXPLICIT_ACCESS))),
       GoogleURLTrackerFactory::GetForProfile(profile),
       g_browser_process->rappor_service(),
       dsp_change_callback);

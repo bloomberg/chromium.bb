@@ -93,27 +93,6 @@ void ChromeHistoryClient::Shutdown() {
   }
 }
 
-// TODO(sdefresne): port client listening for NOTIFICATION_HISTORY_URL_VISITED
-// to use the HistoryService::Observer pattern instead and remove this method
-// when this is complete, http://crbug.com/42178
-void ChromeHistoryClient::OnURLVisited(HistoryService* history_service,
-                                       ui::PageTransition transition,
-                                       const history::URLRow& row,
-                                       const history::RedirectList& redirects,
-                                       base::Time visit_time) {
-  DCHECK(history_service == history_service_);
-  scoped_ptr<history::URLVisitedDetails> details(
-      new history::URLVisitedDetails);
-  details->transition = transition;
-  details->row = row;
-  details->redirects = redirects;
-  details->visit_time = visit_time;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_HISTORY_URL_VISITED,
-      content::Source<Profile>(profile_),
-      content::Details<history::HistoryDetails>(details.get()));
-}
-
 void ChromeHistoryClient::TopSitesLoaded(history::TopSites* top_sites) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_LOADED,

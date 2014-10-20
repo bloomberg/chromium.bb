@@ -955,6 +955,8 @@ void TemplateURLService::OnHistoryURLVisited(const URLVisitedDetails& details) {
 }
 
 void TemplateURLService::Shutdown() {
+  if (client_)
+    client_->Shutdown();
   // This check has to be done at Shutdown() instead of in the dtor to ensure
   // that no clients of KeywordWebDataService are holding ptrs to it after the
   // first phase of the KeyedService Shutdown() process.

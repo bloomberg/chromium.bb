@@ -19,6 +19,10 @@ class TemplateURLServiceClient {
  public:
   virtual ~TemplateURLServiceClient() {}
 
+  // Called by TemplateURLService::Shutdown as part of the two phase shutdown
+  // of the KeyedService.
+  virtual void Shutdown() = 0;
+
   // Sets the pointer to the owner of this object.
   virtual void SetOwner(TemplateURLService* owner) = 0;
 

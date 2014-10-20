@@ -17,6 +17,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/sessions/session_id.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -58,7 +59,8 @@ struct FaviconImageResult;
 // class does the bulk of the work.
 class HistoryMenuBridge : public content::NotificationObserver,
                           public TabRestoreServiceObserver,
-                          public MainMenuItem {
+                          public MainMenuItem,
+                          public history::HistoryServiceObserver {
  public:
   // This is a generalization of the data we store in the history menu because
   // we pull things from different sources with different data types.
@@ -139,6 +141,13 @@ class HistoryMenuBridge : public content::NotificationObserver,
   virtual void ResetMenu() override;
   virtual void BuildMenu() override;
 
+  // history::HistoryServiceObserver:
+  virtual void OnURLVisited(HistoryService* history_service,
+                            ui::PageTransition transition,
+                            const history::URLRow& row,
+                            const history::RedirectList& redirects,
+                            base::Time visit_time) override;
+
   // Looks up an NSMenuItem in the |menu_item_map_| and returns the
   // corresponding HistoryItem.
   HistoryItem* HistoryItemForMenuItem(NSMenuItem* item);
@@ -175,6 +184,9 @@ class HistoryMenuBridge : public content::NotificationObserver,
 
   // Does the query for the history information to create the menu.
   void CreateMenu();
+
+  // Invoked when the History information has changed.
+  void OnHistoryChanged();
 
   // Callback method for when HistoryService query results are ready with the
   // most recently-visited sites.

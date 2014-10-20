@@ -7,6 +7,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -39,7 +40,9 @@ KeyedService* CreateTemplateURLService(content::BrowserContext* context) {
       WebDataServiceFactory::GetKeywordWebDataForProfile(
           profile, Profile::EXPLICIT_ACCESS),
       scoped_ptr<TemplateURLServiceClient>(
-          new ChromeTemplateURLServiceClient(profile)),
+          new ChromeTemplateURLServiceClient(
+              HistoryServiceFactory::GetForProfile(profile,
+                                                   Profile::EXPLICIT_ACCESS))),
       NULL, NULL, base::Closure());
 }
 

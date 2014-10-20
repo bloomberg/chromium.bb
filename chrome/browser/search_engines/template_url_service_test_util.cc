@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -21,9 +22,9 @@ namespace {
 
 class TestingTemplateURLServiceClient : public ChromeTemplateURLServiceClient {
  public:
-  TestingTemplateURLServiceClient(Profile* profile,
+  TestingTemplateURLServiceClient(HistoryService* history_service,
                                   base::string16* search_term)
-      : ChromeTemplateURLServiceClient(profile),
+      : ChromeTemplateURLServiceClient(history_service),
         search_term_(search_term) {}
 
   virtual void SetKeywordSearchTermsForURL(
@@ -115,7 +116,10 @@ void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
       profile()->GetPrefs(), scoped_ptr<SearchTermsData>(search_terms_data_),
       web_data_service_.get(),
       scoped_ptr<TemplateURLServiceClient>(
-          new TestingTemplateURLServiceClient(profile(), &search_term_)),
+          new TestingTemplateURLServiceClient(
+              HistoryServiceFactory::GetForProfileIfExists(
+                  profile(), Profile::EXPLICIT_ACCESS),
+              &search_term_)),
       NULL, NULL, base::Closure()));
   model()->AddObserver(this);
   changed_count_ = 0;

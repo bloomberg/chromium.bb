@@ -811,7 +811,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     // TODO(meelapshah) Disabled due to potential PageCycler regression.
     // Re-enable this.
     // QueryRedirectsTo(url, &redirects);
-    NotifyAddVisit(transition, url_info, redirects, time);
+    NotifyURLVisited(transition, url_info, redirects, time);
 
     // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
     // an HistoryBackendObserver and register it so that we can remove this
@@ -826,10 +826,10 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   return std::make_pair(url_id, visit_id);
 }
 
-void HistoryBackend::NotifyAddVisit(ui::PageTransition transition,
-                                    const URLRow& row,
-                                    const RedirectList& redirects,
-                                    base::Time visit_time) {
+void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
+                                      const URLRow& row,
+                                      const RedirectList& redirects,
+                                      base::Time visit_time) {
   FOR_EACH_OBSERVER(
       HistoryBackendObserver,
       observers_,

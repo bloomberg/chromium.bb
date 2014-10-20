@@ -48,7 +48,6 @@ class HistoryDatabase;
 class URLIndexPrivateData;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
-struct URLVisitedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to

@@ -32,7 +32,6 @@ namespace history {
 class HistoryBackend;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
-struct URLVisitedDetails;
 class URLRow;
 };
 

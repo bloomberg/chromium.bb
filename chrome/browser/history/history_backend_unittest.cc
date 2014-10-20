@@ -138,6 +138,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
 class HistoryBackendTestBase : public testing::Test {
  public:
   typedef std::vector<std::pair<int, HistoryDetails*> > NotificationList;
+  typedef std::vector<std::pair<ui::PageTransition, URLRow>> URLVisitedList;
 
   HistoryBackendTestBase()
       : loaded_(false),
@@ -157,6 +158,14 @@ class HistoryBackendTestBase : public testing::Test {
     favicon_changed_notifications_ = 0;
   }
 
+  int num_url_visited_notifications() const {
+    return url_visited_notifications_.size();
+  }
+
+  const URLVisitedList& url_visited_notifications() const {
+    return url_visited_notifications_;
+  }
+
   int num_broadcasted_notifications() const {
     return broadcasted_notifications_.size();
   }
@@ -166,6 +175,7 @@ class HistoryBackendTestBase : public testing::Test {
   }
 
   void ClearBroadcastedNotifications() {
+    url_visited_notifications_.clear();
     STLDeleteValues(&broadcasted_notifications_);
   }
 
@@ -175,6 +185,13 @@ class HistoryBackendTestBase : public testing::Test {
 
   void NotifyFaviconChanged(const std::set<GURL>& changed_favicons) {
     ++favicon_changed_notifications_;
+  }
+
+  void NotifyURLVisited(ui::PageTransition transition,
+                        const URLRow& row,
+                        const RedirectList& redirects,
+                        base::Time visit_time) {
+    url_visited_notifications_.push_back(std::make_pair(transition, row));
   }
 
   void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
@@ -224,6 +241,7 @@ class HistoryBackendTestBase : public testing::Test {
   // The types and details of notifications which were broadcasted.
   NotificationList broadcasted_notifications_;
   int favicon_changed_notifications_;
+  URLVisitedList url_visited_notifications_;
 
   base::MessageLoop message_loop_;
   base::FilePath test_dir_;
@@ -246,13 +264,7 @@ void HistoryBackendTestDelegate::NotifyURLVisited(ui::PageTransition transition,
                                                   const URLRow& row,
                                                   const RedirectList& redirects,
                                                   base::Time visit_time) {
-  scoped_ptr<URLVisitedDetails> details(new URLVisitedDetails());
-  details->transition = transition;
-  details->row = row;
-  details->redirects = redirects;
-  details->visit_time = visit_time;
-  test_->BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                                details.Pass());
+  test_->NotifyURLVisited(transition, row, redirects, visit_time);
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(
@@ -437,12 +449,6 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
       scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails());
       details->changed_urls.swap(rows);
       BroadcastNotifications(type, details.Pass());
-    } else if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
-      for (URLRows::const_iterator it = rows.begin(); it != rows.end(); ++it) {
-        scoped_ptr<URLVisitedDetails> details(new URLVisitedDetails());
-        details->row = *it;
-        BroadcastNotifications(type, details.Pass());
-      }
     } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
       scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails());
       details->rows = rows;
@@ -1274,30 +1280,23 @@ TEST_F(HistoryBackendTest, AddPageVisitFiresNotificationWithCorrectDetails) {
   EXPECT_NE(0, backend_->db_->GetRowForURL(url1, &stored_row1));
   EXPECT_NE(0, backend_->db_->GetRowForURL(url2, &stored_row2));
 
-  // Expect that NOTIFICATION_HISTORY_URLS_VISITED has been fired 3x, and that
-  // each time, the URLRows have the correct URLs and IDs set.
-  ASSERT_EQ(3, num_broadcasted_notifications());
-  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-            broadcasted_notifications()[0].first);
-  const URLVisitedDetails* details = static_cast<const URLVisitedDetails*>(
-      broadcasted_notifications()[0].second);
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            ui::PageTransitionStripQualifier(details->transition));
-  EXPECT_EQ(stored_row1.id(), details->row.id());
-  EXPECT_EQ(stored_row1.url(), details->row.url());
+  // Expect that HistoryServiceObserver::OnURLVisited has been called 3 times,
+  // and that each time the URLRows have the correct URLs and IDs set.
+  ASSERT_EQ(3, num_url_visited_notifications());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(url_visited_notifications()[0].first,
+                                           ui::PAGE_TRANSITION_LINK));
+  EXPECT_EQ(stored_row1.id(), url_visited_notifications()[0].second.id());
+  EXPECT_EQ(stored_row1.url(), url_visited_notifications()[0].second.url());
 
-  // No further checking, this case analogous to the first one.
-  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-            broadcasted_notifications()[1].first);
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(url_visited_notifications()[1].first,
+                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(stored_row2.id(), url_visited_notifications()[1].second.id());
+  EXPECT_EQ(stored_row2.url(), url_visited_notifications()[1].second.url());
 
-  ASSERT_EQ(chrome::NOTIFICATION_HISTORY_URL_VISITED,
-            broadcasted_notifications()[2].first);
-  details = static_cast<const URLVisitedDetails*>(
-      broadcasted_notifications()[2].second);
-  EXPECT_EQ(ui::PAGE_TRANSITION_TYPED,
-            ui::PageTransitionStripQualifier(details->transition));
-  EXPECT_EQ(stored_row2.id(), details->row.id());
-  EXPECT_EQ(stored_row2.url(), details->row.url());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(url_visited_notifications()[2].first,
+                                           ui::PAGE_TRANSITION_TYPED));
+  EXPECT_EQ(stored_row2.id(), url_visited_notifications()[2].second.id());
+  EXPECT_EQ(stored_row2.url(), url_visited_notifications()[2].second.url());
 }
 
 TEST_F(HistoryBackendTest, AddPageArgsSource) {

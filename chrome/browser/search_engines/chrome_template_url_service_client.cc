@@ -4,32 +4,34 @@
 
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/common/constants.h"
 
-ChromeTemplateURLServiceClient::ChromeTemplateURLServiceClient(Profile* profile)
-    : profile_(profile),
-      owner_(NULL) {
-  DCHECK(profile);
-
-  // Register for notifications.
+ChromeTemplateURLServiceClient::ChromeTemplateURLServiceClient(
+    HistoryService* history_service)
+    : owner_(NULL), history_service_(history_service) {
   // TODO(sky): bug 1166191. The keywords should be moved into the history
   // db, which will mean we no longer need this notification and the history
   // backend can handle automatically adding the search terms as the user
   // navigates.
-  content::Source<Profile> profile_source(profile->GetOriginalProfile());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                              profile_source);
+  if (history_service_)
+    history_service_->AddObserver(this);
 }
 
 ChromeTemplateURLServiceClient::~ChromeTemplateURLServiceClient() {
+}
+
+void ChromeTemplateURLServiceClient::Shutdown() {
+  // ChromeTemplateURLServiceClient is owned by TemplateURLService which is a
+  // KeyedService with a dependency on HistoryService, thus |history_service_|
+  // outlives the ChromeTemplateURLServiceClient.
+  //
+  // Remove self from |history_service_| observers in the shutdown phase of the
+  // two-phases since KeyedService are not supposed to use a dependend service
+  // after the Shutdown call.
+  if (history_service_)
+    history_service_->RemoveObserver(this);
 }
 
 void ChromeTemplateURLServiceClient::SetOwner(TemplateURLService* owner) {
@@ -39,30 +41,24 @@ void ChromeTemplateURLServiceClient::SetOwner(TemplateURLService* owner) {
 
 void ChromeTemplateURLServiceClient::DeleteAllSearchTermsForKeyword(
     TemplateURLID id) {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->DeleteAllSearchTermsForKeyword(id);
+  if (history_service_)
+    history_service_->DeleteAllSearchTermsForKeyword(id);
 }
 
 void ChromeTemplateURLServiceClient::SetKeywordSearchTermsForURL(
     const GURL& url,
     TemplateURLID id,
     const base::string16& term) {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->SetKeywordSearchTermsForURL(url, id, term);
+  if (history_service_)
+    history_service_->SetKeywordSearchTermsForURL(url, id, term);
 }
 
 void ChromeTemplateURLServiceClient::AddKeywordGeneratedVisit(const GURL& url) {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->AddPage(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             ui::PAGE_TRANSITION_KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false);
+  if (history_service_)
+    history_service_->AddPage(url, base::Time::Now(), NULL, 0, GURL(),
+                              history::RedirectList(),
+                              ui::PAGE_TRANSITION_KEYWORD_GENERATED,
+                              history::SOURCE_BROWSED, false);
 }
 
 void ChromeTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
@@ -77,20 +73,19 @@ void ChromeTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
   }
 }
 
-void ChromeTemplateURLServiceClient::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URL_VISITED);
-
+void ChromeTemplateURLServiceClient::OnURLVisited(
+    HistoryService* history_service,
+    ui::PageTransition transition,
+    const history::URLRow& row,
+    const history::RedirectList& redirects,
+    base::Time visit_time) {
+  DCHECK_EQ(history_service_, history_service);
   if (!owner_)
     return;
 
-  content::Details<history::URLVisitedDetails> history_details(details);
   TemplateURLService::URLVisitedDetails visited_details;
-  visited_details.url = history_details->row.url();
+  visited_details.url = row.url();
   visited_details.is_keyword_transition =
-      ui::PageTransitionStripQualifier(history_details->transition) ==
-      ui::PAGE_TRANSITION_KEYWORD;
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_KEYWORD);
   owner_->OnHistoryURLVisited(visited_details);
 }

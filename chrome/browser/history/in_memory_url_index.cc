@@ -214,7 +214,7 @@ void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
                                     const URLRow& row,
                                     const RedirectList& redirects,
                                     base::Time visit_time) {
-  DCHECK(history_service_ == history_service);
+  DCHECK_EQ(history_service_, history_service);
   needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
                                                   row,
                                                   languages_,

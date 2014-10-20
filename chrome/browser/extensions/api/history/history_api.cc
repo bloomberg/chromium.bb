@@ -132,44 +132,36 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
 
 }  // namespace
 
-HistoryEventRouter::HistoryEventRouter(Profile* profile) {
-  const content::Source<Profile> source = content::Source<Profile>(profile);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_HISTORY_URL_VISITED,
-                 source);
+HistoryEventRouter::HistoryEventRouter(Profile* profile,
+                                       HistoryService* history_service)
+    : profile_(profile), history_service_observer_(this) {
+  DCHECK(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                 source);
+                 content::Source<Profile>(profile));
+  history_service_observer_.Add(history_service);
 }
 
-HistoryEventRouter::~HistoryEventRouter() {}
+HistoryEventRouter::~HistoryEventRouter() {
+}
 
 void HistoryEventRouter::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_HISTORY_URL_VISITED:
-      HistoryUrlVisited(
-          content::Source<Profile>(source).ptr(),
-          content::Details<const history::URLVisitedDetails>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-      HistoryUrlsRemoved(
-          content::Source<Profile>(source).ptr(),
-          content::Details<const history::URLsDeletedDetails>(details).ptr());
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
+  HistoryUrlsRemoved(
+      content::Source<Profile>(source).ptr(),
+      content::Details<const history::URLsDeletedDetails>(details).ptr());
 }
 
-void HistoryEventRouter::HistoryUrlVisited(
-    Profile* profile,
-    const history::URLVisitedDetails* details) {
-  scoped_ptr<HistoryItem> history_item = GetHistoryItem(details->row);
+void HistoryEventRouter::OnURLVisited(HistoryService* history_service,
+                                      ui::PageTransition transition,
+                                      const history::URLRow& row,
+                                      const history::RedirectList& redirects,
+                                      base::Time visit_time) {
+  scoped_ptr<HistoryItem> history_item = GetHistoryItem(row);
   scoped_ptr<base::ListValue> args = OnVisited::Create(*history_item);
-
-  DispatchEvent(profile, api::history::OnVisited::kEventName, args.Pass());
+  DispatchEvent(profile_, api::history::OnVisited::kEventName, args.Pass());
 }
 
 void HistoryEventRouter::HistoryUrlsRemoved(
@@ -235,8 +227,10 @@ void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
   tracked_objects::ScopedProfile tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("HistoryAPI::OnListenerAdded"));
 
-  history_event_router_.reset(
-      new HistoryEventRouter(Profile::FromBrowserContext(browser_context_)));
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  history_event_router_.reset(new HistoryEventRouter(
+      profile,
+      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
