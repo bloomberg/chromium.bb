@@ -37,6 +37,7 @@
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -597,7 +598,7 @@ void AnimationPlayer::setOutdated()
 
 bool AnimationPlayer::canStartAnimationOnCompositor()
 {
-    if (m_playbackRate == 0)
+    if (m_playbackRate == 0 || (std::isinf(sourceEnd()) && m_playbackRate < 0))
         return false;
 
     return m_timeline && m_content && m_content->isAnimation() && playing();
@@ -612,6 +613,7 @@ bool AnimationPlayer::maybeStartAnimationOnCompositor()
     double timeOffset = 0;
     if (std::isnan(startTime)) {
         timeOffset = m_playbackRate < 0 ? sourceEnd() - currentTimeInternal() : currentTimeInternal();
+        timeOffset = timeOffset / fabs(m_playbackRate);
     }
     return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(startTime, timeOffset, m_playbackRate);
 }
