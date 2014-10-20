@@ -26,9 +26,9 @@ TEST(CSSTokenizerTest, Basic)
 {
     TestCase testCases[] = {
         { "(max-width: 50px)", "(max-width: 50px)" },
-        { "(max-width: 1e+2px)", "(max-width: 100px)" },
-        { "(max-width: 1e2px)", "(max-width: 100px)" },
-        { "(max-width: 1000e-1px)", "(max-width: 100px)" },
+        { "(max-width: 1e+2px)", "(max-width: 100.000000px)" },
+        { "(max-width: 1e2px)", "(max-width: 100.000000px)" },
+        { "(max-width: 1000e-1px)", "(max-width: 100.000000px)" },
         { "(max-width: 50\\70\\78)", "(max-width: 50px)" },
         { "(max-width: /* comment */50px)", "(max-width: 50px)" },
         { "(max-width: /** *commen*t */60px)", "(max-width: 60px)" },
@@ -57,6 +57,11 @@ TEST(CSSTokenizerTest, Basic)
         { "(max-aspect-ratio: +5bla)", "(max-aspect-ratio: 5other)" },
         { "(max-aspect-ratio: -bla)", "(max-aspect-ratio: -bla)" },
         { "(max-aspect-ratio: --bla)", "(max-aspect-ratio: '-'-bla)" },
+        { "5e0", "5.000000" },
+        { "5.0", "5.000000" },
+        { "5.", "5'.'" },
+        { "5.0e-1", "0.500000" },
+        { "5.e-1", "5'.'e-1" },
         { 0, 0 } // Do not remove the terminator line.
     };
 

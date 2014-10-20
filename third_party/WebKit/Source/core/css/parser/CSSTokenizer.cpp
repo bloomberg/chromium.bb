@@ -275,17 +275,13 @@ static unsigned long long getInteger(CSSTokenizerInputStream& input, unsigned& o
     return input.getUInt(intStartPos, intEndPos);
 }
 
-static double getFraction(CSSTokenizerInputStream& input, unsigned& offset, unsigned& digitsNumber)
+static double getFraction(CSSTokenizerInputStream& input, unsigned& offset)
 {
-    unsigned fractionStartPos = 0;
-    unsigned fractionEndPos = 0;
-    if (input.peek(offset) == '.' && isASCIIDigit(input.peek(++offset))) {
-        fractionStartPos = offset - 1;
-        offset = input.skipWhilePredicate<isASCIIDigit>(offset);
-        fractionEndPos = offset;
-    }
-    digitsNumber = fractionEndPos- fractionStartPos;
-    return input.getDouble(fractionStartPos, fractionEndPos);
+    if (input.peek(offset) != '.' || !isASCIIDigit(input.peek(offset + 1)))
+        return 0;
+    unsigned startOffset = offset;
+    offset = input.skipWhilePredicate<isASCIIDigit>(offset + 1);
+    return input.getDouble(startOffset, offset);
 }
 
 static unsigned long long getExponent(CSSTokenizerInputStream& input, unsigned& offset, int& sign)
@@ -320,16 +316,17 @@ CSSParserToken CSSTokenizer::consumeNumber()
     double value = 0;
     unsigned offset = 0;
     int exponentSign = 1;
-    unsigned fractionDigits;
     int sign = getSign(m_input, offset);
     unsigned long long integerPart = getInteger(m_input, offset);
-    double fractionPart = getFraction(m_input, offset, fractionDigits);
+    unsigned integerPartEndOffset = offset;
+
+    double fractionPart = getFraction(m_input, offset);
     unsigned long long exponentPart = getExponent(m_input, offset, exponentSign);
     double exponent = pow(10, (float)exponentSign * (double)exponentPart);
     value = (double)sign * ((double)integerPart + fractionPart) * exponent;
 
     m_input.advance(offset);
-    if (fractionDigits > 0)
+    if (offset != integerPartEndOffset)
         type = NumberValueType;
 
     return CSSParserToken(NumberToken, value, type);
