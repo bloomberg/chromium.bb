@@ -1528,8 +1528,7 @@ bool QuicFramer::ProcessRstStreamFrame(QuicRstStreamFrame* frame) {
     return false;
   }
 
-  if (error_code >= QUIC_STREAM_LAST_ERROR ||
-      error_code < QUIC_STREAM_NO_ERROR) {
+  if (error_code >= QUIC_STREAM_LAST_ERROR) {
     set_detailed_error("Invalid rst stream error code.");
     return false;
   }
@@ -1553,8 +1552,7 @@ bool QuicFramer::ProcessConnectionCloseFrame(QuicConnectionCloseFrame* frame) {
     return false;
   }
 
-  if (error_code >= QUIC_LAST_ERROR ||
-         error_code < QUIC_NO_ERROR) {
+  if (error_code >= QUIC_LAST_ERROR) {
     set_detailed_error("Invalid error code.");
     return false;
   }
@@ -1579,8 +1577,7 @@ bool QuicFramer::ProcessGoAwayFrame(QuicGoAwayFrame* frame) {
   }
   frame->error_code = static_cast<QuicErrorCode>(error_code);
 
-  if (error_code >= QUIC_LAST_ERROR ||
-      error_code < QUIC_NO_ERROR) {
+  if (error_code >= QUIC_LAST_ERROR) {
     set_detailed_error("Invalid error code.");
     return false;
   }
