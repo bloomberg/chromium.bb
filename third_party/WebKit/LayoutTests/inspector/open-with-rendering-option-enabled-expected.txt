@@ -4,6 +4,7 @@ Loaded modules:
     bindings
     common
     components
+    extensions
     host
     main
     screencast

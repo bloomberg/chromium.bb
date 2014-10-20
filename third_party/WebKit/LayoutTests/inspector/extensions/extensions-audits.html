@@ -46,7 +46,6 @@ function extension_testAudits(nextTest)
         pendingOutput.push("FAIL: disabledCategory.onAuditStarted fired");
         results.done();
     }
-
     var category = webInspector.audits.addCategory("Extension audits");
     category.onAuditStarted.addListener(onStartAuditCategory);
 

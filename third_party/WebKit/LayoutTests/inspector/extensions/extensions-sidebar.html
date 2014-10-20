@@ -26,8 +26,13 @@ function initialize_extensionsSidebarTest()
 
     InspectorTest._extensionSidebar = function(panelName)
     {
-        var sidebarPanes = WebInspector.panels[panelName]._extensionSidebarPanes;
-        return sidebarPanes[sidebarPanes.length - 1];
+        var sidebarPanes = WebInspector.extensionServer.sidebarPanes();
+        var result;
+        for (var i = 0; i < sidebarPanes.length; ++i) {
+            if (sidebarPanes[i].panelName() === panelName)
+                result = sidebarPanes[i];
+        }
+        return result;
     }
 }
 

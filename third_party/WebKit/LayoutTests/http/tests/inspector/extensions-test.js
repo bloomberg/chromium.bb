@@ -12,9 +12,9 @@ function extensionFunctions()
 var initialize_ExtensionsTest = function()
 {
 
-WebInspector.extensionServerProxy._overridePlatformExtensionAPIForTest = function(extensionInfo)
+WebInspector.extensionServer._overridePlatformExtensionAPIForTest = function(extensionInfo)
 {
-    WebInspector.extensionServerProxy._extensionServer._registerHandler("evaluateForTestInFrontEnd", onEvaluate);
+    WebInspector.extensionServer._registerHandler("evaluateForTestInFrontEnd", onEvaluate);
 
     function platformExtensionAPI(coreAPI)
     {
@@ -33,7 +33,7 @@ function onEvaluate(message, port)
 {
     function reply(param)
     {
-        WebInspector.extensionServerProxy._extensionServer._dispatchCallback(message.requestId, port, param);
+        WebInspector.extensionServer._dispatchCallback(message.requestId, port, param);
     }
 
     try {
@@ -53,7 +53,6 @@ InspectorTest.showPanel = function(panelId)
 
 InspectorTest.runExtensionTests = function()
 {
-    WebInspector.extensionServerProxy.setFrontendReady();
     RuntimeAgent.evaluate("location.href", "console", false, function(error, result) {
         if (error)
             return;

@@ -6,6 +6,7 @@ Loaded modules:
     bindings
     common
     components
+    extensions
     host
     main
     screencast
@@ -20,6 +21,7 @@ Loaded modules:
     common
     components
     elements
+    extensions
     host
     main
     screencast
@@ -34,6 +36,7 @@ Loaded modules:
     common
     components
     elements
+    extensions
     host
     main
     network
@@ -50,6 +53,7 @@ Loaded modules:
     common
     components
     elements
+    extensions
     host
     main
     network
@@ -67,6 +71,7 @@ Loaded modules:
     common
     components
     elements
+    extensions
     host
     main
     network

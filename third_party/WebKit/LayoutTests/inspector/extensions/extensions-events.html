@@ -19,7 +19,7 @@ function initialize_extensionsSidebarTest()
 
     InspectorTest._extensionSidebar = function()
     {
-        return WebInspector.panels.elements._extensionSidebarPanes[0];
+        return WebInspector.extensionServer.sidebarPanes()[0];
     }
 }
 
@@ -38,19 +38,6 @@ function extension_testOnSelectionChanged(nextTest)
     }
     webInspector.panels.elements.onSelectionChanged.addListener(onSelectionChanged);
     webInspector.inspectedWindow.eval("inspect(document.body.children[0]), 0");
-}
-
-function extension_testSourcesOnSelectionChanged(nextTest)
-{
-    function onSelectionChanged(selectionInfo)
-    {
-        webInspector.panels.sources.onSelectionChanged.removeListener(onSelectionChanged);
-        output("sources onSelectionChanged fired, selectionInfo:");
-        dumpObject(selectionInfo, {url: "url"});
-        nextTest();
-    }
-    webInspector.panels.sources.onSelectionChanged.addListener(onSelectionChanged);
-    evaluateOnFrontend("InspectorTest.showScriptSource(\"edit-me.js\")");
 }
 
 function extension_testOnRequestFinished(nextTest)

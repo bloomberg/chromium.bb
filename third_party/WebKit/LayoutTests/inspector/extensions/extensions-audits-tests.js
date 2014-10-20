@@ -36,5 +36,7 @@ var initialize_ExtensionsAuditsTest = function()
         InspectorTest.addResult("Progress: " + Math.round(100 * progress.value / progress.max) + "%");
     }
 
+    // We will render DOM node results, so preload elements.
+    InspectorTest.preloadPanel("elements");
     InspectorTest.preloadPanel("audits");
 }
