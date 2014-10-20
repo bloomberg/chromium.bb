@@ -95,13 +95,13 @@ PassRefPtr<FormData> FormData::deepCopy() const
             formData->m_elements.uncheckedAppend(FormDataElement(e.m_data));
             break;
         case FormDataElement::encodedFile:
-            formData->m_elements.uncheckedAppend(FormDataElement(e.m_filename, e.m_fileStart, e.m_fileLength, e.m_expectedFileModificationTime));
+            formData->m_elements.uncheckedAppend(FormDataElement(e.m_filename.isolatedCopy(), e.m_fileStart, e.m_fileLength, e.m_expectedFileModificationTime));
             break;
         case FormDataElement::encodedBlob:
-            formData->m_elements.uncheckedAppend(FormDataElement(e.m_blobUUID, e.m_optionalBlobDataHandle));
+            formData->m_elements.uncheckedAppend(FormDataElement(e.m_blobUUID.isolatedCopy(), e.m_optionalBlobDataHandle));
             break;
         case FormDataElement::encodedFileSystemURL:
-            formData->m_elements.uncheckedAppend(FormDataElement(e.m_fileSystemURL, e.m_fileStart, e.m_fileLength, e.m_expectedFileModificationTime));
+            formData->m_elements.uncheckedAppend(FormDataElement(e.m_fileSystemURL.copy(), e.m_fileStart, e.m_fileLength, e.m_expectedFileModificationTime));
             break;
         }
     }

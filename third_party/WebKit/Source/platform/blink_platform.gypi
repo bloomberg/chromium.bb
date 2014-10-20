@@ -923,6 +923,7 @@
       'graphics/test/MockDiscardablePixelRef.h',
       'image-decoders/ImageDecoderTest.cpp',
       'mac/ScrollElasticityControllerTest.mm',
+      'network/FormDataTest.cpp',
       'network/HTTPParsersTest.cpp',
       'network/ResourceRequestTest.cpp',
       'scheduler/SchedulerTest.cpp',
