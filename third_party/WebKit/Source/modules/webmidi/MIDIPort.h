@@ -57,6 +57,8 @@ public:
     String version() const { return m_version; }
 
     MIDIAccess* midiAccess() const { return m_access; }
+    bool isActive() const { return m_isActive; }
+    void setActiveState(bool isActive) { m_isActive = isActive; }
 
     virtual void trace(Visitor*) override;
 
@@ -67,7 +69,7 @@ public:
     virtual ExecutionContext* executionContext() const override final;
 
 protected:
-    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
+    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version, bool isActive);
 
 private:
     String m_id;
@@ -76,6 +78,7 @@ private:
     MIDIPortTypeCode m_type;
     String m_version;
     Member<MIDIAccess> m_access;
+    bool m_isActive;
 };
 
 } // namespace blink

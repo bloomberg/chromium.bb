@@ -42,7 +42,7 @@ class MIDIAccess;
 class MIDIOutput final : public MIDIPort {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MIDIOutput* create(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version);
+    static MIDIOutput* create(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);
     virtual ~MIDIOutput();
 
     void send(DOMUint8Array*, double timestamp, ExceptionState&);
@@ -56,7 +56,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    MIDIOutput(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version);
+    MIDIOutput(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);
 
     unsigned m_portIndex;
 };

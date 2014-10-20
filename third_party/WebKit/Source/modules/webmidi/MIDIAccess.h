@@ -77,8 +77,10 @@ public:
     virtual void stop() override;
 
     // MIDIAccessorClient
-    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) override;
-    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) override;
+    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive) override;
+    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive) override;
+    virtual void didSetInputPortState(unsigned portIndex, bool isActive) override;
+    virtual void didSetOutputPortState(unsigned portIndex, bool isActive) override;
     virtual void didStartSession(bool success, const String& error, const String& message) override
     {
         // This method is for MIDIAccess initialization: MIDIAccessInitializer

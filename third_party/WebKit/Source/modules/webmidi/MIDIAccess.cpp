@@ -56,9 +56,9 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
     for (size_t i = 0; i < ports.size(); ++i) {
         const MIDIAccessInitializer::PortDescriptor& port = ports[i];
         if (port.type == MIDIPort::MIDIPortTypeInput) {
-            m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer, port.name, port.version));
+            m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer, port.name, port.version, port.isActive));
         } else {
-            m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id, port.manufacturer, port.name, port.version));
+            m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id, port.manufacturer, port.name, port.version, port.isActive));
         }
     }
 }
@@ -70,11 +70,15 @@ MIDIAccess::~MIDIAccess()
 MIDIInputMap* MIDIAccess::inputs() const
 {
     HeapHashMap<String, Member<MIDIInput> > inputs;
+    size_t inactiveCount = 0;
     for (size_t i = 0; i < m_inputs.size(); ++i) {
         MIDIInput* input = m_inputs[i];
-        inputs.add(input->id(), input);
+        if (input->isActive())
+            inputs.add(input->id(), input);
+        else
+            inactiveCount++;
     }
-    if (inputs.size() != m_inputs.size()) {
+    if ((inputs.size() + inactiveCount) != m_inputs.size()) {
         // There is id duplication that violates the spec.
         inputs.clear();
     }
@@ -84,28 +88,46 @@ MIDIInputMap* MIDIAccess::inputs() const
 MIDIOutputMap* MIDIAccess::outputs() const
 {
     HeapHashMap<String, Member<MIDIOutput> > outputs;
+    size_t inactiveCount = 0;
     for (size_t i = 0; i < m_outputs.size(); ++i) {
         MIDIOutput* output = m_outputs[i];
-        outputs.add(output->id(), output);
+        if (output->isActive())
+            outputs.add(output->id(), output);
+        else
+            inactiveCount++;
     }
-    if (outputs.size() != m_outputs.size()) {
+    if ((outputs.size() + inactiveCount) != m_outputs.size()) {
         // There is id duplication that violates the spec.
         outputs.clear();
     }
     return new MIDIOutputMap(outputs);
 }
 
-void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(isMainThread());
-    m_inputs.append(MIDIInput::create(this, id, manufacturer, name, version));
+    m_inputs.append(MIDIInput::create(this, id, manufacturer, name, version, isActive));
 }
 
-void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(isMainThread());
     unsigned portIndex = m_outputs.size();
-    m_outputs.append(MIDIOutput::create(this, portIndex, id, manufacturer, name, version));
+    m_outputs.append(MIDIOutput::create(this, portIndex, id, manufacturer, name, version, isActive));
+}
+
+void MIDIAccess::didSetInputPortState(unsigned portIndex, bool isActive)
+{
+    ASSERT(isMainThread());
+    if (portIndex < m_inputs.size())
+        m_inputs[portIndex]->setActiveState(isActive);
+}
+
+void MIDIAccess::didSetOutputPortState(unsigned portIndex, bool isActive)
+{
+    ASSERT(isMainThread());
+    if (portIndex < m_outputs.size())
+        m_outputs[portIndex]->setActiveState(isActive);
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)

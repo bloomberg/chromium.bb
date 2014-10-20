@@ -37,8 +37,10 @@ namespace blink {
 
 class MIDIAccessorClient {
 public:
-    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
-    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
+    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive) = 0;
+    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive) = 0;
+    virtual void didSetInputPortState(unsigned portIndex, bool isActive) = 0;
+    virtual void didSetOutputPortState(unsigned portIndex, bool isActive) = 0;
 
     virtual void didStartSession(bool success, const String& error, const String& message) = 0;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;

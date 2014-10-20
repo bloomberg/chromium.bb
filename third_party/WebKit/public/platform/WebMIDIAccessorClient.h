@@ -37,8 +37,18 @@ namespace blink {
 
 class WebMIDIAccessorClient {
 public:
+    // FIXME: Remove deprecated interfaces that do not have |isActive| argument.
     virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
     virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
+
+    // didAddInputPort() and didAddOutputPort() can be called before and after
+    // didStartSession() is called. But |id| should be unique in each function.
+    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive) = 0;
+    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive) = 0;
+    // didSetInputPortState() and didSetOutputPortState() should not be called
+    // until didStartSession() is called.
+    virtual void didSetInputPortState(unsigned portIndex, bool isActive) = 0;
+    virtual void didSetOutputPortState(unsigned portIndex, bool isActive) = 0;
 
     virtual void didStartSession(bool success, const WebString& error, const WebString& message) = 0;
 

@@ -173,14 +173,14 @@ private:
 
 } // namespace
 
-MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
+MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(access);
-    return new MIDIOutput(access, portIndex, id, manufacturer, name, version);
+    return new MIDIOutput(access, portIndex, id, manufacturer, name, version, isActive);
 }
 
-MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
-    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version)
+MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
+    : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version, isActive)
     , m_portIndex(portIndex)
 {
 }

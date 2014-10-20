@@ -55,16 +55,30 @@ ScriptPromise MIDIAccessInitializer::start()
     return promise;
 }
 
-void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+void MIDIAccessInitializer::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(m_accessor);
-    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeInput, version));
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeInput, version, isActive));
 }
 
-void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+void MIDIAccessInitializer::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(m_accessor);
-    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeOutput, version));
+    m_portDescriptors.append(PortDescriptor(id, manufacturer, name, MIDIPort::MIDIPortTypeOutput, version, isActive));
+}
+
+void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex, bool isActive)
+{
+    // didSetInputPortState() is not allowed to call before didStartSession()
+    // is called. Once didStartSession() is called, MIDIAccessorClient methods
+    // are delegated to MIDIAccess. See constructor of MIDIAccess.
+    ASSERT_NOT_REACHED();
+}
+
+void MIDIAccessInitializer::didSetOutputPortState(unsigned portIndex, bool isActive)
+{
+    // See comments on didSetInputPortState().
+    ASSERT_NOT_REACHED();
 }
 
 void MIDIAccessInitializer::didStartSession(bool success, const String& error, const String& message)

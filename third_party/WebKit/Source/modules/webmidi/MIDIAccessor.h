@@ -54,8 +54,13 @@ public:
     void setClient(MIDIAccessorClient* client) { m_client = client; }
 
     // WebMIDIAccessorClient
+    // FIXME: Remove deprecated interfaces that do not have |isActive| argument.
     virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) override;
     virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) override;
+    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive) override;
+    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive) override;
+    virtual void didSetInputPortState(unsigned portIndex, bool isActive) override;
+    virtual void didSetOutputPortState(unsigned portIndex, bool isActive) override;
     virtual void didStartSession(bool success, const WebString& error, const WebString& message) override;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
 

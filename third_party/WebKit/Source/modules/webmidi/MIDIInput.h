@@ -41,7 +41,7 @@ class MIDIAccess;
 class MIDIInput final : public MIDIPort {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MIDIInput* create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version);
+    static MIDIInput* create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);
     virtual ~MIDIInput() { }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
@@ -55,7 +55,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version);
+    MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, bool isActive);
 };
 
 } // namespace blink

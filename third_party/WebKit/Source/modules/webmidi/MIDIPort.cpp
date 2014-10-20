@@ -35,13 +35,14 @@
 
 namespace blink {
 
-MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
+MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version, bool isActive)
     : m_id(id)
     , m_manufacturer(manufacturer)
     , m_name(name)
     , m_type(type)
     , m_version(version)
     , m_access(access)
+    , m_isActive(isActive)
 {
     ASSERT(access);
     ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);

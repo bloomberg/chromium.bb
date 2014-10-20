@@ -67,12 +67,32 @@ void MIDIAccessor::sendMIDIData(unsigned portIndex, const unsigned char* data, s
 
 void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
 {
-    m_client->didAddInputPort(id, manufacturer, name, version);
+    m_client->didAddInputPort(id, manufacturer, name, version, true);
 }
 
 void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
 {
-    m_client->didAddOutputPort(id, manufacturer, name, version);
+    m_client->didAddOutputPort(id, manufacturer, name, version, true);
+}
+
+void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive)
+{
+    m_client->didAddInputPort(id, manufacturer, name, version, isActive);
+}
+
+void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive)
+{
+    m_client->didAddOutputPort(id, manufacturer, name, version, isActive);
+}
+
+void MIDIAccessor::didSetInputPortState(unsigned portIndex, bool isActive)
+{
+    m_client->didSetInputPortState(portIndex, isActive);
+}
+
+void MIDIAccessor::didSetOutputPortState(unsigned portIndex, bool isActive)
+{
+    m_client->didSetOutputPortState(portIndex, isActive);
 }
 
 void MIDIAccessor::didStartSession(bool success, const WebString& error, const WebString& message)
