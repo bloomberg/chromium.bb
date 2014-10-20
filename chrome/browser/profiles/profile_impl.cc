@@ -82,6 +82,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/domain_reliability/monitor.h"
@@ -669,10 +670,13 @@ void ProfileImpl::DoFinalInit() {
 #else
   base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
 #endif
+  // TODO(bengr): Remove this in M-43.
+  data_reduction_proxy::MigrateStatisticsPrefs(g_browser_process->local_state(),
+                                               prefs_.get());
   data_reduction_proxy_statistics_prefs =
       scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(
           new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
-              g_browser_process->local_state(),
+              prefs_.get(),
               base::MessageLoopProxy::current(),
               commit_delay));
   data_reduction_proxy_chrome_settings->SetDataReductionProxyStatisticsPrefs(

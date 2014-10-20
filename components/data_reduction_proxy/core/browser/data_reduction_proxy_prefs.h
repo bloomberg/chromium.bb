@@ -12,6 +12,7 @@ class PrefRegistrySyncable;
 }
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace data_reduction_proxy {
 
@@ -27,6 +28,11 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry);
 // Registers local state, i.e., profile-agnostic prefs for the data
 // reduction proxy.
 void RegisterPrefs(PrefRegistrySimple* registry);
+
+// Migrates the prefs that are used to record compression statistics from |src|
+// to |dest|.
+// TODO(bengr): Remove this in M-43.
+void MigrateStatisticsPrefs(PrefService* src, PrefService* dest);
 
 }  // namespace data_reduction_proxy
 

@@ -199,7 +199,6 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
   pref_registry->RegisterDoublePref(
       autofill::prefs::kAutofillNegativeUploadRate, 0.0);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry);
-  data_reduction_proxy::RegisterPrefs(pref_registry);
 
   base::PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(make_scoped_refptr(new AwPrefStore()));

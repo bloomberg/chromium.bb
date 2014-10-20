@@ -88,5 +88,10 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
+// A boolean specifying whether the data reduction proxy statistics preferences
+// have migrated from local state to the profile.
+const char kStatisticsPrefsMigrated[] =
+    "data_reduction.statistics_prefs_migrated";
+
 }  // namespace prefs
 }  // namespace data_reduction_proxy

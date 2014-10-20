@@ -90,6 +90,7 @@
             'data_reduction_proxy/core/browser/data_reduction_proxy_config_service_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_metrics_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_params_unittest.cc',
+            'data_reduction_proxy/core/browser/data_reduction_proxy_prefs_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_protocol_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_settings_unittest.cc',
             'data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs_unittest.cc',
