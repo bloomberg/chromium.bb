@@ -174,10 +174,11 @@ def run_executable(cmd, env):
       p1 = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE,
                             stderr=sys.stdout)
       p2 = subprocess.Popen(["../tools/valgrind/asan/asan_symbolize.py"],
-                            stdin=p1.stdout)
+                            env=env, stdin=p1.stdout)
       p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+      p1.wait()
       p2.wait()
-      return p2.returncode
+      return p1.returncode
     else:
       return subprocess.call(cmd, env=env)
   except OSError:
