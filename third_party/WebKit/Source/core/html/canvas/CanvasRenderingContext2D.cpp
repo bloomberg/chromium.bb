@@ -124,7 +124,7 @@ void CanvasRenderingContext2D::validateStateStack()
 {
 #if ENABLE(ASSERT)
     GraphicsContext* context = canvas()->existingDrawingContext();
-    if (context && !context->contextDisabled())
+    if (context && !context->contextDisabled() && !m_isContextLost)
         ASSERT(context->saveCount() == m_stateStack.size());
 #endif
 }
