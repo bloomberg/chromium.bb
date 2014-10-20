@@ -7,6 +7,7 @@
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/test/base/athena_test_base.h"
+#include "athena/test/base/test_windows.h"
 #include "ui/aura/window.h"
 
 namespace athena {
@@ -53,7 +54,7 @@ TEST_F(ActivityManagerTest, GetActivityForWindow) {
 
   EXPECT_EQ(NULL, manager->GetActivityForWindow(NULL));
 
-  scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
+  scoped_ptr<aura::Window> window = test::CreateNormalWindow(NULL, NULL);
   EXPECT_EQ(NULL, manager->GetActivityForWindow(window.get()));
 }
 

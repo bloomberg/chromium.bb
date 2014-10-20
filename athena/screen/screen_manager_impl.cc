@@ -2,29 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/screen/public/screen_manager.h"
+#include "athena/screen/screen_manager_impl.h"
 
 #include "athena/input/public/accelerator_manager.h"
+#include "athena/screen/modal_window_controller.h"
 #include "athena/screen/screen_accelerator_handler.h"
 #include "athena/util/container_priorities.h"
 #include "athena/util/fill_layout_manager.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/window_util.h"
+
+// This is to avoid creating type definitoin for kAlwaysOnTopKey.
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ATHENA_EXPORT, bool);
 
 namespace athena {
 namespace {
@@ -33,12 +35,38 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ScreenManager::ContainerParams,
                                  kContainerParamsKey,
                                  NULL);
 
-ScreenManager* instance = NULL;
+ScreenManagerImpl* instance = NULL;
 
-bool GrabsInput(aura::Window* container) {
+// A functor to find a container that has the higher priority.
+struct HigherPriorityFinder {
+  HigherPriorityFinder(int p) : priority(p) {}
+  bool operator()(aura::Window* window) {
+    return window->GetProperty(kContainerParamsKey)->z_order_priority >
+           priority;
+  }
+  int priority;
+};
+
+bool BlockEvents(aura::Window* container) {
   ScreenManager::ContainerParams* params =
       container->GetProperty(kContainerParamsKey);
-  return params && params->grab_inputs;
+  return params && params->block_events;
+}
+
+bool DefaultContainer(aura::Window* container) {
+  ScreenManager::ContainerParams* params =
+      container->GetProperty(kContainerParamsKey);
+  return params && params->default_parent;
+}
+
+bool HasModalContainerPriority(aura::Window* container) {
+  ScreenManager::ContainerParams* params =
+      container->GetProperty(kContainerParamsKey);
+  return params && params->modal_container_priority != -1;
+}
+
+bool IsSystemModal(aura::Window* window) {
+  return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
 
 // Returns the container which contains |window|.
@@ -61,47 +89,34 @@ class AthenaFocusRules : public wm::BaseFocusRules {
     return params && params->can_activate_children;
   }
   virtual bool CanActivateWindow(aura::Window* window) const override {
-    // Check if containers of higher z-order than |window| have 'grab_inputs'
+    if (!window)
+      return true;
+
+    // Check if containers of higher z-order than |window| have 'block_events'
     // fields.
-    if (window) {
+    if (window->GetRootWindow()) {
       const aura::Window::Windows& containers =
           window->GetRootWindow()->children();
       aura::Window::Windows::const_iterator iter =
           std::find(containers.begin(), containers.end(), GetContainer(window));
       DCHECK(iter != containers.end());
       for (++iter; iter != containers.end(); ++iter) {
-        if (GrabsInput(*iter))
+        if (BlockEvents(*iter))
           return false;
       }
     }
     return BaseFocusRules::CanActivateWindow(window);
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AthenaFocusRules);
-};
-
-class AthenaWindowTreeClient : public aura::client::WindowTreeClient {
- public:
-  explicit AthenaWindowTreeClient(aura::Window* container)
-      : container_(container) {}
-
- private:
-  virtual ~AthenaWindowTreeClient() {}
-
-  // aura::client::WindowTreeClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* context,
-                                         aura::Window* window,
-                                         const gfx::Rect& bounds) override {
-    aura::Window* transient_parent = wm::GetTransientParent(window);
-    if (transient_parent)
-      return GetContainer(transient_parent);
-    return container_;
+  virtual aura::Window* GetNextActivatableWindow(
+      aura::Window* ignore) const override {
+    aura::Window* next = wm::BaseFocusRules::GetNextActivatableWindow(ignore);
+    // TODO(oshima): Search from activatable containers if |next| is NULL.
+    return next;
   }
 
-  aura::Window* container_;
-
-  DISALLOW_COPY_AND_ASSIGN(AthenaWindowTreeClient);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AthenaFocusRules);
 };
 
 class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
@@ -140,92 +155,55 @@ class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
   DISALLOW_COPY_AND_ASSIGN(AthenaScreenPositionClient);
 };
 
-class AthenaEventTargeter : public aura::WindowTargeter,
-                            public aura::WindowObserver {
+class AthenaWindowTargeter : public aura::WindowTargeter {
  public:
-  explicit AthenaEventTargeter(aura::Window* container)
-      : container_(container) {
-    container_->AddObserver(this);
-  }
+  explicit AthenaWindowTargeter(aura::Window* root_window)
+      : root_window_(root_window) {}
 
-  virtual ~AthenaEventTargeter() {
-    // Removed before the container is removed.
-    if (container_)
-      container_->RemoveObserver(this);
-  }
-
-  void SetPreviousEventTargeter(scoped_ptr<ui::EventTargeter> targeter) {
-    previous_root_event_targeter_ = targeter.Pass();
-  }
+  virtual ~AthenaWindowTargeter() {}
 
  private:
   // aura::WindowTargeter:
   virtual bool SubtreeCanAcceptEvent(
       ui::EventTarget* target,
       const ui::LocatedEvent& event) const override {
+    const aura::Window::Windows& containers = root_window_->children();
+    auto r_iter =
+        std::find_if(containers.rbegin(), containers.rend(), &BlockEvents);
+    if (r_iter == containers.rend())
+      return aura::WindowTargeter::SubtreeCanAcceptEvent(target, event);
+
     aura::Window* window = static_cast<aura::Window*>(target);
-    const aura::Window::Windows& containers =
-        container_->GetRootWindow()->children();
-    aura::Window::Windows::const_iterator iter =
-        std::find(containers.begin(), containers.end(), container_);
-    DCHECK(iter != containers.end());
-    for (; iter != containers.end(); ++iter) {
-      if ((*iter)->Contains(window))
-        return true;
+    for (;; --r_iter) {
+      if ((*r_iter)->Contains(window))
+        return aura::WindowTargeter::SubtreeCanAcceptEvent(target, event);
+      if (r_iter == containers.rbegin())
+        break;
     }
     return false;
   }
 
-  // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override {
-    aura::Window* root_window = container_->GetRootWindow();
-    DCHECK_EQ(window, container_);
-    DCHECK_EQ(
-        this, static_cast<ui::EventTarget*>(root_window)->GetEventTargeter());
-
-    container_->RemoveObserver(this);
-    container_ = NULL;
-
-    // This will remove myself.
-    root_window->SetEventTargeter(previous_root_event_targeter_.Pass());
+  virtual ui::EventTarget* FindTargetForLocatedEvent(
+      ui::EventTarget* root,
+      ui::LocatedEvent* event) override {
+    ui::EventTarget* target =
+        aura::WindowTargeter::FindTargetForLocatedEvent(root, event);
+    if (target)
+      return target;
+    // If the root target is blocking the event, return the container even if
+    // there is no target found so that windows behind it will not be searched.
+    const ScreenManager::ContainerParams* params =
+        static_cast<aura::Window*>(root)->GetProperty(kContainerParamsKey);
+    return (params && params->block_events) ? root : NULL;
   }
-
-  aura::Window* container_;
-  scoped_ptr<ui::EventTargeter> previous_root_event_targeter_;
-
-  DISALLOW_COPY_AND_ASSIGN(AthenaEventTargeter);
-};
-
-class ScreenManagerImpl : public ScreenManager {
- public:
-  explicit ScreenManagerImpl(aura::Window* root_window);
-  virtual ~ScreenManagerImpl();
-
-  void Init();
-
- private:
-  // ScreenManager:
-  virtual aura::Window* CreateDefaultContainer(
-      const ContainerParams& params) override;
-  virtual aura::Window* CreateContainer(const ContainerParams& params) override;
-  virtual aura::Window* GetContext() override { return root_window_; }
-  virtual void SetRotation(gfx::Display::Rotation rotation) override;
-  virtual void SetRotationLocked(bool rotation_locked) override;
 
   // Not owned.
   aura::Window* root_window_;
 
-  scoped_ptr<aura::client::FocusClient> focus_client_;
-  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
-  scoped_ptr<AcceleratorHandler> accelerator_handler_;
-  scoped_ptr< ::wm::ScopedCaptureClient> capture_client_;
-  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
-
-  gfx::Display::Rotation last_requested_rotation_;
-  bool rotation_locked_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(AthenaWindowTargeter);
 };
+
+}  // namespace
 
 ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
     : root_window_(root_window),
@@ -266,76 +244,48 @@ void ScreenManagerImpl::Init() {
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window_));
   accelerator_handler_.reset(new ScreenAcceleratorHandler(root_window_));
-}
 
-aura::Window* ScreenManagerImpl::CreateDefaultContainer(
-    const ContainerParams& params) {
-  aura::Window* container = CreateContainer(params);
-  window_tree_client_.reset(new AthenaWindowTreeClient(container));
-  aura::client::SetWindowTreeClient(root_window_, window_tree_client_.get());
+  aura::client::SetWindowTreeClient(root_window_, this);
 
   screen_position_client_.reset(new AthenaScreenPositionClient());
   aura::client::SetScreenPositionClient(root_window_,
                                         screen_position_client_.get());
-
-  return container;
+  root_window_->SetEventTargeter(
+      make_scoped_ptr(new AthenaWindowTargeter(root_window_)));
 }
 
-// A functor to find a container that has the higher priority.
-struct HigherPriorityFinder {
-  HigherPriorityFinder(int p) : priority(p) {}
-  bool operator()(aura::Window* window) {
-    return window->GetProperty(kContainerParamsKey)->z_order_priority >
-           priority;
+aura::Window* ScreenManagerImpl::FindContainerByPriority(int priority) {
+  for (aura::Window* window : root_window_->children()) {
+    if (window->GetProperty(kContainerParamsKey)->z_order_priority == priority)
+      return window;
   }
-  int priority;
-};
-
-#if !defined(NDEBUG)
-struct PriorityMatcher {
-  PriorityMatcher(int p) : priority(p) {}
-  bool operator()(aura::Window* window) {
-    return window->GetProperty(kContainerParamsKey)->z_order_priority ==
-           priority;
-  }
-  int priority;
-};
-#endif
+  return NULL;
+}
 
 aura::Window* ScreenManagerImpl::CreateContainer(
     const ContainerParams& params) {
+  const aura::Window::Windows& children = root_window_->children();
+
+  if (params.default_parent) {
+    CHECK(std::find_if(children.begin(), children.end(), &DefaultContainer) ==
+          children.end());
+  }
+  // mmodal container's priority must be higher than the container's priority.
+  DCHECK(params.modal_container_priority == -1 ||
+         params.modal_container_priority > params.z_order_priority);
+  // Default parent must specify modal_container_priority.
+  DCHECK(!params.default_parent || params.modal_container_priority != -1);
+
   aura::Window* container = new aura::Window(NULL);
   CHECK_GE(params.z_order_priority, 0);
   container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   container->SetName(params.name);
 
-  const aura::Window::Windows& children = root_window_->children();
-
-#if !defined(NDEBUG)
-  DCHECK(std::find_if(children.begin(),
-                      children.end(),
-                      PriorityMatcher(params.z_order_priority))
-         == children.end())
-      << "The container with the priority "
-      << params.z_order_priority << " already exists.";
-#endif
+  DCHECK(!FindContainerByPriority(params.z_order_priority))
+      << "The container with the priority " << params.z_order_priority
+      << " already exists.";
 
   container->SetProperty(kContainerParamsKey, new ContainerParams(params));
-
-  // If another container is already grabbing the input, SetEventTargeter
-  // implicitly release the grabbing and remove the EventTargeter instance.
-  // TODO(mukai|oshima): think about the ideal behavior of multiple grabbing
-  // and implement it.
-  if (params.grab_inputs) {
-    DCHECK(std::find_if(children.begin(), children.end(), &GrabsInput)
-           == children.end())
-        << "input has already been grabbed by another container";
-    AthenaEventTargeter* athena_event_targeter =
-        new AthenaEventTargeter(container);
-    athena_event_targeter->SetPreviousEventTargeter(
-        root_window_->SetEventTargeter(
-            scoped_ptr<ui::EventTargeter>(athena_event_targeter)));
-  }
 
   root_window_->AddChild(container);
 
@@ -348,6 +298,10 @@ aura::Window* ScreenManagerImpl::CreateContainer(
 
   container->Show();
   return container;
+}
+
+aura::Window* ScreenManagerImpl::GetContext() {
+  return root_window_;
 }
 
 void ScreenManagerImpl::SetRotation(gfx::Display::Rotation rotation) {
@@ -369,14 +323,62 @@ void ScreenManagerImpl::SetRotationLocked(bool rotation_locked) {
     SetRotation(last_requested_rotation_);
 }
 
-}  // namespace
+int ScreenManagerImpl::GetModalContainerPriority(aura::Window* window,
+                                                 aura::Window* parent) {
+  const aura::Window::Windows& children = root_window_->children();
+  if (window->GetProperty(aura::client::kAlwaysOnTopKey)) {
+    // Use top most modal container.
+    auto iter = std::find_if(
+        children.rbegin(), children.rend(), &HasModalContainerPriority);
+    DCHECK(iter != children.rend());
+    return (*iter)->GetProperty(kContainerParamsKey)->modal_container_priority;
+  } else {
+    // use the container closest to the parent which has modal
+    // container priority.
+    auto iter = std::find(children.rbegin(), children.rend(), parent);
+    DCHECK(iter != children.rend());
+    iter = std::find_if(iter, children.rend(), &HasModalContainerPriority);
+    DCHECK(iter != children.rend());
+    return (*iter)->GetProperty(kContainerParamsKey)->modal_container_priority;
+  }
+}
+
+aura::Window* ScreenManagerImpl::GetDefaultParent(aura::Window* context,
+                                                  aura::Window* window,
+                                                  const gfx::Rect& bounds) {
+  aura::Window* parent = wm::GetTransientParent(window);
+  if (parent)
+    parent = GetContainer(parent);
+  else
+    parent = GetDefaultContainer();
+
+  if (IsSystemModal(window)) {
+    DCHECK(window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+           window->type() == ui::wm::WINDOW_TYPE_POPUP);
+    int priority = GetModalContainerPriority(window, parent);
+
+    parent = FindContainerByPriority(priority);
+    if (!parent) {
+      ModalWindowController* controller = new ModalWindowController(priority);
+      parent = controller->modal_container();
+    }
+  }
+  return parent;
+}
+
+aura::Window* ScreenManagerImpl::GetDefaultContainer() {
+  const aura::Window::Windows& children = root_window_->children();
+  return *(std::find_if(children.begin(), children.end(), &DefaultContainer));
+}
 
 ScreenManager::ContainerParams::ContainerParams(const std::string& n,
                                                 int priority)
     : name(n),
       can_activate_children(false),
-      grab_inputs(false),
-      z_order_priority(priority) {
+      block_events(false),
+      z_order_priority(priority),
+      default_parent(false),
+      modal_container_priority(-1) {
 }
 
 // static

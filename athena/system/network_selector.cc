@@ -4,6 +4,7 @@
 
 #include "athena/system/network_selector.h"
 
+#include "athena/screen/public/screen_manager.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -38,6 +39,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using chromeos::NetworkConfigurationHandler;
 using chromeos::NetworkConnectionHandler;
@@ -47,18 +49,14 @@ using chromeos::NetworkState;
 
 namespace {
 
-const int kBackgroundColor = SkColorSetARGB(0x7f, 0, 0, 0);
-
 // The View for the user to enter the password for connceting to a network. This
 // view also shows an error message if the network connection fails.
 class PasswordView : public views::View, public views::ButtonListener {
  public:
   PasswordView(const ui::NetworkInfo& network,
-               const base::Callback<void(bool)>& callback,
-               views::View* parent_container)
+               const base::Callback<void(bool)>& callback)
       : network_(network),
         callback_(callback),
-        parent_container_(parent_container),
         connect_(NULL),
         cancel_(NULL),
         textfield_(NULL),
@@ -102,7 +100,7 @@ class PasswordView : public views::View, public views::ButtonListener {
   virtual ~PasswordView() {}
 
  private:
-  void Close(bool successful) { callback_.Run(successful); }
+  void CloseDialog(bool successful) { callback_.Run(successful); }
 
   void OnKnownError(const std::string& error_name,
                     scoped_ptr<base::DictionaryValue> error_data) {
@@ -122,7 +120,7 @@ class PasswordView : public views::View, public views::ButtonListener {
     if (!error_msg_->parent()) {
       AddChildView(error_msg_);
       InvalidateLayout();
-      parent_container_->Layout();
+      GetWidget()->GetRootView()->Layout();
       ScrollRectToVisible(error_msg_->bounds());
     }
     connect_->SetEnabled(true);
@@ -149,7 +147,7 @@ class PasswordView : public views::View, public views::ButtonListener {
         check_error_state);
   }
 
-  void OnConnectionSucceed() { Close(true); }
+  void OnConnectionSucceed() { CloseDialog(true); }
 
   // views::View:
   virtual void ViewHierarchyChanged(
@@ -176,7 +174,7 @@ class PasswordView : public views::View, public views::ButtonListener {
                      textfield_->text()),
           base::Bind(&PasswordView::OnKnownError, weak_ptr_.GetWeakPtr()));
     } else if (sender == cancel_) {
-      Close(false);
+      CloseDialog(false);
     } else {
       NOTREACHED();
     }
@@ -184,7 +182,6 @@ class PasswordView : public views::View, public views::ButtonListener {
 
   ui::NetworkInfo network_;
   base::Callback<void(bool)> callback_;
-  views::View* parent_container_;
 
   views::BlueButton* connect_;
   views::LabelButton* cancel_;
@@ -199,8 +196,8 @@ class PasswordView : public views::View, public views::ButtonListener {
 // contains the View for taking password for password-protected networks.
 class NetworkRow : public views::View {
  public:
-  NetworkRow(const ui::NetworkInfo& network, views::View* container)
-      : network_(network), container_(container), weak_ptr_(this) {
+  NetworkRow(const ui::NetworkInfo& network)
+      : network_(network), weak_ptr_(this) {
     SetBorder(views::Border::CreateEmptyBorder(10, 5, 10, 5));
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 10));
@@ -230,7 +227,7 @@ class NetworkRow : public views::View {
   void OnPasswordComplete(bool successful) {
     password_view_.reset();
     InvalidateLayout();
-    container_->Layout();
+    GetWidget()->GetRootView()->Layout();
     ScrollRectToVisible(GetContentsBounds());
   }
 
@@ -249,12 +246,11 @@ class NetworkRow : public views::View {
 
     password_view_.reset(new PasswordView(
         network_,
-        base::Bind(&NetworkRow::OnPasswordComplete, weak_ptr_.GetWeakPtr()),
-        container_));
+        base::Bind(&NetworkRow::OnPasswordComplete, weak_ptr_.GetWeakPtr())));
     password_view_->set_owned_by_client();
     AddChildView(password_view_.get());
     PreferredSizeChanged();
-    container_->Layout();
+    GetWidget()->GetRootView()->Layout();
     ScrollRectToVisible(password_view_->bounds());
   }
 
@@ -310,7 +306,6 @@ class NetworkRow : public views::View {
   }
 
   ui::NetworkInfo network_;
-  views::View* container_;
   scoped_ptr<views::View> password_view_;
   base::WeakPtrFactory<NetworkRow> weak_ptr_;
 
@@ -319,15 +314,12 @@ class NetworkRow : public views::View {
 
 class NetworkSelector : public ui::NetworkListDelegate,
                         public chromeos::NetworkStateHandlerObserver,
-                        public ui::EventHandler {
+                        public views::DialogDelegate {
  public:
-  explicit NetworkSelector(aura::Window* container)
-      : background_view_(NULL),
-        scroll_content_(NULL),
-        scroller_(NULL),
-        network_list_(this) {
-    CreateWidget(container);
+  NetworkSelector()
+      : scroll_content_(NULL), scroller_(NULL), network_list_(this) {
     CreateNetworkList();
+    CreateWidget();
 
     NetworkHandler::Get()->network_state_handler()->RequestScan();
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
@@ -340,36 +332,19 @@ class NetworkSelector : public ui::NetworkListDelegate,
   }
 
  private:
-  void CreateWidget(aura::Window* container) {
-    views::Widget::InitParams params;
-    params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.activatable = views::Widget::InitParams::ACTIVATABLE_DEFAULT;
-    params.accept_events = true;
-    params.bounds = gfx::Rect(container->bounds().size());
-    params.parent = container;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.reset(new views::Widget());
-    widget_->Init(params);
-    widget_->Show();
-
-    background_view_ = new views::View;
-    background_view_->set_background(
-        views::Background::CreateSolidBackground(kBackgroundColor));
-    background_view_->SetBorder(
-        views::Border::CreateEmptyBorder(100, 300, 300, 300));
-    background_view_->SetLayoutManager(new views::FillLayout());
-    background_view_->set_target_handler(this);
-
-    widget_->SetContentsView(background_view_);
+  void CreateWidget() {
+    // Same as CreateDialogWidgetWithBounds() with an empty |bounds|.
+    views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
+        this, athena::ScreenManager::Get()->GetContext(), NULL);
+    widget->Show();
+    widget->CenterWindow(gfx::Size(400, 400));
   }
 
   void CreateNetworkList() {
-    const int kListHeight = 500;
+    const int kListHeight = 400;
     scroller_ = new views::ScrollView();
     scroller_->set_background(
         views::Background::CreateSolidBackground(SK_ColorWHITE));
-    scroller_->SetBounds(0, 0, 400, kListHeight);
 
     scroll_content_ = new views::View;
     scroll_content_->SetLayoutManager(
@@ -378,21 +353,16 @@ class NetworkSelector : public ui::NetworkListDelegate,
 
     scroller_->ClipHeightTo(kListHeight, kListHeight);
     scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
-    background_view_->AddChildView(scroller_);
-
-    background_view_->Layout();
 
     network_list_.set_content_view(scroll_content_);
   }
 
   void UpdateNetworkList() { network_list_.UpdateNetworkList(); }
 
-  void Close() { delete this; }
-
   // ui::NetworkListDelegate:
   virtual views::View* CreateViewForNetwork(
       const ui::NetworkInfo& info) override {
-    return new NetworkRow(info, background_view_);
+    return new NetworkRow(info);
   }
 
   virtual bool IsViewHovered(views::View* view) override {
@@ -429,25 +399,19 @@ class NetworkSelector : public ui::NetworkListDelegate,
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) override {}
 
-  // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* mouse) override {
-    CHECK_EQ(background_view_, mouse->target());
-    if (mouse->type() == ui::ET_MOUSE_PRESSED && !mouse->handled()) {
-      Close();
-      mouse->SetHandled();
-    }
+  // views::DialogDelegate:
+  virtual ui::ModalType GetModalType() const override {
+    return ui::MODAL_TYPE_SYSTEM;
   }
-
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
-    CHECK_EQ(background_view_, gesture->target());
-    if (gesture->type() == ui::ET_GESTURE_TAP && !gesture->handled()) {
-      Close();
-      gesture->SetHandled();
-    }
+  virtual void DeleteDelegate() override { delete this; }
+  virtual views::Widget* GetWidget() override { return scroller_->GetWidget(); }
+  virtual const views::Widget* GetWidget() const override {
+    return scroller_->GetWidget();
   }
+  virtual views::View* GetContentsView() override { return scroller_; }
+  virtual int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
+  virtual bool Close() override { return true; }
 
-  scoped_ptr<views::Widget> widget_;
-  views::View* background_view_;
   views::View* scroll_content_;
   views::ScrollView* scroller_;
 
@@ -462,8 +426,8 @@ class NetworkSelector : public ui::NetworkListDelegate,
 
 namespace athena {
 
-void CreateNetworkSelector(aura::Window* container) {
-  new NetworkSelector(container);
+void CreateNetworkSelector() {
+  new NetworkSelector();
 }
 
 }  // namespace athena

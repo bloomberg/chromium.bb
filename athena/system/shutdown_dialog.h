@@ -23,7 +23,7 @@ namespace athena {
 // Shuts down in response to the power button being pressed.
 class ShutdownDialog : public PowerButtonObserver {
  public:
-  explicit ShutdownDialog(aura::Window* dialog_container);
+  explicit ShutdownDialog();
   virtual ~ShutdownDialog();
 
  private:

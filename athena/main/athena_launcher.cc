@@ -115,8 +115,8 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> blocking_task_runner) {
 
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
-  athena::SystemUI::Create(blocking_task_runner);
   athena::WindowManager::Create();
+  athena::SystemUI::Create(blocking_task_runner);
   athena::AppRegistry::Create();
   SetupBackgroundImage();
 
@@ -166,8 +166,8 @@ void ShutdownAthena() {
     session_started = false;
   }
   athena::AppRegistry::ShutDown();
-  athena::WindowManager::Shutdown();
   athena::SystemUI::Shutdown();
+  athena::WindowManager::Shutdown();
   athena::ScreenManager::Shutdown();
   athena::InputManager::Shutdown();
   athena::AthenaEnv::Shutdown();
