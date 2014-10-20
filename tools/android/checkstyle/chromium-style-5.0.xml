@@ -158,11 +158,11 @@
       <property name="option" value="top"/>
       <property name="separated" value="true"/>
     </module>
-    <!-- TODO(aurimas): make indentation an error once https://github.com/checkstyle/checkstyle/issues/255 is fixed. -->
     <module name="Indentation">
-      <property name="severity" value="info"/>
+      <property name="severity" value="error"/>
       <property name="basicOffset" value="4"/>
       <property name="throwsIndent" value="8"/>
+      <property name="lineWrappingIndentation" value="8"/>
     </module>
   </module>
   <module name="FileTabCharacter">
