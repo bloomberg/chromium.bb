@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 
 #include "base/logging.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
@@ -59,6 +60,12 @@ void CastBrowserProcess::SetRemoteDebuggingServer(
     RemoteDebuggingServer* remote_debugging_server) {
   DCHECK(!remote_debugging_server_);
   remote_debugging_server_.reset(remote_debugging_server);
+}
+
+void CastBrowserProcess::SetMetricsHelper(
+    metrics::CastMetricsHelper* metrics_helper) {
+  DCHECK(!metrics_helper_);
+  metrics_helper_.reset(metrics_helper);
 }
 
 void CastBrowserProcess::SetMetricsServiceClient(

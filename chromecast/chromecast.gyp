@@ -14,6 +14,18 @@
   },
   'targets': [
     {
+      'target_name': 'cast_base',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'base/metrics/cast_histograms.h',
+        'base/metrics/cast_metrics_helper.cc',
+        'base/metrics/cast_metrics_helper.h',
+      ],
+    },  # end of target 'cast_base'
+    {
       'target_name': 'cast_net',
       'type': '<(component)',
       'sources': [
@@ -83,6 +95,7 @@
       'target_name': 'cast_shell_common',
       'type': '<(component)',
       'dependencies': [
+        'cast_base',
         'cast_shell_pak',
         'cast_shell_resources',
         'cast_version_header',
@@ -243,6 +256,17 @@
         },
       ],
     },
+    {
+      'target_name': 'cast_metrics_test_support',
+      'type': '<(component)',
+      'dependencies': [
+        'cast_base',
+      ],
+      'sources': [
+        'base/metrics/cast_metrics_test_helper.cc',
+        'base/metrics/cast_metrics_test_helper.h',
+      ],
+    },  # end of target 'cast_metrics_test_support'
     {
       'target_name': 'cast_tests',
       'type': 'none',

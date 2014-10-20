@@ -91,6 +91,7 @@ class BufferingController {
 
   // Start time of a re-buffering phase.
   base::Time begin_buffering_time_;
+  bool initial_buffering_;
 
   // Buffering level for each individual stream.
   typedef std::list<scoped_refptr<BufferingState> > StreamList;

@@ -37,6 +37,7 @@ class CastBrowserProcess {
   void SetBrowserContext(CastBrowserContext* browser_context);
   void SetCastService(CastService* cast_service);
   void SetRemoteDebuggingServer(RemoteDebuggingServer* remote_debugging_server);
+  void SetMetricsHelper(metrics::CastMetricsHelper* metrics_helper);
   void SetMetricsServiceClient(
       metrics::CastMetricsServiceClient* metrics_service_client);
 #if defined(OS_ANDROID)
@@ -51,6 +52,7 @@ class CastBrowserProcess {
 
  private:
   scoped_ptr<CastBrowserContext> browser_context_;
+  scoped_ptr<metrics::CastMetricsHelper> metrics_helper_;
   scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
 #if defined(OS_ANDROID)

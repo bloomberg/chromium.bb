@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
@@ -89,6 +90,9 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
+  cast_browser_process_->SetMetricsHelper(
+      new metrics::CastMetricsHelper(base::MessageLoopProxy::current()));
+
 #if defined(OS_ANDROID)
   base::MessageLoopForUI::current()->Start();
 #endif  // defined(OS_ANDROID)

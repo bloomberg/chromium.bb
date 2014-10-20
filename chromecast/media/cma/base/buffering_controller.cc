@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cma/base/buffering_state.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "media/base/buffers.h"
@@ -21,6 +22,7 @@ BufferingController::BufferingController(
       buffering_notification_cb_(buffering_notification_cb),
       is_buffering_(false),
       begin_buffering_time_(base::Time()),
+      initial_buffering_(true),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
@@ -106,6 +108,7 @@ void BufferingController::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   is_buffering_ = false;
+  initial_buffering_ = true;
   stream_list_.clear();
 }
 
@@ -147,6 +150,15 @@ void BufferingController::OnBufferingStateChanged(
     CMALOG(kLogControl)
         << "Buffering took: "
         << buffering_user_time.InMilliseconds() << "ms";
+    chromecast::metrics::CastMetricsHelper::BufferingType buffering_type =
+        initial_buffering_ ?
+            chromecast::metrics::CastMetricsHelper::kInitialBuffering :
+            chromecast::metrics::CastMetricsHelper::kBufferingAfterUnderrun;
+    chromecast::metrics::CastMetricsHelper::GetInstance()->LogTimeToBufferAv(
+        buffering_type, buffering_user_time);
+
+    // Only the first buffering report is considered "initial buffering".
+    initial_buffering_ = false;
   }
 
   if (is_buffering_prv != is_buffering_ || force_notification)

@@ -39,6 +39,7 @@
       'target_name': 'cma_base',
       'type': '<(component)',
       'dependencies': [
+        '../chromecast.gyp:cast_base',
         '../../base/base.gyp:base',
         '../../media/media.gyp:media',
       ],
@@ -175,6 +176,7 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
+        '../../chromecast/chromecast.gyp:cast_metrics_test_support',
         '../../media/media.gyp:media_test_support',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',

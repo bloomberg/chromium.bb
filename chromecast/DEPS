@@ -4,6 +4,7 @@ include_rules = [
   # Chromecast code should explicitly declare its dependencies on each
   # sub-directory within chromecast/.
   "-chromecast",
+  "+chromecast/base",
 
   # Other Chromecast-wide dependencies.
   "+content/public/common",
