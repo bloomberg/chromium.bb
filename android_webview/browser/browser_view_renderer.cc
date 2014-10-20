@@ -129,6 +129,8 @@ void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
     return;
 
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
+  DCHECK(hardware_enabled_);
+  DCHECK(compositor_);
 
   RequestMemoryPolicy(zero_policy);
   EnforceMemoryPolicyImmediately(zero_policy);
@@ -159,6 +161,7 @@ BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
 // well as the tile resource allocation in GlobalTileManager.
 void BrowserViewRenderer::RequestMemoryPolicy(
     SynchronousCompositorMemoryPolicy& new_policy) {
+  DCHECK(compositor_);
   GlobalTileManager* manager = GlobalTileManager::GetInstance();
 
   // The following line will call BrowserViewRenderer::SetMemoryPolicy().
@@ -295,14 +298,14 @@ void BrowserViewRenderer::ReturnUnusedResource(
   cc::CompositorFrameAck frame_ack;
   cc::TransferableResource::ReturnResources(
       frame->delegated_frame_data->resource_list, &frame_ack.resources);
-  if (!frame_ack.resources.empty())
+  if (compositor_ && !frame_ack.resources.empty())
     compositor_->ReturnResources(frame_ack);
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent() {
   cc::CompositorFrameAck frame_ack;
   shared_renderer_state_->SwapReturnedResources(&frame_ack.resources);
-  if (!frame_ack.resources.empty()) {
+  if (compositor_ && !frame_ack.resources.empty()) {
     compositor_->ReturnResources(frame_ack);
   }
 }
@@ -433,11 +436,13 @@ void BrowserViewRenderer::ReleaseHardware() {
   ReturnResourceFromParent();
   DCHECK(shared_renderer_state_->ReturnedResourcesEmpty());
 
-  compositor_->ReleaseHwDraw();
-  hardware_enabled_ = false;
+  if (compositor_) {
+    compositor_->ReleaseHwDraw();
+    SynchronousCompositorMemoryPolicy zero_policy;
+    RequestMemoryPolicy(zero_policy);
+  }
 
-  SynchronousCompositorMemoryPolicy zero_policy;
-  RequestMemoryPolicy(zero_policy);
+  hardware_enabled_ = false;
   GlobalTileManager::GetInstance()->Remove(tile_manager_key_);
 }
 
@@ -463,9 +468,12 @@ void BrowserViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::DidDestroyCompositor");
   DCHECK(compositor_);
-  compositor_ = NULL;
   SynchronousCompositorMemoryPolicy zero_policy;
+  if (hardware_enabled_) {
+    RequestMemoryPolicy(zero_policy);
+  }
   DCHECK(memory_policy_ == zero_policy);
+  compositor_ = NULL;
 }
 
 void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
