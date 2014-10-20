@@ -21,6 +21,7 @@ PassRefPtr<Image> StaticBitmapImage::create(PassRefPtr<SkImage> image)
 
 StaticBitmapImage::StaticBitmapImage(PassRefPtr<SkImage> image) : m_image(image)
 {
+    ASSERT(m_image);
 }
 
 StaticBitmapImage::~StaticBitmapImage() { }
