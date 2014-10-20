@@ -1032,8 +1032,10 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
 
   // Try finding a fallback font using a meta file.
   // TODO(msw|asvitkine): Support RenderText's font_list()?
+  Font uniscribe_font;
   if (GetUniscribeFallbackFont(original_font, run_text, run_length,
-                               &current_font)) {
+                               &uniscribe_font)) {
+    current_font = uniscribe_font;
     missing_count = CountCharsWithMissingGlyphs(run,
         ShapeTextRunWithFont(run, current_font));
     if (missing_count == 0) {
@@ -1050,8 +1052,25 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
   std::vector<std::string> fonts =
       GetFallbackFontFamilies(original_font.GetFontName());
   for (size_t i = 1; i < fonts.size(); ++i) {
+    current_font = Font(fonts[i], original_font.GetFontSize());
     missing_count = CountCharsWithMissingGlyphs(run,
-        ShapeTextRunWithFont(run, Font(fonts[i], original_font.GetFontSize())));
+        ShapeTextRunWithFont(run, current_font));
+    if (missing_count == 0) {
+      successful_substitute_fonts_[original_font.GetFontName()] = current_font;
+      return;
+    }
+    if (missing_count < best_partial_font_missing_char_count) {
+      best_partial_font_missing_char_count = missing_count;
+      best_partial_font = current_font;
+    }
+  }
+
+  // Try fonts in the fallback list of the Uniscribe font.
+  fonts = GetFallbackFontFamilies(uniscribe_font.GetFontName());
+  for (size_t i = 1; i < fonts.size(); ++i) {
+    current_font = Font(fonts[i], original_font.GetFontSize());
+    missing_count = CountCharsWithMissingGlyphs(run,
+      ShapeTextRunWithFont(run, current_font));
     if (missing_count == 0) {
       successful_substitute_fonts_[original_font.GetFontName()] = current_font;
       return;
