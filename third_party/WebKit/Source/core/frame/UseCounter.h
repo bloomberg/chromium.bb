@@ -540,6 +540,8 @@ public:
         SVGPathSegDOM = 568,
         SVGTransformListConsolidate = 569,
         SVGAnimatedTransformListBaseVal = 570,
+        QuotedAnimationName = 571,
+        QuotedKeyframesRule = 572,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
