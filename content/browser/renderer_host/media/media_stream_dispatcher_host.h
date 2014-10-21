@@ -33,34 +33,33 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
       MediaStreamManager* media_stream_manager);
 
   // MediaStreamRequester implementation.
-  virtual void StreamGenerated(
-      int render_frame_id,
-      int page_request_id,
-      const std::string& label,
-      const StreamDeviceInfoArray& audio_devices,
-      const StreamDeviceInfoArray& video_devices) override;
-  virtual void StreamGenerationFailed(
+  void StreamGenerated(int render_frame_id,
+                       int page_request_id,
+                       const std::string& label,
+                       const StreamDeviceInfoArray& audio_devices,
+                       const StreamDeviceInfoArray& video_devices) override;
+  void StreamGenerationFailed(
       int render_frame_id,
       int page_request_id,
       content::MediaStreamRequestResult result) override;
-  virtual void DeviceStopped(int render_frame_id,
-                             const std::string& label,
-                             const StreamDeviceInfo& device) override;
-  virtual void DevicesEnumerated(int render_frame_id,
-                                 int page_request_id,
-                                 const std::string& label,
-                                 const StreamDeviceInfoArray& devices) override;
-  virtual void DeviceOpened(int render_frame_id,
-                            int page_request_id,
-                            const std::string& label,
-                            const StreamDeviceInfo& video_device) override;
+  void DeviceStopped(int render_frame_id,
+                     const std::string& label,
+                     const StreamDeviceInfo& device) override;
+  void DevicesEnumerated(int render_frame_id,
+                         int page_request_id,
+                         const std::string& label,
+                         const StreamDeviceInfoArray& devices) override;
+  void DeviceOpened(int render_frame_id,
+                    int page_request_id,
+                    const std::string& label,
+                    const StreamDeviceInfo& video_device) override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelClosing() override;
 
  protected:
-  virtual ~MediaStreamDispatcherHost();
+  ~MediaStreamDispatcherHost() override;
 
  private:
   friend class MockMediaStreamDispatcherHost;

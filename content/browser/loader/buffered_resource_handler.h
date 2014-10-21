@@ -28,26 +28,25 @@ class BufferedResourceHandler
   BufferedResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                           ResourceDispatcherHostImpl* host,
                           net::URLRequest* request);
-  virtual ~BufferedResourceHandler();
+  ~BufferedResourceHandler() override;
 
  private:
   // ResourceHandler implementation:
-  virtual void SetController(ResourceController* controller) override;
-  virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) override;
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) override;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
-  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
-                                   const std::string& security_info,
-                                   bool* defer) override;
+  void SetController(ResourceController* controller) override;
+  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  int min_size) override;
+  bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& status,
+                           const std::string& security_info,
+                           bool* defer) override;
 
   // ResourceController implementation:
-  virtual void Resume() override;
-  virtual void Cancel() override;
-  virtual void CancelAndIgnore() override;
-  virtual void CancelWithError(int error_code) override;
+  void Resume() override;
+  void Cancel() override;
+  void CancelAndIgnore() override;
+  void CancelWithError(int error_code) override;
 
   bool ProcessResponse(bool* defer);
 

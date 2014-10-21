@@ -59,7 +59,7 @@ class RenderFrameProxyHost
 
   RenderFrameProxyHost(SiteInstance* site_instance,
                        FrameTreeNode* frame_tree_node);
-  virtual ~RenderFrameProxyHost();
+  ~RenderFrameProxyHost() override;
 
   RenderProcessHost* GetProcess() {
     return site_instance_->GetProcess();
@@ -93,10 +93,10 @@ class RenderFrameProxyHost
   scoped_ptr<RenderFrameHostImpl> PassFrameHostOwnership();
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   CrossProcessFrameConnector* cross_process_frame_connector() {
     return cross_process_frame_connector_.get();

@@ -54,17 +54,17 @@ class CONTENT_EXPORT SQLitePersistentCookieStore
       CookieCryptoDelegate* crypto_delegate);
 
   // net::CookieMonster::PersistentCookieStore:
-  virtual void Load(const LoadedCallback& loaded_callback) override;
-  virtual void LoadCookiesForKey(const std::string& key,
-      const LoadedCallback& callback) override;
-  virtual void AddCookie(const net::CanonicalCookie& cc) override;
-  virtual void UpdateCookieAccessTime(const net::CanonicalCookie& cc) override;
-  virtual void DeleteCookie(const net::CanonicalCookie& cc) override;
-  virtual void SetForceKeepSessionState() override;
-  virtual void Flush(const base::Closure& callback) override;
+  void Load(const LoadedCallback& loaded_callback) override;
+  void LoadCookiesForKey(const std::string& key,
+                         const LoadedCallback& callback) override;
+  void AddCookie(const net::CanonicalCookie& cc) override;
+  void UpdateCookieAccessTime(const net::CanonicalCookie& cc) override;
+  void DeleteCookie(const net::CanonicalCookie& cc) override;
+  void SetForceKeepSessionState() override;
+  void Flush(const base::Closure& callback) override;
 
  protected:
-   virtual ~SQLitePersistentCookieStore();
+  ~SQLitePersistentCookieStore() override;
 
  private:
   class Backend;

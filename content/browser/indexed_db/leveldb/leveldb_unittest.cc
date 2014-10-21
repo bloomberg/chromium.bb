@@ -25,12 +25,12 @@ namespace {
 
 class SimpleComparator : public LevelDBComparator {
  public:
-  virtual int Compare(const base::StringPiece& a,
-                      const base::StringPiece& b) const override {
+  int Compare(const base::StringPiece& a,
+              const base::StringPiece& b) const override {
     size_t len = std::min(a.size(), b.size());
     return memcmp(a.begin(), b.begin(), len);
   }
-  virtual const char* Name() const override { return "temp_comparator"; }
+  const char* Name() const override { return "temp_comparator"; }
 };
 
 }  // namespace

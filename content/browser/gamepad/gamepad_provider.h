@@ -37,7 +37,7 @@ class CONTENT_EXPORT GamepadProvider :
   // Manually specifies the data fetcher. Used for testing.
   explicit GamepadProvider(scoped_ptr<GamepadDataFetcher> fetcher);
 
-  virtual ~GamepadProvider();
+  ~GamepadProvider() override;
 
   // Returns the shared memory handle of the gamepad data duplicated into the
   // given process.
@@ -56,7 +56,7 @@ class CONTENT_EXPORT GamepadProvider :
   void RegisterForUserGesture(const base::Closure& closure);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
-  virtual void OnDevicesChanged(base::SystemMonitor::DeviceType type) override;
+  void OnDevicesChanged(base::SystemMonitor::DeviceType type) override;
 
  private:
   void Initialize(scoped_ptr<GamepadDataFetcher> fetcher);

@@ -79,7 +79,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
 
   // If not using quota management, the proxy may be NULL.
   explicit AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy);
-  virtual ~AppCacheServiceImpl();
+  ~AppCacheServiceImpl() override;
 
   void Initialize(
       const base::FilePath& cache_directory,
@@ -99,16 +99,14 @@ class CONTENT_EXPORT AppCacheServiceImpl
   void ScheduleReinitialize();
 
   // AppCacheService implementation:
-  virtual void CanHandleMainResourceOffline(
+  void CanHandleMainResourceOffline(
       const GURL& url,
       const GURL& first_party,
       const net::CompletionCallback& callback) override;
-  virtual void GetAllAppCacheInfo(
-      AppCacheInfoCollection* collection,
-      const net::CompletionCallback& callback) override;
-  virtual void DeleteAppCacheGroup(
-      const GURL& manifest_url,
-      const net::CompletionCallback& callback) override;
+  void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
+                          const net::CompletionCallback& callback) override;
+  void DeleteAppCacheGroup(const GURL& manifest_url,
+                           const net::CompletionCallback& callback) override;
 
   // Deletes all appcaches for the origin, 'callback' is invoked upon
   // completion. This method always completes asynchronously.

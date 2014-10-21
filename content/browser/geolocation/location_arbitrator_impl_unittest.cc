@@ -73,15 +73,13 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
         access_token_store_(access_token_store) {
   }
 
-  virtual base::Time GetTimeNow() const override {
-    return GetTimeNowForTest();
-  }
+  base::Time GetTimeNow() const override { return GetTimeNowForTest(); }
 
-  virtual AccessTokenStore* NewAccessTokenStore() override {
+  AccessTokenStore* NewAccessTokenStore() override {
     return access_token_store_.get();
   }
 
-  virtual LocationProvider* NewNetworkLocationProvider(
+  LocationProvider* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
@@ -89,7 +87,7 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
     return new MockLocationProvider(&cell_);
   }
 
-  virtual LocationProvider* NewSystemLocationProvider() override {
+  LocationProvider* NewSystemLocationProvider() override {
     return new MockLocationProvider(&gps_);
   }
 

@@ -27,7 +27,7 @@ class StoragePartition;
 class IndexedDBInternalsUI : public WebUIController {
  public:
   explicit IndexedDBInternalsUI(WebUI* web_ui);
-  virtual ~IndexedDBInternalsUI();
+  ~IndexedDBInternalsUI() override;
 
  private:
   void GetAllOrigins(const base::ListValue* args);

@@ -27,11 +27,11 @@ class CONTENT_EXPORT DataFetcherSharedMemory
 
  public:
   DataFetcherSharedMemory();
-  virtual ~DataFetcherSharedMemory();
+  ~DataFetcherSharedMemory() override;
 
  private:
-  virtual bool Start(ConsumerType consumer_type, void* buffer) override;
-  virtual bool Stop(ConsumerType consumer_type) override;
+  bool Start(ConsumerType consumer_type, void* buffer) override;
+  bool Stop(ConsumerType consumer_type) override;
 
 #if !defined(OS_ANDROID)
   DeviceMotionHardwareBuffer* motion_buffer_;
@@ -39,8 +39,8 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   DeviceLightHardwareBuffer* light_buffer_;
 #endif
 #if defined(OS_MACOSX)
-  virtual void Fetch(unsigned consumer_bitmask) override;
-  virtual FetcherType GetType() const override;
+  void Fetch(unsigned consumer_bitmask) override;
+  FetcherType GetType() const override;
 
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 #elif defined(OS_WIN)

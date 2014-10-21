@@ -87,8 +87,7 @@ class TestDownloadFileImpl : public DownloadFileImpl {
                          observer) {}
 
  protected:
-  virtual base::TimeDelta GetRetryDelayForFailedRename(
-      int attempt_count) override {
+  base::TimeDelta GetRetryDelayForFailedRename(int attempt_count) override {
     return base::TimeDelta::FromMilliseconds(0);
   }
 
@@ -96,8 +95,7 @@ class TestDownloadFileImpl : public DownloadFileImpl {
   // On Posix, we don't encounter transient errors during renames, except
   // possibly EAGAIN, which is difficult to replicate reliably. So we resort to
   // simulating a transient error using ACCESS_DENIED instead.
-  virtual bool ShouldRetryFailedRename(
-      DownloadInterruptReason reason) override {
+  bool ShouldRetryFailedRename(DownloadInterruptReason reason) override {
     return reason == DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
   }
 #endif

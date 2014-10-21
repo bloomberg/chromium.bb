@@ -15,10 +15,10 @@ class BatteryStatusMessageFilter : public BrowserMessageFilter {
   BatteryStatusMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~BatteryStatusMessageFilter();
+  ~BatteryStatusMessageFilter() override;
 
   void OnBatteryStatusStart();
   void OnBatteryStatusStop();

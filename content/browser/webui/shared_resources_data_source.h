@@ -15,18 +15,18 @@ class SharedResourcesDataSource : public content::URLDataSource {
   SharedResourcesDataSource();
 
   // content::URLDataSource implementation.
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string&) const override;
-  virtual std::string GetAccessControlAllowOriginForOrigin(
+  std::string GetMimeType(const std::string&) const override;
+  std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) const override;
 
  private:
-  virtual ~SharedResourcesDataSource();
+  ~SharedResourcesDataSource() override;
 
   DISALLOW_COPY_AND_ASSIGN(SharedResourcesDataSource);
 };

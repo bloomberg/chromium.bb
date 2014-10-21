@@ -31,10 +31,10 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
                                       public XboxDataFetcher::Delegate {
  public:
   GamepadPlatformDataFetcherMac();
-  virtual ~GamepadPlatformDataFetcherMac();
-  virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) override;
-  virtual void PauseHint(bool paused) override;
+  ~GamepadPlatformDataFetcherMac() override;
+  void GetGamepadData(blink::WebGamepads* pads,
+                      bool devices_changed_hint) override;
+  void PauseHint(bool paused) override;
 
  private:
   bool enabled_;
@@ -63,10 +63,10 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
   void DeviceRemove(IOHIDDeviceRef device);
   void ValueChanged(IOHIDValueRef value);
 
-  virtual void XboxDeviceAdd(XboxController* device) override;
-  virtual void XboxDeviceRemove(XboxController* device) override;
-  virtual void XboxValueChanged(XboxController* device,
-                                const XboxController::Data& data) override;
+  void XboxDeviceAdd(XboxController* device) override;
+  void XboxDeviceRemove(XboxController* device) override;
+  void XboxValueChanged(XboxController* device,
+                        const XboxController::Data& data) override;
 
   void RegisterForNotifications();
   void UnregisterFromNotifications();

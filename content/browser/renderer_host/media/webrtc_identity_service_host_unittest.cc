@@ -29,11 +29,10 @@ class MockWebRTCIdentityStore : public WebRTCIdentityStore {
  public:
   MockWebRTCIdentityStore() : WebRTCIdentityStore(base::FilePath(), NULL) {}
 
-  virtual base::Closure RequestIdentity(
-      const GURL& origin,
-      const std::string& identity_name,
-      const std::string& common_name,
-      const CompletionCallback& callback) override {
+  base::Closure RequestIdentity(const GURL& origin,
+                                const std::string& identity_name,
+                                const std::string& common_name,
+                                const CompletionCallback& callback) override {
     EXPECT_TRUE(callback_.is_null());
 
     callback_ = callback;
@@ -51,7 +50,7 @@ class MockWebRTCIdentityStore : public WebRTCIdentityStore {
   }
 
  private:
-  virtual ~MockWebRTCIdentityStore() {}
+  ~MockWebRTCIdentityStore() override {}
 
   void OnCancel() { callback_.Reset(); }
 
@@ -67,13 +66,13 @@ class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
     policy->Add(FAKE_RENDERER_ID);
   }
 
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     messages_.push_back(*message);
     delete message;
     return true;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     return WebRTCIdentityServiceHost::OnMessageReceived(message);
   }
 
@@ -84,7 +83,7 @@ class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
   void ClearMessages() { messages_.clear(); }
 
  private:
-  virtual ~WebRTCIdentityServiceHostForTest() {
+  ~WebRTCIdentityServiceHostForTest() override {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->Remove(FAKE_RENDERER_ID);

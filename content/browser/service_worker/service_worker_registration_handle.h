@@ -48,14 +48,12 @@ class ServiceWorkerRegistrationHandle
 
  private:
   // ServiceWorkerRegistration::Listener overrides.
-  virtual void OnVersionAttributesChanged(
+  void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
       ChangedVersionAttributesMask changed_mask,
       const ServiceWorkerRegistrationInfo& info) override;
-  virtual void OnRegistrationFailed(
-      ServiceWorkerRegistration* registration) override;
-  virtual void OnUpdateFound(
-      ServiceWorkerRegistration* registration) override;
+  void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
+  void OnUpdateFound(ServiceWorkerRegistration* registration) override;
 
   // Sets the corresponding version field to the given version or if the given
   // version is NULL, clears the field.

@@ -34,24 +34,24 @@ struct MockDrawableData {
 class MockTouchHandleDrawable : public TouchHandleDrawable {
  public:
   explicit MockTouchHandleDrawable(MockDrawableData* data) : data_(data) {}
-  virtual ~MockTouchHandleDrawable() {}
+  ~MockTouchHandleDrawable() override {}
 
-  virtual void SetEnabled(bool enabled) override { data_->enabled = enabled; }
+  void SetEnabled(bool enabled) override { data_->enabled = enabled; }
 
-  virtual void SetOrientation(TouchHandleOrientation orientation) override {
+  void SetOrientation(TouchHandleOrientation orientation) override {
     data_->orientation = orientation;
   }
 
-  virtual void SetAlpha(float alpha) override { data_->alpha = alpha; }
+  void SetAlpha(float alpha) override { data_->alpha = alpha; }
 
-  virtual void SetFocus(const gfx::PointF& position) override {
+  void SetFocus(const gfx::PointF& position) override {
     // Anchor focus to the top left of the rect (regardless of orientation).
     data_->rect.set_origin(position);
   }
 
-  virtual void SetVisible(bool visible) override { data_->visible = visible; }
+  void SetVisible(bool visible) override { data_->visible = visible; }
 
-  virtual bool IntersectsWith(const gfx::RectF& rect) const override {
+  bool IntersectsWith(const gfx::RectF& rect) const override {
     return data_->rect.Intersects(rect);
   }
 
@@ -72,36 +72,34 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
   virtual ~TouchHandleTest() {}
 
   // TouchHandleClient implementation.
-  virtual void OnHandleDragBegin(const TouchHandle& handle) override {
+  void OnHandleDragBegin(const TouchHandle& handle) override {
     dragging_ = true;
   }
 
-  virtual void OnHandleDragUpdate(const TouchHandle& handle,
-                                  const gfx::PointF& new_position) override {
+  void OnHandleDragUpdate(const TouchHandle& handle,
+                          const gfx::PointF& new_position) override {
     dragged_ = true;
     drag_position_ = new_position;
   }
 
-  virtual void OnHandleDragEnd(const TouchHandle& handle) override {
+  void OnHandleDragEnd(const TouchHandle& handle) override {
     dragging_ = false;
   }
 
-  virtual void OnHandleTapped(const TouchHandle& handle) override {
-    tapped_ = true;
-  }
+  void OnHandleTapped(const TouchHandle& handle) override { tapped_ = true; }
 
-  virtual void SetNeedsAnimate() override { needs_animate_ = true; }
+  void SetNeedsAnimate() override { needs_animate_ = true; }
 
-  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
+  scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
     return scoped_ptr<TouchHandleDrawable>(
         new MockTouchHandleDrawable(&drawable_data_));
   }
 
-  virtual base::TimeDelta GetTapTimeout() const override {
+  base::TimeDelta GetTapTimeout() const override {
     return base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
   }
 
-  virtual float GetTapSlop() const override { return kDefaultTapSlop; }
+  float GetTapSlop() const override { return kDefaultTapSlop; }
 
   void Animate(TouchHandle& handle) {
     needs_animate_ = false;

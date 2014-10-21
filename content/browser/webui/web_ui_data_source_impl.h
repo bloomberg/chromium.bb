@@ -27,30 +27,25 @@ class CONTENT_EXPORT WebUIDataSourceImpl
       public NON_EXPORTED_BASE(WebUIDataSource) {
  public:
   // WebUIDataSource implementation:
-  virtual void AddString(const std::string& name,
-                         const base::string16& value) override;
-  virtual void AddString(const std::string& name,
-                         const std::string& value) override;
-  virtual void AddLocalizedString(const std::string& name, int ids) override;
-  virtual void AddLocalizedStrings(
+  void AddString(const std::string& name, const base::string16& value) override;
+  void AddString(const std::string& name, const std::string& value) override;
+  void AddLocalizedString(const std::string& name, int ids) override;
+  void AddLocalizedStrings(
       const base::DictionaryValue& localized_strings) override;
-  virtual void AddBoolean(const std::string& name, bool value) override;
-  virtual void SetJsonPath(const std::string& path) override;
-  virtual void AddResourcePath(const std::string &path,
-                               int resource_id) override;
-  virtual void SetDefaultResource(int resource_id) override;
-  virtual void SetRequestFilter(
+  void AddBoolean(const std::string& name, bool value) override;
+  void SetJsonPath(const std::string& path) override;
+  void AddResourcePath(const std::string& path, int resource_id) override;
+  void SetDefaultResource(int resource_id) override;
+  void SetRequestFilter(
       const WebUIDataSource::HandleRequestCallback& callback) override;
-  virtual void DisableReplaceExistingSource() override;
-  virtual void DisableContentSecurityPolicy() override;
-  virtual void OverrideContentSecurityPolicyObjectSrc(
-      const std::string& data) override;
-  virtual void OverrideContentSecurityPolicyFrameSrc(
-      const std::string& data) override;
-  virtual void DisableDenyXFrameOptions() override;
+  void DisableReplaceExistingSource() override;
+  void DisableContentSecurityPolicy() override;
+  void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyFrameSrc(const std::string& data) override;
+  void DisableDenyXFrameOptions() override;
 
  protected:
-  virtual ~WebUIDataSourceImpl();
+  ~WebUIDataSourceImpl() override;
 
   // Completes a request by sending our dictionary of localized strings.
   void SendLocalizedStringsAsJSON(

@@ -29,7 +29,7 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
       cc::SurfaceManager* surface_manager,
       cc::SurfaceIdAllocator* allocator,
       const scoped_refptr<cc::ContextProvider>& context_provider);
-  virtual ~SurfaceDisplayOutputSurface();
+  ~SurfaceDisplayOutputSurface() override;
 
   void set_display_client(OnscreenDisplayClient* display_client) {
     display_client_ = display_client;
@@ -39,12 +39,11 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
                                base::TimeDelta interval);
 
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   // cc::SurfaceFactoryClient implementation.
-  virtual void ReturnResources(
-      const cc::ReturnedResourceArray& resources) override;
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
  private:
   void SwapBuffersComplete();

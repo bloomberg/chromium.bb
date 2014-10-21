@@ -89,41 +89,41 @@ class ServiceWorkerCacheStorage::MemoryLoader
                const GURL& origin)
       : CacheLoader(cache_task_runner, request_context, blob_context, origin) {}
 
-  virtual scoped_refptr<ServiceWorkerCache> CreateServiceWorkerCache(
+  scoped_refptr<ServiceWorkerCache> CreateServiceWorkerCache(
       const std::string& cache_name) override {
     return ServiceWorkerCache::CreateMemoryCache(request_context_,
                                                  blob_context_);
   }
 
-  virtual void CreateCache(const std::string& cache_name,
-                           const CacheCallback& callback) override {
+  void CreateCache(const std::string& cache_name,
+                   const CacheCallback& callback) override {
     scoped_refptr<ServiceWorkerCache> cache =
         ServiceWorkerCache::CreateMemoryCache(request_context_, blob_context_);
     cache_refs_.insert(std::make_pair(cache_name, cache));
     callback.Run(cache);
   }
 
-  virtual void CleanUpDeletedCache(const std::string& cache_name,
-                                   const BoolCallback& callback) override {
+  void CleanUpDeletedCache(const std::string& cache_name,
+                           const BoolCallback& callback) override {
     CacheRefMap::iterator it = cache_refs_.find(cache_name);
     DCHECK(it != cache_refs_.end());
     cache_refs_.erase(it);
     callback.Run(true);
   }
 
-  virtual void WriteIndex(const StringVector& cache_names,
-                          const BoolCallback& callback) override {
+  void WriteIndex(const StringVector& cache_names,
+                  const BoolCallback& callback) override {
     callback.Run(false);
   }
 
-  virtual void LoadIndex(scoped_ptr<std::vector<std::string> > cache_names,
-                         const StringVectorCallback& callback) override {
+  void LoadIndex(scoped_ptr<std::vector<std::string>> cache_names,
+                 const StringVectorCallback& callback) override {
     callback.Run(cache_names.Pass());
   }
 
  private:
   typedef std::map<std::string, scoped_refptr<ServiceWorkerCache> > CacheRefMap;
-  virtual ~MemoryLoader() {}
+  ~MemoryLoader() override {}
 
   // Keep a reference to each cache to ensure that it's not freed before the
   // client calls ServiceWorkerCacheStorage::Delete or the CacheStorage is
@@ -143,7 +143,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
         origin_path_(origin_path),
         weak_ptr_factory_(this) {}
 
-  virtual scoped_refptr<ServiceWorkerCache> CreateServiceWorkerCache(
+  scoped_refptr<ServiceWorkerCache> CreateServiceWorkerCache(
       const std::string& cache_name) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -153,8 +153,8 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
         blob_context_);
   }
 
-  virtual void CreateCache(const std::string& cache_name,
-                           const CacheCallback& callback) override {
+  void CreateCache(const std::string& cache_name,
+                   const CacheCallback& callback) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // 1. Delete the cache's directory if it exists.
@@ -192,8 +192,8 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     callback.Run(loader->CreateServiceWorkerCache(cache_name));
   }
 
-  virtual void CleanUpDeletedCache(const std::string& cache_name,
-                                   const BoolCallback& callback) override {
+  void CleanUpDeletedCache(const std::string& cache_name,
+                           const BoolCallback& callback) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // 1. Delete the cache's directory. (CleanUpDeleteCacheDirInPool)
@@ -216,8 +216,8 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     original_loop->PostTask(FROM_HERE, base::Bind(callback, rv));
   }
 
-  virtual void WriteIndex(const StringVector& cache_names,
-                          const BoolCallback& callback) override {
+  void WriteIndex(const StringVector& cache_names,
+                  const BoolCallback& callback) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // 1. Create the index file as a string. (WriteIndex)
@@ -267,8 +267,8 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     original_loop->PostTask(FROM_HERE, base::Bind(callback, rv));
   }
 
-  virtual void LoadIndex(scoped_ptr<std::vector<std::string> > names,
-                         const StringVectorCallback& callback) override {
+  void LoadIndex(scoped_ptr<std::vector<std::string>> names,
+                 const StringVectorCallback& callback) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // 1. Read the file from disk. (LoadIndexReadFileInPool)
@@ -320,7 +320,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
   }
 
  private:
-  virtual ~SimpleCacheLoader() {}
+  ~SimpleCacheLoader() override {}
 
   static std::string HexedHash(const std::string& value) {
     std::string value_hash = base::SHA1HashString(value);

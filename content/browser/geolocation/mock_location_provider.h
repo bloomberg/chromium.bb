@@ -20,16 +20,16 @@ class MockLocationProvider : public LocationProviderBase {
   // Will update |*self_ref| to point to |this| on construction, and to NULL
   // on destruction.
   explicit MockLocationProvider(MockLocationProvider** self_ref);
-  virtual ~MockLocationProvider();
+  ~MockLocationProvider() override;
 
   // Updates listeners with the new position.
   void HandlePositionChanged(const Geoposition& position);
 
   // LocationProvider implementation.
-  virtual bool StartProvider(bool high_accuracy) override;
-  virtual void StopProvider() override;
-  virtual void GetPosition(Geoposition* position) override;
-  virtual void OnPermissionGranted() override;
+  bool StartProvider(bool high_accuracy) override;
+  void StopProvider() override;
+  void GetPosition(Geoposition* position) override;
+  void OnPermissionGranted() override;
 
   Geoposition position_;
   enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;

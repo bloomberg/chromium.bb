@@ -51,18 +51,16 @@ class MockQuotaManager : public QuotaManager {
   // updated when MockQuotaManagerProxy::NotifyStorageModified() is
   // called.  The internal quota value can be updated by calling
   // a helper method MockQuotaManagerProxy::SetQuota().
-  virtual void GetUsageAndQuota(
-      const GURL& origin,
-      storage::StorageType type,
-      const GetUsageAndQuotaCallback& callback) override;
+  void GetUsageAndQuota(const GURL& origin,
+                        storage::StorageType type,
+                        const GetUsageAndQuotaCallback& callback) override;
 
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
   // method will only search through the origins added explicitly via AddOrigin.
-  virtual void GetOriginsModifiedSince(
-      StorageType type,
-      base::Time modified_since,
-      const GetOriginsCallback& callback) override;
+  void GetOriginsModifiedSince(StorageType type,
+                               base::Time modified_since,
+                               const GetOriginsCallback& callback) override;
 
   // Removes an origin from the canned list of origins, but doesn't touch
   // anything on disk. The caller must provide |quota_client_mask| which
@@ -70,10 +68,10 @@ class MockQuotaManager : public QuotaManager {
   // origin as a bitmask built from QuotaClient::IDs. Setting the mask to
   // QuotaClient::kAllClientsMask will remove all clients from the origin,
   // regardless of type.
-  virtual void DeleteOriginData(const GURL& origin,
-                                StorageType type,
-                                int quota_client_mask,
-                                const StatusCallback& callback) override;
+  void DeleteOriginData(const GURL& origin,
+                        StorageType type,
+                        int quota_client_mask,
+                        const StatusCallback& callback) override;
 
   // Helper method for updating internal quota info.
   void SetQuota(const GURL& origin, StorageType type, int64 quota);
@@ -97,7 +95,7 @@ class MockQuotaManager : public QuotaManager {
                      QuotaClient::ID quota_client) const;
 
  protected:
-  virtual ~MockQuotaManager();
+  ~MockQuotaManager() override;
 
  private:
   friend class MockQuotaManagerProxy;

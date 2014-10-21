@@ -22,14 +22,13 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
       InterstitialPageImpl* interstitial,
       NavigationControllerImpl* navigation_controller);
 
-  virtual NavigationController* GetController() override;
-  virtual void DidNavigate(
-      RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params&
-          input_params) override;
+  NavigationController* GetController() override;
+  void DidNavigate(RenderFrameHostImpl* render_frame_host,
+                   const FrameHostMsg_DidCommitProvisionalLoad_Params&
+                       input_params) override;
 
  private:
-  virtual ~InterstitialPageNavigatorImpl() {}
+  ~InterstitialPageNavigatorImpl() override {}
 
   // The InterstitialPage with which this navigator object is associated.
   // Non owned pointer.

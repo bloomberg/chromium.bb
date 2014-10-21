@@ -36,7 +36,7 @@ class SpeechRecognizerImpl::OnDataConverter
  public:
   OnDataConverter(const AudioParameters& input_params,
                   const AudioParameters& output_params);
-  virtual ~OnDataConverter();
+  ~OnDataConverter() override;
 
   // Converts input audio |data| bus into an AudioChunk where the input format
   // is given by |input_parameters_| and the output format by
@@ -45,8 +45,7 @@ class SpeechRecognizerImpl::OnDataConverter
 
  private:
   // media::AudioConverter::InputCallback implementation.
-  virtual double ProvideInput(AudioBus* dest,
-                              base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* dest, base::TimeDelta buffer_delay) override;
 
   // Handles resampling, buffering, and channel mixing between input and output
   // parameters.

@@ -30,7 +30,7 @@ class BytesElementReader : public net::UploadBytesElementReader {
     DCHECK_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
   }
 
-  virtual ~BytesElementReader() {}
+  ~BytesElementReader() override {}
 
  private:
   scoped_refptr<ResourceRequestBody> resource_request_body_;
@@ -55,7 +55,7 @@ class FileElementReader : public net::UploadFileElementReader {
     DCHECK_EQ(ResourceRequestBody::Element::TYPE_FILE, element.type());
   }
 
-  virtual ~FileElementReader() {}
+  ~FileElementReader() override {}
 
  private:
   scoped_refptr<ResourceRequestBody> resource_request_body_;

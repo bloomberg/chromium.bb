@@ -61,7 +61,7 @@ class CONTENT_EXPORT WebContentsTracker
 
  protected:
   friend class base::RefCountedThreadSafe<WebContentsTracker>;
-  virtual ~WebContentsTracker();
+  ~WebContentsTracker() override;
 
  private:
   // Determine the target RenderWidgetHost and, if different from that last
@@ -82,18 +82,18 @@ class CONTENT_EXPORT WebContentsTracker
   // WebContentsObserver overrides: According to web_contents_observer.h, these
   // two method overrides are all that is necessary to track the set of active
   // RenderFrameHosts.
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
-                                      RenderFrameHost* new_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
 
   // WebContentsObserver override to notify the client that the capture target
   // has been permanently lost.
-  virtual void WebContentsDestroyed() override;
+  void WebContentsDestroyed() override;
 
   // WebContentsObserver overrides to notify the client that the capture target
   // may have changed due to a separate fullscreen widget shown/destroyed.
-  virtual void DidShowFullscreenWidget(int routing_id) override;
-  virtual void DidDestroyFullscreenWidget(int routing_id) override;
+  void DidShowFullscreenWidget(int routing_id) override;
+  void DidDestroyFullscreenWidget(int routing_id) override;
 
   // If true, the client is interested in the showing/destruction of fullscreen
   // RenderWidgetHosts.

@@ -24,16 +24,16 @@ const char kDummytResource[] = "<html>blah</html>";
 class TestClient : public TestContentClient {
  public:
   TestClient() {}
-  virtual ~TestClient() {}
+  ~TestClient() override {}
 
-  virtual base::string16 GetLocalizedString(int message_id) const override {
+  base::string16 GetLocalizedString(int message_id) const override {
     if (message_id == kDummyStringId)
       return base::UTF8ToUTF16(kDummyString);
     return base::string16();
 
   }
 
-  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+  base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const override {
     base::RefCountedStaticMemory* bytes = NULL;
     if (resource_id == kDummyDefaultResourceId) {

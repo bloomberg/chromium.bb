@@ -73,7 +73,7 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
         backing_(backing) {
   }
  private:
-  virtual ~DependentIOBuffer() {}
+  ~DependentIOBuffer() override {}
   scoped_refptr<ResourceBuffer> backing_;
 };
 

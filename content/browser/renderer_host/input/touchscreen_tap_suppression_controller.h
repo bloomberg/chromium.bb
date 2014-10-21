@@ -22,7 +22,7 @@ class TouchscreenTapSuppressionController
   TouchscreenTapSuppressionController(
       GestureEventQueue* geq,
       const TapSuppressionController::Config& config);
-  virtual ~TouchscreenTapSuppressionController();
+  ~TouchscreenTapSuppressionController() override;
 
   // Should be called on arrival of GestureFlingCancel events.
   void GestureFlingCancel();
@@ -37,8 +37,8 @@ class TouchscreenTapSuppressionController
 
  private:
   // TapSuppressionControllerClient implementation.
-  virtual void DropStashedTapDown() override;
-  virtual void ForwardStashedTapDown() override;
+  void DropStashedTapDown() override;
+  void ForwardStashedTapDown() override;
 
   GestureEventQueue* gesture_event_queue_;
 

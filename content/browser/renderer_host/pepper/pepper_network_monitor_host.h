@@ -26,10 +26,10 @@ class CONTENT_EXPORT PepperNetworkMonitorHost
                            PP_Instance instance,
                            PP_Resource resource);
 
-  virtual ~PepperNetworkMonitorHost();
+  ~PepperNetworkMonitorHost() override;
 
   // net::NetworkChangeNotifier::IPAddressObserver interface.
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
  private:
   void OnPermissionCheckResult(bool can_use_network_monitor);

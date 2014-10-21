@@ -50,7 +50,7 @@ class DevToolsProtocol {
    public:
     int id() { return id_; }
 
-    virtual std::string Serialize() override;
+    std::string Serialize() override;
 
     // Creates success response. Takes ownership of |result|.
     scoped_refptr<Response> SuccessResponse(base::DictionaryValue* result);
@@ -71,7 +71,7 @@ class DevToolsProtocol {
     scoped_refptr<Response> AsyncResponsePromise();
 
    protected:
-    virtual  ~Command();
+    ~Command() override;
 
    private:
     friend class DevToolsProtocol;
@@ -109,12 +109,11 @@ class DevToolsProtocol {
 
   class Notification : public Message {
    public:
-
-    virtual std::string Serialize() override;
+    std::string Serialize() override;
 
    private:
     friend class DevToolsProtocol;
-    virtual ~Notification();
+    ~Notification() override;
 
     // Takes ownership of |params|.
     Notification(const std::string& method,

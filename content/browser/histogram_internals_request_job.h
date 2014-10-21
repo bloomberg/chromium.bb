@@ -17,13 +17,13 @@ class HistogramInternalsRequestJob : public net::URLRequestSimpleJob {
   HistogramInternalsRequestJob(net::URLRequest* request,
                                net::NetworkDelegate* network_delegate);
 
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* data,
-                      const net::CompletionCallback& callback) const override;
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* data,
+              const net::CompletionCallback& callback) const override;
 
  private:
-  virtual ~HistogramInternalsRequestJob() {}
+  ~HistogramInternalsRequestJob() override {}
 
   // The string to select histograms which have |path_| as a substring.
   std::string path_;

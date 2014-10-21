@@ -102,12 +102,12 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                       DOMStorageContextWrapper* dom_storage_context);
 
   // IPC::MessageFilter methods:
-  virtual void OnChannelClosing() override;
+  void OnChannelClosing() override;
 
   // BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnDestruct() const override;
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() const override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
 
   bool OffTheRecord() const;
@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   net::CookieStore* GetCookieStoreForURL(const GURL& url);
 
  protected:
-  virtual ~RenderMessageFilter();
+  ~RenderMessageFilter() override;
 
   // This method will be overridden by TestSaveImageFromDataURL class for test.
   virtual void DownloadUrl(int render_view_id,

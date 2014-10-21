@@ -38,10 +38,10 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   PepperFileIOHost(BrowserPpapiHostImpl* host,
                    PP_Instance instance,
                    PP_Resource resource);
-  virtual ~PepperFileIOHost();
+  ~PepperFileIOHost() override;
 
   // ppapi::host::ResourceHost override.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

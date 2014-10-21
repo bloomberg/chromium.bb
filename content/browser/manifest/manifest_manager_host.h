@@ -21,7 +21,7 @@ struct Manifest;
 class ManifestManagerHost : public WebContentsObserver {
  public:
   explicit ManifestManagerHost(WebContents* web_contents);
-  virtual ~ManifestManagerHost();
+  ~ManifestManagerHost() override;
 
   typedef base::Callback<void(const Manifest&)> GetManifestCallback;
 
@@ -31,9 +31,8 @@ class ManifestManagerHost : public WebContentsObserver {
   void GetManifest(RenderFrameHost*, const GetManifestCallback&);
 
   // WebContentsObserver
-  virtual bool OnMessageReceived(const IPC::Message&,
-                                 RenderFrameHost*) override;
-  virtual void RenderFrameDeleted(RenderFrameHost*) override;
+  bool OnMessageReceived(const IPC::Message&, RenderFrameHost*) override;
+  void RenderFrameDeleted(RenderFrameHost*) override;
 
  private:
   typedef IDMap<GetManifestCallback, IDMapOwnPointer> CallbackMap;

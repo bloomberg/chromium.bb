@@ -35,9 +35,9 @@ class MediaInternalsProxy
   MediaInternalsProxy();
 
   // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
   // Register a Handler and start receiving callbacks from MediaInternals.
   void Attach(MediaInternalsMessageHandler* handler);
@@ -52,12 +52,12 @@ class MediaInternalsProxy
   void OnUpdate(const base::string16& update);
 
   // net::NetLog::ThreadSafeObserver implementation. Callable from any thread:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLog::Entry& entry) override;
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<MediaInternalsProxy>;
-  virtual ~MediaInternalsProxy();
+  ~MediaInternalsProxy() override;
 
   // Build a dictionary mapping constant names to values.
   base::Value* GetConstants();

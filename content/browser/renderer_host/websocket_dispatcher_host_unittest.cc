@@ -35,14 +35,14 @@ class MockWebSocketHost : public WebSocketHost {
                     net::URLRequestContext* url_request_context,
                     WebSocketDispatcherHostTest* owner);
 
-  virtual ~MockWebSocketHost() {}
+  ~MockWebSocketHost() override {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     received_messages_.push_back(message);
     return true;
   }
 
-  virtual void GoAway() override;
+  void GoAway() override;
 
   std::vector<IPC::Message> received_messages_;
   base::WeakPtr<WebSocketDispatcherHostTest> owner_;

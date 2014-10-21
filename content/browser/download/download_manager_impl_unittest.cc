@@ -211,7 +211,7 @@ class MockDownloadItemFactory
       public base::SupportsWeakPtr<MockDownloadItemFactory> {
  public:
   MockDownloadItemFactory();
-  virtual ~MockDownloadItemFactory();
+  ~MockDownloadItemFactory() override;
 
   // Access to map of created items.
   // TODO(rdsmith): Could add type (save page, persisted, etc.)
@@ -229,7 +229,7 @@ class MockDownloadItemFactory
   void RemoveItem(int id);
 
   // Overridden methods from DownloadItemFactory.
-  virtual DownloadItemImpl* CreatePersistedItem(
+  DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const base::FilePath& current_path,
@@ -249,17 +249,17 @@ class MockDownloadItemFactory
       DownloadInterruptReason interrupt_reason,
       bool opened,
       const net::BoundNetLog& bound_net_log) override;
-  virtual DownloadItemImpl* CreateActiveItem(
+  DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const DownloadCreateInfo& info,
       const net::BoundNetLog& bound_net_log) override;
-  virtual DownloadItemImpl* CreateSavePageItem(
+  DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const base::FilePath& path,
       const GURL& url,
-        const std::string& mime_type,
+      const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) override;
 

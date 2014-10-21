@@ -17,8 +17,8 @@ class AppCacheInterceptor::StartInterceptor
     : public net::URLRequestInterceptor {
  public:
   StartInterceptor() {}
-  virtual ~StartInterceptor() {}
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  ~StartInterceptor() override {}
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     AppCacheRequestHandler* handler = GetHandler(request);

@@ -14,7 +14,7 @@ namespace content {
 class PowerSaveBlockerImpl : public PowerSaveBlocker {
  public:
   PowerSaveBlockerImpl(PowerSaveBlockerType type, const std::string& reason);
-  virtual ~PowerSaveBlockerImpl();
+  ~PowerSaveBlockerImpl() override;
 
 #if defined(OS_ANDROID)
   // In Android platform, the kPowerSaveBlockPreventDisplaySleep type of

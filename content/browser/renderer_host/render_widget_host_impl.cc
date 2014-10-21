@@ -124,8 +124,7 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
       : current_index_(0) {
   }
 
-  virtual ~RenderWidgetHostIteratorImpl() {
-  }
+  ~RenderWidgetHostIteratorImpl() override {}
 
   void Add(RenderWidgetHost* host) {
     hosts_.push_back(RenderWidgetHostID(host->GetProcess()->GetID(),
@@ -133,7 +132,7 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
   }
 
   // RenderWidgetHostIterator:
-  virtual RenderWidgetHost* GetNextHost() override {
+  RenderWidgetHost* GetNextHost() override {
     RenderWidgetHost* host = NULL;
     while (current_index_ < hosts_.size() && !host) {
       RenderWidgetHostID id = hosts_[current_index_];

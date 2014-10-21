@@ -17,7 +17,7 @@ namespace content {
 class AccessibilityUI : public WebUIController {
  public:
   explicit AccessibilityUI(WebUI* web_ui);
-  virtual ~AccessibilityUI();
+  ~AccessibilityUI() override;
 
  private:
   void ToggleAccessibility(const base::ListValue* args);

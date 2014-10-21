@@ -113,16 +113,14 @@ class SavePackageRequestHandle : public DownloadRequestHandleInterface {
       : save_package_(save_package) {}
 
   // DownloadRequestHandleInterface
-  virtual WebContents* GetWebContents() const override {
+  WebContents* GetWebContents() const override {
     return save_package_.get() ? save_package_->web_contents() : NULL;
   }
-  virtual DownloadManager* GetDownloadManager() const override {
-    return NULL;
-  }
-  virtual void PauseRequest() const override {}
-  virtual void ResumeRequest() const override {}
-  virtual void CancelRequest() const override {}
-  virtual std::string DebugString() const override {
+  DownloadManager* GetDownloadManager() const override { return NULL; }
+  void PauseRequest() const override {}
+  void ResumeRequest() const override {}
+  void CancelRequest() const override {}
+  std::string DebugString() const override {
     return "SavePackage DownloadRequestHandle";
   }
 

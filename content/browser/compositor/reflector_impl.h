@@ -53,7 +53,7 @@ class ReflectorImpl : public base::SupportsWeakPtr<ReflectorImpl>,
       BrowserCompositorOutputSurface* surface);
 
   // ui::Reflector implementation.
-  virtual void OnMirroringCompositorResized() override;
+  void OnMirroringCompositorResized() override;
 
   // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
   // the full screen image to the |texture_id_|. This must be called
@@ -99,7 +99,7 @@ class ReflectorImpl : public base::SupportsWeakPtr<ReflectorImpl>,
     gpu::MailboxHolder mailbox_holder;
   };
 
-  virtual ~ReflectorImpl();
+  ~ReflectorImpl() override;
 
   void AttachToOutputSurfaceOnImplThread(
       const gpu::MailboxHolder& mailbox_holder,

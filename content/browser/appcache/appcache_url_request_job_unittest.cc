@@ -46,9 +46,7 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
   MockURLRequestJobFactory() : job_(NULL) {
   }
 
-  virtual ~MockURLRequestJobFactory() {
-    DCHECK(!job_);
-  }
+  ~MockURLRequestJobFactory() override { DCHECK(!job_); }
 
   void SetJob(net::URLRequestJob* job) {
     job_ = job;
@@ -59,7 +57,7 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
   }
 
   // net::URLRequestJobFactory implementation.
-  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
@@ -74,15 +72,15 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
     }
   }
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const override {
+  bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "http";
   };
 
-  virtual bool IsHandledURL(const GURL& url) const override {
+  bool IsHandledURL(const GURL& url) const override {
     return url.SchemeIs("http");
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
+  bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -102,8 +100,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
         : loaded_info_id_(0), test_(test) {
     }
 
-    virtual void OnResponseInfoLoaded(AppCacheResponseInfo* info,
-                                      int64 response_id) override {
+    void OnResponseInfoLoaded(AppCacheResponseInfo* info,
+                              int64 response_id) override {
       loaded_info_ = info;
       loaded_info_id_ = response_id;
       test_->ScheduleNextTask();
@@ -123,7 +121,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
           kill_after_amount_received_(0), kill_with_io_pending_(false) {
     }
 
-    virtual void OnResponseStarted(net::URLRequest* request) override {
+    void OnResponseStarted(net::URLRequest* request) override {
       amount_received_ = 0;
       did_receive_headers_ = false;
       if (request->status().is_success()) {
@@ -136,8 +134,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
       }
     }
 
-    virtual void OnReadCompleted(net::URLRequest* request,
-                                 int bytes_read) override {
+    void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
       if (bytes_read > 0) {
         amount_received_ += bytes_read;
 

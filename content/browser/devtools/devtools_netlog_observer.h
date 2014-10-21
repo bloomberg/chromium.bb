@@ -29,7 +29,7 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
 
  public:
   // net::NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLog::Entry& entry) override;
 
   void OnAddURLRequestEntry(const net::NetLog::Entry& entry);
 
@@ -46,7 +46,7 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
   static DevToolsNetLogObserver* instance_;
 
   DevToolsNetLogObserver();
-  virtual ~DevToolsNetLogObserver();
+  ~DevToolsNetLogObserver() override;
 
   ResourceInfo* GetResourceInfo(uint32 id);
 

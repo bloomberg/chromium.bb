@@ -122,32 +122,28 @@ class PluginDataRemoverImpl::Context
   }
 
   // PluginProcessHost::Client methods.
-  virtual int ID() override {
+  int ID() override {
     // Generate a unique identifier for this PluginProcessHostClient.
     return ChildProcessHostImpl::GenerateChildProcessUniqueId();
   }
 
-  virtual bool OffTheRecord() override {
-    return false;
-  }
+  bool OffTheRecord() override { return false; }
 
-  virtual ResourceContext* GetResourceContext() override {
-    return resource_context_;
-  }
+  ResourceContext* GetResourceContext() override { return resource_context_; }
 
-  virtual void SetPluginInfo(const WebPluginInfo& info) override {}
+  void SetPluginInfo(const WebPluginInfo& info) override {}
 
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) override {}
+  void OnFoundPluginProcessHost(PluginProcessHost* host) override {}
 
-  virtual void OnSentPluginChannelRequest() override {}
+  void OnSentPluginChannelRequest() override {}
 
-  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) override {
+  void OnChannelOpened(const IPC::ChannelHandle& handle) override {
     ConnectToChannel(handle, false);
     // Balancing the AddRef call.
     Release();
   }
 
-  virtual void OnError() override {
+  void OnError() override {
     LOG(ERROR) << "Couldn't open plugin channel";
     SignalDone();
     // Balancing the AddRef call.
@@ -155,16 +151,15 @@ class PluginDataRemoverImpl::Context
   }
 
   // PpapiPluginProcessHost::BrokerClient implementation.
-  virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                                   int* renderer_id) override {
+  void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
+                           int* renderer_id) override {
     *renderer_handle = base::kNullProcessHandle;
     *renderer_id = 0;
   }
 
-  virtual void OnPpapiChannelOpened(
-      const IPC::ChannelHandle& channel_handle,
-      base::ProcessId  /* peer_pid */,
-      int /* child_id */) override {
+  void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
+                            base::ProcessId /* peer_pid */,
+                            int /* child_id */) override {
     if (!channel_handle.name.empty())
       ConnectToChannel(channel_handle, true);
 
@@ -173,7 +168,7 @@ class PluginDataRemoverImpl::Context
   }
 
   // IPC::Listener methods.
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(Context, message)
       IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ClearSiteDataResult,
                           OnClearSiteDataResult)
@@ -185,7 +180,7 @@ class PluginDataRemoverImpl::Context
     return true;
   }
 
-  virtual void OnChannelError() override {
+  void OnChannelError() override {
     if (is_removing_) {
       NOTREACHED() << "Channel error";
       SignalDone();
@@ -197,7 +192,7 @@ class PluginDataRemoverImpl::Context
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<Context>;
-  virtual ~Context() {}
+  ~Context() override {}
 
   IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
     base::FilePath profile_path =

@@ -18,10 +18,11 @@ class SessionStorageDatabaseAdapter : public DOMStorageDatabaseAdapter {
   SessionStorageDatabaseAdapter(SessionStorageDatabase* db,
                                 const std::string& permanent_namespace_id,
                                 const GURL& origin);
-  virtual ~SessionStorageDatabaseAdapter();
-  virtual void ReadAllValues(DOMStorageValuesMap* result) override;
-  virtual bool CommitChanges(bool clear_all_first,
-                             const DOMStorageValuesMap& changes) override;
+  ~SessionStorageDatabaseAdapter() override;
+  void ReadAllValues(DOMStorageValuesMap* result) override;
+  bool CommitChanges(bool clear_all_first,
+                     const DOMStorageValuesMap& changes) override;
+
  private:
   scoped_refptr<SessionStorageDatabase> db_;
   std::string permanent_namespace_id_;

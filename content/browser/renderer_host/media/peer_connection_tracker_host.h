@@ -26,17 +26,17 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter,
   PeerConnectionTrackerHost(int render_process_id);
 
   // content::BrowserMessageFilter override.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelClosing() override;
 
   // base::PowerObserver override.
-  virtual void OnSuspend() override;
+  void OnSuspend() override;
 
  protected:
-  virtual ~PeerConnectionTrackerHost();
+  ~PeerConnectionTrackerHost() override;
 
  private:
   // Handlers for peer connection messages coming from the renderer.

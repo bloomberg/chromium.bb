@@ -28,26 +28,26 @@ namespace {
 class NullInputAckHandler : public InputAckHandler {
  public:
   NullInputAckHandler() : ack_count_(0) {}
-  virtual ~NullInputAckHandler() {}
+  ~NullInputAckHandler() override {}
 
   // InputAckHandler
-  virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
-                                  InputEventAckState ack_result) override {
+  void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
+                          InputEventAckState ack_result) override {
     ++ack_count_;
   }
-  virtual void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                               InputEventAckState ack_result) override {
+  void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override {
     ++ack_count_;
   }
-  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                               InputEventAckState ack_result) override {
+  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override {
     ++ack_count_;
   }
-  virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                                 InputEventAckState ack_result) override {
+  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                         InputEventAckState ack_result) override {
     ++ack_count_;
   }
-  virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) override {
+  void OnUnexpectedEventAck(UnexpectedEventAckType type) override {
     ++ack_count_;
   }
 
@@ -66,28 +66,28 @@ class NullInputAckHandler : public InputAckHandler {
 class NullInputRouterClient : public InputRouterClient {
  public:
   NullInputRouterClient() {}
-  virtual ~NullInputRouterClient() {}
+  ~NullInputRouterClient() override {}
 
   // InputRouterClient
-  virtual InputEventAckState FilterInputEvent(
+  InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info) override {
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
-  virtual void IncrementInFlightEventCount() override {}
-  virtual void DecrementInFlightEventCount() override {}
-  virtual void OnHasTouchEventHandlers(bool has_handlers) override {}
-  virtual void DidFlush() override {}
-  virtual void SetNeedsFlush() override {}
-  virtual void DidOverscroll(const DidOverscrollParams& params) override {}
+  void IncrementInFlightEventCount() override {}
+  void DecrementInFlightEventCount() override {}
+  void OnHasTouchEventHandlers(bool has_handlers) override {}
+  void DidFlush() override {}
+  void SetNeedsFlush() override {}
+  void DidOverscroll(const DidOverscrollParams& params) override {}
 };
 
 class NullIPCSender : public IPC::Sender {
  public:
   NullIPCSender() : sent_count_(0) {}
-  virtual ~NullIPCSender() {}
+  ~NullIPCSender() override {}
 
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     delete message;
     ++sent_count_;
     return true;

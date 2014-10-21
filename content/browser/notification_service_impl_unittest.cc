@@ -22,9 +22,9 @@ class TestObserver : public NotificationObserver {
 
   int notification_count() const { return notification_count_; }
 
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override {
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override {
     ++notification_count_;
   }
 

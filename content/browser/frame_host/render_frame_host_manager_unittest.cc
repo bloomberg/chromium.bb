@@ -51,32 +51,32 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   RenderFrameHostManagerTestWebUIControllerFactory()
     : should_create_webui_(false) {
   }
-  virtual ~RenderFrameHostManagerTestWebUIControllerFactory() {}
+  ~RenderFrameHostManagerTestWebUIControllerFactory() override {}
 
   void set_should_create_webui(bool should_create_webui) {
     should_create_webui_ = should_create_webui;
   }
 
   // WebUIFactory implementation.
-  virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const override {
+  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
+                                               const GURL& url) const override {
     if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;
     return new WebUIController(web_ui);
   }
 
-   virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const override {
+  WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+                             const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
 
-  virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+  bool UseWebUIForURL(BrowserContext* browser_context,
+                      const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 
-  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const override {
+  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
+                              const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 
@@ -89,11 +89,11 @@ class RenderFrameHostManagerTestWebUIControllerFactory
 class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
  public:
   BeforeUnloadFiredWebContentsDelegate() {}
-  virtual ~BeforeUnloadFiredWebContentsDelegate() {}
+  ~BeforeUnloadFiredWebContentsDelegate() override {}
 
-  virtual void BeforeUnloadFired(WebContents* web_contents,
-                                 bool proceed,
-                                 bool* proceed_to_fire_unload) override {
+  void BeforeUnloadFired(WebContents* web_contents,
+                         bool proceed,
+                         bool* proceed_to_fire_unload) override {
     *proceed_to_fire_unload = proceed;
   }
 
@@ -104,9 +104,9 @@ class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
 class CloseWebContentsDelegate : public WebContentsDelegate {
  public:
   CloseWebContentsDelegate() : close_called_(false) {}
-  virtual ~CloseWebContentsDelegate() {}
+  ~CloseWebContentsDelegate() override {}
 
-  virtual void CloseContents(WebContents* web_contents) override {
+  void CloseContents(WebContents* web_contents) override {
     close_called_ = true;
   }
 
@@ -129,7 +129,7 @@ class RenderViewHostDeletedObserver : public WebContentsObserver {
         deleted_(false) {
   }
 
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) override {
+  void RenderViewDeleted(RenderViewHost* render_view_host) override {
     if (render_view_host->GetProcess()->GetID() == process_id_ &&
         render_view_host->GetRoutingID() == routing_id_) {
       deleted_ = true;
@@ -157,7 +157,7 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
         created_(false) {
   }
 
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     created_ = true;
   }
 
@@ -182,7 +182,7 @@ class RenderFrameHostDeletedObserver : public WebContentsObserver {
         deleted_(false) {
   }
 
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     if (render_frame_host->GetProcess()->GetID() == process_id_ &&
         render_frame_host->GetRoutingID() == routing_id_) {
       deleted_ = true;
@@ -213,13 +213,12 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
         plugin_crashed_(false),
         favicon_received_(false) { }
 
-  virtual void PluginCrashed(const base::FilePath& plugin_path,
-                             base::ProcessId plugin_pid) override {
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid) override {
     plugin_crashed_ = true;
   }
 
-  virtual void DidUpdateFaviconURL(
-      const std::vector<FaviconURL>& candidates) override {
+  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override {
     favicon_received_ = true;
   }
 
@@ -248,7 +247,7 @@ class FrameLifetimeConsistencyChecker : public WebContentsObserver {
     RenderFrameCreated(web_contents->GetMainFrame());
   }
 
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     std::pair<int, int> routing_pair =
         std::make_pair(render_frame_host->GetProcess()->GetID(),
                        render_frame_host->GetRoutingID());
@@ -264,7 +263,7 @@ class FrameLifetimeConsistencyChecker : public WebContentsObserver {
     }
   }
 
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     std::pair<int, int> routing_pair =
         std::make_pair(render_frame_host->GetProcess()->GetID(),
                        render_frame_host->GetRoutingID());
@@ -750,8 +749,7 @@ class RenderViewHostDestroyer : public WebContentsObserver {
         render_view_host_(render_view_host),
         web_contents_(web_contents) {}
 
-  virtual void RenderViewDeleted(
-      RenderViewHost* render_view_host) override {
+  void RenderViewDeleted(RenderViewHost* render_view_host) override {
     if (render_view_host == render_view_host_)
       delete web_contents_;
   }

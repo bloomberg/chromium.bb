@@ -20,23 +20,23 @@ class ForwardingAgentHost
   ForwardingAgentHost(DevToolsExternalAgentProxyDelegate* delegate);
 
  private:
-  virtual ~ForwardingAgentHost();
+  ~ForwardingAgentHost() override;
 
   // DevToolsExternalAgentProxy implementation.
-  virtual void DispatchOnClientHost(const std::string& message) override;
-  virtual void ConnectionClosed() override;
+  void DispatchOnClientHost(const std::string& message) override;
+  void ConnectionClosed() override;
 
   // DevToolsAgentHostImpl implementation.
-  virtual void Attach() override;
-  virtual void Detach() override;
-  virtual void DispatchProtocolMessage(const std::string& message) override;
+  void Attach() override;
+  void Detach() override;
+  void DispatchProtocolMessage(const std::string& message) override;
 
   // DevToolsAgentHost implementation
-  virtual Type GetType() override;
-  virtual std::string GetTitle() override;
-  virtual GURL GetURL() override;
-  virtual bool Activate() override;
-  virtual bool Close() override;
+  Type GetType() override;
+  std::string GetTitle() override;
+  GURL GetURL() override;
+  bool Activate() override;
+  bool Close() override;
 
   scoped_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
 };

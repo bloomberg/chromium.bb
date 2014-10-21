@@ -31,19 +31,19 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
   P2PSocketHostTcpServer(IPC::Sender* message_sender,
                          int socket_id,
                          P2PSocketType client_type);
-  virtual ~P2PSocketHostTcpServer();
+  ~P2PSocketHostTcpServer() override;
 
   // P2PSocketHost overrides.
-  virtual bool Init(const net::IPEndPoint& local_address,
-                    const P2PHostAndIPEndPoint& remote_address) override;
-  virtual void Send(const net::IPEndPoint& to,
-                    const std::vector<char>& data,
-                    const rtc::PacketOptions& options,
-                    uint64 packet_id) override;
-  virtual P2PSocketHost* AcceptIncomingTcpConnection(
-      const net::IPEndPoint& remote_address, int id) override;
-  virtual bool SetOption(P2PSocketOption option, int value) override;
-
+  bool Init(const net::IPEndPoint& local_address,
+            const P2PHostAndIPEndPoint& remote_address) override;
+  void Send(const net::IPEndPoint& to,
+            const std::vector<char>& data,
+            const rtc::PacketOptions& options,
+            uint64 packet_id) override;
+  P2PSocketHost* AcceptIncomingTcpConnection(
+      const net::IPEndPoint& remote_address,
+      int id) override;
+  bool SetOption(P2PSocketOption option, int value) override;
 
  private:
   friend class P2PSocketHostTcpServerTest;

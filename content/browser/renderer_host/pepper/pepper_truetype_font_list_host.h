@@ -17,7 +17,7 @@ class PepperTrueTypeFontListHost : public ppapi::host::ResourceHost {
   PepperTrueTypeFontListHost(BrowserPpapiHost* host,
                              PP_Instance instance,
                              PP_Resource resource);
-  virtual ~PepperTrueTypeFontListHost();
+  ~PepperTrueTypeFontListHost() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperTrueTypeFontListHost);

@@ -19,10 +19,10 @@ class ResourceSchedulerFilter : public BrowserMessageFilter {
   explicit ResourceSchedulerFilter(int child_id);
 
   // BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~ResourceSchedulerFilter();
+  ~ResourceSchedulerFilter() override;
 
   int child_id_;
 };

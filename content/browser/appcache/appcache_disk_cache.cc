@@ -59,8 +59,11 @@ class AppCacheDiskCache::EntryImpl : public Entry {
   }
 
   // Entry implementation.
-  virtual int Read(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override {
+  int Read(int index,
+           int64 offset,
+           net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     if (!disk_cache_entry_)
@@ -69,8 +72,11 @@ class AppCacheDiskCache::EntryImpl : public Entry {
         index, static_cast<int>(offset), buf, buf_len, callback);
   }
 
-  virtual int Write(int index, int64 offset, net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override {
+  int Write(int index,
+            int64 offset,
+            net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
     if (!disk_cache_entry_)
@@ -80,11 +86,11 @@ class AppCacheDiskCache::EntryImpl : public Entry {
         index, static_cast<int>(offset), buf, buf_len, callback, kTruncate);
   }
 
-  virtual int64 GetSize(int index) override {
+  int64 GetSize(int index) override {
     return disk_cache_entry_ ? disk_cache_entry_->GetDataSize(index) : 0L;
   }
 
-  virtual void Close() override {
+  void Close() override {
     if (disk_cache_entry_)
       disk_cache_entry_->Close();
     delete this;
@@ -97,7 +103,7 @@ class AppCacheDiskCache::EntryImpl : public Entry {
   }
 
  private:
-  virtual ~EntryImpl() {
+  ~EntryImpl() override {
     if (owner_)
       owner_->RemoveOpenEntry(this);
   }

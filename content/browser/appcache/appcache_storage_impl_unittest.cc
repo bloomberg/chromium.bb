@@ -131,7 +131,7 @@ class MockHttpServerJobFactory
      : appcache_start_interceptor_(appcache_start_interceptor.Pass()) {
   }
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     net::URLRequestJob* appcache_job =
@@ -151,15 +151,13 @@ class IOThread : public base::Thread {
       : base::Thread(name) {
   }
 
-  virtual ~IOThread() {
-    Stop();
-  }
+  ~IOThread() override { Stop(); }
 
   net::URLRequestContext* request_context() {
     return request_context_.get();
   }
 
-  virtual void Init() override {
+  void Init() override {
     scoped_ptr<net::URLRequestJobFactoryImpl> factory(
         new net::URLRequestJobFactoryImpl());
     factory->SetProtocolHandler(
@@ -172,7 +170,7 @@ class IOThread : public base::Thread {
     AppCacheInterceptor::EnsureRegistered();
   }
 
-  virtual void CleanUp() override {
+  void CleanUp() override {
     request_context_.reset();
     job_factory_.reset();
   }
@@ -197,14 +195,14 @@ class AppCacheStorageImplTest : public testing::Test {
           found_cache_id_(kAppCacheNoCacheId), test_(test) {
     }
 
-    virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) override {
+    void OnCacheLoaded(AppCache* cache, int64 cache_id) override {
       loaded_cache_ = cache;
       loaded_cache_id_ = cache_id;
       test_->ScheduleNextTask();
     }
 
-    virtual void OnGroupLoaded(AppCacheGroup* group,
-                               const GURL& manifest_url) override {
+    void OnGroupLoaded(AppCacheGroup* group,
+                       const GURL& manifest_url) override {
       loaded_group_ = group;
       loaded_manifest_url_ = manifest_url;
       loaded_groups_newest_cache_ = group ? group->newest_complete_cache()
@@ -212,30 +210,31 @@ class AppCacheStorageImplTest : public testing::Test {
       test_->ScheduleNextTask();
     }
 
-    virtual void OnGroupAndNewestCacheStored(
-        AppCacheGroup* group, AppCache* newest_cache, bool success,
-        bool would_exceed_quota) override {
+    void OnGroupAndNewestCacheStored(AppCacheGroup* group,
+                                     AppCache* newest_cache,
+                                     bool success,
+                                     bool would_exceed_quota) override {
       stored_group_ = group;
       stored_group_success_ = success;
       would_exceed_quota_ = would_exceed_quota;
       test_->ScheduleNextTask();
     }
 
-    virtual void OnGroupMadeObsolete(AppCacheGroup* group,
-                                     bool success,
-                                     int response_code) override {
+    void OnGroupMadeObsolete(AppCacheGroup* group,
+                             bool success,
+                             int response_code) override {
       obsoleted_group_ = group;
       obsoleted_success_ = success;
       test_->ScheduleNextTask();
     }
 
-    virtual void OnMainResponseFound(const GURL& url,
-                                     const AppCacheEntry& entry,
-                                     const GURL& namespace_entry_url,
-                                     const AppCacheEntry& fallback_entry,
-                                     int64 cache_id,
-                                     int64 group_id,
-                                     const GURL& manifest_url) override {
+    void OnMainResponseFound(const GURL& url,
+                             const AppCacheEntry& entry,
+                             const GURL& namespace_entry_url,
+                             const AppCacheEntry& fallback_entry,
+                             int64 cache_id,
+                             int64 group_id,
+                             const GURL& manifest_url) override {
       found_url_ = url;
       found_entry_ = entry;
       found_namespace_entry_url_ = namespace_entry_url;
@@ -276,10 +275,9 @@ class AppCacheStorageImplTest : public testing::Test {
                        NULL),
           async_(false) {}
 
-    virtual void GetUsageAndQuota(
-        const GURL& origin,
-        storage::StorageType type,
-        const GetUsageAndQuotaCallback& callback) override {
+    void GetUsageAndQuota(const GURL& origin,
+                          storage::StorageType type,
+                          const GetUsageAndQuotaCallback& callback) override {
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       if (async_) {
         base::MessageLoop::current()->PostTask(
@@ -299,7 +297,7 @@ class AppCacheStorageImplTest : public testing::Test {
     bool async_;
 
    protected:
-    virtual ~MockQuotaManager() {}
+    ~MockQuotaManager() override {}
   };
 
   class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
@@ -313,19 +311,19 @@ class AppCacheStorageImplTest : public testing::Test {
       manager_ = mock_manager_.get();
     }
 
-    virtual void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
-                                       const GURL& origin,
-                                       storage::StorageType type) override {
+    void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
+                               const GURL& origin,
+                               storage::StorageType type) override {
       EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       ++notify_storage_accessed_count_;
       last_origin_ = origin;
     }
 
-    virtual void NotifyStorageModified(storage::QuotaClient::ID client_id,
-                                       const GURL& origin,
-                                       storage::StorageType type,
-                                       int64 delta) override {
+    void NotifyStorageModified(storage::QuotaClient::ID client_id,
+                               const GURL& origin,
+                               storage::StorageType type,
+                               int64 delta) override {
       EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       ++notify_storage_modified_count_;
@@ -334,18 +332,17 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Not needed for our tests.
-    virtual void RegisterClient(storage::QuotaClient* client) override {}
-    virtual void NotifyOriginInUse(const GURL& origin) override {}
-    virtual void NotifyOriginNoLongerInUse(const GURL& origin) override {}
-    virtual void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
-                                      const GURL& origin,
-                                      storage::StorageType type,
-                                      bool enabled) override {}
-    virtual void GetUsageAndQuota(
-        base::SequencedTaskRunner* original_task_runner,
-        const GURL& origin,
-        storage::StorageType type,
-        const GetUsageAndQuotaCallback& callback) override {}
+    void RegisterClient(storage::QuotaClient* client) override {}
+    void NotifyOriginInUse(const GURL& origin) override {}
+    void NotifyOriginNoLongerInUse(const GURL& origin) override {}
+    void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
+                              const GURL& origin,
+                              storage::StorageType type,
+                              bool enabled) override {}
+    void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
+                          const GURL& origin,
+                          storage::StorageType type,
+                          const GetUsageAndQuotaCallback& callback) override {}
 
     int notify_storage_accessed_count_;
     int notify_storage_modified_count_;
@@ -354,7 +351,7 @@ class AppCacheStorageImplTest : public testing::Test {
     scoped_refptr<MockQuotaManager> mock_manager_;
 
    protected:
-    virtual ~MockQuotaManagerProxy() {}
+    ~MockQuotaManagerProxy() override {}
   };
 
   template <class Method>
@@ -1613,7 +1610,7 @@ class AppCacheStorageImplTest : public testing::Test {
     explicit MockServiceObserver(AppCacheStorageImplTest* test)
         : test_(test) {}
 
-    virtual void OnServiceReinitialized(
+    void OnServiceReinitialized(
         AppCacheStorageReference* old_storage_ref) override {
       observed_old_storage_ = old_storage_ref;
       test_->ScheduleNextTask();
@@ -1627,25 +1624,23 @@ class AppCacheStorageImplTest : public testing::Test {
    public:
     MockAppCacheFrontend() : error_event_was_raised_(false) {}
 
-    virtual void OnCacheSelected(
-        int host_id, const AppCacheInfo& info) override {}
-    virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 AppCacheStatus status) override {}
-    virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               AppCacheEventID event_id) override {}
-    virtual void OnProgressEventRaised(
-        const std::vector<int>& host_ids,
-        const GURL& url,
-        int num_total, int num_complete) override {}
-    virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const AppCacheErrorDetails& details)
-        override {
+    void OnCacheSelected(int host_id, const AppCacheInfo& info) override {}
+    void OnStatusChanged(const std::vector<int>& host_ids,
+                         AppCacheStatus status) override {}
+    void OnEventRaised(const std::vector<int>& host_ids,
+                       AppCacheEventID event_id) override {}
+    void OnProgressEventRaised(const std::vector<int>& host_ids,
+                               const GURL& url,
+                               int num_total,
+                               int num_complete) override {}
+    void OnErrorEventRaised(const std::vector<int>& host_ids,
+                            const AppCacheErrorDetails& details) override {
       error_event_was_raised_ = true;
     }
-    virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,
-                              const std::string& message) override {}
-    virtual void OnContentBlocked(
-        int host_id, const GURL& manifest_url) override {}
+    void OnLogMessage(int host_id,
+                      AppCacheLogLevel log_level,
+                      const std::string& message) override {}
+    void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
 
     bool error_event_was_raised_;
   };

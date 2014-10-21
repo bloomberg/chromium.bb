@@ -25,14 +25,14 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
       public ui::CompositorVSyncManager::Observer,
       public base::NonThreadSafe {
  public:
-  virtual ~BrowserCompositorOutputSurface();
+  ~BrowserCompositorOutputSurface() override;
 
   // cc::OutputSurface implementation.
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   // ui::CompositorOutputSurface::Observer implementation.
-  virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                       base::TimeDelta interval) override;
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
 
   void OnUpdateVSyncParametersFromGpu(base::TimeTicks tiembase,
                                       base::TimeDelta interval);

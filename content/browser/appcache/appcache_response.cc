@@ -37,7 +37,7 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
   }
 
  private:
-  virtual ~WrappedPickleIOBuffer() {}
+  ~WrappedPickleIOBuffer() override {}
 
   scoped_ptr<const Pickle> pickle_;
 };

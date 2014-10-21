@@ -13,7 +13,7 @@ typedef ContentBrowserTest ChildProcessLauncherBrowserTest;
 
 class StatsTableBrowserTest : public ChildProcessLauncherBrowserTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableStatsTable);
   }
 };

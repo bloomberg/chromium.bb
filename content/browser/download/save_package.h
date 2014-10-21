@@ -135,7 +135,7 @@ class CONTENT_EXPORT SavePackage
               const base::FilePath& file_full_path,
               const base::FilePath& directory_full_path);
 
-  virtual ~SavePackage();
+  ~SavePackage() override;
 
   // Notes from Init() above applies here as well.
   void InternalInit();
@@ -146,10 +146,10 @@ class CONTENT_EXPORT SavePackage
   void DoSavingProcess();
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // DownloadItem::Observer implementation.
-  virtual void OnDownloadDestroyed(DownloadItem* download) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
 
   // Update the download history of this item upon completion.
   void FinalizeDownloadEntry();

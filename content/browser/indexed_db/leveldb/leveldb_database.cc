@@ -128,7 +128,8 @@ class LockImpl : public LevelDBLock {
  public:
   explicit LockImpl(leveldb::Env* env, leveldb::FileLock* lock)
       : env_(env), lock_(lock) {}
-  virtual ~LockImpl() { env_->UnlockFile(lock_); }
+  ~LockImpl() override { env_->UnlockFile(lock_); }
+
  private:
   leveldb::Env* env_;
   leveldb::FileLock* lock_;

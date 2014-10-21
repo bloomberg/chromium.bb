@@ -57,8 +57,8 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   }
 
   // ContentBrowserTest
-  virtual void SetUpInProcessBrowserTestFixture() override;
-  virtual void TearDownInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
  protected:
   std::string GetAttr(const ui::AXNode* node,

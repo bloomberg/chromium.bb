@@ -27,8 +27,8 @@ class AppCacheGroup::HostObserver : public AppCacheHost::Observer {
   explicit HostObserver(AppCacheGroup* group) : group_(group) {}
 
   // Methods for AppCacheHost::Observer.
-  virtual void OnCacheSelectionComplete(AppCacheHost* host) override {}  // N/A
-  virtual void OnDestructionImminent(AppCacheHost* host) override {
+  void OnCacheSelectionComplete(AppCacheHost* host) override {}  // N/A
+  void OnDestructionImminent(AppCacheHost* host) override {
     group_->HostDestructionImminent(host);
   }
  private:

@@ -672,7 +672,7 @@ class AnimatedContentSamplerParameterizedTest
  protected:
   typedef std::pair<gfx::Rect, base::TimeTicks> Event;
 
-  virtual base::TimeDelta GetMinCapturePeriod() const override {
+  base::TimeDelta GetMinCapturePeriod() const override {
     return GetParam().min_capture_period;
   }
 

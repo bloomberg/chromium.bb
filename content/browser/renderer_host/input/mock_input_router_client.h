@@ -17,18 +17,18 @@ class InputRouter;
 class MockInputRouterClient : public InputRouterClient {
  public:
   MockInputRouterClient();
-  virtual ~MockInputRouterClient();
+  ~MockInputRouterClient() override;
 
   // InputRouterClient
-  virtual InputEventAckState FilterInputEvent(
+  InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info) override;
-  virtual void IncrementInFlightEventCount() override;
-  virtual void DecrementInFlightEventCount() override;
-  virtual void OnHasTouchEventHandlers(bool has_handlers) override;
-  virtual void SetNeedsFlush() override;
-  virtual void DidFlush() override;
-  virtual void DidOverscroll(const DidOverscrollParams& params) override;
+  void IncrementInFlightEventCount() override;
+  void DecrementInFlightEventCount() override;
+  void OnHasTouchEventHandlers(bool has_handlers) override;
+  void SetNeedsFlush() override;
+  void DidFlush() override;
+  void DidOverscroll(const DidOverscrollParams& params) override;
 
   bool GetAndResetFilterEventCalled();
   size_t GetAndResetDidFlushCount();

@@ -134,9 +134,7 @@ class ResourceScheduler::ScheduledResourceRequest
                              "url", request->url().spec());
   }
 
-  virtual ~ScheduledResourceRequest() {
-    scheduler_->RemoveRequest(this);
-  }
+  ~ScheduledResourceRequest() override { scheduler_->RemoveRequest(this); }
 
   void Start() {
     TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request_, "Queued");
@@ -169,7 +167,7 @@ class ResourceScheduler::ScheduledResourceRequest
 
  private:
   // ResourceMessageDelegate interface:
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(ScheduledResourceRequest, message)
       IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, DidChangePriority)
@@ -179,13 +177,9 @@ class ResourceScheduler::ScheduledResourceRequest
   }
 
   // ResourceThrottle interface:
-  virtual void WillStartRequest(bool* defer) override {
-    deferred_ = *defer = !ready_;
-  }
+  void WillStartRequest(bool* defer) override { deferred_ = *defer = !ready_; }
 
-  virtual const char* GetNameForLogging() const override {
-    return "ResourceScheduler";
-  }
+  const char* GetNameForLogging() const override { return "ResourceScheduler"; }
 
   void DidChangePriority(int request_id, net::RequestPriority new_priority,
                          int intra_priority_value) {

@@ -41,7 +41,7 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   static size_t GetNumInstances();
 
  protected:
-  virtual ~PepperTCPServerSocketMessageFilter();
+  ~PepperTCPServerSocketMessageFilter() override;
 
  private:
   enum State {
@@ -53,9 +53,9 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   };
 
   // ppapi::host::ResourceMessageFilter overrides.
-  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

@@ -35,10 +35,9 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
         error_on_evict_origin_data_(false),
         error_on_get_usage_and_quota_(false) {}
 
-  virtual void EvictOriginData(
-      const GURL& origin,
-      StorageType type,
-      const EvictOriginDataCallback& callback) override {
+  void EvictOriginData(const GURL& origin,
+                       StorageType type,
+                       const EvictOriginDataCallback& callback) override {
     if (error_on_evict_origin_data_) {
       callback.Run(storage::kQuotaErrorInvalidModification);
       return;
@@ -49,7 +48,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     callback.Run(storage::kQuotaStatusOk);
   }
 
-  virtual void GetUsageAndQuotaForEviction(
+  void GetUsageAndQuotaForEviction(
       const UsageAndQuotaCallback& callback) override {
     if (error_on_get_usage_and_quota_) {
       callback.Run(storage::kQuotaErrorInvalidAccess, UsageAndQuota());
@@ -61,9 +60,8 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     callback.Run(storage::kQuotaStatusOk, quota_and_usage);
   }
 
-  virtual void GetLRUOrigin(
-      StorageType type,
-      const GetLRUOriginCallback& callback) override {
+  void GetLRUOrigin(StorageType type,
+                    const GetLRUOriginCallback& callback) override {
     if (origin_order_.empty())
       callback.Run(GURL());
     else

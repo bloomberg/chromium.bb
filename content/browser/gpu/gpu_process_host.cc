@@ -153,7 +153,7 @@ class GpuSandboxedProcessLauncherDelegate
       : ipc_fd_(host->TakeClientFileDescriptor()) {}
 #endif
 
-  virtual ~GpuSandboxedProcessLauncherDelegate() {}
+  ~GpuSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
   virtual bool ShouldSandbox() override {
@@ -250,9 +250,7 @@ class GpuSandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
 
-  virtual base::ScopedFD TakeIpcFd() override {
-    return ipc_fd_.Pass();
-  }
+  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
 
  private:

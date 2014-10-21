@@ -23,17 +23,17 @@ class FakeBatteryManager : public BatteryStatusManager {
   explicit FakeBatteryManager(
       const BatteryStatusService::BatteryUpdateCallback& callback)
       : callback_(callback), battery_status_available_(true), started_(false) {}
-  virtual ~FakeBatteryManager() { }
+  ~FakeBatteryManager() override {}
 
   // Methods from BatteryStatusManager.
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
     started_ = true;
     if (battery_status_available_)
       InvokeUpdateCallback();
     return battery_status_available_;
   }
 
-  virtual void StopListeningBatteryChange() override { }
+  void StopListeningBatteryChange() override {}
 
   void InvokeUpdateCallback() {
     callback_.Run(status_);
@@ -68,12 +68,12 @@ class BatteryStatusBrowserTest : public ContentBrowserTest  {
         io_loop_finished_event_(false, false) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+    void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&BatteryStatusBrowserTest::SetUpOnIOThread, this));

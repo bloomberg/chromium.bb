@@ -32,15 +32,15 @@ class GpuBrowserCompositorOutputSurface
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator);
 
-  virtual ~GpuBrowserCompositorOutputSurface();
+  ~GpuBrowserCompositorOutputSurface() override;
 
  protected:
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
 
 #if defined(OS_MACOSX)
-  virtual void OnSurfaceDisplayed() override;
+  void OnSurfaceDisplayed() override;
 #endif
 
   CommandBufferProxyImpl* GetCommandBufferProxy();

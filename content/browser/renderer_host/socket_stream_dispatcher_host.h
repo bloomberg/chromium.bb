@@ -37,32 +37,32 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
       ResourceContext* resource_context);
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Make this object inactive.
   // Remove all active SocketStreamHost objects.
   void Shutdown();
 
   // SocketStream::Delegate:
-  virtual void OnConnected(net::SocketStream* socket,
-                           int max_pending_send_allowed) override;
-  virtual void OnSentData(net::SocketStream* socket, int amount_sent) override;
-  virtual void OnReceivedData(net::SocketStream* socket,
-                              const char* data, int len) override;
-  virtual void OnClose(net::SocketStream* socket) override;
-  virtual void OnError(const net::SocketStream* socket, int error) override;
-  virtual void OnSSLCertificateError(net::SocketStream* socket,
-                                     const net::SSLInfo& ssl_info,
-                                     bool fatal) override;
-  virtual bool CanGetCookies(net::SocketStream* socket,
-                             const GURL& url) override;
-  virtual bool CanSetCookie(net::SocketStream* request,
-                            const GURL& url,
-                            const std::string& cookie_line,
-                            net::CookieOptions* options) override;
+  void OnConnected(net::SocketStream* socket,
+                   int max_pending_send_allowed) override;
+  void OnSentData(net::SocketStream* socket, int amount_sent) override;
+  void OnReceivedData(net::SocketStream* socket,
+                      const char* data,
+                      int len) override;
+  void OnClose(net::SocketStream* socket) override;
+  void OnError(const net::SocketStream* socket, int error) override;
+  void OnSSLCertificateError(net::SocketStream* socket,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
+  bool CanGetCookies(net::SocketStream* socket, const GURL& url) override;
+  bool CanSetCookie(net::SocketStream* request,
+                    const GURL& url,
+                    const std::string& cookie_line,
+                    net::CookieOptions* options) override;
 
  protected:
-  virtual ~SocketStreamDispatcherHost();
+  ~SocketStreamDispatcherHost() override;
 
  private:
   // Message handlers called by OnMessageReceived.

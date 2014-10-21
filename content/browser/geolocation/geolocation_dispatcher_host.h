@@ -22,7 +22,7 @@ namespace content {
 class GeolocationDispatcherHost : public WebContentsObserver {
  public:
   explicit GeolocationDispatcherHost(WebContents* web_contents);
-  virtual ~GeolocationDispatcherHost();
+  ~GeolocationDispatcherHost() override;
 
   // Pause or resumes geolocation. Resuming when nothing is paused is a no-op.
   // If the web contents is paused while not currently using geolocation but
@@ -39,14 +39,14 @@ class GeolocationDispatcherHost : public WebContentsObserver {
 
  private:
   // WebContentsObserver
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  virtual void RenderViewHostChanged(RenderViewHost* old_host,
-                                     RenderViewHost* new_host) override;
-  virtual void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
-                                   const LoadCommittedDetails& details,
-                                   const FrameNavigateParams& params) override;
-  virtual bool OnMessageReceived(
-      const IPC::Message& msg, RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override;
+  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                           const LoadCommittedDetails& details,
+                           const FrameNavigateParams& params) override;
+  bool OnMessageReceived(const IPC::Message& msg,
+                         RenderFrameHost* render_frame_host) override;
 
   // Message handlers:
   // TODO(mlamouri): |requesting_origin| should be a security origin to

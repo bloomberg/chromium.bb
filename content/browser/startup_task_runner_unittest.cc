@@ -96,22 +96,21 @@ class MockTaskRunner {
 class TaskRunnerProxy : public base::SingleThreadTaskRunner {
  public:
   TaskRunnerProxy(MockTaskRunner* mock) : mock_(mock) {}
-  virtual bool RunsTasksOnCurrentThread() const override { return true; }
-  virtual bool PostDelayedTask(const tracked_objects::Location& location,
-                               const Closure& closure,
-                               base::TimeDelta delta) override {
+  bool RunsTasksOnCurrentThread() const override { return true; }
+  bool PostDelayedTask(const tracked_objects::Location& location,
+                       const Closure& closure,
+                       base::TimeDelta delta) override {
     return mock_->PostDelayedTask(location, closure, delta);
   }
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& location,
-      const Closure& closure,
-      base::TimeDelta delta) override {
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& location,
+                                  const Closure& closure,
+                                  base::TimeDelta delta) override {
     return mock_->PostNonNestableDelayedTask(location, closure, delta);
   }
 
  private:
   MockTaskRunner* mock_;
-  virtual ~TaskRunnerProxy() {}
+  ~TaskRunnerProxy() override {}
 };
 
 TEST_F(StartupTaskRunnerTest, SynchronousExecution) {

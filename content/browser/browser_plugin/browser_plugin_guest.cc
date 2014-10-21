@@ -51,15 +51,14 @@ class BrowserPluginGuest::EmbedderWebContentsObserver
         browser_plugin_guest_(guest) {
   }
 
-  virtual ~EmbedderWebContentsObserver() {
-  }
+  ~EmbedderWebContentsObserver() override {}
 
   // WebContentsObserver implementation.
-  virtual void WasShown() override {
+  void WasShown() override {
     browser_plugin_guest_->EmbedderVisibilityChanged(true);
   }
 
-  virtual void WasHidden() override {
+  void WasHidden() override {
     browser_plugin_guest_->EmbedderVisibilityChanged(false);
   }
 

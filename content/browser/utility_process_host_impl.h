@@ -38,21 +38,21 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   UtilityProcessHostImpl(
       const scoped_refptr<UtilityProcessHostClient>& client,
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
-  virtual ~UtilityProcessHostImpl();
+  ~UtilityProcessHostImpl() override;
 
   // UtilityProcessHost implementation:
-  virtual bool Send(IPC::Message* message) override;
-  virtual bool StartBatchMode() override;
-  virtual void EndBatchMode() override;
-  virtual void SetExposedDir(const base::FilePath& dir) override;
-  virtual void EnableMDns() override;
-  virtual void DisableSandbox() override;
+  bool Send(IPC::Message* message) override;
+  bool StartBatchMode() override;
+  void EndBatchMode() override;
+  void SetExposedDir(const base::FilePath& dir) override;
+  void EnableMDns() override;
+  void DisableSandbox() override;
 #if defined(OS_WIN)
   virtual void ElevatePrivileges() override;
 #endif
-  virtual const ChildProcessData& GetData() override;
+  const ChildProcessData& GetData() override;
 #if defined(OS_POSIX)
-  virtual void SetEnv(const base::EnvironmentMap& env) override;
+  void SetEnv(const base::EnvironmentMap& env) override;
 #endif
 
   void set_child_flags(int flags) { child_flags_ = flags; }
@@ -63,9 +63,9 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool StartProcess();
 
   // BrowserChildProcessHost:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnProcessLaunchFailed() override;
-  virtual void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessLaunchFailed() override;
+  void OnProcessCrashed(int exit_code) override;
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<UtilityProcessHostClient> client_;

@@ -119,14 +119,12 @@ class URLRequestChromeJob : public net::URLRequestJob,
                       bool is_incognito);
 
   // net::URLRequestJob implementation.
-  virtual void Start() override;
-  virtual void Kill() override;
-  virtual bool ReadRawData(net::IOBuffer* buf,
-                           int buf_size,
-                           int* bytes_read) override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual int GetResponseCode() const override;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
+  void Start() override;
+  void Kill() override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  bool GetMimeType(std::string* mime_type) const override;
+  int GetResponseCode() const override;
+  void GetResponseInfo(net::HttpResponseInfo* info) override;
 
   // Used to notify that the requested data's |mime_type| is ready.
   void MimeTypeAvailable(const std::string& mime_type);
@@ -175,7 +173,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
   }
 
  private:
-  virtual ~URLRequestChromeJob();
+  ~URLRequestChromeJob() override;
 
   // Helper for Start(), to let us start asynchronously.
   // (This pattern is shared by most net::URLRequestJob implementations.)
@@ -459,9 +457,9 @@ class ChromeProtocolHandler
         is_incognito_(is_incognito),
         appcache_service_(appcache_service),
         blob_storage_context_(blob_storage_context) {}
-  virtual ~ChromeProtocolHandler() {}
+  ~ChromeProtocolHandler() override {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     DCHECK(request);
@@ -504,7 +502,7 @@ class ChromeProtocolHandler
         GetURLDataManagerForResourceContext(resource_context_), is_incognito_);
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
+  bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -729,9 +727,9 @@ class DevToolsJobFactory
   // |is_incognito| should be set for incognito profiles.
   DevToolsJobFactory(content::ResourceContext* resource_context,
                      bool is_incognito);
-  virtual ~DevToolsJobFactory();
+  ~DevToolsJobFactory() override;
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 

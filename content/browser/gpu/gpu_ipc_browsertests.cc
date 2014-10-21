@@ -25,7 +25,7 @@ const content::CauseForGpuLaunch kInitCause =
 
 class ContextTestBase : public content::ContentBrowserTest {
  public:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     if (!content::BrowserGpuChannelHostFactory::CanUseForTesting())
       return;
 
@@ -52,7 +52,7 @@ class ContextTestBase : public content::ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     // Must delete the context first.
     context_.reset(NULL);
     ContentBrowserTest::TearDownOnMainThread();
@@ -73,7 +73,7 @@ namespace content {
 
 class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
  public:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     if (!BrowserGpuChannelHostFactory::CanUseForTesting())
       return;
 

@@ -62,30 +62,29 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       ResourceContext* context,
       base::WeakPtr<ResourceMessageFilter> filter,
       bool is_async);
-  virtual ~ResourceRequestInfoImpl();
+  ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
-  virtual ResourceContext* GetContext() const override;
-  virtual int GetChildID() const override;
-  virtual int GetRouteID() const override;
-  virtual int GetOriginPID() const override;
-  virtual int GetRequestID() const override;
-  virtual int GetRenderFrameID() const override;
-  virtual bool IsMainFrame() const override;
-  virtual bool ParentIsMainFrame() const override;
-  virtual int GetParentRenderFrameID() const override;
-  virtual ResourceType GetResourceType() const override;
-  virtual int GetProcessType() const override;
-  virtual blink::WebReferrerPolicy GetReferrerPolicy() const override;
-  virtual blink::WebPageVisibilityState GetVisibilityState() const override;
-  virtual ui::PageTransition GetPageTransition() const override;
-  virtual bool HasUserGesture() const override;
-  virtual bool WasIgnoredByHandler() const override;
-  virtual bool GetAssociatedRenderFrame(int* render_process_id,
-                                        int* render_frame_id) const override;
-  virtual bool IsAsync() const override;
-  virtual bool IsDownload() const override;
-
+  ResourceContext* GetContext() const override;
+  int GetChildID() const override;
+  int GetRouteID() const override;
+  int GetOriginPID() const override;
+  int GetRequestID() const override;
+  int GetRenderFrameID() const override;
+  bool IsMainFrame() const override;
+  bool ParentIsMainFrame() const override;
+  int GetParentRenderFrameID() const override;
+  ResourceType GetResourceType() const override;
+  int GetProcessType() const override;
+  blink::WebReferrerPolicy GetReferrerPolicy() const override;
+  blink::WebPageVisibilityState GetVisibilityState() const override;
+  ui::PageTransition GetPageTransition() const override;
+  bool HasUserGesture() const override;
+  bool WasIgnoredByHandler() const override;
+  bool GetAssociatedRenderFrame(int* render_process_id,
+                                int* render_frame_id) const override;
+  bool IsAsync() const override;
+  bool IsDownload() const override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 

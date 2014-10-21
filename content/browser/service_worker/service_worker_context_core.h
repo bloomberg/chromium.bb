@@ -108,23 +108,23 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerContextCore(
       ServiceWorkerContextCore* old_context,
       ServiceWorkerContextWrapper* wrapper);
-  virtual ~ServiceWorkerContextCore();
+  ~ServiceWorkerContextCore() override;
 
   // ServiceWorkerVersion::Listener overrides.
-  virtual void OnWorkerStarted(ServiceWorkerVersion* version) override;
-  virtual void OnWorkerStopped(ServiceWorkerVersion* version) override;
-  virtual void OnVersionStateChanged(ServiceWorkerVersion* version) override;
-  virtual void OnErrorReported(ServiceWorkerVersion* version,
-                               const base::string16& error_message,
-                               int line_number,
-                               int column_number,
-                               const GURL& source_url) override;
-  virtual void OnReportConsoleMessage(ServiceWorkerVersion* version,
-                                      int source_identifier,
-                                      int message_level,
-                                      const base::string16& message,
-                                      int line_number,
-                                      const GURL& source_url) override;
+  void OnWorkerStarted(ServiceWorkerVersion* version) override;
+  void OnWorkerStopped(ServiceWorkerVersion* version) override;
+  void OnVersionStateChanged(ServiceWorkerVersion* version) override;
+  void OnErrorReported(ServiceWorkerVersion* version,
+                       const base::string16& error_message,
+                       int line_number,
+                       int column_number,
+                       const GURL& source_url) override;
+  void OnReportConsoleMessage(ServiceWorkerVersion* version,
+                              int source_identifier,
+                              int message_level,
+                              const base::string16& message,
+                              int line_number,
+                              const GURL& source_url) override;
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
   ServiceWorkerCacheStorageManager* cache_manager() {

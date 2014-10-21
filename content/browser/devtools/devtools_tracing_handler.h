@@ -26,7 +26,7 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
  public:
   enum Target { Browser, Renderer };
   explicit DevToolsTracingHandler(Target target);
-  virtual ~DevToolsTracingHandler();
+  ~DevToolsTracingHandler() override;
 
   void OnClientDetached();
 

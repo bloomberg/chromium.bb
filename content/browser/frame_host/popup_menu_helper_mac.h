@@ -50,9 +50,9 @@ class PopupMenuHelper : public NotificationObserver {
   virtual RenderWidgetHostViewMac* GetRenderWidgetHostView() const;
 
   // NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
   NotificationRegistrar notification_registrar_;
   RenderFrameHostImpl* render_frame_host_;

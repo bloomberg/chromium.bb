@@ -49,7 +49,7 @@ class PluginTest : public ContentBrowserTest {
  protected:
   PluginTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     // Some NPAPI tests schedule garbage collection to force object tear-down.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose_gc");
 
@@ -76,7 +76,7 @@ class PluginTest : public ContentBrowserTest {
 #endif
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
@@ -508,11 +508,10 @@ class TestResourceDispatcherHostDelegate
 
  private:
   // ResourceDispatcherHostDelegate implementation:
-  virtual void OnResponseStarted(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      ResourceResponse* response,
-      IPC::Sender* sender) override {
+  void OnResponseStarted(net::URLRequest* request,
+                         ResourceContext* resource_context,
+                         ResourceResponse* response,
+                         IPC::Sender* sender) override {
     // The URL below comes from plugin_geturl_test.cc.
     if (!EndsWith(request->url().spec(),
                  "npapi/plugin_ref_target_page.html",

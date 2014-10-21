@@ -30,7 +30,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   TouchpadTapSuppressionController(
       TouchpadTapSuppressionControllerClient* client,
       const TapSuppressionController::Config& config);
-  virtual ~TouchpadTapSuppressionController();
+  ~TouchpadTapSuppressionController() override;
 
   // Should be called on arrival of GestureFlingCancel events.
   void GestureFlingCancel();
@@ -52,8 +52,8 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   friend class MockRenderWidgetHost;
 
   // TapSuppressionControllerClient implementation.
-  virtual void DropStashedTapDown() override;
-  virtual void ForwardStashedTapDown() override;
+  void DropStashedTapDown() override;
+  void ForwardStashedTapDown() override;
 
   TouchpadTapSuppressionControllerClient* client_;
   MouseEventWithLatencyInfo stashed_mouse_down_;

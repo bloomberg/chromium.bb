@@ -83,7 +83,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   }
 
  private:
-  virtual ~DragDownloadFileUI() {
+  ~DragDownloadFileUI() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (download_item_)
       download_item_->RemoveObserver(this);
@@ -103,7 +103,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   }
 
   // DownloadItem::Observer:
-  virtual void OnDownloadUpdated(DownloadItem* item) override {
+  void OnDownloadUpdated(DownloadItem* item) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(download_item_, item);
     DownloadItem::DownloadState state = download_item_->GetState();
@@ -121,7 +121,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     // Ignore other states.
   }
 
-  virtual void OnDownloadDestroyed(DownloadItem* item) override {
+  void OnDownloadDestroyed(DownloadItem* item) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(download_item_, item);
     if (!on_completed_.is_null()) {

@@ -26,42 +26,41 @@ class SaveFileResourceHandler : public ResourceHandler {
                           int render_view_id,
                           const GURL& url,
                           SaveFileManager* manager);
-  virtual ~SaveFileResourceHandler();
+  ~SaveFileResourceHandler() override;
 
   // ResourceHandler Implementation:
-  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
+  bool OnUploadProgress(uint64 position, uint64 size) override;
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
-  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                                   ResourceResponse* response,
-                                   bool* defer) override;
+  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
+                           ResourceResponse* response,
+                           bool* defer) override;
 
   // Sends the download creation information to the download thread.
-  virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) override;
+  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
 
   // Pass-through implementation.
-  virtual bool OnWillStart(const GURL& url, bool* defer) override;
+  bool OnWillStart(const GURL& url, bool* defer) override;
 
   // Pass-through implementation.
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
+  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
 
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) override;
+  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  int min_size) override;
 
   // Passes the buffer to the download file writer.
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
+  bool OnReadCompleted(int bytes_read, bool* defer) override;
 
-  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
-                                   const std::string& security_info,
-                                   bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& status,
+                           const std::string& security_info,
+                           bool* defer) override;
 
   // N/A to this flavor of SaveFileResourceHandler.
-  virtual void OnDataDownloaded(int bytes_downloaded) override;
+  void OnDataDownloaded(int bytes_downloaded) override;
 
   // If the content-length header is not present (or contains something other
   // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and

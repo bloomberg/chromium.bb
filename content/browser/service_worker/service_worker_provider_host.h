@@ -139,8 +139,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            UpdateAfter24Hours);
 
   // ServiceWorkerRegistration::Listener overrides.
-  virtual void OnRegistrationFailed(
-      ServiceWorkerRegistration* registration) override;
+  void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
 
   // Sets the controller version field to |version| or if |version| is NULL,
   // clears the field.

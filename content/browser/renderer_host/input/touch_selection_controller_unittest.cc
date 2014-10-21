@@ -19,13 +19,13 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
  public:
   explicit MockTouchHandleDrawable(bool* contains_point)
       : intersects_rect_(contains_point) {}
-  virtual ~MockTouchHandleDrawable() {}
-  virtual void SetEnabled(bool enabled) override {}
-  virtual void SetOrientation(TouchHandleOrientation orientation) override {}
-  virtual void SetAlpha(float alpha) override {}
-  virtual void SetFocus(const gfx::PointF& position) override {}
-  virtual void SetVisible(bool visible) override {}
-  virtual bool IntersectsWith(const gfx::RectF& rect) const override {
+  ~MockTouchHandleDrawable() override {}
+  void SetEnabled(bool enabled) override {}
+  void SetOrientation(TouchHandleOrientation orientation) override {}
+  void SetAlpha(float alpha) override {}
+  void SetFocus(const gfx::PointF& position) override {}
+  void SetVisible(bool visible) override {}
+  bool IntersectsWith(const gfx::RectF& rect) const override {
     return *intersects_rect_;
   }
 
@@ -60,29 +60,29 @@ class TouchSelectionControllerTest : public testing::Test,
 
   // TouchSelectionControllerClient implementation.
 
-  virtual bool SupportsAnimation() const override { return animation_enabled_; }
+  bool SupportsAnimation() const override { return animation_enabled_; }
 
-  virtual void SetNeedsAnimate() override { needs_animate_ = true; }
+  void SetNeedsAnimate() override { needs_animate_ = true; }
 
-  virtual void MoveCaret(const gfx::PointF& position) override {
+  void MoveCaret(const gfx::PointF& position) override {
     caret_moved_ = true;
     caret_position_ = position;
   }
 
-  virtual void SelectBetweenCoordinates(const gfx::PointF& start,
-                                        const gfx::PointF& end) override {
+  void SelectBetweenCoordinates(const gfx::PointF& start,
+                                const gfx::PointF& end) override {
     selection_moved_ = true;
     selection_start_ = start;
     selection_end_ = end;
   }
 
-  virtual void OnSelectionEvent(SelectionEventType event,
-                                const gfx::PointF& end_position) override {
+  void OnSelectionEvent(SelectionEventType event,
+                        const gfx::PointF& end_position) override {
     last_event_ = event;
     last_event_start_ = end_position;
   }
 
-  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
+  scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
     return scoped_ptr<TouchHandleDrawable>(
         new MockTouchHandleDrawable(&dragging_enabled_));
   }

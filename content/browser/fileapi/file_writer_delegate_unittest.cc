@@ -175,15 +175,13 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
         cursor_(0) {
   }
 
-  virtual void Start() override {
+  void Start() override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
   }
 
-  virtual bool ReadRawData(net::IOBuffer* buf,
-                           int buf_size,
-                           int *bytes_read) override {
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override {
     if (remaining_bytes_ < buf_size)
       buf_size = static_cast<int>(remaining_bytes_);
 
@@ -196,12 +194,10 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
     return true;
   }
 
-  virtual int GetResponseCode() const override {
-    return 200;
-  }
+  int GetResponseCode() const override { return 200; }
 
  protected:
-  virtual ~FileWriterDelegateTestJob() {}
+  ~FileWriterDelegateTestJob() override {}
 
  private:
   std::string content_;
@@ -215,7 +211,7 @@ class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
       : content_data_(content_data) {
   }
 
-  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
@@ -223,15 +219,15 @@ class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
         request, network_delegate, *content_data_);
   }
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const override {
+  bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "blob";
   }
 
-  virtual bool IsHandledURL(const GURL& url) const override {
+  bool IsHandledURL(const GURL& url) const override {
     return url.SchemeIs("blob");
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
+  bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }
 

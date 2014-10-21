@@ -34,7 +34,7 @@ class SocketStreamHost : public SSLErrorHandler::Delegate {
                    int child_id,
                    int render_frame_id,
                    int socket_id);
-  virtual ~SocketStreamHost();
+  ~SocketStreamHost() override;
 
   // Gets socket_id associated with |socket|.
   static int SocketIdFromSocketStream(const net::SocketStream* socket);
@@ -58,9 +58,8 @@ class SocketStreamHost : public SSLErrorHandler::Delegate {
   base::WeakPtr<SSLErrorHandler::Delegate> AsSSLErrorHandlerDelegate();
 
   // SSLErrorHandler::Delegate methods:
-  virtual void CancelSSLRequest(int error,
-                                const net::SSLInfo* ssl_info) override;
-  virtual void ContinueSSLRequest() override;
+  void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override;
+  void ContinueSSLRequest() override;
 
  private:
   net::SocketStream::Delegate* delegate_;

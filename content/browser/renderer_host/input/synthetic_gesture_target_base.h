@@ -25,7 +25,7 @@ class RenderWidgetHostImpl;
 class SyntheticGestureTargetBase : public SyntheticGestureTarget {
  public:
   explicit SyntheticGestureTargetBase(RenderWidgetHostImpl* host);
-  virtual ~SyntheticGestureTargetBase();
+  ~SyntheticGestureTargetBase() override;
 
   virtual void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
@@ -40,19 +40,18 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
       const ui::LatencyInfo& latency_info);
 
   // SyntheticGestureTarget:
-  virtual void DispatchInputEventToPlatform(
-    const blink::WebInputEvent& event) override;
+  void DispatchInputEventToPlatform(const blink::WebInputEvent& event) override;
 
-  virtual void SetNeedsFlush() override;
+  void SetNeedsFlush() override;
 
-  virtual SyntheticGestureParams::GestureSourceType
-      GetDefaultSyntheticGestureSourceType() const override;
+  SyntheticGestureParams::GestureSourceType
+  GetDefaultSyntheticGestureSourceType() const override;
 
-  virtual base::TimeDelta PointerAssumedStoppedTime() const override;
+  base::TimeDelta PointerAssumedStoppedTime() const override;
 
-  virtual float GetTouchSlopInDips() const override;
+  float GetTouchSlopInDips() const override;
 
-  virtual float GetMinScalingSpanInDips() const override;
+  float GetMinScalingSpanInDips() const override;
 
  protected:
   RenderWidgetHostImpl* render_widget_host() const { return host_; }

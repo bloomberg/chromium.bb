@@ -53,7 +53,7 @@ class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
   }
 
  private:
-  virtual ~PoolBuffer() { pool_->RelinquishProducerReservation(id()); }
+  ~PoolBuffer() override { pool_->RelinquishProducerReservation(id()); }
 
   const scoped_refptr<VideoCaptureBufferPool> pool_;
 };
@@ -61,11 +61,9 @@ class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
-  virtual ~SyncPointClientImpl() {}
-  virtual uint32 InsertSyncPoint() override {
-    return gl_helper_->InsertSyncPoint();
-  }
-  virtual void WaitSyncPoint(uint32 sync_point) override {
+  ~SyncPointClientImpl() override {}
+  uint32 InsertSyncPoint() override { return gl_helper_->InsertSyncPoint(); }
+  void WaitSyncPoint(uint32 sync_point) override {
     gl_helper_->WaitSyncPoint(sync_point);
   }
 
@@ -156,24 +154,23 @@ class VideoCaptureController::VideoCaptureDeviceClient
   explicit VideoCaptureDeviceClient(
       const base::WeakPtr<VideoCaptureController>& controller,
       const scoped_refptr<VideoCaptureBufferPool>& buffer_pool);
-  virtual ~VideoCaptureDeviceClient();
+  ~VideoCaptureDeviceClient() override;
 
   // VideoCaptureDevice::Client implementation.
-  virtual scoped_refptr<Buffer> ReserveOutputBuffer(
-      media::VideoFrame::Format format,
-      const gfx::Size& size) override;
-  virtual void OnIncomingCapturedData(const uint8* data,
-                                      int length,
-                                      const VideoCaptureFormat& frame_format,
-                                      int rotation,
-                                      base::TimeTicks timestamp) override;
-  virtual void OnIncomingCapturedVideoFrame(
+  scoped_refptr<Buffer> ReserveOutputBuffer(media::VideoFrame::Format format,
+                                            const gfx::Size& size) override;
+  void OnIncomingCapturedData(const uint8* data,
+                              int length,
+                              const VideoCaptureFormat& frame_format,
+                              int rotation,
+                              base::TimeTicks timestamp) override;
+  void OnIncomingCapturedVideoFrame(
       const scoped_refptr<Buffer>& buffer,
       const VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
       base::TimeTicks timestamp) override;
-  virtual void OnError(const std::string& reason) override;
-  virtual void OnLog(const std::string& message) override;
+  void OnError(const std::string& reason) override;
+  void OnLog(const std::string& message) override;
 
  private:
   scoped_refptr<Buffer> DoReserveOutputBuffer(media::VideoFrame::Format format,

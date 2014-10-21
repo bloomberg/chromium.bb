@@ -27,14 +27,14 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
                          int process_id);
 
   // BrowserIOMessageFilter implementation
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~AppCacheDispatcherHost();
+  ~AppCacheDispatcherHost() override;
 
   // BrowserMessageFilter override.
-  virtual void BadMessageReceived() override;
+  void BadMessageReceived() override;
 
  private:
   // IPC message handlers

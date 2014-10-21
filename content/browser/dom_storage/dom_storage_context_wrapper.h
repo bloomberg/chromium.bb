@@ -33,17 +33,16 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
-  virtual void GetLocalStorageUsage(
+  void GetLocalStorageUsage(
       const GetLocalStorageUsageCallback& callback) override;
-  virtual void GetSessionStorageUsage(
+  void GetSessionStorageUsage(
       const GetSessionStorageUsageCallback& callback) override;
-  virtual void DeleteLocalStorage(const GURL& origin) override;
-  virtual void DeleteSessionStorage(
-      const SessionStorageUsageInfo& usage_info) override;
-  virtual void SetSaveSessionStorageOnDisk() override;
-  virtual scoped_refptr<SessionStorageNamespace>
-      RecreateSessionStorage(const std::string& persistent_id) override;
-  virtual void StartScavengingUnusedSessionStorage() override;
+  void DeleteLocalStorage(const GURL& origin) override;
+  void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info) override;
+  void SetSaveSessionStorageOnDisk() override;
+  scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(
+      const std::string& persistent_id) override;
+  void StartScavengingUnusedSessionStorage() override;
 
   // Used by content settings to alter the behavior around
   // what data to keep and what data to discard at shutdown.
@@ -59,7 +58,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   friend class SessionStorageNamespaceImpl;  // ditto
   friend class base::RefCountedThreadSafe<DOMStorageContextWrapper>;
 
-  virtual ~DOMStorageContextWrapper();
+  ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
 
   scoped_refptr<DOMStorageContextImpl> context_;

@@ -16,10 +16,10 @@ class BrowserOnlineStateObserver
     : public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   BrowserOnlineStateObserver();
-  virtual ~BrowserOnlineStateObserver();
+  ~BrowserOnlineStateObserver() override;
 
   // ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:

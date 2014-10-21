@@ -121,17 +121,17 @@ class DownloadItemTest : public testing::Test {
       item_->AddObserver(this);
     }
 
-    virtual ~MockObserver() {
+    ~MockObserver() override {
       if (item_) item_->RemoveObserver(this);
     }
 
-    virtual void OnDownloadRemoved(DownloadItem* download) override {
+    void OnDownloadRemoved(DownloadItem* download) override {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
       removed_ = true;
     }
 
-    virtual void OnDownloadUpdated(DownloadItem* download) override {
+    void OnDownloadUpdated(DownloadItem* download) override {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
       updated_ = true;
@@ -147,12 +147,12 @@ class DownloadItemTest : public testing::Test {
       last_state_ = new_state;
     }
 
-    virtual void OnDownloadOpened(DownloadItem* download) override {
+    void OnDownloadOpened(DownloadItem* download) override {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
     }
 
-    virtual void OnDownloadDestroyed(DownloadItem* download) override {
+    void OnDownloadDestroyed(DownloadItem* download) override {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
       destroyed_ = true;

@@ -58,10 +58,9 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         stream_context_(stream_context),
         file_system_context_(file_system_context) {}
 
-  virtual ~BlobProtocolHandler() {
-  }
+  ~BlobProtocolHandler() override {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     scoped_refptr<Stream> stream =

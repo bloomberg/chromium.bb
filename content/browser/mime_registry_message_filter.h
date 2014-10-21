@@ -14,13 +14,12 @@ class MimeRegistryMessageFilter : public BrowserMessageFilter {
  public:
   MimeRegistryMessageFilter();
 
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~MimeRegistryMessageFilter();
+  ~MimeRegistryMessageFilter() override;
 
   void OnGetMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                   std::string* mime_type);

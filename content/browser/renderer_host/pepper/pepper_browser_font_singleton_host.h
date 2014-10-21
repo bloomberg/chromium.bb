@@ -17,7 +17,7 @@ class PepperBrowserFontSingletonHost : public ppapi::host::ResourceHost {
   PepperBrowserFontSingletonHost(BrowserPpapiHost* host,
                                  PP_Instance instance,
                                  PP_Resource resource);
-  virtual ~PepperBrowserFontSingletonHost();
+  ~PepperBrowserFontSingletonHost() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PepperBrowserFontSingletonHost);

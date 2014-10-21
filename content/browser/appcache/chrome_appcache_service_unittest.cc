@@ -39,17 +39,15 @@ class MockURLRequestContextGetter : public net::URLRequestContextGetter {
       : context_(context), message_loop_proxy_(message_loop_proxy) {
   }
 
-  virtual net::URLRequestContext* GetURLRequestContext() override {
-    return context_;
-  }
+  net::URLRequestContext* GetURLRequestContext() override { return context_; }
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
     return message_loop_proxy_;
   }
 
  protected:
-  virtual ~MockURLRequestContextGetter() {}
+  ~MockURLRequestContextGetter() override {}
 
  private:
   net::URLRequestContext* context_;

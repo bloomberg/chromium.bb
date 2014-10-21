@@ -53,49 +53,46 @@ class CONTENT_EXPORT InputRouterImpl
                   InputAckHandler* ack_handler,
                   int routing_id,
                   const Config& config);
-  virtual ~InputRouterImpl();
+  ~InputRouterImpl() override;
 
   // InputRouter
-  virtual void Flush() override;
-  virtual bool SendInput(scoped_ptr<IPC::Message> message) override;
-  virtual void SendMouseEvent(
-      const MouseEventWithLatencyInfo& mouse_event) override;
-  virtual void SendWheelEvent(
+  void Flush() override;
+  bool SendInput(scoped_ptr<IPC::Message> message) override;
+  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override;
+  void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
-  virtual void SendKeyboardEvent(
-      const NativeWebKeyboardEvent& key_event,
-      const ui::LatencyInfo& latency_info,
-      bool is_keyboard_shortcut) override;
-  virtual void SendGestureEvent(
+  void SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+                         const ui::LatencyInfo& latency_info,
+                         bool is_keyboard_shortcut) override;
+  void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) override;
-  virtual void SendTouchEvent(
-      const TouchEventWithLatencyInfo& touch_event) override;
-  virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override;
-  virtual bool ShouldForwardTouchEvent() const override;
-  virtual void OnViewUpdated(int view_flags) override;
-  virtual bool HasPendingEvents() const override;
+  void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
+  const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override;
+  bool ShouldForwardTouchEvent() const override;
+  void OnViewUpdated(int view_flags) override;
+  bool HasPendingEvents() const override;
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
 private:
   friend class InputRouterImplTest;
 
   // TouchpadTapSuppressionControllerClient
-  virtual void SendMouseEventImmediately(
+  void SendMouseEventImmediately(
       const MouseEventWithLatencyInfo& mouse_event) override;
 
   // TouchEventQueueClient
-  virtual void SendTouchEventImmediately(
+  void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& touch_event) override;
-  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                               InputEventAckState ack_result) override;
+  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override;
 
   // GetureEventFilterClient
-  virtual void SendGestureEventImmediately(
+  void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& gesture_event) override;
-  virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                                 InputEventAckState ack_result) override;
+  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                         InputEventAckState ack_result) override;
 
   bool SendMoveCaret(scoped_ptr<IPC::Message> message);
   bool SendSelectRange(scoped_ptr<IPC::Message> message);

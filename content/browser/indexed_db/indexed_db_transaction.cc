@@ -212,12 +212,12 @@ class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
   explicit BlobWriteCallbackImpl(
       scoped_refptr<IndexedDBTransaction> transaction)
       : transaction_(transaction) {}
-  virtual void Run(bool succeeded) override {
+  void Run(bool succeeded) override {
     transaction_->BlobWriteComplete(succeeded);
   }
 
  protected:
-  virtual ~BlobWriteCallbackImpl() {}
+  ~BlobWriteCallbackImpl() override {}
 
  private:
   scoped_refptr<IndexedDBTransaction> transaction_;

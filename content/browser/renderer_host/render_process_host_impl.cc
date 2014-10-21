@@ -311,7 +311,7 @@ class RendererSandboxedProcessLauncherDelegate
 #endif  // OS_POSIX
   {}
 
-  virtual ~RendererSandboxedProcessLauncherDelegate() {}
+  ~RendererSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
   virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
@@ -321,16 +321,14 @@ class RendererSandboxedProcessLauncherDelegate
   }
 
 #elif defined(OS_POSIX)
-  virtual bool ShouldUseZygote() override {
+  bool ShouldUseZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringType renderer_prefix =
         browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
     return renderer_prefix.empty();
   }
-  virtual base::ScopedFD TakeIpcFd() override {
-    return ipc_fd_.Pass();
-  }
+  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
 
  private:
@@ -344,7 +342,7 @@ const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
 class SessionStorageHolder : public base::SupportsUserData::Data {
  public:
   SessionStorageHolder() {}
-  virtual ~SessionStorageHolder() {}
+  ~SessionStorageHolder() override {}
 
   void Hold(const SessionStorageNamespaceMap& sessions, int view_route_id) {
     session_storage_namespaces_awaiting_close_[view_route_id] = sessions;

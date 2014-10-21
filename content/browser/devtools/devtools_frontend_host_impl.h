@@ -15,11 +15,11 @@ class DevToolsFrontendHostImpl : public DevToolsFrontendHost,
  public:
   DevToolsFrontendHostImpl(RenderViewHost* frontend_rvh,
                            DevToolsFrontendHost::Delegate* delegate);
-  virtual ~DevToolsFrontendHostImpl();
+  ~DevToolsFrontendHostImpl() override;
 
  private:
   // WebContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnDispatchOnEmbedder(const std::string& message);

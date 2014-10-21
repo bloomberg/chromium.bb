@@ -21,12 +21,12 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
  public:
   ClipboardMessageFilter();
 
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+
  private:
-  virtual ~ClipboardMessageFilter();
+  ~ClipboardMessageFilter() override;
 
   void OnWriteObjectsAsync(const ui::Clipboard::ObjectMap& objects);
   void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,

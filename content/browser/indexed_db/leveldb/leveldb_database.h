@@ -59,15 +59,14 @@ class CONTENT_EXPORT LevelDBDatabase {
    public:
     explicit ComparatorAdapter(const LevelDBComparator* comparator);
 
-    virtual int Compare(const leveldb::Slice& a,
-                        const leveldb::Slice& b) const override;
+    int Compare(const leveldb::Slice& a,
+                const leveldb::Slice& b) const override;
 
-    virtual const char* Name() const override;
+    const char* Name() const override;
 
-    virtual void FindShortestSeparator(std::string* start,
-                                       const leveldb::Slice& limit) const
-        override;
-    virtual void FindShortSuccessor(std::string* key) const override;
+    void FindShortestSeparator(std::string* start,
+                               const leveldb::Slice& limit) const override;
+    void FindShortSuccessor(std::string* key) const override;
 
    private:
     const LevelDBComparator* comparator_;

@@ -19,16 +19,16 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       AllocationCallback;
 
   explicit BrowserGpuMemoryBufferManager(int gpu_client_id);
-  virtual ~BrowserGpuMemoryBufferManager();
+  ~BrowserGpuMemoryBufferManager() override;
 
   static BrowserGpuMemoryBufferManager* current();
 
   // Overridden from cc::GpuMemoryBufferManager:
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage) override;
-  virtual gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
+  gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
 
   void AllocateGpuMemoryBufferForChildProcess(

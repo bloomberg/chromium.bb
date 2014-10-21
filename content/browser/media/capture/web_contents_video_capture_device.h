@@ -32,12 +32,12 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // |device_id|.  Returns NULL if |device_id| is invalid.
   static media::VideoCaptureDevice* Create(const std::string& device_id);
 
-  virtual ~WebContentsVideoCaptureDevice();
+  ~WebContentsVideoCaptureDevice() override;
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const media::VideoCaptureParams& params,
-                                scoped_ptr<Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const media::VideoCaptureParams& params,
+                        scoped_ptr<Client> client) override;
+  void StopAndDeAllocate() override;
 
  private:
   WebContentsVideoCaptureDevice(

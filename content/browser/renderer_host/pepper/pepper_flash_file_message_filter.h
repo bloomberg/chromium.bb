@@ -43,12 +43,12 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
   typedef base::Callback<bool(int, const base::FilePath&)>
       CheckPermissionsCallback;
 
-  virtual ~PepperFlashFileMessageFilter();
+  ~PepperFlashFileMessageFilter() override;
 
   // ppapi::host::ResourceMessageFilter overrides.
-  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

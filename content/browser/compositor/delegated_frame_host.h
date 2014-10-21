@@ -81,7 +81,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(DelegatedFrameHostClient* client);
-  virtual ~DelegatedFrameHost();
+  ~DelegatedFrameHost() override;
 
   bool CanCopyToBitmap() const;
 
@@ -145,24 +145,22 @@ class CONTENT_EXPORT DelegatedFrameHost
   void UnlockResources();
 
   // Overridden from ui::CompositorObserver:
-  virtual void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  virtual void OnCompositingStarted(ui::Compositor* compositor,
-                                    base::TimeTicks start_time) override;
-  virtual void OnCompositingEnded(ui::Compositor* compositor) override;
-  virtual void OnCompositingAborted(ui::Compositor* compositor) override;
-  virtual void OnCompositingLockStateChanged(
-      ui::Compositor* compositor) override;
+  void OnCompositingDidCommit(ui::Compositor* compositor) override;
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override;
+  void OnCompositingEnded(ui::Compositor* compositor) override;
+  void OnCompositingAborted(ui::Compositor* compositor) override;
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
 
   // Overridden from ui::CompositorVSyncManager::Observer:
-  virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                       base::TimeDelta interval) override;
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
 
   // Overridden from ui::LayerOwnerObserver:
-  virtual void OnLayerRecreated(ui::Layer* old_layer,
-                                ui::Layer* new_layer) override;
+  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
 
   // Overridden from ImageTransportFactoryObserver:
-  virtual void OnLostResources() override;
+  void OnLostResources() override;
 
   bool ShouldSkipFrame(gfx::Size size_in_dip) const;
 
@@ -217,14 +215,13 @@ class CONTENT_EXPORT DelegatedFrameHost
   void SendReturnedDelegatedResources(uint32 output_surface_id);
 
   // DelegatedFrameEvictorClient implementation.
-  virtual void EvictDelegatedFrame() override;
+  void EvictDelegatedFrame() override;
 
   // cc::DelegatedFrameProviderClient implementation.
-  virtual void UnusedResourcesAreAvailable() override;
+  void UnusedResourcesAreAvailable() override;
 
   // cc::SurfaceFactoryClient implementation.
-  virtual void ReturnResources(
-      const cc::ReturnedResourceArray& resources) override;
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
   void DidReceiveFrameFromRenderer(const gfx::Rect& damage_rect);
 

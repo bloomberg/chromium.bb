@@ -39,7 +39,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   typedef int RequestID;
 
   URLDataManagerBackend();
-  virtual ~URLDataManagerBackend();
+  ~URLDataManagerBackend() override;
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
   // be set for incognito profiles. Called on the UI thread.

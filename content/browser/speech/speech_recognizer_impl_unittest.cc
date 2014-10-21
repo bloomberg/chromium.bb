@@ -95,52 +95,53 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
   // Overridden from SpeechRecognitionEventListener:
-  virtual void OnAudioStart(int session_id) override {
+  void OnAudioStart(int session_id) override {
     audio_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnAudioEnd(int session_id) override {
+  void OnAudioEnd(int session_id) override {
     audio_ended_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnRecognitionResults(
-      int session_id, const SpeechRecognitionResults& results) override {
+  void OnRecognitionResults(int session_id,
+                            const SpeechRecognitionResults& results) override {
     result_received_ = true;
   }
 
-  virtual void OnRecognitionError(
-      int session_id, const SpeechRecognitionError& error) override {
+  void OnRecognitionError(int session_id,
+                          const SpeechRecognitionError& error) override {
     EXPECT_TRUE(recognition_started_);
     EXPECT_FALSE(recognition_ended_);
     error_ = error.code;
   }
 
-  virtual void OnAudioLevelsChange(int session_id, float volume,
-                                   float noise_volume) override {
+  void OnAudioLevelsChange(int session_id,
+                           float volume,
+                           float noise_volume) override {
     volume_ = volume;
     noise_volume_ = noise_volume;
   }
 
-  virtual void OnRecognitionEnd(int session_id) override {
+  void OnRecognitionEnd(int session_id) override {
     recognition_ended_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnRecognitionStart(int session_id) override {
+  void OnRecognitionStart(int session_id) override {
     recognition_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnEnvironmentEstimationComplete(int session_id) override {}
+  void OnEnvironmentEstimationComplete(int session_id) override {}
 
-  virtual void OnSoundStart(int session_id) override {
+  void OnSoundStart(int session_id) override {
     sound_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnSoundEnd(int session_id) override {
+  void OnSoundEnd(int session_id) override {
     sound_ended_ = true;
     CheckEventsConsistency();
   }

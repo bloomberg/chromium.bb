@@ -122,17 +122,15 @@ class DownloadFileWithDelay : public DownloadFileImpl {
       base::WeakPtr<DownloadDestinationObserver> observer,
       base::WeakPtr<DownloadFileWithDelayFactory> owner);
 
-  virtual ~DownloadFileWithDelay();
+  ~DownloadFileWithDelay() override;
 
   // Wraps DownloadFileImpl::Rename* and intercepts the return callback,
   // storing it in the factory that produced this object for later
   // retrieval.
-  virtual void RenameAndUniquify(
-      const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) override;
-  virtual void RenameAndAnnotate(
-      const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) override;
+  void RenameAndUniquify(const base::FilePath& full_path,
+                         const RenameCompletionCallback& callback) override;
+  void RenameAndAnnotate(const base::FilePath& full_path,
+                         const RenameCompletionCallback& callback) override;
 
  private:
   static void RenameCallbackWrapper(
@@ -155,10 +153,10 @@ class DownloadFileWithDelay : public DownloadFileImpl {
 class DownloadFileWithDelayFactory : public DownloadFileFactory {
  public:
   DownloadFileWithDelayFactory();
-  virtual ~DownloadFileWithDelayFactory();
+  ~DownloadFileWithDelayFactory() override;
 
   // DownloadFileFactory interface.
-  virtual DownloadFile* CreateFile(
+  DownloadFile* CreateFile(
       scoped_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       const GURL& url,
@@ -292,12 +290,12 @@ class CountingDownloadFile : public DownloadFileImpl {
                          url, referrer_url, calculate_hash,
                          stream.Pass(), bound_net_log, observer) {}
 
-  virtual ~CountingDownloadFile() {
+  ~CountingDownloadFile() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     active_files_--;
   }
 
-  virtual void Initialize(const InitializeCallback& callback) override {
+  void Initialize(const InitializeCallback& callback) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     active_files_++;
     return DownloadFileImpl::Initialize(callback);
@@ -331,18 +329,18 @@ int CountingDownloadFile::active_files_ = 0;
 class CountingDownloadFileFactory : public DownloadFileFactory {
  public:
   CountingDownloadFileFactory() {}
-  virtual ~CountingDownloadFileFactory() {}
+  ~CountingDownloadFileFactory() override {}
 
   // DownloadFileFactory interface.
-  virtual DownloadFile* CreateFile(
-    scoped_ptr<DownloadSaveInfo> save_info,
-    const base::FilePath& default_downloads_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    scoped_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& bound_net_log,
-    base::WeakPtr<DownloadDestinationObserver> observer) override {
+  DownloadFile* CreateFile(
+      scoped_ptr<DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      const GURL& url,
+      const GURL& referrer_url,
+      bool calculate_hash,
+      scoped_ptr<ByteStreamReader> stream,
+      const net::BoundNetLog& bound_net_log,
+      base::WeakPtr<DownloadDestinationObserver> observer) override {
     scoped_ptr<PowerSaveBlocker> psb(
         PowerSaveBlocker::Create(
             PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -358,9 +356,9 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
  public:
   TestShellDownloadManagerDelegate()
       : delay_download_open_(false) {}
-  virtual ~TestShellDownloadManagerDelegate() {}
+  ~TestShellDownloadManagerDelegate() override {}
 
-  virtual bool ShouldOpenDownload(
+  bool ShouldOpenDownload(
       DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) override {
     if (delay_download_open_) {
@@ -400,9 +398,7 @@ class RecordingDownloadObserver : DownloadItem::Observer {
     download_->AddObserver(this);
   }
 
-  virtual ~RecordingDownloadObserver() {
-    RemoveObserver();
-  }
+  ~RecordingDownloadObserver() override { RemoveObserver(); }
 
   void CompareToExpectedRecord(const RecordStruct expected[], size_t size) {
     EXPECT_EQ(size, record_.size());
@@ -415,7 +411,7 @@ class RecordingDownloadObserver : DownloadItem::Observer {
   }
 
  private:
-  virtual void OnDownloadUpdated(DownloadItem* download) override {
+  void OnDownloadUpdated(DownloadItem* download) override {
     DCHECK_EQ(download_, download);
     DownloadItem::DownloadState state = download->GetState();
     int bytes = download->GetReceivedBytes();
@@ -426,7 +422,7 @@ class RecordingDownloadObserver : DownloadItem::Observer {
     }
   }
 
-  virtual void OnDownloadDestroyed(DownloadItem* download) override {
+  void OnDownloadDestroyed(DownloadItem* download) override {
     DCHECK_EQ(download_, download);
     RemoveObserver();
   }
@@ -453,20 +449,20 @@ class DownloadCreateObserver : DownloadManager::Observer {
     manager_->AddObserver(this);
   }
 
-  virtual ~DownloadCreateObserver() {
+  ~DownloadCreateObserver() override {
     if (manager_)
       manager_->RemoveObserver(this);
     manager_ = NULL;
   }
 
-  virtual void ManagerGoingDown(DownloadManager* manager) override {
+  void ManagerGoingDown(DownloadManager* manager) override {
     DCHECK_EQ(manager_, manager);
     manager_->RemoveObserver(this);
     manager_ = NULL;
   }
 
-  virtual void OnDownloadCreated(DownloadManager* manager,
-                                 DownloadItem* download) override {
+  void OnDownloadCreated(DownloadManager* manager,
+                         DownloadItem* download) override {
     if (!item_)
       item_ = download;
 
@@ -574,7 +570,7 @@ class DownloadContentTest : public ContentBrowserTest {
        ByteStreamWriter::kFractionBufferBeforeSending) + 1;
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
 
     test_delegate_.reset(new TestShellDownloadManagerDelegate());

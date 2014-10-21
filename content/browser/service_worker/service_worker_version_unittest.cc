@@ -36,11 +36,11 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
   MessageReceiver()
       : EmbeddedWorkerTestHelper(kRenderProcessId),
         current_embedded_worker_id_(0) {}
-  virtual ~MessageReceiver() {}
+  ~MessageReceiver() override {}
 
-  virtual bool OnMessageToWorker(int thread_id,
-                                 int embedded_worker_id,
-                                 const IPC::Message& message) override {
+  bool OnMessageToWorker(int thread_id,
+                         int embedded_worker_id,
+                         const IPC::Message& message) override {
     if (EmbeddedWorkerTestHelper::OnMessageToWorker(
             thread_id, embedded_worker_id, message)) {
       return true;
@@ -85,13 +85,11 @@ class MessageReceiverFromWorker : public EmbeddedWorkerInstance::Listener {
       : instance_(instance) {
     instance_->AddListener(this);
   }
-  virtual ~MessageReceiverFromWorker() {
-    instance_->RemoveListener(this);
-  }
+  ~MessageReceiverFromWorker() override { instance_->RemoveListener(this); }
 
-  virtual void OnStarted() override { NOTREACHED(); }
-  virtual void OnStopped() override { NOTREACHED(); }
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  void OnStarted() override { NOTREACHED(); }
+  void OnStopped() override { NOTREACHED(); }
+  bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MessageReceiverFromWorker, message)
       IPC_MESSAGE_HANDLER(TestMsg_MessageFromWorker, OnMessageFromWorker)

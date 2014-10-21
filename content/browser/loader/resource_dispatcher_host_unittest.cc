@@ -223,7 +223,7 @@ class TestFilter : public ResourceMessageFilter {
   int received_after_canceled() const { return received_after_canceled_; }
 
   // ResourceMessageFilter override
-  virtual bool Send(IPC::Message* msg) override {
+  bool Send(IPC::Message* msg) override {
     // No messages should be received when the process has been canceled.
     if (canceled_)
       received_after_canceled_++;
@@ -235,7 +235,7 @@ class TestFilter : public ResourceMessageFilter {
   ResourceContext* resource_context() { return resource_context_; }
 
  protected:
-  virtual ~TestFilter() {}
+  ~TestFilter() override {}
 
  private:
   void GetContexts(const ResourceHostMsg_Request& request,
@@ -265,12 +265,10 @@ class ForwardingFilter : public TestFilter {
   }
 
   // TestFilter override
-  virtual bool Send(IPC::Message* msg) override {
-    return dest_->Send(msg);
-  }
+  bool Send(IPC::Message* msg) override { return dest_->Send(msg); }
 
  private:
-  virtual ~ForwardingFilter() {}
+  ~ForwardingFilter() override {}
 
   IPC::Sender* dest_;
 
@@ -286,7 +284,7 @@ class URLRequestTestDelayedNetworkJob : public net::URLRequestTestJob {
       : net::URLRequestTestJob(request, network_delegate) {}
 
   // Only start if not deferred for network start.
-  virtual void Start() override {
+  void Start() override {
     bool defer = false;
     NotifyBeforeNetworkStart(&defer);
     if (defer)
@@ -294,12 +292,10 @@ class URLRequestTestDelayedNetworkJob : public net::URLRequestTestJob {
     net::URLRequestTestJob::Start();
   }
 
-  virtual void ResumeNetworkStart() override {
-    net::URLRequestTestJob::StartAsync();
-  }
+  void ResumeNetworkStart() override { net::URLRequestTestJob::StartAsync(); }
 
  private:
-  virtual ~URLRequestTestDelayedNetworkJob() {}
+  ~URLRequestTestDelayedNetworkJob() override {}
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestTestDelayedNetworkJob);
 };
@@ -333,7 +329,7 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
   }
 
   // Do nothing until you're told to.
-  virtual void Start() override {}
+  void Start() override {}
 
   // Finish starting a URL request whose job is an instance of
   // URLRequestTestDelayedStartJob.  It is illegal to call this routine
@@ -364,7 +360,7 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
   }
 
  protected:
-  virtual ~URLRequestTestDelayedStartJob() {
+  ~URLRequestTestDelayedStartJob() override {
     for (URLRequestTestDelayedStartJob** job = &list_head_; *job;
          job = &(*job)->next_) {
       if (*job == this) {
@@ -411,10 +407,10 @@ class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
                                auto_advance) {}
 
  protected:
-  virtual ~URLRequestTestDelayedCompletionJob() {}
+  ~URLRequestTestDelayedCompletionJob() override {}
 
  private:
-  virtual bool NextReadAsync() override { return true; }
+  bool NextReadAsync() override { return true; }
 };
 
 class URLRequestBigJob : public net::URLRequestSimpleJob {
@@ -424,10 +420,10 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
       : net::URLRequestSimpleJob(request, network_delegate) {
   }
 
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* data,
-                      const net::CompletionCallback& callback) const override {
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* data,
+              const net::CompletionCallback& callback) const override {
     *mime_type = "text/plain";
     *charset = "UTF-8";
 
@@ -444,7 +440,7 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
   }
 
  private:
-  virtual ~URLRequestBigJob() {}
+  ~URLRequestBigJob() override {}
 
   // big-job:substring,N
   static bool ParseURL(const GURL& url, std::string* text, int* count) {
@@ -491,20 +487,20 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
     network_start_notification_ = notification;
   }
 
-  virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
-  virtual bool IsHandledProtocol(const std::string& scheme) const override {
+  bool IsHandledProtocol(const std::string& scheme) const override {
     return supported_schemes_.count(scheme) > 0;
   }
 
-  virtual bool IsHandledURL(const GURL& url) const override {
+  bool IsHandledURL(const GURL& url) const override {
     return supported_schemes_.count(url.scheme()) > 0;
   }
 
-  virtual bool IsSafeRedirectTarget(const GURL& location) const override {
+  bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }
 
@@ -526,9 +522,7 @@ class TestUserData : public base::SupportsUserData::Data {
       : was_deleted_(was_deleted) {
   }
 
-  virtual ~TestUserData() {
-    *was_deleted_ = true;
-  }
+  ~TestUserData() override { *was_deleted_ = true; }
 
  private:
   bool* was_deleted_;
@@ -537,9 +531,9 @@ class TestUserData : public base::SupportsUserData::Data {
 class TransfersAllNavigationsContentBrowserClient
     : public TestContentBrowserClient {
  public:
-  virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
-                                              const GURL& current_url,
-                                              const GURL& new_url) override {
+  bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
+                                      const GURL& current_url,
+                                      const GURL& new_url) override {
     return true;
   }
 };
@@ -566,13 +560,13 @@ class GenericResourceThrottle : public ResourceThrottle {
         error_code_for_cancellation_(code) {
   }
 
-  virtual ~GenericResourceThrottle() {
+  ~GenericResourceThrottle() override {
     if (active_throttle_ == this)
       active_throttle_ = NULL;
   }
 
   // ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) override {
+  void WillStartRequest(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
     if (flags_ & DEFER_STARTING_REQUEST) {
       active_throttle_ = this;
@@ -588,7 +582,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual void WillProcessResponse(bool* defer) override {
+  void WillProcessResponse(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
     if (flags_ & DEFER_PROCESSING_RESPONSE) {
       active_throttle_ = this;
@@ -596,7 +590,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual void WillStartUsingNetwork(bool* defer) override {
+  void WillStartUsingNetwork(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
 
     if (flags_ & DEFER_NETWORK_START) {
@@ -605,7 +599,7 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
   }
 
-  virtual const char* GetNameForLogging() const override {
+  const char* GetNameForLogging() const override {
     return "GenericResourceThrottle";
   }
 
@@ -657,12 +651,11 @@ class TestResourceDispatcherHostDelegate
 
   // ResourceDispatcherHostDelegate implementation:
 
-  virtual void RequestBeginning(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      AppCacheService* appcache_service,
-      ResourceType resource_type,
-      ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(net::URLRequest* request,
+                        ResourceContext* resource_context,
+                        AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        ScopedVector<ResourceThrottle>* throttles) override {
     if (user_data_) {
       const void* key = user_data_.get();
       request->SetUserData(key, user_data_.release());
@@ -729,7 +722,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   // IPC::Sender implementation
-  virtual bool Send(IPC::Message* msg) override {
+  bool Send(IPC::Message* msg) override {
     accum_.AddMessage(*msg);
 
     if (send_data_received_acks_ &&

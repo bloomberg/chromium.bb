@@ -29,9 +29,9 @@ namespace content {
 class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
  public:
   RenderViewHostTestBrowserClient() {}
-  virtual ~RenderViewHostTestBrowserClient() {}
+  ~RenderViewHostTestBrowserClient() override {}
 
-  virtual bool IsHandledURL(const GURL& url) override {
+  bool IsHandledURL(const GURL& url) override {
     return url.scheme() == url::kFileScheme;
   }
 
@@ -119,18 +119,18 @@ TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
 class MockDraggingRenderViewHostDelegateView
     : public RenderViewHostDelegateView {
  public:
-  virtual ~MockDraggingRenderViewHostDelegateView() {}
-  virtual void StartDragging(const DropData& drop_data,
-                             blink::WebDragOperationsMask allowed_ops,
-                             const gfx::ImageSkia& image,
-                             const gfx::Vector2d& image_offset,
-                             const DragEventSourceInfo& event_info) override {
+  ~MockDraggingRenderViewHostDelegateView() override {}
+  void StartDragging(const DropData& drop_data,
+                     blink::WebDragOperationsMask allowed_ops,
+                     const gfx::ImageSkia& image,
+                     const gfx::Vector2d& image_offset,
+                     const DragEventSourceInfo& event_info) override {
     drag_url_ = drop_data.url;
     html_base_url_ = drop_data.html_base_url;
   }
-  virtual void UpdateDragCursor(blink::WebDragOperation operation) override {}
-  virtual void GotFocus() override {}
-  virtual void TakeFocus(bool reverse) override {}
+  void UpdateDragCursor(blink::WebDragOperation operation) override {}
+  void GotFocus() override {}
+  void TakeFocus(bool reverse) override {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   GURL drag_url() {
@@ -284,12 +284,12 @@ class TestSaveImageFromDataURL : public RenderMessageFilter {
   }
 
  protected:
-  virtual ~TestSaveImageFromDataURL() { }
-  virtual void DownloadUrl(int render_view_id,
-                           const GURL& url,
-                           const Referrer& referrer,
-                           const base::string16& suggested_name,
-                           const bool use_prompt) const override {
+  ~TestSaveImageFromDataURL() override {}
+  void DownloadUrl(int render_view_id,
+                   const GURL& url,
+                   const Referrer& referrer,
+                   const base::string16& suggested_name,
+                   const bool use_prompt) const override {
     url_string_ = url.spec();
     is_downloaded_ = true;
   }

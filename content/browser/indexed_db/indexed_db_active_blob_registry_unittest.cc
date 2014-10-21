@@ -19,8 +19,8 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
  public:
   RegistryTestMockFactory() : duplicate_calls_(false) {}
 
-  virtual void ReportOutstandingBlobs(const GURL& origin_url,
-                                      bool blobs_outstanding) override {
+  void ReportOutstandingBlobs(const GURL& origin_url,
+                              bool blobs_outstanding) override {
     if (blobs_outstanding) {
       if (origins_.count(origin_url)) {
         duplicate_calls_ = true;
@@ -45,7 +45,7 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
   }
 
  private:
-  virtual ~RegistryTestMockFactory() {}
+  ~RegistryTestMockFactory() override {}
 
   std::set<GURL> origins_;
   bool duplicate_calls_;
@@ -63,7 +63,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
       : IndexedDBFakeBackingStore(factory, task_runner),
         duplicate_calls_(false) {}
 
-  virtual void ReportBlobUnused(int64 database_id, int64 blob_key) override {
+  void ReportBlobUnused(int64 database_id, int64 blob_key) override {
     unused_blobs_.insert(std::make_pair(database_id, blob_key));
   }
 
@@ -78,7 +78,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
   const KeyPairSet& unused_blobs() const { return unused_blobs_; }
 
  protected:
-  virtual ~MockIDBBackingStore() {}
+  ~MockIDBBackingStore() override {}
 
  private:
   KeyPairSet unused_blobs_;

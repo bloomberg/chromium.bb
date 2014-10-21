@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // this to avoid colliding with ServiceWorkers.
   static bool IsControlledByServiceWorker(net::URLRequest* request);
 
-  virtual ~ServiceWorkerRequestHandler();
+  ~ServiceWorkerRequestHandler() override;
 
   // Called via custom URLRequestJobFactory.
   virtual net::URLRequestJob* MaybeCreateJob(

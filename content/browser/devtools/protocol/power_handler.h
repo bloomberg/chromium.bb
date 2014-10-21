@@ -17,12 +17,12 @@ class PowerHandler : public PowerProfilerObserver {
   typedef DevToolsProtocolClient::Response Response;
 
   PowerHandler();
-  virtual ~PowerHandler();
+  ~PowerHandler() override;
 
   void SetClient(scoped_ptr<Client> client);
 
   // PowerProfilerObserver override.
-  virtual void OnPowerEvent(const PowerEventVector& events) override;
+  void OnPowerEvent(const PowerEventVector& events) override;
 
   void Detached();
 

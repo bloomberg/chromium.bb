@@ -321,11 +321,9 @@ class BaseInternalsJob : public net::URLRequestSimpleJob,
     appcache_service_->AddObserver(this);
   }
 
-  virtual ~BaseInternalsJob() {
-    appcache_service_->RemoveObserver(this);
-  }
+  ~BaseInternalsJob() override { appcache_service_->RemoveObserver(this); }
 
-  virtual void OnServiceReinitialized(
+  void OnServiceReinitialized(
       AppCacheStorageReference* old_storage_ref) override {
     if (old_storage_ref->storage() == appcache_storage_)
       disabled_storage_reference_ = old_storage_ref;
@@ -346,7 +344,7 @@ class MainPageJob : public BaseInternalsJob {
         weak_factory_(this) {
   }
 
-  virtual void Start() override {
+  void Start() override {
     DCHECK(request_);
     info_collection_ = new AppCacheInfoCollection;
     appcache_service_->GetAllAppCacheInfo(
@@ -356,10 +354,10 @@ class MainPageJob : public BaseInternalsJob {
   }
 
   // Produces a page containing the listing
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* out,
-                      const net::CompletionCallback& callback) const override {
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* out,
+              const net::CompletionCallback& callback) const override {
     // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
     tracked_objects::ScopedProfile tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("422489 MainPageJob::GetData"));
@@ -392,7 +390,7 @@ class MainPageJob : public BaseInternalsJob {
   }
 
  private:
-  virtual ~MainPageJob() {}
+  ~MainPageJob() override {}
 
   void OnGotInfoComplete(int rv) {
     if (rv != net::OK)
@@ -413,22 +411,21 @@ class RedirectToMainPageJob : public BaseInternalsJob {
                         AppCacheServiceImpl* service)
       : BaseInternalsJob(request, network_delegate, service) {}
 
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* data,
-                      const net::CompletionCallback& callback) const override {
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* data,
+              const net::CompletionCallback& callback) const override {
     return net::OK;  // IsRedirectResponse induces a redirect.
   }
 
-  virtual bool IsRedirectResponse(GURL* location,
-                                  int* http_status_code) override {
+  bool IsRedirectResponse(GURL* location, int* http_status_code) override {
     *location = ClearQuery(request_->url());
     *http_status_code = 307;
     return true;
   }
 
  protected:
-  virtual ~RedirectToMainPageJob() {}
+  ~RedirectToMainPageJob() override {}
 };
 
 // Job that removes an appcache and then redirects back to the main page.
@@ -444,7 +441,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
         weak_factory_(this) {
   }
 
-  virtual void Start() override {
+  void Start() override {
     DCHECK(request_);
 
     appcache_service_->DeleteAppCacheGroup(
@@ -453,7 +450,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
   }
 
  private:
-  virtual ~RemoveAppCacheJob() {}
+  ~RemoveAppCacheJob() override {}
 
   void OnDeleteAppCacheComplete(int rv) {
     StartAsync();  // Causes the base class to redirect.
@@ -476,16 +473,16 @@ class ViewAppCacheJob : public BaseInternalsJob,
       : BaseInternalsJob(request, network_delegate, service),
         manifest_url_(manifest_url) {}
 
-  virtual void Start() override {
+  void Start() override {
     DCHECK(request_);
     appcache_storage_->LoadOrCreateGroup(manifest_url_, this);
   }
 
   // Produces a page containing the entries listing.
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* out,
-                      const net::CompletionCallback& callback) const override {
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* out,
+              const net::CompletionCallback& callback) const override {
     // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
     tracked_objects::ScopedProfile tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("422489 ViewAppCacheJob::GetData"));
@@ -510,13 +507,12 @@ class ViewAppCacheJob : public BaseInternalsJob,
   }
 
  private:
-  virtual ~ViewAppCacheJob() {
+  ~ViewAppCacheJob() override {
     appcache_storage_->CancelDelegateCallbacks(this);
   }
 
   // AppCacheStorage::Delegate override
-  virtual void OnGroupLoaded(
-      AppCacheGroup* group, const GURL& manifest_url) override {
+  void OnGroupLoaded(AppCacheGroup* group, const GURL& manifest_url) override {
     DCHECK_EQ(manifest_url_, manifest_url);
     if (group && group->newest_complete_cache()) {
       appcache_info_.manifest_url = manifest_url;
@@ -555,17 +551,17 @@ class ViewEntryJob : public BaseInternalsJob,
         response_id_(response_id), group_id_(group_id), amount_read_(0) {
   }
 
-  virtual void Start() override {
+  void Start() override {
     DCHECK(request_);
     appcache_storage_->LoadResponseInfo(
         manifest_url_, group_id_, response_id_, this);
   }
 
   // Produces a page containing the response headers and data.
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* out,
-                      const net::CompletionCallback& callback) const override {
+  int GetData(std::string* mime_type,
+              std::string* charset,
+              std::string* out,
+              const net::CompletionCallback& callback) const override {
     // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
     tracked_objects::ScopedProfile tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("422489 ViewEntryJob::GetData"));
@@ -599,12 +595,10 @@ class ViewEntryJob : public BaseInternalsJob,
   }
 
  private:
-  virtual ~ViewEntryJob() {
-    appcache_storage_->CancelDelegateCallbacks(this);
-  }
+  ~ViewEntryJob() override { appcache_storage_->CancelDelegateCallbacks(this); }
 
-  virtual void OnResponseInfoLoaded(
-      AppCacheResponseInfo* response_info, int64 response_id) override {
+  void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
+                            int64 response_id) override {
     if (!response_info) {
       StartAsync();
       return;

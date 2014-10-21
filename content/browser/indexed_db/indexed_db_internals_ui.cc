@@ -304,12 +304,12 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
 class FileDeleter : public DownloadItem::Observer {
  public:
   explicit FileDeleter(const base::FilePath& temp_dir) : temp_dir_(temp_dir) {}
-  virtual ~FileDeleter();
+  ~FileDeleter() override;
 
-  virtual void OnDownloadUpdated(DownloadItem* download) override;
-  virtual void OnDownloadOpened(DownloadItem* item) override {}
-  virtual void OnDownloadRemoved(DownloadItem* item) override {}
-  virtual void OnDownloadDestroyed(DownloadItem* item) override {}
+  void OnDownloadUpdated(DownloadItem* download) override;
+  void OnDownloadOpened(DownloadItem* item) override {}
+  void OnDownloadRemoved(DownloadItem* item) override {}
+  void OnDownloadDestroyed(DownloadItem* item) override {}
 
  private:
   const base::FilePath temp_dir_;

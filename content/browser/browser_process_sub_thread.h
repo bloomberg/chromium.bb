@@ -35,11 +35,11 @@ namespace content {
 class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
  public:
   explicit BrowserProcessSubThread(BrowserThread::ID identifier);
-  virtual ~BrowserProcessSubThread();
+  ~BrowserProcessSubThread() override;
 
  protected:
-  virtual void Init() override;
-  virtual void CleanUp() override;
+  void Init() override;
+  void CleanUp() override;
 
  private:
   // These methods encapsulate cleanup that needs to happen on the IO thread

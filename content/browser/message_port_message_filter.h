@@ -22,9 +22,9 @@ class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
   explicit MessagePortMessageFilter(const NextRoutingIDCallback& callback);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnDestruct() const override;
+  void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() const override;
 
   int GetNextRoutingID();
 
@@ -36,7 +36,7 @@ class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
 
  protected:
   // This is protected, so we can define sub classes for testing.
-  virtual ~MessagePortMessageFilter();
+  ~MessagePortMessageFilter() override;
 
  private:
   friend class BrowserThread;

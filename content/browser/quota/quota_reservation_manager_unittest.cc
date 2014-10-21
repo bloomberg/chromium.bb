@@ -47,12 +47,12 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   FakeBackend()
       : on_memory_usage_(kInitialFileSize),
         on_disk_usage_(kInitialFileSize) {}
-  virtual ~FakeBackend() {}
+  ~FakeBackend() override {}
 
-  virtual void ReserveQuota(const GURL& origin,
-                            storage::FileSystemType type,
-                            int64 delta,
-                            const ReserveQuotaCallback& callback) override {
+  void ReserveQuota(const GURL& origin,
+                    storage::FileSystemType type,
+                    int64 delta,
+                    const ReserveQuotaCallback& callback) override {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_memory_usage_ += delta;
@@ -61,28 +61,28 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
         base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
   }
 
-  virtual void ReleaseReservedQuota(const GURL& origin,
-                                    storage::FileSystemType type,
-                                    int64 size) override {
+  void ReleaseReservedQuota(const GURL& origin,
+                            storage::FileSystemType type,
+                            int64 size) override {
     EXPECT_LE(0, size);
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_memory_usage_ -= size;
   }
 
-  virtual void CommitQuotaUsage(const GURL& origin,
-                                storage::FileSystemType type,
-                                int64 delta) override {
+  void CommitQuotaUsage(const GURL& origin,
+                        storage::FileSystemType type,
+                        int64 delta) override {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_disk_usage_ += delta;
     on_memory_usage_ += delta;
   }
 
-  virtual void IncrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) override {}
-  virtual void DecrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) override {}
+  void IncrementDirtyCount(const GURL& origin,
+                           storage::FileSystemType type) override {}
+  void DecrementDirtyCount(const GURL& origin,
+                           storage::FileSystemType type) override {}
 
   int64 on_memory_usage() { return on_memory_usage_; }
   int64 on_disk_usage() { return on_disk_usage_; }

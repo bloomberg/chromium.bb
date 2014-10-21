@@ -52,9 +52,9 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
   TestValidatorFactory() {}
-  virtual ~TestValidatorFactory() {}
+  ~TestValidatorFactory() override {}
 
-  virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) override {
     // Move arg management to TestValidator?
@@ -73,16 +73,16 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
                                           base::File::FILE_ERROR_SECURITY),
           reject_string_(reject_string) {
     }
-    virtual ~TestValidator() {}
+    ~TestValidator() override {}
 
-    virtual void StartPreWriteValidation(
+    void StartPreWriteValidation(
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result_));
     }
 
-    virtual void StartPostWriteValidation(
+    void StartPostWriteValidation(
         const base::FilePath& dest_platform_path,
         const ResultCallback& result_callback) override {
       base::File::Error result = write_result_;

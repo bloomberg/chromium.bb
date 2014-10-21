@@ -47,7 +47,7 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   // TouchEventQueueClient
-  virtual void SendTouchEventImmediately(
+  void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& event) override {
     ++sent_event_count_;
     last_sent_event_ = event.event;
@@ -57,9 +57,8 @@ class TouchEventQueueTest : public testing::Test,
     }
   }
 
-  virtual void OnTouchEventAck(
-      const TouchEventWithLatencyInfo& event,
-      InputEventAckState ack_result) override {
+  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override {
     ++acked_event_count_;
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;

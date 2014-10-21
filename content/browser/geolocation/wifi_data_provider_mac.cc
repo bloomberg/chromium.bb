@@ -30,7 +30,7 @@ const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
 class Apple80211Api : public WifiDataProviderCommon::WlanApiInterface {
  public:
   Apple80211Api();
-  virtual ~Apple80211Api();
+  ~Apple80211Api() override;
 
   // Must be called before any other interface method. Will return false if the
   // Apple80211 framework cannot be initialized (e.g. running on post-10.5 OSX),
@@ -38,7 +38,7 @@ class Apple80211Api : public WifiDataProviderCommon::WlanApiInterface {
   bool Init();
 
   // WlanApiInterface
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
+  bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
 
  private:
   // Handle, context and function pointers for Apple80211 library.

@@ -72,21 +72,20 @@ class PumpableTaskRunner
   void RemoveWrappedTaskFromQueue(WrappedTask* task);
 
   // base::SingleThreadTaskRunner implementation:
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
 
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override;
 
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksOnCurrentThread() const override;
 
  private:
   friend class WrappedTask;
 
-  virtual ~PumpableTaskRunner();
+  ~PumpableTaskRunner() override;
 
   // A queue of live messages.  Must hold |task_queue_lock_| to access. Tasks
   // are added only on the IO thread and removed only on the UI thread.  The

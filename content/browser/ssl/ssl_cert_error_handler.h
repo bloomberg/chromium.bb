@@ -27,7 +27,7 @@ class SSLCertErrorHandler : public SSLErrorHandler {
                       const net::SSLInfo& ssl_info,
                       bool fatal);
 
-  virtual SSLCertErrorHandler* AsSSLCertErrorHandler() override;
+  SSLCertErrorHandler* AsSSLCertErrorHandler() override;
 
   // These accessors are available on either thread
   const net::SSLInfo& ssl_info() const { return ssl_info_; }
@@ -36,11 +36,11 @@ class SSLCertErrorHandler : public SSLErrorHandler {
 
  protected:
   // SSLErrorHandler methods
-  virtual void OnDispatchFailed() override;
-  virtual void OnDispatched() override;
+  void OnDispatchFailed() override;
+  void OnDispatched() override;
 
  private:
-  virtual ~SSLCertErrorHandler();
+  ~SSLCertErrorHandler() override;
 
   // These read-only members may be accessed on any thread.
   const net::SSLInfo ssl_info_;

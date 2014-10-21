@@ -95,55 +95,52 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
 
-  virtual ~RenderFrameHostImpl();
+  ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
-  virtual int GetRoutingID() override;
-  virtual SiteInstanceImpl* GetSiteInstance() override;
-  virtual RenderProcessHost* GetProcess() override;
-  virtual RenderFrameHost* GetParent() override;
-  virtual const std::string& GetFrameName() override;
-  virtual bool IsCrossProcessSubframe() override;
-  virtual GURL GetLastCommittedURL() override;
-  virtual gfx::NativeView GetNativeView() override;
-  virtual void ExecuteJavaScript(
-      const base::string16& javascript) override;
-  virtual void ExecuteJavaScript(
-      const base::string16& javascript,
-      const JavaScriptResultCallback& callback) override;
-  virtual void ExecuteJavaScriptForTests(
-      const base::string16& javascript) override;
-  virtual RenderViewHost* GetRenderViewHost() override;
-  virtual ServiceRegistry* GetServiceRegistry() override;
+  int GetRoutingID() override;
+  SiteInstanceImpl* GetSiteInstance() override;
+  RenderProcessHost* GetProcess() override;
+  RenderFrameHost* GetParent() override;
+  const std::string& GetFrameName() override;
+  bool IsCrossProcessSubframe() override;
+  GURL GetLastCommittedURL() override;
+  gfx::NativeView GetNativeView() override;
+  void ExecuteJavaScript(const base::string16& javascript) override;
+  void ExecuteJavaScript(const base::string16& javascript,
+                         const JavaScriptResultCallback& callback) override;
+  void ExecuteJavaScriptForTests(const base::string16& javascript) override;
+  RenderViewHost* GetRenderViewHost() override;
+  ServiceRegistry* GetServiceRegistry() override;
 
   // IPC::Sender
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // BrowserAccessibilityDelegate
-  virtual void AccessibilitySetFocus(int acc_obj_id) override;
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id) override;
-  virtual void AccessibilityShowMenu(const gfx::Point& global_point) override;
-  virtual void AccessibilityScrollToMakeVisible(
-      int acc_obj_id, const gfx::Rect& subfocus) override;
-  virtual void AccessibilityScrollToPoint(
-      int acc_obj_id, const gfx::Point& point) override;
-  virtual void AccessibilitySetTextSelection(
-      int acc_obj_id, int start_offset, int end_offset) override;
-  virtual bool AccessibilityViewHasFocus() const override;
-  virtual gfx::Rect AccessibilityGetViewBounds() const override;
-  virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds)
-      const override;
-  virtual void AccessibilityHitTest(const gfx::Point& point) override;
-  virtual void AccessibilityFatalError() override;
-  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
-  virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
-      override;
-  virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
+  void AccessibilitySetFocus(int acc_obj_id) override;
+  void AccessibilityDoDefaultAction(int acc_obj_id) override;
+  void AccessibilityShowMenu(const gfx::Point& global_point) override;
+  void AccessibilityScrollToMakeVisible(int acc_obj_id,
+                                        const gfx::Rect& subfocus) override;
+  void AccessibilityScrollToPoint(int acc_obj_id,
+                                  const gfx::Point& point) override;
+  void AccessibilitySetTextSelection(int acc_obj_id,
+                                     int start_offset,
+                                     int end_offset) override;
+  bool AccessibilityViewHasFocus() const override;
+  gfx::Rect AccessibilityGetViewBounds() const override;
+  gfx::Point AccessibilityOriginInScreen(
+      const gfx::Rect& bounds) const override;
+  void AccessibilityHitTest(const gfx::Point& point) override;
+  void AccessibilityFatalError() override;
+  gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
+  gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
+  BrowserAccessibilityManager* AccessibilityGetChildFrame(
       int accessibility_node_id) override;
-  virtual BrowserAccessibility* AccessibilityGetParentFrame() override;
+  BrowserAccessibility* AccessibilityGetParentFrame() override;
 
   // Creates a RenderFrame in the renderer process.  Only called for
   // cross-process subframe navigations in --site-per-process.

@@ -53,7 +53,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
        scoped_ptr<webrtc::DesktopCapturer> capturer,
        DesktopMediaID::Type type);
-  virtual ~Core();
+  ~Core() override;
 
   // Implementation of VideoCaptureDevice methods.
   void AllocateAndStart(const media::VideoCaptureParams& params,
@@ -64,8 +64,8 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  private:
 
   // webrtc::DesktopCapturer::Callback interface
-  virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
-  virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
+  webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
+  void OnCaptureCompleted(webrtc::DesktopFrame* frame) override;
 
   // Chooses new output properties based on the supplied source size and the
   // properties requested to Allocate(), and dispatches OnFrameInfo[Changed]

@@ -36,20 +36,20 @@ const char kPrivilegedScheme[] = "privileged";
 
 class SiteInstanceTestWebUIControllerFactory : public WebUIControllerFactory {
  public:
-  virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const override {
+  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
+                                               const GURL& url) const override {
     return NULL;
   }
-  virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const override {
+  WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+                             const GURL& url) const override {
     return WebUI::kNoWebUI;
   }
-  virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+  bool UseWebUIForURL(BrowserContext* browser_context,
+                      const GURL& url) const override {
     return HasWebUIScheme(url);
   }
-  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const override {
+  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
+                              const GURL& url) const override {
     return HasWebUIScheme(url);
   }
 };
@@ -61,12 +61,12 @@ class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
-  virtual ~SiteInstanceTestBrowserClient() {
+  ~SiteInstanceTestBrowserClient() override {
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
   }
 
-  virtual bool IsSuitableHost(RenderProcessHost* process_host,
-                              const GURL& site_url) override {
+  bool IsSuitableHost(RenderProcessHost* process_host,
+                      const GURL& site_url) override {
     return (privileged_process_id_ == process_host->GetID()) ==
         site_url.SchemeIs(kPrivilegedScheme);
   }
@@ -157,9 +157,7 @@ class TestBrowsingInstance : public BrowsingInstance {
   using BrowsingInstance::UnregisterSiteInstance;
 
  private:
-  virtual ~TestBrowsingInstance() {
-    (*delete_counter_)++;
-  }
+  ~TestBrowsingInstance() override { (*delete_counter_)++; }
 
   int* delete_counter_;
 };
@@ -179,9 +177,7 @@ class TestSiteInstance : public SiteInstanceImpl {
  private:
   TestSiteInstance(BrowsingInstance* browsing_instance, int* delete_counter)
     : SiteInstanceImpl(browsing_instance), delete_counter_(delete_counter) {}
-  virtual ~TestSiteInstance() {
-    (*delete_counter_)++;
-  }
+  ~TestSiteInstance() override { (*delete_counter_)++; }
 
   int* delete_counter_;
 };

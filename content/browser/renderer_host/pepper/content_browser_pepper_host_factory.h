@@ -26,9 +26,9 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
   // Non-owning pointer to the filter must outlive this class.
   explicit ContentBrowserPepperHostFactory(BrowserPpapiHostImpl* host);
 
-  virtual ~ContentBrowserPepperHostFactory();
+  ~ContentBrowserPepperHostFactory() override;
 
-  virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
+  scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
       ppapi::host::PpapiHost* host,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,

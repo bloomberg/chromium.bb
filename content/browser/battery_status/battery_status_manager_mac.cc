@@ -254,18 +254,16 @@ class BatteryStatusManagerMac : public BatteryStatusManager {
   explicit BatteryStatusManagerMac(const BatteryCallback& callback)
       : notifier_(new BatteryStatusObserver(callback)) {}
 
-  virtual ~BatteryStatusManagerMac() {
-    notifier_->Stop();
-  }
+  ~BatteryStatusManagerMac() override { notifier_->Stop(); }
 
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notifier_->Start();
     return true;
   }
 
-  virtual void StopListeningBatteryChange() override {
+  void StopListeningBatteryChange() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notifier_->Stop();
   }

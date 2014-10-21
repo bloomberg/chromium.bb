@@ -110,69 +110,68 @@ class CONTENT_EXPORT RenderViewHostImpl
                      bool swapped_out,
                      bool hidden,
                      bool has_initialized_audio_host);
-  virtual ~RenderViewHostImpl();
+  ~RenderViewHostImpl() override;
 
   // RenderViewHost implementation.
-  virtual RenderFrameHost* GetMainFrame() override;
-  virtual void AllowBindings(int binding_flags) override;
-  virtual void ClearFocusedElement() override;
-  virtual bool IsFocusedElementEditable() override;
-  virtual void ClosePage() override;
-  virtual void CopyImageAt(int x, int y) override;
-  virtual void SaveImageAt(int x, int y) override;
-  virtual void DirectoryEnumerationFinished(
+  RenderFrameHost* GetMainFrame() override;
+  void AllowBindings(int binding_flags) override;
+  void ClearFocusedElement() override;
+  bool IsFocusedElementEditable() override;
+  void ClosePage() override;
+  void CopyImageAt(int x, int y) override;
+  void SaveImageAt(int x, int y) override;
+  void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) override;
-  virtual void DisableScrollbarsForThreshold(const gfx::Size& size) override;
-  virtual void DragSourceEndedAt(
-      int client_x, int client_y, int screen_x, int screen_y,
-      blink::WebDragOperation operation) override;
-  virtual void DragSourceSystemDragEnded() override;
-  virtual void DragTargetDragEnter(
-      const DropData& drop_data,
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
-      blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers) override;
-  virtual void DragTargetDragOver(
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
-      blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers) override;
-  virtual void DragTargetDragLeave() override;
-  virtual void DragTargetDrop(const gfx::Point& client_pt,
-                              const gfx::Point& screen_pt,
-                              int key_modifiers) override;
-  virtual void EnableAutoResize(const gfx::Size& min_size,
-                                const gfx::Size& max_size) override;
-  virtual void DisableAutoResize(const gfx::Size& new_size) override;
-  virtual void EnablePreferredSizeMode() override;
-  virtual void ExecuteMediaPlayerActionAtLocation(
+  void DisableScrollbarsForThreshold(const gfx::Size& size) override;
+  void DragSourceEndedAt(int client_x,
+                         int client_y,
+                         int screen_x,
+                         int screen_y,
+                         blink::WebDragOperation operation) override;
+  void DragSourceSystemDragEnded() override;
+  void DragTargetDragEnter(const DropData& drop_data,
+                           const gfx::Point& client_pt,
+                           const gfx::Point& screen_pt,
+                           blink::WebDragOperationsMask operations_allowed,
+                           int key_modifiers) override;
+  void DragTargetDragOver(const gfx::Point& client_pt,
+                          const gfx::Point& screen_pt,
+                          blink::WebDragOperationsMask operations_allowed,
+                          int key_modifiers) override;
+  void DragTargetDragLeave() override;
+  void DragTargetDrop(const gfx::Point& client_pt,
+                      const gfx::Point& screen_pt,
+                      int key_modifiers) override;
+  void EnableAutoResize(const gfx::Size& min_size,
+                        const gfx::Size& max_size) override;
+  void DisableAutoResize(const gfx::Size& new_size) override;
+  void EnablePreferredSizeMode() override;
+  void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
       const blink::WebMediaPlayerAction& action) override;
-  virtual void ExecutePluginActionAtLocation(
+  void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;
-  virtual void ExitFullscreen() override;
-  virtual void FilesSelectedInChooser(
+  void ExitFullscreen() override;
+  void FilesSelectedInChooser(
       const std::vector<content::FileChooserFileInfo>& files,
       FileChooserParams::Mode permissions) override;
-  virtual RenderViewHostDelegate* GetDelegate() const override;
-  virtual int GetEnabledBindings() const override;
-  virtual SiteInstanceImpl* GetSiteInstance() const override;
-  virtual bool IsRenderViewLive() const override;
-  virtual void NotifyMoveOrResizeStarted() override;
-  virtual void SetWebUIProperty(const std::string& name,
-                                const std::string& value) override;
-  virtual void Zoom(PageZoom zoom) override;
-  virtual void SyncRendererPrefs() override;
-  virtual WebPreferences GetWebkitPreferences() override;
-  virtual void UpdateWebkitPreferences(
-      const WebPreferences& prefs) override;
-  virtual void OnWebkitPreferencesChanged() override;
-  virtual void GetAudioOutputControllers(
+  RenderViewHostDelegate* GetDelegate() const override;
+  int GetEnabledBindings() const override;
+  SiteInstanceImpl* GetSiteInstance() const override;
+  bool IsRenderViewLive() const override;
+  void NotifyMoveOrResizeStarted() override;
+  void SetWebUIProperty(const std::string& name,
+                        const std::string& value) override;
+  void Zoom(PageZoom zoom) override;
+  void SyncRendererPrefs() override;
+  WebPreferences GetWebkitPreferences() override;
+  void UpdateWebkitPreferences(const WebPreferences& prefs) override;
+  void OnWebkitPreferencesChanged() override;
+  void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override;
-  virtual void SelectWordAroundCaret() override;
+  void SelectWordAroundCaret() override;
 
 #if defined(OS_ANDROID)
   virtual void ActivateNearestFindResult(int request_id,
@@ -262,22 +261,20 @@ class CONTENT_EXPORT RenderViewHostImpl
   }
 
   // RenderWidgetHost public overrides.
-  virtual void Init() override;
-  virtual void Shutdown() override;
-  virtual void WasHidden() override;
-  virtual void WasShown(const ui::LatencyInfo& latency_info) override;
-  virtual bool IsRenderView() const override;
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void GotFocus() override;
-  virtual void LostCapture() override;
-  virtual void LostMouseLock() override;
-  virtual void SetIsLoading(bool is_loading) override;
-  virtual void ForwardMouseEvent(
-      const blink::WebMouseEvent& mouse_event) override;
-  virtual void OnPointerEventActivate() override;
-  virtual void ForwardKeyboardEvent(
-      const NativeWebKeyboardEvent& key_event) override;
-  virtual gfx::Rect GetRootWindowResizerRect() const override;
+  void Init() override;
+  void Shutdown() override;
+  void WasHidden() override;
+  void WasShown(const ui::LatencyInfo& latency_info) override;
+  bool IsRenderView() const override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void GotFocus() override;
+  void LostCapture() override;
+  void LostMouseLock() override;
+  void SetIsLoading(bool is_loading) override;
+  void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
+  void OnPointerEventActivate() override;
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
+  gfx::Rect GetRootWindowResizerRect() const override;
 
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(
@@ -333,15 +330,15 @@ class CONTENT_EXPORT RenderViewHostImpl
 
  protected:
   // RenderWidgetHost protected overrides.
-  virtual void OnUserGesture() override;
-  virtual void NotifyRendererUnresponsive() override;
-  virtual void NotifyRendererResponsive() override;
-  virtual void OnRenderAutoResized(const gfx::Size& size) override;
-  virtual void RequestToLockMouse(bool user_gesture,
-                                  bool last_unlocked_by_target) override;
-  virtual bool IsFullscreen() const override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  void OnUserGesture() override;
+  void NotifyRendererUnresponsive() override;
+  void NotifyRendererResponsive() override;
+  void OnRenderAutoResized(const gfx::Size& size) override;
+  void RequestToLockMouse(bool user_gesture,
+                          bool last_unlocked_by_target) override;
+  bool IsFullscreen() const override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // IPC message handlers.
   void OnShowView(int route_id,

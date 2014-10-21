@@ -32,10 +32,10 @@ class CONTENT_EXPORT PepperPrintSettingsManagerImpl
     : public PepperPrintSettingsManager {
  public:
   PepperPrintSettingsManagerImpl() {}
-  virtual ~PepperPrintSettingsManagerImpl() {}
+  ~PepperPrintSettingsManagerImpl() override {}
 
   // PepperPrintSettingsManager implementation.
-  virtual void GetDefaultPrintSettings(
+  void GetDefaultPrintSettings(
       PepperPrintSettingsManager::Callback callback) override;
 
  private:

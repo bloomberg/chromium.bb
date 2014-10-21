@@ -85,7 +85,7 @@ class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
   }
 
   // Implement |PlatformThread::Delegate|.
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     MachBroker_ParentRecvMsg msg;
     bzero(&msg, sizeof(msg));
     msg.header.msgh_size = sizeof(msg);

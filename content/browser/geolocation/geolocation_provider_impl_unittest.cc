@@ -27,7 +27,7 @@ namespace content {
 class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
  public:
   LocationProviderForTestArbitrator() : mock_arbitrator_(NULL) {}
-  virtual ~LocationProviderForTestArbitrator() {}
+  ~LocationProviderForTestArbitrator() override {}
 
   // Only valid for use on the geolocation thread.
   MockLocationArbitrator* mock_arbitrator() const {
@@ -36,7 +36,7 @@ class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
 
  protected:
   // GeolocationProviderImpl implementation:
-  virtual LocationArbitrator* CreateArbitrator() override;
+  LocationArbitrator* CreateArbitrator() override;
 
  private:
   MockLocationArbitrator* mock_arbitrator_;
@@ -61,7 +61,7 @@ class MockGeolocationObserver : public GeolocationObserver {
 
 class AsyncMockGeolocationObserver : public MockGeolocationObserver {
  public:
-  virtual void OnLocationUpdate(const Geoposition& position) override {
+  void OnLocationUpdate(const Geoposition& position) override {
     MockGeolocationObserver::OnLocationUpdate(position);
     base::MessageLoop::current()->Quit();
   }

@@ -51,7 +51,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
         observed_registration_->RemoveListener(this);
     }
 
-    virtual void OnVersionAttributesChanged(
+    void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
         ChangedVersionAttributesMask changed_mask,
         const ServiceWorkerRegistrationInfo& info) override {
@@ -60,18 +60,17 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       observed_info_ = info;
     }
 
-    virtual void OnRegistrationFailed(
+    void OnRegistrationFailed(
         ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }
 
-    virtual void OnRegistrationFinishedUninstalling(
+    void OnRegistrationFinishedUninstalling(
         ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }
 
-    virtual void OnUpdateFound(
-        ServiceWorkerRegistration* registration) override {
+    void OnUpdateFound(ServiceWorkerRegistration* registration) override {
       NOTREACHED();
     }
 

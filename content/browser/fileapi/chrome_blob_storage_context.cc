@@ -27,11 +27,9 @@ class BlobHandleImpl : public BlobHandle {
       : handle_(handle.Pass()) {
   }
 
-  virtual ~BlobHandleImpl() {}
+  ~BlobHandleImpl() override {}
 
-  virtual std::string GetUUID() override {
-    return handle_->uuid();
-  }
+  std::string GetUUID() override { return handle_->uuid(); }
 
  private:
   scoped_ptr<storage::BlobDataHandle> handle_;

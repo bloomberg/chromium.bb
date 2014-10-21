@@ -67,16 +67,14 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   }
 
   // ServiceWorkerContext implementation:
-  virtual void RegisterServiceWorker(
-      const GURL& pattern,
-      const GURL& script_url,
-      const ResultCallback& continuation) override;
-  virtual void UnregisterServiceWorker(
-      const GURL& pattern,
-      const ResultCallback& continuation) override;
-  virtual void Terminate() override;
-  virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
-  virtual void DeleteForOrigin(const GURL& origin_url) override;
+  void RegisterServiceWorker(const GURL& pattern,
+                             const GURL& script_url,
+                             const ResultCallback& continuation) override;
+  void UnregisterServiceWorker(const GURL& pattern,
+                               const ResultCallback& continuation) override;
+  void Terminate() override;
+  void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
+  void DeleteForOrigin(const GURL& origin_url) override;
 
   // DeleteForOrigin with completion callback.  Does not exit early, and returns
   // false if one or more of the deletions fail.
@@ -104,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class ServiceWorkerProcessManager;
   friend class MockServiceWorkerContextWrapper;
 
-  virtual ~ServiceWorkerContextWrapper();
+  ~ServiceWorkerContextWrapper() override;
 
   void InitInternal(
       const base::FilePath& user_data_directory,

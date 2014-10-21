@@ -21,10 +21,10 @@ class GeofencingDispatcherHost : public BrowserMessageFilter {
   explicit GeofencingDispatcherHost(BrowserContext* browser_context);
 
  private:
-  virtual ~GeofencingDispatcherHost();
+  ~GeofencingDispatcherHost() override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnRegisterRegion(int thread_id,
                         int request_id,

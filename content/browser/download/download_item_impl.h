@@ -87,77 +87,76 @@ class CONTENT_EXPORT DownloadItemImpl
                    scoped_ptr<DownloadRequestHandleInterface> request_handle,
                    const net::BoundNetLog& bound_net_log);
 
-  virtual ~DownloadItemImpl();
+  ~DownloadItemImpl() override;
 
   // DownloadItem
-  virtual void AddObserver(DownloadItem::Observer* observer) override;
-  virtual void RemoveObserver(DownloadItem::Observer* observer) override;
-  virtual void UpdateObservers() override;
-  virtual void ValidateDangerousDownload() override;
-  virtual void StealDangerousDownload(const AcquireFileCallback& callback)
-      override;
-  virtual void Pause() override;
-  virtual void Resume() override;
-  virtual void Cancel(bool user_cancel) override;
-  virtual void Remove() override;
-  virtual void OpenDownload() override;
-  virtual void ShowDownloadInShell() override;
-  virtual uint32 GetId() const override;
-  virtual DownloadState GetState() const override;
-  virtual DownloadInterruptReason GetLastReason() const override;
-  virtual bool IsPaused() const override;
-  virtual bool IsTemporary() const override;
-  virtual bool CanResume() const override;
-  virtual bool IsDone() const override;
-  virtual const GURL& GetURL() const override;
-  virtual const std::vector<GURL>& GetUrlChain() const override;
-  virtual const GURL& GetOriginalUrl() const override;
-  virtual const GURL& GetReferrerUrl() const override;
-  virtual const GURL& GetTabUrl() const override;
-  virtual const GURL& GetTabReferrerUrl() const override;
-  virtual std::string GetSuggestedFilename() const override;
-  virtual std::string GetContentDisposition() const override;
-  virtual std::string GetMimeType() const override;
-  virtual std::string GetOriginalMimeType() const override;
-  virtual std::string GetRemoteAddress() const override;
-  virtual bool HasUserGesture() const override;
-  virtual ui::PageTransition GetTransitionType() const override;
-  virtual const std::string& GetLastModifiedTime() const override;
-  virtual const std::string& GetETag() const override;
-  virtual bool IsSavePackageDownload() const override;
-  virtual const base::FilePath& GetFullPath() const override;
-  virtual const base::FilePath& GetTargetFilePath() const override;
-  virtual const base::FilePath& GetForcedFilePath() const override;
-  virtual base::FilePath GetFileNameToReportUser() const override;
-  virtual TargetDisposition GetTargetDisposition() const override;
-  virtual const std::string& GetHash() const override;
-  virtual const std::string& GetHashState() const override;
-  virtual bool GetFileExternallyRemoved() const override;
-  virtual void DeleteFile(const base::Callback<void(bool)>& callback) override;
-  virtual bool IsDangerous() const override;
-  virtual DownloadDangerType GetDangerType() const override;
-  virtual bool TimeRemaining(base::TimeDelta* remaining) const override;
-  virtual int64 CurrentSpeed() const override;
-  virtual int PercentComplete() const override;
-  virtual bool AllDataSaved() const override;
-  virtual int64 GetTotalBytes() const override;
-  virtual int64 GetReceivedBytes() const override;
-  virtual base::Time GetStartTime() const override;
-  virtual base::Time GetEndTime() const override;
-  virtual bool CanShowInFolder() override;
-  virtual bool CanOpenDownload() override;
-  virtual bool ShouldOpenFileBasedOnExtension() override;
-  virtual bool GetOpenWhenComplete() const override;
-  virtual bool GetAutoOpened() override;
-  virtual bool GetOpened() const override;
-  virtual BrowserContext* GetBrowserContext() const override;
-  virtual WebContents* GetWebContents() const override;
-  virtual void OnContentCheckCompleted(DownloadDangerType danger_type) override;
-  virtual void SetOpenWhenComplete(bool open) override;
-  virtual void SetIsTemporary(bool temporary) override;
-  virtual void SetOpened(bool opened) override;
-  virtual void SetDisplayName(const base::FilePath& name) override;
-  virtual std::string DebugString(bool verbose) const override;
+  void AddObserver(DownloadItem::Observer* observer) override;
+  void RemoveObserver(DownloadItem::Observer* observer) override;
+  void UpdateObservers() override;
+  void ValidateDangerousDownload() override;
+  void StealDangerousDownload(const AcquireFileCallback& callback) override;
+  void Pause() override;
+  void Resume() override;
+  void Cancel(bool user_cancel) override;
+  void Remove() override;
+  void OpenDownload() override;
+  void ShowDownloadInShell() override;
+  uint32 GetId() const override;
+  DownloadState GetState() const override;
+  DownloadInterruptReason GetLastReason() const override;
+  bool IsPaused() const override;
+  bool IsTemporary() const override;
+  bool CanResume() const override;
+  bool IsDone() const override;
+  const GURL& GetURL() const override;
+  const std::vector<GURL>& GetUrlChain() const override;
+  const GURL& GetOriginalUrl() const override;
+  const GURL& GetReferrerUrl() const override;
+  const GURL& GetTabUrl() const override;
+  const GURL& GetTabReferrerUrl() const override;
+  std::string GetSuggestedFilename() const override;
+  std::string GetContentDisposition() const override;
+  std::string GetMimeType() const override;
+  std::string GetOriginalMimeType() const override;
+  std::string GetRemoteAddress() const override;
+  bool HasUserGesture() const override;
+  ui::PageTransition GetTransitionType() const override;
+  const std::string& GetLastModifiedTime() const override;
+  const std::string& GetETag() const override;
+  bool IsSavePackageDownload() const override;
+  const base::FilePath& GetFullPath() const override;
+  const base::FilePath& GetTargetFilePath() const override;
+  const base::FilePath& GetForcedFilePath() const override;
+  base::FilePath GetFileNameToReportUser() const override;
+  TargetDisposition GetTargetDisposition() const override;
+  const std::string& GetHash() const override;
+  const std::string& GetHashState() const override;
+  bool GetFileExternallyRemoved() const override;
+  void DeleteFile(const base::Callback<void(bool)>& callback) override;
+  bool IsDangerous() const override;
+  DownloadDangerType GetDangerType() const override;
+  bool TimeRemaining(base::TimeDelta* remaining) const override;
+  int64 CurrentSpeed() const override;
+  int PercentComplete() const override;
+  bool AllDataSaved() const override;
+  int64 GetTotalBytes() const override;
+  int64 GetReceivedBytes() const override;
+  base::Time GetStartTime() const override;
+  base::Time GetEndTime() const override;
+  bool CanShowInFolder() override;
+  bool CanOpenDownload() override;
+  bool ShouldOpenFileBasedOnExtension() override;
+  bool GetOpenWhenComplete() const override;
+  bool GetAutoOpened() override;
+  bool GetOpened() const override;
+  BrowserContext* GetBrowserContext() const override;
+  WebContents* GetWebContents() const override;
+  void OnContentCheckCompleted(DownloadDangerType danger_type) override;
+  void SetOpenWhenComplete(bool open) override;
+  void SetIsTemporary(bool temporary) override;
+  void SetOpened(bool opened) override;
+  void SetDisplayName(const base::FilePath& name) override;
+  std::string DebugString(bool verbose) const override;
 
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
@@ -210,11 +209,11 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void MarkAsComplete();
 
   // DownloadDestinationObserver
-  virtual void DestinationUpdate(int64 bytes_so_far,
-                                 int64 bytes_per_sec,
-                                 const std::string& hash_state) override;
-  virtual void DestinationError(DownloadInterruptReason reason) override;
-  virtual void DestinationCompleted(const std::string& final_hash) override;
+  void DestinationUpdate(int64 bytes_so_far,
+                         int64 bytes_per_sec,
+                         const std::string& hash_state) override;
+  void DestinationError(DownloadInterruptReason reason) override;
+  void DestinationCompleted(const std::string& final_hash) override;
 
  private:
   // Fine grained states of a download. Note that active downloads are created

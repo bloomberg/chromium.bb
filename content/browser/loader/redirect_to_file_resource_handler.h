@@ -46,7 +46,7 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   // |next_handler|.
   RedirectToFileResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                                 net::URLRequest* request);
-  virtual ~RedirectToFileResourceHandler();
+  ~RedirectToFileResourceHandler() override;
 
   // Replace the CreateTemporaryFileStream implementation with a mocked one for
   // testing purposes. The function should create a net::FileStream and a
@@ -56,16 +56,15 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
       const CreateTemporaryFileStreamFunction& create_temporary_file_stream);
 
   // LayeredResourceHandler implementation:
-  virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) override;
-  virtual bool OnWillStart(const GURL& url, bool* defer) override;
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) override;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
-  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
-                                   const std::string& security_info,
-                                   bool* defer) override;
+  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  bool OnWillStart(const GURL& url, bool* defer) override;
+  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  int min_size) override;
+  bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& status,
+                           const std::string& security_info,
+                           bool* defer) override;
 
  private:
   void DidCreateTemporaryFile(base::File::Error error_code,

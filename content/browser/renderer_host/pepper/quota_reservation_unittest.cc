@@ -33,9 +33,9 @@ const int kFile3ID = 3;
 class FakeBackend : public QuotaReservationManager::QuotaBackend {
  public:
   FakeBackend() {}
-  virtual ~FakeBackend() {}
+  ~FakeBackend() override {}
 
-  virtual void ReserveQuota(
+  void ReserveQuota(
       const GURL& origin,
       storage::FileSystemType type,
       int64 delta,
@@ -45,18 +45,18 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
         base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
   }
 
-  virtual void ReleaseReservedQuota(const GURL& origin,
-                                    storage::FileSystemType type,
-                                    int64 size) override {}
+  void ReleaseReservedQuota(const GURL& origin,
+                            storage::FileSystemType type,
+                            int64 size) override {}
 
-  virtual void CommitQuotaUsage(const GURL& origin,
-                                storage::FileSystemType type,
-                                int64 delta) override {}
+  void CommitQuotaUsage(const GURL& origin,
+                        storage::FileSystemType type,
+                        int64 delta) override {}
 
-  virtual void IncrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) override {}
-  virtual void DecrementDirtyCount(const GURL& origin,
-                                   storage::FileSystemType type) override {}
+  void IncrementDirtyCount(const GURL& origin,
+                           storage::FileSystemType type) override {}
+  void DecrementDirtyCount(const GURL& origin,
+                           storage::FileSystemType type) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeBackend);

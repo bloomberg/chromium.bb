@@ -32,12 +32,12 @@ class ServiceWorkerDatabaseTaskManagerImpl
  public:
   explicit ServiceWorkerDatabaseTaskManagerImpl(
       base::SequencedWorkerPool* pool);
-  virtual ~ServiceWorkerDatabaseTaskManagerImpl();
+  ~ServiceWorkerDatabaseTaskManagerImpl() override;
 
  protected:
-  virtual scoped_ptr<ServiceWorkerDatabaseTaskManager> Clone() override;
-  virtual base::SequencedTaskRunner* GetTaskRunner() override;
-  virtual base::SequencedTaskRunner* GetShutdownBlockingTaskRunner() override;
+  scoped_ptr<ServiceWorkerDatabaseTaskManager> Clone() override;
+  base::SequencedTaskRunner* GetTaskRunner() override;
+  base::SequencedTaskRunner* GetShutdownBlockingTaskRunner() override;
 
  private:
   ServiceWorkerDatabaseTaskManagerImpl(
@@ -57,12 +57,12 @@ class CONTENT_EXPORT MockServiceWorkerDatabaseTaskManager
  public:
   explicit MockServiceWorkerDatabaseTaskManager(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-  virtual ~MockServiceWorkerDatabaseTaskManager();
+  ~MockServiceWorkerDatabaseTaskManager() override;
 
  protected:
-  virtual scoped_ptr<ServiceWorkerDatabaseTaskManager> Clone() override;
-  virtual base::SequencedTaskRunner* GetTaskRunner() override;
-  virtual base::SequencedTaskRunner* GetShutdownBlockingTaskRunner() override;
+  scoped_ptr<ServiceWorkerDatabaseTaskManager> Clone() override;
+  base::SequencedTaskRunner* GetTaskRunner() override;
+  base::SequencedTaskRunner* GetShutdownBlockingTaskRunner() override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

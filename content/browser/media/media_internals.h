@@ -34,7 +34,7 @@ class CONTENT_EXPORT MediaInternals
 
   static MediaInternals* GetInstance();
 
-  virtual ~MediaInternals();
+  ~MediaInternals() override;
 
   // Called when a MediaEvent occurs.
   void OnMediaEvents(int render_process_id,
@@ -56,8 +56,7 @@ class CONTENT_EXPORT MediaInternals
       const media::VideoCaptureDeviceInfos& video_capture_device_infos);
 
   // AudioLogFactory implementation.  Safe to call from any thread.
-  virtual scoped_ptr<media::AudioLog> CreateAudioLog(
-      AudioComponent component) override;
+  scoped_ptr<media::AudioLog> CreateAudioLog(AudioComponent component) override;
 
  private:
   friend class AudioLogImpl;

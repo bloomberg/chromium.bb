@@ -98,16 +98,15 @@ class PepperTrueTypeFontMac : public PepperTrueTypeFont {
   PepperTrueTypeFontMac();
 
   // PepperTrueTypeFont implementation.
-  virtual int32_t Initialize(
-      ppapi::proxy::SerializedTrueTypeFontDesc* desc) override;
-  virtual int32_t GetTableTags(std::vector<uint32_t>* tags) override;
-  virtual int32_t GetTable(uint32_t table_tag,
-                           int32_t offset,
-                           int32_t max_data_length,
-                           std::string* data) override;
+  int32_t Initialize(ppapi::proxy::SerializedTrueTypeFontDesc* desc) override;
+  int32_t GetTableTags(std::vector<uint32_t>* tags) override;
+  int32_t GetTable(uint32_t table_tag,
+                   int32_t offset,
+                   int32_t max_data_length,
+                   std::string* data) override;
 
  private:
-  virtual ~PepperTrueTypeFontMac() override;
+  ~PepperTrueTypeFontMac() override;
 
   virtual int32_t GetEntireFont(int32_t offset,
                                 int32_t max_data_length,

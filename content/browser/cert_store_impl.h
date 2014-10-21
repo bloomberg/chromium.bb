@@ -18,14 +18,14 @@ class CertStoreImpl : public CertStore {
   static CertStoreImpl* GetInstance();
 
   // CertStore implementation:
-  virtual int StoreCert(net::X509Certificate* cert,
-                        int render_process_host_id) override;
-  virtual bool RetrieveCert(int cert_id,
-                            scoped_refptr<net::X509Certificate>* cert) override;
+  int StoreCert(net::X509Certificate* cert,
+                int render_process_host_id) override;
+  bool RetrieveCert(int cert_id,
+                    scoped_refptr<net::X509Certificate>* cert) override;
 
  protected:
   CertStoreImpl();
-  virtual ~CertStoreImpl();
+  ~CertStoreImpl() override;
 
  private:
   friend struct DefaultSingletonTraits<CertStoreImpl>;

@@ -72,7 +72,7 @@ bool CheckObjectRespondsToEditCommands(NSArray* edit_commands, id test_obj) {
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
-  virtual ~MockRenderWidgetHostDelegate() {}
+  ~MockRenderWidgetHostDelegate() override {}
 };
 
 // Create a RenderWidget for which we can filter messages.
@@ -86,7 +86,7 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
       edit_command_message_count_(0) {
   }
 
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     if (message->type() == InputMsg_ExecuteEditCommand::ID)
       edit_command_message_count_++;
     return RenderWidgetHostImpl::Send(message);

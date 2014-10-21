@@ -316,12 +316,11 @@ void ImmediateShutdownAndExitProcess() {
 class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
  public:
   MemoryObserver() {}
-  virtual ~MemoryObserver() {}
+  ~MemoryObserver() override {}
 
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
-  }
+  void WillProcessTask(const base::PendingTask& pending_task) override {}
 
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
+  void DidProcessTask(const base::PendingTask& pending_task) override {
 #if !defined(OS_IOS)  // No ProcessMetrics on IOS.
     scoped_ptr<base::ProcessMetrics> process_metrics(
         base::ProcessMetrics::CreateProcessMetrics(

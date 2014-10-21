@@ -26,7 +26,7 @@ class FakeServerSocket : public net::ServerSocket {
         accept_socket_(NULL) {
   }
 
-  virtual ~FakeServerSocket() {}
+  ~FakeServerSocket() override {}
 
   bool listening() { return listening_; }
 
@@ -47,19 +47,19 @@ class FakeServerSocket : public net::ServerSocket {
     }
   }
 
-  virtual int Listen(const net::IPEndPoint& address, int backlog) override {
+  int Listen(const net::IPEndPoint& address, int backlog) override {
     local_address_ = address;
     listening_ = true;
     return net::OK;
   }
 
-  virtual int GetLocalAddress(net::IPEndPoint* address) const override {
+  int GetLocalAddress(net::IPEndPoint* address) const override {
     *address = local_address_;
     return net::OK;
   }
 
-  virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
-                     const net::CompletionCallback& callback) override {
+  int Accept(scoped_ptr<net::StreamSocket>* socket,
+             const net::CompletionCallback& callback) override {
     DCHECK(socket);
     if (!incoming_sockets_.empty()) {
       socket->reset(incoming_sockets_.front());

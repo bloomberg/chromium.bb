@@ -40,10 +40,10 @@ const base::FilePath::CharType kCookieFilename[] = FILE_PATH_LITERAL("Cookies");
 class CookieCryptor : public content::CookieCryptoDelegate {
  public:
   CookieCryptor();
-  virtual bool EncryptString(const std::string& plaintext,
-                             std::string* ciphertext) override;
-  virtual bool DecryptString(const std::string& ciphertext,
-                             std::string* plaintext) override;
+  bool EncryptString(const std::string& plaintext,
+                     std::string* ciphertext) override;
+  bool DecryptString(const std::string& ciphertext,
+                     std::string* plaintext) override;
 
  private:
   scoped_ptr<crypto::SymmetricKey> key_;

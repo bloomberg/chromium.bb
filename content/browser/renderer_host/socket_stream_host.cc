@@ -18,7 +18,7 @@ const char* kSocketIdKey = "socketId";
 class SocketStreamId : public net::SocketStream::UserData {
  public:
   explicit SocketStreamId(int socket_id) : socket_id_(socket_id) {}
-  virtual ~SocketStreamId() {}
+  ~SocketStreamId() override {}
   int socket_id() const { return socket_id_; }
 
  private:

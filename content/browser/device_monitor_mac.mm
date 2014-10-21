@@ -136,9 +136,10 @@ void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
 class QTKitMonitorImpl : public DeviceMonitorMacImpl {
  public:
   explicit QTKitMonitorImpl(content::DeviceMonitorMac* monitor);
-  virtual ~QTKitMonitorImpl();
+  ~QTKitMonitorImpl() override;
 
-  virtual void OnDeviceChanged() override;
+  void OnDeviceChanged() override;
+
  private:
   void CountDevices();
   void OnAttributeChanged(NSNotification* notification);
@@ -377,9 +378,9 @@ class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
   AVFoundationMonitorImpl(
       content::DeviceMonitorMac* monitor,
       const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
-  virtual ~AVFoundationMonitorImpl();
+  ~AVFoundationMonitorImpl() override;
 
-  virtual void OnDeviceChanged() override;
+  void OnDeviceChanged() override;
 
  private:
   // {Video,AudioInput}DeviceManager's "Device" thread task runner used for

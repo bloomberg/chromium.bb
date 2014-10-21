@@ -17,7 +17,7 @@ namespace content {
 class CONTENT_EXPORT TracingUI : public WebUIController {
  public:
   explicit TracingUI(WebUI* web_ui);
-  virtual ~TracingUI();
+  ~TracingUI() override;
   void OnMonitoringStateChanged(bool is_monitoring);
   void DoUpload(const base::ListValue* args);
   void OnTraceUploadProgress(int64 current, int64 total);

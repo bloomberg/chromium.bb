@@ -20,9 +20,9 @@ namespace content {
 class SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice {
  public:
   explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
-  virtual ~SoftwareOutputDeviceMac();
+  ~SoftwareOutputDeviceMac() override;
 
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  void EndPaint(cc::SoftwareFrameData* frame_data) override;
 
  private:
   ui::Compositor* compositor_;

@@ -23,12 +23,12 @@ class CONTENT_EXPORT NotificationServiceImpl : public NotificationService {
   // Normally instantiated when the thread is created.  Not all threads have
   // a NotificationService.  Only one instance should be created per thread.
   NotificationServiceImpl();
-  virtual ~NotificationServiceImpl();
+  ~NotificationServiceImpl() override;
 
   // NotificationService:
-  virtual void Notify(int type,
-                      const NotificationSource& source,
-                      const NotificationDetails& details) override;
+  void Notify(int type,
+              const NotificationSource& source,
+              const NotificationDetails& details) override;
 
  private:
   friend class NotificationRegistrar;

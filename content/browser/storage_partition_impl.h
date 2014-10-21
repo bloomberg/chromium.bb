@@ -21,7 +21,7 @@ namespace content {
 
 class StoragePartitionImpl : public StoragePartition {
  public:
-  CONTENT_EXPORT virtual ~StoragePartitionImpl();
+  CONTENT_EXPORT ~StoragePartitionImpl() override;
 
   // Quota managed data uses a different bitmask for types than
   // StoragePartition uses. This method generates that mask.
@@ -33,30 +33,29 @@ class StoragePartitionImpl : public StoragePartition {
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // StoragePartition interface.
-  virtual base::FilePath GetPath() override;
-  virtual net::URLRequestContextGetter* GetURLRequestContext() override;
-  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() override;
-  virtual storage::QuotaManager* GetQuotaManager() override;
-  virtual ChromeAppCacheService* GetAppCacheService() override;
-  virtual storage::FileSystemContext* GetFileSystemContext() override;
-  virtual storage::DatabaseTracker* GetDatabaseTracker() override;
-  virtual DOMStorageContextWrapper* GetDOMStorageContext() override;
-  virtual IndexedDBContextImpl* GetIndexedDBContext() override;
-  virtual ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
+  base::FilePath GetPath() override;
+  net::URLRequestContextGetter* GetURLRequestContext() override;
+  net::URLRequestContextGetter* GetMediaURLRequestContext() override;
+  storage::QuotaManager* GetQuotaManager() override;
+  ChromeAppCacheService* GetAppCacheService() override;
+  storage::FileSystemContext* GetFileSystemContext() override;
+  storage::DatabaseTracker* GetDatabaseTracker() override;
+  DOMStorageContextWrapper* GetDOMStorageContext() override;
+  IndexedDBContextImpl* GetIndexedDBContext() override;
+  ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
 
-  virtual void ClearDataForOrigin(
-      uint32 remove_mask,
-      uint32 quota_storage_remove_mask,
-      const GURL& storage_origin,
-      net::URLRequestContextGetter* request_context_getter,
-      const base::Closure& callback) override;
-  virtual void ClearData(uint32 remove_mask,
-                         uint32 quota_storage_remove_mask,
-                         const GURL& storage_origin,
-                         const OriginMatcherFunction& origin_matcher,
-                         const base::Time begin,
-                         const base::Time end,
-                         const base::Closure& callback) override;
+  void ClearDataForOrigin(uint32 remove_mask,
+                          uint32 quota_storage_remove_mask,
+                          const GURL& storage_origin,
+                          net::URLRequestContextGetter* request_context_getter,
+                          const base::Closure& callback) override;
+  void ClearData(uint32 remove_mask,
+                 uint32 quota_storage_remove_mask,
+                 const GURL& storage_origin,
+                 const OriginMatcherFunction& origin_matcher,
+                 const base::Time begin,
+                 const base::Time end,
+                 const base::Closure& callback) override;
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
 

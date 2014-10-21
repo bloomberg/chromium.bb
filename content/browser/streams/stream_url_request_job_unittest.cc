@@ -38,7 +38,7 @@ class StreamURLRequestJobTest : public testing::Test {
     MockProtocolHandler(StreamRegistry* registry) : registry_(registry) {}
 
     // net::URLRequestJobFactory::ProtocolHandler override.
-    virtual net::URLRequestJob* MaybeCreateJob(
+    net::URLRequestJob* MaybeCreateJob(
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const override {
       scoped_refptr<Stream> stream = registry_->GetStream(request->url());

@@ -28,7 +28,7 @@ class CloseTrackingDelegate : public WebContentsDelegate {
 
   bool close_contents_called() const { return close_contents_called_; }
 
-  virtual void CloseContents(WebContents* source) override {
+  void CloseContents(WebContents* source) override {
     close_contents_called_ = true;
   }
 
@@ -42,7 +42,7 @@ class CloseTrackingDelegate : public WebContentsDelegate {
 
 class OpenedByDOMTest : public ContentBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     // Use --site-per-process to force process swaps on cross-site navigations.
     command_line->AppendSwitch(switches::kSitePerProcess);
   }

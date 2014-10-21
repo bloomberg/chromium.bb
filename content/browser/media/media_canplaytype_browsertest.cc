@@ -45,9 +45,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
 public:
   MediaCanPlayTypeTest() : url_("about:blank") { }
 
-  virtual void SetUpOnMainThread() override {
-    NavigateToURL(shell(), url_);
-  }
+  void SetUpOnMainThread() override { NavigateToURL(shell(), url_); }
 
   std::string CanPlay(const std::string& type) {
     std::string command("document.createElement('video').canPlayType(");

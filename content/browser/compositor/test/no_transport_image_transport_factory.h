@@ -19,17 +19,17 @@ namespace content {
 class NoTransportImageTransportFactory : public ImageTransportFactory {
  public:
   NoTransportImageTransportFactory();
-  virtual ~NoTransportImageTransportFactory();
+  ~NoTransportImageTransportFactory() override;
 
   // ImageTransportFactory implementation.
-  virtual ui::ContextFactory* GetContextFactory() override;
-  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
-  virtual cc::SurfaceManager* GetSurfaceManager() override;
-  virtual GLHelper* GetGLHelper() override;
-  virtual void AddObserver(ImageTransportFactoryObserver* observer) override;
-  virtual void RemoveObserver(ImageTransportFactoryObserver* observer) override;
+  ui::ContextFactory* GetContextFactory() override;
+  gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
+  cc::SurfaceManager* GetSurfaceManager() override;
+  GLHelper* GetGLHelper() override;
+  void AddObserver(ImageTransportFactoryObserver* observer) override;
+  void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
-  virtual void OnSurfaceDisplayed(int surface_id) override {}
+  void OnSurfaceDisplayed(int surface_id) override {}
 #endif
 
  private:

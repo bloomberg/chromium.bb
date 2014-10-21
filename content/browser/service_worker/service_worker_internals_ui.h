@@ -42,7 +42,7 @@ class ServiceWorkerInternalsUI
   class OperationProxy;
   class PartitionObserver;
 
-  virtual ~ServiceWorkerInternalsUI();
+  ~ServiceWorkerInternalsUI() override;
   void AddContextFromStoragePartition(StoragePartition* partition);
 
   void RemoveObserverFromStoragePartition(StoragePartition* partition);

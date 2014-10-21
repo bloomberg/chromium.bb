@@ -88,28 +88,27 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
   WebSocketEventHandler(WebSocketDispatcherHost* dispatcher,
                         int routing_id,
                         int render_frame_id);
-  virtual ~WebSocketEventHandler();
+  ~WebSocketEventHandler() override;
 
   // net::WebSocketEventInterface implementation
 
-  virtual ChannelState OnAddChannelResponse(
-      bool fail,
-      const std::string& selected_subprotocol,
-      const std::string& extensions) override;
-  virtual ChannelState OnDataFrame(bool fin,
-                                   WebSocketMessageType type,
-                                   const std::vector<char>& data) override;
-  virtual ChannelState OnClosingHandshake() override;
-  virtual ChannelState OnFlowControl(int64 quota) override;
-  virtual ChannelState OnDropChannel(bool was_clean,
-                                     uint16 code,
-                                     const std::string& reason) override;
-  virtual ChannelState OnFailChannel(const std::string& message) override;
-  virtual ChannelState OnStartOpeningHandshake(
+  ChannelState OnAddChannelResponse(bool fail,
+                                    const std::string& selected_subprotocol,
+                                    const std::string& extensions) override;
+  ChannelState OnDataFrame(bool fin,
+                           WebSocketMessageType type,
+                           const std::vector<char>& data) override;
+  ChannelState OnClosingHandshake() override;
+  ChannelState OnFlowControl(int64 quota) override;
+  ChannelState OnDropChannel(bool was_clean,
+                             uint16 code,
+                             const std::string& reason) override;
+  ChannelState OnFailChannel(const std::string& message) override;
+  ChannelState OnStartOpeningHandshake(
       scoped_ptr<net::WebSocketHandshakeRequestInfo> request) override;
-  virtual ChannelState OnFinishOpeningHandshake(
+  ChannelState OnFinishOpeningHandshake(
       scoped_ptr<net::WebSocketHandshakeResponseInfo> response) override;
-  virtual ChannelState OnSSLCertificateError(
+  ChannelState OnSSLCertificateError(
       scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
       const GURL& url,
       const net::SSLInfo& ssl_info,
@@ -120,14 +119,13 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
    public:
     SSLErrorHandlerDelegate(
         scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks);
-    virtual ~SSLErrorHandlerDelegate();
+    ~SSLErrorHandlerDelegate() override;
 
     base::WeakPtr<SSLErrorHandler::Delegate> GetWeakPtr();
 
     // SSLErrorHandler::Delegate methods
-    virtual void CancelSSLRequest(int error,
-                                  const net::SSLInfo* ssl_info) override;
-    virtual void ContinueSSLRequest() override;
+    void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override;
+    void ContinueSSLRequest() override;
 
    private:
     scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;

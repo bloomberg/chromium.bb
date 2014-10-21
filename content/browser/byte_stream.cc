@@ -48,7 +48,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   ByteStreamWriterImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
                        scoped_refptr<LifetimeFlag> lifetime_flag,
                        size_t buffer_size);
-  virtual ~ByteStreamWriterImpl();
+  ~ByteStreamWriterImpl() override;
 
   // Must be called before any operations are performed.
   void SetPeer(ByteStreamReaderImpl* peer,
@@ -56,12 +56,11 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
                scoped_refptr<LifetimeFlag> peer_lifetime_flag);
 
   // Overridden from ByteStreamWriter.
-  virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
-                     size_t byte_count) override;
-  virtual void Flush() override;
-  virtual void Close(int status) override;
-  virtual void RegisterCallback(const base::Closure& source_callback) override;
-  virtual size_t GetTotalBufferedBytes() const override;
+  bool Write(scoped_refptr<net::IOBuffer> buffer, size_t byte_count) override;
+  void Flush() override;
+  void Close(int status) override;
+  void RegisterCallback(const base::Closure& source_callback) override;
+  size_t GetTotalBufferedBytes() const override;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
   static void UpdateWindow(scoped_refptr<LifetimeFlag> lifetime_flag,
@@ -108,7 +107,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
   ByteStreamReaderImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
                        scoped_refptr<LifetimeFlag> lifetime_flag,
                        size_t buffer_size);
-  virtual ~ByteStreamReaderImpl();
+  ~ByteStreamReaderImpl() override;
 
   // Must be called before any operations are performed.
   void SetPeer(ByteStreamWriterImpl* peer,
@@ -116,10 +115,9 @@ class ByteStreamReaderImpl : public ByteStreamReader {
                scoped_refptr<LifetimeFlag> peer_lifetime_flag);
 
   // Overridden from ByteStreamReader.
-  virtual StreamState Read(scoped_refptr<net::IOBuffer>* data,
-                           size_t* length) override;
-  virtual int GetStatus() const override;
-  virtual void RegisterCallback(const base::Closure& sink_callback) override;
+  StreamState Read(scoped_refptr<net::IOBuffer>* data, size_t* length) override;
+  int GetStatus() const override;
+  void RegisterCallback(const base::Closure& sink_callback) override;
 
   // PostTask target from |ByteStreamWriterImpl::Write| and
   // |ByteStreamWriterImpl::Close|.

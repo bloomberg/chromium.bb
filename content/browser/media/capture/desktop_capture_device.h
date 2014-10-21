@@ -35,12 +35,12 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   static scoped_ptr<media::VideoCaptureDevice> Create(
       const DesktopMediaID& source);
 
-  virtual ~DesktopCaptureDevice();
+  ~DesktopCaptureDevice() override;
 
   // VideoCaptureDevice interface.
-  virtual void AllocateAndStart(const media::VideoCaptureParams& params,
-                                scoped_ptr<Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const media::VideoCaptureParams& params,
+                        scoped_ptr<Client> client) override;
+  void StopAndDeAllocate() override;
 
   // Set the platform-dependent window id for the notification window.
   void SetNotificationWindowId(gfx::NativeViewId window_id);

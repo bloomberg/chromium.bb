@@ -47,11 +47,11 @@ class CONTENT_EXPORT SpeechRecognizerImpl
                        bool provisional_results,
                        SpeechRecognitionEngine* engine);
 
-  virtual void StartRecognition(const std::string& device_id) override;
-  virtual void AbortRecognition() override;
-  virtual void StopAudioCapture() override;
-  virtual bool IsActive() const override;
-  virtual bool IsCapturingAudio() const override;
+  void StartRecognition(const std::string& device_id) override;
+  void AbortRecognition() override;
+  void StopAudioCapture() override;
+  bool IsActive() const override;
+  bool IsCapturingAudio() const override;
   const SpeechRecognitionEngine& recognition_engine() const;
 
  private:
@@ -89,7 +89,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
     SpeechRecognitionError engine_error;
   };
 
-  virtual ~SpeechRecognizerImpl();
+  ~SpeechRecognizerImpl() override;
 
   // Entry point for pushing any new external event into the recognizer FSM.
   void DispatchEvent(const FSMEventArgs& event_args);
@@ -129,19 +129,19 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   void OnAudioClosed(media::AudioInputController*);
 
   // AudioInputController::EventHandler methods.
-  virtual void OnCreated(media::AudioInputController* controller) override {}
-  virtual void OnRecording(media::AudioInputController* controller) override {}
-  virtual void OnError(media::AudioInputController* controller,
-      media::AudioInputController::ErrorCode error_code) override;
-  virtual void OnData(media::AudioInputController* controller,
-                      const media::AudioBus* data) override;
-  virtual void OnLog(media::AudioInputController* controller,
-                     const std::string& message) override {}
+  void OnCreated(media::AudioInputController* controller) override {}
+  void OnRecording(media::AudioInputController* controller) override {}
+  void OnError(media::AudioInputController* controller,
+               media::AudioInputController::ErrorCode error_code) override;
+  void OnData(media::AudioInputController* controller,
+              const media::AudioBus* data) override;
+  void OnLog(media::AudioInputController* controller,
+             const std::string& message) override {}
 
   // SpeechRecognitionEngineDelegate methods.
-  virtual void OnSpeechRecognitionEngineResults(
+  void OnSpeechRecognitionEngineResults(
       const SpeechRecognitionResults& results) override;
-  virtual void OnSpeechRecognitionEngineError(
+  void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) override;
 
   static media::AudioManager* audio_manager_for_tests_;

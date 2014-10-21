@@ -160,27 +160,23 @@ class OpenChannelToPpapiPluginCallback
         context_(context) {
   }
 
-  virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                                   int* renderer_id) override {
+  void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
+                           int* renderer_id) override {
     *renderer_handle = filter()->PeerHandle();
     *renderer_id = filter()->render_process_id();
   }
 
-  virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
-                                    base::ProcessId plugin_pid,
-                                    int plugin_child_id) override {
+  void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
+                            base::ProcessId plugin_pid,
+                            int plugin_child_id) override {
     ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(
         reply_msg(), channel_handle, plugin_pid, plugin_child_id);
     SendReplyAndDeleteThis();
   }
 
-  virtual bool OffTheRecord() override {
-    return filter()->OffTheRecord();
-  }
+  bool OffTheRecord() override { return filter()->OffTheRecord(); }
 
-  virtual ResourceContext* GetResourceContext() override {
-    return context_;
-  }
+  ResourceContext* GetResourceContext() override { return context_; }
 
  private:
   ResourceContext* context_;
@@ -195,26 +191,24 @@ class OpenChannelToPpapiBrokerCallback
         routing_id_(routing_id) {
   }
 
-  virtual ~OpenChannelToPpapiBrokerCallback() {}
+  ~OpenChannelToPpapiBrokerCallback() override {}
 
-  virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
-                                   int* renderer_id) override {
+  void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
+                           int* renderer_id) override {
     *renderer_handle = filter_->PeerHandle();
     *renderer_id = filter_->render_process_id();
   }
 
-  virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
-                                    base::ProcessId plugin_pid,
-                                    int /* plugin_child_id */) override {
+  void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
+                            base::ProcessId plugin_pid,
+                            int /* plugin_child_id */) override {
     filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
                                                         plugin_pid,
                                                         channel_handle));
     delete this;
   }
 
-  virtual bool OffTheRecord() override {
-    return filter_->OffTheRecord();
-  }
+  bool OffTheRecord() override { return filter_->OffTheRecord(); }
 
  private:
   scoped_refptr<RenderMessageFilter> filter_;
@@ -237,15 +231,11 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
         sent_plugin_channel_request_(false) {
   }
 
-  virtual int ID() override {
-    return filter()->render_process_id();
-  }
+  int ID() override { return filter()->render_process_id(); }
 
-  virtual ResourceContext* GetResourceContext() override {
-    return context_;
-  }
+  ResourceContext* GetResourceContext() override { return context_; }
 
-  virtual bool OffTheRecord() override {
+  bool OffTheRecord() override {
     if (filter()->OffTheRecord())
       return true;
     if (GetContentClient()->browser()->AllowSaveLocalState(context_))
@@ -259,26 +249,22 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
     return false;
   }
 
-  virtual void SetPluginInfo(const WebPluginInfo& info) override {
-    info_ = info;
-  }
+  void SetPluginInfo(const WebPluginInfo& info) override { info_ = info; }
 
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) override {
+  void OnFoundPluginProcessHost(PluginProcessHost* host) override {
     DCHECK(host);
     host_ = host;
   }
 
-  virtual void OnSentPluginChannelRequest() override {
+  void OnSentPluginChannelRequest() override {
     sent_plugin_channel_request_ = true;
   }
 
-  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) override {
+  void OnChannelOpened(const IPC::ChannelHandle& handle) override {
     WriteReplyAndDeleteThis(handle);
   }
 
-  virtual void OnError() override {
-    WriteReplyAndDeleteThis(IPC::ChannelHandle());
-  }
+  void OnError() override { WriteReplyAndDeleteThis(IPC::ChannelHandle()); }
 
   PluginProcessHost* host() const {
     return host_;

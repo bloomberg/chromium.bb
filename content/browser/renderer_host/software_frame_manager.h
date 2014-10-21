@@ -39,7 +39,7 @@ class CONTENT_EXPORT SoftwareFrameManager : public RendererFrameManagerClient {
  public:
   explicit SoftwareFrameManager(
       base::WeakPtr<SoftwareFrameManagerClient> client);
-  virtual ~SoftwareFrameManager();
+  ~SoftwareFrameManager() override;
 
   // Swaps to a new frame from shared memory. This frame is guaranteed to
   // not be evicted until SwapToNewFrameComplete is called.
@@ -64,7 +64,7 @@ class CONTENT_EXPORT SoftwareFrameManager : public RendererFrameManagerClient {
  private:
   // Called by SoftwareFrameMemoryManager to demand that the current frame
   // be evicted.
-  virtual void EvictCurrentFrame() override;
+  void EvictCurrentFrame() override;
 
   base::WeakPtr<SoftwareFrameManagerClient> client_;
 

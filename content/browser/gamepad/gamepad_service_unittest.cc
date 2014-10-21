@@ -24,14 +24,12 @@ class ConnectionListener : public GamepadConsumer {
     ClearCounters();
   }
 
-  virtual void OnGamepadConnected(
-      unsigned index,
-      const blink::WebGamepad& gamepad) override {
+  void OnGamepadConnected(unsigned index,
+                          const blink::WebGamepad& gamepad) override {
     connected_counter_++;
   }
-  virtual void OnGamepadDisconnected(
-      unsigned index,
-      const blink::WebGamepad& gamepad) override {
+  void OnGamepadDisconnected(unsigned index,
+                             const blink::WebGamepad& gamepad) override {
     disconnected_counter_++;
   }
 

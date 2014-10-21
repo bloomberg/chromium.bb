@@ -29,7 +29,7 @@ namespace {
 class FakeTiming : public rtc::Timing {
  public:
   FakeTiming() : now_(0.0) {}
-  virtual double TimerNow() override { return now_; }
+  double TimerNow() override { return now_; }
   void set_now(double now) { now_ = now; }
 
  private:
@@ -46,27 +46,27 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
       : sent_packets_(sent_packets) {
   }
 
-  virtual void Close() override {
-  }
+  void Close() override {}
 
-  virtual int GetPeerAddress(net::IPEndPoint* address) const override {
+  int GetPeerAddress(net::IPEndPoint* address) const override {
     NOTREACHED();
     return net::ERR_SOCKET_NOT_CONNECTED;
   }
 
-  virtual int GetLocalAddress(net::IPEndPoint* address) const override {
+  int GetLocalAddress(net::IPEndPoint* address) const override {
     *address = address_;
     return 0;
   }
 
-  virtual int Listen(const net::IPEndPoint& address) override {
+  int Listen(const net::IPEndPoint& address) override {
     address_ = address;
     return 0;
   }
 
-  virtual int RecvFrom(net::IOBuffer* buf, int buf_len,
-                       net::IPEndPoint* address,
-                       const net::CompletionCallback& callback) override {
+  int RecvFrom(net::IOBuffer* buf,
+               int buf_len,
+               net::IPEndPoint* address,
+               const net::CompletionCallback& callback) override {
     CHECK(recv_callback_.is_null());
     if (incoming_packets_.size() > 0) {
       scoped_refptr<net::IOBuffer> buffer(buf);
@@ -85,22 +85,19 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     }
   }
 
-  virtual int SendTo(net::IOBuffer* buf, int buf_len,
-                     const net::IPEndPoint& address,
-                     const net::CompletionCallback& callback) override {
+  int SendTo(net::IOBuffer* buf,
+             int buf_len,
+             const net::IPEndPoint& address,
+             const net::CompletionCallback& callback) override {
     scoped_refptr<net::IOBuffer> buffer(buf);
     std::vector<char> data_vector(buffer->data(), buffer->data() + buf_len);
     sent_packets_->push_back(UDPPacket(address, data_vector));
     return buf_len;
   }
 
-  virtual int SetReceiveBufferSize(int32 size) override {
-    return net::OK;
-  }
+  int SetReceiveBufferSize(int32 size) override { return net::OK; }
 
-  virtual int SetSendBufferSize(int32 size) override {
-    return net::OK;
-  }
+  int SetSendBufferSize(int32 size) override { return net::OK; }
 
   void ReceivePacket(const net::IPEndPoint& address, std::vector<char> data) {
     if (!recv_callback_.is_null()) {
@@ -116,53 +113,43 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     }
   }
 
-  virtual const net::BoundNetLog& NetLog() const override {
-    return net_log_;
-  }
+  const net::BoundNetLog& NetLog() const override { return net_log_; }
 
-  virtual void AllowAddressReuse() override {
-    NOTIMPLEMENTED();
-  }
+  void AllowAddressReuse() override { NOTIMPLEMENTED(); }
 
-  virtual void AllowBroadcast() override {
-    NOTIMPLEMENTED();
-  }
+  void AllowBroadcast() override { NOTIMPLEMENTED(); }
 
-  virtual int JoinGroup(
-      const net::IPAddressNumber& group_address) const override {
+  int JoinGroup(const net::IPAddressNumber& group_address) const override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual int LeaveGroup(
-      const net::IPAddressNumber& group_address) const override {
+  int LeaveGroup(const net::IPAddressNumber& group_address) const override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual int SetMulticastInterface(uint32 interface_index) override {
+  int SetMulticastInterface(uint32 interface_index) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual int SetMulticastTimeToLive(int time_to_live) override {
+  int SetMulticastTimeToLive(int time_to_live) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual int SetMulticastLoopbackMode(bool loopback) override {
+  int SetMulticastLoopbackMode(bool loopback) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual int SetDiffServCodePoint(net::DiffServCodePoint dscp) override {
+  int SetDiffServCodePoint(net::DiffServCodePoint dscp) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  virtual void DetachFromThread() override {
-    NOTIMPLEMENTED();
-  }
+  void DetachFromThread() override { NOTIMPLEMENTED(); }
 
  private:
   net::IPEndPoint address_;

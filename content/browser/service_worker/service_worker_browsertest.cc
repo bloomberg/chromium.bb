@@ -145,7 +145,7 @@ class WorkerActivatedObserver
     RunOnIOThread(base::Bind(&WorkerActivatedObserver::InitOnIOThread, this));
   }
   // ServiceWorkerContextObserver overrides.
-  virtual void OnVersionStateChanged(int64 version_id) override {
+  void OnVersionStateChanged(int64 version_id) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     const ServiceWorkerVersion* version =
         context_->context()->GetLiveVersion(version_id);
@@ -160,7 +160,7 @@ class WorkerActivatedObserver
 
  private:
   friend class base::RefCountedThreadSafe<WorkerActivatedObserver>;
-  virtual ~WorkerActivatedObserver() {}
+  ~WorkerActivatedObserver() override {}
   void InitOnIOThread() { context_->AddObserver(this); }
   void Quit() { run_loop_.Quit(); }
 
@@ -192,10 +192,10 @@ class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
  public:
   LongLivedResourceInterceptor(const std::string& body)
       : body_(body) {}
-  virtual ~LongLivedResourceInterceptor() {}
+  ~LongLivedResourceInterceptor() override {}
 
   // net::URLRequestInterceptor implementation
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     const char kHeaders[] =
@@ -262,12 +262,12 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
  protected:
   typedef ServiceWorkerBrowserTest self;
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
         shell()->web_contents()->GetBrowserContext());
@@ -283,7 +283,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
     RunOnIOThread(base::Bind(&self::SetUpOnIOThread, this));
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     RunOnIOThread(base::Bind(&self::TearDownOnIOThread, this));
     wrapper_ = NULL;
   }
@@ -313,7 +313,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
         pause_mode_(DONT_PAUSE) {}
   virtual ~EmbeddedWorkerBrowserTest() {}
 
-  virtual void TearDownOnIOThread() override {
+  void TearDownOnIOThread() override {
     if (worker_) {
       worker_->RemoveListener(this);
       worker_.reset();
@@ -367,19 +367,19 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
 
  protected:
   // EmbeddedWorkerInstance::Observer overrides:
-  virtual void OnStarted() override {
+  void OnStarted() override {
     ASSERT_TRUE(worker_ != NULL);
     ASSERT_FALSE(done_closure_.is_null());
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
-  virtual void OnStopped() override {
+  void OnStopped() override {
     ASSERT_TRUE(worker_ != NULL);
     ASSERT_FALSE(done_closure_.is_null());
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
-  virtual void OnPausedAfterDownload() override {
+  void OnPausedAfterDownload() override {
     if (pause_mode_ == PAUSE_THEN_RESUME)
       worker_->ResumeAfterDownload();
     else if (pause_mode_ == PAUSE_THEN_STOP)
@@ -387,18 +387,16 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     else
       ASSERT_TRUE(false);
   }
-  virtual void OnReportException(const base::string16& error_message,
-                                 int line_number,
-                                 int column_number,
-                                 const GURL& source_url) override {}
-  virtual void OnReportConsoleMessage(int source_identifier,
-                                      int message_level,
-                                      const base::string16& message,
-                                      int line_number,
-                                      const GURL& source_url) override {}
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
-    return false;
-  }
+  void OnReportException(const base::string16& error_message,
+                         int line_number,
+                         int column_number,
+                         const GURL& source_url) override {}
+  void OnReportConsoleMessage(int source_identifier,
+                              int message_level,
+                              const base::string16& message,
+                              int line_number,
+                              const GURL& source_url) override {}
+  bool OnMessageReceived(const IPC::Message& message) override { return false; }
 
   scoped_ptr<EmbeddedWorkerInstance> worker_;
   EmbeddedWorkerInstance::Status last_worker_status_;
@@ -420,7 +418,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   virtual ~ServiceWorkerVersionBrowserTest() {}
 
-  virtual void TearDownOnIOThread() override {
+  void TearDownOnIOThread() override {
     registration_ = NULL;
     version_ = NULL;
   }

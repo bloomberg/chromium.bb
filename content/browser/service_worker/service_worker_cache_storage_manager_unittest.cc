@@ -223,13 +223,13 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
 
 class ServiceWorkerCacheStorageManagerMemoryOnlyTest
     : public ServiceWorkerCacheStorageManagerTest {
-  virtual bool MemoryOnly() override { return true; }
+  bool MemoryOnly() override { return true; }
 };
 
 class ServiceWorkerCacheStorageManagerTestP
     : public ServiceWorkerCacheStorageManagerTest,
       public testing::WithParamInterface<bool> {
-  virtual bool MemoryOnly() override { return !GetParam(); }
+  bool MemoryOnly() override { return !GetParam(); }
 };
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, TestsRunOnIOThread) {
@@ -515,7 +515,7 @@ class ServiceWorkerCacheQuotaClientTest
 class ServiceWorkerCacheQuotaClientTestP
     : public ServiceWorkerCacheQuotaClientTest,
       public testing::WithParamInterface<bool> {
-  virtual bool MemoryOnly() override { return !GetParam(); }
+  bool MemoryOnly() override { return !GetParam(); }
 };
 
 TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaID) {

@@ -64,25 +64,25 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   void AddPlaceholderForPid(base::ProcessHandle pid);
 
   // Implement |ProcessMetrics::PortProvider|.
-  virtual mach_port_t TaskForPid(base::ProcessHandle process) const override;
+  mach_port_t TaskForPid(base::ProcessHandle process) const override;
 
   // Implement |BrowserChildProcessObserver|.
-  virtual void BrowserChildProcessHostDisconnected(
+  void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
-  virtual void BrowserChildProcessCrashed(
-      const ChildProcessData& data) override;
+  void BrowserChildProcessCrashed(const ChildProcessData& data) override;
 
   // Implement |NotificationObserver|.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
+
  private:
   friend class MachBrokerTest;
   friend class MachListenerThreadDelegate;
   friend struct DefaultSingletonTraits<MachBroker>;
 
   MachBroker();
-  virtual ~MachBroker();
+  ~MachBroker() override;
 
   // Updates the mapping for |pid| to include the given |mach_info|.  Does
   // nothing if PlaceholderForPid() has not already been called for the given

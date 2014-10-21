@@ -36,62 +36,58 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                 NavigatorDelegate* delegate);
 
   // Navigator implementation.
-  virtual NavigationController* GetController() override;
-  virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
-                                       const GURL& url,
-                                       bool is_transition_navigation) override;
-  virtual void DidFailProvisionalLoadWithError(
+  NavigationController* GetController() override;
+  void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                               const GURL& url,
+                               bool is_transition_navigation) override;
+  void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
       override;
-  virtual void DidFailLoadWithError(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description) override;
-  virtual void DidNavigate(
-      RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params&
-          input_params) override;
-  virtual bool NavigateToPendingEntry(
+  void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
+                            const GURL& url,
+                            int error_code,
+                            const base::string16& error_description) override;
+  void DidNavigate(RenderFrameHostImpl* render_frame_host,
+                   const FrameHostMsg_DidCommitProvisionalLoad_Params&
+                       input_params) override;
+  bool NavigateToPendingEntry(
       RenderFrameHostImpl* render_frame_host,
       NavigationController::ReloadType reload_type) override;
-  virtual void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
-                              const GURL& url,
-                              const Referrer& referrer,
-                              WindowOpenDisposition disposition,
-                              bool should_replace_current_entry,
-                              bool user_gesture) override;
-  virtual void RequestTransferURL(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const std::vector<GURL>& redirect_chain,
-      const Referrer& referrer,
-      ui::PageTransition page_transition,
-      WindowOpenDisposition disposition,
-      const GlobalRequestID& transferred_global_request_id,
-      bool should_replace_current_entry,
-      bool user_gesture) override;
-  virtual void OnBeginNavigation(
-      FrameTreeNode* frame_tree_node,
-      const FrameHostMsg_BeginNavigation_Params& params,
-      const CommonNavigationParams& common_params) override;
-  virtual void CommitNavigation(FrameTreeNode* frame_tree_node,
-                                ResourceResponse* response,
-                                scoped_ptr<StreamHandle> body) override;
-  virtual void LogResourceRequestTime(
-      base::TimeTicks timestamp, const GURL& url) override;
-  virtual void LogBeforeUnloadTime(
+  void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                      const GURL& url,
+                      const Referrer& referrer,
+                      WindowOpenDisposition disposition,
+                      bool should_replace_current_entry,
+                      bool user_gesture) override;
+  void RequestTransferURL(RenderFrameHostImpl* render_frame_host,
+                          const GURL& url,
+                          const std::vector<GURL>& redirect_chain,
+                          const Referrer& referrer,
+                          ui::PageTransition page_transition,
+                          WindowOpenDisposition disposition,
+                          const GlobalRequestID& transferred_global_request_id,
+                          bool should_replace_current_entry,
+                          bool user_gesture) override;
+  void OnBeginNavigation(FrameTreeNode* frame_tree_node,
+                         const FrameHostMsg_BeginNavigation_Params& params,
+                         const CommonNavigationParams& common_params) override;
+  void CommitNavigation(FrameTreeNode* frame_tree_node,
+                        ResourceResponse* response,
+                        scoped_ptr<StreamHandle> body) override;
+  void LogResourceRequestTime(base::TimeTicks timestamp,
+                              const GURL& url) override;
+  void LogBeforeUnloadTime(
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) override;
-  virtual void CancelNavigation(FrameTreeNode* frame_tree_node) override;
+  void CancelNavigation(FrameTreeNode* frame_tree_node) override;
 
  private:
   // Holds data used to track browser side navigation metrics.
   struct NavigationMetricsData;
 
   friend class NavigatorTest;
-  virtual ~NavigatorImpl();
+  ~NavigatorImpl() override;
 
   // Navigates to the given entry, which must be the pending entry.  Private
   // because all callers should use NavigateToPendingEntry.

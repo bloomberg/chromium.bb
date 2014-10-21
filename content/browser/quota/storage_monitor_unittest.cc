@@ -51,7 +51,7 @@ class MockObserver : public StorageObserver {
   }
 
   // StorageObserver implementation:
-  virtual void OnStorageEvent(const StorageObserver::Event& event) override {
+  void OnStorageEvent(const StorageObserver::Event& event) override {
     events_.push_back(event);
   }
 
@@ -86,7 +86,7 @@ class UsageMockQuotaManager : public QuotaManager {
     delayed_callback_.Run(callback_status_, callback_usage_, callback_quota_);
   }
 
-  virtual void GetUsageAndQuotaForWebApps(
+  void GetUsageAndQuotaForWebApps(
       const GURL& origin,
       StorageType type,
       const GetUsageAndQuotaCallback& callback) override {
@@ -97,7 +97,7 @@ class UsageMockQuotaManager : public QuotaManager {
   }
 
  protected:
-  virtual ~UsageMockQuotaManager() {}
+  ~UsageMockQuotaManager() override {}
 
  private:
   int64 callback_usage_;

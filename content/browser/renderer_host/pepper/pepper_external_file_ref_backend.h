@@ -25,29 +25,28 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
   PepperExternalFileRefBackend(ppapi::host::PpapiHost* host,
                                int render_process_id,
                                const base::FilePath& path);
-  virtual ~PepperExternalFileRefBackend();
+  ~PepperExternalFileRefBackend() override;
 
   // PepperFileRefBackend overrides.
-  virtual int32_t MakeDirectory(ppapi::host::ReplyMessageContext context,
-                                int32_t make_directory_flags) override;
-  virtual int32_t Touch(ppapi::host::ReplyMessageContext context,
-                        PP_Time last_accessed_time,
-                        PP_Time last_modified_time) override;
-  virtual int32_t Delete(ppapi::host::ReplyMessageContext context) override;
-  virtual int32_t Rename(ppapi::host::ReplyMessageContext context,
-                         PepperFileRefHost* new_file_ref) override;
-  virtual int32_t Query(ppapi::host::ReplyMessageContext context) override;
-  virtual int32_t ReadDirectoryEntries(ppapi::host::ReplyMessageContext context)
-      override;
-  virtual int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context)
-      override;
-  virtual storage::FileSystemURL GetFileSystemURL() const override;
-  virtual base::FilePath GetExternalFilePath() const override;
+  int32_t MakeDirectory(ppapi::host::ReplyMessageContext context,
+                        int32_t make_directory_flags) override;
+  int32_t Touch(ppapi::host::ReplyMessageContext context,
+                PP_Time last_accessed_time,
+                PP_Time last_modified_time) override;
+  int32_t Delete(ppapi::host::ReplyMessageContext context) override;
+  int32_t Rename(ppapi::host::ReplyMessageContext context,
+                 PepperFileRefHost* new_file_ref) override;
+  int32_t Query(ppapi::host::ReplyMessageContext context) override;
+  int32_t ReadDirectoryEntries(
+      ppapi::host::ReplyMessageContext context) override;
+  int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context) override;
+  storage::FileSystemURL GetFileSystemURL() const override;
+  base::FilePath GetExternalFilePath() const override;
 
-  virtual int32_t CanRead() const override;
-  virtual int32_t CanWrite() const override;
-  virtual int32_t CanCreate() const override;
-  virtual int32_t CanReadWrite() const override;
+  int32_t CanRead() const override;
+  int32_t CanWrite() const override;
+  int32_t CanCreate() const override;
+  int32_t CanReadWrite() const override;
 
  private:
   // Generic reply callback.

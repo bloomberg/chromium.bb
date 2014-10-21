@@ -627,7 +627,7 @@ class ServiceWorkerResourceStorageDiskTest
     ServiceWorkerResourceStorageTest::SetUp();
   }
 
-  virtual base::FilePath GetUserDataDirectory() override {
+  base::FilePath GetUserDataDirectory() override {
     return user_data_directory_.path();
   }
 

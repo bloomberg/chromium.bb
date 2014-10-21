@@ -142,7 +142,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
         oracle_proxy_(oracle),
         delivery_log_(delivery_log) {}
 
-  virtual bool ShouldCaptureFrame(
+  bool ShouldCaptureFrame(
       const gfx::Rect& damage_rect,
       base::TimeTicks present_time,
       scoped_refptr<media::VideoFrame>* storage,
@@ -185,12 +185,12 @@ class ContentCaptureSubscription : public content::NotificationObserver {
       const RenderWidgetHost& source,
       const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
       const CaptureCallback& capture_callback);
-  virtual ~ContentCaptureSubscription();
+  ~ContentCaptureSubscription() override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   void OnTimer();
@@ -229,12 +229,12 @@ void RenderVideoFrame(const SkBitmap& input,
 class WebContentsCaptureMachine : public VideoCaptureMachine {
  public:
   WebContentsCaptureMachine(int render_process_id, int main_render_frame_id);
-  virtual ~WebContentsCaptureMachine();
+  ~WebContentsCaptureMachine() override;
 
   // VideoCaptureMachine overrides.
-  virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-                     const media::VideoCaptureParams& params) override;
-  virtual void Stop(const base::Closure& callback) override;
+  bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
+             const media::VideoCaptureParams& params) override;
+  void Stop(const base::Closure& callback) override;
 
   // Starts a copy from the backing store or the composited surface. Must be run
   // on the UI BrowserThread. |deliver_frame_cb| will be run when the operation

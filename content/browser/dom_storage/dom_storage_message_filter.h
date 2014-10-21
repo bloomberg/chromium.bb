@@ -34,17 +34,17 @@ class DOMStorageMessageFilter
                                    DOMStorageContextWrapper* context);
 
  private:
-  virtual ~DOMStorageMessageFilter();
+  ~DOMStorageMessageFilter() override;
 
   void InitializeInSequence();
   void UninitializeInSequence();
 
   // BrowserMessageFilter implementation
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message Handlers.
   void OnOpenStorageArea(int connection_id, int64 namespace_id,
@@ -63,21 +63,18 @@ class DOMStorageMessageFilter
 
   // DOMStorageContextImpl::EventObserver implementation which
   // sends events back to our renderer process.
-  virtual void OnDOMStorageItemSet(
-      const DOMStorageArea* area,
-      const base::string16& key,
-      const base::string16& new_value,
-      const base::NullableString16& old_value,
-      const GURL& page_url) override;
-  virtual void OnDOMStorageItemRemoved(
-      const DOMStorageArea* area,
-      const base::string16& key,
-      const base::string16& old_value,
-      const GURL& page_url) override;
-  virtual void OnDOMStorageAreaCleared(
-      const DOMStorageArea* area,
-      const GURL& page_url) override;
-  virtual void OnDOMSessionStorageReset(int64 namespace_id) override;
+  void OnDOMStorageItemSet(const DOMStorageArea* area,
+                           const base::string16& key,
+                           const base::string16& new_value,
+                           const base::NullableString16& old_value,
+                           const GURL& page_url) override;
+  void OnDOMStorageItemRemoved(const DOMStorageArea* area,
+                               const base::string16& key,
+                               const base::string16& old_value,
+                               const GURL& page_url) override;
+  void OnDOMStorageAreaCleared(const DOMStorageArea* area,
+                               const GURL& page_url) override;
+  void OnDOMSessionStorageReset(int64 namespace_id) override;
 
   void SendDOMStorageEvent(
       const DOMStorageArea* area,

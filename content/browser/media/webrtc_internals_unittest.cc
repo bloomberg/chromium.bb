@@ -20,8 +20,7 @@ static const std::string kUrl = "u";
 
 class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
  public:
-  virtual void OnUpdate(const std::string& command,
-                        const base::Value* value) override {
+  void OnUpdate(const std::string& command, const base::Value* value) override {
     command_ = command;
     if (value)
       value_.reset(value->DeepCopy());

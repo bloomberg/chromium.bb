@@ -44,24 +44,22 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer);
 
-  virtual ~DownloadFileImpl();
+  ~DownloadFileImpl() override;
 
   // DownloadFile functions.
-  virtual void Initialize(const InitializeCallback& callback) override;
-  virtual void RenameAndUniquify(
-      const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) override;
-  virtual void RenameAndAnnotate(
-      const base::FilePath& full_path,
-      const RenameCompletionCallback& callback) override;
-  virtual void Detach() override;
-  virtual void Cancel() override;
-  virtual base::FilePath FullPath() const override;
-  virtual bool InProgress() const override;
-  virtual int64 CurrentSpeed() const override;
-  virtual bool GetHash(std::string* hash) override;
-  virtual std::string GetHashState() override;
-  virtual void SetClientGuid(const std::string& guid) override;
+  void Initialize(const InitializeCallback& callback) override;
+  void RenameAndUniquify(const base::FilePath& full_path,
+                         const RenameCompletionCallback& callback) override;
+  void RenameAndAnnotate(const base::FilePath& full_path,
+                         const RenameCompletionCallback& callback) override;
+  void Detach() override;
+  void Cancel() override;
+  base::FilePath FullPath() const override;
+  bool InProgress() const override;
+  int64 CurrentSpeed() const override;
+  bool GetHash(std::string* hash) override;
+  std::string GetHashState() override;
+  void SetClientGuid(const std::string& guid) override;
 
  protected:
   // For test class overrides.

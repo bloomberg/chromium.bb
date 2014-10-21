@@ -56,7 +56,7 @@ class TestRequest : public ResourceController {
         url_request_(url_request.Pass()) {
     throttle_->set_controller_for_testing(this);
   }
-  virtual ~TestRequest() {}
+  ~TestRequest() override {}
 
   bool started() const { return started_; }
 
@@ -66,7 +66,7 @@ class TestRequest : public ResourceController {
     started_ = !deferred;
   }
 
-  virtual void Cancel() override {
+  void Cancel() override {
     // Alert the scheduler that the request can be deleted.
     throttle_.reset(0);
   }
@@ -75,9 +75,9 @@ class TestRequest : public ResourceController {
 
  protected:
   // ResourceController interface:
-  virtual void CancelAndIgnore() override {}
-  virtual void CancelWithError(int error_code) override {}
-  virtual void Resume() override { started_ = true; }
+  void CancelAndIgnore() override {}
+  void CancelWithError(int error_code) override {}
+  void Resume() override { started_ = true; }
 
  private:
   bool started_;
@@ -96,7 +96,7 @@ class CancelingTestRequest : public TestRequest {
   }
 
  private:
-  virtual void Resume() override {
+  void Resume() override {
     TestRequest::Resume();
     request_to_cancel_.reset();
   }
@@ -106,8 +106,8 @@ class CancelingTestRequest : public TestRequest {
 
 class FakeResourceContext : public ResourceContext {
  private:
-  virtual net::HostResolver* GetHostResolver() override { return NULL; }
-  virtual net::URLRequestContext* GetRequestContext() override { return NULL; }
+  net::HostResolver* GetHostResolver() override { return NULL; }
+  net::URLRequestContext* GetRequestContext() override { return NULL; }
 };
 
 class FakeResourceMessageFilter : public ResourceMessageFilter {
@@ -125,7 +125,7 @@ class FakeResourceMessageFilter : public ResourceMessageFilter {
   }
 
  private:
-  virtual ~FakeResourceMessageFilter() {}
+  ~FakeResourceMessageFilter() override {}
 
   void GetContexts(const ResourceHostMsg_Request& request,
                    ResourceContext** resource_context,

@@ -31,8 +31,8 @@ class ServiceWorkerRequestInterceptor
  public:
   explicit ServiceWorkerRequestInterceptor(ResourceContext* resource_context)
       : resource_context_(resource_context) {}
-  virtual ~ServiceWorkerRequestInterceptor() {}
-  virtual net::URLRequestJob* MaybeInterceptRequest(
+  ~ServiceWorkerRequestInterceptor() override {}
+  net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     ServiceWorkerRequestHandler* handler =

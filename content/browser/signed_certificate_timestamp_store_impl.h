@@ -20,10 +20,9 @@ class SignedCertificateTimestampStoreImpl
   static SignedCertificateTimestampStoreImpl* GetInstance();
 
   // SignedCertificateTimestampStore implementation:
-  virtual int Store(
-      net::ct::SignedCertificateTimestamp* sct,
-      int render_process_host_id) override;
-  virtual bool Retrieve(
+  int Store(net::ct::SignedCertificateTimestamp* sct,
+            int render_process_host_id) override;
+  bool Retrieve(
       int sct_id,
       scoped_refptr<net::ct::SignedCertificateTimestamp>* sct) override;
 
@@ -31,7 +30,7 @@ class SignedCertificateTimestampStoreImpl
   friend struct DefaultSingletonTraits<SignedCertificateTimestampStoreImpl>;
 
   SignedCertificateTimestampStoreImpl();
-  virtual ~SignedCertificateTimestampStoreImpl();
+  ~SignedCertificateTimestampStoreImpl() override;
 
   RendererDataMemoizingStore<net::ct::SignedCertificateTimestamp> store_;
 

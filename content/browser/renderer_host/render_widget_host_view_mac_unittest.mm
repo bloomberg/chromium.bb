@@ -91,7 +91,7 @@ namespace {
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
-  virtual ~MockRenderWidgetHostDelegate() {}
+  ~MockRenderWidgetHostDelegate() override {}
 };
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {

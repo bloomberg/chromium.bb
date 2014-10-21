@@ -31,10 +31,10 @@ class CONTENT_EXPORT OwnedMailbox : public base::RefCounted<OwnedMailbox>,
   void Destroy();
 
  protected:
-  virtual ~OwnedMailbox();
+  ~OwnedMailbox() override;
 
   // ImageTransportFactoryObserver implementation.
-  virtual void OnLostResources() override;
+  void OnLostResources() override;
 
  private:
   friend class base::RefCounted<OwnedMailbox>;

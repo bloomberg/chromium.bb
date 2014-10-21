@@ -39,9 +39,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
   // BrowserMessageFilter implementation
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnDestruct() const override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation
 
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   // class assumes that Send() can only fail after that when the renderer
   // process has terminated, at which point the whole instance will eventually
   // be destroyed.
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
   // Returns the existing registration handle whose reference count is
   // incremented or newly created one if it doesn't exist.
@@ -66,7 +66,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   }
 
  protected:
-  virtual ~ServiceWorkerDispatcherHost();
+  ~ServiceWorkerDispatcherHost() override;
 
  private:
   friend class BrowserThread;

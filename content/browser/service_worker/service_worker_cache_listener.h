@@ -28,10 +28,10 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
  public:
   ServiceWorkerCacheListener(ServiceWorkerVersion* version,
                              base::WeakPtr<ServiceWorkerContextCore> context);
-  virtual ~ServiceWorkerCacheListener();
+  ~ServiceWorkerCacheListener() override;
 
   // From EmbeddedWorkerInstance::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // The message receiver functions for the CacheStorage API:

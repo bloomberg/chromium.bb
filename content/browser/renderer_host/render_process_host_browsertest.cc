@@ -42,12 +42,12 @@ class RenderProcessHostTest : public ContentBrowserTest,
 
  protected:
   // RenderProcessHostObserver:
-  virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::TerminationStatus status,
-                                   int exit_code) override {
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override {
     ++process_exits_;
   }
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     ++host_destructions_;
   }
 
@@ -120,14 +120,14 @@ class ShellCloser : public RenderProcessHostObserver {
 
  protected:
   // RenderProcessHostObserver:
-  virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::TerminationStatus status,
-                                   int exit_code) override {
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override {
     logging_string_->append("ShellCloser::RenderProcessExited ");
     shell_->Close();
   }
 
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     logging_string_->append("ShellCloser::RenderProcessHostDestroyed ");
   }
 
@@ -144,13 +144,13 @@ class ObserverLogger : public RenderProcessHostObserver {
 
  protected:
   // RenderProcessHostObserver:
-  virtual void RenderProcessExited(RenderProcessHost* host,
-                                   base::TerminationStatus status,
-                                   int exit_code) override {
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override {
     logging_string_->append("ObserverLogger::RenderProcessExited ");
   }
 
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     logging_string_->append("ObserverLogger::RenderProcessHostDestroyed ");
     host_destroyed_ = true;
   }

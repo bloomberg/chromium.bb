@@ -23,14 +23,14 @@ class FontMessageFilter : public ppapi::host::ResourceMessageFilter {
   FontMessageFilter();
 
   // ppapi::host::ResourceMessageFilter implementation.
-  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
  private:
-  virtual ~FontMessageFilter();
+  ~FontMessageFilter() override;
 
   // Message handler.
   int32_t OnHostMsgGetFontFamilies(ppapi::host::HostMessageContext* context);

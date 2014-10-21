@@ -38,21 +38,17 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
     Init(context_wrapper);
   }
 
-  virtual bool Send(IPC::Message* message) override {
-    return helper_->Send(message);
-  }
+  bool Send(IPC::Message* message) override { return helper_->Send(message); }
 
   IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
 
-  virtual void BadMessageReceived() override {
-    ++bad_messages_received_count_;
-  }
+  void BadMessageReceived() override { ++bad_messages_received_count_; }
 
   int bad_messages_received_count_;
 
  protected:
   EmbeddedWorkerTestHelper* helper_;
-  virtual ~TestingServiceWorkerDispatcherHost() {}
+  ~TestingServiceWorkerDispatcherHost() override {}
 };
 
 class ServiceWorkerDispatcherHostTest : public testing::Test {
@@ -131,9 +127,9 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
-  virtual bool AllowServiceWorker(const GURL& scope,
-                                  const GURL& first_party,
-                                  content::ResourceContext* context) override {
+  bool AllowServiceWorker(const GURL& scope,
+                          const GURL& first_party,
+                          content::ResourceContext* context) override {
     return false;
   }
 };

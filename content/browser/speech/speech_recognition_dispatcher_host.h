@@ -34,33 +34,30 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   base::WeakPtr<SpeechRecognitionDispatcherHost> AsWeakPtr();
 
   // SpeechRecognitionEventListener methods.
-  virtual void OnRecognitionStart(int session_id) override;
-  virtual void OnAudioStart(int session_id) override;
-  virtual void OnEnvironmentEstimationComplete(int session_id) override;
-  virtual void OnSoundStart(int session_id) override;
-  virtual void OnSoundEnd(int session_id) override;
-  virtual void OnAudioEnd(int session_id) override;
-  virtual void OnRecognitionEnd(int session_id) override;
-  virtual void OnRecognitionResults(
-      int session_id,
-      const SpeechRecognitionResults& results) override;
-  virtual void OnRecognitionError(
-      int session_id,
-      const SpeechRecognitionError& error) override;
-  virtual void OnAudioLevelsChange(int session_id,
-                                   float volume,
-                                   float noise_volume) override;
+  void OnRecognitionStart(int session_id) override;
+  void OnAudioStart(int session_id) override;
+  void OnEnvironmentEstimationComplete(int session_id) override;
+  void OnSoundStart(int session_id) override;
+  void OnSoundEnd(int session_id) override;
+  void OnAudioEnd(int session_id) override;
+  void OnRecognitionEnd(int session_id) override;
+  void OnRecognitionResults(int session_id,
+                            const SpeechRecognitionResults& results) override;
+  void OnRecognitionError(int session_id,
+                          const SpeechRecognitionError& error) override;
+  void OnAudioLevelsChange(int session_id,
+                           float volume,
+                           float noise_volume) override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
 
-  virtual void OnChannelClosing() override;
+  void OnChannelClosing() override;
 
  private:
-  virtual ~SpeechRecognitionDispatcherHost();
+  ~SpeechRecognitionDispatcherHost() override;
 
   void OnStartRequest(
       const SpeechRecognitionHostMsg_StartRequest_Params& params);

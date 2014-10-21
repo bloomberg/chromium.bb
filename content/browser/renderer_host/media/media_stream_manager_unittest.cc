@@ -55,9 +55,9 @@ typedef media::FakeAudioManager AudioManagerPlatform;
 class MockAudioManager : public AudioManagerPlatform {
  public:
   MockAudioManager() : AudioManagerPlatform(&fake_audio_log_factory_) {}
-  virtual ~MockAudioManager() {}
+  ~MockAudioManager() override {}
 
-  virtual void GetAudioInputDeviceNames(
+  void GetAudioInputDeviceNames(
       media::AudioDeviceNames* device_names) override {
     DCHECK(device_names->empty());
     if (HasAudioInputDevices()) {

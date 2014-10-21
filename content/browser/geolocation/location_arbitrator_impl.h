@@ -37,15 +37,15 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
 
   explicit LocationArbitratorImpl(const LocationUpdateCallback& callback);
-  virtual ~LocationArbitratorImpl();
+  ~LocationArbitratorImpl() override;
 
   static GURL DefaultNetworkProviderURL();
 
   // LocationArbitrator
-  virtual void StartProviders(bool use_high_accuracy) override;
-  virtual void StopProviders() override;
-  virtual void OnPermissionGranted() override;
-  virtual bool HasPermissionBeenGranted() const override;
+  void StartProviders(bool use_high_accuracy) override;
+  void StopProviders() override;
+  void OnPermissionGranted() override;
+  bool HasPermissionBeenGranted() const override;
 
  protected:
   AccessTokenStore* GetAccessTokenStore();

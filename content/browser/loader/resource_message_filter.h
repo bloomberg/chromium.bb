@@ -51,8 +51,8 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
                         const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelClosing() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void GetContexts(const ResourceHostMsg_Request& request,
                    ResourceContext** resource_context,
@@ -84,7 +84,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
  protected:
   // Protected destructor so that we can be overriden in tests.
-  virtual ~ResourceMessageFilter();
+  ~ResourceMessageFilter() override;
 
  private:
   // The ID of the child process.

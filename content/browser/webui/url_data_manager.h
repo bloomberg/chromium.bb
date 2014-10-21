@@ -26,7 +26,7 @@ class WebUIDataSource;
 class CONTENT_EXPORT URLDataManager : public base::SupportsUserData::Data {
  public:
   explicit URLDataManager(BrowserContext* browser_context);
-  virtual ~URLDataManager();
+  ~URLDataManager() override;
 
   // Adds a DataSource to the collection of data sources. This *must* be invoked
   // on the UI thread.

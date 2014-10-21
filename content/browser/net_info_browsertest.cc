@@ -14,7 +14,7 @@
 
 class NetInfoBrowserTest : public content::ContentBrowserTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(jkarlin): Once NetInfo is enabled on all platforms remove this
     // switch.
     command_line->AppendSwitch(switches::kEnableNetworkInformation);
@@ -30,7 +30,7 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
   }
 #endif
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
     base::RunLoop().RunUntilIdle();
   }

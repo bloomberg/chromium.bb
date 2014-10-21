@@ -34,49 +34,43 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
       : dictionary_(dictionary),
         in_aux_attributes_(false) { }
 
-  virtual void AddInt64(const char* name, int64 value) override {
+  void AddInt64(const char* name, int64 value) override {
     if (in_aux_attributes_)
       dictionary_->SetDouble(name, value);
   }
 
-  virtual void AddInt(const char* name, int value) override {
+  void AddInt(const char* name, int value) override {
     if (in_aux_attributes_)
       dictionary_->SetInteger(name, value);
   }
 
-  virtual void AddString(const char* name, const std::string& value) override {
+  void AddString(const char* name, const std::string& value) override {
     if (in_aux_attributes_)
       dictionary_->SetString(name, value);
   }
 
-  virtual void AddBool(const char* name, bool value) override {
+  void AddBool(const char* name, bool value) override {
     if (in_aux_attributes_)
       dictionary_->SetBoolean(name, value);
   }
 
-  virtual void AddTimeDeltaInSecondsF(const char* name,
-                                      const base::TimeDelta& value) override {
+  void AddTimeDeltaInSecondsF(const char* name,
+                              const base::TimeDelta& value) override {
     if (in_aux_attributes_)
       dictionary_->SetDouble(name, value.InSecondsF());
   }
 
-  virtual void BeginGPUDevice() override {
-  }
+  void BeginGPUDevice() override {}
 
-  virtual void EndGPUDevice() override {
-  }
+  void EndGPUDevice() override {}
 
-  virtual void BeginVideoEncodeAcceleratorSupportedProfile() override {}
+  void BeginVideoEncodeAcceleratorSupportedProfile() override {}
 
-  virtual void EndVideoEncodeAcceleratorSupportedProfile() override {}
+  void EndVideoEncodeAcceleratorSupportedProfile() override {}
 
-  virtual void BeginAuxAttributes() override {
-    in_aux_attributes_ = true;
-  }
+  void BeginAuxAttributes() override { in_aux_attributes_ = true; }
 
-  virtual void EndAuxAttributes() override {
-    in_aux_attributes_ = false;
-  }
+  void EndAuxAttributes() override { in_aux_attributes_ = false; }
 
  private:
   base::DictionaryValue* dictionary_;

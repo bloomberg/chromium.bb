@@ -42,22 +42,21 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
                        const base::FilePath& profile_data_directory,
                        bool in_process,
                        bool external_plugin);
-  virtual ~BrowserPpapiHostImpl();
+  ~BrowserPpapiHostImpl() override;
 
   // BrowserPpapiHost.
-  virtual ppapi::host::PpapiHost* GetPpapiHost() override;
-  virtual base::ProcessHandle GetPluginProcessHandle() const override;
-  virtual bool IsValidInstance(PP_Instance instance) const override;
-  virtual bool GetRenderFrameIDsForInstance(PP_Instance instance,
-                                            int* render_process_id,
-                                            int* render_frame_id) const
-      override;
-  virtual const std::string& GetPluginName() override;
-  virtual const base::FilePath& GetPluginPath() override;
-  virtual const base::FilePath& GetProfileDataDirectory() override;
-  virtual GURL GetDocumentURLForInstance(PP_Instance instance) override;
-  virtual GURL GetPluginURLForInstance(PP_Instance instance) override;
-  virtual void SetOnKeepaliveCallback(
+  ppapi::host::PpapiHost* GetPpapiHost() override;
+  base::ProcessHandle GetPluginProcessHandle() const override;
+  bool IsValidInstance(PP_Instance instance) const override;
+  bool GetRenderFrameIDsForInstance(PP_Instance instance,
+                                    int* render_process_id,
+                                    int* render_frame_id) const override;
+  const std::string& GetPluginName() override;
+  const base::FilePath& GetPluginPath() override;
+  const base::FilePath& GetProfileDataDirectory() override;
+  GURL GetDocumentURLForInstance(PP_Instance instance) override;
+  GURL GetPluginURLForInstance(PP_Instance instance) override;
+  void SetOnKeepaliveCallback(
       const BrowserPpapiHost::OnKeepaliveCallback& callback) override;
 
   void set_plugin_process_handle(base::ProcessHandle handle) {
@@ -93,12 +92,12 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
                       BrowserPpapiHostImpl* browser_ppapi_host_impl);
 
     // IPC::MessageFilter.
-    virtual bool OnMessageReceived(const IPC::Message& msg) override;
+    bool OnMessageReceived(const IPC::Message& msg) override;
 
     void OnHostDestroyed();
 
    private:
-    virtual ~HostMessageFilter();
+    ~HostMessageFilter() override;
 
     void OnKeepalive();
     void OnHostMsgLogInterfaceUsage(int hash) const;

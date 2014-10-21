@@ -63,9 +63,9 @@ class LoadStopNotificationObserver : public WindowedNotificationObserver {
         session_index_(-1),
         controller_(NULL) {
   }
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override {
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override {
     if (type == NOTIFICATION_LOAD_STOP) {
       const Details<LoadNotificationDetails> load_details(details);
       url_ = load_details->url;
@@ -93,7 +93,7 @@ class NavigateOnCommitObserver : public WebContentsObserver {
   }
 
   // WebContentsObserver:
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override {
     if (!done_) {
       done_ = true;
@@ -114,8 +114,7 @@ class RenderViewSizeDelegate : public WebContentsDelegate {
   }
 
   // WebContentsDelegate:
-  virtual gfx::Size GetSizeForNewRenderView(
-      WebContents* web_contents) const override {
+  gfx::Size GetSizeForNewRenderView(WebContents* web_contents) const override {
     gfx::Size size(web_contents->GetContainerBounds().size());
     size.Enlarge(size_insets_.width(), size_insets_.height());
     return size;
@@ -134,11 +133,11 @@ class RenderViewSizeObserver : public WebContentsObserver {
   }
 
   // WebContentsObserver:
-  virtual void RenderViewCreated(RenderViewHost* rvh) override {
+  void RenderViewCreated(RenderViewHost* rvh) override {
     rwhv_create_size_ = rvh->GetView()->GetViewBounds().size();
   }
 
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       NavigationController::ReloadType reload_type) override {
     ResizeWebContentsView(shell_, wcv_new_size_, false);
@@ -160,8 +159,8 @@ class LoadingStateChangedDelegate : public WebContentsDelegate {
   }
 
   // WebContentsDelegate:
-  virtual void LoadingStateChanged(WebContents* contents,
-                                   bool to_different_document) override {
+  void LoadingStateChanged(WebContents* contents,
+                           bool to_different_document) override {
       loadingStateChangedCount_++;
       if (to_different_document)
         loadingStateToDifferentDocumentCount_++;
@@ -385,7 +384,7 @@ class RenderFrameCreatedObserver : public WebContentsObserver {
         last_rfh_(NULL) {
   }
 
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     last_rfh_ = render_frame_host;
   }
 
@@ -489,22 +488,21 @@ struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
   }
 
   // WebContentsDelegate:
-  virtual void LoadProgressChanged(WebContents* source,
-                                   double progress) override {
+  void LoadProgressChanged(WebContents* source, double progress) override {
     EXPECT_TRUE(did_start_loading);
     EXPECT_FALSE(did_stop_loading);
     progresses.push_back(progress);
   }
 
   // WebContentsObserver:
-  virtual void DidStartLoading(RenderViewHost* render_view_host) override {
+  void DidStartLoading(RenderViewHost* render_view_host) override {
     EXPECT_FALSE(did_start_loading);
     EXPECT_EQ(0U, progresses.size());
     EXPECT_FALSE(did_stop_loading);
     did_start_loading = true;
   }
 
-  virtual void DidStopLoading(RenderViewHost* render_view_host) override {
+  void DidStopLoading(RenderViewHost* render_view_host) override {
     EXPECT_TRUE(did_start_loading);
     EXPECT_GE(progresses.size(), 1U);
     EXPECT_FALSE(did_stop_loading);
@@ -543,7 +541,7 @@ struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
       : WebContentsObserver(shell->web_contents()),
         did_fist_visually_non_empty_paint_(false) {}
 
-  virtual void DidFirstVisuallyNonEmptyPaint() override {
+  void DidFirstVisuallyNonEmptyPaint() override {
     did_fist_visually_non_empty_paint_ = true;
     on_did_first_visually_non_empty_paint_.Run();
   }

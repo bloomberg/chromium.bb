@@ -22,10 +22,10 @@ class CONTENT_EXPORT PepperPrintingHost : public ppapi::host::ResourceHost {
       PP_Instance instance,
       PP_Resource resource,
       scoped_ptr<PepperPrintSettingsManager> print_settings_manager);
-  virtual ~PepperPrintingHost();
+  ~PepperPrintingHost() override;
 
   // ppapi::host::ResourceHost implementation.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

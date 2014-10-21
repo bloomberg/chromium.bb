@@ -97,7 +97,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   }
 
   // ContentBrowserTest:
-  virtual void SetUpCommandLine(CommandLine* cmd) override {
+  void SetUpCommandLine(CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
     // TODO(rbyers): Remove this switch once touch-action ships.

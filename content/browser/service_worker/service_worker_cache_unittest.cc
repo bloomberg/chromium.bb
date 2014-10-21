@@ -286,7 +286,7 @@ class ServiceWorkerCacheTest : public testing::Test {
 
 class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
                                 public testing::WithParamInterface<bool> {
-  virtual bool MemoryOnly() override { return !GetParam(); }
+  bool MemoryOnly() override { return !GetParam(); }
 };
 
 TEST_P(ServiceWorkerCacheTestP, PutNoBody) {

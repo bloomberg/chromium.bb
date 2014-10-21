@@ -19,9 +19,9 @@ const int kDefaultSamplePeriodMs = 50;
 class TestPowerDataProvider : public PowerDataProvider {
  public:
   TestPowerDataProvider(int count) : num_events_to_send_(count) {}
-  virtual ~TestPowerDataProvider() {}
+  ~TestPowerDataProvider() override {}
 
-  virtual PowerEventVector GetData() override {
+  PowerEventVector GetData() override {
     PowerEventVector events;
     if (num_events_to_send_ == 0)
       return events;
@@ -36,11 +36,11 @@ class TestPowerDataProvider : public PowerDataProvider {
     return events;
   }
 
-  virtual base::TimeDelta GetSamplingRate() override {
+  base::TimeDelta GetSamplingRate() override {
     return base::TimeDelta::FromMilliseconds(kDefaultSamplePeriodMs);
   }
 
-  virtual AccuracyLevel GetAccuracyLevel() override { return High; }
+  AccuracyLevel GetAccuracyLevel() override { return High; }
 
  private:
   int num_events_to_send_;
@@ -52,9 +52,9 @@ class TestPowerProfilerObserver : public PowerProfilerObserver {
   TestPowerProfilerObserver()
       : valid_event_count_(0),
         total_num_events_received_(0) {}
-  virtual ~TestPowerProfilerObserver() {}
+  ~TestPowerProfilerObserver() override {}
 
-  virtual void OnPowerEvent(const PowerEventVector& events) override {
+  void OnPowerEvent(const PowerEventVector& events) override {
     if (IsValidEvent(events[0]))
       ++valid_event_count_;
 

@@ -18,17 +18,15 @@ class FakeBatteryManager : public BatteryStatusManager {
   explicit FakeBatteryManager(
       const BatteryStatusService::BatteryUpdateCallback& callback)
       : callback_(callback), start_invoked_count_(0), stop_invoked_count_(0) {}
-  virtual ~FakeBatteryManager() { }
+  ~FakeBatteryManager() override {}
 
   // Methods from Battery Status Manager
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
     start_invoked_count_++;
     return true;
   }
 
-  virtual void StopListeningBatteryChange() override {
-    stop_invoked_count_++;
-  }
+  void StopListeningBatteryChange() override { stop_invoked_count_++; }
 
   void InvokeUpdateCallback(const blink::WebBatteryStatus& status) {
     callback_.Run(status);

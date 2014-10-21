@@ -56,18 +56,18 @@ class RendererOverridesHandlerTest : public ContentBrowserTest,
   scoped_refptr<DevToolsAgentHost> agent_host_;
 
  private:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     agent_host_ = DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
     agent_host_->AttachClient(this);
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     agent_host_->DetachClient();
     agent_host_ = NULL;
   }
 
-  virtual void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host, const std::string& message) override {
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override {
     scoped_ptr<base::DictionaryValue> root(
         static_cast<base::DictionaryValue*>(base::JSONReader::Read(message)));
     base::DictionaryValue* result;
@@ -76,8 +76,7 @@ class RendererOverridesHandlerTest : public ContentBrowserTest,
     base::MessageLoop::current()->QuitNow();
   }
 
-  virtual void AgentHostClosed(
-      DevToolsAgentHost* agent_host, bool replaced) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
     EXPECT_TRUE(false);
   }
 };
@@ -99,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
 class CaptureScreenshotTest : public RendererOverridesHandlerTest {
  private:
 #if !defined(OS_ANDROID)
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
   }
 #endif

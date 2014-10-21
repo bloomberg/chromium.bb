@@ -17,9 +17,9 @@ class VibrationMessageFilter : public BrowserMessageFilter {
   VibrationMessageFilter();
 
  private:
-  virtual ~VibrationMessageFilter();
+  ~VibrationMessageFilter() override;
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnVibrate(int64 milliseconds);
   void OnCancelVibration();

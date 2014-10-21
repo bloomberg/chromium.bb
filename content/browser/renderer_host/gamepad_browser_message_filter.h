@@ -22,18 +22,16 @@ class GamepadBrowserMessageFilter :
   GamepadBrowserMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // GamepadConsumer implementation.
-  virtual void OnGamepadConnected(
-      unsigned index,
-      const blink::WebGamepad& gamepad) override;
-  virtual void OnGamepadDisconnected(
-      unsigned index,
-      const blink::WebGamepad& gamepad) override;
+  void OnGamepadConnected(unsigned index,
+                          const blink::WebGamepad& gamepad) override;
+  void OnGamepadDisconnected(unsigned index,
+                             const blink::WebGamepad& gamepad) override;
 
  private:
-  virtual ~GamepadBrowserMessageFilter();
+  ~GamepadBrowserMessageFilter() override;
 
   void OnGamepadStartPolling(base::SharedMemoryHandle* renderer_handle);
   void OnGamepadStopPolling();

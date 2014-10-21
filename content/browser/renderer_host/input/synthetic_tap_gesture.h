@@ -16,9 +16,9 @@ namespace content {
 class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
  public:
   explicit SyntheticTapGesture(const SyntheticTapGestureParams& params);
-  virtual ~SyntheticTapGesture();
+  ~SyntheticTapGesture() override;
 
-  virtual SyntheticGesture::Result ForwardInputEvents(
+  SyntheticGesture::Result ForwardInputEvents(
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
 

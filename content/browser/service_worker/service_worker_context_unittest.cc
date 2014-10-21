@@ -77,9 +77,9 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
   explicit RejectInstallTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
-  virtual void OnInstallEvent(int embedded_worker_id,
-                              int request_id,
-                              int active_version_id) override {
+  void OnInstallEvent(int embedded_worker_id,
+                      int request_id,
+                      int active_version_id) override {
     SimulateSend(
         new ServiceWorkerHostMsg_InstallEventFinished(
             embedded_worker_id, request_id,
@@ -92,8 +92,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
   explicit RejectActivateTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
-  virtual void OnActivateEvent(int embedded_worker_id,
-                               int request_id) override {
+  void OnActivateEvent(int embedded_worker_id, int request_id) override {
     SimulateSend(
         new ServiceWorkerHostMsg_ActivateEventFinished(
             embedded_worker_id, request_id,

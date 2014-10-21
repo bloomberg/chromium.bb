@@ -37,7 +37,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
                               PP_Instance instance,
                               PP_Resource resource,
                               PP_FileSystemType type);
-  virtual ~PepperFileSystemBrowserHost();
+  ~PepperFileSystemBrowserHost() override;
 
   // Opens the PepperFileSystemBrowserHost to use an existing file system at the
   // given |root_url|. The file system at |root_url| must already be opened and
@@ -46,10 +46,10 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   void OpenExisting(const GURL& root_url, const base::Closure& callback);
 
   // ppapi::host::ResourceHost overrides.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
-  virtual bool IsFileSystemHost() override;
+  bool IsFileSystemHost() override;
 
   // Supports FileRefs direct access on the host side.
   PP_FileSystemType GetType() const { return type_; }

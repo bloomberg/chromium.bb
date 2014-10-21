@@ -21,14 +21,13 @@ class WebRTCInternalsMessageHandler : public WebUIMessageHandler,
                                       public WebRTCInternalsUIObserver{
  public:
   WebRTCInternalsMessageHandler();
-  virtual ~WebRTCInternalsMessageHandler();
+  ~WebRTCInternalsMessageHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // WebRTCInternalsUIObserver override.
-  virtual void OnUpdate(const std::string& command,
-                        const base::Value* args) override;
+  void OnUpdate(const std::string& command, const base::Value* args) override;
 
  private:
   // Javascript message handler.

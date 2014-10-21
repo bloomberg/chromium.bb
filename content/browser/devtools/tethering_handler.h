@@ -20,7 +20,7 @@ class TetheringHandler : public DevToolsProtocol::Handler {
  public:
   TetheringHandler(DevToolsHttpHandlerDelegate* delegate,
                    scoped_refptr<base::MessageLoopProxy> message_loop_proxy);
-  virtual ~TetheringHandler();
+  ~TetheringHandler() override;
 
  private:
   class TetheringImpl;

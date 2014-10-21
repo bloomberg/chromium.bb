@@ -37,7 +37,7 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
                          PP_Instance instance,
                          PP_Resource resource);
 
-  virtual ~PepperNetworkProxyHost();
+  ~PepperNetworkProxyHost() override;
 
  private:
   // We retrieve the appropriate URLRequestContextGetter and whether this API
@@ -55,7 +55,7 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
   void DidGetUIThreadData(const UIThreadData&);
 
   // ResourceHost implementation.
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 

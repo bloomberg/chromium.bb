@@ -59,13 +59,13 @@ class CONTENT_EXPORT AppCacheInterceptor
 
  protected:
   // Override from net::URLRequest::Interceptor:
-  virtual net::URLRequestJob* MaybeIntercept(
+  net::URLRequestJob* MaybeIntercept(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) override;
-  virtual net::URLRequestJob* MaybeInterceptResponse(
+  net::URLRequestJob* MaybeInterceptResponse(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) override;
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
+  net::URLRequestJob* MaybeInterceptRedirect(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       const GURL& location) override;
@@ -75,7 +75,7 @@ class CONTENT_EXPORT AppCacheInterceptor
   class StartInterceptor;
 
   AppCacheInterceptor();
-  virtual ~AppCacheInterceptor();
+  ~AppCacheInterceptor() override;
 
   static void SetHandler(net::URLRequest* request,
                          AppCacheRequestHandler* handler);

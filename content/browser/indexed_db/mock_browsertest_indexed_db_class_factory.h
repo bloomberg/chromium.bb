@@ -30,10 +30,9 @@ enum FailMethod {
 class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
  public:
   MockBrowserTestIndexedDBClassFactory();
-  virtual ~MockBrowserTestIndexedDBClassFactory();
-  virtual LevelDBTransaction* CreateLevelDBTransaction(
-      LevelDBDatabase* db) override;
-  virtual LevelDBIteratorImpl* CreateIteratorImpl(
+  ~MockBrowserTestIndexedDBClassFactory() override;
+  LevelDBTransaction* CreateLevelDBTransaction(LevelDBDatabase* db) override;
+  LevelDBIteratorImpl* CreateIteratorImpl(
       scoped_ptr<leveldb::Iterator> iterator) override;
 
   void FailOperation(FailClass failure_class,

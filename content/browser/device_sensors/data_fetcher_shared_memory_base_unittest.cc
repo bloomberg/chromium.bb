@@ -32,7 +32,7 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
         light_buffer_(NULL),
         motion_buffer_(NULL),
         orientation_buffer_(NULL) {}
-  virtual ~FakeDataFetcher() { }
+  ~FakeDataFetcher() override {}
 
   bool Init(ConsumerType consumer_type, void* buffer) {
     EXPECT_TRUE(buffer);
@@ -155,9 +155,9 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
 class FakeNonPollingDataFetcher : public FakeDataFetcher {
  public:
   FakeNonPollingDataFetcher() { }
-  virtual ~FakeNonPollingDataFetcher() { }
+  ~FakeNonPollingDataFetcher() override {}
 
-  virtual bool Start(ConsumerType consumer_type, void* buffer) override {
+  bool Start(ConsumerType consumer_type, void* buffer) override {
     Init(consumer_type, buffer);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
@@ -178,7 +178,7 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual bool Stop(ConsumerType consumer_type) override {
+  bool Stop(ConsumerType consumer_type) override {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
         stop_motion_.Signal();
@@ -195,14 +195,12 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual void Fetch(unsigned consumer_bitmask) override {
+  void Fetch(unsigned consumer_bitmask) override {
     FAIL() << "fetch should not be called, "
         << "because this is a non-polling fetcher";
   }
 
-  virtual FetcherType GetType() const override {
-    return FakeDataFetcher::GetType();
-  }
+  FetcherType GetType() const override { return FakeDataFetcher::GetType(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNonPollingDataFetcher);
@@ -211,9 +209,9 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
 class FakePollingDataFetcher : public FakeDataFetcher {
  public:
   FakePollingDataFetcher() { }
-  virtual ~FakePollingDataFetcher() { }
+  ~FakePollingDataFetcher() override {}
 
-  virtual bool Start(ConsumerType consumer_type, void* buffer) override {
+  bool Start(ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
 
     Init(consumer_type, buffer);
@@ -233,7 +231,7 @@ class FakePollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual bool Stop(ConsumerType consumer_type) override {
+  bool Stop(ConsumerType consumer_type) override {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
 
     switch (consumer_type) {
@@ -252,7 +250,7 @@ class FakePollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual void Fetch(unsigned consumer_bitmask) override {
+  void Fetch(unsigned consumer_bitmask) override {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
     EXPECT_TRUE(consumer_bitmask & CONSUMER_TYPE_ORIENTATION ||
                 consumer_bitmask & CONSUMER_TYPE_MOTION ||
@@ -266,9 +264,7 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       UpdateLight();
   }
 
-  virtual FetcherType GetType() const override {
-    return FETCHER_TYPE_POLLING_CALLBACK;
-  }
+  FetcherType GetType() const override { return FETCHER_TYPE_POLLING_CALLBACK; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePollingDataFetcher);
@@ -277,9 +273,9 @@ class FakePollingDataFetcher : public FakeDataFetcher {
 class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
  public:
   FakeZeroDelayPollingDataFetcher() { }
-  virtual ~FakeZeroDelayPollingDataFetcher() { }
+  ~FakeZeroDelayPollingDataFetcher() override {}
 
-  virtual bool Start(ConsumerType consumer_type, void* buffer) override {
+  bool Start(ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
 
     Init(consumer_type, buffer);
@@ -299,7 +295,7 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual bool Stop(ConsumerType consumer_type) override {
+  bool Stop(ConsumerType consumer_type) override {
     EXPECT_TRUE(base::MessageLoop::current() == GetPollingMessageLoop());
 
     switch (consumer_type) {
@@ -318,13 +314,11 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual void Fetch(unsigned consumer_bitmask) override {
+  void Fetch(unsigned consumer_bitmask) override {
     FAIL() << "fetch should not be called";
   }
 
-  virtual FetcherType GetType() const override {
-    return FETCHER_TYPE_SEPARATE_THREAD;
-  }
+  FetcherType GetType() const override { return FETCHER_TYPE_SEPARATE_THREAD; }
 
   bool IsPollingTimerRunningForTesting() const {
     return FakeDataFetcher::IsPollingTimerRunningForTesting();

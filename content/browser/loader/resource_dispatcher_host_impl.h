@@ -71,16 +71,16 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       public ResourceLoaderDelegate {
  public:
   ResourceDispatcherHostImpl();
-  virtual ~ResourceDispatcherHostImpl();
+  ~ResourceDispatcherHostImpl() override;
 
   // Returns the current ResourceDispatcherHostImpl. May return NULL if it
   // hasn't been created yet.
   static ResourceDispatcherHostImpl* Get();
 
   // ResourceDispatcherHost implementation:
-  virtual void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
-  virtual void SetAllowCrossOriginAuthPrompt(bool value) override;
-  virtual DownloadInterruptReason BeginDownload(
+  void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
+  void SetAllowCrossOriginAuthPrompt(bool value) override;
+  DownloadInterruptReason BeginDownload(
       scoped_ptr<net::URLRequest> request,
       const Referrer& referrer,
       bool is_content_initiated,
@@ -91,10 +91,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       scoped_ptr<DownloadSaveInfo> save_info,
       uint32 download_id,
       const DownloadStartedCallback& started_callback) override;
-  virtual void ClearLoginDelegateForRequest(net::URLRequest* request) override;
-  virtual void BlockRequestsForRoute(int child_id, int route_id) override;
-  virtual void ResumeBlockedRequestsForRoute(
-      int child_id, int route_id) override;
+  void ClearLoginDelegateForRequest(net::URLRequest* request) override;
+  void BlockRequestsForRoute(int child_id, int route_id) override;
+  void ResumeBlockedRequestsForRoute(int child_id, int route_id) override;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -295,16 +294,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   friend class ResourceMessageDelegate;
 
   // ResourceLoaderDelegate implementation:
-  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+  ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) override;
-  virtual bool HandleExternalProtocol(ResourceLoader* loader,
-                                      const GURL& url) override;
-  virtual void DidStartRequest(ResourceLoader* loader) override;
-  virtual void DidReceiveRedirect(ResourceLoader* loader,
-                                  const GURL& new_url) override;
-  virtual void DidReceiveResponse(ResourceLoader* loader) override;
-  virtual void DidFinishLoading(ResourceLoader* loader) override;
+  bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;
+  void DidStartRequest(ResourceLoader* loader) override;
+  void DidReceiveRedirect(ResourceLoader* loader, const GURL& new_url) override;
+  void DidReceiveResponse(ResourceLoader* loader) override;
+  void DidFinishLoading(ResourceLoader* loader) override;
 
   // An init helper that runs on the IO thread.
   void OnInit();

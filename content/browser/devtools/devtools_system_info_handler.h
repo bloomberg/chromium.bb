@@ -14,7 +14,7 @@ class DevToolsSystemInfoHandler
     : public DevToolsProtocol::Handler {
  public:
   DevToolsSystemInfoHandler();
-  virtual ~DevToolsSystemInfoHandler();
+  ~DevToolsSystemInfoHandler() override;
 
  private:
   scoped_refptr<DevToolsProtocol::Response> OnGetInfo(

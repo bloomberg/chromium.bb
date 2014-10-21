@@ -40,8 +40,8 @@ class AppCacheResponseTest : public testing::Test {
         : loaded_info_id_(0), test_(test) {
     }
 
-    virtual void OnResponseInfoLoaded(AppCacheResponseInfo* info,
-                                      int64 response_id) override {
+    void OnResponseInfoLoaded(AppCacheResponseInfo* info,
+                              int64 response_id) override {
       loaded_info_ = info;
       loaded_info_id_ = response_id;
       test_->ScheduleNextTask();

@@ -25,7 +25,7 @@ class ProfilerControllerImpl : public ProfilerController {
   // Normally instantiated when the child process is launched. Only one instance
   // should be created per process.
   ProfilerControllerImpl();
-  virtual ~ProfilerControllerImpl();
+  ~ProfilerControllerImpl() override;
 
   // Notify the |subscriber_| that it should expect at least |pending_processes|
   // additional calls to OnProfilerDataCollected().  OnPendingProcess() may be
@@ -42,9 +42,9 @@ class ProfilerControllerImpl : public ProfilerController {
       int process_type);
 
   // ProfilerController implementation:
-  virtual void Register(ProfilerSubscriber* subscriber) override;
-  virtual void Unregister(const ProfilerSubscriber* subscriber) override;
-  virtual void GetProfilerData(int sequence_number) override;
+  void Register(ProfilerSubscriber* subscriber) override;
+  void Unregister(const ProfilerSubscriber* subscriber) override;
+  void GetProfilerData(int sequence_number) override;
 
  private:
   friend struct DefaultSingletonTraits<ProfilerControllerImpl>;

@@ -28,25 +28,25 @@ class DummyServerSocket : public net::ServerSocket {
   DummyServerSocket() {}
 
   // net::ServerSocket "implementation"
-  virtual int Listen(const net::IPEndPoint& address, int backlog) override {
+  int Listen(const net::IPEndPoint& address, int backlog) override {
     return net::OK;
   }
 
-  virtual int ListenWithAddressAndPort(const std::string& ip_address,
-                                       int port,
-                                       int backlog) override {
+  int ListenWithAddressAndPort(const std::string& ip_address,
+                               int port,
+                               int backlog) override {
     return net::OK;
   }
 
-  virtual int GetLocalAddress(net::IPEndPoint* address) const override {
+  int GetLocalAddress(net::IPEndPoint* address) const override {
     net::IPAddressNumber number;
     EXPECT_TRUE(net::ParseIPLiteralToNumber("127.0.0.1", &number));
     *address = net::IPEndPoint(number, kDummyPort);
     return net::OK;
   }
 
-  virtual int Accept(scoped_ptr<net::StreamSocket>* socket,
-                     const net::CompletionCallback& callback) override {
+  int Accept(scoped_ptr<net::StreamSocket>* socket,
+             const net::CompletionCallback& callback) override {
     return net::ERR_IO_PENDING;
   }
 };
@@ -60,13 +60,13 @@ class DummyServerSocketFactory
         quit_closure_1_(quit_closure_1),
         quit_closure_2_(quit_closure_2) {}
 
-  virtual ~DummyServerSocketFactory() {
+  ~DummyServerSocketFactory() override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, quit_closure_2_);
   }
 
  private:
-  virtual scoped_ptr<net::ServerSocket> Create() const override {
+  scoped_ptr<net::ServerSocket> Create() const override {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, quit_closure_1_);
     return scoped_ptr<net::ServerSocket>(new DummyServerSocket());
@@ -78,15 +78,13 @@ class DummyServerSocketFactory
 
 class DummyDelegate : public DevToolsHttpHandlerDelegate {
  public:
-  virtual std::string GetDiscoveryPageHTML() override { return std::string(); }
+  std::string GetDiscoveryPageHTML() override { return std::string(); }
 
-  virtual bool BundlesFrontendResources() override { return true; }
+  bool BundlesFrontendResources() override { return true; }
 
-  virtual base::FilePath GetDebugFrontendDir() override {
-    return base::FilePath();
-  }
+  base::FilePath GetDebugFrontendDir() override { return base::FilePath(); }
 
-  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
+  scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) override {
     return scoped_ptr<net::StreamListenSocket>();

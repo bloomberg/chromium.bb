@@ -24,10 +24,10 @@ class PepperMessageFilter : public BrowserMessageFilter {
   PepperMessageFilter();
 
   // BrowserMessageFilter methods.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~PepperMessageFilter();
+  ~PepperMessageFilter() override;
 
  private:
   void OnX509CertificateParseDER(const std::vector<char>& der,

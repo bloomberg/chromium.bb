@@ -71,29 +71,29 @@ class CONTENT_EXPORT VideoCaptureHost
   explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() override;
-  virtual void OnDestruct() const override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelClosing() override;
+  void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // VideoCaptureControllerEventHandler implementation.
-  virtual void OnError(const VideoCaptureControllerID& id) override;
-  virtual void OnBufferCreated(const VideoCaptureControllerID& id,
-                               base::SharedMemoryHandle handle,
-                               int length,
-                               int buffer_id) override;
-  virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
-                                 int buffer_id) override;
-  virtual void OnBufferReady(const VideoCaptureControllerID& id,
-                             int buffer_id,
-                             const media::VideoCaptureFormat& format,
-                             const gfx::Rect& visible_rect,
-                             base::TimeTicks timestamp) override;
-  virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
-                                    int buffer_id,
-                                    const gpu::MailboxHolder& mailbox_holder,
-                                    const media::VideoCaptureFormat& format,
-                                    base::TimeTicks timestamp) override;
-  virtual void OnEnded(const VideoCaptureControllerID& id) override;
+  void OnError(const VideoCaptureControllerID& id) override;
+  void OnBufferCreated(const VideoCaptureControllerID& id,
+                       base::SharedMemoryHandle handle,
+                       int length,
+                       int buffer_id) override;
+  void OnBufferDestroyed(const VideoCaptureControllerID& id,
+                         int buffer_id) override;
+  void OnBufferReady(const VideoCaptureControllerID& id,
+                     int buffer_id,
+                     const media::VideoCaptureFormat& format,
+                     const gfx::Rect& visible_rect,
+                     base::TimeTicks timestamp) override;
+  void OnMailboxBufferReady(const VideoCaptureControllerID& id,
+                            int buffer_id,
+                            const gpu::MailboxHolder& mailbox_holder,
+                            const media::VideoCaptureFormat& format,
+                            base::TimeTicks timestamp) override;
+  void OnEnded(const VideoCaptureControllerID& id) override;
 
  private:
   friend class BrowserThread;
@@ -101,7 +101,7 @@ class CONTENT_EXPORT VideoCaptureHost
   friend class MockVideoCaptureHost;
   friend class VideoCaptureHostTest;
 
-  virtual ~VideoCaptureHost();
+  ~VideoCaptureHost() override;
 
   // IPC message: Start capture on the VideoCaptureDevice referenced by
   // |session_id|. |device_id| is an id created by VideoCaptureMessageFilter

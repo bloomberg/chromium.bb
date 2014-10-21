@@ -30,10 +30,10 @@ class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
                             scoped_refptr<WebRTCIdentityStore> identity_store);
 
  protected:
-  virtual ~WebRTCIdentityServiceHost();
+  ~WebRTCIdentityServiceHost() override;
 
   // content::BrowserMessageFilter override.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // |sequence_number| is the same as in the OnRequestIdentity call.

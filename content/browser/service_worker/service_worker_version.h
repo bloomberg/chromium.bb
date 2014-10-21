@@ -229,21 +229,21 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
   typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
 
-  virtual ~ServiceWorkerVersion();
+  ~ServiceWorkerVersion() override;
 
   // EmbeddedWorkerInstance::Listener overrides:
-  virtual void OnStarted() override;
-  virtual void OnStopped() override;
-  virtual void OnReportException(const base::string16& error_message,
-                                 int line_number,
-                                 int column_number,
-                                 const GURL& source_url) override;
-  virtual void OnReportConsoleMessage(int source_identifier,
-                                      int message_level,
-                                      const base::string16& message,
-                                      int line_number,
-                                      const GURL& source_url) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnStarted() override;
+  void OnStopped() override;
+  void OnReportException(const base::string16& error_message,
+                         int line_number,
+                         int column_number,
+                         const GURL& source_url) override;
+  void OnReportConsoleMessage(int source_identifier,
+                              int message_level,
+                              const base::string16& message,
+                              int line_number,
+                              const GURL& source_url) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnStartMessageSent(ServiceWorkerStatusCode status);
 

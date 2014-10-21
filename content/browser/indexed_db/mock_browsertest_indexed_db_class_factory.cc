@@ -52,9 +52,9 @@ class LevelDBTestTansaction : public LevelDBTransaction {
     DCHECK_GT(fail_on_call_num, 0);
   }
 
-  virtual leveldb::Status Get(const base::StringPiece& key,
-                              std::string* value,
-                              bool* found) override {
+  leveldb::Status Get(const base::StringPiece& key,
+                      std::string* value,
+                      bool* found) override {
     if (fail_method_ != FAIL_METHOD_GET ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBTransaction::Get(key, value, found);
@@ -63,7 +63,7 @@ class LevelDBTestTansaction : public LevelDBTransaction {
     return leveldb::Status::Corruption("Corrupted for the test");
   }
 
-  virtual leveldb::Status Commit() override {
+  leveldb::Status Commit() override {
     if (fail_method_ != FAIL_METHOD_COMMIT ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBTransaction::Commit();
@@ -72,7 +72,7 @@ class LevelDBTestTansaction : public LevelDBTransaction {
   }
 
  private:
-  virtual ~LevelDBTestTansaction() {}
+  ~LevelDBTestTansaction() override {}
 
   FailMethod fail_method_;
   int fail_on_call_num_;
@@ -86,14 +86,14 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
         commit_tracer_(s_class_name, "Commit", tx_num),
         get_tracer_(s_class_name, "Get", tx_num) {}
 
-  virtual leveldb::Status Get(const base::StringPiece& key,
-                              std::string* value,
-                              bool* found) override {
+  leveldb::Status Get(const base::StringPiece& key,
+                      std::string* value,
+                      bool* found) override {
     get_tracer_.log_call();
     return LevelDBTransaction::Get(key, value, found);
   }
 
-  virtual leveldb::Status Commit() override {
+  leveldb::Status Commit() override {
     commit_tracer_.log_call();
     return LevelDBTransaction::Commit();
   }
@@ -101,7 +101,7 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
  private:
   static const std::string s_class_name;
 
-  virtual ~LevelDBTraceTansaction() {}
+  ~LevelDBTraceTansaction() override {}
 
   FunctionTracer commit_tracer_;
   FunctionTracer get_tracer_;
@@ -120,36 +120,36 @@ class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
         prev_tracer_(s_class_name, "Prev", inst_num),
         key_tracer_(s_class_name, "Key", inst_num),
         value_tracer_(s_class_name, "Value", inst_num) {}
-  virtual ~LevelDBTraceIteratorImpl() {}
+  ~LevelDBTraceIteratorImpl() override {}
 
  private:
   static const std::string s_class_name;
 
-  virtual bool IsValid() const override {
+  bool IsValid() const override {
     is_valid_tracer_.log_call();
     return LevelDBIteratorImpl::IsValid();
   }
-  virtual leveldb::Status SeekToLast() override {
+  leveldb::Status SeekToLast() override {
     seek_to_last_tracer_.log_call();
     return LevelDBIteratorImpl::SeekToLast();
   }
-  virtual leveldb::Status Seek(const base::StringPiece& target) override {
+  leveldb::Status Seek(const base::StringPiece& target) override {
     seek_tracer_.log_call();
     return LevelDBIteratorImpl::Seek(target);
   }
-  virtual leveldb::Status Next() override {
+  leveldb::Status Next() override {
     next_tracer_.log_call();
     return LevelDBIteratorImpl::Next();
   }
-  virtual leveldb::Status Prev() override {
+  leveldb::Status Prev() override {
     prev_tracer_.log_call();
     return LevelDBIteratorImpl::Prev();
   }
-  virtual base::StringPiece Key() const override {
+  base::StringPiece Key() const override {
     key_tracer_.log_call();
     return LevelDBIteratorImpl::Key();
   }
-  virtual base::StringPiece Value() const override {
+  base::StringPiece Value() const override {
     value_tracer_.log_call();
     return LevelDBIteratorImpl::Value();
   }
@@ -174,10 +174,10 @@ class LevelDBTestIteratorImpl : public content::LevelDBIteratorImpl {
         fail_method_(fail_method),
         fail_on_call_num_(fail_on_call_num),
         current_call_num_(0) {}
-  virtual ~LevelDBTestIteratorImpl() {}
+  ~LevelDBTestIteratorImpl() override {}
 
  private:
-  virtual leveldb::Status Seek(const base::StringPiece& target) override {
+  leveldb::Status Seek(const base::StringPiece& target) override {
     if (fail_method_ != FAIL_METHOD_SEEK ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBIteratorImpl::Seek(target);

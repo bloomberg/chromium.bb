@@ -134,7 +134,7 @@ class CONTENT_EXPORT AppCacheResponseIO {
 class CONTENT_EXPORT AppCacheResponseReader
     : public AppCacheResponseIO {
  public:
-  virtual ~AppCacheResponseReader();
+  ~AppCacheResponseReader() override;
 
   // Reads http info from storage. Always returns the result of the read
   // asynchronously through the 'callback'. Returns the number of bytes read
@@ -177,7 +177,7 @@ class CONTENT_EXPORT AppCacheResponseReader
                          int64 group_id,
                          AppCacheDiskCacheInterface* disk_cache);
 
-  virtual void OnIOComplete(int result) override;
+  void OnIOComplete(int result) override;
   void ContinueReadInfo();
   void ContinueReadData();
   void OpenEntryIfNeededAndContinue();
@@ -197,7 +197,7 @@ class CONTENT_EXPORT AppCacheResponseReader
 class CONTENT_EXPORT AppCacheResponseWriter
     : public AppCacheResponseIO {
  public:
-  virtual ~AppCacheResponseWriter();
+  ~AppCacheResponseWriter() override;
 
   // Writes the http info to storage. Always returns the result of the write
   // asynchronously through the 'callback'. Returns the number of bytes written
@@ -243,7 +243,7 @@ class CONTENT_EXPORT AppCacheResponseWriter
     SECOND_ATTEMPT
   };
 
-  virtual void OnIOComplete(int result) override;
+  void OnIOComplete(int result) override;
   void ContinueWriteInfo();
   void ContinueWriteData();
   void CreateEntryIfNeededAndContinue();

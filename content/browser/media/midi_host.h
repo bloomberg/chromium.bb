@@ -31,17 +31,16 @@ class CONTENT_EXPORT MidiHost
   MidiHost(int renderer_process_id, media::MidiManager* midi_manager);
 
   // BrowserMessageFilter implementation.
-  virtual void OnDestruct() const override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // MidiManagerClient implementation.
-  virtual void CompleteStartSession(int client_id,
-                                    media::MidiResult result) override;
-  virtual void ReceiveMidiData(uint32 port,
-                               const uint8* data,
-                               size_t length,
-                               double timestamp) override;
-  virtual void AccumulateMidiBytesSent(size_t n) override;
+  void CompleteStartSession(int client_id, media::MidiResult result) override;
+  void ReceiveMidiData(uint32 port,
+                       const uint8* data,
+                       size_t length,
+                       double timestamp) override;
+  void AccumulateMidiBytesSent(size_t n) override;
 
   // Start session to access MIDI hardware.
   void OnStartSession(int client_id);
@@ -56,7 +55,7 @@ class CONTENT_EXPORT MidiHost
   friend class base::DeleteHelper<MidiHost>;
   friend class BrowserThread;
 
-  virtual ~MidiHost();
+  ~MidiHost() override;
 
   // Returns true if |data| fulfills the requirements of MidiOutput.send API
   // defined in the WebMIDI spec.

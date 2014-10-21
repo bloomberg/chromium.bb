@@ -47,37 +47,35 @@ class MockAppCacheStorageTest;
 class MockAppCacheStorage : public AppCacheStorage {
  public:
   explicit MockAppCacheStorage(AppCacheServiceImpl* service);
-  virtual ~MockAppCacheStorage();
+  ~MockAppCacheStorage() override;
 
-  virtual void GetAllInfo(Delegate* delegate) override;
-  virtual void LoadCache(int64 id, Delegate* delegate) override;
-  virtual void LoadOrCreateGroup(const GURL& manifest_url,
-                                 Delegate* delegate) override;
-  virtual void StoreGroupAndNewestCache(AppCacheGroup* group,
-                                        AppCache* newest_cache,
-                                        Delegate* delegate) override;
-  virtual void FindResponseForMainRequest(const GURL& url,
-                                          const GURL& preferred_manifest_url,
-                                          Delegate* delegate) override;
-  virtual void FindResponseForSubRequest(
-      AppCache* cache, const GURL& url,
-      AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
-      bool * found_network_namespace) override;
-  virtual void MarkEntryAsForeign(const GURL& entry_url,
-                                  int64 cache_id) override;
-  virtual void MakeGroupObsolete(AppCacheGroup* group,
-                                 Delegate* delegate,
-                                 int response_code) override;
-  virtual AppCacheResponseReader* CreateResponseReader(
-      const GURL& manifest_url, int64 group_id, int64 response_id) override;
-  virtual AppCacheResponseWriter* CreateResponseWriter(
-      const GURL& manifest_url, int64 group_id) override;
-  virtual void DoomResponses(
-      const GURL& manifest_url,
-      const std::vector<int64>& response_ids) override;
-  virtual void DeleteResponses(
-      const GURL& manifest_url,
-      const std::vector<int64>& response_ids) override;
+  void GetAllInfo(Delegate* delegate) override;
+  void LoadCache(int64 id, Delegate* delegate) override;
+  void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate) override;
+  void StoreGroupAndNewestCache(AppCacheGroup* group,
+                                AppCache* newest_cache,
+                                Delegate* delegate) override;
+  void FindResponseForMainRequest(const GURL& url,
+                                  const GURL& preferred_manifest_url,
+                                  Delegate* delegate) override;
+  void FindResponseForSubRequest(AppCache* cache,
+                                 const GURL& url,
+                                 AppCacheEntry* found_entry,
+                                 AppCacheEntry* found_fallback_entry,
+                                 bool* found_network_namespace) override;
+  void MarkEntryAsForeign(const GURL& entry_url, int64 cache_id) override;
+  void MakeGroupObsolete(AppCacheGroup* group,
+                         Delegate* delegate,
+                         int response_code) override;
+  AppCacheResponseReader* CreateResponseReader(const GURL& manifest_url,
+                                               int64 group_id,
+                                               int64 response_id) override;
+  AppCacheResponseWriter* CreateResponseWriter(const GURL& manifest_url,
+                                               int64 group_id) override;
+  void DoomResponses(const GURL& manifest_url,
+                     const std::vector<int64>& response_ids) override;
+  void DeleteResponses(const GURL& manifest_url,
+                       const std::vector<int64>& response_ids) override;
 
  private:
   friend class AppCacheRequestHandlerTest;

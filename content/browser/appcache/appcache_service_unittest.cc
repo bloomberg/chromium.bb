@@ -38,8 +38,8 @@ class MockResponseReader : public AppCacheResponseReader {
         info_(info), info_size_(info_size),
         data_(data), data_size_(data_size) {
   }
-  virtual void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                        const net::CompletionCallback& callback) override {
+  void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
+                const net::CompletionCallback& callback) override {
     info_buffer_ = info_buf;
     callback_ = callback;  // Cleared on completion.
 
@@ -48,8 +48,9 @@ class MockResponseReader : public AppCacheResponseReader {
     info_buffer_->response_data_size = data_size_;
     ScheduleUserCallback(rv);
   }
-  virtual void ReadData(net::IOBuffer* buf, int buf_len,
-                        const net::CompletionCallback& callback) override {
+  void ReadData(net::IOBuffer* buf,
+                int buf_len,
+                const net::CompletionCallback& callback) override {
     buffer_ = buf;
     buffer_len_ = buf_len;
     callback_ = callback;  // Cleared on completion.

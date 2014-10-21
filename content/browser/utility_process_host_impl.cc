@@ -47,7 +47,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #endif  // OS_WIN
   {}
 
-  virtual ~UtilitySandboxedProcessLauncherDelegate() {}
+  ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
   virtual bool ShouldLaunchElevated() override {
@@ -59,15 +59,11 @@ class UtilitySandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
 
-  virtual bool ShouldUseZygote() override {
+  bool ShouldUseZygote() override {
     return !no_sandbox_ && exposed_dir_.empty();
   }
-  virtual base::EnvironmentMap GetEnvironment() override {
-    return env_;
-  }
-  virtual base::ScopedFD TakeIpcFd() override {
-    return ipc_fd_.Pass();
-  }
+  base::EnvironmentMap GetEnvironment() override { return env_; }
+  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
 
  private:

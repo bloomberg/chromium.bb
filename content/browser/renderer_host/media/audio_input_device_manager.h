@@ -45,13 +45,13 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   const StreamDeviceInfo* GetOpenedDeviceInfoById(int session_id);
 
   // MediaStreamProvider implementation, called on IO thread.
-  virtual void Register(MediaStreamProviderListener* listener,
-                        const scoped_refptr<base::SingleThreadTaskRunner>&
-                            device_task_runner) override;
-  virtual void Unregister() override;
-  virtual void EnumerateDevices(MediaStreamType stream_type) override;
-  virtual int Open(const StreamDeviceInfo& device) override;
-  virtual void Close(int session_id) override;
+  void Register(MediaStreamProviderListener* listener,
+                const scoped_refptr<base::SingleThreadTaskRunner>&
+                    device_task_runner) override;
+  void Unregister() override;
+  void EnumerateDevices(MediaStreamType stream_type) override;
+  int Open(const StreamDeviceInfo& device) override;
+  void Close(int session_id) override;
 
   void UseFakeDevice();
   bool ShouldUseFakeDevice() const;
@@ -73,7 +73,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void GetFakeDeviceNames(media::AudioDeviceNames* device_names);
 
   typedef std::vector<StreamDeviceInfo> StreamDeviceList;
-  virtual ~AudioInputDeviceManager();
+  ~AudioInputDeviceManager() override;
 
   // Enumerates audio input devices on media stream device thread.
   void EnumerateOnDeviceThread(MediaStreamType stream_type);

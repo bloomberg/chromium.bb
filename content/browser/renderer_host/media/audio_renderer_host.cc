@@ -42,7 +42,7 @@ class AudioRendererHost::AudioEntry
              const std::string& output_device_id,
              scoped_ptr<base::SharedMemory> shared_memory,
              scoped_ptr<media::AudioOutputController::SyncReader> reader);
-  virtual ~AudioEntry();
+  ~AudioEntry() override;
 
   int stream_id() const {
     return stream_id_;
@@ -69,12 +69,11 @@ class AudioRendererHost::AudioEntry
 
  private:
   // media::AudioOutputController::EventHandler implementation.
-  virtual void OnCreated() override;
-  virtual void OnPlaying() override;
-  virtual void OnPaused() override;
-  virtual void OnError() override;
-  virtual void OnDeviceChange(int new_buffer_size, int new_sample_rate)
-      override;
+  void OnCreated() override;
+  void OnPlaying() override;
+  void OnPaused() override;
+  void OnError() override;
+  void OnDeviceChange(int new_buffer_size, int new_sample_rate) override;
 
   AudioRendererHost* const host_;
   const int stream_id_;

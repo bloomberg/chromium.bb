@@ -17,11 +17,11 @@ class WifiDataProviderMac : public WifiDataProviderCommon {
   WifiDataProviderMac();
 
  private:
-  virtual ~WifiDataProviderMac();
+  ~WifiDataProviderMac() override;
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi() override;
-  virtual WifiPollingPolicy* NewPollingPolicy() override;
+  WlanApiInterface* NewWlanApi() override;
+  WifiPollingPolicy* NewPollingPolicy() override;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderMac);
 };

@@ -34,11 +34,10 @@ class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
   explicit RenderViewHostTestWebContentsObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents),
         navigation_count_(0) {}
-  virtual ~RenderViewHostTestWebContentsObserver() {}
+  ~RenderViewHostTestWebContentsObserver() override {}
 
-  virtual void DidNavigateMainFrame(
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) override {
+  void DidNavigateMainFrame(const LoadCommittedDetails& details,
+                            const FrameNavigateParams& params) override {
     observed_socket_address_ = params.socket_address;
     base_url_ = params.base_url;
     ++navigation_count_;

@@ -18,10 +18,10 @@ namespace content {
 class GenericHandler : public WebUIMessageHandler {
  public:
   GenericHandler();
-  virtual ~GenericHandler();
+  ~GenericHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void HandleNavigateToUrl(const base::ListValue* args);

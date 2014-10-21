@@ -32,7 +32,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       public AppCacheHost::Observer,
       public AppCacheStorage::Delegate  {
  public:
-  virtual ~AppCacheRequestHandler();
+  ~AppCacheRequestHandler() override;
 
   // These are called on each request intercept opportunity.
   AppCacheURLRequestJob* MaybeLoadResource(
@@ -62,7 +62,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   AppCacheRequestHandler(AppCacheHost* host, ResourceType resource_type);
 
   // AppCacheHost::Observer override
-  virtual void OnDestructionImminent(AppCacheHost* host) override;
+  void OnDestructionImminent(AppCacheHost* host) override;
 
   // Helpers to instruct a waiting job with what response to
   // deliver for the request we're handling.
@@ -87,10 +87,13 @@ class CONTENT_EXPORT AppCacheRequestHandler
                              net::NetworkDelegate* network_delegate);
 
   // AppCacheStorage::Delegate methods
-  virtual void OnMainResponseFound(
-      const GURL& url, const AppCacheEntry& entry,
-      const GURL& fallback_url, const AppCacheEntry& fallback_entry,
-      int64 cache_id, int64 group_id, const GURL& mainfest_url) override;
+  void OnMainResponseFound(const GURL& url,
+                           const AppCacheEntry& entry,
+                           const GURL& fallback_url,
+                           const AppCacheEntry& fallback_entry,
+                           int64 cache_id,
+                           int64 group_id,
+                           const GURL& mainfest_url) override;
 
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
@@ -100,7 +103,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   void ContinueMaybeLoadSubResource();
 
   // AppCacheHost::Observer override
-  virtual void OnCacheSelectionComplete(AppCacheHost* host) override;
+  void OnCacheSelectionComplete(AppCacheHost* host) override;
 
   // Data members -----------------------------------------------
 

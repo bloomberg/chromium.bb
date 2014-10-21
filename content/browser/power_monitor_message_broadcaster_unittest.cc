@@ -17,9 +17,9 @@ class PowerMonitorMessageSender : public IPC::Sender {
         suspends_(0),
         resumes_(0) {
   }
-  virtual ~PowerMonitorMessageSender() {}
+  ~PowerMonitorMessageSender() override {}
 
-  virtual bool Send(IPC::Message* msg) override {
+  bool Send(IPC::Message* msg) override {
     switch (msg->type()) {
       case PowerMonitorMsg_Suspend::ID:
         suspends_++;

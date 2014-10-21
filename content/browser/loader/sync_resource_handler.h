@@ -31,24 +31,23 @@ class SyncResourceHandler : public ResourceHandler {
   SyncResourceHandler(net::URLRequest* request,
                       IPC::Message* result_message,
                       ResourceDispatcherHostImpl* resource_dispatcher_host);
-  virtual ~SyncResourceHandler();
+  ~SyncResourceHandler() override;
 
-  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
-  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                                   ResourceResponse* response,
-                                   bool* defer) override;
-  virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) override;
-  virtual bool OnWillStart(const GURL& url, bool* defer) override;
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) override;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
-  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
-                                   const std::string& security_info,
-                                   bool* defer) override;
-  virtual void OnDataDownloaded(int bytes_downloaded) override;
+  bool OnUploadProgress(uint64 position, uint64 size) override;
+  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
+                           ResourceResponse* response,
+                           bool* defer) override;
+  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  bool OnWillStart(const GURL& url, bool* defer) override;
+  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
+  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  int min_size) override;
+  bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& status,
+                           const std::string& security_info,
+                           bool* defer) override;
+  void OnDataDownloaded(int bytes_downloaded) override;
 
  private:
   enum { kReadBufSize = 3840 };

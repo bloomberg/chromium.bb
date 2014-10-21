@@ -55,14 +55,14 @@ class CONTENT_EXPORT PluginLoaderPosix
   void GetPlugins(const PluginService::GetPluginsCallback& callback);
 
   // UtilityProcessHostClient:
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
  private:
-  virtual ~PluginLoaderPosix();
+  ~PluginLoaderPosix() override;
 
   // Called on the FILE thread to get the list of plugin paths to probe.
   void GetPluginsToLoad();

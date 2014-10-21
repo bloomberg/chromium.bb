@@ -68,7 +68,7 @@ class CONTENT_EXPORT AppCacheHost
 
   AppCacheHost(int host_id, AppCacheFrontend* frontend,
                AppCacheServiceImpl* service);
-  virtual ~AppCacheHost();
+  ~AppCacheHost() override;
 
   // Adds/removes an observer, the AppCacheHost does not take
   // ownership of the observer.
@@ -192,11 +192,10 @@ class CONTENT_EXPORT AppCacheHost
   void AssociateCacheHelper(AppCache* cache, const GURL& manifest_url);
 
   // AppCacheStorage::Delegate impl
-  virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) override;
-  virtual void OnGroupLoaded(AppCacheGroup* group,
-                             const GURL& manifest_url) override;
+  void OnCacheLoaded(AppCache* cache, int64 cache_id) override;
+  void OnGroupLoaded(AppCacheGroup* group, const GURL& manifest_url) override;
   // AppCacheServiceImpl::Observer impl
-  virtual void OnServiceReinitialized(
+  void OnServiceReinitialized(
       AppCacheStorageReference* old_storage_ref) override;
 
   void FinishCacheSelection(AppCache* cache, AppCacheGroup* group);
@@ -207,7 +206,7 @@ class CONTENT_EXPORT AppCacheHost
   void ObserveGroupBeingUpdated(AppCacheGroup* group);
 
   // AppCacheGroup::UpdateObserver methods.
-  virtual void OnUpdateComplete(AppCacheGroup* group) override;
+  void OnUpdateComplete(AppCacheGroup* group) override;
 
   // Returns true if this host is for a dedicated worker context.
   bool is_for_dedicated_worker() const {

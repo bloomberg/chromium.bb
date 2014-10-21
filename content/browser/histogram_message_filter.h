@@ -19,10 +19,10 @@ class HistogramMessageFilter : public BrowserMessageFilter {
   HistogramMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~HistogramMessageFilter();
+  ~HistogramMessageFilter() override;
 
   // Message handlers.
   void OnChildHistogramData(int sequence_number,

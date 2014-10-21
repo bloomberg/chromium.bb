@@ -21,12 +21,12 @@ class FileUtilitiesMessageFilter : public BrowserMessageFilter {
   explicit FileUtilitiesMessageFilter(int process_id);
 
   // BrowserMessageFilter implementation.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+
  private:
-  virtual ~FileUtilitiesMessageFilter();
+  ~FileUtilitiesMessageFilter() override;
 
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
                                     const base::File::Info& file_info);

@@ -21,7 +21,7 @@ class TimeZoneMonitorMac : public TimeZoneMonitor {
                     }];
   }
 
-  virtual ~TimeZoneMonitorMac() {
+  ~TimeZoneMonitorMac() override {
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
     [nc removeObserver:notification_observer_];
   }

@@ -17,10 +17,10 @@ namespace content {
 class CONTENT_EXPORT PluginDataRemoverImpl : public PluginDataRemover {
  public:
   explicit PluginDataRemoverImpl(BrowserContext* browser_context);
-  virtual ~PluginDataRemoverImpl();
+  ~PluginDataRemoverImpl() override;
 
   // PluginDataRemover implementation:
-  virtual base::WaitableEvent* StartRemoving(base::Time begin_time) override;
+  base::WaitableEvent* StartRemoving(base::Time begin_time) override;
 
   // The plug-in whose data should be removed (usually Flash) is specified via
   // its MIME type. This method sets a different MIME type in order to call a

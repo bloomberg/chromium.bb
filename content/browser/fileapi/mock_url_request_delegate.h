@@ -17,11 +17,10 @@ namespace content {
 class MockURLRequestDelegate : public net::URLRequest::Delegate {
  public:
   MockURLRequestDelegate();
-  virtual ~MockURLRequestDelegate();
+  ~MockURLRequestDelegate() override;
 
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   const std::string& response_data() const { return response_data_; }
 
  private:

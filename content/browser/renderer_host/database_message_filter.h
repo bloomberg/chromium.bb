@@ -20,18 +20,17 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
   explicit DatabaseMessageFilter(storage::DatabaseTracker* db_tracker);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() override;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelClosing() override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   storage::DatabaseTracker* database_tracker() const {
     return db_tracker_.get();
   }
 
  private:
-  virtual ~DatabaseMessageFilter();
+  ~DatabaseMessageFilter() override;
 
   class PromptDelegate;
 
@@ -72,10 +71,10 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
                            int error);
 
   // DatabaseTracker::Observer callbacks (file thread)
-  virtual void OnDatabaseSizeChanged(const std::string& origin_identifier,
-                                     const base::string16& database_name,
-                                     int64 database_size) override;
-  virtual void OnDatabaseScheduledForDeletion(
+  void OnDatabaseSizeChanged(const std::string& origin_identifier,
+                             const base::string16& database_name,
+                             int64 database_size) override;
+  void OnDatabaseScheduledForDeletion(
       const std::string& origin_identifier,
       const base::string16& database_name) override;
 

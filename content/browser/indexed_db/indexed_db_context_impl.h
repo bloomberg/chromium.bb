@@ -63,14 +63,13 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
   // IndexedDBContext implementation:
-  virtual base::SequencedTaskRunner* TaskRunner() const override;
-  virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
-  virtual int64 GetOriginDiskUsage(const GURL& origin_url) override;
-  virtual void DeleteForOrigin(const GURL& origin_url) override;
-  virtual base::FilePath GetFilePathForTesting(
+  base::SequencedTaskRunner* TaskRunner() const override;
+  std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
+  int64 GetOriginDiskUsage(const GURL& origin_url) override;
+  void DeleteForOrigin(const GURL& origin_url) override;
+  base::FilePath GetFilePathForTesting(
       const std::string& origin_id) const override;
-  virtual void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner)
-      override;
+  void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner) override;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url, IndexedDBConnection* db);
@@ -106,7 +105,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   bool is_incognito() const { return data_path_.empty(); }
 
  protected:
-  virtual ~IndexedDBContextImpl();
+  ~IndexedDBContextImpl() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearLocalState);

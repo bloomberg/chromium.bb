@@ -58,7 +58,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       void(ServiceWorkerStatusCode status, bool are_equal)>
           CompareCallback;
 
-  virtual ~ServiceWorkerStorage();
+  ~ServiceWorkerStorage() override;
 
   static scoped_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& path,

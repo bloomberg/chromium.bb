@@ -21,15 +21,15 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator,
       unsigned internalformat);
-  virtual ~GpuSurfacelessBrowserCompositorOutputSurface();
+  ~GpuSurfacelessBrowserCompositorOutputSurface() override;
 
  private:
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
-  virtual void OnSwapBuffersComplete() override;
-  virtual void BindFramebuffer() override;
-  virtual void Reshape(const gfx::Size& size, float scale_factor) override;
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void OnSwapBuffersComplete() override;
+  void BindFramebuffer() override;
+  void Reshape(const gfx::Size& size, float scale_factor) override;
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   unsigned int internalformat_;
   scoped_ptr<BufferQueue> output_surface_;

@@ -64,13 +64,13 @@ class GpuProcessHostUIShim : public IPC::Listener,
   CONTENT_EXPORT static GpuProcessHostUIShim* GetOneInstance();
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener implementation.
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   CONTENT_EXPORT void SimulateRemoveAllContext();
   CONTENT_EXPORT void SimulateCrash();
@@ -78,7 +78,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
  private:
   explicit GpuProcessHostUIShim(int host_id);
-  virtual ~GpuProcessHostUIShim();
+  ~GpuProcessHostUIShim() override;
 
   // Message handlers.
   bool OnControlMessageReceived(const IPC::Message& message);

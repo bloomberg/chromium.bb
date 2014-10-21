@@ -45,26 +45,25 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
   }
 
   // MessageLoopProxy implementation.
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task, base::TimeDelta delay) override {
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
     return BrowserThread::PostDelayedTask(id_, from_here, task, delay);
   }
 
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override {
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override {
     return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
                                                      delay);
   }
 
-  virtual bool RunsTasksOnCurrentThread() const override {
+  bool RunsTasksOnCurrentThread() const override {
     return BrowserThread::CurrentlyOn(id_);
   }
 
  protected:
-  virtual ~BrowserThreadMessageLoopProxy() {}
+  ~BrowserThreadMessageLoopProxy() override {}
 
  private:
   BrowserThread::ID id_;

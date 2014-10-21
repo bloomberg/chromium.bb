@@ -35,7 +35,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   ResourceLoader(scoped_ptr<net::URLRequest> request,
                  scoped_ptr<ResourceHandler> handler,
                  ResourceLoaderDelegate* delegate);
-  virtual ~ResourceLoader();
+  ~ResourceLoader() override;
 
   void StartRequest();
   void CancelRequest(bool from_renderer);
@@ -59,32 +59,29 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreNull);
 
   // net::URLRequest::Delegate implementation:
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer) override;
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* info) override;
-  virtual void OnCertificateRequested(net::URLRequest* request,
-                                      net::SSLCertRequestInfo* info) override;
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     const net::SSLInfo& info,
-                                     bool fatal) override;
-  virtual void OnBeforeNetworkStart(net::URLRequest* request,
-                                    bool* defer) override;
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer) override;
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* info) override;
+  void OnCertificateRequested(net::URLRequest* request,
+                              net::SSLCertRequestInfo* info) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& info,
+                             bool fatal) override;
+  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   // SSLErrorHandler::Delegate implementation:
-  virtual void CancelSSLRequest(int error,
-                                const net::SSLInfo* ssl_info) override;
-  virtual void ContinueSSLRequest() override;
+  void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override;
+  void ContinueSSLRequest() override;
 
   // ResourceController implementation:
-  virtual void Resume() override;
-  virtual void Cancel() override;
-  virtual void CancelAndIgnore() override;
-  virtual void CancelWithError(int error_code) override;
+  void Resume() override;
+  void Cancel() override;
+  void CancelAndIgnore() override;
+  void CancelWithError(int error_code) override;
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);

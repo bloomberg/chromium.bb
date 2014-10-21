@@ -68,16 +68,16 @@ class AudioLogImpl : public media::AudioLog {
   AudioLogImpl(int owner_id,
                media::AudioLogFactory::AudioComponent component,
                content::MediaInternals* media_internals);
-  virtual ~AudioLogImpl();
+  ~AudioLogImpl() override;
 
-  virtual void OnCreated(int component_id,
-                         const media::AudioParameters& params,
-                         const std::string& device_id) override;
-  virtual void OnStarted(int component_id) override;
-  virtual void OnStopped(int component_id) override;
-  virtual void OnClosed(int component_id) override;
-  virtual void OnError(int component_id) override;
-  virtual void OnSetVolume(int component_id, double volume) override;
+  void OnCreated(int component_id,
+                 const media::AudioParameters& params,
+                 const std::string& device_id) override;
+  void OnStarted(int component_id) override;
+  void OnStopped(int component_id) override;
+  void OnClosed(int component_id) override;
+  void OnError(int component_id) override;
+  void OnSetVolume(int component_id, double volume) override;
 
  private:
   void SendSingleStringUpdate(int component_id,

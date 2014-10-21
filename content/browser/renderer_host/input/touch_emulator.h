@@ -18,7 +18,7 @@ namespace content {
 class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
  public:
   explicit TouchEmulator(TouchEmulatorClient* client);
-  virtual ~TouchEmulator();
+  ~TouchEmulator() override;
 
   void Enable();
   void Disable();
@@ -45,7 +45,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
 
  private:
   // ui::GestureProviderClient implementation.
-  virtual void OnGestureEvent(const ui::GestureEventData& gesture) override;
+  void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
   // Returns cursor size in DIP.
   gfx::SizeF InitCursorFromResource(

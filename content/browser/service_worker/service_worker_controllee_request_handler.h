@@ -40,15 +40,15 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
-  virtual ~ServiceWorkerControlleeRequestHandler();
+  ~ServiceWorkerControlleeRequestHandler() override;
 
   // Called via custom URLRequestJobFactory.
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
-  virtual void GetExtraResponseInfo(
+  void GetExtraResponseInfo(
       bool* was_fetched_via_service_worker,
       bool* was_fallback_required_by_service_worker,
       GURL* original_url_via_service_worker,

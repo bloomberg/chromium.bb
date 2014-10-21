@@ -50,44 +50,44 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
       const cc::CompositorFrameMetadata& frame_metadata);
 
   // DevTooolsAgentHost overrides.
-  virtual void DisconnectWebContents() override;
-  virtual void ConnectWebContents(WebContents* web_contents) override;
-  virtual WebContents* GetWebContents() override;
-  virtual Type GetType() override;
-  virtual std::string GetTitle() override;
-  virtual GURL GetURL() override;
-  virtual bool Activate() override;
-  virtual bool Close() override;
+  void DisconnectWebContents() override;
+  void ConnectWebContents(WebContents* web_contents) override;
+  WebContents* GetWebContents() override;
+  Type GetType() override;
+  std::string GetTitle() override;
+  GURL GetURL() override;
+  bool Activate() override;
+  bool Close() override;
 
  private:
   friend class DevToolsAgentHost;
-  virtual ~RenderViewDevToolsAgentHost();
+  ~RenderViewDevToolsAgentHost() override;
 
   // IPCDevToolsAgentHost overrides.
-  virtual void DispatchProtocolMessage(const std::string& message) override;
-  virtual void SendMessageToAgent(IPC::Message* msg) override;
-  virtual void OnClientAttached() override;
-  virtual void OnClientDetached() override;
+  void DispatchProtocolMessage(const std::string& message) override;
+  void SendMessageToAgent(IPC::Message* msg) override;
+  void OnClientAttached() override;
+  void OnClientDetached() override;
 
   // WebContentsObserver overrides.
-  virtual void AboutToNavigateRenderView(RenderViewHost* dest_rvh) override;
-  virtual void RenderViewHostChanged(RenderViewHost* old_host,
-                                     RenderViewHost* new_host) override;
-  virtual void RenderViewDeleted(RenderViewHost* rvh) override;
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidAttachInterstitialPage() override;
-  virtual void DidDetachInterstitialPage() override;
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
-  virtual void NavigationEntryCommitted(
+  void AboutToNavigateRenderView(RenderViewHost* dest_rvh) override;
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override;
+  void RenderViewDeleted(RenderViewHost* rvh) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidAttachInterstitialPage() override;
+  void DidDetachInterstitialPage() override;
+  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
+  void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override;
 
   // NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
   void DisconnectRenderViewHost();
   void ConnectRenderViewHost(RenderViewHost* rvh);

@@ -22,7 +22,7 @@ class InputRouterClient;
 // received, it is free to customize when those events are dispatched.
 class InputRouter : public IPC::Listener {
  public:
-  virtual ~InputRouter() {}
+  ~InputRouter() override {}
 
   // Should be called only in response to |SetNeedsFlush| requests made via
   // the |InputRouterClient|.

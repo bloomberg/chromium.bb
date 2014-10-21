@@ -32,63 +32,61 @@ class CONTENT_EXPORT NavigationEntryImpl
                       const base::string16& title,
                       ui::PageTransition transition_type,
                       bool is_renderer_initiated);
-  virtual ~NavigationEntryImpl();
+  ~NavigationEntryImpl() override;
 
   // NavigationEntry implementation:
-  virtual int GetUniqueID() const override;
-  virtual PageType GetPageType() const override;
-  virtual void SetURL(const GURL& url) override;
-  virtual const GURL& GetURL() const override;
-  virtual void SetBaseURLForDataURL(const GURL& url) override;
-  virtual const GURL& GetBaseURLForDataURL() const override;
-  virtual void SetReferrer(const Referrer& referrer) override;
-  virtual const Referrer& GetReferrer() const override;
-  virtual void SetVirtualURL(const GURL& url) override;
-  virtual const GURL& GetVirtualURL() const override;
-  virtual void SetTitle(const base::string16& title) override;
-  virtual const base::string16& GetTitle() const override;
-  virtual void SetPageState(const PageState& state) override;
-  virtual const PageState& GetPageState() const override;
-  virtual void SetPageID(int page_id) override;
-  virtual int32 GetPageID() const override;
-  virtual const base::string16& GetTitleForDisplay(
+  int GetUniqueID() const override;
+  PageType GetPageType() const override;
+  void SetURL(const GURL& url) override;
+  const GURL& GetURL() const override;
+  void SetBaseURLForDataURL(const GURL& url) override;
+  const GURL& GetBaseURLForDataURL() const override;
+  void SetReferrer(const Referrer& referrer) override;
+  const Referrer& GetReferrer() const override;
+  void SetVirtualURL(const GURL& url) override;
+  const GURL& GetVirtualURL() const override;
+  void SetTitle(const base::string16& title) override;
+  const base::string16& GetTitle() const override;
+  void SetPageState(const PageState& state) override;
+  const PageState& GetPageState() const override;
+  void SetPageID(int page_id) override;
+  int32 GetPageID() const override;
+  const base::string16& GetTitleForDisplay(
       const std::string& languages) const override;
-  virtual bool IsViewSourceMode() const override;
-  virtual void SetTransitionType(ui::PageTransition transition_type) override;
-  virtual ui::PageTransition GetTransitionType() const override;
-  virtual const GURL& GetUserTypedURL() const override;
-  virtual void SetHasPostData(bool has_post_data) override;
-  virtual bool GetHasPostData() const override;
-  virtual void SetPostID(int64 post_id) override;
-  virtual int64 GetPostID() const override;
-  virtual void SetBrowserInitiatedPostData(
-      const base::RefCountedMemory* data) override;
-  virtual const base::RefCountedMemory*
-      GetBrowserInitiatedPostData() const override;
-  virtual const FaviconStatus& GetFavicon() const override;
-  virtual FaviconStatus& GetFavicon() override;
-  virtual const SSLStatus& GetSSL() const override;
-  virtual SSLStatus& GetSSL() override;
-  virtual void SetOriginalRequestURL(const GURL& original_url) override;
-  virtual const GURL& GetOriginalRequestURL() const override;
-  virtual void SetIsOverridingUserAgent(bool override) override;
-  virtual bool GetIsOverridingUserAgent() const override;
-  virtual void SetTimestamp(base::Time timestamp) override;
-  virtual base::Time GetTimestamp() const override;
-  virtual void SetCanLoadLocalResources(bool allow) override;
-  virtual bool GetCanLoadLocalResources() const override;
-  virtual void SetFrameToNavigate(const std::string& frame_name) override;
-  virtual const std::string& GetFrameToNavigate() const override;
-  virtual void SetExtraData(const std::string& key,
-                            const base::string16& data) override;
-  virtual bool GetExtraData(const std::string& key,
-                            base::string16* data) const override;
-  virtual void ClearExtraData(const std::string& key) override;
-  virtual void SetHttpStatusCode(int http_status_code) override;
-  virtual int GetHttpStatusCode() const override;
-  virtual void SetRedirectChain(const std::vector<GURL>& redirects) override;
-  virtual const std::vector<GURL>& GetRedirectChain() const override;
-  virtual bool IsRestored() const override;
+  bool IsViewSourceMode() const override;
+  void SetTransitionType(ui::PageTransition transition_type) override;
+  ui::PageTransition GetTransitionType() const override;
+  const GURL& GetUserTypedURL() const override;
+  void SetHasPostData(bool has_post_data) override;
+  bool GetHasPostData() const override;
+  void SetPostID(int64 post_id) override;
+  int64 GetPostID() const override;
+  void SetBrowserInitiatedPostData(const base::RefCountedMemory* data) override;
+  const base::RefCountedMemory* GetBrowserInitiatedPostData() const override;
+  const FaviconStatus& GetFavicon() const override;
+  FaviconStatus& GetFavicon() override;
+  const SSLStatus& GetSSL() const override;
+  SSLStatus& GetSSL() override;
+  void SetOriginalRequestURL(const GURL& original_url) override;
+  const GURL& GetOriginalRequestURL() const override;
+  void SetIsOverridingUserAgent(bool override) override;
+  bool GetIsOverridingUserAgent() const override;
+  void SetTimestamp(base::Time timestamp) override;
+  base::Time GetTimestamp() const override;
+  void SetCanLoadLocalResources(bool allow) override;
+  bool GetCanLoadLocalResources() const override;
+  void SetFrameToNavigate(const std::string& frame_name) override;
+  const std::string& GetFrameToNavigate() const override;
+  void SetExtraData(const std::string& key,
+                    const base::string16& data) override;
+  bool GetExtraData(const std::string& key,
+                    base::string16* data) const override;
+  void ClearExtraData(const std::string& key) override;
+  void SetHttpStatusCode(int http_status_code) override;
+  int GetHttpStatusCode() const override;
+  void SetRedirectChain(const std::vector<GURL>& redirects) override;
+  const std::vector<GURL>& GetRedirectChain() const override;
+  bool IsRestored() const override;
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.

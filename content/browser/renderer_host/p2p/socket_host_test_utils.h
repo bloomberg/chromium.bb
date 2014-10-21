@@ -31,7 +31,7 @@ class MockIPCSender : public IPC::Sender {
 class FakeSocket : public net::StreamSocket {
  public:
   FakeSocket(std::string* written_data);
-  virtual ~FakeSocket();
+  ~FakeSocket() override;
 
   void set_async_write(bool async_write) { async_write_ = async_write; }
   void AppendInputData(const char* data, int data_size);
@@ -41,26 +41,28 @@ class FakeSocket : public net::StreamSocket {
   void SetLocalAddress(const net::IPEndPoint& local_address);
 
   // net::Socket implementation.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override;
-  virtual int SetReceiveBufferSize(int32 size) override;
-  virtual int SetSendBufferSize(int32 size) override;
-  virtual int Connect(const net::CompletionCallback& callback) override;
-  virtual void Disconnect() override;
-  virtual bool IsConnected() const override;
-  virtual bool IsConnectedAndIdle() const override;
-  virtual int GetPeerAddress(net::IPEndPoint* address) const override;
-  virtual int GetLocalAddress(net::IPEndPoint* address) const override;
-  virtual const net::BoundNetLog& NetLog() const override;
-  virtual void SetSubresourceSpeculation() override;
-  virtual void SetOmniboxSpeculation() override;
-  virtual bool WasEverUsed() const override;
-  virtual bool UsingTCPFastOpen() const override;
-  virtual bool WasNpnNegotiated() const override;
-  virtual net::NextProto GetNegotiatedProtocol() const override;
-  virtual bool GetSSLInfo(net::SSLInfo* ssl_info) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override;
+  int SetReceiveBufferSize(int32 size) override;
+  int SetSendBufferSize(int32 size) override;
+  int Connect(const net::CompletionCallback& callback) override;
+  void Disconnect() override;
+  bool IsConnected() const override;
+  bool IsConnectedAndIdle() const override;
+  int GetPeerAddress(net::IPEndPoint* address) const override;
+  int GetLocalAddress(net::IPEndPoint* address) const override;
+  const net::BoundNetLog& NetLog() const override;
+  void SetSubresourceSpeculation() override;
+  void SetOmniboxSpeculation() override;
+  bool WasEverUsed() const override;
+  bool UsingTCPFastOpen() const override;
+  bool WasNpnNegotiated() const override;
+  net::NextProto GetNegotiatedProtocol() const override;
+  bool GetSSLInfo(net::SSLInfo* ssl_info) override;
 
  private:
   void DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,

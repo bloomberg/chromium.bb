@@ -43,86 +43,82 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       RenderWidgetHost* widget,
       BrowserPluginGuest* guest,
       base::WeakPtr<RenderWidgetHostViewBase> platform_view);
-  virtual ~RenderWidgetHostViewGuest();
+  ~RenderWidgetHostViewGuest() override;
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message,
                                      RenderWidgetHostImpl* embedder);
 
   // RenderWidgetHostView implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void InitAsChild(gfx::NativeView parent_view) override;
-  virtual void SetSize(const gfx::Size& size) override;
-  virtual void SetBounds(const gfx::Rect& rect) override;
-  virtual void Focus() override;
-  virtual bool HasFocus() const override;
-  virtual gfx::NativeView GetNativeView() const override;
-  virtual gfx::NativeViewId GetNativeViewId() const override;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  virtual gfx::Rect GetViewBounds() const override;
-  virtual void SetBackgroundOpaque(bool opaque) override;
-  virtual gfx::Size GetPhysicalBackingSize() const override;
-  virtual base::string16 GetSelectedText() const override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void InitAsChild(gfx::NativeView parent_view) override;
+  void SetSize(const gfx::Size& size) override;
+  void SetBounds(const gfx::Rect& rect) override;
+  void Focus() override;
+  bool HasFocus() const override;
+  gfx::NativeView GetNativeView() const override;
+  gfx::NativeViewId GetNativeViewId() const override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  gfx::Rect GetViewBounds() const override;
+  void SetBackgroundOpaque(bool opaque) override;
+  gfx::Size GetPhysicalBackingSize() const override;
+  base::string16 GetSelectedText() const override;
 
   // RenderWidgetHostViewBase implementation.
-  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& pos) override;
-  virtual void InitAsFullscreen(
-      RenderWidgetHostView* reference_host_view) override;
-  virtual void WasShown() override;
-  virtual void WasHidden() override;
-  virtual void MovePluginWindows(
-      const std::vector<WebPluginGeometry>& moves) override;
-  virtual void UpdateCursor(const WebCursor& cursor) override;
-  virtual void SetIsLoading(bool is_loading) override;
-  virtual void TextInputTypeChanged(ui::TextInputType type,
-                                    ui::TextInputMode input_mode,
-                                    bool can_compose_inline) override;
-  virtual void ImeCancelComposition() override;
+  void InitAsPopup(RenderWidgetHostView* parent_host_view,
+                   const gfx::Rect& pos) override;
+  void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
+  void WasShown() override;
+  void WasHidden() override;
+  void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
+  void UpdateCursor(const WebCursor& cursor) override;
+  void SetIsLoading(bool is_loading) override;
+  void TextInputTypeChanged(ui::TextInputType type,
+                            ui::TextInputMode input_mode,
+                            bool can_compose_inline) override;
+  void ImeCancelComposition() override;
 #if defined(OS_MACOSX) || defined(USE_AURA)
-  virtual void ImeCompositionRangeChanged(
+  void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
 #endif
-  virtual void RenderProcessGone(base::TerminationStatus status,
-                                 int error_code) override;
-  virtual void Destroy() override;
-  virtual void SetTooltipText(const base::string16& tooltip_text) override;
-  virtual void SelectionChanged(const base::string16& text,
-                                size_t offset,
-                                const gfx::Range& range) override;
-  virtual void SelectionBoundsChanged(
+  void RenderProcessGone(base::TerminationStatus status,
+                         int error_code) override;
+  void Destroy() override;
+  void SetTooltipText(const base::string16& tooltip_text) override;
+  void SelectionChanged(const base::string16& text,
+                        size_t offset,
+                        const gfx::Range& range) override;
+  void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
-  virtual void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      CopyFromCompositingSurfaceCallback& callback,
-      const SkColorType color_type) override;
-  virtual void OnSwapCompositorFrame(
-      uint32 output_surface_id,
-      scoped_ptr<cc::CompositorFrame> frame) override;
+  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                  const gfx::Size& dst_size,
+                                  CopyFromCompositingSurfaceCallback& callback,
+                                  const SkColorType color_type) override;
+  void OnSwapCompositorFrame(uint32 output_surface_id,
+                             scoped_ptr<cc::CompositorFrame> frame) override;
 #if defined(USE_AURA)
   virtual void ProcessAckedTouchEvent(
       const TouchEventWithLatencyInfo& touch,
       InputEventAckState ack_result) override;
 #endif
-  virtual bool LockMouse() override;
-  virtual void UnlockMouse() override;
-  virtual void GetScreenInfo(blink::WebScreenInfo* results) override;
+  bool LockMouse() override;
+  void UnlockMouse() override;
+  void GetScreenInfo(blink::WebScreenInfo* results) override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.
-  virtual void SetActive(bool active) override;
-  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) override;
-  virtual void SetWindowVisibility(bool visible) override;
-  virtual void WindowFrameChanged() override;
-  virtual void ShowDefinitionForSelection() override;
-  virtual bool SupportsSpeech() const override;
-  virtual void SpeakSelection() override;
-  virtual bool IsSpeaking() const override;
-  virtual void StopSpeaking() override;
+  void SetActive(bool active) override;
+  void SetTakesFocusOnlyOnMouseDown(bool flag) override;
+  void SetWindowVisibility(bool visible) override;
+  void WindowFrameChanged() override;
+  void ShowDefinitionForSelection() override;
+  bool SupportsSpeech() const override;
+  void SpeakSelection() override;
+  bool IsSpeaking() const override;
+  void StopSpeaking() override;
 
   // RenderWidgetHostViewBase implementation.
-  virtual bool PostProcessEventForPluginIme(
+  bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) override;
 #endif  // defined(OS_MACOSX)
 
@@ -144,11 +140,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #endif
 
   // Overridden from ui::GestureEventHelper.
-  virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) override;
-  virtual void DispatchGestureEvent(ui::GestureEvent* event) override;
-  virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) override;
+  bool CanDispatchToConsumer(ui::GestureConsumer* consumer) override;
+  void DispatchGestureEvent(ui::GestureEvent* event) override;
+  void DispatchCancelTouchEvent(ui::TouchEvent* event) override;
 
-  virtual SkColorType PreferredReadbackFormat() override;
+  SkColorType PreferredReadbackFormat() override;
 
  protected:
   friend class RenderWidgetHostView;

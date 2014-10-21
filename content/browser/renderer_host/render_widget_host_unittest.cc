@@ -67,50 +67,45 @@ class MockInputRouter : public InputRouter {
         message_received_(false),
         client_(client) {
   }
-  virtual ~MockInputRouter() {}
+  ~MockInputRouter() override {}
 
   // InputRouter
-  virtual void Flush() override {
-    flush_called_ = true;
-  }
-  virtual bool SendInput(scoped_ptr<IPC::Message> message) override {
+  void Flush() override { flush_called_ = true; }
+  bool SendInput(scoped_ptr<IPC::Message> message) override {
     send_event_called_ = true;
     return true;
   }
-  virtual void SendMouseEvent(
-      const MouseEventWithLatencyInfo& mouse_event) override {
+  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override {
     sent_mouse_event_ = true;
   }
-  virtual void SendWheelEvent(
+  void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
     sent_wheel_event_ = true;
   }
-  virtual void SendKeyboardEvent(
-      const NativeWebKeyboardEvent& key_event,
-      const ui::LatencyInfo& latency_info,
-      bool is_shortcut) override {
+  void SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+                         const ui::LatencyInfo& latency_info,
+                         bool is_shortcut) override {
     sent_keyboard_event_ = true;
   }
-  virtual void SendGestureEvent(
+  void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) override {
     sent_gesture_event_ = true;
   }
-  virtual void SendTouchEvent(
-      const TouchEventWithLatencyInfo& touch_event) override {
+  void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override {
     send_touch_event_not_cancelled_ =
         client_->FilterInputEvent(touch_event.event, touch_event.latency) ==
         INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
-  virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override {
+  const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override {
     NOTREACHED();
     return NULL;
   }
-  virtual bool ShouldForwardTouchEvent() const override { return true; }
-  virtual void OnViewUpdated(int view_flags) override {}
-  virtual bool HasPendingEvents() const override { return false; }
+  bool ShouldForwardTouchEvent() const override { return true; }
+  void OnViewUpdated(int view_flags) override {}
+  bool HasPendingEvents() const override { return false; }
 
   // IPC::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     message_received_ = true;
     return false;
   }
@@ -151,9 +146,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::input_router_;
 
-  virtual void OnTouchEventAck(
-      const TouchEventWithLatencyInfo& event,
-      InputEventAckState ack_result) override {
+  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckState ack_result) override {
     // Sniff touch acks.
     acked_touch_event_type_ = event.event.type;
     RenderWidgetHostImpl::OnTouchEventAck(event, ack_result);
@@ -185,7 +179,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
  protected:
-  virtual void NotifyRendererUnresponsive() override {
+  void NotifyRendererUnresponsive() override {
     unresponsive_timer_fired_ = true;
   }
 
@@ -205,8 +199,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
       : MockRenderProcessHost(browser_context),
         update_msg_reply_flags_(0) {
   }
-  virtual ~RenderWidgetHostProcess() {
-  }
+  ~RenderWidgetHostProcess() override {}
 
   void set_update_msg_reply_flags(int flags) {
     update_msg_reply_flags_ = flags;
@@ -215,7 +208,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   // Fills the given update parameters with resonable default values.
   void InitUpdateRectParams(ViewHostMsg_UpdateRect_Params* params);
 
-  virtual bool HasConnection() const override { return true; }
+  bool HasConnection() const override { return true; }
 
  protected:
   // Indicates the flags that should be sent with a repaint request. This
@@ -278,27 +271,25 @@ class TestView : public TestRenderWidgetHostView {
   }
 
   // RenderWidgetHostView override.
-  virtual gfx::Rect GetViewBounds() const override {
-    return bounds_;
-  }
-  virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                                      InputEventAckState ack_result) override {
+  gfx::Rect GetViewBounds() const override { return bounds_; }
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                              InputEventAckState ack_result) override {
     acked_event_ = touch.event;
     ++acked_event_count_;
   }
-  virtual void WheelEventAck(const WebMouseWheelEvent& event,
-                             InputEventAckState ack_result) override {
+  void WheelEventAck(const WebMouseWheelEvent& event,
+                     InputEventAckState ack_result) override {
     if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
       return;
     unhandled_wheel_event_count_++;
     unhandled_wheel_event_ = event;
   }
-  virtual void GestureEventAck(const WebGestureEvent& event,
-                               InputEventAckState ack_result) override {
+  void GestureEventAck(const WebGestureEvent& event,
+                       InputEventAckState ack_result) override {
     gesture_event_type_ = event.type;
     ack_result_ = ack_result;
   }
-  virtual gfx::Size GetPhysicalBackingSize() const override {
+  gfx::Size GetPhysicalBackingSize() const override {
     if (use_fake_physical_backing_size_)
       return mock_physical_backing_size_;
     return TestRenderWidgetHostView::GetPhysicalBackingSize();
@@ -342,7 +333,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
         handle_wheel_event_(false),
         handle_wheel_event_called_(false) {
   }
-  virtual ~MockRenderWidgetHostDelegate() {}
+  ~MockRenderWidgetHostDelegate() override {}
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
   // didn't send work by making sure we didn't call UnhandledKeyboardEvent().
@@ -375,21 +366,19 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   }
 
  protected:
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) override {
+  bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                              bool* is_keyboard_shortcut) override {
     prehandle_keyboard_event_type_ = event.type;
     prehandle_keyboard_event_called_ = true;
     return prehandle_keyboard_event_;
   }
 
-  virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) override {
+  void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override {
     unhandled_keyboard_event_type_ = event.type;
     unhandled_keyboard_event_called_ = true;
   }
 
-  virtual bool HandleWheelEvent(
-      const blink::WebMouseWheelEvent& event) override {
+  bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override {
     handle_wheel_event_called_ = true;
     return handle_wheel_event_;
   }

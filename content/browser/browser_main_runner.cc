@@ -134,12 +134,12 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   BrowserMainRunnerImpl()
       : initialization_started_(false), is_shutdown_(false) {}
 
-  virtual ~BrowserMainRunnerImpl() {
+  ~BrowserMainRunnerImpl() override {
     if (initialization_started_ && !is_shutdown_)
       Shutdown();
   }
 
-  virtual int Initialize(const MainFunctionParams& parameters) override {
+  int Initialize(const MainFunctionParams& parameters) override {
     TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize");
     // On Android we normally initialize the browser in a series of UI thread
     // tasks. While this is happening a second request can come from the OS or
@@ -216,14 +216,14 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     return -1;
   }
 
-  virtual int Run() override {
+  int Run() override {
     DCHECK(initialization_started_);
     DCHECK(!is_shutdown_);
     main_loop_->RunMainMessageLoopParts();
     return main_loop_->GetResultCode();
   }
 
-  virtual void Shutdown() override {
+  void Shutdown() override {
     DCHECK(initialization_started_);
     DCHECK(!is_shutdown_);
 #ifdef LEAK_SANITIZER

@@ -195,7 +195,7 @@ class MockHttpServer {
 class MockHttpServerJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return MockHttpServer::JobFactory(request, network_delegate);
@@ -219,16 +219,13 @@ class MockFrontend : public AppCacheFrontend {
         start_update_trigger_(APPCACHE_CHECKING_EVENT), update_(NULL) {
   }
 
-  virtual void OnCacheSelected(
-      int host_id, const AppCacheInfo& info) override {
-  }
+  void OnCacheSelected(int host_id, const AppCacheInfo& info) override {}
 
-  virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               AppCacheStatus status) override {
-  }
+  void OnStatusChanged(const std::vector<int>& host_ids,
+                       AppCacheStatus status) override {}
 
-  virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             AppCacheEventID event_id) override {
+  void OnEventRaised(const std::vector<int>& host_ids,
+                     AppCacheEventID event_id) override {
     raised_events_.push_back(RaisedEvent(host_ids, event_id));
 
     // Trigger additional updates if requested.
@@ -243,17 +240,16 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const AppCacheErrorDetails& details)
-      override {
+  void OnErrorEventRaised(const std::vector<int>& host_ids,
+                          const AppCacheErrorDetails& details) override {
     error_message_ = details.message;
     OnEventRaised(host_ids, APPCACHE_ERROR_EVENT);
   }
 
-  virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
-                                     const GURL& url,
-                                     int num_total,
-                                     int num_complete) override {
+  void OnProgressEventRaised(const std::vector<int>& host_ids,
+                             const GURL& url,
+                             int num_total,
+                             int num_complete) override {
     if (!ignore_progress_events_)
       OnEventRaised(host_ids, APPCACHE_PROGRESS_EVENT);
 
@@ -281,14 +277,11 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  virtual void OnLogMessage(int host_id,
-                            AppCacheLogLevel log_level,
-                            const std::string& message) override {
-  }
+  void OnLogMessage(int host_id,
+                    AppCacheLogLevel log_level,
+                    const std::string& message) override {}
 
-  virtual void OnContentBlocked(int host_id,
-                                const GURL& manifest_url) override {
-  }
+  void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
 
   void AddExpectedEvent(const std::vector<int>& host_ids,
       AppCacheEventID event_id) {
@@ -345,7 +338,7 @@ class MockFrontend : public AppCacheFrontend {
 // Helper factories to simulate redirected URL responses for tests.
 class RedirectFactory : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return new net::URLRequestTestJob(
@@ -399,10 +392,10 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
     }
   }
 
-  virtual int GetResponseCode() const override { return response_code_; }
+  int GetResponseCode() const override { return response_code_; }
 
  private:
-  virtual ~RetryRequestTestJob() {}
+  ~RetryRequestTestJob() override {}
 
   static std::string retry_headers() {
     const char no_retry_after[] =
@@ -461,7 +454,7 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 class RetryRequestTestJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return RetryRequestTestJob::RetryFactory(request, network_delegate);
@@ -521,7 +514,7 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
   }
 
  protected:
-  virtual ~HttpHeadersRequestTestJob() {}
+  ~HttpHeadersRequestTestJob() override {}
 
  private:
   static std::string expect_if_modified_since_;
@@ -541,7 +534,7 @@ bool HttpHeadersRequestTestJob::already_checked_ = false;
 class IfModifiedSinceJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return HttpHeadersRequestTestJob::IfModifiedSinceFactory(
@@ -555,9 +548,7 @@ class IOThread : public base::Thread {
       : base::Thread(name) {
   }
 
-  virtual ~IOThread() {
-    Stop();
-  }
+  ~IOThread() override { Stop(); }
 
   net::URLRequestContext* request_context() {
     return request_context_.get();
@@ -569,7 +560,7 @@ class IOThread : public base::Thread {
     request_context_->set_job_factory(job_factory_.get());
   }
 
-  virtual void Init() override {
+  void Init() override {
     scoped_ptr<net::URLRequestJobFactoryImpl> factory(
         new net::URLRequestJobFactoryImpl());
     factory->SetProtocolHandler("http", new MockHttpServerJobFactory);
@@ -579,7 +570,7 @@ class IOThread : public base::Thread {
     request_context_->set_job_factory(job_factory_.get());
   }
 
-  virtual void CleanUp() override {
+  void CleanUp() override {
     request_context_.reset();
     job_factory_.reset();
   }
@@ -3017,7 +3008,7 @@ class AppCacheUpdateJobTest : public testing::Test,
       group_->AddUpdateObserver(this);
   }
 
-  virtual void OnUpdateComplete(AppCacheGroup* group) override {
+  void OnUpdateComplete(AppCacheGroup* group) override {
     ASSERT_EQ(group_.get(), group);
     protect_newest_cache_ = group->newest_complete_cache();
     UpdateFinished();

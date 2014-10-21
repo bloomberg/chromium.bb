@@ -31,13 +31,13 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
 
-  virtual ~SoftwareBrowserCompositorOutputSurface();
+  ~SoftwareBrowserCompositorOutputSurface() override;
 
  private:
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
 #if defined(OS_MACOSX)
-  virtual void OnSurfaceDisplayed() override;
+  void OnSurfaceDisplayed() override;
 #endif
 
   // On the software path we need to explicitly call the proxy to update the

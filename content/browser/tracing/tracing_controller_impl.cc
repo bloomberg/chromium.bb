@@ -43,7 +43,7 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
         completion_callback_(callback),
         file_(NULL) {}
 
-  virtual void AddTraceChunk(const std::string& chunk) override {
+  void AddTraceChunk(const std::string& chunk) override {
     std::string tmp = chunk;
     scoped_refptr<base::RefCountedString> chunk_ptr =
         base::RefCountedString::TakeString(&tmp);
@@ -53,10 +53,10 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
         base::Bind(
             &FileTraceDataSink::AddTraceChunkOnFileThread, this, chunk_ptr));
   }
-  virtual void SetSystemTrace(const std::string& data) override {
+  void SetSystemTrace(const std::string& data) override {
     system_trace_ = data;
   }
-  virtual void Close() override {
+  void Close() override {
     BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
@@ -64,7 +64,7 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
   }
 
  private:
-  virtual ~FileTraceDataSink() { DCHECK(file_ == NULL); }
+  ~FileTraceDataSink() override { DCHECK(file_ == NULL); }
 
   void AddTraceChunkOnFileThread(
       const scoped_refptr<base::RefCountedString> chunk) {
@@ -127,15 +127,15 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
       : completion_callback_(callback) {}
 
   // TracingController::TraceDataSink implementation
-  virtual void AddTraceChunk(const std::string& chunk) override {
+  void AddTraceChunk(const std::string& chunk) override {
     if (!trace_.empty())
       trace_ += ",";
     trace_ += chunk;
   }
-  virtual void SetSystemTrace(const std::string& data) override {
+  void SetSystemTrace(const std::string& data) override {
     system_trace_ = data;
   }
-  virtual void Close() override {
+  void Close() override {
     std::string result = "{\"traceEvents\":[" + trace_ + "]";
     if (!system_trace_.empty())
       result += ",\"systemTraceEvents\": " + system_trace_;
@@ -147,7 +147,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
   }
 
  private:
-  virtual ~StringTraceDataSink() {}
+  ~StringTraceDataSink() override {}
 
   std::string trace_;
   std::string system_trace_;

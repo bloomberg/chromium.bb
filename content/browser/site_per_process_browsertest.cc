@@ -34,17 +34,16 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
   explicit SitePerProcessWebContentsObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents),
         navigation_succeeded_(false) {}
-  virtual ~SitePerProcessWebContentsObserver() {}
+  ~SitePerProcessWebContentsObserver() override {}
 
-  virtual void DidStartProvisionalLoadForFrame(
-      RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override {
+  void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
+                                       const GURL& validated_url,
+                                       bool is_error_page,
+                                       bool is_iframe_srcdoc) override {
     navigation_succeeded_ = false;
   }
 
-  virtual void DidFailProvisionalLoad(
+  void DidFailProvisionalLoad(
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
@@ -53,7 +52,7 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
     navigation_succeeded_ = false;
   }
 
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override {
@@ -81,7 +80,7 @@ class RedirectNotificationObserver : public NotificationObserver {
   // NotificationService::AllSources().
   RedirectNotificationObserver(int notification_type,
                                const NotificationSource& source);
-  virtual ~RedirectNotificationObserver();
+  ~RedirectNotificationObserver() override;
 
   // Wait until the specified notification occurs.  If the notification was
   // emitted between the construction of this object and this call then it
@@ -99,9 +98,9 @@ class RedirectNotificationObserver : public NotificationObserver {
   }
 
   // NotificationObserver:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
  private:
   bool seen_;

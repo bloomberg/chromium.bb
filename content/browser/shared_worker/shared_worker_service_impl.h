@@ -41,10 +41,10 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   static SharedWorkerServiceImpl* GetInstance();
 
   // WorkerService implementation:
-  virtual bool TerminateWorker(int process_id, int route_id) override;
-  virtual std::vector<WorkerInfo> GetWorkers() override;
-  virtual void AddObserver(WorkerServiceObserver* observer) override;
-  virtual void RemoveObserver(WorkerServiceObserver* observer) override;
+  bool TerminateWorker(int process_id, int route_id) override;
+  std::vector<WorkerInfo> GetWorkers() override;
+  void AddObserver(WorkerServiceObserver* observer) override;
+  void RemoveObserver(WorkerServiceObserver* observer) override;
 
   // These methods correspond to worker related IPCs.
   void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
@@ -115,7 +115,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
       PendingInstaneMap;
 
   SharedWorkerServiceImpl();
-  virtual ~SharedWorkerServiceImpl();
+  ~SharedWorkerServiceImpl() override;
 
   void ResetForTesting();
 

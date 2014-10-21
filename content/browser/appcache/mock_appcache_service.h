@@ -24,7 +24,7 @@ class MockAppCacheService : public AppCacheServiceImpl {
 
   // Just returns a canned completion code without actually
   // removing groups and caches in our mock storage instance.
-  virtual void DeleteAppCachesForOrigin(
+  void DeleteAppCachesForOrigin(
       const GURL& origin,
       const net::CompletionCallback& callback) override;
 

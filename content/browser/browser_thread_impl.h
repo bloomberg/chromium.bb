@@ -23,14 +23,14 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // thread already exists.
   BrowserThreadImpl(BrowserThread::ID identifier,
                     base::MessageLoop* message_loop);
-  virtual ~BrowserThreadImpl();
+  ~BrowserThreadImpl() override;
 
   static void ShutdownThreadPool();
 
  protected:
-  virtual void Init() override;
-  virtual void Run(base::MessageLoop* message_loop) override;
-  virtual void CleanUp() override;
+  void Init() override;
+  void Run(base::MessageLoop* message_loop) override;
+  void CleanUp() override;
 
  private:
   // We implement all the functionality of the public BrowserThread

@@ -37,7 +37,7 @@ class CONTENT_EXPORT GestureTextSelectorClient {
 class CONTENT_EXPORT GestureTextSelector : public ui::SimpleGestureListener {
  public:
   explicit GestureTextSelector(GestureTextSelectorClient* client);
-  virtual ~GestureTextSelector();
+  ~GestureTextSelector() override;
 
   // This should be called before |event| is seen by the platform gesture
   // detector or forwarded to web content.
@@ -49,11 +49,11 @@ class CONTENT_EXPORT GestureTextSelector : public ui::SimpleGestureListener {
                            ShouldStartTextSelection);
 
   // SimpleGestureListener implementation.
-  virtual bool OnSingleTapUp(const ui::MotionEvent& e) override;
-  virtual bool OnScroll(const ui::MotionEvent& e1,
-                        const ui::MotionEvent& e2,
-                        float distance_x,
-                        float distance_y) override;
+  bool OnSingleTapUp(const ui::MotionEvent& e) override;
+  bool OnScroll(const ui::MotionEvent& e1,
+                const ui::MotionEvent& e2,
+                float distance_x,
+                float distance_y) override;
 
   static bool ShouldStartTextSelection(const ui::MotionEvent& event);
 

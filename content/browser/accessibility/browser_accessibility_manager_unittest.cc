@@ -22,15 +22,11 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
     global_obj_count_++;
     native_ref_count_ = 1;
   }
-  virtual ~CountedBrowserAccessibility() {
-    global_obj_count_--;
-  }
+  ~CountedBrowserAccessibility() override { global_obj_count_--; }
 
-  virtual void NativeAddReference() override {
-    native_ref_count_++;
-  }
+  void NativeAddReference() override { native_ref_count_++; }
 
-  virtual void NativeReleaseReference() override {
+  void NativeReleaseReference() override {
     native_ref_count_--;
     if (native_ref_count_ == 0)
       delete this;
@@ -55,8 +51,8 @@ int CountedBrowserAccessibility::global_obj_count_ = 0;
 class CountedBrowserAccessibilityFactory
     : public BrowserAccessibilityFactory {
  public:
-  virtual ~CountedBrowserAccessibilityFactory() {}
-  virtual BrowserAccessibility* Create() override {
+  ~CountedBrowserAccessibilityFactory() override {}
+  BrowserAccessibility* Create() override {
     return new CountedBrowserAccessibility();
   }
 };
@@ -67,43 +63,35 @@ class TestBrowserAccessibilityDelegate
   TestBrowserAccessibilityDelegate()
       : got_fatal_error_(false) {}
 
-  virtual void AccessibilitySetFocus(int acc_obj_id) override {}
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id) override {}
-  virtual void AccessibilityShowMenu(const gfx::Point& point) override {}
-  virtual void AccessibilityScrollToMakeVisible(
-      int acc_obj_id, const gfx::Rect& subfocus) override {}
-  virtual void AccessibilityScrollToPoint(
-      int acc_obj_id, const gfx::Point& point) override {}
-  virtual void AccessibilitySetTextSelection(
-      int acc_obj_id, int start_offset, int end_offset) override {}
-  virtual bool AccessibilityViewHasFocus() const override {
-    return false;
-  }
-  virtual gfx::Rect AccessibilityGetViewBounds() const override {
-    return gfx::Rect();
-  }
-  virtual gfx::Point AccessibilityOriginInScreen(
+  void AccessibilitySetFocus(int acc_obj_id) override {}
+  void AccessibilityDoDefaultAction(int acc_obj_id) override {}
+  void AccessibilityShowMenu(const gfx::Point& point) override {}
+  void AccessibilityScrollToMakeVisible(int acc_obj_id,
+                                        const gfx::Rect& subfocus) override {}
+  void AccessibilityScrollToPoint(int acc_obj_id,
+                                  const gfx::Point& point) override {}
+  void AccessibilitySetTextSelection(int acc_obj_id,
+                                     int start_offset,
+                                     int end_offset) override {}
+  bool AccessibilityViewHasFocus() const override { return false; }
+  gfx::Rect AccessibilityGetViewBounds() const override { return gfx::Rect(); }
+  gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const override {
     return gfx::Point();
   }
-  virtual void AccessibilityHitTest(const gfx::Point& point) override {}
-  virtual void AccessibilityFatalError() override {
-    got_fatal_error_ = true;
-  }
-  virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
+  void AccessibilityHitTest(const gfx::Point& point) override {}
+  void AccessibilityFatalError() override { got_fatal_error_ = true; }
+  gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
     return gfx::kNullAcceleratedWidget;
   }
-  virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible()
-      override {
+  gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override {
     return NULL;
   }
-  virtual BrowserAccessibilityManager* AccessibilityGetChildFrame(
+  BrowserAccessibilityManager* AccessibilityGetChildFrame(
       int accessibility_node_id) override {
     return NULL;
   }
-  virtual BrowserAccessibility* AccessibilityGetParentFrame() override {
-    return NULL;
-  }
+  BrowserAccessibility* AccessibilityGetParentFrame() override { return NULL; }
 
   bool got_fatal_error() const { return got_fatal_error_; }
   void reset_got_fatal_error() { got_fatal_error_ = false; }

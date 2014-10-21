@@ -25,13 +25,11 @@ class FakeSoftwareFrameManagerClient : public SoftwareFrameManagerClient {
     HostSharedBitmapManager::current()->ProcessRemoved(
         base::GetCurrentProcessHandle());
   }
-  virtual void SoftwareFrameWasFreed(uint32 output_surface_id,
-                                     unsigned frame_id) override {
+  void SoftwareFrameWasFreed(uint32 output_surface_id,
+                             unsigned frame_id) override {
     freed_frames_.push_back(std::make_pair(output_surface_id, frame_id));
   }
-  virtual void ReleaseReferencesToSoftwareFrame() override {
-    ++evicted_count_;
-  }
+  void ReleaseReferencesToSoftwareFrame() override { ++evicted_count_; }
 
   bool SwapToNewFrame(uint32 output_surface, unsigned frame_id) {
     cc::SoftwareFrameData frame;

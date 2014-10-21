@@ -26,7 +26,7 @@ const int64 kTaskDelayMs = 200;
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
-  virtual ~MockRenderWidgetHostDelegate() {}
+  ~MockRenderWidgetHostDelegate() override {}
 };
 
 // This test does not test the WebKit side of the dictionary system (which

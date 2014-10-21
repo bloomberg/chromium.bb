@@ -45,17 +45,17 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       scoped_ptr<media::VideoCaptureDeviceFactory> factory);
 
   // Implements MediaStreamProvider.
-  virtual void Register(MediaStreamProviderListener* listener,
-                        const scoped_refptr<base::SingleThreadTaskRunner>&
-                            device_task_runner) override;
+  void Register(MediaStreamProviderListener* listener,
+                const scoped_refptr<base::SingleThreadTaskRunner>&
+                    device_task_runner) override;
 
-  virtual void Unregister() override;
+  void Unregister() override;
 
-  virtual void EnumerateDevices(MediaStreamType stream_type) override;
+  void EnumerateDevices(MediaStreamType stream_type) override;
 
-  virtual int Open(const StreamDeviceInfo& device) override;
+  int Open(const StreamDeviceInfo& device) override;
 
-  virtual void Close(int capture_session_id) override;
+  void Close(int capture_session_id) override;
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
   // adding the Host as a client of the device's controller if successful. The
@@ -132,7 +132,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   }
 
  private:
-  virtual ~VideoCaptureManager();
+  ~VideoCaptureManager() override;
   struct DeviceEntry;
 
   // Checks to see if |entry| has no clients left on its controller. If so,

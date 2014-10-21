@@ -30,7 +30,7 @@ class CONTENT_EXPORT StoragePartitionImplMap
  public:
   explicit StoragePartitionImplMap(BrowserContext* browser_context);
 
-  virtual ~StoragePartitionImplMap();
+  ~StoragePartitionImplMap() override;
 
   // This map retains ownership of the returned StoragePartition objects.
   StoragePartitionImpl* Get(const std::string& partition_domain,

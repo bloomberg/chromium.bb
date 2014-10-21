@@ -33,12 +33,11 @@ class TrackingResourceDispatcherHostDelegate
   TrackingResourceDispatcherHostDelegate() : throttle_created_(false) {
   }
 
-  virtual void RequestBeginning(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      AppCacheService* appcache_service,
-      ResourceType resource_type,
-      ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(net::URLRequest* request,
+                        ResourceContext* resource_context,
+                        AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        ScopedVector<ResourceThrottle>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(
         request, resource_context, appcache_service, resource_type, throttles);
@@ -88,7 +87,7 @@ class TrackingResourceDispatcherHostDelegate
         : request_(request), tracker_(tracker) {
     }
 
-    virtual ~TrackingThrottle() {
+    ~TrackingThrottle() override {
       // If the request is deleted without being cancelled, its status will
       // indicate it succeeded, so have to check if the request is still pending
       // as well.
@@ -97,7 +96,7 @@ class TrackingResourceDispatcherHostDelegate
     }
 
     // ResourceThrottle implementation:
-    virtual const char* GetNameForLogging() const override {
+    const char* GetNameForLogging() const override {
       return "TrackingThrottle";
     }
 
@@ -144,8 +143,8 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
  public:
   NoTransferRequestDelegate() {}
 
-  virtual WebContents* OpenURLFromTab(WebContents* source,
-                                      const OpenURLParams& params) override {
+  WebContents* OpenURLFromTab(WebContents* source,
+                              const OpenURLParams& params) override {
     bool is_transfer =
         (params.transferred_global_request_id != GlobalRequestID());
     if (is_transfer)
@@ -172,7 +171,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
   }
 
   // ContentBrowserTest implementation:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -180,7 +179,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
             base::Unretained(this)));
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -205,7 +204,7 @@ class CrossSiteTransferTest : public ContentBrowserTest {
       load_observer.Wait();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     // Use --site-per-process to force process swaps for cross-site transfers.
     command_line->AppendSwitch(switches::kSitePerProcess);
   }

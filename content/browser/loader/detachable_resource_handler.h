@@ -37,7 +37,7 @@ class DetachableResourceHandler : public ResourceHandler,
   DetachableResourceHandler(net::URLRequest* request,
                             base::TimeDelta cancel_delay,
                             scoped_ptr<ResourceHandler> next_handler);
-  virtual ~DetachableResourceHandler();
+  ~DetachableResourceHandler() override;
 
   bool is_detached() const { return next_handler_ == NULL; }
   void Detach();
@@ -47,29 +47,28 @@ class DetachableResourceHandler : public ResourceHandler,
   }
 
   // ResourceHandler implementation:
-  virtual void SetController(ResourceController* controller) override;
-  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
-  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                                   ResourceResponse* response,
-                                   bool* defer) override;
-  virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) override;
-  virtual bool OnWillStart(const GURL& url, bool* defer) override;
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) override;
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
-  virtual void OnResponseCompleted(const net::URLRequestStatus& status,
-                                   const std::string& security_info,
-                                   bool* defer) override;
-  virtual void OnDataDownloaded(int bytes_downloaded) override;
+  void SetController(ResourceController* controller) override;
+  bool OnUploadProgress(uint64 position, uint64 size) override;
+  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
+                           ResourceResponse* response,
+                           bool* defer) override;
+  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  bool OnWillStart(const GURL& url, bool* defer) override;
+  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
+  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  int min_size) override;
+  bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& status,
+                           const std::string& security_info,
+                           bool* defer) override;
+  void OnDataDownloaded(int bytes_downloaded) override;
 
   // ResourceController implementation:
-  virtual void Resume() override;
-  virtual void Cancel() override;
-  virtual void CancelAndIgnore() override;
-  virtual void CancelWithError(int error_code) override;
+  void Resume() override;
+  void Cancel() override;
+  void CancelAndIgnore() override;
+  void CancelWithError(int error_code) override;
 
  private:
   scoped_ptr<ResourceHandler> next_handler_;

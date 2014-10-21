@@ -45,21 +45,17 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
         root_(root),
         callback_(callback),
         weak_factory_(this) {}
-  virtual ~LoggingRecursiveOperation() {}
+  ~LoggingRecursiveOperation() override {}
 
   const std::vector<LogEntry>& log_entries() const { return log_entries_; }
 
   // RecursiveOperationDelegate overrides.
-  virtual void Run() override {
-    NOTREACHED();
-  }
+  void Run() override { NOTREACHED(); }
 
-  virtual void RunRecursively() override {
-    StartRecursiveOperation(root_, callback_);
-  }
+  void RunRecursively() override { StartRecursiveOperation(root_, callback_); }
 
-  virtual void ProcessFile(const FileSystemURL& url,
-                           const StatusCallback& callback) override {
+  void ProcessFile(const FileSystemURL& url,
+                   const StatusCallback& callback) override {
     RecordLogEntry(LogEntry::PROCESS_FILE, url);
     operation_runner()->GetMetadata(
         url,
@@ -67,14 +63,14 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
                    weak_factory_.GetWeakPtr(), callback));
   }
 
-  virtual void ProcessDirectory(const FileSystemURL& url,
-                                const StatusCallback& callback) override {
+  void ProcessDirectory(const FileSystemURL& url,
+                        const StatusCallback& callback) override {
     RecordLogEntry(LogEntry::PROCESS_DIRECTORY, url);
     callback.Run(base::File::FILE_OK);
   }
 
-  virtual void PostProcessDirectory(const FileSystemURL& url,
-                                    const StatusCallback& callback) override {
+  void PostProcessDirectory(const FileSystemURL& url,
+                            const StatusCallback& callback) override {
     RecordLogEntry(LogEntry::POST_PROCESS_DIRECTORY, url);
     callback.Run(base::File::FILE_OK);
   }

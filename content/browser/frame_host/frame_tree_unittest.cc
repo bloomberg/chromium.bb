@@ -51,7 +51,7 @@ class TreeWalkingWebContentsLogger : public WebContentsObserver {
   explicit TreeWalkingWebContentsLogger(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
-  virtual ~TreeWalkingWebContentsLogger() {
+  ~TreeWalkingWebContentsLogger() override {
     EXPECT_EQ("", log_) << "Activity logged that was not expected";
   }
 
@@ -63,22 +63,22 @@ class TreeWalkingWebContentsLogger : public WebContentsObserver {
   }
 
   // content::WebContentsObserver implementation.
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     LogWhatHappened("RenderFrameCreated", render_frame_host);
   }
 
-  virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
-                                      RenderFrameHost* new_host) override {
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override {
     if (old_host)
       LogWhatHappened("RenderFrameChanged(old)", old_host);
     LogWhatHappened("RenderFrameChanged(new)", new_host);
   }
 
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
     LogWhatHappened("RenderFrameDeleted", render_frame_host);
   }
 
-  virtual void RenderProcessGone(base::TerminationStatus status) override {
+  void RenderProcessGone(base::TerminationStatus status) override {
     LogWhatHappened("RenderProcessGone");
   }
 

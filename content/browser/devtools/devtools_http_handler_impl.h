@@ -48,23 +48,21 @@ class DevToolsHttpHandlerImpl
                           const std::string& frontend_url,
                           DevToolsHttpHandlerDelegate* delegate,
                           const base::FilePath& active_port_output_directory);
-  virtual ~DevToolsHttpHandlerImpl();
+  ~DevToolsHttpHandlerImpl() override;
   void Start();
 
   // DevToolsHttpHandler implementation.
-  virtual void Stop() override;
-  virtual GURL GetFrontendURL() override;
+  void Stop() override;
+  GURL GetFrontendURL() override;
 
   // net::HttpServer::Delegate implementation.
-  virtual void OnConnect(int connection_id) override {}
-  virtual void OnHttpRequest(int connection_id,
-                             const net::HttpServerRequestInfo& info) override;
-  virtual void OnWebSocketRequest(
-      int connection_id,
-      const net::HttpServerRequestInfo& info) override;
-  virtual void OnWebSocketMessage(int connection_id,
-                                  const std::string& data) override;
-  virtual void OnClose(int connection_id) override;
+  void OnConnect(int connection_id) override {}
+  void OnHttpRequest(int connection_id,
+                     const net::HttpServerRequestInfo& info) override;
+  void OnWebSocketRequest(int connection_id,
+                          const net::HttpServerRequestInfo& info) override;
+  void OnWebSocketMessage(int connection_id, const std::string& data) override;
+  void OnClose(int connection_id) override;
 
   void OnJsonRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);

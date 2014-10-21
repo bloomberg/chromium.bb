@@ -38,14 +38,14 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
   explicit ResolveProxyMsgHelper(net::ProxyService* proxy_service);
 
   // BrowserMessageFilter implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
  protected:
   // Destruction cancels the current outstanding request, and clears the
   // pending queue.
-  virtual ~ResolveProxyMsgHelper();
+  ~ResolveProxyMsgHelper() override;
 
  private:
   // Callback for the ProxyService (bound to |callback_|).

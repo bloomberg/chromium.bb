@@ -26,7 +26,7 @@ class CONTENT_EXPORT AppCacheDiskCache
     : public AppCacheDiskCacheInterface {
  public:
   AppCacheDiskCache();
-  virtual ~AppCacheDiskCache();
+  ~AppCacheDiskCache() override;
 
   // Initializes the object to use disk backed storage.
   int InitWithDiskBackend(
@@ -44,12 +44,13 @@ class CONTENT_EXPORT AppCacheDiskCache
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
-  virtual int CreateEntry(int64 key, Entry** entry,
-                          const net::CompletionCallback& callback) override;
-  virtual int OpenEntry(int64 key, Entry** entry,
-                        const net::CompletionCallback& callback) override;
-  virtual int DoomEntry(int64 key,
-                        const net::CompletionCallback& callback) override;
+  int CreateEntry(int64 key,
+                  Entry** entry,
+                  const net::CompletionCallback& callback) override;
+  int OpenEntry(int64 key,
+                Entry** entry,
+                const net::CompletionCallback& callback) override;
+  int DoomEntry(int64 key, const net::CompletionCallback& callback) override;
 
  private:
   class CreateBackendCallbackShim;

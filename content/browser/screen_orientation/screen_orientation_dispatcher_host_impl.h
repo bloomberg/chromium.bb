@@ -24,19 +24,19 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHostImpl
       public WebContentsObserver {
  public:
   explicit ScreenOrientationDispatcherHostImpl(WebContents* web_contents);
-  virtual ~ScreenOrientationDispatcherHostImpl();
+  ~ScreenOrientationDispatcherHostImpl() override;
 
   // ScreenOrientationDispatcherHost:
-  virtual void NotifyLockSuccess(int request_id) override;
-  virtual void NotifyLockError(int request_id,
-                               blink::WebLockOrientationError error) override;
-  virtual void OnOrientationChange() override;
+  void NotifyLockSuccess(int request_id) override;
+  void NotifyLockError(int request_id,
+                       blink::WebLockOrientationError error) override;
+  void OnOrientationChange() override;
 
   // WebContentsObserver:
-  virtual bool OnMessageReceived(const IPC::Message&,
-                                 RenderFrameHost* render_frame_host) override;
-  virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
-                                    const FrameNavigateParams& params) override;
+  bool OnMessageReceived(const IPC::Message&,
+                         RenderFrameHost* render_frame_host) override;
+  void DidNavigateMainFrame(const LoadCommittedDetails& details,
+                            const FrameNavigateParams& params) override;
 
  private:
   void OnLockRequest(RenderFrameHost* render_frame_host,

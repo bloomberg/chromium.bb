@@ -1151,7 +1151,7 @@ class RenderViewHostDestructionObserver : public WebContentsObserver {
  public:
   explicit RenderViewHostDestructionObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
-  virtual ~RenderViewHostDestructionObserver() {}
+  ~RenderViewHostDestructionObserver() override {}
   void EnsureRVHGetsDestructed(RenderViewHost* rvh) {
     watched_render_view_hosts_.insert(rvh);
   }
@@ -1161,7 +1161,7 @@ class RenderViewHostDestructionObserver : public WebContentsObserver {
 
  private:
   // WebContentsObserver implementation:
-  virtual void RenderViewDeleted(RenderViewHost* rvh) override {
+  void RenderViewDeleted(RenderViewHost* rvh) override {
     watched_render_view_hosts_.erase(rvh);
   }
 
@@ -1390,7 +1390,7 @@ class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {
  public:
   RFHMProcessPerTabTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kProcessPerTab);
   }
 };

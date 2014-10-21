@@ -31,10 +31,10 @@ class MediaStreamTrackMetricsHost
   explicit MediaStreamTrackMetricsHost();
 
  protected:
-  virtual ~MediaStreamTrackMetricsHost();
+  ~MediaStreamTrackMetricsHost() override;
 
   // BrowserMessageFilter override.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnAddTrack(uint64 id, bool is_audio, bool is_remote);

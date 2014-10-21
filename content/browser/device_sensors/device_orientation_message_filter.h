@@ -14,10 +14,10 @@ class DeviceOrientationMessageFilter : public BrowserMessageFilter {
   DeviceOrientationMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~DeviceOrientationMessageFilter();
+  ~DeviceOrientationMessageFilter() override;
 
   void OnDeviceOrientationStartPolling();
   void OnDeviceOrientationStopPolling();

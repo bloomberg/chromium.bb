@@ -45,25 +45,23 @@ void DidGetUsage(bool* done,
 class MockQuotaClient : public QuotaClient {
  public:
   MockQuotaClient() {}
-  virtual ~MockQuotaClient() {}
+  ~MockQuotaClient() override {}
 
-  virtual ID id() const override {
-    return kFileSystem;
-  }
+  ID id() const override { return kFileSystem; }
 
-  virtual void OnQuotaManagerDestroyed() override {}
+  void OnQuotaManagerDestroyed() override {}
 
-  virtual void GetOriginUsage(const GURL& origin,
-                              StorageType type,
-                              const GetUsageCallback& callback) override {
+  void GetOriginUsage(const GURL& origin,
+                      StorageType type,
+                      const GetUsageCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     int64 usage = GetUsage(origin);
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(callback, usage));
   }
 
-  virtual void GetOriginsForType(StorageType type,
-                                 const GetOriginsCallback& callback) override {
+  void GetOriginsForType(StorageType type,
+                         const GetOriginsCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     std::set<GURL> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
@@ -74,9 +72,9 @@ class MockQuotaClient : public QuotaClient {
                                            base::Bind(callback, origins));
   }
 
-  virtual void GetOriginsForHost(StorageType type,
-                                 const std::string& host,
-                                 const GetOriginsCallback& callback) override {
+  void GetOriginsForHost(StorageType type,
+                         const std::string& host,
+                         const GetOriginsCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     std::set<GURL> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
@@ -88,16 +86,16 @@ class MockQuotaClient : public QuotaClient {
                                            base::Bind(callback, origins));
   }
 
-  virtual void DeleteOriginData(const GURL& origin,
-                                StorageType type,
-                                const DeletionCallback& callback) override {
+  void DeleteOriginData(const GURL& origin,
+                        StorageType type,
+                        const DeletionCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     usage_map_.erase(origin);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, kQuotaStatusOk));
   }
 
-  virtual bool DoesSupport(storage::StorageType type) const override {
+  bool DoesSupport(storage::StorageType type) const override {
     return type == storage::kStorageTypeTemporary;
   }
 

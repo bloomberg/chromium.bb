@@ -64,12 +64,10 @@ class BrowserTargetImpl : public mojo::InterfaceImpl<BrowserTarget> {
  public:
   explicit BrowserTargetImpl(base::RunLoop* run_loop) : run_loop_(run_loop) {}
 
-  virtual ~BrowserTargetImpl() {}
+  ~BrowserTargetImpl() override {}
 
   // mojo::InterfaceImpl<BrowserTarget> overrides:
-  virtual void PingResponse() override {
-    NOTREACHED();
-  }
+  void PingResponse() override { NOTREACHED(); }
 
  protected:
   base::RunLoop* run_loop_;
@@ -83,15 +81,13 @@ class PingBrowserTargetImpl : public BrowserTargetImpl {
   explicit PingBrowserTargetImpl(base::RunLoop* run_loop)
       : BrowserTargetImpl(run_loop) {}
 
-  virtual ~PingBrowserTargetImpl() {}
+  ~PingBrowserTargetImpl() override {}
 
   // mojo::InterfaceImpl<BrowserTarget> overrides:
-  virtual void OnConnectionEstablished() override {
-    client()->Ping();
-  }
+  void OnConnectionEstablished() override { client()->Ping(); }
 
   // Quit the RunLoop when called.
-  virtual void PingResponse() override {
+  void PingResponse() override {
     got_message = true;
     run_loop_->Quit();
   }
@@ -127,10 +123,10 @@ class PingTestWebUIController : public TestWebUIController {
    PingTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
        : TestWebUIController(web_ui, run_loop) {
    }
-   virtual ~PingTestWebUIController() {}
+   ~PingTestWebUIController() override {}
 
   // WebUIController overrides:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) override {
+   void RenderViewCreated(RenderViewHost* render_view_host) override {
     render_view_host->GetMainFrame()->GetServiceRegistry()->
         AddService<BrowserTarget>(base::Bind(
             &PingTestWebUIController::CreateHandler, base::Unretained(this)));
@@ -152,22 +148,22 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
 
-  virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const override {
+  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
+                                               const GURL& url) const override {
     if (url.query() == "ping")
       return new PingTestWebUIController(web_ui, run_loop_);
     return NULL;
   }
-  virtual WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-      const GURL& url) const override {
+  WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
+                             const GURL& url) const override {
     return reinterpret_cast<WebUI::TypeID>(1);
   }
-  virtual bool UseWebUIForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+  bool UseWebUIForURL(BrowserContext* browser_context,
+                      const GURL& url) const override {
     return true;
   }
-  virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                                      const GURL& url) const override {
+  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
+                              const GURL& url) const override {
     return true;
   }
 

@@ -37,17 +37,17 @@ class GestureTextSelectorTest : public testing::Test,
   }
 
   // GestureTextSelectorClient implementation.
-  virtual void ShowSelectionHandlesAutomatically() override {
+  void ShowSelectionHandlesAutomatically() override {
     event_log_.push_back("Show");
   }
 
-  virtual void SelectRange(float x1, float y1, float x2, float y2) override {
+  void SelectRange(float x1, float y1, float x2, float y2) override {
     std::stringstream ss;
     ss << "SelectRange(" << x1 << ", " << y1 << ", " << x2 << ", " << y2 << ")";
     event_log_.push_back(ss.str());
   }
 
-  virtual void LongPress(base::TimeTicks time, float x, float y) override {
+  void LongPress(base::TimeTicks time, float x, float y) override {
     event_log_.push_back("LongPress");
   }
 

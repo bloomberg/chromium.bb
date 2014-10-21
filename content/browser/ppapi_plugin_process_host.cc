@@ -48,7 +48,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 #endif  // OS_POSIX
         is_broker_(is_broker) {}
 
-  virtual ~PpapiPluginSandboxedProcessLauncherDelegate() {}
+  ~PpapiPluginSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
   virtual bool ShouldSandbox() override {
@@ -69,16 +69,14 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 
 #elif defined(OS_POSIX)
-  virtual bool ShouldUseZygote() override {
+  bool ShouldUseZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringType plugin_launcher = browser_command_line
         .GetSwitchValueNative(switches::kPpapiPluginLauncher);
     return !is_broker_ && plugin_launcher.empty() && info_.is_sandboxed;
   }
-  virtual base::ScopedFD TakeIpcFd() override {
-    return ipc_fd_.Pass();
-  }
+  base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
 
  private:
@@ -101,13 +99,13 @@ class PpapiPluginProcessHost::PluginNetworkObserver
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
-  virtual ~PluginNetworkObserver() {
+  ~PluginNetworkObserver() override {
     net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
 
   // IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() override {
+  void OnIPAddressChanged() override {
     // TODO(brettw) bug 90246: This doesn't seem correct. The online/offline
     // notification seems like it should be sufficient, but I don't see that
     // when I unplug and replug my network cable. Sending this notification when
@@ -118,7 +116,7 @@ class PpapiPluginProcessHost::PluginNetworkObserver
   }
 
   // ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
     process_host_->Send(new PpapiMsg_SetNetworkState(
         type != net::NetworkChangeNotifier::CONNECTION_NONE));

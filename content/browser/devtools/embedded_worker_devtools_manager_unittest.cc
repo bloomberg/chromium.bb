@@ -21,11 +21,10 @@ namespace {
 class TestDevToolsClientHost : public DevToolsAgentHostClient {
  public:
   TestDevToolsClientHost() {}
-  virtual ~TestDevToolsClientHost() {}
-  virtual void DispatchProtocolMessage(
-      DevToolsAgentHost* agent_host, const std::string& message) override {}
-  virtual void AgentHostClosed(
-      DevToolsAgentHost* agent_host, bool replaced) override {}
+  ~TestDevToolsClientHost() override {}
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override {}
+  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {}
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
     if (agent_host_.get())

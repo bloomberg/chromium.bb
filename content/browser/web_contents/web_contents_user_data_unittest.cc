@@ -15,7 +15,8 @@ namespace content {
 class WebContentsAttachedClass1
     : public WebContentsUserData<WebContentsAttachedClass1> {
  public:
-  virtual ~WebContentsAttachedClass1() {}
+  ~WebContentsAttachedClass1() override {}
+
  private:
   explicit WebContentsAttachedClass1(WebContents* contents) {}
   friend class WebContentsUserData<WebContentsAttachedClass1>;
@@ -24,7 +25,8 @@ class WebContentsAttachedClass1
 class WebContentsAttachedClass2
     : public WebContentsUserData<WebContentsAttachedClass2> {
  public:
-  virtual ~WebContentsAttachedClass2() {}
+  ~WebContentsAttachedClass2() override {}
+
  private:
   explicit WebContentsAttachedClass2(WebContents* contents) {}
   friend class WebContentsUserData<WebContentsAttachedClass2>;

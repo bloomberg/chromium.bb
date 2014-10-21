@@ -42,11 +42,11 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void CreateAndTestRequest(bool success, const std::string& http_response);
 
   // SpeechRecognitionRequestDelegate methods.
-  virtual void OnSpeechRecognitionEngineResults(
+  void OnSpeechRecognitionEngineResults(
       const SpeechRecognitionResults& results) override {
     results_.push(results);
   }
-  virtual void OnSpeechRecognitionEngineError(
+  void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) override {
     error_ = error.code;
   }

@@ -17,10 +17,9 @@ namespace {
 class FakeVSyncProvider : public gfx::VSyncProvider {
  public:
   FakeVSyncProvider() : call_count_(0) {}
-  virtual ~FakeVSyncProvider() {}
+  ~FakeVSyncProvider() override {}
 
-  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback)
-      override {
+  void GetVSyncParameters(const UpdateVSyncCallback& callback) override {
     callback.Run(timebase_, interval_);
     call_count_++;
   }
@@ -42,9 +41,9 @@ class FakeVSyncProvider : public gfx::VSyncProvider {
 class FakeSoftwareOutputDevice : public cc::SoftwareOutputDevice {
  public:
   FakeSoftwareOutputDevice() : vsync_provider_(new FakeVSyncProvider()) {}
-  virtual ~FakeSoftwareOutputDevice() {}
+  ~FakeSoftwareOutputDevice() override {}
 
-  virtual gfx::VSyncProvider* GetVSyncProvider() override {
+  gfx::VSyncProvider* GetVSyncProvider() override {
     return vsync_provider_.get();
   }
 

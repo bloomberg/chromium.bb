@@ -37,39 +37,35 @@ class GpuProcessTransportFactory
  public:
   GpuProcessTransportFactory();
 
-  virtual ~GpuProcessTransportFactory();
+  ~GpuProcessTransportFactory() override;
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
   CreateOffscreenCommandBufferContext();
 
   // ui::ContextFactory implementation.
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      ui::Compositor* compositor, bool software_fallback) override;
-  virtual scoped_refptr<ui::Reflector> CreateReflector(
-      ui::Compositor* source,
-      ui::Layer* target) override;
-  virtual void RemoveReflector(
-      scoped_refptr<ui::Reflector> reflector) override;
-  virtual void RemoveCompositor(ui::Compositor* compositor) override;
-  virtual scoped_refptr<cc::ContextProvider>
-      SharedMainThreadContextProvider() override;
-  virtual bool DoesCreateTestContexts() override;
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
-  virtual cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
-  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
-      override;
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+      ui::Compositor* compositor,
+      bool software_fallback) override;
+  scoped_refptr<ui::Reflector> CreateReflector(ui::Compositor* source,
+                                               ui::Layer* target) override;
+  void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
+  void RemoveCompositor(ui::Compositor* compositor) override;
+  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
+  bool DoesCreateTestContexts() override;
+  cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  base::MessageLoopProxy* GetCompositorMessageLoop() override;
+  scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
 
   // ImageTransportFactory implementation.
-  virtual ui::ContextFactory* GetContextFactory() override;
-  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
-  virtual cc::SurfaceManager* GetSurfaceManager() override;
-  virtual GLHelper* GetGLHelper() override;
-  virtual void AddObserver(ImageTransportFactoryObserver* observer) override;
-  virtual void RemoveObserver(
-      ImageTransportFactoryObserver* observer) override;
+  ui::ContextFactory* GetContextFactory() override;
+  gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
+  cc::SurfaceManager* GetSurfaceManager() override;
+  GLHelper* GetGLHelper() override;
+  void AddObserver(ImageTransportFactoryObserver* observer) override;
+  void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
-  virtual void OnSurfaceDisplayed(int surface_id) override;
+  void OnSurfaceDisplayed(int surface_id) override;
 #endif
 
  private:

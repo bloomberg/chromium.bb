@@ -14,10 +14,10 @@ class DeviceLightMessageFilter : public BrowserMessageFilter {
   DeviceLightMessageFilter();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~DeviceLightMessageFilter();
+  ~DeviceLightMessageFilter() override;
 
   void OnDeviceLightStartPolling();
   void OnDeviceLightStopPolling();

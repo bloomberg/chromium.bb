@@ -21,12 +21,12 @@ class CONTENT_EXPORT PowerMonitorMessageBroadcaster
     : public base::PowerObserver {
  public:
   explicit PowerMonitorMessageBroadcaster(IPC::Sender* sender);
-  virtual ~PowerMonitorMessageBroadcaster();
+  ~PowerMonitorMessageBroadcaster() override;
 
   // Implement PowerObserver.
-  virtual void OnPowerStateChange(bool on_battery_power) override;
-  virtual void OnSuspend() override;
-  virtual void OnResume() override;
+  void OnPowerStateChange(bool on_battery_power) override;
+  void OnSuspend() override;
+  void OnResume() override;
 
   void Init();
 

@@ -53,13 +53,13 @@ class CONTENT_EXPORT ChromeAppCacheService
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   // AppCachePolicy overrides
-  virtual bool CanLoadAppCache(const GURL& manifest_url,
-                               const GURL& first_party) override;
-  virtual bool CanCreateAppCache(const GURL& manifest_url,
-                                 const GURL& first_party) override;
+  bool CanLoadAppCache(const GURL& manifest_url,
+                       const GURL& first_party) override;
+  bool CanCreateAppCache(const GURL& manifest_url,
+                         const GURL& first_party) override;
 
  protected:
-  virtual ~ChromeAppCacheService();
+  ~ChromeAppCacheService() override;
 
  private:
   friend class base::DeleteHelper<ChromeAppCacheService>;

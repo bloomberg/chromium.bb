@@ -94,7 +94,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
-  virtual ~BrowserAccessibilityManager();
+  ~BrowserAccessibilityManager() override;
 
   void Initialize(const ui::AXTreeUpdate& initial_tree);
 
@@ -187,12 +187,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node);
 
   // AXTreeDelegate implementation.
-  virtual void OnNodeWillBeDeleted(ui::AXNode* node) override;
-  virtual void OnNodeCreated(ui::AXNode* node) override;
-  virtual void OnNodeChanged(ui::AXNode* node) override;
-  virtual void OnNodeCreationFinished(ui::AXNode* node) override;
-  virtual void OnNodeChangeFinished(ui::AXNode* node) override;
-  virtual void OnRootChanged(ui::AXNode* new_root) override {}
+  void OnNodeWillBeDeleted(ui::AXNode* node) override;
+  void OnNodeCreated(ui::AXNode* node) override;
+  void OnNodeChanged(ui::AXNode* node) override;
+  void OnNodeCreationFinished(ui::AXNode* node) override;
+  void OnNodeChangeFinished(ui::AXNode* node) override;
+  void OnRootChanged(ui::AXNode* new_root) override {}
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
   void set_delegate(BrowserAccessibilityDelegate* delegate) {

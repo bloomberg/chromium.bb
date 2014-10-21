@@ -60,39 +60,33 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   }
 
   // net::URLRequestJob overrides:
-  virtual void Start() override;
-  virtual void Kill() override;
-  virtual net::LoadState GetLoadState() const override;
-  virtual bool GetCharset(std::string* charset) override;
-  virtual bool GetMimeType(std::string* mime_type) const override;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) override;
-  virtual void GetLoadTimingInfo(
-      net::LoadTimingInfo* load_timing_info) const override;
-  virtual int GetResponseCode() const override;
-  virtual void SetExtraRequestHeaders(
-      const net::HttpRequestHeaders& headers) override;
-  virtual bool ReadRawData(net::IOBuffer* buf,
-                           int buf_size,
-                           int *bytes_read) override;
+  void Start() override;
+  void Kill() override;
+  net::LoadState GetLoadState() const override;
+  bool GetCharset(std::string* charset) override;
+  bool GetMimeType(std::string* mime_type) const override;
+  void GetResponseInfo(net::HttpResponseInfo* info) override;
+  void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
+  int GetResponseCode() const override;
+  void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
 
   // net::URLRequest::Delegate overrides that read the blob from the
   // ServiceWorkerFetchResponse.
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override;
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) override;
-  virtual void OnCertificateRequested(
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* auth_info) override;
+  void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     const net::SSLInfo& ssl_info,
-                                     bool fatal) override;
-  virtual void OnBeforeNetworkStart(net::URLRequest* request,
-                                    bool* defer) override;
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
+  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   const net::HttpResponseInfo* http_info() const;
 
@@ -106,7 +100,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       base::TimeTicks* fetch_end_time) const;
 
  protected:
-  virtual ~ServiceWorkerURLRequestJob();
+  ~ServiceWorkerURLRequestJob() override;
 
  private:
   enum ResponseType {

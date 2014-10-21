@@ -21,12 +21,12 @@ class Stream;
 class StreamHandleImpl : public StreamHandle {
  public:
   StreamHandleImpl(const base::WeakPtr<Stream>& stream);
-  virtual ~StreamHandleImpl();
+  ~StreamHandleImpl() override;
 
  private:
   // StreamHandle overrides
-  virtual const GURL& GetURL() override;
-  virtual void AddCloseListener(const base::Closure& callback) override;
+  const GURL& GetURL() override;
+  void AddCloseListener(const base::Closure& callback) override;
 
   base::WeakPtr<Stream> stream_;
   GURL url_;

@@ -29,22 +29,21 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   ThrottlingResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                             net::URLRequest* request,
                             ScopedVector<ResourceThrottle> throttles);
-  virtual ~ThrottlingResourceHandler();
+  ~ThrottlingResourceHandler() override;
 
   // LayeredResourceHandler overrides:
-  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                                   ResourceResponse* response,
-                                   bool* defer) override;
-  virtual bool OnResponseStarted(ResourceResponse* response,
-                                 bool* defer) override;
-  virtual bool OnWillStart(const GURL& url, bool* defer) override;
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
+  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
+                           ResourceResponse* response,
+                           bool* defer) override;
+  bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
+  bool OnWillStart(const GURL& url, bool* defer) override;
+  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
 
   // ResourceController implementation:
-  virtual void Cancel() override;
-  virtual void CancelAndIgnore() override;
-  virtual void CancelWithError(int error_code) override;
-  virtual void Resume() override;
+  void Cancel() override;
+  void CancelAndIgnore() override;
+  void CancelWithError(int error_code) override;
+  void Resume() override;
 
  private:
   void ResumeStart();

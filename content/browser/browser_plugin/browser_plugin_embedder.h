@@ -39,7 +39,7 @@ struct NativeWebKeyboardEvent;
 
 class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
  public:
-  virtual ~BrowserPluginEmbedder();
+  ~BrowserPluginEmbedder() override;
 
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents);
 
@@ -50,7 +50,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void DidSendScreenRects();
 
   // WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);

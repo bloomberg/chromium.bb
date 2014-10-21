@@ -58,7 +58,7 @@ class DOMStorageAreaTest : public testing::Test {
   class VerifyChangesCommittedDatabase : public DOMStorageDatabase {
    public:
     VerifyChangesCommittedDatabase() {}
-    virtual ~VerifyChangesCommittedDatabase() {
+    ~VerifyChangesCommittedDatabase() override {
       const base::string16 kKey(ASCIIToUTF16("key"));
       const base::string16 kValue(ASCIIToUTF16("value"));
       DOMStorageValuesMap values;

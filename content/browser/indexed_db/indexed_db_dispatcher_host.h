@@ -58,12 +58,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       const content::IndexedDBDatabaseMetadata& metadata);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelClosing() override;
-  virtual void OnDestruct() const override;
-  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelClosing() override;
+  void OnDestruct() const override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void FinishTransaction(int64 host_transaction_id, bool committed);
 
@@ -234,7 +234,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     DISALLOW_COPY_AND_ASSIGN(CursorDispatcherHost);
   };
 
-  virtual ~IndexedDBDispatcherHost();
+  ~IndexedDBDispatcherHost() override;
 
   // Helper templates.
   template <class ReturnType>

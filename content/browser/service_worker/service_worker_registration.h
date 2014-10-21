@@ -110,7 +110,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
-  virtual ~ServiceWorkerRegistration();
+  ~ServiceWorkerRegistration() override;
 
   void SetVersionInternal(
       ServiceWorkerVersion* version,
@@ -121,7 +121,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       ChangedVersionAttributesMask* mask);
 
   // ServiceWorkerVersion::Listener override.
-  virtual void OnNoControllees(ServiceWorkerVersion* version) override;
+  void OnNoControllees(ServiceWorkerVersion* version) override;
 
   // This method corresponds to the [[Activate]] algorithm.
   void ActivateWaitingVersion();

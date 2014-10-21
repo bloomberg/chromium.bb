@@ -14,15 +14,15 @@ class CONTENT_EXPORT LocationProviderBase
     : NON_EXPORTED_BASE(public LocationProvider) {
  public:
   LocationProviderBase();
-  virtual ~LocationProviderBase();
+  ~LocationProviderBase() override;
 
  protected:
   void NotifyCallback(const Geoposition& position);
 
   // Overridden from LocationProvider:
-  virtual void SetUpdateCallback(
+  void SetUpdateCallback(
       const LocationProviderUpdateCallback& callback) override;
-  virtual void RequestRefresh() override;
+  void RequestRefresh() override;
 
  private:
   LocationProviderUpdateCallback callback_;

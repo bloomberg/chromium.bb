@@ -19,14 +19,14 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
                                         public RenderProcessHostObserver {
  public:
   // SiteInstance interface overrides.
-  virtual int32 GetId() override;
-  virtual bool HasProcess() const override;
-  virtual RenderProcessHost* GetProcess() override;
-  virtual BrowserContext* GetBrowserContext() const override;
-  virtual const GURL& GetSiteURL() const override;
-  virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) override;
-  virtual bool IsRelatedSiteInstance(const SiteInstance* instance) override;
-  virtual size_t GetRelatedActiveContentsCount() override;
+  int32 GetId() override;
+  bool HasProcess() const override;
+  RenderProcessHost* GetProcess() override;
+  BrowserContext* GetBrowserContext() const override;
+  const GURL& GetSiteURL() const override;
+  SiteInstance* GetRelatedSiteInstance(const GURL& url) override;
+  bool IsRelatedSiteInstance(const SiteInstance* instance) override;
+  size_t GetRelatedActiveContentsCount() override;
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -89,7 +89,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   friend class SiteInstance;
 
   // Virtual to allow tests to extend it.
-  virtual ~SiteInstanceImpl();
+  ~SiteInstanceImpl() override;
 
   // Create a new SiteInstance.  Protected to give access to BrowsingInstance
   // and tests; most callers should use Create or GetRelatedSiteInstance
@@ -98,7 +98,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
  private:
   // RenderProcessHostObserver implementation.
-  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) override;
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();

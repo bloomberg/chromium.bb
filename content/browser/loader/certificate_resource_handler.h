@@ -31,40 +31,39 @@ namespace content {
 class CertificateResourceHandler : public ResourceHandler {
  public:
   explicit CertificateResourceHandler(net::URLRequest* request);
-  virtual ~CertificateResourceHandler();
+  ~CertificateResourceHandler() override;
 
-  virtual bool OnUploadProgress(uint64 position, uint64 size) override;
+  bool OnUploadProgress(uint64 position, uint64 size) override;
 
   // Not needed, as this event handler ought to be the final resource.
-  virtual bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
-                                   ResourceResponse* resp,
-                                   bool* defer) override;
+  bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
+                           ResourceResponse* resp,
+                           bool* defer) override;
 
   // Check if this indeed an X509 cert.
-  virtual bool OnResponseStarted(ResourceResponse* resp,
-                                 bool* defer) override;
+  bool OnResponseStarted(ResourceResponse* resp, bool* defer) override;
 
   // Pass-through implementation.
-  virtual bool OnWillStart(const GURL& url, bool* defer) override;
+  bool OnWillStart(const GURL& url, bool* defer) override;
 
   // Pass-through implementation.
-  virtual bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
+  bool OnBeforeNetworkStart(const GURL& url, bool* defer) override;
 
   // Create a new buffer to store received data.
-  virtual bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
-                          int* buf_size,
-                          int min_size) override;
+  bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
+                  int* buf_size,
+                  int min_size) override;
 
   // A read was completed, maybe allocate a new buffer for further data.
-  virtual bool OnReadCompleted(int bytes_read, bool* defer) override;
+  bool OnReadCompleted(int bytes_read, bool* defer) override;
 
   // Done downloading the certificate.
-  virtual void OnResponseCompleted(const net::URLRequestStatus& urs,
-                                   const std::string& sec_info,
-                                   bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& urs,
+                           const std::string& sec_info,
+                           bool* defer) override;
 
   // N/A to cert downloading.
-  virtual void OnDataDownloaded(int bytes_downloaded) override;
+  void OnDataDownloaded(int bytes_downloaded) override;
 
  private:
   typedef std::vector<std::pair<scoped_refptr<net::IOBuffer>,

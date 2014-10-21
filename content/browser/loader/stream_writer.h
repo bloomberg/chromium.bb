@@ -29,7 +29,7 @@ class StreamWriter : public StreamWriteObserver {
   // Creates a new StreamWriter without an initialized Stream or controller. The
   // controller must be set before the writer is used.
   StreamWriter();
-  virtual ~StreamWriter();
+  ~StreamWriter() override;
 
   Stream* stream() { return stream_.get(); }
 
@@ -68,8 +68,8 @@ class StreamWriter : public StreamWriteObserver {
 
  private:
   // StreamWriteObserver implementation.
-  virtual void OnSpaceAvailable(Stream* stream) override;
-  virtual void OnClose(Stream* stream) override;
+  void OnSpaceAvailable(Stream* stream) override;
+  void OnClose(Stream* stream) override;
 
   ResourceController* controller_;
   scoped_refptr<Stream> stream_;

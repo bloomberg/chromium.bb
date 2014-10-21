@@ -19,7 +19,7 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
  public:
   RenderWidgetHostBrowserTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
   }
 

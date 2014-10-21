@@ -110,7 +110,7 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
                                ScopedVector<IPC::Message>* message_queue)
       : MessagePortMessageFilter(callback), message_queue_(message_queue) {}
 
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     if (!message_queue_) {
       delete message;
       return false;
@@ -125,7 +125,7 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
   }
 
  private:
-  virtual ~MockMessagePortMessageFilter() {}
+  ~MockMessagePortMessageFilter() override {}
   ScopedVector<IPC::Message>* message_queue_;
 };
 
@@ -142,7 +142,7 @@ class MockSharedWorkerMessageFilter : public SharedWorkerMessageFilter {
                                   message_port_filter),
         message_queue_(message_queue) {}
 
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     if (!message_queue_) {
       delete message;
       return false;
@@ -157,7 +157,7 @@ class MockSharedWorkerMessageFilter : public SharedWorkerMessageFilter {
   }
 
  private:
-  virtual ~MockSharedWorkerMessageFilter() {}
+  ~MockSharedWorkerMessageFilter() override {}
   ScopedVector<IPC::Message>* message_queue_;
 };
 

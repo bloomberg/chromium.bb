@@ -79,7 +79,7 @@ struct DropData;
 // which means it can share storage and can script this guest.
 class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
  public:
-  virtual ~BrowserPluginGuest();
+  ~BrowserPluginGuest() override;
 
   // The WebContents passed into the factory method here has not been
   // initialized yet and so it does not yet hold a SiteInstance.
@@ -149,16 +149,16 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   // WebContentsObserver implementation.
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
 
-  virtual void RenderViewReady() override;
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) override;
+  void RenderViewReady() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* render_frame_host) override;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents() const;

@@ -36,7 +36,7 @@ static size_t GetConsumerSharedMemoryBufferSize(ConsumerType consumer_type) {
 class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
  public:
   PollingThread(const char* name, DataFetcherSharedMemoryBase* fetcher);
-  virtual ~PollingThread();
+  ~PollingThread() override;
 
   void AddConsumer(ConsumerType consumer_type, void* buffer);
   void RemoveConsumer(ConsumerType consumer_type);

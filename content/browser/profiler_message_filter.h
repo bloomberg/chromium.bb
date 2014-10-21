@@ -21,13 +21,13 @@ class ProfilerMessageFilter : public BrowserMessageFilter {
   explicit ProfilerMessageFilter(int process_type);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32 peer_pid) override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~ProfilerMessageFilter();
+  ~ProfilerMessageFilter() override;
 
  private:
   // Message handlers.

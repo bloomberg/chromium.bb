@@ -19,15 +19,15 @@ class BrowserContext;
 class MidiDispatcherHost : public WebContentsObserver {
  public:
   explicit MidiDispatcherHost(WebContents* web_contents);
-  virtual ~MidiDispatcherHost();
+  ~MidiDispatcherHost() override;
 
   // WebContentsObserver implementation.
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  virtual void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
-                                   const LoadCommittedDetails& details,
-                                   const FrameNavigateParams& params) override;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                           const LoadCommittedDetails& details,
+                           const FrameNavigateParams& params) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* render_frame_host) override;
 
  private:
   void OnRequestSysExPermission(RenderFrameHost* render_frame_host,

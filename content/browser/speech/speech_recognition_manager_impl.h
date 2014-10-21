@@ -58,39 +58,39 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   static SpeechRecognitionManagerImpl* GetInstance();
 
   // SpeechRecognitionManager implementation.
-  virtual int CreateSession(
-      const SpeechRecognitionSessionConfig& config) override;
-  virtual void StartSession(int session_id) override;
-  virtual void AbortSession(int session_id) override;
-  virtual void AbortAllSessionsForRenderProcess(int render_process_id) override;
-  virtual void AbortAllSessionsForRenderView(int render_process_id,
-                                             int render_view_id) override;
-  virtual void StopAudioCaptureForSession(int session_id) override;
-  virtual const SpeechRecognitionSessionConfig& GetSessionConfig(
+  int CreateSession(const SpeechRecognitionSessionConfig& config) override;
+  void StartSession(int session_id) override;
+  void AbortSession(int session_id) override;
+  void AbortAllSessionsForRenderProcess(int render_process_id) override;
+  void AbortAllSessionsForRenderView(int render_process_id,
+                                     int render_view_id) override;
+  void StopAudioCaptureForSession(int session_id) override;
+  const SpeechRecognitionSessionConfig& GetSessionConfig(
       int session_id) const override;
-  virtual SpeechRecognitionSessionContext GetSessionContext(
+  SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const override;
-  virtual int GetSession(int render_process_id,
-                         int render_view_id,
-                         int request_id) const override;
-  virtual bool HasAudioInputDevices() override;
-  virtual base::string16 GetAudioInputDeviceModel() override;
-  virtual void ShowAudioInputSettings() override;
+  int GetSession(int render_process_id,
+                 int render_view_id,
+                 int request_id) const override;
+  bool HasAudioInputDevices() override;
+  base::string16 GetAudioInputDeviceModel() override;
+  void ShowAudioInputSettings() override;
 
   // SpeechRecognitionEventListener methods.
-  virtual void OnRecognitionStart(int session_id) override;
-  virtual void OnAudioStart(int session_id) override;
-  virtual void OnEnvironmentEstimationComplete(int session_id) override;
-  virtual void OnSoundStart(int session_id) override;
-  virtual void OnSoundEnd(int session_id) override;
-  virtual void OnAudioEnd(int session_id) override;
-  virtual void OnRecognitionEnd(int session_id) override;
-  virtual void OnRecognitionResults(
-      int session_id, const SpeechRecognitionResults& result) override;
-  virtual void OnRecognitionError(
-      int session_id, const SpeechRecognitionError& error) override;
-  virtual void OnAudioLevelsChange(int session_id, float volume,
-                                   float noise_volume) override;
+  void OnRecognitionStart(int session_id) override;
+  void OnAudioStart(int session_id) override;
+  void OnEnvironmentEstimationComplete(int session_id) override;
+  void OnSoundStart(int session_id) override;
+  void OnSoundEnd(int session_id) override;
+  void OnAudioEnd(int session_id) override;
+  void OnRecognitionEnd(int session_id) override;
+  void OnRecognitionResults(int session_id,
+                            const SpeechRecognitionResults& result) override;
+  void OnRecognitionError(int session_id,
+                          const SpeechRecognitionError& error) override;
+  void OnAudioLevelsChange(int session_id,
+                           float volume,
+                           float noise_volume) override;
 
   SpeechRecognitionManagerDelegate* delegate() const { return delegate_.get(); }
 
@@ -101,7 +101,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   friend struct base::DefaultDeleter<SpeechRecognitionManagerImpl>;
   SpeechRecognitionManagerImpl(media::AudioManager* audio_manager,
                                MediaStreamManager* media_stream_manager);
-  virtual ~SpeechRecognitionManagerImpl();
+  ~SpeechRecognitionManagerImpl() override;
 
  private:
   // Data types for the internal Finite State Machine (FSM).

@@ -33,12 +33,12 @@ class ThemeHelperMac : public NotificationObserver {
   friend struct DefaultSingletonTraits<ThemeHelperMac>;
 
   ThemeHelperMac();
-  virtual ~ThemeHelperMac();
+  ~ThemeHelperMac() override;
 
   // Overridden from NotificationObserver:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) override;
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
   NotificationRegistrar registrar_;
 

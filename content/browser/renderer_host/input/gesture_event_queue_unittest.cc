@@ -45,7 +45,7 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   // GestureEventQueueClient
-  virtual void SendGestureEventImmediately(
+  void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& event) override {
     ++sent_gesture_event_count_;
     if (sync_ack_result_) {
@@ -54,9 +54,8 @@ class GestureEventQueueTest : public testing::Test,
     }
   }
 
-  virtual void OnGestureEventAck(
-      const GestureEventWithLatencyInfo& event,
-      InputEventAckState ack_result) override {
+  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                         InputEventAckState ack_result) override {
     ++acked_gesture_event_count_;
     last_acked_event_ = event.event;
     if (sync_followup_event_) {
@@ -66,9 +65,8 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   // TouchpadTapSuppressionControllerClient
-  virtual void SendMouseEventImmediately(
-      const MouseEventWithLatencyInfo& event) override {
-  }
+  void SendMouseEventImmediately(
+      const MouseEventWithLatencyInfo& event) override {}
 
  protected:
   static GestureEventQueue::Config DefaultConfig() {

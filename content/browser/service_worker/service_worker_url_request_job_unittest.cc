@@ -55,9 +55,9 @@ class MockHttpProtocolHandler
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
       : provider_host_(provider_host),
         blob_storage_context_(blob_storage_context) {}
-  virtual ~MockHttpProtocolHandler() {}
+  ~MockHttpProtocolHandler() override {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     ServiceWorkerURLRequestJob* job =
@@ -199,12 +199,12 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
       : EmbeddedWorkerTestHelper(mock_render_process_id),
         blob_uuid_(blob_uuid),
         blob_size_(blob_size) {}
-  virtual ~BlobResponder() {}
+  ~BlobResponder() override {}
 
  protected:
-  virtual void OnFetchEvent(int embedded_worker_id,
-                            int request_id,
-                            const ServiceWorkerFetchRequest& request) override {
+  void OnFetchEvent(int embedded_worker_id,
+                    int request_id,
+                    const ServiceWorkerFetchRequest& request) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id,
         request_id,

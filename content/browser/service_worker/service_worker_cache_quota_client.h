@@ -25,23 +25,23 @@ class CONTENT_EXPORT ServiceWorkerCacheQuotaClient
  public:
   explicit ServiceWorkerCacheQuotaClient(
       base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager);
-  virtual ~ServiceWorkerCacheQuotaClient();
+  ~ServiceWorkerCacheQuotaClient() override;
 
   // QuotaClient overrides
-  virtual ID id() const override;
-  virtual void OnQuotaManagerDestroyed() override;
-  virtual void GetOriginUsage(const GURL& origin_url,
-                              storage::StorageType type,
-                              const GetUsageCallback& callback) override;
-  virtual void GetOriginsForType(storage::StorageType type,
-                                 const GetOriginsCallback& callback) override;
-  virtual void GetOriginsForHost(storage::StorageType type,
-                                 const std::string& host,
-                                 const GetOriginsCallback& callback) override;
-  virtual void DeleteOriginData(const GURL& origin,
-                                storage::StorageType type,
-                                const DeletionCallback& callback) override;
-  virtual bool DoesSupport(storage::StorageType type) const override;
+  ID id() const override;
+  void OnQuotaManagerDestroyed() override;
+  void GetOriginUsage(const GURL& origin_url,
+                      storage::StorageType type,
+                      const GetUsageCallback& callback) override;
+  void GetOriginsForType(storage::StorageType type,
+                         const GetOriginsCallback& callback) override;
+  void GetOriginsForHost(storage::StorageType type,
+                         const std::string& host,
+                         const GetOriginsCallback& callback) override;
+  void DeleteOriginData(const GURL& origin,
+                        storage::StorageType type,
+                        const DeletionCallback& callback) override;
+  bool DoesSupport(storage::StorageType type) const override;
 
  private:
   base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager_;

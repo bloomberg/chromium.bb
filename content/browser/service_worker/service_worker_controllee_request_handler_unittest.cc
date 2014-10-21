@@ -88,9 +88,9 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
-  virtual bool AllowServiceWorker(const GURL& scope,
-                                  const GURL& first_party,
-                                  content::ResourceContext* context) override {
+  bool AllowServiceWorker(const GURL& scope,
+                          const GURL& first_party,
+                          content::ResourceContext* context) override {
     return false;
   }
 };

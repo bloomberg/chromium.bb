@@ -24,12 +24,11 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
 
   // GpuChannelHostFactory implementation.
-  virtual bool IsMainThread() override;
-  virtual base::MessageLoop* GetMainLoop() override;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
-  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) override;
-  virtual CreateCommandBufferResult CreateViewCommandBuffer(
+  bool IsMainThread() override;
+  base::MessageLoop* GetMainLoop() override;
+  scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
+  scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
+  CreateCommandBufferResult CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;
@@ -58,7 +57,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   class EstablishRequest;
 
   BrowserGpuChannelHostFactory();
-  virtual ~BrowserGpuChannelHostFactory();
+  ~BrowserGpuChannelHostFactory() override;
 
   void GpuChannelEstablished();
   void CreateViewCommandBufferOnIO(

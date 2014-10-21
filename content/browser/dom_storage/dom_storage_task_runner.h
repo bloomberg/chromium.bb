@@ -49,7 +49,7 @@ class CONTENT_EXPORT DOMStorageTaskRunner
 
   // The TaskRunner override returns true if the current thread is running
   // on the primary sequence.
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksOnCurrentThread() const override;
 
   // Returns true if the current thread is running on the given |sequence_id|.
   virtual bool IsRunningOnSequence(SequenceID sequence_id) const = 0;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT DOMStorageTaskRunner
   }
 
  protected:
-  virtual ~DOMStorageTaskRunner() {}
+  ~DOMStorageTaskRunner() override {}
 };
 
 // A derived class used in chromium that utilizes a SequenceWorkerPool
@@ -76,20 +76,18 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
       base::SequencedWorkerPool::SequenceToken commit_sequence_token,
       base::MessageLoopProxy* delayed_task_loop);
 
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
 
-  virtual bool PostShutdownBlockingTask(
-      const tracked_objects::Location& from_here,
-      SequenceID sequence_id,
-      const base::Closure& task) override;
+  bool PostShutdownBlockingTask(const tracked_objects::Location& from_here,
+                                SequenceID sequence_id,
+                                const base::Closure& task) override;
 
-  virtual bool IsRunningOnSequence(SequenceID sequence_id) const override;
+  bool IsRunningOnSequence(SequenceID sequence_id) const override;
 
  protected:
-  virtual ~DOMStorageWorkerPoolTaskRunner();
+  ~DOMStorageWorkerPoolTaskRunner() override;
 
  private:
 
@@ -111,20 +109,18 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
  public:
   explicit MockDOMStorageTaskRunner(base::MessageLoopProxy* message_loop);
 
-  virtual bool PostDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
 
-  virtual bool PostShutdownBlockingTask(
-      const tracked_objects::Location& from_here,
-      SequenceID sequence_id,
-      const base::Closure& task) override;
+  bool PostShutdownBlockingTask(const tracked_objects::Location& from_here,
+                                SequenceID sequence_id,
+                                const base::Closure& task) override;
 
-  virtual bool IsRunningOnSequence(SequenceID sequence_id) const override;
+  bool IsRunningOnSequence(SequenceID sequence_id) const override;
 
  protected:
-  virtual ~MockDOMStorageTaskRunner();
+  ~MockDOMStorageTaskRunner() override;
 
  private:
   const scoped_refptr<base::MessageLoopProxy> message_loop_;

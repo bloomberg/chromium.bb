@@ -36,10 +36,10 @@ class PepperRendererConnection : public BrowserMessageFilter {
   explicit PepperRendererConnection(int render_process_id);
 
   // BrowserMessageFilter overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
-  virtual ~PepperRendererConnection();
+  ~PepperRendererConnection() override;
 
   // Returns the host for the child process for the given |child_process_id|.
   // If |child_process_id| is 0, returns the host owned by this

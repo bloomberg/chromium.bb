@@ -71,15 +71,15 @@ class CONTENT_EXPORT LevelDBTransaction
   class DataIterator : public LevelDBIterator {
    public:
     static scoped_ptr<DataIterator> Create(LevelDBTransaction* transaction);
-    virtual ~DataIterator();
+    ~DataIterator() override;
 
-    virtual bool IsValid() const override;
-    virtual leveldb::Status SeekToLast() override;
-    virtual leveldb::Status Seek(const base::StringPiece& slice) override;
-    virtual leveldb::Status Next() override;
-    virtual leveldb::Status Prev() override;
-    virtual base::StringPiece Key() const override;
-    virtual base::StringPiece Value() const override;
+    bool IsValid() const override;
+    leveldb::Status SeekToLast() override;
+    leveldb::Status Seek(const base::StringPiece& slice) override;
+    leveldb::Status Next() override;
+    leveldb::Status Prev() override;
+    base::StringPiece Key() const override;
+    base::StringPiece Value() const override;
     bool IsDeleted() const;
 
    private:
@@ -92,17 +92,17 @@ class CONTENT_EXPORT LevelDBTransaction
 
   class TransactionIterator : public LevelDBIterator {
    public:
-    virtual ~TransactionIterator();
+    ~TransactionIterator() override;
     static scoped_ptr<TransactionIterator> Create(
         scoped_refptr<LevelDBTransaction> transaction);
 
-    virtual bool IsValid() const override;
-    virtual leveldb::Status SeekToLast() override;
-    virtual leveldb::Status Seek(const base::StringPiece& target) override;
-    virtual leveldb::Status Next() override;
-    virtual leveldb::Status Prev() override;
-    virtual base::StringPiece Key() const override;
-    virtual base::StringPiece Value() const override;
+    bool IsValid() const override;
+    leveldb::Status SeekToLast() override;
+    leveldb::Status Seek(const base::StringPiece& target) override;
+    leveldb::Status Next() override;
+    leveldb::Status Prev() override;
+    base::StringPiece Key() const override;
+    base::StringPiece Value() const override;
     void DataChanged();
 
    private:

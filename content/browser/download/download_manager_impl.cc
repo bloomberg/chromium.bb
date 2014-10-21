@@ -161,9 +161,9 @@ class MapValueIteratorAdapter {
 class DownloadItemFactoryImpl : public DownloadItemFactory {
  public:
   DownloadItemFactoryImpl() {}
-  virtual ~DownloadItemFactoryImpl() {}
+  ~DownloadItemFactoryImpl() override {}
 
-  virtual DownloadItemImpl* CreatePersistedItem(
+  DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const base::FilePath& current_path,
@@ -205,7 +205,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
         bound_net_log);
   }
 
-  virtual DownloadItemImpl* CreateActiveItem(
+  DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const DownloadCreateInfo& info,
@@ -213,7 +213,7 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
     return new DownloadItemImpl(delegate, download_id, info, bound_net_log);
   }
 
-  virtual DownloadItemImpl* CreateSavePageItem(
+  DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
       uint32 download_id,
       const base::FilePath& path,

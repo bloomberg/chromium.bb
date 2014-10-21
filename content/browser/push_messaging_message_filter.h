@@ -25,10 +25,10 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
       ServiceWorkerContextWrapper* service_worker_context);
 
  private:
-  virtual ~PushMessagingMessageFilter();
+  ~PushMessagingMessageFilter() override;
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnRegister(int render_frame_id,
                   int callbacks_id,

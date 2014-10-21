@@ -41,7 +41,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   NetworkLocationRequest(net::URLRequestContextGetter* context,
                          const GURL& url,
                          LocationResponseCallback callback);
-  virtual ~NetworkLocationRequest();
+  ~NetworkLocationRequest() override;
 
   // Makes a new request. Returns true if the new request was successfully
   // started. In all cases, any currently pending request will be canceled.
@@ -54,7 +54,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   LocationResponseCallback location_response_callback_;

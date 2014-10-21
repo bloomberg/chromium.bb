@@ -21,38 +21,39 @@ class MockAppCacheStorageTest : public testing::Test {
           obsoleted_success_(false), found_cache_id_(kAppCacheNoCacheId) {
     }
 
-    virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) override {
+    void OnCacheLoaded(AppCache* cache, int64 cache_id) override {
       loaded_cache_ = cache;
       loaded_cache_id_ = cache_id;
     }
 
-    virtual void OnGroupLoaded(AppCacheGroup* group,
-                               const GURL& manifest_url) override {
+    void OnGroupLoaded(AppCacheGroup* group,
+                       const GURL& manifest_url) override {
       loaded_group_ = group;
       loaded_manifest_url_ = manifest_url;
     }
 
-    virtual void OnGroupAndNewestCacheStored(
-        AppCacheGroup* group, AppCache* newest_cache, bool success,
-        bool would_exceed_quota) override {
+    void OnGroupAndNewestCacheStored(AppCacheGroup* group,
+                                     AppCache* newest_cache,
+                                     bool success,
+                                     bool would_exceed_quota) override {
       stored_group_ = group;
       stored_group_success_ = success;
     }
 
-    virtual void OnGroupMadeObsolete(AppCacheGroup* group,
-                                     bool success,
-                                     int response_code) override {
+    void OnGroupMadeObsolete(AppCacheGroup* group,
+                             bool success,
+                             int response_code) override {
       obsoleted_group_ = group;
       obsoleted_success_ = success;
     }
 
-    virtual void OnMainResponseFound(const GURL& url,
-                                     const AppCacheEntry& entry,
-                                     const GURL& fallback_url,
-                                     const AppCacheEntry& fallback_entry,
-                                     int64 cache_id,
-                                     int64 group_id,
-                                     const GURL& manifest_url) override {
+    void OnMainResponseFound(const GURL& url,
+                             const AppCacheEntry& entry,
+                             const GURL& fallback_url,
+                             const AppCacheEntry& fallback_entry,
+                             int64 cache_id,
+                             int64 group_id,
+                             const GURL& manifest_url) override {
       found_url_ = url;
       found_entry_ = entry;
       found_fallback_url_ = fallback_url;
