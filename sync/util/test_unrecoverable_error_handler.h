@@ -15,10 +15,10 @@ namespace syncer {
 class TestUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
  public:
   TestUnrecoverableErrorHandler();
-  virtual ~TestUnrecoverableErrorHandler();
+  ~TestUnrecoverableErrorHandler() override;
 
-  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) override;
+  void OnUnrecoverableError(const tracked_objects::Location& from_here,
+                            const std::string& message) override;
 };
 
 }  // namespace syncer

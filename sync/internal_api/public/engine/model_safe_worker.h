@@ -89,13 +89,13 @@ class SYNC_EXPORT ModelSafeWorker
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 
   // MessageLoop::DestructionObserver implementation.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
  protected:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
 
   explicit ModelSafeWorker(WorkerLoopDestructionObserver* observer);
-  virtual ~ModelSafeWorker();
+  ~ModelSafeWorker() override;
 
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done

@@ -14,13 +14,13 @@ namespace syncer {
 // ciphertext.  Obviously, this should be used only for testing.
 class FakeEncryptor : public Encryptor {
  public:
-  virtual ~FakeEncryptor();
+  ~FakeEncryptor() override;
 
-  virtual bool EncryptString(const std::string& plaintext,
-                             std::string* ciphertext) override;
+  bool EncryptString(const std::string& plaintext,
+                     std::string* ciphertext) override;
 
-  virtual bool DecryptString(const std::string& ciphertext,
-                             std::string* plaintext) override;
+  bool DecryptString(const std::string& ciphertext,
+                     std::string* plaintext) override;
 };
 
 }  // namespace syncer

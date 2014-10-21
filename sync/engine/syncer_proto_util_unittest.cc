@@ -257,10 +257,9 @@ class DummyConnectionManager : public ServerConnectionManager {
         send_error_(false),
         access_denied_(false) {}
 
-  virtual ~DummyConnectionManager() {}
-  virtual bool PostBufferWithCachedAuth(
-      PostBufferParams* params,
-      ScopedServerStatusWatcher* watcher) override {
+  ~DummyConnectionManager() override {}
+  bool PostBufferWithCachedAuth(PostBufferParams* params,
+                                ScopedServerStatusWatcher* watcher) override {
     if (send_error_) {
       return false;
     }

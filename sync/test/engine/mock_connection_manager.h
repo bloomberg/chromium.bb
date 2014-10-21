@@ -35,14 +35,13 @@ class MockConnectionManager : public ServerConnectionManager {
 
   MockConnectionManager(syncable::Directory*,
                         CancelationSignal* signal);
-  virtual ~MockConnectionManager();
+  ~MockConnectionManager() override;
 
   // Overridden ServerConnectionManager functions.
-  virtual bool PostBufferToPath(
-      PostBufferParams*,
-      const std::string& path,
-      const std::string& auth_token,
-      ScopedServerStatusWatcher* watcher) override;
+  bool PostBufferToPath(PostBufferParams*,
+                        const std::string& path,
+                        const std::string& auth_token,
+                        ScopedServerStatusWatcher* watcher) override;
 
   // Control of commit response.
   // NOTE: Commit callback is invoked only once then reset.

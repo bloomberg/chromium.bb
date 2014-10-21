@@ -51,34 +51,32 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
       Encryptor* encryptor,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping);
-  virtual ~SyncEncryptionHandlerImpl();
+  ~SyncEncryptionHandlerImpl() override;
 
   // SyncEncryptionHandler implementation.
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual void Init() override;
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       bool is_explicit) override;
-  virtual void SetDecryptionPassphrase(const std::string& passphrase) override;
-  virtual void EnableEncryptEverything() override;
-  virtual bool EncryptEverythingEnabled() const override;
-  virtual PassphraseType GetPassphraseType() const override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  void Init() override;
+  void SetEncryptionPassphrase(const std::string& passphrase,
+                               bool is_explicit) override;
+  void SetDecryptionPassphrase(const std::string& passphrase) override;
+  void EnableEncryptEverything() override;
+  bool EncryptEverythingEnabled() const override;
+  PassphraseType GetPassphraseType() const override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
-  virtual void ApplyNigoriUpdate(
-      const sync_pb::NigoriSpecifics& nigori,
-      syncable::BaseTransaction* const trans) override;
-  virtual void UpdateNigoriFromEncryptedTypes(
+  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+                         syncable::BaseTransaction* const trans) override;
+  void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const override;
-  virtual bool NeedKeystoreKey(
-      syncable::BaseTransaction* const trans) const override;
-  virtual bool SetKeystoreKeys(
+  bool NeedKeystoreKey(syncable::BaseTransaction* const trans) const override;
+  bool SetKeystoreKeys(
       const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
       syncable::BaseTransaction* const trans) override;
   // Can be called from any thread.
-  virtual ModelTypeSet GetEncryptedTypes(
+  ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const override;
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk

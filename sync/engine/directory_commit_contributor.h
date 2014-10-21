@@ -32,10 +32,9 @@ class DirectoryCommitContributor : public CommitContributor {
   DirectoryCommitContributor(syncable::Directory* dir,
                              ModelType type,
                              DirectoryTypeDebugInfoEmitter* debug_info_emitter);
-  virtual ~DirectoryCommitContributor();
+  ~DirectoryCommitContributor() override;
 
-  virtual scoped_ptr<CommitContribution> GetContribution(
-      size_t max_entries) override;
+  scoped_ptr<CommitContribution> GetContribution(size_t max_entries) override;
 
  private:
   syncable::Directory* dir_;

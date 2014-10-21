@@ -18,26 +18,26 @@ namespace syncer {
 class SYNC_EXPORT_PRIVATE SyncBackupManager : public SyncRollbackManagerBase {
  public:
   SyncBackupManager();
-  virtual ~SyncBackupManager();
+  ~SyncBackupManager() override;
 
   // SyncManager implementation.
-  virtual void Init(InitArgs* args) override;
-  virtual void SaveChanges() override;
-  virtual SyncStatus GetDetailedStatus() const override;
-  virtual void ShutdownOnSyncThread(ShutdownReason reason) override;
+  void Init(InitArgs* args) override;
+  void SaveChanges() override;
+  SyncStatus GetDetailedStatus() const override;
+  void ShutdownOnSyncThread(ShutdownReason reason) override;
 
   // DirectoryChangeDelegate implementation.
-  virtual ModelTypeSet HandleTransactionEndingChangeEvent(
+  ModelTypeSet HandleTransactionEndingChangeEvent(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans) override;
 
-  virtual void RegisterDirectoryTypeDebugInfoObserver(
+  void RegisterDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
-  virtual void UnregisterDirectoryTypeDebugInfoObserver(
+  void UnregisterDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
-  virtual bool HasDirectoryTypeDebugInfoObserver(
+  bool HasDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
-  virtual void RequestEmitDebugInfo() override;
+  void RequestEmitDebugInfo() override;
 
  private:
   // Replaces local IDs with server IDs and clear unsynced bit of modified

@@ -47,20 +47,19 @@ class SYNC_EXPORT_PRIVATE DirectoryUpdateHandler : public UpdateHandler {
                          ModelType type,
                          scoped_refptr<ModelSafeWorker> worker,
                          DirectoryTypeDebugInfoEmitter* debug_info_emitter);
-  virtual ~DirectoryUpdateHandler();
+  ~DirectoryUpdateHandler() override;
 
   // UpdateHandler implementation.
-  virtual void GetDownloadProgress(
+  void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const override;
-  virtual void GetDataTypeContext(sync_pb::DataTypeContext* context) const
-      override;
-  virtual SyncerError ProcessGetUpdatesResponse(
+  void GetDataTypeContext(sync_pb::DataTypeContext* context) const override;
+  SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
       sessions::StatusController* status) override;
-  virtual void ApplyUpdates(sessions::StatusController* status) override;
-  virtual void PassiveApplyUpdates(sessions::StatusController* status) override;
+  void ApplyUpdates(sessions::StatusController* status) override;
+  void PassiveApplyUpdates(sessions::StatusController* status) override;
 
  private:
   friend class DirectoryUpdateHandlerApplyUpdateTest;

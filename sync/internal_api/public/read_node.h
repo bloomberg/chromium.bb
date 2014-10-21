@@ -22,16 +22,15 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   // Create an unpopulated ReadNode on the given transaction.  Call some flavor
   // of Init to populate the ReadNode with a database entry.
   explicit ReadNode(const BaseTransaction* transaction);
-  virtual ~ReadNode();
+  ~ReadNode() override;
 
   // A client must use one (and only one) of the following Init variants to
   // populate the node.
 
   // BaseNode implementation.
-  virtual InitByLookupResult InitByIdLookup(int64 id) override;
-  virtual InitByLookupResult InitByClientTagLookup(
-      ModelType model_type,
-      const std::string& tag) override;
+  InitByLookupResult InitByIdLookup(int64 id) override;
+  InitByLookupResult InitByClientTagLookup(ModelType model_type,
+                                           const std::string& tag) override;
 
   // There is always a root node, so this can't fail.  The root node is
   // never mutable, so root lookup is only possible on a ReadNode.
@@ -50,8 +49,8 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   InitByLookupResult InitByTagLookupForBookmarks(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.
-  virtual const syncable::Entry* GetEntry() const override;
-  virtual const BaseTransaction* GetTransaction() const override;
+  const syncable::Entry* GetEntry() const override;
+  const BaseTransaction* GetTransaction() const override;
 
  protected:
   ReadNode();

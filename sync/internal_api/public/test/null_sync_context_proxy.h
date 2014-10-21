@@ -19,15 +19,15 @@ class ModelTypeSyncProxyImpl;
 class NullSyncContextProxy : public SyncContextProxy {
  public:
   NullSyncContextProxy();
-  virtual ~NullSyncContextProxy();
+  ~NullSyncContextProxy() override;
 
-  virtual void ConnectTypeToSync(
+  void ConnectTypeToSync(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& saved_pending_updates,
       const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) override;
-  virtual void Disconnect(syncer::ModelType type) override;
-  virtual scoped_ptr<SyncContextProxy> Clone() const override;
+  void Disconnect(syncer::ModelType type) override;
+  scoped_ptr<SyncContextProxy> Clone() const override;
 };
 
 }  // namespace syncer

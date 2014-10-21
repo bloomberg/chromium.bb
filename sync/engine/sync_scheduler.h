@@ -64,7 +64,7 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // (except for RequestEarlyExit()).
 
   SyncScheduler();
-  virtual ~SyncScheduler();
+  ~SyncScheduler() override;
 
   // Start the scheduler with the given mode.  If the scheduler is
   // already started, switch to the given mode, although some

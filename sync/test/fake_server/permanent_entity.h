@@ -17,7 +17,7 @@ namespace fake_server {
 // A server-created, permanent entity.
 class PermanentEntity : public FakeServerEntity {
  public:
-  virtual ~PermanentEntity();
+  ~PermanentEntity() override;
 
   // Factory function for PermanentEntity. |server_tag| should be a globally
   // unique identifier.
@@ -37,10 +37,10 @@ class PermanentEntity : public FakeServerEntity {
       FakeServerEntity* current_server_entity);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const override;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
-  virtual bool IsDeleted() const override;
-  virtual bool IsFolder() const override;
+  std::string GetParentId() const override;
+  void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  bool IsDeleted() const override;
+  bool IsFolder() const override;
 
  private:
   PermanentEntity(const std::string& id,

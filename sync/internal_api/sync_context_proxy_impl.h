@@ -28,7 +28,7 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
   SyncContextProxyImpl(
       const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner,
       const base::WeakPtr<SyncContext>& sync_context);
-  virtual ~SyncContextProxyImpl();
+  ~SyncContextProxyImpl() override;
 
   // Attempts to connect a non-blocking type to the sync context.
   //
@@ -37,16 +37,16 @@ class SYNC_EXPORT_PRIVATE SyncContextProxyImpl : public SyncContextProxy {
   // unable to distinguish a slow success from failure.
   //
   // Must be called from the thread where the data type lives.
-  virtual void ConnectTypeToSync(
+  void ConnectTypeToSync(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& pending_updates,
       const base::WeakPtr<ModelTypeSyncProxyImpl>& sync_proxy_impl) override;
 
   // Disables syncing for the given type on the sync thread.
-  virtual void Disconnect(syncer::ModelType type) override;
+  void Disconnect(syncer::ModelType type) override;
 
-  virtual scoped_ptr<SyncContextProxy> Clone() const override;
+  scoped_ptr<SyncContextProxy> Clone() const override;
 
  private:
   // A SequencedTaskRunner representing the thread where the SyncContext lives.

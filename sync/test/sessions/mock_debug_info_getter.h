@@ -19,11 +19,11 @@ namespace sessions {
 class MockDebugInfoGetter : public sessions::DebugInfoGetter {
  public:
   MockDebugInfoGetter();
-  virtual ~MockDebugInfoGetter();
+  ~MockDebugInfoGetter() override;
 
   // DebugInfoGetter implementation.
-  virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) override;
-  virtual void ClearDebugInfo() override;
+  void GetDebugInfo(sync_pb::DebugInfo* debug_info) override;
+  void ClearDebugInfo() override;
 
   void AddDebugEvent();
 

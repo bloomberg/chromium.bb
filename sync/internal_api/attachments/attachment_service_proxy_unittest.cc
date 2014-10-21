@@ -32,13 +32,13 @@ class StubAttachmentService : public AttachmentService,
     DetachFromThread();
   }
 
-  virtual ~StubAttachmentService() {}
+  ~StubAttachmentService() override {}
 
-  virtual AttachmentStore* GetStore() override { return NULL; }
+  AttachmentStore* GetStore() override { return NULL; }
 
-  virtual void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
-                                        const GetOrDownloadCallback& callback)
-      override {
+  void GetOrDownloadAttachments(
+      const AttachmentIdList& attachment_ids,
+      const GetOrDownloadCallback& callback) override {
     CalledOnValidThread();
     Increment();
     scoped_ptr<AttachmentMap> attachments(new AttachmentMap());
@@ -49,16 +49,15 @@ class StubAttachmentService : public AttachmentService,
                    base::Passed(&attachments)));
   }
 
-  virtual void DropAttachments(const AttachmentIdList& attachment_ids,
-                               const DropCallback& callback) override {
+  void DropAttachments(const AttachmentIdList& attachment_ids,
+                       const DropCallback& callback) override {
     CalledOnValidThread();
     Increment();
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, AttachmentService::DROP_SUCCESS));
   }
 
-  virtual void UploadAttachments(
-      const AttachmentIdSet& attachments_ids) override {
+  void UploadAttachments(const AttachmentIdSet& attachments_ids) override {
     CalledOnValidThread();
     Increment();
   }

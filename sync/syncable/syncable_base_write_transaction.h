@@ -23,7 +23,7 @@ class SYNC_EXPORT BaseWriteTransaction : public BaseTransaction {
       const char* name,
       WriterTag writer,
       Directory* directory);
-  virtual ~BaseWriteTransaction();
+  ~BaseWriteTransaction() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseWriteTransaction);

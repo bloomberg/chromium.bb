@@ -21,10 +21,10 @@ namespace syncer {
 class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
  public:
   MockModelTypeSyncWorker();
-  virtual ~MockModelTypeSyncWorker();
+  ~MockModelTypeSyncWorker() override;
 
   // Implementation of ModelTypeSyncWorker.
-  virtual void EnqueueForCommit(const CommitRequestDataList& list) override;
+  void EnqueueForCommit(const CommitRequestDataList& list) override;
 
   // Getters to inspect the requests sent to this object.
   size_t GetNumCommitRequestLists() const;

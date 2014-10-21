@@ -22,15 +22,14 @@ class SYNC_EXPORT PassiveModelWorker : public ModelSafeWorker {
                               WorkerLoopDestructionObserver* observer);
 
   // ModelSafeWorker implementation. Called on the sync thread.
-  virtual void RegisterForLoopDestruction() override;
-  virtual ModelSafeGroup GetModelSafeGroup() override;
+  void RegisterForLoopDestruction() override;
+  ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
-  virtual SyncerError DoWorkAndWaitUntilDoneImpl(
-      const WorkCallback& work) override;
+  SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
 
  private:
-  virtual ~PassiveModelWorker();
+  ~PassiveModelWorker() override;
 
   const base::MessageLoop* const sync_loop_;
 

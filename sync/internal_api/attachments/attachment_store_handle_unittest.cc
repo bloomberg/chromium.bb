@@ -30,22 +30,20 @@ class MockAttachmentStore : public AttachmentStoreBase {
         drop_called_(drop_called),
         dtor_called_(dtor_called) {}
 
-  virtual ~MockAttachmentStore() {
-    dtor_called_.Run();
-  }
+  ~MockAttachmentStore() override { dtor_called_.Run(); }
 
-  virtual void Read(const AttachmentIdList& ids,
-                    const ReadCallback& callback) override {
+  void Read(const AttachmentIdList& ids,
+            const ReadCallback& callback) override {
     read_called_.Run();
   }
 
-  virtual void Write(const AttachmentList& attachments,
-                     const WriteCallback& callback) override {
+  void Write(const AttachmentList& attachments,
+             const WriteCallback& callback) override {
     write_called_.Run();
   }
 
-  virtual void Drop(const AttachmentIdList& ids,
-                    const DropCallback& callback) override {
+  void Drop(const AttachmentIdList& ids,
+            const DropCallback& callback) override {
     drop_called_.Run();
   }
 

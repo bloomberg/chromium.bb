@@ -22,14 +22,14 @@ class TrackableMockInvalidation : public MockInvalidation {
                             const std::string& payload,
                             MockInvalidationTracker* tracker,
                             int tracking_id);
-  virtual ~TrackableMockInvalidation();
+  ~TrackableMockInvalidation() override;
 
   // Forwards notice of the acknowledgement of this invalidation to the
   // |tracker_|.
-  virtual void Acknowledge() override;
+  void Acknowledge() override;
 
   // Forwards notice of the drop of this invalidation to the |tracker_|.
-  virtual void Drop() override;
+  void Drop() override;
 
   // Returns the integer used to identify this object with the |tracker_|.
   int GetTrackingId();

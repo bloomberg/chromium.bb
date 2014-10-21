@@ -16,11 +16,11 @@ class SYNC_EXPORT_PRIVATE InvalidDirectoryBackingStore
     : public DirectoryBackingStore {
  public:
   InvalidDirectoryBackingStore();
-  virtual ~InvalidDirectoryBackingStore();
-  virtual DirOpenResult Load(
-      Directory::MetahandlesMap* handles_map,
-      JournalIndex* delete_journals,
-      Directory::KernelLoadInfo* kernel_load_info) override;
+  ~InvalidDirectoryBackingStore() override;
+  DirOpenResult Load(Directory::MetahandlesMap* handles_map,
+                     JournalIndex* delete_journals,
+                     Directory::KernelLoadInfo* kernel_load_info) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InvalidDirectoryBackingStore);
 };

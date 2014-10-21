@@ -29,19 +29,19 @@ class SYNC_EXPORT SyncJsController
  public:
   SyncJsController();
 
-  virtual ~SyncJsController();
+  ~SyncJsController() override;
 
   // Sets the backend to route all messages to (if initialized).
   // Sends any queued-up messages if |backend| is initialized.
   void AttachJsBackend(const WeakHandle<JsBackend>& js_backend);
 
   // JsController implementation.
-  virtual void AddJsEventHandler(JsEventHandler* event_handler) override;
-  virtual void RemoveJsEventHandler(JsEventHandler* event_handler) override;
+  void AddJsEventHandler(JsEventHandler* event_handler) override;
+  void RemoveJsEventHandler(JsEventHandler* event_handler) override;
 
   // JsEventHandler implementation.
-  virtual void HandleJsEvent(const std::string& name,
-                             const JsEventDetails& details) override;
+  void HandleJsEvent(const std::string& name,
+                     const JsEventDetails& details) override;
 
  private:
   // Sets |js_backend_|'s event handler depending on how many

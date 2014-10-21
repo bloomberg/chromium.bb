@@ -17,14 +17,14 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
     : public InternalComponentsFactory {
  public:
   InternalComponentsFactoryImpl(const Switches& switches);
-  virtual ~InternalComponentsFactoryImpl();
+  ~InternalComponentsFactoryImpl() override;
 
-  virtual scoped_ptr<SyncScheduler> BuildScheduler(
+  scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context,
       syncer::CancelationSignal* cancelation_signal) override;
 
-  virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
+  scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       ExtensionsActivity* extensions_activity,
@@ -33,12 +33,12 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) override;
 
-  virtual scoped_ptr<syncable::DirectoryBackingStore>
-  BuildDirectoryBackingStore(StorageOption storage,
-                             const std::string& dir_name,
-                             const base::FilePath& backing_filepath) override;
+  scoped_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
+      StorageOption storage,
+      const std::string& dir_name,
+      const base::FilePath& backing_filepath) override;
 
-  virtual Switches GetSwitches() const override;
+  Switches GetSwitches() const override;
 
  private:
   const Switches switches_;

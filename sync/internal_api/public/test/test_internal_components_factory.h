@@ -14,14 +14,14 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
   explicit TestInternalComponentsFactory(const Switches& switches,
                                          StorageOption option,
                                          StorageOption* storage_used);
-  virtual ~TestInternalComponentsFactory();
+  ~TestInternalComponentsFactory() override;
 
-  virtual scoped_ptr<SyncScheduler> BuildScheduler(
+  scoped_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       sessions::SyncSessionContext* context,
       syncer::CancelationSignal* cancelation_signal) override;
 
-  virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
+  scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       ExtensionsActivity* monitor,
@@ -30,13 +30,12 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) override;
 
-  virtual scoped_ptr<syncable::DirectoryBackingStore>
-  BuildDirectoryBackingStore(
+  scoped_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
       StorageOption storage,
       const std::string& dir_name,
       const base::FilePath& backing_filepath) override;
 
-  virtual Switches GetSwitches() const override;
+  Switches GetSwitches() const override;
 
  private:
   const Switches switches_;

@@ -33,10 +33,10 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
   // Resume the middle of a transaction. Will not close transaction.
   ReadTransaction(UserShare* share, syncable::BaseTransaction* trans);
 
-  virtual ~ReadTransaction();
+  ~ReadTransaction() override;
 
   // BaseTransaction override.
-  virtual syncable::BaseTransaction* GetWrappedTrans() const override;
+  syncable::BaseTransaction* GetWrappedTrans() const override;
 
   // Return |transaction_version| of |type| stored in sync directory's
   // persisted info.

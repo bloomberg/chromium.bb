@@ -17,16 +17,16 @@ namespace fake_server {
 // A Sync entity that represents a deleted item.
 class TombstoneEntity : public FakeServerEntity {
  public:
-  virtual ~TombstoneEntity();
+  ~TombstoneEntity() override;
 
   // Factory function for TombstoneEntity.
   static FakeServerEntity* Create(const std::string& id);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const override;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
-  virtual bool IsDeleted() const override;
-  virtual bool IsFolder() const override;
+  std::string GetParentId() const override;
+  void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  bool IsDeleted() const override;
+  bool IsFolder() const override;
 
  private:
   TombstoneEntity(const std::string& id, const syncer::ModelType& model_type);

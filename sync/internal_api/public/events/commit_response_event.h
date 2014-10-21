@@ -24,13 +24,13 @@ class SYNC_EXPORT_PRIVATE CommitResponseEvent : public ProtocolEvent {
       base::Time timestamp,
       SyncerError result,
       const sync_pb::ClientToServerResponse& response);
-  virtual ~CommitResponseEvent();
+  ~CommitResponseEvent() override;
 
-  virtual base::Time GetTimestamp() const override;
-  virtual std::string GetType() const override;
-  virtual std::string GetDetails() const override;
-  virtual scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
-  virtual scoped_ptr<ProtocolEvent> Clone() const override;
+  base::Time GetTimestamp() const override;
+  std::string GetType() const override;
+  std::string GetDetails() const override;
+  scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  scoped_ptr<ProtocolEvent> Clone() const override;
 
   static scoped_ptr<base::DictionaryValue> ToValue(
       const ProtocolEvent& event);

@@ -18,7 +18,7 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
   ReadTransaction(const tracked_objects::Location& from_here,
                   Directory* directory);
 
-  virtual ~ReadTransaction();
+  ~ReadTransaction() override;
 
  protected:  // Don't allow creation on heap, except by sync API wrapper.
   friend class syncer::ReadTransaction;

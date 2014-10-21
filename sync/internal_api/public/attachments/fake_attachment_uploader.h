@@ -15,11 +15,11 @@ class SYNC_EXPORT FakeAttachmentUploader : public AttachmentUploader,
                                            public base::NonThreadSafe {
  public:
   FakeAttachmentUploader();
-  virtual ~FakeAttachmentUploader();
+  ~FakeAttachmentUploader() override;
 
   // AttachmentUploader implementation.
-  virtual void UploadAttachment(const Attachment& attachment,
-                                const UploadCallback& callback) override;
+  void UploadAttachment(const Attachment& attachment,
+                        const UploadCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAttachmentUploader);

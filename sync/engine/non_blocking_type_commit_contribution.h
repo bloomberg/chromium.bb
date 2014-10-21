@@ -26,15 +26,15 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
       const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
       const std::vector<int64>& sequence_numbers,
       ModelTypeSyncWorkerImpl* worker);
-  virtual ~NonBlockingTypeCommitContribution();
+  ~NonBlockingTypeCommitContribution() override;
 
   // Implementation of CommitContribution
-  virtual void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
-  virtual SyncerError ProcessCommitResponse(
+  void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
+  SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
       sessions::StatusController* status) override;
-  virtual void CleanUp() override;
-  virtual size_t GetNumEntries() const override;
+  void CleanUp() override;
+  size_t GetNumEntries() const override;
 
  private:
   // A non-owned pointer back to the object that created this contribution.

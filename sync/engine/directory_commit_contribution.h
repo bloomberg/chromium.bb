@@ -37,7 +37,7 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
     : public CommitContribution {
  public:
   // This destructor will DCHECK if UnsetSyncingBits() has not been called yet.
-  virtual ~DirectoryCommitContribution();
+  ~DirectoryCommitContribution() override;
 
   // Build a CommitContribution from the IS_UNSYNCED items in |dir| with the
   // given |type|.  The contribution will include at most |max_items| entries.
@@ -56,7 +56,7 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
   // This function is not const.  It will update some state in this contribution
   // that will be used when processing the associated commit response.  This
   // function should not be called more than once.
-  virtual void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
+  void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
 
   // Updates this contribution's contents in accordance with the provided
   // |response|.
@@ -64,16 +64,16 @@ class SYNC_EXPORT_PRIVATE DirectoryCommitContribution
   // This function may make model-neutral changes to the directory.  It is not
   // valid to call this function unless AddToCommitMessage() was called earlier.
   // This function should not be called more than once.
-  virtual SyncerError ProcessCommitResponse(
+  SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
       sessions::StatusController* status) override;
 
   // Cleans up any temporary state associated with the commit.  Must be called
   // before destruction.
-  virtual void CleanUp() override;
+  void CleanUp() override;
 
   // Returns the number of entries included in this contribution.
-  virtual size_t GetNumEntries() const override;
+  size_t GetNumEntries() const override;
 
  private:
   class DirectoryCommitContributionTest;

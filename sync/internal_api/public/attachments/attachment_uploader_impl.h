@@ -41,11 +41,11 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
       const OAuth2TokenService::ScopeSet& scopes,
       const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
           token_service_provider);
-  virtual ~AttachmentUploaderImpl();
+  ~AttachmentUploaderImpl() override;
 
   // AttachmentUploader implementation.
-  virtual void UploadAttachment(const Attachment& attachment,
-                                const UploadCallback& callback) override;
+  void UploadAttachment(const Attachment& attachment,
+                        const UploadCallback& callback) override;
 
   // Return the URL for the given |sync_service_url| and |attachment_id|.
   static GURL GetURLForAttachmentId(const GURL& sync_service_url,

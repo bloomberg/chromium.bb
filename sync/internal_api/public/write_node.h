@@ -56,16 +56,15 @@ class SYNC_EXPORT WriteNode : public BaseNode {
 
   // Create a WriteNode using the given transaction.
   explicit WriteNode(WriteTransaction* transaction);
-  virtual ~WriteNode();
+  ~WriteNode() override;
 
   // A client must use one (and only one) of the following Init variants to
   // populate the node.
 
   // BaseNode implementation.
-  virtual InitByLookupResult InitByIdLookup(int64 id) override;
-  virtual InitByLookupResult InitByClientTagLookup(
-      ModelType model_type,
-      const std::string& tag) override;
+  InitByLookupResult InitByIdLookup(int64 id) override;
+  InitByLookupResult InitByClientTagLookup(ModelType model_type,
+                                           const std::string& tag) override;
 
   // Create a new bookmark node with the specified parent and predecessor.  Use
   // a NULL |predecessor| to indicate that this is to be the first child.
@@ -178,9 +177,9 @@ class SYNC_EXPORT WriteNode : public BaseNode {
       const sync_pb::AttachmentMetadata& attachment_metadata);
 
   // Implementation of BaseNode's abstract virtual accessors.
-  virtual const syncable::Entry* GetEntry() const override;
+  const syncable::Entry* GetEntry() const override;
 
-  virtual const BaseTransaction* GetTransaction() const override;
+  const BaseTransaction* GetTransaction() const override;
 
   syncable::MutableEntry* GetMutableEntryForTest();
 

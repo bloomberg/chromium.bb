@@ -28,9 +28,9 @@ class SYNC_EXPORT_PRIVATE ModelNeutralWriteTransaction
       const tracked_objects::Location& location,
       WriterTag writer,
       Directory* directory);
-  virtual ~ModelNeutralWriteTransaction();
+  ~ModelNeutralWriteTransaction() override;
 
-  virtual void TrackChangesTo(const EntryKernel* entry) override;
+  void TrackChangesTo(const EntryKernel* entry) override;
 
  private:
   MetahandleSet modified_handles_;

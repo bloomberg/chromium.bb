@@ -25,44 +25,37 @@ using base::TimeDelta;
 class BlockingHttpPost : public HttpPostProviderInterface {
  public:
   BlockingHttpPost() : wait_for_abort_(false, false) {}
-  virtual ~BlockingHttpPost() {}
+  ~BlockingHttpPost() override {}
 
-  virtual void SetExtraRequestHeaders(const char* headers) override {}
-  virtual void SetURL(const char* url, int port) override {}
-  virtual void SetPostPayload(const char* content_type,
-                              int content_length,
-                              const char* content) override {}
-  virtual bool MakeSynchronousPost(int* error_code, int* response_code)
-      override {
+  void SetExtraRequestHeaders(const char* headers) override {}
+  void SetURL(const char* url, int port) override {}
+  void SetPostPayload(const char* content_type,
+                      int content_length,
+                      const char* content) override {}
+  bool MakeSynchronousPost(int* error_code, int* response_code) override {
     wait_for_abort_.TimedWait(TestTimeouts::action_max_timeout());
     *error_code = net::ERR_ABORTED;
     return false;
   }
-  virtual int GetResponseContentLength() const override {
-    return 0;
-  }
-  virtual const char* GetResponseContent() const override {
-    return "";
-  }
-  virtual const std::string GetResponseHeaderValue(
+  int GetResponseContentLength() const override { return 0; }
+  const char* GetResponseContent() const override { return ""; }
+  const std::string GetResponseHeaderValue(
       const std::string& name) const override {
     return std::string();
   }
-  virtual void Abort() override {
-    wait_for_abort_.Signal();
-  }
+  void Abort() override { wait_for_abort_.Signal(); }
  private:
   base::WaitableEvent wait_for_abort_;
 };
 
 class BlockingHttpPostFactory : public HttpPostProviderFactory {
  public:
-  virtual ~BlockingHttpPostFactory() {}
-  virtual void Init(const std::string& user_agent) override {}
-  virtual HttpPostProviderInterface* Create() override {
+  ~BlockingHttpPostFactory() override {}
+  void Init(const std::string& user_agent) override {}
+  HttpPostProviderInterface* Create() override {
     return new BlockingHttpPost();
   }
-  virtual void Destroy(HttpPostProviderInterface* http) override {
+  void Destroy(HttpPostProviderInterface* http) override {
     delete static_cast<BlockingHttpPost*>(http);
   }
 };

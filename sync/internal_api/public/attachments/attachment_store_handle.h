@@ -41,15 +41,13 @@ class SYNC_EXPORT AttachmentStoreHandle : public AttachmentStore,
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
 
   // AttachmentStore implementation.
-  virtual void Read(const AttachmentIdList& id,
-                    const ReadCallback& callback) override;
-  virtual void Write(const AttachmentList& attachments,
-                     const WriteCallback& callback) override;
-  virtual void Drop(const AttachmentIdList& id,
-                    const DropCallback& callback) override;
+  void Read(const AttachmentIdList& id, const ReadCallback& callback) override;
+  void Write(const AttachmentList& attachments,
+             const WriteCallback& callback) override;
+  void Drop(const AttachmentIdList& id, const DropCallback& callback) override;
 
  private:
-  virtual ~AttachmentStoreHandle();
+  ~AttachmentStoreHandle() override;
 
   // AttachmentStoreHandle controls backend's lifetime. It is safe for
   // AttachmentStoreHandle to bind backend through base::Unretained for posts.

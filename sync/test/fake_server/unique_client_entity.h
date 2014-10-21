@@ -17,7 +17,7 @@ namespace fake_server {
 // An entity that is unique per client account.
 class UniqueClientEntity : public FakeServerEntity {
  public:
-  virtual ~UniqueClientEntity();
+  ~UniqueClientEntity() override;
 
   // Factory function for creating a UniqueClientEntity.
   static FakeServerEntity* Create(const sync_pb::SyncEntity& client_entity);
@@ -27,10 +27,10 @@ class UniqueClientEntity : public FakeServerEntity {
       const sync_pb::SyncEntity& entity);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const override;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
-  virtual bool IsDeleted() const override;
-  virtual bool IsFolder() const override;
+  std::string GetParentId() const override;
+  void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  bool IsDeleted() const override;
+  bool IsFolder() const override;
 
  private:
   UniqueClientEntity(const std::string& id,

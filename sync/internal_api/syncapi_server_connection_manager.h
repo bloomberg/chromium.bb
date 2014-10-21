@@ -25,14 +25,14 @@ class SyncAPIBridgedConnection : public ServerConnectionManager::Connection {
   SyncAPIBridgedConnection(ServerConnectionManager* scm,
                            HttpPostProviderFactory* factory);
 
-  virtual ~SyncAPIBridgedConnection();
+  ~SyncAPIBridgedConnection() override;
 
-  virtual bool Init(const char* path,
-                    const std::string& auth_token,
-                    const std::string& payload,
-                    HttpResponse* response) override;
+  bool Init(const char* path,
+            const std::string& auth_token,
+            const std::string& payload,
+            HttpResponse* response) override;
 
-  virtual void Abort() override;
+  void Abort() override;
 
  private:
   // Pointer to the factory we use for creating HttpPostProviders. We do not
@@ -56,10 +56,10 @@ class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
                                  bool use_ssl,
                                  HttpPostProviderFactory* factory,
                                  CancelationSignal* cancelation_signal);
-  virtual ~SyncAPIServerConnectionManager();
+  ~SyncAPIServerConnectionManager() override;
 
   // ServerConnectionManager overrides.
-  virtual Connection* MakeConnection() override;
+  Connection* MakeConnection() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest,

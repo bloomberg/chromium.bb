@@ -23,10 +23,10 @@ class BookmarkEntityBuilder : public EntityBuilder {
                         const std::string& originator_cache_guid,
                         const std::string& originator_client_item_id);
 
-  virtual ~BookmarkEntityBuilder();
+  ~BookmarkEntityBuilder() override;
 
   // EntityBuilder
-  virtual scoped_ptr<FakeServerEntity> Build() override;
+  scoped_ptr<FakeServerEntity> Build() override;
 
  private:
   // The bookmark's URL.

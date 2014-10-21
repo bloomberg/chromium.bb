@@ -20,16 +20,15 @@ class ModelTypeSyncWorker;
 class InjectableSyncContextProxy : public syncer::SyncContextProxy {
  public:
   explicit InjectableSyncContextProxy(ModelTypeSyncWorker* worker);
-  virtual ~InjectableSyncContextProxy();
+  ~InjectableSyncContextProxy() override;
 
-  virtual void ConnectTypeToSync(
-      syncer::ModelType type,
-      const DataTypeState& data_type_state,
-      const UpdateResponseDataList& pending_updates,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy)
-      override;
-  virtual void Disconnect(syncer::ModelType type) override;
-  virtual scoped_ptr<SyncContextProxy> Clone() const override;
+  void ConnectTypeToSync(syncer::ModelType type,
+                         const DataTypeState& data_type_state,
+                         const UpdateResponseDataList& pending_updates,
+                         const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>&
+                             type_sync_proxy) override;
+  void Disconnect(syncer::ModelType type) override;
+  scoped_ptr<SyncContextProxy> Clone() const override;
 
   ModelTypeSyncWorker* GetWorker();
 

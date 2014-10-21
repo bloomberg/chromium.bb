@@ -55,7 +55,7 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
       OAuth2TokenServiceRequest::TokenServiceProvider* token_service_provider,
       const base::WeakPtr<AttachmentUploaderImpl>& owner);
 
-  virtual ~UploadState();
+  ~UploadState() override;
 
   // Returns true if this object is stopped.  Once stopped, this object is
   // effectively dead and can be destroyed.
@@ -72,14 +72,14 @@ class AttachmentUploaderImpl::UploadState : public net::URLFetcherDelegate,
   const Attachment& GetAttachment();
 
   // URLFetcher implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // OAuth2TokenService::Consumer.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
  private:
   typedef std::vector<UploadCallback> UploadCallbackList;

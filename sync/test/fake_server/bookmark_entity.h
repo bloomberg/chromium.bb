@@ -19,7 +19,7 @@ namespace fake_server {
 // are non-deleted, client-created, and not unique per client account.
 class BookmarkEntity : public FakeServerEntity {
  public:
-  virtual ~BookmarkEntity();
+  ~BookmarkEntity() override;
 
   // Factory function for BookmarkEntity. This factory should be used only for
   // the first time that a specific bookmark is seen by the server.
@@ -49,10 +49,10 @@ class BookmarkEntity : public FakeServerEntity {
                  int64 last_modified_time);
 
   // FakeServerEntity implementation.
-  virtual std::string GetParentId() const override;
-  virtual void SerializeAsProto(sync_pb::SyncEntity* proto) override;
-  virtual bool IsDeleted() const override;
-  virtual bool IsFolder() const override;
+  std::string GetParentId() const override;
+  void SerializeAsProto(sync_pb::SyncEntity* proto) override;
+  bool IsDeleted() const override;
+  bool IsFolder() const override;
 
  private:
   // All member values have equivalent fields in SyncEntity.

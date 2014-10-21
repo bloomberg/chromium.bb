@@ -23,14 +23,12 @@ class LocalSyncTestServer : public net::LocalTestServer {
   // |xmpp_port| for p2p notifications.
   LocalSyncTestServer(uint16 port, uint16 xmpp_port);
 
-  virtual ~LocalSyncTestServer();
+  ~LocalSyncTestServer() override;
 
   // Overriden from net::LocalTestServer.
-  virtual bool AddCommandLineArguments(
-      base::CommandLine* command_line) const override;
-  virtual bool SetPythonPath() const override;
-  virtual bool GetTestServerPath(
-      base::FilePath* testserver_path) const override;
+  bool AddCommandLineArguments(base::CommandLine* command_line) const override;
+  bool SetPythonPath() const override;
+  bool GetTestServerPath(base::FilePath* testserver_path) const override;
 
   // Returns true if the path to |test_script_name| is successfully stored  in
   // |*test_script_path|. Used by the run_sync_testserver executable.

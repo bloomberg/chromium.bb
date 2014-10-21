@@ -25,13 +25,13 @@ class SYNC_EXPORT_PRIVATE PollGetUpdatesRequestEvent : public ProtocolEvent {
   PollGetUpdatesRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request);
-  virtual ~PollGetUpdatesRequestEvent();
+  ~PollGetUpdatesRequestEvent() override;
 
-  virtual base::Time GetTimestamp() const override;
-  virtual std::string GetType() const override;
-  virtual std::string GetDetails() const override;
-  virtual scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
-  virtual scoped_ptr<ProtocolEvent> Clone() const override;
+  base::Time GetTimestamp() const override;
+  std::string GetType() const override;
+  std::string GetDetails() const override;
+  scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  scoped_ptr<ProtocolEvent> Clone() const override;
 
  private:
   const base::Time timestamp_;

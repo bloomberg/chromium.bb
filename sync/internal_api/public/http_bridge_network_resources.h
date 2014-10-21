@@ -21,10 +21,10 @@ class HttpPostProviderFactory;
 
 class SYNC_EXPORT HttpBridgeNetworkResources : public NetworkResources {
   public:
-   virtual ~HttpBridgeNetworkResources();
+   ~HttpBridgeNetworkResources() override;
 
    // NetworkResources
-   virtual scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
+   scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
        const scoped_refptr<net::URLRequestContextGetter>&
            baseline_context_getter,
        const NetworkTimeUpdateCallback& network_time_update_callback,

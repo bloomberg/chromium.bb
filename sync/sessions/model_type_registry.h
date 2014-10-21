@@ -48,7 +48,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
                     syncable::Directory* directory,
                     NudgeHandler* nudge_handler);
-  virtual ~ModelTypeRegistry();
+  ~ModelTypeRegistry() override;
 
   // Sets the set of enabled types.
   void SetEnabledDirectoryTypes(const ModelSafeRoutingInfo& routing_info);
@@ -57,7 +57,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   // and its task_runner to the newly created worker.
   //
   // Expects that the proxy's ModelType is not currently enabled.
-  virtual void ConnectSyncTypeToWorker(
+  void ConnectSyncTypeToWorker(
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const syncer::UpdateResponseDataList& saved_pending_updates,
@@ -68,22 +68,21 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   //
   // Expects that the type is currently enabled.
   // Deletes the worker associated with the type.
-  virtual void DisconnectSyncWorker(syncer::ModelType type) override;
+  void DisconnectSyncWorker(syncer::ModelType type) override;
 
   // Implementation of SyncEncryptionHandler::Observer.
-  virtual void OnPassphraseRequired(
+  void OnPassphraseRequired(
       PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) override;
-  virtual void OnPassphraseAccepted() override;
-  virtual void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
-                                       BootstrapTokenType type) override;
-  virtual void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                                       bool encrypt_everything) override;
-  virtual void OnEncryptionComplete() override;
-  virtual void OnCryptographerStateChanged(
-      Cryptographer* cryptographer) override;
-  virtual void OnPassphraseTypeChanged(PassphraseType type,
-                                       base::Time passphrase_time) override;
+  void OnPassphraseAccepted() override;
+  void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
+                               BootstrapTokenType type) override;
+  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+                               bool encrypt_everything) override;
+  void OnEncryptionComplete() override;
+  void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
+  void OnPassphraseTypeChanged(PassphraseType type,
+                               base::Time passphrase_time) override;
 
   // Gets the set of enabled types.
   ModelTypeSet GetEnabledTypes() const;

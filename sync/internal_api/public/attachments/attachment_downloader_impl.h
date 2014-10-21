@@ -42,21 +42,21 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
       const OAuth2TokenService::ScopeSet& scopes,
       const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
           token_service_provider);
-  virtual ~AttachmentDownloaderImpl();
+  ~AttachmentDownloaderImpl() override;
 
   // AttachmentDownloader implementation.
-  virtual void DownloadAttachment(const AttachmentId& attachment_id,
-                                  const DownloadCallback& callback) override;
+  void DownloadAttachment(const AttachmentId& attachment_id,
+                          const DownloadCallback& callback) override;
 
   // OAuth2TokenService::Consumer implementation.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AttachmentDownloaderImplTest, ExtractCrc32c_First);

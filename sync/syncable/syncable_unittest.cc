@@ -50,10 +50,9 @@ class TestBackingStore : public OnDiskDirectoryBackingStore {
   TestBackingStore(const std::string& dir_name,
                    const base::FilePath& backing_filepath);
 
-  virtual ~TestBackingStore();
+  ~TestBackingStore() override;
 
-  virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot)
-      override;
+  bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) override;
 
    void StartFailingSaveChanges() {
      fail_save_changes_ = true;
@@ -90,7 +89,7 @@ class TestDirectory : public Directory {
       const std::string& dir_name,
       const base::FilePath& backing_filepath);
 
-  virtual ~TestDirectory();
+  ~TestDirectory() override;
 
   void StartFailingSaveChanges() {
     backing_store_->StartFailingSaveChanges();

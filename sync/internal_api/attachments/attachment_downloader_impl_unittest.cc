@@ -34,24 +34,24 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
  public:
   MockOAuth2TokenService() : num_invalidate_token_(0) {}
 
-  virtual ~MockOAuth2TokenService() {}
+  ~MockOAuth2TokenService() override {}
 
   void RespondToAccessTokenRequest(GoogleServiceAuthError error);
 
   int num_invalidate_token() const { return num_invalidate_token_; }
 
  protected:
-  virtual void FetchOAuth2Token(RequestImpl* request,
-                                const std::string& account_id,
-                                net::URLRequestContextGetter* getter,
-                                const std::string& client_id,
-                                const std::string& client_secret,
-                                const ScopeSet& scopes) override;
+  void FetchOAuth2Token(RequestImpl* request,
+                        const std::string& account_id,
+                        net::URLRequestContextGetter* getter,
+                        const std::string& client_id,
+                        const std::string& client_secret,
+                        const ScopeSet& scopes) override;
 
-  virtual void InvalidateOAuth2Token(const std::string& account_id,
-                                     const std::string& client_id,
-                                     const ScopeSet& scopes,
-                                     const std::string& access_token) override;
+  void InvalidateOAuth2Token(const std::string& account_id,
+                             const std::string& client_id,
+                             const ScopeSet& scopes,
+                             const std::string& access_token) override;
 
  private:
   base::WeakPtr<RequestImpl> last_request_;
@@ -103,12 +103,12 @@ class TokenServiceProvider
   TokenServiceProvider(OAuth2TokenService* token_service);
 
   // OAuth2TokenService::TokenServiceProvider implementation.
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetTokenServiceTaskRunner() override;
-  virtual OAuth2TokenService* GetTokenService() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTokenServiceTaskRunner()
+      override;
+  OAuth2TokenService* GetTokenService() override;
 
  private:
-  virtual ~TokenServiceProvider();
+  ~TokenServiceProvider() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   OAuth2TokenService* token_service_;

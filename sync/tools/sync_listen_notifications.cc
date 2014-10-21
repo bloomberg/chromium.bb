@@ -52,14 +52,14 @@ const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
 class NotificationPrinter : public InvalidationHandler {
  public:
   NotificationPrinter() {}
-  virtual ~NotificationPrinter() {}
+  ~NotificationPrinter() override {}
 
-  virtual void OnInvalidatorStateChange(InvalidatorState state) override {
+  void OnInvalidatorStateChange(InvalidatorState state) override {
     LOG(INFO) << "Invalidator state changed to "
               << InvalidatorStateToString(state);
   }
 
-  virtual void OnIncomingInvalidation(
+  void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) override {
     ObjectIdSet ids = invalidation_map.GetObjectIds();
     for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
@@ -68,9 +68,7 @@ class NotificationPrinter : public InvalidationHandler {
     }
   }
 
-  virtual std::string GetOwnerName() const override {
-    return "NotificationPrinter";
-  }
+  std::string GetOwnerName() const override { return "NotificationPrinter"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPrinter);
@@ -87,7 +85,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
     Init();
   }
 
-  virtual ~MyTestURLRequestContext() {}
+  ~MyTestURLRequestContext() override {}
 };
 
 class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
@@ -96,7 +94,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
       : TestURLRequestContextGetter(io_task_runner) {}
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() override {
+  net::TestURLRequestContext* GetURLRequestContext() override {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)
@@ -105,7 +103,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
   }
 
  private:
-  virtual ~MyTestURLRequestContextGetter() {}
+  ~MyTestURLRequestContextGetter() override {}
 
   scoped_ptr<MyTestURLRequestContext> context_;
 };

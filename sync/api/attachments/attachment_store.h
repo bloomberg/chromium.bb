@@ -115,7 +115,7 @@ class SYNC_EXPORT AttachmentStore
 
  protected:
   friend class base::RefCountedThreadSafe<AttachmentStore>;
-  virtual ~AttachmentStore();
+  ~AttachmentStore() override;
 
  private:
   static void CreateOnDiskStoreOnBackendThread(

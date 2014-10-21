@@ -22,13 +22,13 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesRequestEvent
       base::Time timestamp,
       sync_pb::SyncEnums::GetUpdatesOrigin origin,
       const sync_pb::ClientToServerMessage& request);
-  virtual ~ConfigureGetUpdatesRequestEvent();
+  ~ConfigureGetUpdatesRequestEvent() override;
 
-  virtual base::Time GetTimestamp() const override;
-  virtual std::string GetType() const override;
-  virtual std::string GetDetails() const override;
-  virtual scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
-  virtual scoped_ptr<ProtocolEvent> Clone() const override;
+  base::Time GetTimestamp() const override;
+  std::string GetType() const override;
+  std::string GetDetails() const override;
+  scoped_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  scoped_ptr<ProtocolEvent> Clone() const override;
 
  private:
   const base::Time timestamp_;

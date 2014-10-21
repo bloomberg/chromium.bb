@@ -37,51 +37,46 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
       public DataTypeDebugInfoListener {
  public:
   DebugInfoEventListener();
-  virtual ~DebugInfoEventListener();
+  ~DebugInfoEventListener() override;
 
   // SyncManager::Observer implementation.
-  virtual void OnSyncCycleCompleted(
-    const sessions::SyncSessionSnapshot& snapshot) override;
-  virtual void OnInitializationComplete(
+  void OnSyncCycleCompleted(
+      const sessions::SyncSessionSnapshot& snapshot) override;
+  void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
-      bool success, ModelTypeSet restored_types) override;
-  virtual void OnConnectionStatusChange(
-      ConnectionStatus connection_status) override;
-  virtual void OnActionableError(
-      const SyncProtocolError& sync_error) override;
-  virtual void OnMigrationRequested(ModelTypeSet types) override;
-  virtual void OnProtocolEvent(const ProtocolEvent& event) override;
+      bool success,
+      ModelTypeSet restored_types) override;
+  void OnConnectionStatusChange(ConnectionStatus connection_status) override;
+  void OnActionableError(const SyncProtocolError& sync_error) override;
+  void OnMigrationRequested(ModelTypeSet types) override;
+  void OnProtocolEvent(const ProtocolEvent& event) override;
 
   // SyncEncryptionHandler::Observer implementation.
-  virtual void OnPassphraseRequired(
+  void OnPassphraseRequired(
       PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) override;
-  virtual void OnPassphraseAccepted() override;
-  virtual void OnBootstrapTokenUpdated(
-      const std::string& bootstrap_token,
-      BootstrapTokenType type) override;
-  virtual void OnEncryptedTypesChanged(
-      ModelTypeSet encrypted_types,
-      bool encrypt_everything) override;
-  virtual void OnEncryptionComplete() override;
-  virtual void OnCryptographerStateChanged(
-      Cryptographer* cryptographer) override;
-  virtual void OnPassphraseTypeChanged(
-      PassphraseType type,
-      base::Time explicit_passphrase_time) override;
+  void OnPassphraseAccepted() override;
+  void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
+                               BootstrapTokenType type) override;
+  void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
+                               bool encrypt_everything) override;
+  void OnEncryptionComplete() override;
+  void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
+  void OnPassphraseTypeChanged(PassphraseType type,
+                               base::Time explicit_passphrase_time) override;
 
   // Sync manager events.
   void OnNudgeFromDatatype(ModelType datatype);
 
   // DebugInfoGetter implementation.
-  virtual void GetDebugInfo(sync_pb::DebugInfo* debug_info) override;
+  void GetDebugInfo(sync_pb::DebugInfo* debug_info) override;
 
   // DebugInfoGetter implementation.
-  virtual void ClearDebugInfo() override;
+  void ClearDebugInfo() override;
 
   // DataTypeDebugInfoListener implementation.
-  virtual void OnDataTypeConfigureComplete(
+  void OnDataTypeConfigureComplete(
       const std::vector<DataTypeConfigurationStats>& configuration_stats)
       override;
 

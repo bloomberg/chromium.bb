@@ -23,20 +23,20 @@ class MockAttachmentStore : public AttachmentStore,
  public:
   MockAttachmentStore() {}
 
-  virtual void Read(const AttachmentIdList& ids,
-                    const ReadCallback& callback) override {
+  void Read(const AttachmentIdList& ids,
+            const ReadCallback& callback) override {
     read_ids.push_back(ids);
     read_callbacks.push_back(callback);
   }
 
-  virtual void Write(const AttachmentList& attachments,
-                     const WriteCallback& callback) override {
+  void Write(const AttachmentList& attachments,
+             const WriteCallback& callback) override {
     write_attachments.push_back(attachments);
     write_callbacks.push_back(callback);
   }
 
-  virtual void Drop(const AttachmentIdList& ids,
-                    const DropCallback& callback) override {
+  void Drop(const AttachmentIdList& ids,
+            const DropCallback& callback) override {
     NOTREACHED();
   }
 
@@ -88,7 +88,7 @@ class MockAttachmentStore : public AttachmentStore,
   std::vector<WriteCallback> write_callbacks;
 
  private:
-  virtual ~MockAttachmentStore() {}
+  ~MockAttachmentStore() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockAttachmentStore);
 };
@@ -99,8 +99,8 @@ class MockAttachmentDownloader
  public:
   MockAttachmentDownloader() {}
 
-  virtual void DownloadAttachment(const AttachmentId& id,
-                                  const DownloadCallback& callback) override {
+  void DownloadAttachment(const AttachmentId& id,
+                          const DownloadCallback& callback) override {
     ASSERT_TRUE(download_requests.find(id) == download_requests.end());
     download_requests.insert(std::make_pair(id, callback));
   }
@@ -133,8 +133,8 @@ class MockAttachmentUploader
   MockAttachmentUploader() {}
 
   // AttachmentUploader implementation.
-  virtual void UploadAttachment(const Attachment& attachment,
-                                const UploadCallback& callback) override {
+  void UploadAttachment(const Attachment& attachment,
+                        const UploadCallback& callback) override {
     const AttachmentId id = attachment.GetId();
     ASSERT_TRUE(upload_requests.find(id) == upload_requests.end());
     upload_requests.insert(std::make_pair(id, callback));
@@ -174,8 +174,7 @@ class AttachmentServiceImplTest : public testing::Test,
   }
 
   // AttachmentService::Delegate implementation.
-  virtual void OnAttachmentUploaded(
-      const AttachmentId& attachment_id) override {
+  void OnAttachmentUploaded(const AttachmentId& attachment_id) override {
     on_attachment_uploaded_list_.push_back(attachment_id);
   }
 

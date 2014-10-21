@@ -77,7 +77,7 @@ class SYNC_EXPORT SyncableService
   virtual scoped_refptr<AttachmentStore> GetAttachmentStore();
 
  protected:
-  virtual ~SyncableService();
+  ~SyncableService() override;
 };
 
 }  // namespace syncer

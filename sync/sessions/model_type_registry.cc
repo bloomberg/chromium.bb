@@ -26,15 +26,13 @@ class ModelTypeSyncProxyWrapper : public ModelTypeSyncProxy {
   ModelTypeSyncProxyWrapper(
       const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy,
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
-  virtual ~ModelTypeSyncProxyWrapper();
+  ~ModelTypeSyncProxyWrapper() override;
 
-  virtual void OnCommitCompleted(
-      const DataTypeState& type_state,
-      const CommitResponseDataList& response_list) override;
-  virtual void OnUpdateReceived(
-      const DataTypeState& type_state,
-      const UpdateResponseDataList& response_list,
-      const UpdateResponseDataList& pending_updates) override;
+  void OnCommitCompleted(const DataTypeState& type_state,
+                         const CommitResponseDataList& response_list) override;
+  void OnUpdateReceived(const DataTypeState& type_state,
+                        const UpdateResponseDataList& response_list,
+                        const UpdateResponseDataList& pending_updates) override;
 
  private:
   base::WeakPtr<ModelTypeSyncProxyImpl> processor_;
@@ -79,9 +77,9 @@ class ModelTypeSyncWorkerWrapper : public ModelTypeSyncWorker {
   ModelTypeSyncWorkerWrapper(
       const base::WeakPtr<ModelTypeSyncWorkerImpl>& worker,
       const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
-  virtual ~ModelTypeSyncWorkerWrapper();
+  ~ModelTypeSyncWorkerWrapper() override;
 
-  virtual void EnqueueForCommit(const CommitRequestDataList& list) override;
+  void EnqueueForCommit(const CommitRequestDataList& list) override;
 
  private:
   base::WeakPtr<ModelTypeSyncWorkerImpl> worker_;

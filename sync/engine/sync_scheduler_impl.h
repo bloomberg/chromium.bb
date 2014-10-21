@@ -49,45 +49,43 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
                     Syncer* syncer);
 
   // Calls Stop().
-  virtual ~SyncSchedulerImpl();
+  ~SyncSchedulerImpl() override;
 
-  virtual void Start(Mode mode) override;
-  virtual void ScheduleConfiguration(
-      const ConfigurationParams& params) override;
-  virtual void Stop() override;
-  virtual void ScheduleLocalNudge(
+  void Start(Mode mode) override;
+  void ScheduleConfiguration(const ConfigurationParams& params) override;
+  void Stop() override;
+  void ScheduleLocalNudge(
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) override;
-  virtual void ScheduleLocalRefreshRequest(
+  void ScheduleLocalRefreshRequest(
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) override;
-  virtual void ScheduleInvalidationNudge(
+  void ScheduleInvalidationNudge(
       syncer::ModelType type,
       scoped_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) override;
-  virtual void ScheduleInitialSyncNudge(syncer::ModelType model_type) override;
-  virtual void SetNotificationsEnabled(bool notifications_enabled) override;
+  void ScheduleInitialSyncNudge(syncer::ModelType model_type) override;
+  void SetNotificationsEnabled(bool notifications_enabled) override;
 
-  virtual void OnCredentialsUpdated() override;
-  virtual void OnConnectionStatusChange() override;
+  void OnCredentialsUpdated() override;
+  void OnConnectionStatusChange() override;
 
   // SyncSession::Delegate implementation.
-  virtual void OnThrottled(const base::TimeDelta& throttle_duration) override;
-  virtual void OnTypesThrottled(
-      ModelTypeSet types,
-      const base::TimeDelta& throttle_duration) override;
-  virtual bool IsCurrentlyThrottled() override;
-  virtual void OnReceivedShortPollIntervalUpdate(
+  void OnThrottled(const base::TimeDelta& throttle_duration) override;
+  void OnTypesThrottled(ModelTypeSet types,
+                        const base::TimeDelta& throttle_duration) override;
+  bool IsCurrentlyThrottled() override;
+  void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) override;
-  virtual void OnReceivedLongPollIntervalUpdate(
+  void OnReceivedLongPollIntervalUpdate(
       const base::TimeDelta& new_interval) override;
-  virtual void OnReceivedCustomNudgeDelays(
+  void OnReceivedCustomNudgeDelays(
       const std::map<ModelType, base::TimeDelta>& nudge_delays) override;
-  virtual void OnReceivedClientInvalidationHintBufferSize(int size) override;
-  virtual void OnSyncProtocolError(
+  void OnReceivedClientInvalidationHintBufferSize(int size) override;
+  void OnSyncProtocolError(
       const SyncProtocolError& sync_protocol_error) override;
-  virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) override;
-  virtual void OnReceivedMigrationRequest(syncer::ModelTypeSet types) override;
+  void OnReceivedGuRetryDelay(const base::TimeDelta& delay) override;
+  void OnReceivedMigrationRequest(syncer::ModelTypeSet types) override;
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;

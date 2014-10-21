@@ -21,7 +21,7 @@ class SYNC_EXPORT AttachmentServiceProxyForTest
     : public AttachmentServiceProxy {
  public:
   static AttachmentServiceProxy Create();
-  virtual ~AttachmentServiceProxyForTest();
+  ~AttachmentServiceProxyForTest() override;
 
  private:
   // A Core that owns the wrapped AttachmentService.
@@ -32,7 +32,7 @@ class SYNC_EXPORT AttachmentServiceProxyForTest
         scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory);
 
    private:
-    virtual ~OwningCore();
+    ~OwningCore() override;
 
     scoped_ptr<AttachmentService> wrapped_;
     // WeakPtrFactory for wrapped_.  See Create() for why this is a scoped_ptr.

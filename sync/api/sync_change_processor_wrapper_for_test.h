@@ -18,14 +18,13 @@ class SyncChangeProcessorWrapperForTest : public SyncChangeProcessor {
   // of |wrapped| and is responsible for ensuring it outlives this object.
   explicit SyncChangeProcessorWrapperForTest(
       syncer::SyncChangeProcessor* wrapped);
-  virtual ~SyncChangeProcessorWrapperForTest();
+  ~SyncChangeProcessorWrapperForTest() override;
 
   // SyncChangeProcessor implementation.
-  virtual syncer::SyncError ProcessSyncChanges(
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
 
  private:
   syncer::SyncChangeProcessor* const wrapped_;

@@ -21,7 +21,7 @@ void OnConfigDone(bool success) {
 
 class SyncTestRollbackManager : public SyncRollbackManagerBase {
  public:
-  virtual void Init(InitArgs* args) override {
+  void Init(InitArgs* args) override {
     SyncRollbackManagerBase::InitInternal(
         args->database_location,
         args->internal_components_factory.get(),

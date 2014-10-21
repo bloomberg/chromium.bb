@@ -67,7 +67,7 @@ class SYNC_EXPORT_PRIVATE HttpBridge
         const std::string& user_agent);
 
     // The destructor MUST be called on the IO thread.
-    virtual ~RequestContext();
+    ~RequestContext() override;
 
    private:
     net::URLRequestContext* const baseline_context_;
@@ -87,12 +87,12 @@ class SYNC_EXPORT_PRIVATE HttpBridge
         const std::string& user_agent);
 
     // net::URLRequestContextGetter implementation.
-    virtual net::URLRequestContext* GetURLRequestContext() override;
-    virtual scoped_refptr<base::SingleThreadTaskRunner>
-        GetNetworkTaskRunner() const override;
+    net::URLRequestContext* GetURLRequestContext() override;
+    scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+        const override;
 
    protected:
-    virtual ~RequestContextGetter();
+    ~RequestContextGetter() override;
 
    private:
     scoped_refptr<net::URLRequestContextGetter> baseline_context_getter_;
@@ -110,32 +110,32 @@ class SYNC_EXPORT_PRIVATE HttpBridge
              const NetworkTimeUpdateCallback& network_time_update_callback);
 
   // HttpPostProvider implementation.
-  virtual void SetExtraRequestHeaders(const char* headers) override;
-  virtual void SetURL(const char* url, int port) override;
-  virtual void SetPostPayload(const char* content_type, int content_length,
-                              const char* content) override;
-  virtual bool MakeSynchronousPost(int* error_code,
-                                   int* response_code) override;
-  virtual void Abort() override;
+  void SetExtraRequestHeaders(const char* headers) override;
+  void SetURL(const char* url, int port) override;
+  void SetPostPayload(const char* content_type,
+                      int content_length,
+                      const char* content) override;
+  bool MakeSynchronousPost(int* error_code, int* response_code) override;
+  void Abort() override;
 
   // WARNING: these response content methods are used to extract plain old data
   // and not null terminated strings, so you should make sure you have read
   // GetResponseContentLength() characters when using GetResponseContent. e.g
   // string r(b->GetResponseContent(), b->GetResponseContentLength()).
-  virtual int GetResponseContentLength() const override;
-  virtual const char* GetResponseContent() const override;
-  virtual const std::string GetResponseHeaderValue(
+  int GetResponseContentLength() const override;
+  const char* GetResponseContent() const override;
+  const std::string GetResponseHeaderValue(
       const std::string& name) const override;
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   net::URLRequestContextGetter* GetRequestContextGetterForTest() const;
 
  protected:
   friend class base::RefCountedThreadSafe<HttpBridge>;
 
-  virtual ~HttpBridge();
+  ~HttpBridge() override;
 
   // Protected virtual so the unit test can override to shunt network requests.
   virtual void MakeAsynchronousPost();
@@ -232,15 +232,15 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory,
           baseline_context_getter,
       const NetworkTimeUpdateCallback& network_time_update_callback,
       CancelationSignal* cancelation_signal);
-  virtual ~HttpBridgeFactory();
+  ~HttpBridgeFactory() override;
 
   // HttpPostProviderFactory:
-  virtual void Init(const std::string& user_agent) override;
-  virtual HttpPostProviderInterface* Create() override;
-  virtual void Destroy(HttpPostProviderInterface* http) override;
+  void Init(const std::string& user_agent) override;
+  HttpPostProviderInterface* Create() override;
+  void Destroy(HttpPostProviderInterface* http) override;
 
   // CancelationObserver implementation:
-  virtual void OnSignalReceived() override;
+  void OnSignalReceived() override;
 
  private:
   // Protects |request_context_getter_| and |baseline_request_context_getter_|.

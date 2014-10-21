@@ -16,7 +16,7 @@ class SyncErrorFactory;
 class FakeSyncableService : public SyncableService {
  public:
   FakeSyncableService();
-  virtual ~FakeSyncableService();
+  ~FakeSyncableService() override;
 
   // Setters for SyncableService implementation results.
   void set_merge_data_and_start_syncing_error(const SyncError& error);
@@ -27,16 +27,15 @@ class FakeSyncableService : public SyncableService {
   bool syncing() const;
 
   // SyncableService implementation.
-  virtual SyncMergeResult MergeDataAndStartSyncing(
+  SyncMergeResult MergeDataAndStartSyncing(
       ModelType type,
       const SyncDataList& initial_sync_data,
       scoped_ptr<SyncChangeProcessor> sync_processor,
       scoped_ptr<SyncErrorFactory> sync_error_factory) override;
-  virtual void StopSyncing(ModelType type) override;
-  virtual SyncDataList GetAllSyncData(ModelType type) const override;
-  virtual SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const SyncChangeList& change_list) override;
+  void StopSyncing(ModelType type) override;
+  SyncDataList GetAllSyncData(ModelType type) const override;
+  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+                               const SyncChangeList& change_list) override;
 
  private:
   scoped_ptr<SyncChangeProcessor> sync_processor_;

@@ -22,13 +22,11 @@ class SYNC_EXPORT_PRIVATE DeferredOnDiskDirectoryBackingStore
  public:
   DeferredOnDiskDirectoryBackingStore(const std::string& dir_name,
                                       const base::FilePath& backing_filepath);
-  virtual ~DeferredOnDiskDirectoryBackingStore();
-  virtual DirOpenResult Load(
-      Directory::MetahandlesMap* handles_map,
-      JournalIndex* delete_journals,
-      Directory::KernelLoadInfo* kernel_load_info) override;
-  virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot)
-      override;
+  ~DeferredOnDiskDirectoryBackingStore() override;
+  DirOpenResult Load(Directory::MetahandlesMap* handles_map,
+                     JournalIndex* delete_journals,
+                     Directory::KernelLoadInfo* kernel_load_info) override;
+  bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) override;
 
  private:
   base::FilePath backing_filepath_;

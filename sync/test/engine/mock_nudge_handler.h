@@ -15,11 +15,11 @@ namespace syncer {
 class MockNudgeHandler : public NudgeHandler {
  public:
   MockNudgeHandler();
-  virtual ~MockNudgeHandler();
+  ~MockNudgeHandler() override;
 
-  virtual void NudgeForInitialDownload(syncer::ModelType type) override;
-  virtual void NudgeForCommit(syncer::ModelType type) override;
-  virtual void NudgeForRefresh(syncer::ModelType type) override;
+  void NudgeForInitialDownload(syncer::ModelType type) override;
+  void NudgeForCommit(syncer::ModelType type) override;
+  void NudgeForRefresh(syncer::ModelType type) override;
 
   int GetNumInitialDownloadNudges() const;
   int GetNumCommitNudges() const;

@@ -43,21 +43,21 @@ class SYNC_EXPORT_PRIVATE GetUpdatesDelegate {
 class SYNC_EXPORT_PRIVATE NormalGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   NormalGetUpdatesDelegate(const sessions::NudgeTracker& nudge_tracker);
-  virtual ~NormalGetUpdatesDelegate();
+  ~NormalGetUpdatesDelegate() override;
 
   // Uses the member NudgeTracker to populate some fields of this GU message.
-  virtual void HelpPopulateGuMessage(
+  void HelpPopulateGuMessage(
       sync_pb::GetUpdatesMessage* get_updates) const override;
 
   // Applies pending updates on the appropriate data type threads.
-  virtual void ApplyUpdates(
-      ModelTypeSet gu_types,
-      sessions::StatusController* status,
-      UpdateHandlerMap* update_handler_map) const override;
+  void ApplyUpdates(ModelTypeSet gu_types,
+                    sessions::StatusController* status,
+                    UpdateHandlerMap* update_handler_map) const override;
 
-  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NormalGetUpdatesDelegate);
 
@@ -70,24 +70,24 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
  public:
   ConfigureGetUpdatesDelegate(
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
-  virtual ~ConfigureGetUpdatesDelegate();
+  ~ConfigureGetUpdatesDelegate() override;
 
   // Sets the 'source' and 'origin' fields for this request.
-  virtual void HelpPopulateGuMessage(
+  void HelpPopulateGuMessage(
       sync_pb::GetUpdatesMessage* get_updates) const override;
 
   // Applies updates passively (ie. on the sync thread).
   //
   // This is safe only if the ChangeProcessor is not listening to changes at
   // this time.
-  virtual void ApplyUpdates(
-      ModelTypeSet gu_types,
-      sessions::StatusController* status,
-      UpdateHandlerMap* update_handler_map) const override;
+  void ApplyUpdates(ModelTypeSet gu_types,
+                    sessions::StatusController* status,
+                    UpdateHandlerMap* update_handler_map) const override;
 
-  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigureGetUpdatesDelegate);
 
@@ -101,21 +101,21 @@ class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesDelegate
 class SYNC_EXPORT_PRIVATE PollGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   PollGetUpdatesDelegate();
-  virtual ~PollGetUpdatesDelegate();
+  ~PollGetUpdatesDelegate() override;
 
   // Sets the 'source' and 'origin' to indicate this is a poll request.
-  virtual void HelpPopulateGuMessage(
+  void HelpPopulateGuMessage(
       sync_pb::GetUpdatesMessage* get_updates) const override;
 
   // Applies updates on the appropriate data type thread.
-  virtual void ApplyUpdates(
-      ModelTypeSet gu_types,
-      sessions::StatusController* status,
-      UpdateHandlerMap* update_handler_map) const override;
+  void ApplyUpdates(ModelTypeSet gu_types,
+                    sessions::StatusController* status,
+                    UpdateHandlerMap* update_handler_map) const override;
 
-  virtual scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
+  scoped_ptr<ProtocolEvent> GetNetworkRequestEvent(
       base::Time timestamp,
       const sync_pb::ClientToServerMessage& request) const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PollGetUpdatesDelegate);
 };
