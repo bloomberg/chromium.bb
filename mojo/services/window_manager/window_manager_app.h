@@ -64,7 +64,7 @@ class WindowManagerApp
  public:
   WindowManagerApp(ViewManagerDelegate* view_manager_delegate,
                    WindowManagerDelegate* window_manager_delegate);
-  virtual ~WindowManagerApp();
+  ~WindowManagerApp() override;
 
   static View* GetViewForWindow(aura::Window* window);
   aura::Window* GetWindowForViewId(Id view);
@@ -95,39 +95,37 @@ class WindowManagerApp
   }
 
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* impl) override;
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override;
+  void Initialize(ApplicationImpl* impl) override;
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
 
  private:
   typedef std::set<WindowManagerService2Impl*> Connections;
   typedef std::map<Id, aura::Window*> ViewIdToWindowMap;
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) override;
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override;
+  void OnEmbed(ViewManager* view_manager,
+               View* root,
+               ServiceProviderImpl* exported_services,
+               scoped_ptr<ServiceProvider> imported_services) override;
+  void OnViewManagerDisconnected(ViewManager* view_manager) override;
 
   // Overridden from ViewObserver:
-  virtual void OnTreeChanged(
-      const ViewObserver::TreeChangeParams& params) override;
-  virtual void OnViewDestroying(View* view) override;
-  virtual void OnViewBoundsChanged(View* view,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) override;
+  void OnTreeChanged(const ViewObserver::TreeChangeParams& params) override;
+  void OnViewDestroying(View* view) override;
+  void OnViewBoundsChanged(View* view,
+                           const gfx::Rect& old_bounds,
+                           const gfx::Rect& new_bounds) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) override;
+  void OnEvent(ui::Event* event) override;
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override;
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override;
 
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Creates an aura::Window for every view in the hierarchy beneath |view|,
   // and adds to the registry so that it can be retrieved later via

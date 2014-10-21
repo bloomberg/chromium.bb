@@ -56,7 +56,7 @@ namespace {
 
 class StubShellImpl : public InterfaceImpl<Shell> {
  private:
-  virtual void ConnectToApplication(
+  void ConnectToApplication(
       const String& requestor_url,
       InterfaceRequest<ServiceProvider> in_service_provider) override {
     ServiceProviderPtr out_service_provider;
@@ -106,10 +106,10 @@ class QuitLoopOnConnectApplicationImpl : public InterfaceImpl<Application> {
       : url_(url), to_quit_(loop), quit_callback_(quit_callback) {}
 
  private:
-  virtual void Initialize(Array<String> args) override {}
+  void Initialize(Array<String> args) override {}
 
-  virtual void AcceptConnection(const String& requestor_url,
-                                ServiceProviderPtr p) override {
+  void AcceptConnection(const String& requestor_url,
+                        ServiceProviderPtr p) override {
     DVLOG(1) << url_ << " accepting connection from " << requestor_url;
     to_quit_->PostTask(FROM_HERE, quit_callback_);
   }

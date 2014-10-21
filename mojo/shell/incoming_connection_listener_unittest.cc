@@ -25,10 +25,10 @@ namespace {
 class TestDelegate : public IncomingConnectionListenerPosix::Delegate {
  public:
   TestDelegate() {}
-  virtual ~TestDelegate() {}
+  ~TestDelegate() override {}
 
-  virtual void OnListening(int rv) override { EXPECT_EQ(net::OK, rv); }
-  virtual void OnConnection(net::SocketDescriptor incoming) override {
+  void OnListening(int rv) override { EXPECT_EQ(net::OK, rv); }
+  void OnConnection(net::SocketDescriptor incoming) override {
     EXPECT_NE(net::kInvalidSocket, incoming);
   }
 };
@@ -38,10 +38,10 @@ class ListeningFailsDelegate
     : public IncomingConnectionListenerPosix::Delegate {
  public:
   explicit ListeningFailsDelegate(int expected) : expected_error_(expected) {}
-  virtual ~ListeningFailsDelegate() {}
+  ~ListeningFailsDelegate() override {}
 
-  virtual void OnListening(int rv) override { EXPECT_EQ(expected_error_, rv); }
-  virtual void OnConnection(net::SocketDescriptor incoming) override {
+  void OnListening(int rv) override { EXPECT_EQ(expected_error_, rv); }
+  void OnConnection(net::SocketDescriptor incoming) override {
     FAIL() << "No connection should be attempted.";
   }
 

@@ -26,33 +26,31 @@ class DefaultWindowManager : public ApplicationDelegate,
       : window_manager_app_(new WindowManagerApp(this, this)),
         view_manager_(NULL),
         root_(NULL) {}
-  virtual ~DefaultWindowManager() {}
+  ~DefaultWindowManager() override {}
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* impl) override {
+  void Initialize(ApplicationImpl* impl) override {
     window_manager_app_->Initialize(impl);
   }
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override {
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     window_manager_app_->ConfigureIncomingConnection(connection);
     return true;
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) override {
+  void OnEmbed(ViewManager* view_manager,
+               View* root,
+               ServiceProviderImpl* exported_services,
+               scoped_ptr<ServiceProvider> imported_services) override {
     view_manager_ = view_manager;
     root_ = root;
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {}
+  void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 
   // Overridden from WindowManagerDelegate:
-  virtual void Embed(
-      const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) override {
+  void Embed(const String& url,
+             InterfaceRequest<ServiceProvider> service_provider) override {
     View* view = View::Create(view_manager_);
     root_->AddChild(view);
     view->Embed(url, scoped_ptr<mojo::ServiceProviderImpl>(

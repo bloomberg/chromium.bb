@@ -34,13 +34,13 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceImpl
  public:
   ViewManagerInitServiceImpl(ApplicationConnection* connection,
                              ViewManagerInitServiceContext* context);
-  virtual ~ViewManagerInitServiceImpl();
+  ~ViewManagerInitServiceImpl() override;
 
  private:
   // ViewManagerInitService overrides:
-  virtual void Embed(const String& url,
-                     ServiceProviderPtr service_provider,
-                     const Callback<void(bool)>& callback) override;
+  void Embed(const String& url,
+             ServiceProviderPtr service_provider,
+             const Callback<void(bool)>& callback) override;
 
   ViewManagerInitServiceContext* context_;
 

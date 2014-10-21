@@ -30,14 +30,13 @@ class MOJO_VIEW_MANAGER_EXPORT WindowManagerClientImpl
     : public InterfaceImpl<WindowManagerClient> {
  public:
   explicit WindowManagerClientImpl(ConnectionManager* connection_manager);
-  virtual ~WindowManagerClientImpl();
+  ~WindowManagerClientImpl() override;
 
   // WindowManagerClient:
-  virtual void DispatchInputEventToView(Id transport_view_id,
-                                        EventPtr event) override;
+  void DispatchInputEventToView(Id transport_view_id, EventPtr event) override;
 
   // InterfaceImp overrides:
-  virtual void OnConnectionError() override;
+  void OnConnectionError() override;
 
  private:
   ConnectionManager* connection_manager_;

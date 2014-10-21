@@ -12,10 +12,10 @@ namespace mojo {
 class ViewManagerTestSuite : public base::TestSuite {
  public:
   ViewManagerTestSuite(int argc, char** argv);
-  virtual ~ViewManagerTestSuite();
+  ~ViewManagerTestSuite() override;
 
  protected:
-  virtual void Initialize() override;
+  void Initialize() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTestSuite);

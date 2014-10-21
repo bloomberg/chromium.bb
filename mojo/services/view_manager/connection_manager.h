@@ -68,7 +68,7 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
 
   ConnectionManager(ApplicationConnection* app_connection,
                     const Callback<void()>& native_viewport_closed_callback);
-  virtual ~ConnectionManager();
+  ~ConnectionManager() override;
 
   // Returns the id for the next ViewManagerServiceImpl.
   ConnectionSpecificId GetAndAdvanceNextConnectionId();
@@ -164,21 +164,21 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
       InterfaceRequest<ServiceProvider> service_provider);
 
   // Overridden from ServerViewDelegate:
-  virtual void OnViewDestroyed(const ServerView* view) override;
-  virtual void OnWillChangeViewHierarchy(const ServerView* view,
-                                         const ServerView* new_parent,
-                                         const ServerView* old_parent) override;
-  virtual void OnViewHierarchyChanged(const ServerView* view,
-                                      const ServerView* new_parent,
-                                      const ServerView* old_parent) override;
-  virtual void OnViewBoundsChanged(const ServerView* view,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) override;
-  virtual void OnViewSurfaceIdChanged(const ServerView* view) override;
-  virtual void OnViewReordered(const ServerView* view,
-                               const ServerView* relative,
-                               OrderDirection direction) override;
-  virtual void OnWillChangeViewVisibility(const ServerView* view) override;
+  void OnViewDestroyed(const ServerView* view) override;
+  void OnWillChangeViewHierarchy(const ServerView* view,
+                                 const ServerView* new_parent,
+                                 const ServerView* old_parent) override;
+  void OnViewHierarchyChanged(const ServerView* view,
+                              const ServerView* new_parent,
+                              const ServerView* old_parent) override;
+  void OnViewBoundsChanged(const ServerView* view,
+                           const gfx::Rect& old_bounds,
+                           const gfx::Rect& new_bounds) override;
+  void OnViewSurfaceIdChanged(const ServerView* view) override;
+  void OnViewReordered(const ServerView* view,
+                       const ServerView* relative,
+                       OrderDirection direction) override;
+  void OnWillChangeViewVisibility(const ServerView* view) override;
 
   ApplicationConnection* app_connection_;
 

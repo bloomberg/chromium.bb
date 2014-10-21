@@ -40,7 +40,7 @@ class MOJO_VIEW_MANAGER_EXPORT DisplayManager
   DisplayManager(ApplicationConnection* app_connection,
                  ConnectionManager* connection_manager,
                  const Callback<void()>& native_viewport_closed_callback);
-  virtual ~DisplayManager();
+  ~DisplayManager() override;
 
   // Schedules a paint for the specified region of the specified view.
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds);
@@ -54,13 +54,12 @@ class MOJO_VIEW_MANAGER_EXPORT DisplayManager
   void Draw();
 
   // NativeViewportClient implementation.
-  virtual void OnDestroyed() override;
-  virtual void OnSizeChanged(SizePtr size) override;
-  virtual void OnEvent(EventPtr event,
-                       const mojo::Callback<void()>& callback) override;
+  void OnDestroyed() override;
+  void OnSizeChanged(SizePtr size) override;
+  void OnEvent(EventPtr event, const mojo::Callback<void()>& callback) override;
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
+  void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   ConnectionManager* connection_manager_;
 

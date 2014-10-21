@@ -15,26 +15,24 @@ class View;
 class SurfaceContextFactory : public ui::ContextFactory {
  public:
   SurfaceContextFactory(Shell* shell, View* view);
-  virtual ~SurfaceContextFactory();
+  ~SurfaceContextFactory() override;
 
  private:
   // ContextFactory:
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       ui::Compositor* compositor,
       bool software_fallback) override;
-  virtual scoped_refptr<ui::Reflector> CreateReflector(
+  scoped_refptr<ui::Reflector> CreateReflector(
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer) override;
-  virtual void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
-  virtual scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider()
-      override;
-  virtual void RemoveCompositor(ui::Compositor* compositor) override;
-  virtual bool DoesCreateTestContexts() override;
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() override;
-  virtual cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  virtual base::MessageLoopProxy* GetCompositorMessageLoop() override;
-  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator()
-      override;
+  void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
+  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
+  void RemoveCompositor(ui::Compositor* compositor) override;
+  bool DoesCreateTestContexts() override;
+  cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  base::MessageLoopProxy* GetCompositorMessageLoop() override;
+  scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
 
   SurfaceBinding surface_binding_;
 

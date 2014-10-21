@@ -29,10 +29,10 @@ class ExternalApplicationRegistrarConnection : public ErrorHandler {
   // Configures client_socket_ to point at socket_path.
   explicit ExternalApplicationRegistrarConnection(
       const base::FilePath& socket_path);
-  virtual ~ExternalApplicationRegistrarConnection();
+  ~ExternalApplicationRegistrarConnection() override;
 
   // Implementation of ErrorHandler
-  virtual void OnConnectionError() override;
+  void OnConnectionError() override;
 
   // Connects client_socket_ and binds it to registrar_.
   // Status code is passed to callback upon success or failure.

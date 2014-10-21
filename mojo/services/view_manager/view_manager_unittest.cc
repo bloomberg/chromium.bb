@@ -65,8 +65,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     SetInstance(this);
   }
 
-  virtual ~ViewManagerProxy() {
-  }
+  ~ViewManagerProxy() override {}
 
   // Returns true if in an initial state. If this returns false it means the
   // last test didn't clean up properly, or most likely didn't invoke
@@ -288,7 +287,7 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
 
   // TestChangeTracker::Delegate:
-  virtual void OnChangeAdded() override {
+  void OnChangeAdded() override {
     if (quit_count_ > 0 && --quit_count_ == 0)
       QuitCountReached();
   }
@@ -336,45 +335,44 @@ class TestViewManagerClientConnection
   ViewManagerProxy* proxy() { return &proxy_; }
 
   // InterfaceImpl:
-  virtual void OnConnectionEstablished() override {
+  void OnConnectionEstablished() override {
     proxy_.set_router(internal_state()->router());
     proxy_.set_view_manager(client());
   }
 
   // ViewManagerClient:
-  virtual void OnEmbed(
-      ConnectionSpecificId connection_id,
-      const String& creator_url,
-      ViewDataPtr root,
-      InterfaceRequest<ServiceProvider> services) override {
+  void OnEmbed(ConnectionSpecificId connection_id,
+               const String& creator_url,
+               ViewDataPtr root,
+               InterfaceRequest<ServiceProvider> services) override {
     tracker_.OnEmbed(connection_id, creator_url, root.Pass());
   }
-  virtual void OnViewBoundsChanged(Id view_id,
-                                   RectPtr old_bounds,
-                                   RectPtr new_bounds) override {
+  void OnViewBoundsChanged(Id view_id,
+                           RectPtr old_bounds,
+                           RectPtr new_bounds) override {
     tracker_.OnViewBoundsChanged(view_id, old_bounds.Pass(), new_bounds.Pass());
   }
-  virtual void OnViewHierarchyChanged(Id view,
-                                      Id new_parent,
-                                      Id old_parent,
-                                      Array<ViewDataPtr> views) override {
+  void OnViewHierarchyChanged(Id view,
+                              Id new_parent,
+                              Id old_parent,
+                              Array<ViewDataPtr> views) override {
     tracker_.OnViewHierarchyChanged(view, new_parent, old_parent, views.Pass());
   }
-  virtual void OnViewReordered(Id view_id,
-                               Id relative_view_id,
-                               OrderDirection direction) override {
+  void OnViewReordered(Id view_id,
+                       Id relative_view_id,
+                       OrderDirection direction) override {
     tracker_.OnViewReordered(view_id, relative_view_id, direction);
   }
-  virtual void OnViewDeleted(Id view) override { tracker_.OnViewDeleted(view); }
-  virtual void OnViewVisibilityChanged(uint32_t view, bool visible) override {
+  void OnViewDeleted(Id view) override { tracker_.OnViewDeleted(view); }
+  void OnViewVisibilityChanged(uint32_t view, bool visible) override {
     tracker_.OnViewVisibilityChanged(view, visible);
   }
-  virtual void OnViewDrawnStateChanged(uint32_t view, bool drawn) override {
+  void OnViewDrawnStateChanged(uint32_t view, bool drawn) override {
     tracker_.OnViewDrawnStateChanged(view, drawn);
   }
-  virtual void OnViewInputEvent(Id view_id,
-                                EventPtr event,
-                                const Callback<void()>& callback) override {
+  void OnViewInputEvent(Id view_id,
+                        EventPtr event,
+                        const Callback<void()>& callback) override {
     tracker_.OnViewInputEvent(view_id, event.Pass());
   }
 
@@ -389,20 +387,19 @@ class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
  public:
   explicit WindowManagerServiceImpl(TestViewManagerClientConnection* connection)
       : connection_(connection) {}
-  virtual ~WindowManagerServiceImpl() {}
+  ~WindowManagerServiceImpl() override {}
 
   // InterfaceImpl:
-  virtual void OnConnectionEstablished() override {
+  void OnConnectionEstablished() override {
     connection_->proxy()->set_window_manager_client(client());
   }
 
   // WindowManagerService:
-  virtual void Embed(
-      const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) override {
+  void Embed(const String& url,
+             InterfaceRequest<ServiceProvider> service_provider) override {
     connection_->tracker()->DelegateEmbed(url);
   }
-  virtual void OnViewInputEvent(mojo::EventPtr event) override {}
+  void OnViewInputEvent(mojo::EventPtr event) override {}
 
  private:
   TestViewManagerClientConnection* connection_;
@@ -418,12 +415,12 @@ class EmbedApplicationLoader : public ApplicationLoader,
                                public InterfaceFactory<WindowManagerService> {
  public:
   EmbedApplicationLoader() : last_view_manager_client_(nullptr) {}
-  virtual ~EmbedApplicationLoader() {}
+  ~EmbedApplicationLoader() override {}
 
   // ApplicationLoader implementation:
-  virtual void Load(ApplicationManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) override {
+  void Load(ApplicationManager* manager,
+            const GURL& url,
+            scoped_refptr<LoadCallbacks> callbacks) override {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (!shell_handle.is_valid())
       return;
@@ -431,25 +428,24 @@ class EmbedApplicationLoader : public ApplicationLoader,
                                                         shell_handle.Pass()));
     apps_.push_back(app.release());
   }
-  virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) override {}
+  void OnApplicationError(ApplicationManager* manager,
+                          const GURL& url) override {}
 
   // ApplicationDelegate implementation:
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      override {
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService<ViewManagerClient>(this);
     connection->AddService<WindowManagerService>(this);
     return true;
   }
 
   // InterfaceFactory<ViewManagerClient> implementation:
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ViewManagerClient> request) override {
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<ViewManagerClient> request) override {
     last_view_manager_client_ = new TestViewManagerClientConnection;
     BindToRequest(last_view_manager_client_, &request);
   }
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<WindowManagerService> request) override {
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<WindowManagerService> request) override {
     BindToRequest(new WindowManagerServiceImpl(last_view_manager_client_),
                   &request);
   }

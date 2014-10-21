@@ -17,24 +17,23 @@ class WindowManagerAccessPolicy : public AccessPolicy {
  public:
   WindowManagerAccessPolicy(ConnectionSpecificId connection_id,
                             AccessPolicyDelegate* delegate);
-  virtual ~WindowManagerAccessPolicy();
+  ~WindowManagerAccessPolicy() override;
 
   // AccessPolicy:
-  virtual bool CanRemoveViewFromParent(const ServerView* view) const override;
-  virtual bool CanAddView(const ServerView* parent,
-                          const ServerView* child) const override;
-  virtual bool CanReorderView(const ServerView* view,
-                              const ServerView* relative_view,
-                              OrderDirection direction) const override;
-  virtual bool CanDeleteView(const ServerView* view) const override;
-  virtual bool CanGetViewTree(const ServerView* view) const override;
-  virtual bool CanDescendIntoViewForViewTree(
-      const ServerView* view) const override;
-  virtual bool CanEmbed(const ServerView* view) const override;
-  virtual bool CanChangeViewVisibility(const ServerView* view) const override;
-  virtual bool CanSetViewSurfaceId(const ServerView* view) const override;
-  virtual bool CanSetViewBounds(const ServerView* view) const override;
-  virtual bool ShouldNotifyOnHierarchyChange(
+  bool CanRemoveViewFromParent(const ServerView* view) const override;
+  bool CanAddView(const ServerView* parent,
+                  const ServerView* child) const override;
+  bool CanReorderView(const ServerView* view,
+                      const ServerView* relative_view,
+                      OrderDirection direction) const override;
+  bool CanDeleteView(const ServerView* view) const override;
+  bool CanGetViewTree(const ServerView* view) const override;
+  bool CanDescendIntoViewForViewTree(const ServerView* view) const override;
+  bool CanEmbed(const ServerView* view) const override;
+  bool CanChangeViewVisibility(const ServerView* view) const override;
+  bool CanSetViewSurfaceId(const ServerView* view) const override;
+  bool CanSetViewBounds(const ServerView* view) const override;
+  bool ShouldNotifyOnHierarchyChange(
       const ServerView* view,
       const ServerView** new_parent,
       const ServerView** old_parent) const override;

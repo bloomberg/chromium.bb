@@ -54,7 +54,7 @@ class TestWindowManagerClient : public WindowManagerClient2 {
 
   explicit TestWindowManagerClient(base::RunLoop* run_loop)
       : run_loop_(run_loop) {}
-  virtual ~TestWindowManagerClient() {}
+  ~TestWindowManagerClient() override {}
 
   void set_focus_changed_callback(const TwoNodeCallback& callback) {
     focus_changed_callback_ = callback;
@@ -65,16 +65,15 @@ class TestWindowManagerClient : public WindowManagerClient2 {
 
  private:
   // Overridden from WindowManagerClient:
-  virtual void OnWindowManagerReady() override { run_loop_->Quit(); }
-  virtual void OnCaptureChanged(Id old_capture_node_id,
-                                Id new_capture_node_id) override {}
-  virtual void OnFocusChanged(Id old_focused_node_id,
-                              Id new_focused_node_id) override {
+  void OnWindowManagerReady() override { run_loop_->Quit(); }
+  void OnCaptureChanged(Id old_capture_node_id,
+                        Id new_capture_node_id) override {}
+  void OnFocusChanged(Id old_focused_node_id, Id new_focused_node_id) override {
     if (!focus_changed_callback_.is_null())
       focus_changed_callback_.Run(old_focused_node_id, new_focused_node_id);
   }
-  virtual void OnActiveWindowChanged(Id old_active_window,
-                                     Id new_active_window) override {
+  void OnActiveWindowChanged(Id old_active_window,
+                             Id new_active_window) override {
     if (!active_window_changed_callback_.is_null())
       active_window_changed_callback_.Run(old_active_window, new_active_window);
   }
@@ -94,13 +93,13 @@ class TestApplicationLoader : public ApplicationLoader,
 
   explicit TestApplicationLoader(const RootAddedCallback& root_added_callback)
       : root_added_callback_(root_added_callback) {}
-  virtual ~TestApplicationLoader() {}
+  ~TestApplicationLoader() override {}
 
  private:
   // Overridden from ApplicationLoader:
-  virtual void Load(ApplicationManager* application_manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) override {
+  void Load(ApplicationManager* application_manager,
+            const GURL& url,
+            scoped_refptr<LoadCallbacks> callbacks) override {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (!shell_handle.is_valid())
       return;
@@ -108,29 +107,28 @@ class TestApplicationLoader : public ApplicationLoader,
         new ApplicationImpl(this, shell_handle.Pass()));
     apps_.push_back(app.release());
   }
-  virtual void OnApplicationError(ApplicationManager* application_manager,
-                                  const GURL& url) override {}
+  void OnApplicationError(ApplicationManager* application_manager,
+                          const GURL& url) override {}
 
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) override {
+  void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }
 
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override {
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) override {
+  void OnEmbed(ViewManager* view_manager,
+               View* root,
+               ServiceProviderImpl* exported_services,
+               scoped_ptr<ServiceProvider> imported_services) override {
     root_added_callback_.Run(root);
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {}
+  void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 
   RootAddedCallback root_added_callback_;
 

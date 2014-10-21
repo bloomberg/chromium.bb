@@ -47,7 +47,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                          const std::string& url,
                          const ViewId& root_id,
                          InterfaceRequest<ServiceProvider> service_provider);
-  virtual ~ViewManagerServiceImpl();
+  ~ViewManagerServiceImpl() override;
 
   // Used to mark this connection as originating from a call to
   // ViewManagerService::Connect(). When set OnConnectionError() deletes |this|.
@@ -96,7 +96,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // TODO(sky): move this to private section (currently can't because of
   // bindings).
   // InterfaceImp overrides:
-  virtual void OnConnectionError() override;
+  void OnConnectionError() override;
 
  private:
   typedef std::map<ConnectionSpecificId, ServerView*> ViewMap;
@@ -147,45 +147,42 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   void NotifyDrawnStateChanged(const ServerView* view, bool new_drawn_value);
 
   // ViewManagerService:
-  virtual void CreateView(Id transport_view_id,
-                          const Callback<void(ErrorCode)>& callback) override;
-  virtual void DeleteView(Id transport_view_id,
-                          const Callback<void(bool)>& callback) override;
-  virtual void AddView(Id parent_id,
-                       Id child_id,
-                       const Callback<void(bool)>& callback) override;
-  virtual void RemoveViewFromParent(
-      Id view_id,
-      const Callback<void(bool)>& callback) override;
-  virtual void ReorderView(Id view_id,
-                           Id relative_view_id,
-                           OrderDirection direction,
-                           const Callback<void(bool)>& callback) override;
-  virtual void GetViewTree(
-      Id view_id,
-      const Callback<void(Array<ViewDataPtr>)>& callback) override;
-  virtual void SetViewSurfaceId(Id view_id,
-                                SurfaceIdPtr surface_id,
-                                const Callback<void(bool)>& callback) override;
-  virtual void SetViewBounds(Id view_id,
-                             RectPtr bounds,
-                             const Callback<void(bool)>& callback) override;
-  virtual void SetViewVisibility(Id view_id,
-                                 bool visible,
-                                 const Callback<void(bool)>& callback) override;
-  virtual void Embed(const String& url,
-                     Id view_id,
-                     ServiceProviderPtr service_provider,
+  void CreateView(Id transport_view_id,
+                  const Callback<void(ErrorCode)>& callback) override;
+  void DeleteView(Id transport_view_id,
+                  const Callback<void(bool)>& callback) override;
+  void AddView(Id parent_id,
+               Id child_id,
+               const Callback<void(bool)>& callback) override;
+  void RemoveViewFromParent(Id view_id,
+                            const Callback<void(bool)>& callback) override;
+  void ReorderView(Id view_id,
+                   Id relative_view_id,
+                   OrderDirection direction,
+                   const Callback<void(bool)>& callback) override;
+  void GetViewTree(Id view_id,
+                   const Callback<void(Array<ViewDataPtr>)>& callback) override;
+  void SetViewSurfaceId(Id view_id,
+                        SurfaceIdPtr surface_id,
+                        const Callback<void(bool)>& callback) override;
+  void SetViewBounds(Id view_id,
+                     RectPtr bounds,
                      const Callback<void(bool)>& callback) override;
+  void SetViewVisibility(Id view_id,
+                         bool visible,
+                         const Callback<void(bool)>& callback) override;
+  void Embed(const String& url,
+             Id view_id,
+             ServiceProviderPtr service_provider,
+             const Callback<void(bool)>& callback) override;
 
   // InterfaceImpl:
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
   // AccessPolicyDelegate:
-  virtual const base::hash_set<Id>& GetRootsForAccessPolicy() const override;
-  virtual bool IsViewKnownForAccessPolicy(
-      const ServerView* view) const override;
-  virtual bool IsViewRootOfAnotherConnectionForAccessPolicy(
+  const base::hash_set<Id>& GetRootsForAccessPolicy() const override;
+  bool IsViewKnownForAccessPolicy(const ServerView* view) const override;
+  bool IsViewRootOfAnotherConnectionForAccessPolicy(
       const ServerView* view) const override;
 
   ConnectionManager* connection_manager_;

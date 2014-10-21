@@ -15,17 +15,16 @@ class WindowManagerApp;
 class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
  public:
   explicit WindowManagerServiceImpl(WindowManagerApp* app);
-  virtual ~WindowManagerServiceImpl();
+  ~WindowManagerServiceImpl() override;
 
  private:
   // WindowManagerServiceImpl:
-  virtual void Embed(
-      const String& url,
-      InterfaceRequest<ServiceProvider> service_provider) override;
-  virtual void OnViewInputEvent(mojo::EventPtr event) override;
+  void Embed(const String& url,
+             InterfaceRequest<ServiceProvider> service_provider) override;
+  void OnViewInputEvent(mojo::EventPtr event) override;
 
   // InterfaceImpl:
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
   WindowManagerApp* app_;
 

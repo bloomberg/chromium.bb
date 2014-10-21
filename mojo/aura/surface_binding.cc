@@ -35,10 +35,10 @@ namespace {
 class SurfaceClientImpl : public SurfaceClient {
  public:
   SurfaceClientImpl() {}
-  virtual ~SurfaceClientImpl() {}
+  ~SurfaceClientImpl() override {}
 
   // SurfaceClient:
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override {
+  void ReturnResources(Array<ReturnedResourcePtr> resources) override {
     // TODO (sky|jamesr): figure out right way to recycle resources.
   }
 
@@ -56,10 +56,10 @@ class OutputSurfaceImpl : public cc::OutputSurface {
                     const scoped_refptr<cc::ContextProvider>& context_provider,
                     Surface* surface,
                     cc::SurfaceIdAllocator* id_allocator);
-  virtual ~OutputSurfaceImpl();
+  ~OutputSurfaceImpl() override;
 
   // cc::OutputSurface:
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
  private:
   View* view_;

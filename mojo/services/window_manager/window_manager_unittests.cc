@@ -16,10 +16,10 @@ namespace mojo {
 class WindowManagerTestSuite : public base::TestSuite {
  public:
   WindowManagerTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
-  virtual ~WindowManagerTestSuite() {}
+  ~WindowManagerTestSuite() override {}
 
  protected:
-  virtual void Initialize() override {
+  void Initialize() override {
 #if defined(USE_X11)
     // Each test ends up creating a new thread for the native viewport service.
     // In other words we'll use X on different threads, so tell it that.

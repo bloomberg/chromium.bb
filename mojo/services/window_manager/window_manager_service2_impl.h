@@ -16,7 +16,7 @@ class WindowManagerApp;
 class WindowManagerService2Impl : public InterfaceImpl<WindowManagerService2> {
  public:
   explicit WindowManagerService2Impl(WindowManagerApp* manager);
-  virtual ~WindowManagerService2Impl();
+  ~WindowManagerService2Impl() override;
 
   void NotifyReady();
   void NotifyViewFocused(Id new_focused_id, Id old_focused_id);
@@ -24,15 +24,12 @@ class WindowManagerService2Impl : public InterfaceImpl<WindowManagerService2> {
 
  private:
   // Overridden from WindowManagerService:
-  virtual void SetCapture(Id view,
-                          const Callback<void(bool)>& callback) override;
-  virtual void FocusWindow(Id view,
-                           const Callback<void(bool)>& callback) override;
-  virtual void ActivateWindow(Id view,
-                              const Callback<void(bool)>& callback) override;
+  void SetCapture(Id view, const Callback<void(bool)>& callback) override;
+  void FocusWindow(Id view, const Callback<void(bool)>& callback) override;
+  void ActivateWindow(Id view, const Callback<void(bool)>& callback) override;
 
   // Overridden from InterfaceImpl:
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
   WindowManagerApp* window_manager_;
 

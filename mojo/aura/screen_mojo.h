@@ -20,26 +20,22 @@ namespace mojo {
 class ScreenMojo : public gfx::Screen {
  public:
   static ScreenMojo* Create();
-  virtual ~ScreenMojo();
+  ~ScreenMojo() override;
 
  protected:
   // gfx::Screen overrides:
-  virtual bool IsDIPEnabled() override;
-  virtual gfx::Point GetCursorScreenPoint() override;
-  virtual gfx::NativeWindow GetWindowUnderCursor() override;
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      override;
-  virtual int GetNumDisplays() const override;
-  virtual std::vector<gfx::Display> GetAllDisplays() const override;
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override;
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  virtual gfx::Display GetPrimaryDisplay() const override;
-  virtual void AddObserver(gfx::DisplayObserver* observer) override;
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override;
+  bool IsDIPEnabled() override;
+  gfx::Point GetCursorScreenPoint() override;
+  gfx::NativeWindow GetWindowUnderCursor() override;
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  int GetNumDisplays() const override;
+  std::vector<gfx::Display> GetAllDisplays() const override;
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  gfx::Display GetPrimaryDisplay() const override;
+  void AddObserver(gfx::DisplayObserver* observer) override;
+  void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
   explicit ScreenMojo(const gfx::Rect& screen_bounds);
