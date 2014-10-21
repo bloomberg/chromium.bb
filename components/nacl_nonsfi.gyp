@@ -42,6 +42,7 @@
                 'extra_deps_newlib32_nonsfi': [
                   '>(tc_lib_dir_nonsfi_helper32)/libbase_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libevent_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
                 ],
               }],
             ],
@@ -51,6 +52,11 @@
             '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
             '../native_client/tools.gyp:prep_toolchain',
+
+            # Temporarily depends on some libraries to make sure they can be
+            # built properly. These are depended on by PPAPI library.
+            # TODO(hidehiko): Remove them when PPAPI library is introduced.
+            '../media/media_nacl.gyp:shared_memory_support_nacl',
           ],
         },
         # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.
