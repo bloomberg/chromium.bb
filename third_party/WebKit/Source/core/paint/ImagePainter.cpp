@@ -14,6 +14,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderReplaced.h"
@@ -62,7 +63,9 @@ void ImagePainter::paintAreaElementFocusRing(PaintInfo& paintInfo)
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
     GraphicsContextStateSaver savedContext(*paintInfo.context);
-    paintInfo.context->clip(m_renderImage.absoluteContentBox());
+    IntRect focusRect = m_renderImage.absoluteContentBox();
+    PaintCommandRecorder recorder(paintInfo.context, &m_renderImage, paintInfo.phase, focusRect);
+    paintInfo.context->clip(focusRect);
     paintInfo.context->drawFocusRing(path, outlineWidth,
         areaElementStyle->outlineOffset(),
         m_renderImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
@@ -88,10 +91,12 @@ void ImagePainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintO
             LayoutUnit topPad = m_renderImage.paddingTop();
 
             // Draw an outline rect where the image should be.
+            IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + leftBorder + leftPad, paintOffset.y() + topBorder + topPad, cWidth, cHeight));
+            PaintCommandRecorder recorder(context, &m_renderImage, paintInfo.phase, paintRect);
             context->setStrokeStyle(SolidStroke);
             context->setStrokeColor(Color::lightGray);
             context->setFillColor(Color::transparent);
-            context->drawRect(pixelSnappedIntRect(LayoutRect(paintOffset.x() + leftBorder + leftPad, paintOffset.y() + topBorder + topPad, cWidth, cHeight)));
+            context->drawRect(paintRect);
 
             bool errorPictureDrawn = false;
             LayoutSize imageOffset;
@@ -153,6 +158,7 @@ void ImagePainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintO
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = m_renderImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
+        PaintCommandRecorder recorder(context, &m_renderImage, paintInfo.phase, contentRect);
         bool clip = !contentRect.contains(paintRect);
         if (clip) {
             context->save();
