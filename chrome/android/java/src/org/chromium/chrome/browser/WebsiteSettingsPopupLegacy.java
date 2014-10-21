@@ -25,7 +25,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.URISyntaxException;
@@ -67,8 +67,8 @@ public class WebsiteSettingsPopupLegacy implements OnClickListener {
         mDialog.setCanceledOnTouchOutside(true);
         // This needs to come after other member initialization.
         mNativeWebsiteSettingsPopupLegacy = nativeInit(this, webContents);
-        final WebContentsObserverAndroid webContentsObserver =
-                new WebContentsObserverAndroid(mWebContents) {
+        final WebContentsObserver webContentsObserver =
+                new WebContentsObserver(mWebContents) {
             @Override
             public void navigationEntryCommitted() {
                 // If a navigation is committed (e.g. from in-page redirect), the data we're
