@@ -11,6 +11,10 @@ from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
 
 
+class TimeoutRetryThread(reraiser_thread.ReraiserThread):
+  pass
+
+
 def Run(func, timeout, retries, args=None, kwargs=None):
   """Runs the passed function in a separate thread with timeouts and retries.
 
@@ -40,7 +44,7 @@ def Run(func, timeout, retries, args=None, kwargs=None):
     try:
       name = 'TimeoutThread-for-%s' % threading.current_thread().name
       thread_group = reraiser_thread.ReraiserThreadGroup(
-          [reraiser_thread.ReraiserThread(RunOnTimeoutThread, name=name)])
+          [TimeoutRetryThread(RunOnTimeoutThread, name=name)])
       thread_group.StartAll()
       thread_group.JoinAll(watchdog_timer.WatchdogTimer(timeout))
       return ret[0]
