@@ -11,34 +11,17 @@ var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var guestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
+var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
-// Attributes.
-var WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY = 'allowtransparency';
-var WEB_VIEW_ATTRIBUTE_AUTOSIZE = 'autosize';
-var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
-var WEB_VIEW_ATTRIBUTE_MAXWIDTH = 'maxwidth';
-var WEB_VIEW_ATTRIBUTE_MINHEIGHT = 'minheight';
-var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
-var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
 var AUTO_SIZE_ATTRIBUTES = [
-  WEB_VIEW_ATTRIBUTE_AUTOSIZE,
-  WEB_VIEW_ATTRIBUTE_MAXHEIGHT,
-  WEB_VIEW_ATTRIBUTE_MAXWIDTH,
-  WEB_VIEW_ATTRIBUTE_MINHEIGHT,
-  WEB_VIEW_ATTRIBUTE_MINWIDTH
+  WebViewConstants.ATTRIBUTE_AUTOSIZE,
+  WebViewConstants.ATTRIBUTE_MAXHEIGHT,
+  WebViewConstants.ATTRIBUTE_MAXWIDTH,
+  WebViewConstants.ATTRIBUTE_MINHEIGHT,
+  WebViewConstants.ATTRIBUTE_MINWIDTH
 ];
-
-// Error messages.
-var ERROR_MSG_ALREADY_NAVIGATED =
-    'The object has already navigated, so its partition cannot be changed.';
-var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
-    'Script cannot be injected into content until the page has loaded.';
-var ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE = '<webview>: ' +
-    'contentWindow is not available at this time. It will become available ' +
-    'when the page has finished loading.';
-var ERROR_MSG_INVALID_PARTITION_ATTRIBUTE = 'Invalid partition attribute.';
 
 // Represents the state of the storage partition.
 function Partition() {
@@ -57,7 +40,7 @@ Partition.prototype.toAttribute = function() {
 Partition.prototype.fromAttribute = function(value, hasNavigated) {
   var result = {};
   if (hasNavigated) {
-    result.error = ERROR_MSG_ALREADY_NAVIGATED;
+    result.error = WebViewConstants.ERROR_MSG_ALREADY_NAVIGATED;
     return result;
   }
   if (!value) {
@@ -69,7 +52,7 @@ Partition.prototype.fromAttribute = function(value, hasNavigated) {
     value = value.substr(LEN);
     if (!value) {
       this.validPartitionId = false;
-      result.error = ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
+      result.error = WebViewConstants.ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
       return result;
     }
     this.persistStorage = true;
@@ -180,7 +163,7 @@ WebView.prototype.setupFocusPropagation = function() {
 // Validation helper function for executeScript() and insertCSS().
 WebView.prototype.validateExecuteCodeCall  = function() {
   if (!this.guestInstanceId) {
-    throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
+    throw new Error(WebViewConstants.ERROR_MSG_CANNOT_INJECT_SCRIPT);
   }
 };
 
@@ -203,13 +186,14 @@ WebView.prototype.setupWebviewNodeProperties = function() {
   this.setupAutoSizeProperties();
 
   Object.defineProperty(this.webviewNode,
-                        WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY, {
+                        WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY, {
     get: function() {
       return this.allowtransparency;
     }.bind(this),
     set: function(value) {
-      this.webviewNode.setAttribute(WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY,
-                                    value);
+      this.webviewNode.setAttribute(
+          WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY,
+          value);
     }.bind(this),
     enumerable: true
   });
@@ -221,7 +205,8 @@ WebView.prototype.setupWebviewNodeProperties = function() {
       if (this.contentWindow) {
         return this.contentWindow;
       }
-      window.console.error(ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
+      window.console.error(
+          WebViewConstants.ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
     }.bind(this),
     // No setter.
     enumerable: true
@@ -302,7 +287,8 @@ WebView.prototype.handleWebviewAttributeMutation =
       return;
     }
     // Convert autosize attribute to boolean.
-    var autosize = this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE);
+    var autosize = this.webviewNode.hasAttribute(
+        WebViewConstants.ATTRIBUTE_AUTOSIZE);
     GuestViewInternal.setAutoSize(this.guestInstanceId, {
       'enableAutoSize': autosize,
       'min': {
@@ -315,7 +301,7 @@ WebView.prototype.handleWebviewAttributeMutation =
       }
     });
     return;
-  } else if (name == WEB_VIEW_ATTRIBUTE_ALLOWTRANSPARENCY) {
+  } else if (name == WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY) {
     // We treat null attribute (attribute removed) and the empty string as
     // one case.
     oldValue = oldValue || '';
@@ -419,17 +405,17 @@ WebView.prototype.onSizeChanged = function(webViewEvent) {
   // Check the current bounds to make sure we do not resize <webview>
   // outside of current constraints.
   var maxWidth;
-  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MAXWIDTH) &&
-      node[WEB_VIEW_ATTRIBUTE_MAXWIDTH]) {
-    maxWidth = node[WEB_VIEW_ATTRIBUTE_MAXWIDTH];
+  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MAXWIDTH) &&
+      node[WebViewConstants.ATTRIBUTE_MAXWIDTH]) {
+    maxWidth = node[WebViewConstants.ATTRIBUTE_MAXWIDTH];
   } else {
     maxWidth = width;
   }
 
   var minWidth;
-  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MINWIDTH) &&
-      node[WEB_VIEW_ATTRIBUTE_MINWIDTH]) {
-    minWidth = node[WEB_VIEW_ATTRIBUTE_MINWIDTH];
+  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MINWIDTH) &&
+      node[WebViewConstants.ATTRIBUTE_MINWIDTH]) {
+    minWidth = node[WebViewConstants.ATTRIBUTE_MINWIDTH];
   } else {
     minWidth = width;
   }
@@ -438,17 +424,17 @@ WebView.prototype.onSizeChanged = function(webViewEvent) {
   }
 
   var maxHeight;
-  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MAXHEIGHT) &&
-      node[WEB_VIEW_ATTRIBUTE_MAXHEIGHT]) {
-    maxHeight = node[WEB_VIEW_ATTRIBUTE_MAXHEIGHT];
+  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MAXHEIGHT) &&
+      node[WebViewConstants.ATTRIBUTE_MAXHEIGHT]) {
+    maxHeight = node[WebViewConstants.ATTRIBUTE_MAXHEIGHT];
   } else {
     maxHeight = height;
   }
 
   var minHeight;
-  if (node.hasAttribute(WEB_VIEW_ATTRIBUTE_MINHEIGHT) &&
-      node[WEB_VIEW_ATTRIBUTE_MINHEIGHT]) {
-    minHeight = node[WEB_VIEW_ATTRIBUTE_MINHEIGHT];
+  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MINHEIGHT) &&
+      node[WebViewConstants.ATTRIBUTE_MINHEIGHT]) {
+    minHeight = node[WebViewConstants.ATTRIBUTE_MINHEIGHT];
   } else {
     minHeight = height;
   }
@@ -456,7 +442,7 @@ WebView.prototype.onSizeChanged = function(webViewEvent) {
     minHeight = maxHeight;
   }
 
-  if (!this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE) ||
+  if (!this.webviewNode.hasAttribute(WebViewConstants.ATTRIBUTE_AUTOSIZE) ||
       (newWidth >= minWidth &&
        newWidth <= maxWidth &&
        newHeight >= minHeight &&
@@ -480,7 +466,7 @@ WebView.prototype.hasNavigated = function() {
 
 WebView.prototype.parseSrcAttribute = function(result) {
   if (!this.partition.validPartitionId) {
-    result.error = ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
+    result.error = WebViewConstants.ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
     return;
   }
   this.src = this.webviewNode.getAttribute('src');
@@ -516,8 +502,8 @@ WebView.prototype.createGuest = function() {
     return;
   }
   var storagePartitionId =
-      this.webviewNode.getAttribute(WEB_VIEW_ATTRIBUTE_PARTITION) ||
-      this.webviewNode[WEB_VIEW_ATTRIBUTE_PARTITION];
+      this.webviewNode.getAttribute(WebViewConstants.ATTRIBUTE_PARTITION) ||
+      this.webviewNode[WebViewConstants.ATTRIBUTE_PARTITION];
   var params = {
     'storagePartitionId': storagePartitionId
   };
@@ -595,7 +581,8 @@ WebView.prototype.onAttach = function(storagePartitionId) {
 WebView.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
     'allowtransparency': this.allowtransparency || false,
-    'autosize': this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE),
+    'autosize': this.webviewNode.hasAttribute(
+        WebViewConstants.ATTRIBUTE_AUTOSIZE),
     'instanceId': this.viewInstanceId,
     'maxheight': parseInt(this.maxheight || 0),
     'maxwidth': parseInt(this.maxwidth || 0),
