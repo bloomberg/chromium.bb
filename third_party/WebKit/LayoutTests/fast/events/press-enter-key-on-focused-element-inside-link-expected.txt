@@ -1,0 +1,29 @@
+EnterMe
+
+ 
+SVG anchor with tabindex
+This test ensures that the link is activated by enter key on focusing the child element inside the anchor
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+H1 - keydown - Enter
+H1 - keypress - Enter
+A - click
+H1 - keyup - Enter
+
+
+TEXTAREA - keydown - Enter
+TEXTAREA - keypress - Enter
+TEXTAREA - keyup - Enter
+
+
+text - keydown - Enter
+text - keypress - Enter
+a - click
+text - keyup - Enter
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
