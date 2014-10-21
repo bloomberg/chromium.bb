@@ -30,23 +30,23 @@ class GLImageSync : public gfx::GLImage {
                        const gfx::Size& size);
 
   // Implement GLImage.
-  virtual void Destroy(bool have_context) override;
-  virtual gfx::Size GetSize() override;
-  virtual bool BindTexImage(unsigned target) override;
-  virtual void ReleaseTexImage(unsigned target) override;
-  virtual bool CopyTexImage(unsigned target) override;
-  virtual void WillUseTexImage() override;
-  virtual void WillModifyTexImage() override;
-  virtual void DidModifyTexImage() override;
-  virtual void DidUseTexImage() override;
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int z_order,
-                                    gfx::OverlayTransform transform,
-                                    const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) override;
+  void Destroy(bool have_context) override;
+  gfx::Size GetSize() override;
+  bool BindTexImage(unsigned target) override;
+  void ReleaseTexImage(unsigned target) override;
+  bool CopyTexImage(unsigned target) override;
+  void WillUseTexImage() override;
+  void WillModifyTexImage() override;
+  void DidModifyTexImage() override;
+  void DidUseTexImage() override;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
 
  protected:
-  virtual ~GLImageSync();
+  ~GLImageSync() override;
 
  private:
   scoped_refptr<NativeImageBuffer> buffer_;
@@ -306,15 +306,15 @@ class NativeImageBufferStub : public NativeImageBuffer {
   NativeImageBufferStub() : NativeImageBuffer() {}
 
  private:
-  virtual ~NativeImageBufferStub() {}
-  virtual void AddClient(gfx::GLImage* client) override {}
-  virtual void RemoveClient(gfx::GLImage* client) override {}
-  virtual bool IsClient(gfx::GLImage* client) override { return true; }
-  virtual void BindToTexture(GLenum target) override {}
-  virtual void WillRead(gfx::GLImage* client) override {}
-  virtual void WillWrite(gfx::GLImage* client) override {}
-  virtual void DidRead(gfx::GLImage* client) override {}
-  virtual void DidWrite(gfx::GLImage* client) override {}
+  ~NativeImageBufferStub() override {}
+  void AddClient(gfx::GLImage* client) override {}
+  void RemoveClient(gfx::GLImage* client) override {}
+  bool IsClient(gfx::GLImage* client) override { return true; }
+  void BindToTexture(GLenum target) override {}
+  void WillRead(gfx::GLImage* client) override {}
+  void WillWrite(gfx::GLImage* client) override {}
+  void DidRead(gfx::GLImage* client) override {}
+  void DidWrite(gfx::GLImage* client) override {}
 
   DISALLOW_COPY_AND_ASSIGN(NativeImageBufferStub);
 };

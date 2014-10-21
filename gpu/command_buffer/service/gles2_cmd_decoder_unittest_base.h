@@ -554,24 +554,23 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
    public:
     MockCommandBufferEngine();
 
-    virtual ~MockCommandBufferEngine();
+    ~MockCommandBufferEngine() override;
 
-    virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id)
-        override;
+    scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) override;
 
     void ClearSharedMemory() {
       memset(valid_buffer_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    virtual void set_token(int32 token) override;
+    void set_token(int32 token) override;
 
-    virtual bool SetGetBuffer(int32 /* transfer_buffer_id */) override;
-
-    // Overridden from CommandBufferEngine.
-    virtual bool SetGetOffset(int32 offset) override;
+    bool SetGetBuffer(int32 /* transfer_buffer_id */) override;
 
     // Overridden from CommandBufferEngine.
-    virtual int32 GetGetOffset() override;
+    bool SetGetOffset(int32 offset) override;
+
+    // Overridden from CommandBufferEngine.
+    int32 GetGetOffset() override;
 
    private:
     scoped_refptr<gpu::Buffer> valid_buffer_;

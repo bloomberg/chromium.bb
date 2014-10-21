@@ -34,7 +34,7 @@ class AsyncPixelTransferCompletionObserverImpl
     cancelled_ = true;
   }
 
-  virtual void DidComplete(const AsyncMemoryParams& mem_params) override {
+  void DidComplete(const AsyncMemoryParams& mem_params) override {
     base::AutoLock locked(lock_);
     if (!cancelled_) {
       DCHECK(mem_params.buffer().get());
@@ -45,7 +45,7 @@ class AsyncPixelTransferCompletionObserverImpl
   }
 
  private:
-  virtual ~AsyncPixelTransferCompletionObserverImpl() {}
+  ~AsyncPixelTransferCompletionObserverImpl() override {}
 
   base::subtle::Atomic32 submit_count_;
 
@@ -62,13 +62,13 @@ class AsyncPixelTransfersCompletedQuery
   AsyncPixelTransfersCompletedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~AsyncPixelTransfersCompletedQuery();
+  ~AsyncPixelTransfersCompletedQuery() override;
 
   scoped_refptr<AsyncPixelTransferCompletionObserverImpl> observer_;
 };
@@ -139,13 +139,13 @@ class AllSamplesPassedQuery : public QueryManager::Query {
   AllSamplesPassedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset,
       GLuint service_id);
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~AllSamplesPassedQuery();
+  ~AllSamplesPassedQuery() override;
 
  private:
   // Service side query id.
@@ -198,13 +198,13 @@ class CommandsIssuedQuery : public QueryManager::Query {
   CommandsIssuedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~CommandsIssuedQuery();
+  ~CommandsIssuedQuery() override;
 
  private:
   base::TimeTicks begin_time_;
@@ -245,13 +245,13 @@ class CommandLatencyQuery : public QueryManager::Query {
   CommandLatencyQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~CommandLatencyQuery();
+  ~CommandLatencyQuery() override;
 };
 
 CommandLatencyQuery::CommandLatencyQuery(
@@ -291,14 +291,14 @@ class AsyncReadPixelsCompletedQuery
   AsyncReadPixelsCompletedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
   void Complete();
-  virtual ~AsyncReadPixelsCompletedQuery();
+  ~AsyncReadPixelsCompletedQuery() override;
 
  private:
   bool completed_;
@@ -351,13 +351,13 @@ class GetErrorQuery : public QueryManager::Query {
   GetErrorQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~GetErrorQuery();
+  ~GetErrorQuery() override;
 
  private:
 };
@@ -398,13 +398,13 @@ class CommandsCompletedQuery : public QueryManager::Query {
                          uint32 shm_offset);
 
   // Overridden from QueryManager::Query:
-  virtual bool Begin() override;
-  virtual bool End(base::subtle::Atomic32 submit_count) override;
-  virtual bool Process() override;
-  virtual void Destroy(bool have_context) override;
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process() override;
+  void Destroy(bool have_context) override;
 
  protected:
-  virtual ~CommandsCompletedQuery();
+  ~CommandsCompletedQuery() override;
 
  private:
   scoped_ptr<gfx::GLFence> fence_;

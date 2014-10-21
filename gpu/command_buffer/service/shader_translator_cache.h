@@ -29,7 +29,7 @@ class GPU_EXPORT ShaderTranslatorCache
   ShaderTranslatorCache();
 
   // ShaderTranslator::DestructionObserver implementation
-  virtual void OnDestruct(ShaderTranslator* translator) override;
+  void OnDestruct(ShaderTranslator* translator) override;
 
   scoped_refptr<ShaderTranslator> GetTranslator(
       sh::GLenum shader_type,
@@ -41,7 +41,7 @@ class GPU_EXPORT ShaderTranslatorCache
 
  private:
   friend class base::RefCounted<ShaderTranslatorCache>;
-  virtual ~ShaderTranslatorCache();
+  ~ShaderTranslatorCache() override;
 
   // Parameters passed into ShaderTranslator::Init
   struct ShaderTranslatorInitParams {

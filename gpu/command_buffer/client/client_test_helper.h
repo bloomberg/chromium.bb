@@ -26,21 +26,21 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   static const int32 kMaxTransferBuffers = 6;
 
   MockCommandBufferBase();
-  virtual ~MockCommandBufferBase();
+  ~MockCommandBufferBase() override;
 
-  virtual bool Initialize() override;
-  virtual State GetLastState() override;
-  virtual int32 GetLastToken() override;
-  virtual void WaitForTokenInRange(int32 start, int32 end) override;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
-  virtual void SetGetBuffer(int transfer_buffer_id) override;
-  virtual void SetGetOffset(int32 get_offset) override;
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                          int32* id) override;
-  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) override;
-  virtual void SetToken(int32 token) override;
-  virtual void SetParseError(error::Error error) override;
-  virtual void SetContextLostReason(error::ContextLostReason reason) override;
+  bool Initialize() override;
+  State GetLastState() override;
+  int32 GetLastToken() override;
+  void WaitForTokenInRange(int32 start, int32 end) override;
+  void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  void SetGetBuffer(int transfer_buffer_id) override;
+  void SetGetOffset(int32 get_offset) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                  int32* id) override;
+  scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) override;
+  void SetToken(int32 token) override;
+  void SetParseError(error::Error error) override;
+  void SetContextLostReason(error::ContextLostReason reason) override;
 
   // Get's the Id of the next transfer buffer that will be returned
   // by CreateTransferBuffer. This is useful for testing expected ids.

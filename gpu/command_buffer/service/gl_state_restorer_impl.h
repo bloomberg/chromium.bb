@@ -22,13 +22,13 @@ struct ContextState;
 class GPU_EXPORT GLStateRestorerImpl : public gfx::GLStateRestorer {
  public:
    explicit GLStateRestorerImpl(base::WeakPtr<gles2::GLES2Decoder> decoder);
-   virtual ~GLStateRestorerImpl();
+   ~GLStateRestorerImpl() override;
 
-   virtual bool IsInitialized() override;
-   virtual void RestoreState(const gfx::GLStateRestorer* prev_state) override;
-   virtual void RestoreAllTextureUnitBindings() override;
-   virtual void RestoreActiveTextureUnitBinding(unsigned int target) override;
-   virtual void RestoreFramebufferBindings() override;
+   bool IsInitialized() override;
+   void RestoreState(const gfx::GLStateRestorer* prev_state) override;
+   void RestoreAllTextureUnitBindings() override;
+   void RestoreActiveTextureUnitBinding(unsigned int target) override;
+   void RestoreFramebufferBindings() override;
 
  private:
    const gles2::ContextState* GetContextState() const;

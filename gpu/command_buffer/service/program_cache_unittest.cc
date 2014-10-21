@@ -15,7 +15,7 @@ namespace gles2 {
 
 class NoBackendProgramCache : public ProgramCache {
  public:
-  virtual ProgramLoadResult LoadLinkedProgram(
+  ProgramLoadResult LoadLinkedProgram(
       GLuint /* program */,
       Shader* /* shader_a */,
       const ShaderTranslatorInterface* /* translator_a */,
@@ -25,18 +25,17 @@ class NoBackendProgramCache : public ProgramCache {
       const ShaderCacheCallback& /* callback */) override {
     return PROGRAM_LOAD_SUCCESS;
   }
-  virtual void SaveLinkedProgram(
-      GLuint /* program */,
-      const Shader* /* shader_a */,
-      const ShaderTranslatorInterface* /* translator_b */,
-      const Shader* /* shader_b */,
-      const ShaderTranslatorInterface* /* translator_b */,
-      const LocationMap* /* bind_attrib_location_map */,
-      const ShaderCacheCallback& /* callback */) override { }
+  void SaveLinkedProgram(GLuint /* program */,
+                         const Shader* /* shader_a */,
+                         const ShaderTranslatorInterface* /* translator_b */,
+                         const Shader* /* shader_b */,
+                         const ShaderTranslatorInterface* /* translator_b */,
+                         const LocationMap* /* bind_attrib_location_map */,
+                         const ShaderCacheCallback& /* callback */) override {}
 
-  virtual void LoadProgram(const std::string& /* program */) override {}
+  void LoadProgram(const std::string& /* program */) override {}
 
-  virtual void ClearBackend() override {}
+  void ClearBackend() override {}
 
   void SaySuccessfullyCached(const std::string& shader1,
                              const ShaderTranslatorInterface* translator_1,

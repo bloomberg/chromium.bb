@@ -17,45 +17,44 @@ namespace gles2 {
 class ErrorStateImpl : public ErrorState {
  public:
   explicit ErrorStateImpl(ErrorStateClient* client, Logger* logger);
-  virtual ~ErrorStateImpl();
+  ~ErrorStateImpl() override;
 
-  virtual uint32 GetGLError() override;
+  uint32 GetGLError() override;
 
-  virtual void SetGLError(
-      const char* filename,
-      int line,
-      unsigned int error,
-      const char* function_name,
-      const char* msg) override;
-  virtual void SetGLErrorInvalidEnum(
-      const char* filename,
-      int line,
-      const char* function_name,
-      unsigned int value,
-      const char* label) override;
-  virtual void SetGLErrorInvalidParami(
-      const char* filename,
-      int line,
-      unsigned int error,
-      const char* function_name,
-      unsigned int pname,
-      int param) override;
-  virtual void SetGLErrorInvalidParamf(
-      const char* filename,
-      int line,
-      unsigned int error,
-      const char* function_name,
-      unsigned int pname,
-      float param) override;
+  void SetGLError(const char* filename,
+                  int line,
+                  unsigned int error,
+                  const char* function_name,
+                  const char* msg) override;
+  void SetGLErrorInvalidEnum(const char* filename,
+                             int line,
+                             const char* function_name,
+                             unsigned int value,
+                             const char* label) override;
+  void SetGLErrorInvalidParami(const char* filename,
+                               int line,
+                               unsigned int error,
+                               const char* function_name,
+                               unsigned int pname,
+                               int param) override;
+  void SetGLErrorInvalidParamf(const char* filename,
+                               int line,
+                               unsigned int error,
+                               const char* function_name,
+                               unsigned int pname,
+                               float param) override;
 
-  virtual unsigned int PeekGLError(
-      const char* filename, int line, const char* function_name) override;
+  unsigned int PeekGLError(const char* filename,
+                           int line,
+                           const char* function_name) override;
 
-  virtual void CopyRealGLErrorsToWrapper(
-      const char* filename, int line, const char* function_name) override;
+  void CopyRealGLErrorsToWrapper(const char* filename,
+                                 int line,
+                                 const char* function_name) override;
 
-  virtual void ClearRealGLErrors(
-      const char* filename, int line, const char* function_name) override;
+  void ClearRealGLErrors(const char* filename,
+                         int line,
+                         const char* function_name) override;
 
  private:
   // The last error message set.

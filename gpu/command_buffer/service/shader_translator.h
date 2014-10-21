@@ -83,24 +83,22 @@ class GPU_EXPORT ShaderTranslator
   ShaderTranslator();
 
   // Overridden from ShaderTranslatorInterface.
-  virtual bool Init(
-      sh::GLenum shader_type,
-      ShShaderSpec shader_spec,
-      const ShBuiltInResources* resources,
-      GlslImplementationType glsl_implementation_type,
-      ShCompileOptions driver_bug_workarounds) override;
+  bool Init(sh::GLenum shader_type,
+            ShShaderSpec shader_spec,
+            const ShBuiltInResources* resources,
+            GlslImplementationType glsl_implementation_type,
+            ShCompileOptions driver_bug_workarounds) override;
 
   // Overridden from ShaderTranslatorInterface.
-  virtual bool Translate(const std::string& shader_source,
-                         std::string* info_log,
-                         std::string* translated_source,
-                         AttributeMap* attrib_map,
-                         UniformMap* uniform_map,
-                         VaryingMap* varying_map,
-                         NameMap* name_map) const override;
+  bool Translate(const std::string& shader_source,
+                 std::string* info_log,
+                 std::string* translated_source,
+                 AttributeMap* attrib_map,
+                 UniformMap* uniform_map,
+                 VaryingMap* varying_map,
+                 NameMap* name_map) const override;
 
-  virtual std::string GetStringForOptionsThatWouldAffectCompilation() const
-      override;
+  std::string GetStringForOptionsThatWouldAffectCompilation() const override;
 
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
@@ -108,7 +106,7 @@ class GPU_EXPORT ShaderTranslator
  private:
   friend class base::RefCounted<ShaderTranslator>;
 
-  virtual ~ShaderTranslator();
+  ~ShaderTranslator() override;
   int GetCompileOptions() const;
 
   ShHandle compiler_;

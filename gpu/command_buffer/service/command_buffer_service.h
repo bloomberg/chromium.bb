@@ -42,26 +42,25 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   typedef base::Callback<bool(int32)> GetBufferChangedCallback;
   explicit CommandBufferService(
       TransferBufferManagerInterface* transfer_buffer_manager);
-  virtual ~CommandBufferService();
+  ~CommandBufferService() override;
 
   // CommandBuffer implementation:
-  virtual bool Initialize() override;
-  virtual State GetLastState() override;
-  virtual int32 GetLastToken() override;
-  virtual void Flush(int32 put_offset) override;
-  virtual void WaitForTokenInRange(int32 start, int32 end) override;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
-  virtual void SetGetBuffer(int32 transfer_buffer_id) override;
-  virtual scoped_refptr<Buffer> CreateTransferBuffer(size_t size,
-                                                     int32* id) override;
-  virtual void DestroyTransferBuffer(int32 id) override;
+  bool Initialize() override;
+  State GetLastState() override;
+  int32 GetLastToken() override;
+  void Flush(int32 put_offset) override;
+  void WaitForTokenInRange(int32 start, int32 end) override;
+  void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  void SetGetBuffer(int32 transfer_buffer_id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32* id) override;
+  void DestroyTransferBuffer(int32 id) override;
 
   // CommandBufferServiceBase implementation:
-  virtual void SetGetOffset(int32 get_offset) override;
-  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
-  virtual void SetToken(int32 token) override;
-  virtual void SetParseError(error::Error error) override;
-  virtual void SetContextLostReason(error::ContextLostReason) override;
+  void SetGetOffset(int32 get_offset) override;
+  scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
+  void SetToken(int32 token) override;
+  void SetParseError(error::Error error) override;
+  void SetContextLostReason(error::ContextLostReason) override;
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress

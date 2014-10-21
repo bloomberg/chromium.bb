@@ -191,7 +191,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                       bool lose_context_when_out_of_memory,
                       GpuControl* gpu_control);
 
-  virtual ~GLES2Implementation();
+  ~GLES2Implementation() override;
 
   bool Initialize(
       unsigned int starting_transfer_buffer_size,
@@ -211,23 +211,21 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // this file instead of having to edit some template or the code generator.
   #include "gpu/command_buffer/client/gles2_implementation_autogen.h"
 
-  virtual void DisableVertexAttribArray(GLuint index) override;
-  virtual void EnableVertexAttribArray(GLuint index) override;
-  virtual void GetVertexAttribfv(
-      GLuint index, GLenum pname, GLfloat* params) override;
-  virtual void GetVertexAttribiv(
-      GLuint index, GLenum pname, GLint* params) override;
+  void DisableVertexAttribArray(GLuint index) override;
+  void EnableVertexAttribArray(GLuint index) override;
+  void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) override;
+  void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) override;
 
   // ContextSupport implementation.
-  virtual void Swap() override;
-  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
-  virtual void ScheduleOverlayPlane(int plane_z_order,
-                                    gfx::OverlayTransform plane_transform,
-                                    unsigned overlay_texture_id,
-                                    const gfx::Rect& display_bounds,
-                                    const gfx::RectF& uv_rect) override;
-  virtual GLuint InsertFutureSyncPointCHROMIUM() override;
-  virtual void RetireSyncPointCHROMIUM(GLuint sync_point) override;
+  void Swap() override;
+  void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
+  void ScheduleOverlayPlane(int plane_z_order,
+                            gfx::OverlayTransform plane_transform,
+                            unsigned overlay_texture_id,
+                            const gfx::Rect& display_bounds,
+                            const gfx::RectF& uv_rect) override;
+  GLuint InsertFutureSyncPointCHROMIUM() override;
+  void RetireSyncPointCHROMIUM(GLuint sync_point) override;
 
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
@@ -243,11 +241,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void FreeEverything();
 
   // ContextSupport implementation.
-  virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) override;
-  virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) override;
-  virtual void SetSurfaceVisible(bool visible) override;
+  void SignalSyncPoint(uint32 sync_point,
+                       const base::Closure& callback) override;
+  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SetSurfaceVisible(bool visible) override;
 
   void SetErrorMessageCallback(
       GLES2ImplementationErrorMessageCallback* callback) {

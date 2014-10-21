@@ -115,14 +115,14 @@ class Outputter : public base::RefCounted<Outputter> {
 class TraceOutputter : public Outputter {
  public:
   static scoped_refptr<TraceOutputter> Create(const std::string& name);
-  virtual void Trace(const std::string& name,
-                     int64 start_time,
-                     int64 end_time) override;
+  void Trace(const std::string& name,
+             int64 start_time,
+             int64 end_time) override;
 
  protected:
   friend class base::RefCounted<Outputter>;
   explicit TraceOutputter(const std::string& name);
-  virtual ~TraceOutputter();
+  ~TraceOutputter() override;
 
   base::Thread named_thread_;
   uint64 local_trace_id_;

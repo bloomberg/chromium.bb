@@ -32,14 +32,14 @@ class GPU_EXPORT TransferBufferManager
   TransferBufferManager();
 
   bool Initialize();
-  virtual bool RegisterTransferBuffer(int32 id,
-                                      scoped_ptr<BufferBacking> buffer_backing)
-      override;
-  virtual void DestroyTransferBuffer(int32 id) override;
-  virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
+  bool RegisterTransferBuffer(
+      int32 id,
+      scoped_ptr<BufferBacking> buffer_backing) override;
+  void DestroyTransferBuffer(int32 id) override;
+  scoped_refptr<Buffer> GetTransferBuffer(int32 id) override;
 
  private:
-  virtual ~TransferBufferManager();
+  ~TransferBufferManager() override;
 
   typedef base::hash_map<int32, scoped_refptr<Buffer> > BufferMap;
   BufferMap registered_buffers_;

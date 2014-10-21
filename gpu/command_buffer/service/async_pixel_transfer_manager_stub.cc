@@ -11,18 +11,16 @@ namespace gpu {
 class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
  public:
   AsyncPixelTransferDelegateStub();
-  virtual ~AsyncPixelTransferDelegateStub();
+  ~AsyncPixelTransferDelegateStub() override;
 
   // Implement AsyncPixelTransferDelegate:
-  virtual void AsyncTexImage2D(
-      const AsyncTexImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params,
-      const base::Closure& bind_callback) override;
-  virtual void AsyncTexSubImage2D(
-      const AsyncTexSubImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) override;
-  virtual bool TransferIsInProgress() override;
-  virtual void WaitForTransferCompletion() override;
+  void AsyncTexImage2D(const AsyncTexImage2DParams& tex_params,
+                       const AsyncMemoryParams& mem_params,
+                       const base::Closure& bind_callback) override;
+  void AsyncTexSubImage2D(const AsyncTexSubImage2DParams& tex_params,
+                          const AsyncMemoryParams& mem_params) override;
+  bool TransferIsInProgress() override;
+  void WaitForTransferCompletion() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateStub);

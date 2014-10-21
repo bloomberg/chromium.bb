@@ -45,7 +45,7 @@ class GPU_EXPORT AsyncPixelTransferManager
  public:
   static AsyncPixelTransferManager* Create(gfx::GLContext* context);
 
-  virtual ~AsyncPixelTransferManager();
+  ~AsyncPixelTransferManager() override;
 
   void Initialize(gles2::TextureManager* texture_manager);
 
@@ -82,9 +82,8 @@ class GPU_EXPORT AsyncPixelTransferManager
   bool AsyncTransferIsInProgress(gles2::TextureRef* ref);
 
   // gles2::TextureRef::DestructionObserver implementation:
-  virtual void OnTextureManagerDestroying(gles2::TextureManager* manager)
-      override;
-  virtual void OnTextureRefDestroying(gles2::TextureRef* texture) override;
+  void OnTextureManagerDestroying(gles2::TextureManager* manager) override;
+  void OnTextureRefDestroying(gles2::TextureRef* texture) override;
 
  protected:
   AsyncPixelTransferManager();

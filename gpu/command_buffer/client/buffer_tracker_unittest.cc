@@ -23,10 +23,10 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
   MockClientCommandBufferImpl()
       : MockClientCommandBuffer(),
         context_lost_(false) {}
-  virtual ~MockClientCommandBufferImpl() {}
+  ~MockClientCommandBufferImpl() override {}
 
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                          int32* id) override {
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                  int32* id) override {
     if (context_lost_) {
       *id = -1;
       return NULL;

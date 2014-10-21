@@ -17,7 +17,7 @@ namespace gpu {
 
 class GPU_EXPORT GpuDriverBugList : public GpuControlList {
  public:
-  virtual ~GpuDriverBugList();
+  ~GpuDriverBugList() override;
 
   static GpuDriverBugList* Create();
 

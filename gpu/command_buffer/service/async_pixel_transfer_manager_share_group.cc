@@ -51,7 +51,7 @@ class TransferThread : public base::Thread {
 #endif
   }
 
-  virtual ~TransferThread() {
+  ~TransferThread() override {
     // The only instance of this class was declared leaky.
     NOTREACHED();
   }
@@ -71,7 +71,7 @@ class TransferThread : public base::Thread {
     wait_for_init.Wait();
   }
 
-  virtual void CleanUp() override {
+  void CleanUp() override {
     surface_ = NULL;
     context_ = NULL;
   }
@@ -377,20 +377,18 @@ class AsyncPixelTransferDelegateShareGroup
       AsyncPixelTransferManagerShareGroup::SharedState* shared_state,
       GLuint texture_id,
       const AsyncTexImage2DParams& define_params);
-  virtual ~AsyncPixelTransferDelegateShareGroup();
+  ~AsyncPixelTransferDelegateShareGroup() override;
 
   void BindTransfer() { state_->BindTransfer(); }
 
   // Implement AsyncPixelTransferDelegate:
-  virtual void AsyncTexImage2D(
-      const AsyncTexImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params,
-      const base::Closure& bind_callback) override;
-  virtual void AsyncTexSubImage2D(
-      const AsyncTexSubImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) override;
-  virtual bool TransferIsInProgress() override;
-  virtual void WaitForTransferCompletion() override;
+  void AsyncTexImage2D(const AsyncTexImage2DParams& tex_params,
+                       const AsyncMemoryParams& mem_params,
+                       const base::Closure& bind_callback) override;
+  void AsyncTexSubImage2D(const AsyncTexSubImage2DParams& tex_params,
+                          const AsyncMemoryParams& mem_params) override;
+  bool TransferIsInProgress() override;
+  void WaitForTransferCompletion() override;
 
  private:
   // A raw pointer is safe because the SharedState is owned by the Manager,

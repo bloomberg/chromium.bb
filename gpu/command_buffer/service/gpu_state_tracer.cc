@@ -24,11 +24,11 @@ class Snapshot : public base::debug::ConvertableToTraceFormat {
   bool SaveScreenshot(const gfx::Size& size);
 
   // base::debug::ConvertableToTraceFormat implementation.
-  virtual void AppendAsTraceFormat(std::string* out) const override;
+  void AppendAsTraceFormat(std::string* out) const override;
 
  private:
   explicit Snapshot(const ContextState* state);
-  virtual ~Snapshot() {}
+  ~Snapshot() override {}
 
   const ContextState* state_;
 

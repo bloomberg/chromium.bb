@@ -2167,16 +2167,14 @@ class CountingMemoryTracker : public MemoryTracker {
     current_size_[1] = 0;
   }
 
-  virtual void TrackMemoryAllocatedChange(size_t old_size,
-                                          size_t new_size,
-                                          Pool pool)  override {
+  void TrackMemoryAllocatedChange(size_t old_size,
+                                  size_t new_size,
+                                  Pool pool) override {
     DCHECK_LT(static_cast<size_t>(pool), arraysize(current_size_));
     current_size_[pool] += new_size - old_size;
   }
 
-  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) override {
-    return true;
-  }
+  bool EnsureGPUMemoryAvailable(size_t size_needed) override { return true; }
 
   size_t GetSize(Pool pool) {
     DCHECK_LT(static_cast<size_t>(pool), arraysize(current_size_));
@@ -2184,7 +2182,7 @@ class CountingMemoryTracker : public MemoryTracker {
   }
 
  private:
-  virtual ~CountingMemoryTracker() {}
+  ~CountingMemoryTracker() override {}
 
   size_t current_size_[2];
   DISALLOW_COPY_AND_ASSIGN(CountingMemoryTracker);

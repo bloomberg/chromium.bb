@@ -34,23 +34,22 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   gfx::Display* display();
 
   // Implement GLContext.
-  virtual bool Initialize(
-      gfx::GLSurface* compatible_surface,
-      gfx::GpuPreference gpu_preference) override;
-  virtual void Destroy() override;
-  virtual bool MakeCurrent(gfx::GLSurface* surface) override;
-  virtual void ReleaseCurrent(gfx::GLSurface* surface) override;
-  virtual bool IsCurrent(gfx::GLSurface* surface) override;
-  virtual void* GetHandle() override;
-  virtual void SetSwapInterval(int interval) override;
-  virtual std::string GetExtensions() override;
-  virtual bool GetTotalGpuMemory(size_t* bytes) override;
-  virtual void SetSafeToForceGpuSwitch() override;
-  virtual bool WasAllocatedUsingRobustnessExtension() override;
-  virtual void SetUnbindFboOnMakeCurrent() override;
+  bool Initialize(gfx::GLSurface* compatible_surface,
+                  gfx::GpuPreference gpu_preference) override;
+  void Destroy() override;
+  bool MakeCurrent(gfx::GLSurface* surface) override;
+  void ReleaseCurrent(gfx::GLSurface* surface) override;
+  bool IsCurrent(gfx::GLSurface* surface) override;
+  void* GetHandle() override;
+  void SetSwapInterval(int interval) override;
+  std::string GetExtensions() override;
+  bool GetTotalGpuMemory(size_t* bytes) override;
+  void SetSafeToForceGpuSwitch() override;
+  bool WasAllocatedUsingRobustnessExtension() override;
+  void SetUnbindFboOnMakeCurrent() override;
 
  protected:
-  virtual ~GLContextVirtual();
+  ~GLContextVirtual() override;
 
  private:
   scoped_refptr<gfx::GLContext> shared_context_;

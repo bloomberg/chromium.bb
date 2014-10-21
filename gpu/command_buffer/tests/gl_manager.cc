@@ -62,21 +62,21 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() override {
+  void* Map() override {
     mapped_ = true;
     return &bytes_->data().front();
   }
-  virtual void Unmap() override { mapped_ = false; }
-  virtual bool IsMapped() const override { return mapped_; }
-  virtual Format GetFormat() const override { return format_; }
-  virtual uint32 GetStride() const override {
+  void Unmap() override { mapped_ = false; }
+  bool IsMapped() const override { return mapped_; }
+  Format GetFormat() const override { return format_; }
+  uint32 GetStride() const override {
     return size_.width() * BytesPerPixel(format_);
   }
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const override {
+  gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
-  virtual ClientBuffer AsClientBuffer() override {
+  ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
 

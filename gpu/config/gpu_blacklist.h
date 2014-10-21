@@ -13,7 +13,7 @@ namespace gpu {
 
 class GPU_EXPORT GpuBlacklist : public GpuControlList {
  public:
-  virtual ~GpuBlacklist();
+  ~GpuBlacklist() override;
 
   static GpuBlacklist* Create();
 

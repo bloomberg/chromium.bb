@@ -14,7 +14,7 @@ namespace gles2 {
 class GLES2InterfaceStub : public GLES2Interface {
  public:
   GLES2InterfaceStub();
-  virtual ~GLES2InterfaceStub();
+  ~GLES2InterfaceStub() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

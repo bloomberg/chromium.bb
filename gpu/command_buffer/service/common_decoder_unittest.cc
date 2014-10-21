@@ -51,15 +51,14 @@ TEST(CommonDecoderBucket, SetData) {
 class TestCommonDecoder : public CommonDecoder {
  public:
   // Overridden from AsyncAPIInterface
-  virtual const char* GetCommandName(unsigned int command_id) const override {
+  const char* GetCommandName(unsigned int command_id) const override {
     return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
   }
 
   // Overridden from AsyncAPIInterface
-  virtual error::Error DoCommand(
-      unsigned int command,
-      unsigned int arg_count,
-      const void* cmd_data) override {
+  error::Error DoCommand(unsigned int command,
+                         unsigned int arg_count,
+                         const void* cmd_data) override {
     return DoCommonCommand(command, arg_count, cmd_data);
   }
 
@@ -87,8 +86,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id)
-      override {
+  scoped_refptr<gpu::Buffer> GetSharedMemoryBuffer(int32 shm_id) override {
     if (IsValidSharedMemoryId(shm_id))
       return buffer_;
     return NULL;
@@ -110,22 +108,20 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual void set_token(int32 token) override {
-    token_ = token;
-  }
+  void set_token(int32 token) override { token_ = token; }
 
   int32 token() const {
     return token_;
   }
 
   // Overridden from CommandBufferEngine.
-  virtual bool SetGetBuffer(int32 transfer_buffer_id) override {
+  bool SetGetBuffer(int32 transfer_buffer_id) override {
     NOTREACHED();
     return false;
   }
 
   // Overridden from CommandBufferEngine.
-  virtual bool SetGetOffset(int32 offset) override {
+  bool SetGetOffset(int32 offset) override {
     if (static_cast<size_t>(offset) < kBufferSize) {
       get_offset_ = offset;
       return true;
@@ -134,9 +130,7 @@ class MockCommandBufferEngine : public CommandBufferEngine {
   }
 
   // Overridden from CommandBufferEngine.
-  virtual int32 GetGetOffset() override {
-    return get_offset_;
-  }
+  int32 GetGetOffset() override { return get_offset_; }
 
  private:
   bool IsValidSharedMemoryId(int32 shm_id) {

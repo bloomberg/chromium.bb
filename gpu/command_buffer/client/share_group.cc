@@ -26,12 +26,13 @@ COMPILE_ASSERT(gpu::kInvalidResource == 0,
 class IdHandler : public IdHandlerInterface {
  public:
   IdHandler() { }
-  virtual ~IdHandler() { }
+  ~IdHandler() override {}
 
   // Overridden from IdHandlerInterface.
-  virtual void MakeIds(
-      GLES2Implementation* /* gl_impl */,
-      GLuint id_offset, GLsizei n, GLuint* ids) override {
+  void MakeIds(GLES2Implementation* /* gl_impl */,
+               GLuint id_offset,
+               GLsizei n,
+               GLuint* ids) override {
     base::AutoLock auto_lock(lock_);
     if (id_offset == 0) {
       for (GLsizei ii = 0; ii < n; ++ii) {
@@ -46,9 +47,10 @@ class IdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool FreeIds(
-      GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) override {
+  bool FreeIds(GLES2Implementation* gl_impl,
+               GLsizei n,
+               const GLuint* ids,
+               DeleteFn delete_fn) override {
     base::AutoLock auto_lock(lock_);
 
     for (GLsizei ii = 0; ii < n; ++ii) {
@@ -65,14 +67,14 @@ class IdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool MarkAsUsedForBind(GLuint id) override {
+  bool MarkAsUsedForBind(GLuint id) override {
     if (id == 0)
       return true;
     base::AutoLock auto_lock(lock_);
     return id_allocator_.MarkAsUsed(id);
   }
 
-  virtual void FreeContext(GLES2Implementation* gl_impl) override {}
+  void FreeContext(GLES2Implementation* gl_impl) override {}
 
  private:
   base::Lock lock_;
@@ -83,13 +85,13 @@ class IdHandler : public IdHandlerInterface {
 class StrictIdHandler : public IdHandlerInterface {
  public:
   explicit StrictIdHandler(int id_namespace) : id_namespace_(id_namespace) {}
-  virtual ~StrictIdHandler() {}
+  ~StrictIdHandler() override {}
 
   // Overridden from IdHandler.
-  virtual void MakeIds(GLES2Implementation* gl_impl,
-                       GLuint /* id_offset */,
-                       GLsizei n,
-                       GLuint* ids) override {
+  void MakeIds(GLES2Implementation* gl_impl,
+               GLuint /* id_offset */,
+               GLsizei n,
+               GLuint* ids) override {
     base::AutoLock auto_lock(lock_);
 
     // Collect pending FreeIds from other flush_generation.
@@ -113,11 +115,10 @@ class StrictIdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandler.
-  virtual bool FreeIds(GLES2Implementation* gl_impl,
-                       GLsizei n,
-                       const GLuint* ids,
-                       DeleteFn delete_fn) override {
-
+  bool FreeIds(GLES2Implementation* gl_impl,
+               GLsizei n,
+               const GLuint* ids,
+               DeleteFn delete_fn) override {
     // Delete stub must run before CollectPendingFreeIds.
     (gl_impl->*delete_fn)(n, ids);
 
@@ -146,7 +147,7 @@ class StrictIdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandler.
-  virtual bool MarkAsUsedForBind(GLuint id) override {
+  bool MarkAsUsedForBind(GLuint id) override {
 #ifndef NDEBUG
     if (id != 0) {
       base::AutoLock auto_lock(lock_);
@@ -157,7 +158,7 @@ class StrictIdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  virtual void FreeContext(GLES2Implementation* gl_impl) override {
+  void FreeContext(GLES2Implementation* gl_impl) override {
     base::AutoLock auto_lock(lock_);
     CollectPendingFreeIds(gl_impl);
   }
@@ -193,12 +194,13 @@ class StrictIdHandler : public IdHandlerInterface {
 class NonReusedIdHandler : public IdHandlerInterface {
  public:
   NonReusedIdHandler() : last_id_(0) {}
-  virtual ~NonReusedIdHandler() {}
+  ~NonReusedIdHandler() override {}
 
   // Overridden from IdHandlerInterface.
-  virtual void MakeIds(
-      GLES2Implementation* /* gl_impl */,
-      GLuint id_offset, GLsizei n, GLuint* ids) override {
+  void MakeIds(GLES2Implementation* /* gl_impl */,
+               GLuint id_offset,
+               GLsizei n,
+               GLuint* ids) override {
     base::AutoLock auto_lock(lock_);
     for (GLsizei ii = 0; ii < n; ++ii) {
       ids[ii] = ++last_id_ + id_offset;
@@ -206,21 +208,22 @@ class NonReusedIdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool FreeIds(
-      GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) override {
+  bool FreeIds(GLES2Implementation* gl_impl,
+               GLsizei n,
+               const GLuint* ids,
+               DeleteFn delete_fn) override {
     // Ids are never freed.
     (gl_impl->*delete_fn)(n, ids);
     return true;
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool MarkAsUsedForBind(GLuint /* id */) override {
+  bool MarkAsUsedForBind(GLuint /* id */) override {
     // This is only used for Shaders and Programs which have no bind.
     return false;
   }
 
-  virtual void FreeContext(GLES2Implementation* gl_impl) override {}
+  void FreeContext(GLES2Implementation* gl_impl) override {}
 
  private:
   base::Lock lock_;

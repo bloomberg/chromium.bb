@@ -68,7 +68,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Creates a decoder.
   static GLES2Decoder* Create(ContextGroup* group);
 
-  virtual ~GLES2Decoder();
+  ~GLES2Decoder() override;
 
   bool initialized() const {
     return initialized_;

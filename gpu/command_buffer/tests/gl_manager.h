@@ -59,7 +59,7 @@ class GLManager : private GpuControl {
     bool context_lost_allowed;
   };
   GLManager();
-  virtual ~GLManager();
+  ~GLManager() override;
 
   static scoped_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
@@ -95,25 +95,24 @@ class GLManager : private GpuControl {
   const gpu::gles2::FeatureInfo::Workarounds& workarounds() const;
 
   // GpuControl implementation.
-  virtual Capabilities GetCapabilities() override;
-  virtual int32 CreateImage(ClientBuffer buffer,
-                            size_t width,
-                            size_t height,
-                            unsigned internalformat) override;
-  virtual void DestroyImage(int32 id) override;
-  virtual int32 CreateGpuMemoryBufferImage(size_t width,
-                                           size_t height,
-                                           unsigned internalformat,
-                                           unsigned usage) override;
-  virtual uint32 InsertSyncPoint() override;
-  virtual uint32 InsertFutureSyncPoint() override;
-  virtual void RetireSyncPoint(uint32 sync_point) override;
-  virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) override;
-  virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) override;
-  virtual void SetSurfaceVisible(bool visible) override;
-  virtual uint32 CreateStreamTexture(uint32 texture_id) override;
+  Capabilities GetCapabilities() override;
+  int32 CreateImage(ClientBuffer buffer,
+                    size_t width,
+                    size_t height,
+                    unsigned internalformat) override;
+  void DestroyImage(int32 id) override;
+  int32 CreateGpuMemoryBufferImage(size_t width,
+                                   size_t height,
+                                   unsigned internalformat,
+                                   unsigned usage) override;
+  uint32 InsertSyncPoint() override;
+  uint32 InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32 sync_point) override;
+  void SignalSyncPoint(uint32 sync_point,
+                       const base::Closure& callback) override;
+  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SetSurfaceVisible(bool visible) override;
+  uint32 CreateStreamTexture(uint32 texture_id) override;
 
  private:
   void PumpCommands();

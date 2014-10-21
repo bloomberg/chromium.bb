@@ -46,9 +46,9 @@ class CommandBufferServiceLocked : public CommandBufferService {
         flush_locked_(false),
         last_flush_(-1),
         flush_count_(0) {}
-  virtual ~CommandBufferServiceLocked() {}
+  ~CommandBufferServiceLocked() override {}
 
-  virtual void Flush(int32 put_offset) override {
+  void Flush(int32 put_offset) override {
     flush_count_++;
     if (!flush_locked_) {
       last_flush_ = -1;
@@ -64,7 +64,7 @@ class CommandBufferServiceLocked : public CommandBufferService {
 
   int FlushCount() { return flush_count_; }
 
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override {
+  void WaitForGetOffsetInRange(int32 start, int32 end) override {
     if (last_flush_ != -1) {
       CommandBufferService::Flush(last_flush_);
       last_flush_ = -1;

@@ -95,7 +95,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   };
 
   CommonDecoder();
-  virtual ~CommonDecoder();
+  ~CommonDecoder() override;
 
   // Sets the engine, to get shared memory buffers from, and to set the token
   // to.

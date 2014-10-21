@@ -48,61 +48,42 @@ class RenderbufferAttachment
       : renderbuffer_(renderbuffer) {
   }
 
-  virtual GLsizei width() const override {
-    return renderbuffer_->width();
-  }
+  GLsizei width() const override { return renderbuffer_->width(); }
 
-  virtual GLsizei height() const override {
-    return renderbuffer_->height();
-  }
+  GLsizei height() const override { return renderbuffer_->height(); }
 
-  virtual GLenum internal_format() const override {
+  GLenum internal_format() const override {
     return renderbuffer_->internal_format();
   }
 
-  virtual GLenum texture_type() const override {
-    return 0;
-  }
+  GLenum texture_type() const override { return 0; }
 
-  virtual GLsizei samples() const override {
-    return renderbuffer_->samples();
-  }
+  GLsizei samples() const override { return renderbuffer_->samples(); }
 
-  virtual GLuint object_name() const override {
-    return renderbuffer_->client_id();
-  }
+  GLuint object_name() const override { return renderbuffer_->client_id(); }
 
-  virtual bool cleared() const override {
-    return renderbuffer_->cleared();
-  }
+  bool cleared() const override { return renderbuffer_->cleared(); }
 
-  virtual void SetCleared(
-      RenderbufferManager* renderbuffer_manager,
-      TextureManager* /* texture_manager */,
-      bool cleared) override {
+  void SetCleared(RenderbufferManager* renderbuffer_manager,
+                  TextureManager* /* texture_manager */,
+                  bool cleared) override {
     renderbuffer_manager->SetCleared(renderbuffer_.get(), cleared);
   }
 
-  virtual bool IsTexture(
-      TextureRef* /* texture */) const override {
-    return false;
-  }
+  bool IsTexture(TextureRef* /* texture */) const override { return false; }
 
-  virtual bool IsRenderbuffer(
-       Renderbuffer* renderbuffer) const override {
+  bool IsRenderbuffer(Renderbuffer* renderbuffer) const override {
     return renderbuffer_.get() == renderbuffer;
   }
 
-  virtual bool CanRenderTo() const override {
-    return true;
-  }
+  bool CanRenderTo() const override { return true; }
 
-  virtual void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
+  void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
     // Nothing to do for renderbuffers.
   }
 
-  virtual bool ValidForAttachmentType(
-      GLenum attachment_type, uint32 max_color_attachments) override {
+  bool ValidForAttachmentType(GLenum attachment_type,
+                              uint32 max_color_attachments) override {
     uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
     uint32 have = GLES2Util::GetChannelsForFormat(internal_format());
@@ -113,26 +94,25 @@ class RenderbufferAttachment
     return renderbuffer_.get();
   }
 
-  virtual size_t GetSignatureSize(
-      TextureManager* texture_manager) const override {
+  size_t GetSignatureSize(TextureManager* texture_manager) const override {
     return renderbuffer_->GetSignatureSize();
   }
 
-  virtual void AddToSignature(
-      TextureManager* texture_manager, std::string* signature) const override {
+  void AddToSignature(TextureManager* texture_manager,
+                      std::string* signature) const override {
     DCHECK(signature);
     renderbuffer_->AddToSignature(signature);
   }
 
-  virtual void OnWillRenderTo() const override {}
-  virtual void OnDidRenderTo() const override {}
-  virtual bool FormsFeedbackLoop(
-      TextureRef* /* texture */, GLint /*level */) const override {
+  void OnWillRenderTo() const override {}
+  void OnDidRenderTo() const override {}
+  bool FormsFeedbackLoop(TextureRef* /* texture */,
+                         GLint /*level */) const override {
     return false;
   }
 
  protected:
-  virtual ~RenderbufferAttachment() { }
+  ~RenderbufferAttachment() override {}
 
  private:
   scoped_refptr<Renderbuffer> renderbuffer_;
@@ -151,7 +131,7 @@ class TextureAttachment
         samples_(samples) {
   }
 
-  virtual GLsizei width() const override {
+  GLsizei width() const override {
     GLsizei temp_width = 0;
     GLsizei temp_height = 0;
     texture_ref_->texture()->GetLevelSize(
@@ -159,7 +139,7 @@ class TextureAttachment
     return temp_width;
   }
 
-  virtual GLsizei height() const override {
+  GLsizei height() const override {
     GLsizei temp_width = 0;
     GLsizei temp_height = 0;
     texture_ref_->texture()->GetLevelSize(
@@ -167,7 +147,7 @@ class TextureAttachment
     return temp_height;
   }
 
-  virtual GLenum internal_format() const override {
+  GLenum internal_format() const override {
     GLenum temp_type = 0;
     GLenum temp_internal_format = 0;
     texture_ref_->texture()->GetLevelType(
@@ -175,7 +155,7 @@ class TextureAttachment
     return temp_internal_format;
   }
 
-  virtual GLenum texture_type() const override {
+  GLenum texture_type() const override {
     GLenum temp_type = 0;
     GLenum temp_internal_format = 0;
     texture_ref_->texture()->GetLevelType(
@@ -183,33 +163,26 @@ class TextureAttachment
     return temp_type;
   }
 
-  virtual GLsizei samples() const override {
-    return samples_;
-  }
+  GLsizei samples() const override { return samples_; }
 
-  virtual GLuint object_name() const override {
-    return texture_ref_->client_id();
-  }
+  GLuint object_name() const override { return texture_ref_->client_id(); }
 
-  virtual bool cleared() const override {
+  bool cleared() const override {
     return texture_ref_->texture()->IsLevelCleared(target_, level_);
   }
 
-  virtual void SetCleared(
-      RenderbufferManager* /* renderbuffer_manager */,
-      TextureManager* texture_manager,
-      bool cleared) override {
+  void SetCleared(RenderbufferManager* /* renderbuffer_manager */,
+                  TextureManager* texture_manager,
+                  bool cleared) override {
     texture_manager->SetLevelCleared(
         texture_ref_.get(), target_, level_, cleared);
   }
 
-  virtual bool IsTexture(TextureRef* texture) const override {
+  bool IsTexture(TextureRef* texture) const override {
     return texture == texture_ref_.get();
   }
 
-  virtual bool IsRenderbuffer(
-       Renderbuffer* /* renderbuffer */)
-          const override {
+  bool IsRenderbuffer(Renderbuffer* /* renderbuffer */) const override {
     return false;
   }
 
@@ -217,18 +190,17 @@ class TextureAttachment
     return texture_ref_.get();
   }
 
-  virtual bool CanRenderTo() const override {
+  bool CanRenderTo() const override {
     return texture_ref_->texture()->CanRenderTo();
   }
 
-  virtual void DetachFromFramebuffer(Framebuffer* framebuffer)
-      const override {
+  void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
     texture_ref_->texture()->DetachFromFramebuffer();
     framebuffer->OnTextureRefDetached(texture_ref_.get());
   }
 
-  virtual bool ValidForAttachmentType(
-      GLenum attachment_type, uint32 max_color_attachments) override {
+  bool ValidForAttachmentType(GLenum attachment_type,
+                              uint32 max_color_attachments) override {
     GLenum type = 0;
     GLenum internal_format = 0;
     if (!texture_ref_->texture()->GetLevelType(
@@ -248,33 +220,31 @@ class TextureAttachment
     return (need & have) != 0;
   }
 
-  virtual size_t GetSignatureSize(
-      TextureManager* texture_manager) const override {
+  size_t GetSignatureSize(TextureManager* texture_manager) const override {
     return texture_manager->GetSignatureSize();
   }
 
-  virtual void AddToSignature(
-      TextureManager* texture_manager, std::string* signature) const override {
+  void AddToSignature(TextureManager* texture_manager,
+                      std::string* signature) const override {
     DCHECK(signature);
     texture_manager->AddToSignature(
         texture_ref_.get(), target_, level_, signature);
   }
 
-  virtual void OnWillRenderTo() const override {
+  void OnWillRenderTo() const override {
     texture_ref_->texture()->OnWillModifyPixels();
   }
 
-  virtual void OnDidRenderTo() const override {
+  void OnDidRenderTo() const override {
     texture_ref_->texture()->OnDidModifyPixels();
   }
 
-  virtual bool FormsFeedbackLoop(
-      TextureRef* texture, GLint level) const override {
+  bool FormsFeedbackLoop(TextureRef* texture, GLint level) const override {
     return texture == texture_ref_.get() && level == level_;
   }
 
  protected:
-  virtual ~TextureAttachment() {}
+  ~TextureAttachment() override {}
 
  private:
   scoped_refptr<TextureRef> texture_ref_;

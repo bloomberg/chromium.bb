@@ -3139,7 +3139,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention declaration."""
     impl_decl = func.GetInfo('impl_decl')
     if impl_decl == None or impl_decl == True:
-      file.Write("virtual %s %s(%s) override;\n" %
+      file.Write("%s %s(%s) override;\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("\n")
@@ -3180,7 +3180,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2TraceImplementationHeader(self, func, file):
     """Writes the GLES2 Trace Implemention header."""
-    file.Write("virtual %s %s(%s) override;\n" %
+    file.Write("%s %s(%s) override;\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
 
@@ -3231,7 +3231,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2InterfaceStub(self, func, file):
     """Writes the GLES2 Interface stub declaration."""
-    file.Write("virtual %s %s(%s) override;\n" %
+    file.Write("%s %s(%s) override;\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
 
@@ -3828,7 +3828,7 @@ class ManualHandler(CustomHandler):
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("virtual %s %s(%s) override;\n" %
+    file.Write("%s %s(%s) override;\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("\n")

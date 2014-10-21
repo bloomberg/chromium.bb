@@ -17,7 +17,7 @@ class GLES2_IMPL_EXPORT GLES2TraceImplementation
     : NON_EXPORTED_BASE(public GLES2Interface) {
  public:
   explicit GLES2TraceImplementation(GLES2Interface* gl);
-  virtual ~GLES2TraceImplementation();
+  ~GLES2TraceImplementation() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

@@ -14,18 +14,18 @@ namespace gpu {
 class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
  public:
   AsyncPixelTransferManagerIdle();
-  virtual ~AsyncPixelTransferManagerIdle();
+  ~AsyncPixelTransferManagerIdle() override;
 
   // AsyncPixelTransferManager implementation:
-  virtual void BindCompletedAsyncTransfers() override;
-  virtual void AsyncNotifyCompletion(
+  void BindCompletedAsyncTransfers() override;
+  void AsyncNotifyCompletion(
       const AsyncMemoryParams& mem_params,
       AsyncPixelTransferCompletionObserver* observer) override;
-  virtual uint32 GetTextureUploadCount() override;
-  virtual base::TimeDelta GetTotalTextureUploadTime() override;
-  virtual void ProcessMorePendingTransfers() override;
-  virtual bool NeedsProcessMorePendingTransfers() override;
-  virtual void WaitAllAsyncTexImage2D() override;
+  uint32 GetTextureUploadCount() override;
+  base::TimeDelta GetTotalTextureUploadTime() override;
+  void ProcessMorePendingTransfers() override;
+  bool NeedsProcessMorePendingTransfers() override;
+  void WaitAllAsyncTexImage2D() override;
 
   struct Task {
     Task(uint64 transfer_id,
@@ -54,7 +54,7 @@ class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
 
  private:
   // AsyncPixelTransferManager implementation:
-  virtual AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
+  AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
       gles2::TextureRef* ref,
       const AsyncTexImage2DParams& define_params) override;
 
