@@ -65,7 +65,6 @@
         'geometry/vector3d_f.cc',
         'geometry/vector3d_f.h',
       ],
-      # TODO(jdduke): Revisit optimization after gauging benefit, crbug/419051.
       'includes': [
         '../../build/android/increase_size_for_speed.gypi',
       ],
