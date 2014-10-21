@@ -50,12 +50,12 @@ namespace {
 class IFrameLoader : public content::NotificationObserver {
  public:
   IFrameLoader(Browser* browser, int iframe_id, const GURL& url);
-  virtual ~IFrameLoader();
+  ~IFrameLoader() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   const GURL& iframe_url() const { return iframe_url_; }
 
@@ -129,12 +129,12 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
   // until the infobar has been displayed; otherwise it will block until the
   // navigation is completed.
   explicit GeolocationNotificationObserver(bool wait_for_infobar);
-  virtual ~GeolocationNotificationObserver();
+  ~GeolocationNotificationObserver() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void AddWatchAndWaitForNotification(
       content::RenderFrameHost* render_frame_host);
@@ -245,8 +245,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   virtual ~GeolocationBrowserTest();
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
   Browser* current_browser() { return current_browser_; }
   void set_html_for_tests(const std::string& html_for_tests) {

@@ -46,14 +46,14 @@ class ProtocolHandlerRegistry : public KeyedService {
       : public ShellIntegration::DefaultWebClientObserver {
    public:
     explicit DefaultClientObserver(ProtocolHandlerRegistry* registry);
-    virtual ~DefaultClientObserver();
+    ~DefaultClientObserver() override;
 
     // Get response from the worker regarding whether Chrome is the default
     // handler for the protocol.
-    virtual void SetDefaultWebClientUIState(
+    void SetDefaultWebClientUIState(
         ShellIntegration::DefaultWebClientUIState state) override;
 
-    virtual bool IsInteractiveSetDefaultPermitted() override;
+    bool IsInteractiveSetDefaultPermitted() override;
 
     // Give the observer a handle to the worker, so we can find out the protocol
     // when we're called and also tell the worker if we get deleted.
@@ -63,7 +63,7 @@ class ProtocolHandlerRegistry : public KeyedService {
     ShellIntegration::DefaultProtocolClientWorker* worker_;
 
    private:
-    virtual bool IsOwnedByWorker() override;
+    bool IsOwnedByWorker() override;
 
     // This is a raw pointer, not reference counted, intentionally. In general
     // subclasses of DefaultWebClientObserver are not able to be refcounted
@@ -105,20 +105,20 @@ class ProtocolHandlerRegistry : public KeyedService {
    public:
     // |io_thread_delegate| is used to perform actual job creation work.
     explicit JobInterceptorFactory(IOThreadDelegate* io_thread_delegate);
-    virtual ~JobInterceptorFactory();
+    ~JobInterceptorFactory() override;
 
     // |job_factory| is set as the URLRequestJobFactory where requests are
     // forwarded if JobInterceptorFactory decides to pass on them.
     void Chain(scoped_ptr<net::URLRequestJobFactory> job_factory);
 
     // URLRequestJobFactory implementation.
-    virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+    net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
         const std::string& scheme,
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const override;
-    virtual bool IsHandledProtocol(const std::string& scheme) const override;
-    virtual bool IsHandledURL(const GURL& url) const override;
-    virtual bool IsSafeRedirectTarget(const GURL& location) const override;
+    bool IsHandledProtocol(const std::string& scheme) const override;
+    bool IsHandledURL(const GURL& url) const override;
+    bool IsSafeRedirectTarget(const GURL& location) const override;
 
    private:
     // When JobInterceptorFactory decides to pass on particular requests,
@@ -138,7 +138,7 @@ class ProtocolHandlerRegistry : public KeyedService {
 
   // Creates a new instance. Assumes ownership of |delegate|.
   ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
-  virtual ~ProtocolHandlerRegistry();
+  ~ProtocolHandlerRegistry() override;
 
   // Returns a net::URLRequestJobFactory suitable for use on the IO thread, but
   // is initialized on the UI thread.
@@ -244,7 +244,7 @@ class ProtocolHandlerRegistry : public KeyedService {
 
   // This is called by the UI thread when the system is shutting down. This
   // does finalization which must be done on the UI thread.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Registers the preferences that we store registered protocol handlers in.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

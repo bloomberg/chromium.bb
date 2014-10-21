@@ -90,7 +90,7 @@ class CookieSettings : public RefcountedKeyedService {
   // Detaches the |CookieSettings| from all |Profile|-related objects like
   // |PrefService|. This methods needs to be called before destroying the
   // |Profile|. Afterwards, only const methods can be called.
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
   // A helper for applying third party cookie blocking rules.
   ContentSetting GetCookieSetting(
@@ -114,19 +114,19 @@ class CookieSettings : public RefcountedKeyedService {
     friend struct DefaultSingletonTraits<Factory>;
 
     Factory();
-    virtual ~Factory();
+    ~Factory() override;
 
     // |BrowserContextKeyedBaseFactory| methods:
-    virtual void RegisterProfilePrefs(
+    void RegisterProfilePrefs(
         user_prefs::PrefRegistrySyncable* registry) override;
-    virtual content::BrowserContext* GetBrowserContextToUse(
+    content::BrowserContext* GetBrowserContextToUse(
         content::BrowserContext* context) const override;
-    virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+    scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
         content::BrowserContext* context) const override;
   };
 
  private:
-  virtual ~CookieSettings();
+  ~CookieSettings() override;
 
   void OnBlockThirdPartyCookiesChanged();
 

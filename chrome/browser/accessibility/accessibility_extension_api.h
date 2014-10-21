@@ -101,8 +101,8 @@ class ExtensionAccessibilityEventRouter {
 // minimize the impact.
 class AccessibilityPrivateSetAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateSetAccessibilityEnabledFunction() {}
-  virtual bool RunSync() override;
+  ~AccessibilityPrivateSetAccessibilityEnabledFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setAccessibilityEnabled",
                              ACCESSIBILITY_PRIVATE_SETACCESSIBILITYENABLED)
 };
@@ -110,8 +110,8 @@ class AccessibilityPrivateSetAccessibilityEnabledFunction
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateSetNativeAccessibilityEnabledFunction() {}
-  virtual bool RunSync() override;
+  ~AccessibilityPrivateSetNativeAccessibilityEnabledFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION(
       "accessibilityPrivate.setNativeAccessibilityEnabled",
       ACCESSIBILITY_PRIVATE_SETNATIVEACCESSIBILITYENABLED)
@@ -120,8 +120,8 @@ class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
 // API function that returns the most recent focused control.
 class AccessibilityPrivateGetFocusedControlFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateGetFocusedControlFunction() {}
-  virtual bool RunSync() override;
+  ~AccessibilityPrivateGetFocusedControlFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getFocusedControl",
                              ACCESSIBILITY_PRIVATE_GETFOCUSEDCONTROL)
 };
@@ -129,8 +129,8 @@ class AccessibilityPrivateGetFocusedControlFunction
 // API function that returns alerts being shown on the give tab.
 class AccessibilityPrivateGetAlertsForTabFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateGetAlertsForTabFunction() {}
-  virtual bool RunSync() override;
+  ~AccessibilityPrivateGetAlertsForTabFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getAlertsForTab",
                              ACCESSIBILITY_PRIVATE_GETALERTSFORTAB)
 };
@@ -138,8 +138,8 @@ class AccessibilityPrivateGetAlertsForTabFunction
 // API function that sets the location of the accessibility focus ring.
 class AccessibilityPrivateSetFocusRingFunction
     : public ChromeSyncExtensionFunction {
-  virtual ~AccessibilityPrivateSetFocusRingFunction() {}
-  virtual bool RunSync() override;
+  ~AccessibilityPrivateSetFocusRingFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setFocusRing",
                              ACCESSIBILITY_PRIVATE_SETFOCUSRING)
 };

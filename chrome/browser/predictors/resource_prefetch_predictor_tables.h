@@ -121,7 +121,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   friend class MockResourcePrefetchPredictorTables;
 
   ResourcePrefetchPredictorTables();
-  virtual ~ResourcePrefetchPredictorTables();
+  ~ResourcePrefetchPredictorTables() override;
 
   // Helper functions below help perform functions on the Url and host table
   // using the same code.
@@ -137,8 +137,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   bool StringsAreSmallerThanDBLimit(const PrefetchData& data) const;
 
   // PredictorTableBase methods.
-  virtual void CreateTableIfNonExistent() override;
-  virtual void LogDatabaseStats() override;
+  void CreateTableIfNonExistent() override;
+  void LogDatabaseStats() override;
 
   // Helpers to return Statements for cached Statements. The caller must take
   // ownership of the return Statements.

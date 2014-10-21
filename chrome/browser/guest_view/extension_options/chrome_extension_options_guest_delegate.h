@@ -17,14 +17,13 @@ class ChromeExtensionOptionsGuestDelegate
     : public ExtensionOptionsGuestDelegate {
  public:
   explicit ChromeExtensionOptionsGuestDelegate(ExtensionOptionsGuest* guest);
-  virtual ~ChromeExtensionOptionsGuestDelegate();
+  ~ChromeExtensionOptionsGuestDelegate() override;
 
-  virtual void DidInitialize() override;
+  void DidInitialize() override;
 
-  virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
-  virtual content::WebContents* OpenURLInNewTab(
+  content::WebContents* OpenURLInNewTab(
       const content::OpenURLParams& params) override;
 
  private:

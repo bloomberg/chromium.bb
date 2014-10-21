@@ -45,11 +45,10 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     set_response_code(status);
     SetResponseString(response);
   }
-  virtual ~TestSpellingURLFetcher() {
-  }
+  ~TestSpellingURLFetcher() override {}
 
-  virtual void SetUploadData(const std::string& upload_content_type,
-                             const std::string& upload_content) override {
+  void SetUploadData(const std::string& upload_content_type,
+                     const std::string& upload_content) override {
     // Verify the given content type is JSON. (The Spelling service returns an
     // internal server error when this content type is not JSON.)
     EXPECT_EQ("application/json", upload_content_type);
@@ -79,7 +78,7 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     net::TestURLFetcher::SetUploadData(upload_content_type, upload_content);
   }
 
-  virtual void Start() override {
+  void Start() override {
     // Verify that this client does not either send cookies to the Spelling
     // service or accept cookies from it.
     EXPECT_EQ(net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES,
@@ -122,8 +121,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
         success_(false),
         fetcher_(NULL) {
   }
-  virtual ~TestingSpellingServiceClient() {
-  }
+  ~TestingSpellingServiceClient() override {}
 
   void SetHTTPRequest(int type,
                       const std::string& text,
@@ -168,7 +166,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
  private:
-  virtual net::URLFetcher* CreateURLFetcher(const GURL& url) override {
+  net::URLFetcher* CreateURLFetcher(const GURL& url) override {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(0, url, this,
                                           request_type_, request_text_,

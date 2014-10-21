@@ -22,7 +22,7 @@ class CrashUploadList : public UploadList {
   CrashUploadList(Delegate* delegate, const base::FilePath& upload_log_path);
 
  protected:
-  virtual ~CrashUploadList();
+  ~CrashUploadList() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrashUploadList);

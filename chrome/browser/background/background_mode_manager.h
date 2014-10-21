@@ -56,7 +56,7 @@ class BackgroundModeManager
  public:
   BackgroundModeManager(base::CommandLine* command_line,
                         ProfileInfoCache* profile_cache);
-  virtual ~BackgroundModeManager();
+  ~BackgroundModeManager() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -119,13 +119,13 @@ class BackgroundModeManager
     explicit BackgroundModeData(
         Profile* profile,
         CommandIdExtensionVector* command_id_extension_vector);
-    virtual ~BackgroundModeData();
+    ~BackgroundModeData() override;
 
     // The cached list of BackgroundApplications.
     scoped_ptr<BackgroundApplicationListModel> applications_;
 
     // Overrides from StatusIconMenuModel::Delegate implementation.
-    virtual void ExecuteCommand(int command_id, int event_flags) override;
+    void ExecuteCommand(int command_id, int event_flags) override;
 
     // Returns a browser window, or creates one if none are open. Used by
     // operations (like displaying the preferences dialog) that require a
@@ -191,31 +191,29 @@ class BackgroundModeManager
   typedef std::map<Profile*, BackgroundModeInfo> BackgroundModeInfoMap;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Called when the kBackgroundModeEnabled preference changes.
   void OnBackgroundModeEnabledPrefChanged();
 
   // BackgroundApplicationListModel::Observer implementation.
-  virtual void OnApplicationDataChanged(const extensions::Extension* extension,
-                                        Profile* profile) override;
-  virtual void OnApplicationListChanged(Profile* profile) override;
+  void OnApplicationDataChanged(const extensions::Extension* extension,
+                                Profile* profile) override;
+  void OnApplicationListChanged(Profile* profile) override;
 
   // Overrides from ProfileInfoCacheObserver
-  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
-  virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) override;
-  virtual void OnProfileNameChanged(
-      const base::FilePath& profile_path,
-      const base::string16& old_profile_name) override;
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
 
   // Overrides from StatusIconMenuModel::Delegate implementation.
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
   // chrome::BrowserListObserver implementation.
-  virtual void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override;
 
   // Invoked when an extension is installed so we can ensure that
   // launch-on-startup is enabled if appropriate. |extension| can be NULL when

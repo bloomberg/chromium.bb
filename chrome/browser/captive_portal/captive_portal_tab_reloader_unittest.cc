@@ -73,14 +73,11 @@ class MockInterstitialPageDelegate : public content::InterstitialPageDelegate {
     interstitial_page->Show();
   }
 
-  virtual ~MockInterstitialPageDelegate() {
-  }
+  ~MockInterstitialPageDelegate() override {}
 
  private:
   // InterstitialPageDelegate implementation:
-  virtual std::string GetHTMLContents() override {
-    return "HTML Contents";
-  }
+  std::string GetHTMLContents() override { return "HTML Contents"; }
 
   DISALLOW_COPY_AND_ASSIGN(MockInterstitialPageDelegate);
 };

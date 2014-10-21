@@ -36,12 +36,12 @@ class TestUndoService {
 class TestUndoOperation : public UndoOperation {
  public:
   explicit TestUndoOperation(TestUndoService* undo_service);
-  virtual ~TestUndoOperation();
+  ~TestUndoOperation() override;
 
   // UndoOperation:
-  virtual void Undo() override;
-  virtual int GetUndoLabelId() const override;
-  virtual int GetRedoLabelId() const override;
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
 
  private:
   TestUndoService* undo_service_;
@@ -103,7 +103,7 @@ class TestObserver : public UndoManagerObserver {
   // Returns the number of state change callbacks
   int state_change_count() { return state_change_count_; }
 
-  virtual void OnUndoManagerStateChange() override { ++state_change_count_; }
+  void OnUndoManagerStateChange() override { ++state_change_count_; }
 
  private:
   int state_change_count_;

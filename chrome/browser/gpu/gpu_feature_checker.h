@@ -28,11 +28,12 @@ class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
   void CheckGPUFeatureAvailability();
 
   // content::GpuDataManagerObserver
-  virtual void OnGpuInfoUpdate() override;
+  void OnGpuInfoUpdate() override;
+
  private:
   friend class base::RefCountedThreadSafe<GPUFeatureChecker>;
 
-  virtual ~GPUFeatureChecker();
+  ~GPUFeatureChecker() override;
 
   gpu::GpuFeatureType feature_;
   FeatureAvailableCallback callback_;

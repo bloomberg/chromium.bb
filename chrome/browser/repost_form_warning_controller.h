@@ -16,19 +16,19 @@ class RepostFormWarningController : public TabModalConfirmDialogDelegate,
                                     public content::WebContentsObserver {
  public:
   explicit RepostFormWarningController(content::WebContents* web_contents);
-  virtual ~RepostFormWarningController();
+  ~RepostFormWarningController() override;
 
  private:
   // TabModalConfirmDialogDelegate methods:
-  virtual base::string16 GetTitle() override;
-  virtual base::string16 GetDialogMessage() override;
-  virtual base::string16 GetAcceptButtonTitle() override;
-  virtual void OnAccepted() override;
-  virtual void OnCanceled() override;
-  virtual void OnClosed() override;
+  base::string16 GetTitle() override;
+  base::string16 GetDialogMessage() override;
+  base::string16 GetAcceptButtonTitle() override;
+  void OnAccepted() override;
+  void OnCanceled() override;
+  void OnClosed() override;
 
   // content::WebContentsObserver methods:
-  virtual void BeforeFormRepostWarningShow() override;
+  void BeforeFormRepostWarningShow() override;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningController);
 };

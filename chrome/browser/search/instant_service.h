@@ -38,7 +38,7 @@ class InstantService : public KeyedService,
                        public TemplateURLServiceObserver {
  public:
   explicit InstantService(Profile* profile);
-  virtual ~InstantService();
+  ~InstantService() override;
 
   // Add, remove, and query RenderProcessHost IDs that are associated with
   // Instant processes.
@@ -105,18 +105,18 @@ class InstantService : public KeyedService,
                            SendsSearchURLsToRenderer);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // TemplateURLServiceObserver:
   // Caches the previous value of the Default Search Provider and the Google
   // base URL to filter out changes other than those affecting the Default
   // Search Provider.
-  virtual void OnTemplateURLServiceChanged() override;
+  void OnTemplateURLServiceChanged() override;
 
   // Called when a renderer process is terminated.
   void OnRendererProcessTerminated(int process_id);

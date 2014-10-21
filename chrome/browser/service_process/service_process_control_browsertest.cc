@@ -118,7 +118,7 @@ class ServiceProcessControlBrowserTest
 class RealServiceProcessControlBrowserTest
       : public ServiceProcessControlBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ServiceProcessControlBrowserTest::SetUpCommandLine(command_line);
     base::FilePath exe;
     PathService::Get(base::DIR_EXE, &exe);

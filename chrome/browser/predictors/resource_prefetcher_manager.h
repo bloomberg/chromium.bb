@@ -54,10 +54,10 @@ class ResourcePrefetcherManager
   void MaybeRemovePrefetch(const NavigationID& navigation_id);
 
   // ResourcePrefetcher::Delegate methods.
-  virtual void ResourcePrefetcherFinished(
+  void ResourcePrefetcherFinished(
       ResourcePrefetcher* prefetcher,
       ResourcePrefetcher::RequestVector* requests) override;
-  virtual net::URLRequestContext* GetURLRequestContext() override;
+  net::URLRequestContext* GetURLRequestContext() override;
 
  private:
   friend class base::RefCountedThreadSafe<ResourcePrefetcherManager>;
@@ -65,7 +65,7 @@ class ResourcePrefetcherManager
 
   typedef std::map<std::string, ResourcePrefetcher*> PrefetcherMap;
 
-  virtual ~ResourcePrefetcherManager();
+  ~ResourcePrefetcherManager() override;
 
   // UI Thread. |predictor_| needs to be called on the UI thread.
   void ResourcePrefetcherFinishedOnUI(

@@ -58,7 +58,7 @@ class ThumbnailService : public RefcountedKeyedService {
   virtual bool ShouldAcquirePageThumbnail(const GURL& url) = 0;
 
  protected:
-  virtual ~ThumbnailService() {}
+  ~ThumbnailService() override {}
 };
 
 }  // namespace thumbnails

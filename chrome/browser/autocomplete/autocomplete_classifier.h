@@ -27,7 +27,7 @@ class AutocompleteClassifier : public KeyedService {
   AutocompleteClassifier(
       scoped_ptr<AutocompleteController> controller_,
       scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier);
-  virtual ~AutocompleteClassifier();
+  ~AutocompleteClassifier() override;
 
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.
@@ -55,7 +55,7 @@ class AutocompleteClassifier : public KeyedService {
 
  private:
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   scoped_ptr<AutocompleteController> controller_;
   scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier_;

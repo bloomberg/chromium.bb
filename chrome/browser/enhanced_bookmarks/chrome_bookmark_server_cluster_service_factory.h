@@ -28,12 +28,12 @@ class ChromeBookmarkServerClusterServiceFactory
       ChromeBookmarkServerClusterServiceFactory>;
 
   ChromeBookmarkServerClusterServiceFactory();
-  virtual ~ChromeBookmarkServerClusterServiceFactory() {}
+  ~ChromeBookmarkServerClusterServiceFactory() override {}
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBookmarkServerClusterServiceFactory);

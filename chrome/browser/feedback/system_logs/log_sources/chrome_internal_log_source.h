@@ -13,10 +13,10 @@ namespace system_logs {
 class ChromeInternalLogSource : public SystemLogsSource {
  public:
   ChromeInternalLogSource();
-  virtual ~ChromeInternalLogSource();
+  ~ChromeInternalLogSource() override;
 
   // SystemLogsSource override.
-  virtual void Fetch(const SysLogsSourceCallback& request) override;
+  void Fetch(const SysLogsSourceCallback& request) override;
 
  private:
   void PopulateSyncLogs(SystemLogsResponse* response);

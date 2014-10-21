@@ -29,44 +29,41 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
  public:
   LazyDomDistillerService(Profile* profile,
                           const DomDistillerServiceFactory* service_factory);
-  virtual ~LazyDomDistillerService();
+  ~LazyDomDistillerService() override;
 
  public:
   // DomDistillerServiceInterface implementation:
-  virtual syncer::SyncableService* GetSyncableService() const override;
-  virtual const std::string AddToList(
+  syncer::SyncableService* GetSyncableService() const override;
+  const std::string AddToList(
       const GURL& url,
       scoped_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) override;
-  virtual bool HasEntry(const std::string& entry_id) override;
-  virtual std::string GetUrlForEntry(const std::string& entry_id) override;
-  virtual std::vector<ArticleEntry> GetEntries() const override;
-  virtual scoped_ptr<ArticleEntry> RemoveEntry(
-      const std::string& entry_id) override;
-  virtual scoped_ptr<ViewerHandle> ViewEntry(
-      ViewRequestDelegate* delegate,
-      scoped_ptr<DistillerPage> distiller_page,
-      const std::string& entry_id) override;
-  virtual scoped_ptr<ViewerHandle> ViewUrl(
-      ViewRequestDelegate* delegate,
-      scoped_ptr<DistillerPage> distiller_page,
-      const GURL& url) override;
-  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
+  bool HasEntry(const std::string& entry_id) override;
+  std::string GetUrlForEntry(const std::string& entry_id) override;
+  std::vector<ArticleEntry> GetEntries() const override;
+  scoped_ptr<ArticleEntry> RemoveEntry(const std::string& entry_id) override;
+  scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate* delegate,
+                                     scoped_ptr<DistillerPage> distiller_page,
+                                     const std::string& entry_id) override;
+  scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
+                                   scoped_ptr<DistillerPage> distiller_page,
+                                   const GURL& url) override;
+  scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
       const gfx::Size& render_view_size) override;
-  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
+  scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       scoped_ptr<SourcePageHandle> handle) override;
-  virtual void AddObserver(DomDistillerObserver* observer) override;
-  virtual void RemoveObserver(DomDistillerObserver* observer) override;
-  virtual DistilledPagePrefs* GetDistilledPagePrefs() override;
+  void AddObserver(DomDistillerObserver* observer) override;
+  void RemoveObserver(DomDistillerObserver* observer) override;
+  DistilledPagePrefs* GetDistilledPagePrefs() override;
 
  private:
   // Accessor method for the backing service instance.
   DomDistillerServiceInterface* instance() const;
 
   // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // The Profile to use when retrieving the DomDistillerService and also the
   // profile to listen for destruction of.

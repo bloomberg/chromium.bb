@@ -36,7 +36,7 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
   static bool IsMicrophoneAvailable();
 
   // Overridden from MediaCaptureDevicesDispatcher::Observer
-  virtual void OnUpdateAudioDevices(
+  void OnUpdateAudioDevices(
       const content::MediaStreamDevices& devices) override;
 
   // This will kick off the monitor that calls OnUpdateAudioDevices when the
@@ -51,12 +51,12 @@ class HotwordServiceFactory : public MediaCaptureDevicesDispatcher::Observer,
   friend struct DefaultSingletonTraits<HotwordServiceFactory>;
 
   HotwordServiceFactory();
-  virtual ~HotwordServiceFactory();
+  ~HotwordServiceFactory() override;
 
   // Overrides from BrowserContextKeyedServiceFactory:
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   // Must be called from the UI thread since the instance of

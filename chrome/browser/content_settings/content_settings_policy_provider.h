@@ -27,26 +27,23 @@ namespace content_settings {
 class PolicyProvider : public ObservableProvider {
  public:
   explicit PolicyProvider(PrefService* prefs);
-  virtual ~PolicyProvider();
+  ~PolicyProvider() override;
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // ProviderInterface implementations.
-  virtual RuleIterator* GetRuleIterator(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      bool incognito) const override;
+  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
+                                const ResourceIdentifier& resource_identifier,
+                                bool incognito) const override;
 
-  virtual bool SetWebsiteSetting(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      base::Value* value) override;
+  bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
+                         const ContentSettingsPattern& secondary_pattern,
+                         ContentSettingsType content_type,
+                         const ResourceIdentifier& resource_identifier,
+                         base::Value* value) override;
 
-  virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) override;
+  void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
 
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
  private:
   // Reads the policy managed default settings.

@@ -18,9 +18,9 @@ class ChromeBrowserPepperHostFactory : public ppapi::host::HostFactory {
  public:
   // Non-owning pointer to the filter must outlive this class.
   explicit ChromeBrowserPepperHostFactory(content::BrowserPpapiHost* host);
-  virtual ~ChromeBrowserPepperHostFactory();
+  ~ChromeBrowserPepperHostFactory() override;
 
-  virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
+  scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
       ppapi::host::PpapiHost* host,
       const ppapi::proxy::ResourceMessageCallParams& params,
       PP_Instance instance,

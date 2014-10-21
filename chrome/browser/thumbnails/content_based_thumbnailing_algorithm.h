@@ -17,14 +17,14 @@ class ContentBasedThumbnailingAlgorithm : public ThumbnailingAlgorithm {
  public:
   explicit ContentBasedThumbnailingAlgorithm(const gfx::Size& target_size);
 
-  virtual ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
-                                       ui::ScaleFactor scale_factor,
-                                       gfx::Rect* clipping_rect,
-                                       gfx::Size* target_size) const override;
+  ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
+                               ui::ScaleFactor scale_factor,
+                               gfx::Rect* clipping_rect,
+                               gfx::Size* target_size) const override;
 
-  virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
-                             const ConsumerCallback& callback,
-                             const SkBitmap& bitmap) override;
+  void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
+                     const ConsumerCallback& callback,
+                     const SkBitmap& bitmap) override;
 
   // Prepares (clips to size, copies etc.) the bitmap passed to ProcessBitmap.
   // Always returns a bitmap that can be properly refcounted.
@@ -43,7 +43,7 @@ class ContentBasedThumbnailingAlgorithm : public ThumbnailingAlgorithm {
       const ConsumerCallback& callback);
 
  protected:
-  virtual ~ContentBasedThumbnailingAlgorithm();
+  ~ContentBasedThumbnailingAlgorithm() override;
 
  private:
   static gfx::Rect GetClippingRect(const gfx::Size& source_size,

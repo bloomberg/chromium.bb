@@ -57,9 +57,9 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
       : ChromeResourceDispatcherHostDelegate(prerender_tracker) {
   }
 
-  virtual ~TestDispatcherHostDelegate() {}
+  ~TestDispatcherHostDelegate() override {}
 
-  virtual void RequestBeginning(
+  void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
@@ -74,11 +74,10 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
     request_headers_.MergeFrom(request->extra_request_headers());
   }
 
-  virtual void OnRequestRedirected(
-      const GURL& redirect_url,
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::ResourceResponse* response) override {
+  void OnRequestRedirected(const GURL& redirect_url,
+                           net::URLRequest* request,
+                           content::ResourceContext* resource_context,
+                           content::ResourceResponse* response) override {
     ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
         redirect_url,
         request,
@@ -100,7 +99,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
  public:
   ChromeResourceDispatcherHostDelegateBrowserTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     // Hook navigations with our delegate.
     dispatcher_host_delegate_.reset(new TestDispatcherHostDelegate(
@@ -130,7 +129,7 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
     }
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     content::ResourceDispatcherHost::Get()->SetDelegate(NULL);
     dispatcher_host_delegate_.reset();
   }

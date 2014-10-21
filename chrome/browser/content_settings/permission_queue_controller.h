@@ -28,7 +28,7 @@ class PermissionQueueController : public content::NotificationObserver {
   typedef base::Callback<void(bool /* allowed */)> PermissionDecidedCallback;
 
   PermissionQueueController(Profile* profile, ContentSettingsType type);
-  virtual ~PermissionQueueController();
+  ~PermissionQueueController() override;
 
   // The InfoBar will be displayed immediately if the tab is not already
   // displaying one, otherwise it'll be queued.
@@ -56,9 +56,9 @@ class PermissionQueueController : public content::NotificationObserver {
 
  protected:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   class PendingInfobarRequest;

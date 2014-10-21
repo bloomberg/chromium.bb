@@ -53,7 +53,7 @@ class SpellcheckService : public KeyedService,
   };
 
   explicit SpellcheckService(content::BrowserContext* context);
-  virtual ~SpellcheckService();
+  ~SpellcheckService() override;
 
   // This function computes a vector of strings which are to be displayed in
   // the context menu over a text area for changing spell check languages. It
@@ -109,20 +109,20 @@ class SpellcheckService : public KeyedService,
   bool UnloadExternalDictionary(std::string path);
 
   // NotificationProfile implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // SpellcheckCustomDictionary::Observer implementation.
-  virtual void OnCustomDictionaryLoaded() override;
-  virtual void OnCustomDictionaryChanged(
+  void OnCustomDictionaryLoaded() override;
+  void OnCustomDictionaryChanged(
       const SpellcheckCustomDictionary::Change& dictionary_change) override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
-  virtual void OnHunspellDictionaryInitialized() override;
-  virtual void OnHunspellDictionaryDownloadBegin() override;
-  virtual void OnHunspellDictionaryDownloadSuccess() override;
-  virtual void OnHunspellDictionaryDownloadFailure() override;
+  void OnHunspellDictionaryInitialized() override;
+  void OnHunspellDictionaryDownloadBegin() override;
+  void OnHunspellDictionaryDownloadSuccess() override;
+  void OnHunspellDictionaryDownloadFailure() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);

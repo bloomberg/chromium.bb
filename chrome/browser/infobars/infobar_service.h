@@ -49,25 +49,24 @@ class InfoBarService : public infobars::InfoBarManager,
   friend class content::WebContentsUserData<InfoBarService>;
 
   explicit InfoBarService(content::WebContents* web_contents);
-  virtual ~InfoBarService();
+  ~InfoBarService() override;
 
   // InfoBarManager:
-  virtual int GetActiveEntryID() override;
+  int GetActiveEntryID() override;
   // TODO(droger): Remove these functions once infobar notifications are
   // removed. See http://crbug.com/354380
-  virtual void NotifyInfoBarAdded(infobars::InfoBar* infobar) override;
-  virtual void NotifyInfoBarRemoved(infobars::InfoBar* infobar,
-                                    bool animate) override;
+  void NotifyInfoBarAdded(infobars::InfoBar* infobar) override;
+  void NotifyInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
 
   // content::WebContentsObserver:
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
-  virtual void DidStartNavigationToPendingEntry(
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
-  virtual void WebContentsDestroyed() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void WebContentsDestroyed() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
   void OnDidBlockDisplayingInsecureContent();

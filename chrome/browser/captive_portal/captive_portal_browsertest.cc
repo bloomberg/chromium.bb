@@ -116,7 +116,7 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
                                      public base::NonThreadSafe {
  public:
   // net::URLRequestJob:
-  virtual void Start() override;
+  void Start() override;
 
   // All the public static methods below can be called on any thread.
 
@@ -144,7 +144,7 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
 
   URLRequestTimeoutOnDemandJob(net::URLRequest* request,
                                net::NetworkDelegate* network_delegate);
-  virtual ~URLRequestTimeoutOnDemandJob();
+  ~URLRequestTimeoutOnDemandJob() override;
 
   // Attempts to removes |this| from |jobs_|.  Returns true if it was removed
   // from the list.
@@ -503,7 +503,7 @@ bool IsLoginTab(WebContents* web_contents) {
 class MultiNavigationObserver : public content::NotificationObserver {
  public:
   MultiNavigationObserver();
-  virtual ~MultiNavigationObserver();
+  ~MultiNavigationObserver() override;
 
   // Waits for exactly |num_navigations_to_wait_for| LOAD_STOP
   // notifications to have occurred since the construction of |this|.  More
@@ -521,8 +521,9 @@ class MultiNavigationObserver : public content::NotificationObserver {
   typedef std::map<const WebContents*, int> TabNavigationMap;
 
   // content::NotificationObserver:
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   int num_navigations_;
 
@@ -603,7 +604,7 @@ void MultiNavigationObserver::Observe(
 class FailLoadsAfterLoginObserver : public content::NotificationObserver {
  public:
   FailLoadsAfterLoginObserver();
-  virtual ~FailLoadsAfterLoginObserver();
+  ~FailLoadsAfterLoginObserver() override;
 
   void WaitForNavigations();
 
@@ -611,8 +612,9 @@ class FailLoadsAfterLoginObserver : public content::NotificationObserver {
   typedef std::set<const WebContents*> TabSet;
 
   // content::NotificationObserver:
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // The set of tabs that need to be navigated.  This is the set of loading
   // tabs when the observer is created.
@@ -700,9 +702,9 @@ class CaptivePortalObserver : public content::NotificationObserver {
 
  private:
   // Records results and exits the message loop, if needed.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Number of times OnPortalResult has been called since construction.
   int num_results_received_;
@@ -799,8 +801,8 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   CaptivePortalBrowserTest();
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Sets the captive portal checking preference.  Does not affect the command
   // line flag, which is set in SetUpCommandLine.

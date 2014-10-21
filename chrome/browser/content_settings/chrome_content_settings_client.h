@@ -16,33 +16,32 @@ class ChromeContentSettingsClient
     : public content_settings::ContentSettingsClient,
       public content::WebContentsUserData<ChromeContentSettingsClient> {
  public:
-  virtual ~ChromeContentSettingsClient();
+  ~ChromeContentSettingsClient() override;
 
   static void CreateForWebContents(content::WebContents* contents);
 
   // ContentSettingsClient implementation.
-  virtual void OnCookiesRead(const GURL& url,
-                             const GURL& first_party_url,
-                             const net::CookieList& cookie_list,
+  void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override;
+  void OnCookieChanged(const GURL& url,
+                       const GURL& first_party_url,
+                       const std::string& cookie_line,
+                       const net::CookieOptions& options,
+                       bool blocked_by_policy) override;
+  void OnFileSystemAccessed(const GURL& url, bool blocked_by_policy) override;
+  void OnIndexedDBAccessed(const GURL& url,
+                           const base::string16& description,
+                           bool blocked_by_policy) override;
+  void OnLocalStorageAccessed(const GURL& url,
+                              bool local,
+                              bool blocked_by_policy) override;
+  void OnWebDatabaseAccessed(const GURL& url,
+                             const base::string16& name,
+                             const base::string16& display_name,
                              bool blocked_by_policy) override;
-  virtual void OnCookieChanged(const GURL& url,
-                               const GURL& first_party_url,
-                               const std::string& cookie_line,
-                               const net::CookieOptions& options,
-                               bool blocked_by_policy) override;
-  virtual void OnFileSystemAccessed(const GURL& url,
-                                    bool blocked_by_policy) override;
-  virtual void OnIndexedDBAccessed(const GURL& url,
-                                   const base::string16& description,
-                                   bool blocked_by_policy) override;
-  virtual void OnLocalStorageAccessed(const GURL& url,
-                                      bool local,
-                                      bool blocked_by_policy) override;
-  virtual void OnWebDatabaseAccessed(const GURL& url,
-                                     const base::string16& name,
-                                     const base::string16& display_name,
-                                     bool blocked_by_policy) override;
-  virtual const LocalSharedObjectsCounter& local_shared_objects(
+  const LocalSharedObjectsCounter& local_shared_objects(
       AccessType type) const override;
 
   // Creates a new copy of a CookiesTreeModel for all allowed (or blocked,

@@ -58,8 +58,8 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void Cancel();
 
   // UtilityProcessHostClient implementation:
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers
   void OnImportStart();
@@ -94,7 +94,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
 #endif
 
  protected:
-  virtual ~ExternalProcessImporterClient();
+  ~ExternalProcessImporterClient() override;
 
  private:
   // Notifies the importerhost that import has finished, and calls Release().

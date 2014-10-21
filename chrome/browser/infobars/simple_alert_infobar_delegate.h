@@ -25,14 +25,13 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   SimpleAlertInfoBarDelegate(int icon_id,
                              const base::string16& message,
                              bool auto_expire);
-  virtual ~SimpleAlertInfoBarDelegate();
+  ~SimpleAlertInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual int GetButtons() const override;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
 
   const int icon_id_;
   base::string16 message_;

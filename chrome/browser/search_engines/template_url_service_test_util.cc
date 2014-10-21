@@ -27,10 +27,9 @@ class TestingTemplateURLServiceClient : public ChromeTemplateURLServiceClient {
       : ChromeTemplateURLServiceClient(history_service),
         search_term_(search_term) {}
 
-  virtual void SetKeywordSearchTermsForURL(
-      const GURL& url,
-      TemplateURLID id,
-      const base::string16& term) override {
+  void SetKeywordSearchTermsForURL(const GURL& url,
+                                   TemplateURLID id,
+                                   const base::string16& term) override {
     *search_term_ = term;
   }
 

@@ -35,18 +35,17 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
   };
 
   ThreeDAPIInfoBarDelegate(const GURL& url, content::ThreeDAPIType requester);
-  virtual ~ThreeDAPIInfoBarDelegate();
+  ~ThreeDAPIInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual bool EqualsDelegate(
-      infobars::InfoBarDelegate* delegate) const override;
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
-  virtual base::string16 GetLinkText() const override;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
+  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   GURL url_;
   content::ThreeDAPIType requester_;

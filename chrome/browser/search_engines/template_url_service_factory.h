@@ -25,16 +25,16 @@ class TemplateURLServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<TemplateURLServiceFactory>;
 
   TemplateURLServiceFactory();
-  virtual ~TemplateURLServiceFactory();
+  ~TemplateURLServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_FACTORY_H_

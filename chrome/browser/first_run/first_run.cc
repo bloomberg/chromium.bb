@@ -86,13 +86,13 @@ bool g_should_do_autofill_personal_data_manager_first_run = false;
 class ImportEndedObserver : public importer::ImporterProgressObserver {
  public:
   ImportEndedObserver() : ended_(false) {}
-  virtual ~ImportEndedObserver() {}
+  ~ImportEndedObserver() override {}
 
   // importer::ImporterProgressObserver:
-  virtual void ImportStarted() override {}
-  virtual void ImportItemStarted(importer::ImportItem item) override {}
-  virtual void ImportItemEnded(importer::ImportItem item) override {}
-  virtual void ImportEnded() override {
+  void ImportStarted() override {}
+  void ImportItemStarted(importer::ImportItem item) override {}
+  void ImportItemEnded(importer::ImportItem item) override {}
+  void ImportEnded() override {
     ended_ = true;
     if (!callback_for_import_end_.is_null())
       callback_for_import_end_.Run();
@@ -134,9 +134,9 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     // After processing the notification we always delete ourselves.
     if (type == extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED) {
       Profile* profile = content::Source<Profile>(source).ptr();
@@ -149,7 +149,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
 
  private:
   // Private ctor forces it to be created only in the heap.
-  virtual ~FirstRunDelayedTasks() {}
+  ~FirstRunDelayedTasks() override {}
 
   // The extension work is to basically trigger an extension update check.
   // If the extension specified in the master pref is older than the live
@@ -311,12 +311,12 @@ class FirstRunBubbleLauncher : public content::NotificationObserver {
 
  private:
   FirstRunBubbleLauncher();
-  virtual ~FirstRunBubbleLauncher();
+  ~FirstRunBubbleLauncher() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

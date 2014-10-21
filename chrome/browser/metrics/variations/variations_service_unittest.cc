@@ -47,8 +47,7 @@ class TestVariationsService : public VariationsService {
     SetCreateTrialsFromSeedCalledForTesting(true);
   }
 
-  virtual ~TestVariationsService() {
-  }
+  ~TestVariationsService() override {}
 
   void set_intercepts_fetch(bool value) {
     intercepts_fetch_ = value;
@@ -58,7 +57,7 @@ class TestVariationsService : public VariationsService {
 
   bool seed_stored() const { return seed_stored_; }
 
-  virtual void DoActualFetch() override {
+  void DoActualFetch() override {
     if (intercepts_fetch_) {
       fetch_attempted_ = true;
       return;
@@ -68,9 +67,9 @@ class TestVariationsService : public VariationsService {
   }
 
  protected:
-  virtual void StoreSeed(const std::string& seed_data,
-                         const std::string& seed_signature,
-                         const base::Time& date_fetched) override {
+  void StoreSeed(const std::string& seed_data,
+                 const std::string& seed_signature,
+                 const base::Time& date_fetched) override {
     seed_stored_ = true;
   }
 
@@ -88,10 +87,9 @@ class TestVariationsServiceObserver : public VariationsService::Observer {
       : best_effort_changes_notified_(0),
         crticial_changes_notified_(0) {
   }
-  virtual ~TestVariationsServiceObserver() {
-  }
+  ~TestVariationsServiceObserver() override {}
 
-  virtual void OnExperimentChangesDetected(Severity severity) override {
+  void OnExperimentChangesDetected(Severity severity) override {
     switch (severity) {
       case BEST_EFFORT:
         ++best_effort_changes_notified_;

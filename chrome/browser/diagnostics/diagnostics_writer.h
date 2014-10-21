@@ -24,7 +24,7 @@ class DiagnosticsWriter : public DiagnosticsModel::Observer {
   };
 
   explicit DiagnosticsWriter(FormatType format);
-  virtual ~DiagnosticsWriter();
+  ~DiagnosticsWriter() override;
 
   // How many tests reported failure.
   int failures() { return failures_; }
@@ -37,10 +37,10 @@ class DiagnosticsWriter : public DiagnosticsModel::Observer {
   bool WriteInfoLine(const std::string& info_text);
 
   // DiagnosticsModel::Observer overrides
-  virtual void OnTestFinished(int index, DiagnosticsModel* model) override;
-  virtual void OnAllTestsDone(DiagnosticsModel* model) override;
-  virtual void OnRecoveryFinished(int index, DiagnosticsModel* model) override;
-  virtual void OnAllRecoveryDone(DiagnosticsModel* model) override;
+  void OnTestFinished(int index, DiagnosticsModel* model) override;
+  void OnAllTestsDone(DiagnosticsModel* model) override;
+  void OnRecoveryFinished(int index, DiagnosticsModel* model) override;
+  void OnAllRecoveryDone(DiagnosticsModel* model) override;
 
  private:
   // Write a result block. For humans, it consists of two lines. The first line

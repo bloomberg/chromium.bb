@@ -17,7 +17,7 @@ class SystemLogsMemoryHandler : public MemoryDetails {
 
   // Sends the data to the callback.
   // MemoryDetails override.
-  virtual void OnDetailsAvailable() override {
+  void OnDetailsAvailable() override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
@@ -26,7 +26,7 @@ class SystemLogsMemoryHandler : public MemoryDetails {
   }
 
  private:
-  virtual ~SystemLogsMemoryHandler() {}
+  ~SystemLogsMemoryHandler() override {}
   SysLogsSourceCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemLogsMemoryHandler);

@@ -23,7 +23,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
   TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             content::ContextMenuParams params);
-  virtual ~TestRenderViewContextMenu();
+  ~TestRenderViewContextMenu() override;
 
   // Factory.
   // This is a lightweight method to create a test RenderViewContextMenu
@@ -35,9 +35,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
                                            const GURL& frame_url);
 
   // Implementation of pure virtuals in RenderViewContextMenu.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
 
   // Returns true if command specified by |command_id| is present
   // in the menu.

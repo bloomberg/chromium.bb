@@ -137,25 +137,25 @@ class PosixConsole : public SimpleConsole {
  public:
   PosixConsole() : use_color_(false) {}
 
-  virtual bool Init() override {
+  bool Init() override {
     // Technically, we should also check the terminal capabilities before using
     // color, but in practice this is unlikely to be an issue.
     use_color_ = isatty(STDOUT_FILENO);
     return true;
   }
 
-  virtual bool Write(const base::string16& text) override {
+  bool Write(const base::string16& text) override {
     // We're assuming that the terminal is using UTF-8 encoding.
     printf("%s", base::UTF16ToUTF8(text).c_str());
     return true;
   }
 
-  virtual void OnQuit() override {
+  void OnQuit() override {
     // The "press enter to continue" prompt isn't very unixy, so only do that on
     // Windows.
   }
 
-  virtual bool SetColor(Color color) override {
+  bool SetColor(Color color) override {
     if (!use_color_)
       return false;
 

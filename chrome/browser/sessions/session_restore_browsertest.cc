@@ -72,7 +72,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
   }
 #endif
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     active_browser_list_ = BrowserList::GetInstance(chrome::GetActiveDesktop());
 
     SessionStartupPref pref(SessionStartupPref::LAST);
@@ -93,7 +93,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  virtual bool SetUpUserDataDirectory() override {
+  bool SetUpUserDataDirectory() override {
     url1_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot1.html"));

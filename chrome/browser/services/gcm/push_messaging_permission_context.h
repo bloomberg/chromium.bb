@@ -13,7 +13,7 @@ namespace gcm {
 class PushMessagingPermissionContext : public PermissionContextBase {
  public:
   explicit PushMessagingPermissionContext(Profile* profile);
-  virtual ~PushMessagingPermissionContext();
+  ~PushMessagingPermissionContext() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PushMessagingPermissionContext);

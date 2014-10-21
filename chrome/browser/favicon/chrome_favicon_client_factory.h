@@ -26,12 +26,12 @@ class ChromeFaviconClientFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ChromeFaviconClientFactory>;
 
   ChromeFaviconClientFactory();
-  virtual ~ChromeFaviconClientFactory();
+  ~ChromeFaviconClientFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

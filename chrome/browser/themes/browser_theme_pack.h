@@ -79,13 +79,13 @@ class BrowserThemePack : public CustomThemeSupplier {
   bool WriteToDisk(const base::FilePath& path) const;
 
   // Overridden from CustomThemeSupplier:
-  virtual bool GetTint(int id, color_utils::HSL* hsl) const override;
-  virtual bool GetColor(int id, SkColor* color) const override;
-  virtual bool GetDisplayProperty(int id, int* result) const override;
-  virtual gfx::Image GetImageNamed(int id) override;
-  virtual base::RefCountedMemory* GetRawData(
-      int id, ui::ScaleFactor scale_factor) const override;
-  virtual bool HasCustomImage(int id) const override;
+  bool GetTint(int id, color_utils::HSL* hsl) const override;
+  bool GetColor(int id, SkColor* color) const override;
+  bool GetDisplayProperty(int id, int* result) const override;
+  gfx::Image GetImageNamed(int id) override;
+  base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
+      const override;
+  bool HasCustomImage(int id) const override;
 
  private:
   friend class BrowserThemePackTest;
@@ -108,7 +108,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Default. Everything is empty.
   BrowserThemePack();
 
-  virtual ~BrowserThemePack();
+  ~BrowserThemePack() override;
 
   // Builds a header ready to write to disk.
   void BuildHeader(const extensions::Extension* extension);

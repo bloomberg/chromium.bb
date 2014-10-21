@@ -38,12 +38,12 @@ class ShortcutsBackendFactory
   friend struct DefaultSingletonTraits<ShortcutsBackendFactory>;
 
   ShortcutsBackendFactory();
-  virtual ~ShortcutsBackendFactory();
+  ~ShortcutsBackendFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_BACKEND_FACTORY_H_

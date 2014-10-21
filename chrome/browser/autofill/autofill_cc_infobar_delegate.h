@@ -42,22 +42,21 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   AutofillCCInfoBarDelegate(const AutofillMetrics* metric_logger,
                             const base::Closure& save_card_callback);
-  virtual ~AutofillCCInfoBarDelegate();
+  ~AutofillCCInfoBarDelegate() override;
 
   void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
 
   // ConfirmInfoBarDelegate:
-  virtual void InfoBarDismissed() override;
-  virtual int GetIconID() const override;
-  virtual Type GetInfoBarType() const override;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
-  virtual base::string16 GetLinkText() const override;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
+  void InfoBarDismissed() override;
+  int GetIconID() const override;
+  Type GetInfoBarType() const override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // For logging UMA metrics.
   // Weak reference. Owned by the AutofillManager that initiated this infobar.

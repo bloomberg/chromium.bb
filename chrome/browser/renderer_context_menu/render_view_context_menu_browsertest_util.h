@@ -17,12 +17,12 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
  public:
   // Wait for a context menu to be shown, and then execute |command_to_execute|.
   explicit ContextMenuNotificationObserver(int command_to_execute);
-  virtual ~ContextMenuNotificationObserver();
+  ~ContextMenuNotificationObserver() override;
 
  private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void ExecuteCommand(RenderViewContextMenu* context_menu);
 
@@ -40,7 +40,7 @@ class SaveLinkAsContextMenuObserver : public ContextMenuNotificationObserver {
   // NotificationService::AllSources().
   explicit SaveLinkAsContextMenuObserver(
       const content::NotificationSource& source);
-  virtual ~SaveLinkAsContextMenuObserver();
+  ~SaveLinkAsContextMenuObserver() override;
 
   // Suggested filename for file downloaded through "Save Link As" option.
   base::string16 GetSuggestedFilename();
@@ -49,9 +49,9 @@ class SaveLinkAsContextMenuObserver : public ContextMenuNotificationObserver {
   void WaitForMenu();
 
  private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void Cancel(RenderViewContextMenu* context_menu);
 

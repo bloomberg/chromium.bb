@@ -56,7 +56,7 @@ class ProfileResetter : public base::NonThreadSafe,
                  type_ResettableFlags_doesnt_match_Resettable);
 
   explicit ProfileResetter(Profile* profile);
-  virtual ~ProfileResetter();
+  ~ProfileResetter() override;
 
   // Resets |resettable_flags| and calls |callback| on the UI thread on
   // completion. |default_settings| allows the caller to specify some default
@@ -84,7 +84,7 @@ class ProfileResetter : public base::NonThreadSafe,
   void ResetShortcuts();
 
   // BrowsingDataRemover::Observer:
-  virtual void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone() override;
 
   // Callback for when TemplateURLService has loaded.
   void OnTemplateURLServiceLoaded();

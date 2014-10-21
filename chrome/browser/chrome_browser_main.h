@@ -47,7 +47,7 @@ class TrackingSynchronizer;
 
 class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
-  virtual ~ChromeBrowserMainParts();
+  ~ChromeBrowserMainParts() override;
 
   // Add additional ChromeBrowserMainExtraParts.
   virtual void AddParts(ChromeBrowserMainExtraParts* parts);
@@ -60,16 +60,16 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // These are called in-order by content::BrowserMainLoop.
   // Each stage calls the same stages in any ChromeBrowserMainExtraParts added
   // with AddParts() from ChromeContentBrowserClient::CreateBrowserMainParts.
-  virtual void PreEarlyInitialization() override;
-  virtual void PostEarlyInitialization() override;
-  virtual void ToolkitInitialized() override;
-  virtual void PreMainMessageLoopStart() override;
-  virtual void PostMainMessageLoopStart() override;
-  virtual int PreCreateThreads() override;
-  virtual void PreMainMessageLoopRun() override;
-  virtual bool MainMessageLoopRun(int* result_code) override;
-  virtual void PostMainMessageLoopRun() override;
-  virtual void PostDestroyThreads() override;
+  void PreEarlyInitialization() override;
+  void PostEarlyInitialization() override;
+  void ToolkitInitialized() override;
+  void PreMainMessageLoopStart() override;
+  void PostMainMessageLoopStart() override;
+  int PreCreateThreads() override;
+  void PreMainMessageLoopRun() override;
+  bool MainMessageLoopRun(int* result_code) override;
+  void PostMainMessageLoopRun() override;
+  void PostDestroyThreads() override;
 
   // Additional stages for ChromeBrowserMainExtraParts. These stages are called
   // in order from PreMainMessageLoopRun(). See implementation for details.

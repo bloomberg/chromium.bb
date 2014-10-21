@@ -23,21 +23,20 @@ class ThumbnailServiceImpl : public ThumbnailService {
   explicit ThumbnailServiceImpl(Profile* profile);
 
   // Implementation of ThumbnailService.
-  virtual bool SetPageThumbnail(const ThumbnailingContext& context,
-                                const gfx::Image& thumbnail) override;
-  virtual ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const override;
-  virtual bool GetPageThumbnail(
-      const GURL& url,
-      bool prefix_match,
-      scoped_refptr<base::RefCountedMemory>* bytes) override;
-  virtual void AddForcedURL(const GURL& url) override;
-  virtual bool ShouldAcquirePageThumbnail(const GURL& url) override;
+  bool SetPageThumbnail(const ThumbnailingContext& context,
+                        const gfx::Image& thumbnail) override;
+  ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const override;
+  bool GetPageThumbnail(const GURL& url,
+                        bool prefix_match,
+                        scoped_refptr<base::RefCountedMemory>* bytes) override;
+  void AddForcedURL(const GURL& url) override;
+  bool ShouldAcquirePageThumbnail(const GURL& url) override;
 
   // Implementation of RefcountedKeyedService.
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
  private:
-  virtual ~ThumbnailServiceImpl();
+  ~ThumbnailServiceImpl() override;
 
   scoped_refptr<history::TopSites> top_sites_;
   bool use_thumbnail_retargeting_;

@@ -67,7 +67,7 @@ class AutomaticProfileResetter : public KeyedService {
   };
 
   explicit AutomaticProfileResetter(Profile* profile);
-  virtual ~AutomaticProfileResetter();
+  ~AutomaticProfileResetter() override;
 
   // Initializes the service if it is enabled in the field trial. Otherwise,
   // skips the initialization steps, and also permanently disables the service.
@@ -139,7 +139,7 @@ class AutomaticProfileResetter : public KeyedService {
       const scoped_refptr<base::TaskRunner>& task_runner);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   class InputBuilder;

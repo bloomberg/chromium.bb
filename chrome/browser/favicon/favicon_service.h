@@ -30,7 +30,7 @@ class FaviconService : public KeyedService {
   // The FaviconClient must outlive the constructed FaviconService.
   FaviconService(Profile* profile, FaviconClient* favicon_client);
 
-  virtual ~FaviconService();
+  ~FaviconService() override;
 
   // We usually pass parameters with pointer to avoid copy. This function is a
   // helper to run FaviconResultsCallback with pointer parameters.

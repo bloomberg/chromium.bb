@@ -50,7 +50,7 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
 
  private:
   // BrowserWithTestWindowTest override:
-  virtual TestingProfile* CreateProfile() override;
+  TestingProfile* CreateProfile() override;
 
   void SetUpHelper();
 };

@@ -27,14 +27,14 @@ namespace {
 
 class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
  public:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  ConnectionType GetCurrentConnectionType() const OVERRIDE {
     return NetworkChangeNotifier::CONNECTION_WIFI;
   }
 };
 
 class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
  public:
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+  ConnectionType GetCurrentConnectionType() const OVERRIDE {
     return NetworkChangeNotifier::CONNECTION_4G;
   }
 };

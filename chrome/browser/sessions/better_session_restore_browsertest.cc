@@ -111,9 +111,7 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
     background_mode_active_ = active;
   }
 
-  virtual bool IsBackgroundModeActive() override {
-    return background_mode_active_;
-  }
+  bool IsBackgroundModeActive() override { return background_mode_active_; }
 
  private:
   bool background_mode_active_;
@@ -161,7 +159,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     SessionServiceTestHelper helper(
         SessionServiceFactory::GetForProfile(browser()->profile()));
     helper.SetForceBrowserNotAliveWithNoWindows(true);
@@ -371,15 +369,15 @@ class ContinueWhereILeftOffTest : public BetterSessionRestoreTest {
  public:
   ContinueWhereILeftOffTest() { }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BetterSessionRestoreTest::SetUpOnMainThread();
     SessionStartupPref::SetStartupPref(
         browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   }
 
  protected:
-  virtual Browser* QuitBrowserAndRestore(Browser* browser,
-                                         bool close_all_windows) override {
+  Browser* QuitBrowserAndRestore(Browser* browser,
+                                 bool close_all_windows) override {
     content::WindowedNotificationObserver session_restore_observer(
         chrome::NOTIFICATION_SESSION_RESTORE_DONE,
         content::NotificationService::AllSources());
@@ -669,7 +667,7 @@ class NoSessionRestoreTest : public BetterSessionRestoreTest {
  public:
   NoSessionRestoreTest() { }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BetterSessionRestoreTest::SetUpOnMainThread();
     SessionStartupPref::SetStartupPref(
         browser()->profile(), SessionStartupPref(SessionStartupPref::DEFAULT));

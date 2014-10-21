@@ -32,13 +32,13 @@ class PepperOutputProtectionMessageFilter
 #endif
 
   // ppapi::host::ResourceMessageFilter overrides.
-  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
-  virtual ~PepperOutputProtectionMessageFilter();
+  ~PepperOutputProtectionMessageFilter() override;
 
   int32_t OnQueryStatus(ppapi::host::HostMessageContext* context);
   int32_t OnEnableProtection(ppapi::host::HostMessageContext* context,

@@ -12,19 +12,18 @@ class NavigationMetricsRecorder
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationMetricsRecorder> {
  public:
-  virtual ~NavigationMetricsRecorder();
+  ~NavigationMetricsRecorder() override;
 
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
   friend class content::WebContentsUserData<NavigationMetricsRecorder>;
 
   // content::WebContentsObserver overrides:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
-  virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) override;
+  void DidStartLoading(content::RenderViewHost* render_view_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };

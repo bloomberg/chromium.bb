@@ -182,9 +182,9 @@ content::WebContents* PinnedTabsResetTest::CreateWebContents() {
 // URLFetcher delegate that simply records the upload data.
 struct URLFetcherRequestListener : net::URLFetcherDelegate {
   URLFetcherRequestListener();
-  virtual ~URLFetcherRequestListener();
+  ~URLFetcherRequestListener() override;
 
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   std::string upload_data;
   net::URLFetcherDelegate* real_delegate;

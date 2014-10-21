@@ -45,13 +45,12 @@ class FieldTrialSynchronizer
   // is finalized. This method contacts all renderers (by calling
   // NotifyAllRenderers) to create a FieldTrial that carries the randomly
   // selected state from the browser process into all the renderer processes.
-  virtual void OnFieldTrialGroupFinalized(
-      const std::string& name,
-      const std::string& group_name) override;
+  void OnFieldTrialGroupFinalized(const std::string& name,
+                                  const std::string& group_name) override;
 
  private:
   friend class base::RefCountedThreadSafe<FieldTrialSynchronizer>;
-  virtual ~FieldTrialSynchronizer();
+  ~FieldTrialSynchronizer() override;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialSynchronizer);
 };

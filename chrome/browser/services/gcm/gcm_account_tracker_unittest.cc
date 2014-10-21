@@ -68,15 +68,14 @@ void VerifyAccountTokens(
 class CustomFakeGCMDriver : public FakeGCMDriver {
  public:
   CustomFakeGCMDriver();
-  virtual ~CustomFakeGCMDriver();
+  ~CustomFakeGCMDriver() override;
 
   // GCMDriver overrides:
-  virtual void SetAccountTokens(
+  void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
-  virtual void AddConnectionObserver(GCMConnectionObserver* observer) override;
-  virtual void RemoveConnectionObserver(
-      GCMConnectionObserver* observer) override;
-  virtual bool IsConnected() const override { return connected_; }
+  void AddConnectionObserver(GCMConnectionObserver* observer) override;
+  void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
+  bool IsConnected() const override { return connected_; }
 
   // Test results and helpers.
   void SetConnected(bool connected);

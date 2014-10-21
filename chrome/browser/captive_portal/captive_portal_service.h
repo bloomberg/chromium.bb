@@ -43,7 +43,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   };
 
   explicit CaptivePortalService(Profile* profile);
-  virtual ~CaptivePortalService();
+  ~CaptivePortalService() override;
 
   // Triggers a check for a captive portal.  If there's already a check in
   // progress, does nothing.  Throttles the rate at which requests are sent.
@@ -114,7 +114,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
       const captive_portal::CaptivePortalDetector::Results& results);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Called when a captive portal check completes.  Passes the result to all
   // observers.

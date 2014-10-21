@@ -42,7 +42,7 @@ class TestPermissionContext : public PermissionContextBase {
      permission_granted_(false),
      tab_context_updated_(false) {}
 
-  virtual ~TestPermissionContext() {}
+  ~TestPermissionContext() override {}
 
   PermissionQueueController* GetInfoBarController() {
     return GetQueueController();
@@ -66,9 +66,9 @@ class TestPermissionContext : public PermissionContextBase {
   }
 
  protected:
-  virtual void UpdateTabContext(const PermissionRequestID& id,
-                                const GURL& requesting_origin,
-                                bool allowed) override {
+  void UpdateTabContext(const PermissionRequestID& id,
+                        const GURL& requesting_origin,
+                        bool allowed) override {
     tab_context_updated_ = true;
   }
 

@@ -27,12 +27,12 @@ class ScopedExtensionLoadObserver : public ExtensionRegistryObserver {
  public:
   ScopedExtensionLoadObserver(ExtensionRegistry* registry,
                               const base::Closure& quit_closure);
-  virtual ~ScopedExtensionLoadObserver();
+  ~ScopedExtensionLoadObserver() override;
 
  private:
-  virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
-                                    const Extension* extension,
-                                    bool is_update) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
 
   ExtensionRegistry* registry_;
   base::Closure quit_closure_;

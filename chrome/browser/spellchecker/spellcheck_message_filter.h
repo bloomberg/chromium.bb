@@ -21,15 +21,14 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   explicit SpellCheckMessageFilter(int render_process_id);
 
   // content::BrowserMessageFilter implementation.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   friend class TestingSpellCheckMessageFilter;
 
-  virtual ~SpellCheckMessageFilter();
+  ~SpellCheckMessageFilter() override;
 
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const base::string16& word, bool misspelled);

@@ -118,7 +118,7 @@ class TabLoader : public content::NotificationObserver,
   typedef std::set<RenderWidgetHost*> RenderWidgetHostSet;
 
   explicit TabLoader(base::TimeTicks restore_started);
-  virtual ~TabLoader();
+  ~TabLoader() override;
 
   // Loads the next tab. If there are no more tabs to load this deletes itself,
   // otherwise |force_load_timer_| is restarted.
@@ -126,12 +126,12 @@ class TabLoader : public content::NotificationObserver,
 
   // NotificationObserver method. Removes the specified tab and loads the next
   // tab.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Removes the listeners from the specified tab and removes the tab from
@@ -686,7 +686,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     return web_contents;
   }
 
-  virtual ~SessionRestoreImpl() {
+  ~SessionRestoreImpl() override {
     STLDeleteElements(&windows_);
 
     active_session_restorers->erase(this);
@@ -698,9 +698,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     g_browser_process->ReleaseModule();
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     switch (type) {
       case chrome::NOTIFICATION_BROWSER_CLOSED:
         delete this;

@@ -759,8 +759,7 @@ TEST_F(SearchTest, IsQueryExtractionAllowedForURL) {
 
 class SearchURLTest : public SearchTest {
  protected:
-  virtual void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url)
-      override {
+  void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url) override {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     TemplateURLData data;

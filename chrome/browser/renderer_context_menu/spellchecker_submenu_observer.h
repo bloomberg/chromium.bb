@@ -22,14 +22,14 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
   SpellCheckerSubMenuObserver(RenderViewContextMenuProxy* proxy,
                               ui::SimpleMenuModel::Delegate* delegate,
                               int group);
-  virtual ~SpellCheckerSubMenuObserver();
+  ~SpellCheckerSubMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
-  virtual void InitMenu(const content::ContextMenuParams& params) override;
-  virtual bool IsCommandIdSupported(int command_id) override;
-  virtual bool IsCommandIdChecked(int command_id) override;
-  virtual bool IsCommandIdEnabled(int command_id) override;
-  virtual void ExecuteCommand(int command_id) override;
+  void InitMenu(const content::ContextMenuParams& params) override;
+  bool IsCommandIdSupported(int command_id) override;
+  bool IsCommandIdChecked(int command_id) override;
+  bool IsCommandIdEnabled(int command_id) override;
+  void ExecuteCommand(int command_id) override;
 
  private:
   // The interface for adding a submenu to the parent.

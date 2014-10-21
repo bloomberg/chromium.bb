@@ -17,46 +17,42 @@ class ChromeWebViewPermissionHelperDelegate :
  public:
   explicit ChromeWebViewPermissionHelperDelegate(
       extensions::WebViewPermissionHelper* web_view_permission_helper);
-  virtual ~ChromeWebViewPermissionHelperDelegate();
+  ~ChromeWebViewPermissionHelperDelegate() override;
 
   // WebViewPermissionHelperDelegate implementation.
-  virtual void CanDownload(
-      content::RenderViewHost* render_view_host,
-      const GURL& url,
-      const std::string& request_method,
-      const base::Callback<void(bool)>& callback) override;
-  virtual void RequestPointerLockPermission(
+  void CanDownload(content::RenderViewHost* render_view_host,
+                   const GURL& url,
+                   const std::string& request_method,
+                   const base::Callback<void(bool)>& callback) override;
+  void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
       const base::Callback<void(bool)>& callback) override;
-  virtual void RequestGeolocationPermission(
+  void RequestGeolocationPermission(
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
       const base::Callback<void(bool)>& callback) override;
-  virtual void CancelGeolocationPermissionRequest(int bridge_id) override;
-  virtual void RequestFileSystemPermission(
+  void CancelGeolocationPermissionRequest(int bridge_id) override;
+  void RequestFileSystemPermission(
       const GURL& url,
       bool allowed_by_default,
       const base::Callback<void(bool)>& callback) override;
-  virtual void FileSystemAccessedAsync(
-      int render_process_id,
-      int render_frame_id,
-      int request_id,
-      const GURL& url,
-      bool blocked_by_policy) override;
-  virtual void FileSystemAccessedSync(
-      int render_process_id,
-      int render_frame_id,
-      const GURL& url,
-      bool blocked_by_policy,
-      IPC::Message* reply_msg) override;
+  void FileSystemAccessedAsync(int render_process_id,
+                               int render_frame_id,
+                               int request_id,
+                               const GURL& url,
+                               bool blocked_by_policy) override;
+  void FileSystemAccessedSync(int render_process_id,
+                              int render_frame_id,
+                              const GURL& url,
+                              bool blocked_by_policy,
+                              IPC::Message* reply_msg) override;
 #if defined(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 #endif  // defined(ENABLE_PLUGINS)
 
  private:

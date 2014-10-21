@@ -42,7 +42,7 @@ class DeadlockCheckerThread : public base::PlatformThread::Delegate {
   explicit DeadlockCheckerThread(PrefProvider* provider)
       : provider_(provider) {}
 
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     bool got_lock = provider_->lock_.Try();
     EXPECT_TRUE(got_lock);
     if (got_lock)

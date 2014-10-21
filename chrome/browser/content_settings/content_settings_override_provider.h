@@ -27,25 +27,22 @@ class OverrideProvider : public ProviderInterface {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   OverrideProvider(PrefService* prefs, bool incognito);
-  virtual ~OverrideProvider();
+  ~OverrideProvider() override;
 
   // ProviderInterface implementations.
-  virtual RuleIterator* GetRuleIterator(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      bool incognito) const override;
+  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
+                                const ResourceIdentifier& resource_identifier,
+                                bool incognito) const override;
 
-  virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) override;
+  void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
 
-  virtual bool SetWebsiteSetting(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      base::Value* value) override;
+  bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
+                         const ContentSettingsPattern& secondary_pattern,
+                         ContentSettingsType content_type,
+                         const ResourceIdentifier& resource_identifier,
+                         base::Value* value) override;
 
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
   // Sets if a given |content_type| is |enabled|.
   void SetOverrideSetting(ContentSettingsType content_type, bool enabled);

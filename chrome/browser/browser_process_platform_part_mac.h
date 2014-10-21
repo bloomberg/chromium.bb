@@ -17,12 +17,12 @@ class ExtensionAppShimHandler;
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
  public:
   BrowserProcessPlatformPart();
-  virtual ~BrowserProcessPlatformPart();
+  ~BrowserProcessPlatformPart() override;
 
   // Overridden from BrowserProcessPlatformPartBase:
-  virtual void StartTearDown() override;
-  virtual void AttemptExit() override;
-  virtual void PreMainMessageLoopRun() override;
+  void StartTearDown() override;
+  void AttemptExit() override;
+  void PreMainMessageLoopRun() override;
 
   AppShimHostManager* app_shim_host_manager();
 

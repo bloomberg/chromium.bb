@@ -17,10 +17,10 @@ namespace about_flags {
 class PrefServiceFlagsStorage : public FlagsStorage {
  public:
   explicit PrefServiceFlagsStorage(PrefService *prefs);
-  virtual ~PrefServiceFlagsStorage();
+  ~PrefServiceFlagsStorage() override;
 
-  virtual std::set<std::string> GetFlags() override;
-  virtual bool SetFlags(const std::set<std::string>& flags) override;
+  std::set<std::string> GetFlags() override;
+  bool SetFlags(const std::set<std::string>& flags) override;
 
  private:
   PrefService* prefs_;

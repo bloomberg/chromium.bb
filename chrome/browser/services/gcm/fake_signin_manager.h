@@ -33,14 +33,13 @@ class FakeSigninManager : public SigninManager {
 #endif
  public:
   explicit FakeSigninManager(Profile* profile);
-  virtual ~FakeSigninManager();
+  ~FakeSigninManager() override;
 
   void SignIn(const std::string& username);
 #if defined(OS_CHROMEOS)
   void SignOut(signin_metrics::ProfileSignout signout_source_metric);
 #else
-  virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric)
-      override;
+  void SignOut(signin_metrics::ProfileSignout signout_source_metric) override;
 #endif
 
   static KeyedService* Build(content::BrowserContext* context);

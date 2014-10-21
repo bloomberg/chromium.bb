@@ -35,7 +35,7 @@ class PromoResourceService : public WebResourceService {
   PromoResourceService();
 
  private:
-  virtual ~PromoResourceService();
+  ~PromoResourceService() override;
 
   // Schedule a notification that a web resource is either going to become
   // available or be no longer valid.
@@ -56,7 +56,7 @@ class PromoResourceService : public WebResourceService {
   void PromoResourceStateChange();
 
   // WebResourceService override to process the parsed information.
-  virtual void Unpack(const base::DictionaryValue& parsed_json) override;
+  void Unpack(const base::DictionaryValue& parsed_json) override;
 
   // Allows the creation of tasks to send a notification.
   // This allows the PromoResourceService to notify the New Tab Page immediately

@@ -60,7 +60,7 @@ class IOThreadSearchTermsData : public SearchTermsData {
   explicit IOThreadSearchTermsData(const std::string& google_base_url);
 
   // Implementation of SearchTermsData.
-  virtual std::string GoogleBaseURLValue() const override;
+  std::string GoogleBaseURLValue() const override;
 
  private:
   std::string google_base_url_;
@@ -121,11 +121,10 @@ class GoogleURLObserver : public content::RenderProcessHostObserver {
                     content::RenderProcessHost* host);
 
   // Implementation of content::RenderProcessHostObserver.
-  virtual void RenderProcessHostDestroyed(
-        content::RenderProcessHost* host) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
  private:
-  virtual ~GoogleURLObserver() {}
+  ~GoogleURLObserver() override {}
 
   // Callback that is called when the Google URL is updated.
   void OnGoogleURLUpdated();

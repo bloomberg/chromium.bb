@@ -11,13 +11,13 @@ class ChromeOmahaQueryParamsDelegate
     : public omaha_query_params::OmahaQueryParamsDelegate {
  public:
   ChromeOmahaQueryParamsDelegate();
-  virtual ~ChromeOmahaQueryParamsDelegate();
+  ~ChromeOmahaQueryParamsDelegate() override;
 
   // Gets the LazyInstance for ChromeOmahaQueryParamsDelegate.
   static ChromeOmahaQueryParamsDelegate* GetInstance();
 
   // omaha_query_params::OmahaQueryParamsDelegate:
-  virtual std::string GetExtraParams() override;
+  std::string GetExtraParams() override;
 
   // Returns the value we use for the "updaterchannel=" and "prodchannel="
   // parameters. Possible return values include: "canary", "dev", "beta", and

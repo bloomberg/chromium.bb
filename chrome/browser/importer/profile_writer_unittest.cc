@@ -29,7 +29,7 @@ class TestProfileWriter : public ProfileWriter {
  public:
   explicit TestProfileWriter(Profile* profile) : ProfileWriter(profile) {}
  protected:
-  virtual ~TestProfileWriter() {}
+  ~TestProfileWriter() override {}
 };
 
 class ProfileWriterTest : public testing::Test {

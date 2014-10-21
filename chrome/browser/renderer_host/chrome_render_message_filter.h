@@ -45,16 +45,15 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   };
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
 
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ChromeRenderMessageFilter>;
 
-  virtual ~ChromeRenderMessageFilter();
+  ~ChromeRenderMessageFilter() override;
 
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnPreconnect(const GURL& url);

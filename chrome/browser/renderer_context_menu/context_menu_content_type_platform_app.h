@@ -9,10 +9,10 @@
 
 class ContextMenuContentTypePlatformApp : public ContextMenuContentType {
  public:
-  virtual ~ContextMenuContentTypePlatformApp();
+  ~ContextMenuContentTypePlatformApp() override;
 
   // ContextMenuContentType overrides.
-  virtual bool SupportsGroup(int group) override;
+  bool SupportsGroup(int group) override;
 
  protected:
   ContextMenuContentTypePlatformApp(content::WebContents* web_contents,

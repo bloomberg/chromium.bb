@@ -24,13 +24,12 @@ namespace {
 class CustomFakeGCMDriver : public gcm::FakeGCMDriver {
  public:
   CustomFakeGCMDriver() {}
-  virtual ~CustomFakeGCMDriver() {}
+  ~CustomFakeGCMDriver() override {}
 
  protected:
   // FakeGCMDriver override:
-  virtual void RegisterImpl(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids) override {
+  void RegisterImpl(const std::string& app_id,
+                    const std::vector<std::string>& sender_ids) override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&CustomFakeGCMDriver::RegisterFinished,

@@ -35,7 +35,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
         message_loop_runner_(new content::MessageLoopRunner){
     PersonalDataManagerFactory::GetForProfile(profile_)->AddObserver(this);
   }
-  virtual ~WindowedPersonalDataManagerObserver() {}
+  ~WindowedPersonalDataManagerObserver() override {}
 
   // Waits for the PersonalDataManager's list of profiles to be updated.
   void Wait() {
@@ -44,9 +44,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
   }
 
   // PersonalDataManagerObserver:
-  virtual void OnPersonalDataChanged() override {
-    message_loop_runner_->Quit();
-  }
+  void OnPersonalDataChanged() override { message_loop_runner_->Quit(); }
 
  private:
   Profile* profile_;
@@ -70,7 +68,7 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
   }
 
   // net::TestURLFetcher::DelegateForTests:
-  virtual void OnRequestStart(int fetcher_id) override {
+  void OnRequestStart(int fetcher_id) override {
     net::TestURLFetcher* fetcher = factory_->GetFetcherByID(fetcher_id);
     if (fetcher->upload_data() == expected_upload_data_)
       message_loop_runner_->Quit();
@@ -78,8 +76,8 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
     // Not interested in any further status updates from this fetcher.
     fetcher->SetDelegateForTests(NULL);
   }
-  virtual void OnChunkUpload(int fetcher_id) override {}
-  virtual void OnRequestEnd(int fetcher_id) override {}
+  void OnChunkUpload(int fetcher_id) override {}
+  void OnRequestEnd(int fetcher_id) override {}
 
  private:
   // Mocks out network requests.
@@ -95,7 +93,7 @@ class WindowedNetworkObserver : public net::TestURLFetcher::DelegateForTests {
 
 class AutofillServerTest : public InProcessBrowserTest  {
  public:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     // Disable interactions with the Mac Keychain.
     PrefService* pref_service = browser()->profile()->GetPrefs();
     test::DisableSystemServices(pref_service);

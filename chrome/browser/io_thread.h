@@ -213,7 +213,7 @@ class IOThread : public content::BrowserThreadDelegate {
            ChromeNetLog* net_log,
            extensions::EventRouterForwarder* extension_event_router_forwarder);
 
-  virtual ~IOThread();
+  ~IOThread() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -255,9 +255,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must
   // live on the IO thread.
-  virtual void Init() override;
-  virtual void InitAsync() override;
-  virtual void CleanUp() override;
+  void Init() override;
+  void InitAsync() override;
+  void CleanUp() override;
 
   // Initializes |params| based on the settings in |globals|.
   static void InitializeNetworkSessionParamsFromGlobals(

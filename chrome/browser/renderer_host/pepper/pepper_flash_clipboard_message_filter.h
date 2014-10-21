@@ -39,14 +39,14 @@ class PepperFlashClipboardMessageFilter
 
  protected:
   // ppapi::host::ResourceMessageFilter overrides.
-  virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
-  virtual int32_t OnResourceMessageReceived(
+  int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
  private:
-  virtual ~PepperFlashClipboardMessageFilter();
+  ~PepperFlashClipboardMessageFilter() override;
 
   int32_t OnMsgRegisterCustomFormat(
       ppapi::host::HostMessageContext* host_context,

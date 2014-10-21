@@ -49,13 +49,13 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
  public:
   DiagnosticsModelImpl() : tests_run_(0) {}
 
-  virtual ~DiagnosticsModelImpl() { STLDeleteElements(&tests_); }
+  ~DiagnosticsModelImpl() override { STLDeleteElements(&tests_); }
 
-  virtual int GetTestRunCount() const override { return tests_run_; }
+  int GetTestRunCount() const override { return tests_run_; }
 
-  virtual int GetTestAvailableCount() const override { return tests_.size(); }
+  int GetTestAvailableCount() const override { return tests_.size(); }
 
-  virtual void RunAll(DiagnosticsModel::Observer* observer) override {
+  void RunAll(DiagnosticsModel::Observer* observer) override {
     size_t test_count = tests_.size();
     bool continue_running = true;
     for (size_t i = 0; i != test_count; ++i) {
@@ -79,7 +79,7 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
       observer->OnAllTestsDone(this);
   }
 
-  virtual void RecoverAll(DiagnosticsModel::Observer* observer) override {
+  void RecoverAll(DiagnosticsModel::Observer* observer) override {
     size_t test_count = tests_.size();
     bool continue_running = true;
     for (size_t i = 0; i != test_count; ++i) {
@@ -102,11 +102,11 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
       observer->OnAllRecoveryDone(this);
   }
 
-  virtual const TestInfo& GetTest(size_t index) const override {
+  const TestInfo& GetTest(size_t index) const override {
     return *tests_[index];
   }
 
-  virtual bool GetTestInfo(int id, const TestInfo** result) const override {
+  bool GetTestInfo(int id, const TestInfo** result) const override {
     DCHECK(id < DIAGNOSTICS_TEST_ID_COUNT);
     DCHECK(id >= 0);
     for (size_t i = 0; i < tests_.size(); i++) {

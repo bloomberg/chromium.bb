@@ -72,7 +72,7 @@ class SessionService : public BaseSessionService,
   // For testing.
   explicit SessionService(const base::FilePath& save_path);
 
-  virtual ~SessionService();
+  ~SessionService() override;
 
   // Returns true if a new window opening should really be treated like the
   // start of a session (with potential session restore, startup URLs, etc.).
@@ -200,7 +200,7 @@ class SessionService : public BaseSessionService,
 
   // Overridden from BaseSessionService because we want some UMA reporting on
   // session update activities.
-  virtual void Save() override;
+  void Save() override;
 
  private:
   // Allow tests to access our innards for testing purposes.
@@ -233,14 +233,14 @@ class SessionService : public BaseSessionService,
   bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
                           Browser* browser);
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // chrome::BrowserListObserver
-  virtual void OnBrowserAdded(Browser* browser) override {}
-  virtual void OnBrowserRemoved(Browser* browser) override {}
-  virtual void OnBrowserSetLastActive(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override {}
+  void OnBrowserRemoved(Browser* browser) override {}
+  void OnBrowserSetLastActive(Browser* browser) override;
 
   // Sets the application extension id of the specified tab.
   void SetTabExtensionAppID(const SessionID& window_id,
@@ -389,7 +389,7 @@ class SessionService : public BaseSessionService,
 
   // Schedules the specified command. This method takes ownership of the
   // command.
-  virtual void ScheduleCommand(SessionCommand* command) override;
+  void ScheduleCommand(SessionCommand* command) override;
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();

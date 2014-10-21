@@ -16,26 +16,24 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
                                        public history::HistoryServiceObserver {
  public:
   explicit ChromeTemplateURLServiceClient(HistoryService* history_service);
-  virtual ~ChromeTemplateURLServiceClient();
+  ~ChromeTemplateURLServiceClient() override;
 
   // TemplateURLServiceClient:
-  virtual void Shutdown() override;
-  virtual void SetOwner(TemplateURLService* owner) override;
-  virtual void DeleteAllSearchTermsForKeyword(
-      history::KeywordID keyword_Id) override;
-  virtual void SetKeywordSearchTermsForURL(const GURL& url,
-                                           TemplateURLID id,
-                                           const base::string16& term) override;
-  virtual void AddKeywordGeneratedVisit(const GURL& url) override;
-  virtual void RestoreExtensionInfoIfNecessary(
-      TemplateURL* template_url) override;
+  void Shutdown() override;
+  void SetOwner(TemplateURLService* owner) override;
+  void DeleteAllSearchTermsForKeyword(history::KeywordID keyword_Id) override;
+  void SetKeywordSearchTermsForURL(const GURL& url,
+                                   TemplateURLID id,
+                                   const base::string16& term) override;
+  void AddKeywordGeneratedVisit(const GURL& url) override;
+  void RestoreExtensionInfoIfNecessary(TemplateURL* template_url) override;
 
   // history::HistoryServiceObserver:
-  virtual void OnURLVisited(HistoryService* history_service,
-                            ui::PageTransition transition,
-                            const history::URLRow& row,
-                            const history::RedirectList& redirects,
-                            base::Time visit_time) override;
+  void OnURLVisited(HistoryService* history_service,
+                    ui::PageTransition transition,
+                    const history::URLRow& row,
+                    const history::RedirectList& redirects,
+                    base::Time visit_time) override;
 
  private:
   TemplateURLService* owner_;

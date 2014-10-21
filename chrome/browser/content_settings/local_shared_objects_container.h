@@ -23,11 +23,11 @@ class Profile;
 class LocalSharedObjectsContainer : public LocalSharedObjectsCounter {
  public:
   explicit LocalSharedObjectsContainer(Profile* profile);
-  virtual ~LocalSharedObjectsContainer();
+  ~LocalSharedObjectsContainer() override;
 
   // LocalSharedObjectsCounter:
-  virtual size_t GetObjectCount() const override;
-  virtual size_t GetObjectCountForDomain(const GURL& url) const override;
+  size_t GetObjectCount() const override;
+  size_t GetObjectCountForDomain(const GURL& url) const override;
 
   // Empties the container.
   void Reset();

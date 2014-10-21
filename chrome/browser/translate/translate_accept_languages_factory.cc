@@ -19,7 +19,7 @@ namespace {
 class TranslateAcceptLanguagesService : public KeyedService {
  public:
   explicit TranslateAcceptLanguagesService(PrefService* prefs);
-  virtual ~TranslateAcceptLanguagesService();
+  ~TranslateAcceptLanguagesService() override;
 
   // Returns the associated TranslateAcceptLanguages.
   translate::TranslateAcceptLanguages& accept_languages() {

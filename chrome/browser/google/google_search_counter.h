@@ -46,7 +46,7 @@ class GoogleSearchCounter : content::NotificationObserver {
   friend class GoogleSearchCounterAndroidTest;
 
   GoogleSearchCounter();
-  virtual ~GoogleSearchCounter();
+  ~GoogleSearchCounter() override;
 
   void ProcessCommittedEntry(const content::NotificationSource& source,
                              const content::NotificationDetails& details);
@@ -59,9 +59,9 @@ class GoogleSearchCounter : content::NotificationObserver {
   void RegisterForNotificationsInternal();
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
   scoped_ptr<GoogleSearchMetrics> search_metrics_;

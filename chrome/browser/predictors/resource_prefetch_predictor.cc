@@ -117,20 +117,20 @@ class GetUrlVisitCountTask : public history::HistoryDBTask {
     DCHECK(requests_.get());
   }
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     history::URLRow url_row;
     if (db->GetRowForURL(navigation_id_.main_frame_url, &url_row))
       visit_count_ = url_row.visit_count();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {
+  void DoneRunOnMainThread() override {
     callback_.Run(visit_count_, navigation_id_, *requests_);
   }
 
  private:
-  virtual ~GetUrlVisitCountTask() { }
+  ~GetUrlVisitCountTask() override {}
 
   int visit_count_;
   NavigationID navigation_id_;

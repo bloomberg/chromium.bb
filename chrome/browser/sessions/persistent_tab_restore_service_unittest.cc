@@ -46,11 +46,9 @@ class PersistentTabRestoreTimeFactory : public TabRestoreService::TimeFactory {
  public:
   PersistentTabRestoreTimeFactory() : time_(base::Time::Now()) {}
 
-  virtual ~PersistentTabRestoreTimeFactory() {}
+  ~PersistentTabRestoreTimeFactory() override {}
 
-  virtual base::Time TimeNow() override {
-    return time_;
-  }
+  base::Time TimeNow() override { return time_; }
 
  private:
   base::Time time_;
@@ -181,11 +179,9 @@ class TestTabRestoreServiceObserver : public TabRestoreServiceObserver {
   bool got_loaded() const { return got_loaded_; }
 
   // TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override {
-  }
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override {
-  }
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override {
+  void TabRestoreServiceChanged(TabRestoreService* service) override {}
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override {}
+  void TabRestoreServiceLoaded(TabRestoreService* service) override {
     got_loaded_ = true;
   }
 

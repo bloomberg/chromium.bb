@@ -113,7 +113,7 @@ const std::string CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER =
 
 class UnloadTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     if (strcmp(test_info->name(),
@@ -126,7 +126,7 @@ class UnloadTest : public InProcessBrowserTest {
     }
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -416,18 +416,16 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
 
 class FastUnloadTest : public UnloadTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     UnloadTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableFastUnload);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(test_server()->Start());
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() override {
-    test_server()->Stop();
-  }
+  void TearDownInProcessBrowserTestFixture() override { test_server()->Stop(); }
 
   GURL GetUrl(const std::string& name) {
     return GURL(test_server()->GetURL(
@@ -462,13 +460,12 @@ class FastTabCloseTabStripModelObserver : public TabStripModelObserver {
     model_->AddObserver(this);
   }
 
-  virtual ~FastTabCloseTabStripModelObserver() {
+  ~FastTabCloseTabStripModelObserver() override {
     model_->RemoveObserver(this);
   }
 
   // TabStripModelObserver:
-  virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) override {
+  void TabDetachedAt(content::WebContents* contents, int index) override {
     run_loop_->Quit();
   }
 

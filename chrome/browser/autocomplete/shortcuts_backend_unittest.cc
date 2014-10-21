@@ -38,8 +38,8 @@ class ShortcutsBackendTest : public testing::Test,
   virtual void SetUp();
   virtual void TearDown();
 
-  virtual void OnShortcutsLoaded() override;
-  virtual void OnShortcutsChanged() override;
+  void OnShortcutsLoaded() override;
+  void OnShortcutsChanged() override;
 
   const ShortcutsBackend::ShortcutMap& shortcuts_map() const {
     return backend_->shortcuts_map();

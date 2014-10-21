@@ -22,10 +22,10 @@ class SearchProviderInstallStateMessageFilter
                                           Profile* profile);
 
   // content::BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  virtual ~SearchProviderInstallStateMessageFilter();
+  ~SearchProviderInstallStateMessageFilter() override;
 
   // Figures out the install state for the search provider.
    search_provider::InstallState GetSearchProviderInstallState(

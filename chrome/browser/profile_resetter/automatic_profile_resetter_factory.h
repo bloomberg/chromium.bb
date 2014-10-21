@@ -37,17 +37,17 @@ class AutomaticProfileResetterFactory
   friend struct DefaultSingletonTraits<AutomaticProfileResetterFactory>;
 
   AutomaticProfileResetterFactory();
-  virtual ~AutomaticProfileResetterFactory();
+  ~AutomaticProfileResetterFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   // BrowserContextKeyedBaseFactory:
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterFactory);
 };

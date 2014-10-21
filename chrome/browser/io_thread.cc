@@ -156,7 +156,7 @@ class SystemURLRequestContext : public net::URLRequestContext {
   }
 
  private:
-  virtual ~SystemURLRequestContext() {
+  ~SystemURLRequestContext() override {
     AssertNoURLRequests();
 #if defined(USE_NSS) || defined(OS_IOS)
     net::SetURLRequestContextForNSSHttpIO(NULL);
@@ -326,21 +326,21 @@ class IOThread::LoggingNetworkChangeObserver
     net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   }
 
-  virtual ~LoggingNetworkChangeObserver() {
+  ~LoggingNetworkChangeObserver() override {
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
     net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
     net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged() override {
+  void OnIPAddressChanged() override {
     VLOG(1) << "Observed a change to the network IP addresses";
 
     net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
   }
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  virtual void OnConnectionTypeChanged(
+  void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
     std::string type_as_string =
         net::NetworkChangeNotifier::ConnectionTypeToString(type);
@@ -354,7 +354,7 @@ class IOThread::LoggingNetworkChangeObserver
   }
 
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
     std::string type_as_string =
         net::NetworkChangeNotifier::ConnectionTypeToString(type);
@@ -376,12 +376,12 @@ class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
   explicit SystemURLRequestContextGetter(IOThread* io_thread);
 
   // Implementation for net::UrlRequestContextGetter.
-  virtual net::URLRequestContext* GetURLRequestContext() override;
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override;
+  net::URLRequestContext* GetURLRequestContext() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override;
 
  protected:
-  virtual ~SystemURLRequestContextGetter();
+  ~SystemURLRequestContextGetter() override;
 
  private:
   IOThread* const io_thread_;  // Weak pointer, owned by BrowserProcess.

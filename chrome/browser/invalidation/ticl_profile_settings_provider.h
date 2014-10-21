@@ -18,10 +18,10 @@ namespace invalidation {
 class TiclProfileSettingsProvider : public TiclSettingsProvider {
  public:
   explicit TiclProfileSettingsProvider(Profile* profile);
-  virtual ~TiclProfileSettingsProvider();
+  ~TiclProfileSettingsProvider() override;
 
   // TiclInvalidationServiceSettingsProvider:
-  virtual bool UseGCMChannel() const override;
+  bool UseGCMChannel() const override;
 
  private:
   PrefChangeRegistrar registrar_;

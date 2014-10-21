@@ -59,13 +59,13 @@ class SessionServiceFactory : public BrowserContextKeyedServiceFactory {
                            DetachingTabWithCrashedInfoBar);
 
   SessionServiceFactory();
-  virtual ~SessionServiceFactory();
+  ~SessionServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_SERVICE_FACTORY_H_

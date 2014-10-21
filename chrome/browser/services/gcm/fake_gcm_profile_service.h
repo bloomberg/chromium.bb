@@ -25,7 +25,7 @@ class FakeGCMProfileService : public GCMProfileService {
   static KeyedService* Build(content::BrowserContext* context);
 
   explicit FakeGCMProfileService(Profile* profile);
-  virtual ~FakeGCMProfileService();
+  ~FakeGCMProfileService() override;
 
   void RegisterFinished(const std::string& app_id,
                         const std::vector<std::string>& sender_ids);

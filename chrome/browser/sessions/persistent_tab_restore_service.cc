@@ -119,17 +119,16 @@ class PersistentTabRestoreService::Delegate
  public:
   explicit Delegate(Profile* profile);
 
-  virtual ~Delegate();
+  ~Delegate() override;
 
   // BaseSessionService:
-  virtual void Save() override;
+  void Save() override;
 
   // TabRestoreServiceHelper::Observer:
-  virtual void OnClearEntries() override;
-  virtual void OnRestoreEntryById(
-      SessionID::id_type id,
-      Entries::const_iterator entry_iterator) override;
-  virtual void OnAddEntry() override;
+  void OnClearEntries() override;
+  void OnRestoreEntryById(SessionID::id_type id,
+                          Entries::const_iterator entry_iterator) override;
+  void OnAddEntry() override;
 
   void set_tab_restore_service_helper(
       TabRestoreServiceHelper* tab_restore_service_helper) {

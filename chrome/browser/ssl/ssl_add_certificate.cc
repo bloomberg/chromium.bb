@@ -43,35 +43,31 @@ class SSLAddCertificateInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   explicit SSLAddCertificateInfoBarDelegate(net::X509Certificate* cert)
       : cert_(cert) {}
-  virtual ~SSLAddCertificateInfoBarDelegate() {}
+  ~SSLAddCertificateInfoBarDelegate() override {}
 
   // ConfirmInfoBarDelegate implementation:
-  virtual int GetIconID() const override {
+  int GetIconID() const override {
     // TODO(davidben): Use a more appropriate icon.
     return IDR_INFOBAR_SAVE_PASSWORD;
   }
 
-  virtual Type GetInfoBarType() const override {
-    return PAGE_ACTION_TYPE;
-  }
+  Type GetInfoBarType() const override { return PAGE_ACTION_TYPE; }
 
-  virtual base::string16 GetMessageText() const override {
+  base::string16 GetMessageText() const override {
     // TODO(evanm): GetDisplayName should return UTF-16.
     return l10n_util::GetStringFUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
                                       base::UTF8ToUTF16(
                                           cert_->issuer().GetDisplayName()));
   }
 
-  virtual int GetButtons() const override {
-    return BUTTON_OK;
-  }
+  int GetButtons() const override { return BUTTON_OK; }
 
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override {
+  base::string16 GetButtonLabel(InfoBarButton button) const override {
     DCHECK_EQ(BUTTON_OK, button);
     return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
   }
 
-  virtual bool Accept() override {
+  bool Accept() override {
     WebContents* web_contents =
         InfoBarService::WebContentsFromInfoBar(infobar());
     ShowCertificateViewer(web_contents,

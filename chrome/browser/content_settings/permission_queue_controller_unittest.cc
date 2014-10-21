@@ -47,7 +47,7 @@ class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness {
 class ObservationCountingQueueController : public PermissionQueueController {
  public:
   explicit ObservationCountingQueueController(Profile* profile);
-  virtual ~ObservationCountingQueueController();
+  ~ObservationCountingQueueController() override;
 
   int call_count() const { return call_count_; }
 
@@ -55,9 +55,9 @@ class ObservationCountingQueueController : public PermissionQueueController {
   int call_count_;
 
   // PermissionQueueController:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   DISALLOW_COPY_AND_ASSIGN(ObservationCountingQueueController);
 };

@@ -177,14 +177,14 @@ class HistoryRequestHandler {
 
 class TestFaviconClient : public FaviconClient {
  public:
-  virtual ~TestFaviconClient() {};
+  ~TestFaviconClient() override{};
 
-  virtual FaviconService* GetFaviconService() override {
+  FaviconService* GetFaviconService() override {
     // Just give none NULL value, so overridden methods can be hit.
     return (FaviconService*)(1);
   }
 
-  virtual bool IsBookmarked(const GURL& url) override { return false; }
+  bool IsBookmarked(const GURL& url) override { return false; }
 };
 
 class TestFaviconDriver : public FaviconDriver {
@@ -194,36 +194,33 @@ class TestFaviconDriver : public FaviconDriver {
   virtual ~TestFaviconDriver() {
   }
 
-  virtual bool IsOffTheRecord() override { return false; }
+  bool IsOffTheRecord() override { return false; }
 
-  virtual const gfx::Image GetActiveFaviconImage() override { return image_; }
+  const gfx::Image GetActiveFaviconImage() override { return image_; }
 
-  virtual const GURL GetActiveFaviconURL() override { return favicon_url_; }
+  const GURL GetActiveFaviconURL() override { return favicon_url_; }
 
-  virtual bool GetActiveFaviconValidity() override { return favicon_validity_; }
+  bool GetActiveFaviconValidity() override { return favicon_validity_; }
 
-  virtual const GURL GetActiveURL() override { return url_; }
+  const GURL GetActiveURL() override { return url_; }
 
-  virtual void SetActiveFaviconImage(gfx::Image image) override {
-    image_ = image;
-  }
+  void SetActiveFaviconImage(gfx::Image image) override { image_ = image; }
 
-  virtual void SetActiveFaviconURL(GURL favicon_url) override {
+  void SetActiveFaviconURL(GURL favicon_url) override {
     favicon_url_ = favicon_url;
   }
 
-  virtual void SetActiveFaviconValidity(bool favicon_validity) override {
+  void SetActiveFaviconValidity(bool favicon_validity) override {
     favicon_validity_ = favicon_validity;
   }
 
-  virtual int StartDownload(const GURL& url,
-                            int max_bitmap_size) override {
+  int StartDownload(const GURL& url, int max_bitmap_size) override {
     ADD_FAILURE() << "TestFaviconDriver::StartDownload() "
                   << "should never be called in tests.";
     return -1;
   }
 
-  virtual void NotifyFaviconUpdated(bool icon_url_changed) override {
+  void NotifyFaviconUpdated(bool icon_url_changed) override {
     ADD_FAILURE() << "TestFaviconDriver::NotifyFaviconUpdated() "
                   << "should never be called in tests.";
   }
@@ -259,8 +256,7 @@ class TestFaviconHandler : public FaviconHandler {
     download_handler_.reset(new DownloadHandler(this));
   }
 
-  virtual ~TestFaviconHandler() {
-  }
+  ~TestFaviconHandler() override {}
 
   HistoryRequestHandler* history_handler() {
     return history_handler_.get();
@@ -297,7 +293,7 @@ class TestFaviconHandler : public FaviconHandler {
   }
 
  protected:
-  virtual void UpdateFaviconMappingAndFetch(
+  void UpdateFaviconMappingAndFetch(
       const GURL& page_url,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
@@ -307,7 +303,7 @@ class TestFaviconHandler : public FaviconHandler {
                                                      icon_type, callback));
   }
 
-  virtual void GetFaviconFromFaviconService(
+  void GetFaviconFromFaviconService(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       const favicon_base::FaviconResultsCallback& callback,
@@ -316,7 +312,7 @@ class TestFaviconHandler : public FaviconHandler {
                                                      icon_type, callback));
   }
 
-  virtual void GetFaviconForURLFromFaviconService(
+  void GetFaviconForURLFromFaviconService(
       const GURL& page_url,
       int icon_types,
       const favicon_base::FaviconResultsCallback& callback,
@@ -325,8 +321,7 @@ class TestFaviconHandler : public FaviconHandler {
                                                      icon_types, callback));
   }
 
-  virtual int DownloadFavicon(const GURL& image_url,
-                              int max_bitmap_size) override {
+  int DownloadFavicon(const GURL& image_url, int max_bitmap_size) override {
     download_id_++;
     std::vector<int> sizes;
     sizes.push_back(0);
@@ -335,10 +330,10 @@ class TestFaviconHandler : public FaviconHandler {
     return download_id_;
   }
 
-  virtual void SetHistoryFavicons(const GURL& page_url,
-                                  const GURL& icon_url,
-                                  favicon_base::IconType icon_type,
-                                  const gfx::Image& image) override {
+  void SetHistoryFavicons(const GURL& page_url,
+                          const GURL& icon_url,
+                          favicon_base::IconType icon_type,
+                          const gfx::Image& image) override {
     scoped_refptr<base::RefCountedMemory> bytes = image.As1xPNGBytes();
     std::vector<unsigned char> bitmap_data(bytes->front(),
                                            bytes->front() + bytes->size());
@@ -346,11 +341,9 @@ class TestFaviconHandler : public FaviconHandler {
         page_url, icon_url, icon_type, bitmap_data, image.Size()));
   }
 
-  virtual bool ShouldSaveFavicon(const GURL& url) override {
-    return true;
-  }
+  bool ShouldSaveFavicon(const GURL& url) override { return true; }
 
-  virtual void NotifyFaviconUpdated(bool icon_url_changed) override {
+  void NotifyFaviconUpdated(bool icon_url_changed) override {
     ++num_favicon_updates_;
   }
 

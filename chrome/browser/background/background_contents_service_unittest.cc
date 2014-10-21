@@ -90,7 +90,7 @@ class MockBackgroundContents : public BackgroundContents {
         content::Source<Profile>(profile_),
         content::Details<BackgroundContents>(this));
   }
-  virtual const GURL& GetURL() const override { return url_; }
+  const GURL& GetURL() const override { return url_; }
 
   void MockClose(Profile* profile) {
     content::NotificationService::current()->Notify(
@@ -100,7 +100,7 @@ class MockBackgroundContents : public BackgroundContents {
     delete this;
   }
 
-  virtual ~MockBackgroundContents() {
+  ~MockBackgroundContents() override {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
         content::Source<Profile>(profile_),
@@ -125,7 +125,7 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
  public:
   explicit NotificationWaiter(const std::string& target_id, Profile* profile)
       : target_id_(target_id), profile_(profile) {}
-  virtual ~NotificationWaiter() {}
+  ~NotificationWaiter() override {}
 
   void WaitForNotificationAdded() {
     DCHECK(!run_loop_.running());
@@ -139,14 +139,12 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
 
  private:
   // message_center::MessageCenterObserver overrides:
-  virtual void OnNotificationAdded(
-      const std::string& notification_id) override {
+  void OnNotificationAdded(const std::string& notification_id) override {
     if (notification_id == FindNotificationIdFromDelegateId(target_id_))
       run_loop_.Quit();
   }
 
-  virtual void OnNotificationUpdated(
-      const std::string& notification_id) override {
+  void OnNotificationUpdated(const std::string& notification_id) override {
     if (notification_id == FindNotificationIdFromDelegateId(target_id_))
       run_loop_.Quit();
   }

@@ -31,7 +31,7 @@ class SSLErrorClassification : public content::NotificationObserver {
                          const GURL& url,
                          int cert_error,
                          const net::X509Certificate& cert);
-  virtual ~SSLErrorClassification();
+  ~SSLErrorClassification() override;
 
   // Returns true if the system time is in the past.
   static bool IsUserClockInThePast(const base::Time& time_now);
@@ -126,10 +126,9 @@ class SSLErrorClassification : public content::NotificationObserver {
   float CalculateScoreEnvironments() const;
 
   // content::NotificationObserver:
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::WebContents* web_contents_;
   // This stores the current time.

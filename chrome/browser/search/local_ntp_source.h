@@ -18,19 +18,18 @@ class LocalNtpSource : public content::URLDataSource {
   explicit LocalNtpSource(Profile* profile);
 
  private:
-  virtual ~LocalNtpSource();
+  ~LocalNtpSource() override;
 
   // Overridden from content::URLDataSource:
-  virtual std::string GetSource() const override;
-  virtual void StartDataRequest(
+  std::string GetSource() const override;
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
-  virtual std::string GetMimeType(const std::string& path) const override;
-  virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const override;
-  virtual std::string GetContentSecurityPolicyFrameSrc() const override;
+  std::string GetMimeType(const std::string& path) const override;
+  bool ShouldServiceRequest(const net::URLRequest* request) const override;
+  std::string GetContentSecurityPolicyFrameSrc() const override;
 
   // Sends a local resource with a specific |class_name| substituted.
   void SendResourceWithClass(

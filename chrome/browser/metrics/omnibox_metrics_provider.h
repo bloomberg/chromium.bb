@@ -19,19 +19,19 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider,
                                public content::NotificationObserver {
  public:
   OmniboxMetricsProvider();
-  virtual ~OmniboxMetricsProvider();
+  ~OmniboxMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
-  virtual void OnRecordingEnabled() override;
-  virtual void OnRecordingDisabled() override;
-  virtual void ProvideGeneralMetrics(
+  void OnRecordingEnabled() override;
+  void OnRecordingDisabled() override;
+  void ProvideGeneralMetrics(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.

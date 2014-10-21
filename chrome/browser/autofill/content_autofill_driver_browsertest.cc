@@ -65,7 +65,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
             client,
             g_browser_process->GetApplicationLocale(),
             AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
-  virtual ~TestContentAutofillDriver() {}
+  ~TestContentAutofillDriver() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestContentAutofillDriver);

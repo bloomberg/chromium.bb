@@ -71,7 +71,7 @@ class AutocompleteActionPredictor
   };
 
   explicit AutocompleteActionPredictor(Profile* profile);
-  virtual ~AutocompleteActionPredictor();
+  ~AutocompleteActionPredictor() override;
 
   // Registers an AutocompleteResult for a given |user_text|. This will be used
   // when the user navigates from the Omnibox to determine early opportunities
@@ -154,9 +154,9 @@ class AutocompleteActionPredictor
   static const int kMaximumDaysToKeepEntry;
 
   // NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // The first step in initializing the predictor is accessing the database and
   // building the local cache. This should be delayed until after critical DB

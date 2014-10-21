@@ -15,7 +15,7 @@
 class SessionTabHelper : public content::WebContentsObserver,
                          public content::WebContentsUserData<SessionTabHelper> {
  public:
-  virtual ~SessionTabHelper();
+  ~SessionTabHelper() override;
 
   // Returns the identifier used by session restore for this tab.
   const SessionID& session_id() const { return session_id_; }
@@ -44,10 +44,9 @@ class SessionTabHelper : public content::WebContentsObserver,
 
   // content::WebContentsObserver:
 #if defined(ENABLE_EXTENSIONS)
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 #endif
-  virtual void UserAgentOverrideSet(const std::string& user_agent) override;
+  void UserAgentOverrideSet(const std::string& user_agent) override;
 
  private:
   explicit SessionTabHelper(content::WebContents* contents);

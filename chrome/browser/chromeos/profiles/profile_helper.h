@@ -45,7 +45,7 @@ class ProfileHelper
       public user_manager::UserManager::UserSessionStateObserver {
  public:
   ProfileHelper();
-  virtual ~ProfileHelper();
+  ~ProfileHelper() override;
 
   // Returns ProfileHelper instance. This class is not singleton and is owned
   // by BrowserProcess/BrowserProcessPlatformPart. This method keeps that
@@ -135,15 +135,15 @@ class ProfileHelper
   friend class SessionStateDelegateChromeOSTest;
 
   // BrowsingDataRemover::Observer implementation:
-  virtual void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoverDone() override;
 
   // OAuth2LoginManager::Observer overrides.
-  virtual void OnSessionRestoreStateChanged(
+  void OnSessionRestoreStateChanged(
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) override;
 
   // user_manager::UserManager::UserSessionStateObserver implementation:
-  virtual void ActiveUserHashChanged(const std::string& hash) override;
+  void ActiveUserHashChanged(const std::string& hash) override;
 
   // Associates |user| with profile with the same user_id,
   // for GetUserByProfile() testing.

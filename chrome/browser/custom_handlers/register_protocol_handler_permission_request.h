@@ -21,18 +21,18 @@ class RegisterProtocolHandlerPermissionRequest
       const ProtocolHandler& handler,
       GURL url,
       bool user_gesture);
-  virtual ~RegisterProtocolHandlerPermissionRequest();
+  ~RegisterProtocolHandlerPermissionRequest() override;
 
   // PermissionBubbleRequest:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetMessageTextFragment() const override;
-  virtual bool HasUserGesture() const override;
-  virtual GURL GetRequestingHostname() const override;
-  virtual void PermissionGranted() override;
-  virtual void PermissionDenied() override;
-  virtual void Cancelled() override;
-  virtual void RequestFinished() override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetMessageTextFragment() const override;
+  bool HasUserGesture() const override;
+  GURL GetRequestingHostname() const override;
+  void PermissionGranted() override;
+  void PermissionDenied() override;
+  void Cancelled() override;
+  void RequestFinished() override;
 
  private:
   ProtocolHandlerRegistry* registry_;

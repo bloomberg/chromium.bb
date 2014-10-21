@@ -50,7 +50,7 @@ class AutocompleteSyncableService
       public autofill::AutofillWebDataServiceObserverOnDBThread,
       public base::NonThreadSafe {
  public:
-  virtual ~AutocompleteSyncableService();
+  ~AutocompleteSyncableService() override;
 
   // Creates a new AutocompleteSyncableService and hangs it off of
   // |web_data_service|, which takes ownership.
@@ -65,20 +65,19 @@ class AutocompleteSyncableService
   static syncer::ModelType model_type() { return syncer::AUTOFILL; }
 
   // syncer::SyncableService:
-  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+  syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
       scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
-  virtual void StopSyncing(syncer::ModelType type) override;
-  virtual syncer::SyncDataList GetAllSyncData(
-      syncer::ModelType type) const override;
-  virtual syncer::SyncError ProcessSyncChanges(
+  void StopSyncing(syncer::ModelType type) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
   // AutofillWebDataServiceObserverOnDBThread:
-  virtual void AutofillEntriesChanged(
+  void AutofillEntriesChanged(
       const autofill::AutofillChangeList& changes) override;
 
   // Provides a StartSyncFlare to the SyncableService. See sync_start_util for

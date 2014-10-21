@@ -29,7 +29,7 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
  public:
   explicit DiagnosticsTest(DiagnosticsTestId id);
 
-  virtual ~DiagnosticsTest();
+  ~DiagnosticsTest() override;
 
   // Runs the test. Returning false signals that no more tests should be run.
   // The actual outcome of the test should be set using the RecordXX functions.
@@ -62,14 +62,15 @@ class DiagnosticsTest : public DiagnosticsModel::TestInfo {
   static base::FilePath GetUserDefaultProfileDir();
 
   // DiagnosticsModel::TestInfo overrides
-  virtual int GetId() const override;
-  virtual std::string GetName() const override;
-  virtual std::string GetTitle() const override;
-  virtual DiagnosticsModel::TestResult GetResult() const override;
-  virtual std::string GetAdditionalInfo() const override;
-  virtual int GetOutcomeCode() const override;
-  virtual base::Time GetStartTime() const override;
-  virtual base::Time GetEndTime() const override;
+  int GetId() const override;
+  std::string GetName() const override;
+  std::string GetTitle() const override;
+  DiagnosticsModel::TestResult GetResult() const override;
+  std::string GetAdditionalInfo() const override;
+  int GetOutcomeCode() const override;
+  base::Time GetStartTime() const override;
+  base::Time GetEndTime() const override;
+
  protected:
   // Derived classes override this method do perform the actual test.
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) = 0;

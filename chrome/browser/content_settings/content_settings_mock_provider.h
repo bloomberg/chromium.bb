@@ -20,26 +20,24 @@ class MockProvider : public ObservableProvider {
  public:
   MockProvider();
   explicit MockProvider(bool read_only);
-  virtual ~MockProvider();
+  ~MockProvider() override;
 
-  virtual RuleIterator* GetRuleIterator(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      bool incognito) const override;
+  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
+                                const ResourceIdentifier& resource_identifier,
+                                bool incognito) const override;
 
   // The MockProvider is only able to store one content setting. So every time
   // this method is called the previously set content settings is overwritten.
-  virtual bool SetWebsiteSetting(
-      const ContentSettingsPattern& requesting_url_pattern,
-      const ContentSettingsPattern& embedding_url_pattern,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      base::Value* value) override;
+  bool SetWebsiteSetting(const ContentSettingsPattern& requesting_url_pattern,
+                         const ContentSettingsPattern& embedding_url_pattern,
+                         ContentSettingsType content_type,
+                         const ResourceIdentifier& resource_identifier,
+                         base::Value* value) override;
 
-  virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) override {}
+  void ClearAllContentSettingsRules(ContentSettingsType content_type) override {
+  }
 
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
   void set_read_only(bool read_only) {
     read_only_ = read_only;

@@ -28,9 +28,9 @@ class OverrideRuleIterator : public RuleIterator {
  public:
   explicit OverrideRuleIterator(bool is_allowed) : is_done_(is_allowed) {}
 
-  virtual bool HasNext() const override { return !is_done_; }
+  bool HasNext() const override { return !is_done_; }
 
-  virtual Rule Next() override {
+  Rule Next() override {
     DCHECK(!is_done_);
     is_done_ = true;
     return Rule(ContentSettingsPattern::Wildcard(),

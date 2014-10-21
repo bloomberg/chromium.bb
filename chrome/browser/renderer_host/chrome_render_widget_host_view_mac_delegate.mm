@@ -46,11 +46,10 @@ class SpellCheckObserver : public content::WebContentsObserver {
         view_delegate_(view_delegate) {
   }
 
-  virtual ~SpellCheckObserver() {
-  }
+  ~SpellCheckObserver() override {}
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SpellCheckObserver, message)
       IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck,

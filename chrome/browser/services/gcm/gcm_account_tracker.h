@@ -60,7 +60,7 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   // in the browser context to |driver|.
   GCMAccountTracker(scoped_ptr<gaia::AccountTracker> account_tracker,
                     GCMDriver* driver);
-  virtual ~GCMAccountTracker();
+  ~GCMAccountTracker() override;
 
   // Shuts down the tracker ensuring a proper clean up. After Shutdown() is
   // called Start() and Stop() should no longer be used. Must be called before
@@ -81,21 +81,21 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   typedef std::map<std::string, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.
-  virtual void OnAccountAdded(const gaia::AccountIds& ids) override;
-  virtual void OnAccountRemoved(const gaia::AccountIds& ids) override;
-  virtual void OnAccountSignInChanged(const gaia::AccountIds& ids,
-                                      bool is_signed_in) override;
+  void OnAccountAdded(const gaia::AccountIds& ids) override;
+  void OnAccountRemoved(const gaia::AccountIds& ids) override;
+  void OnAccountSignInChanged(const gaia::AccountIds& ids,
+                              bool is_signed_in) override;
 
   // OAuth2TokenService::Consumer overrides.
-  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                 const std::string& access_token,
-                                 const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                                 const GoogleServiceAuthError& error) override;
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
 
   // GCMConnectionObserver overrides.
-  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) override;
-  virtual void OnDisconnected() override;
+  void OnConnected(const net::IPEndPoint& ip_endpoint) override;
+  void OnDisconnected() override;
 
   // Report the list of accounts with OAuth2 tokens back using the |callback_|
   // function. If there are token requests in progress, do nothing.

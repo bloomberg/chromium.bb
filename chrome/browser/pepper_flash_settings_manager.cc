@@ -64,8 +64,8 @@ class PepperFlashSettingsManager::Core
                      uint64 max_age);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
@@ -119,7 +119,7 @@ class PepperFlashSettingsManager::Core
     uint64 max_age;
   };
 
-  virtual ~Core();
+  ~Core() override;
 
   void ConnectToChannel(bool success, const IPC::ChannelHandle& handle);
 

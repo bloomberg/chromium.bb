@@ -14,11 +14,11 @@ class ResourcePrefetchPredictorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ResourcePrefetchPredictorTabHelper> {
  public:
-  virtual ~ResourcePrefetchPredictorTabHelper();
+  ~ResourcePrefetchPredictorTabHelper() override;
 
   // content::WebContentsObserver implementation
-  virtual void DocumentOnLoadCompletedInMainFrame() override;
-  virtual void DidLoadResourceFromMemoryCache(
+  void DocumentOnLoadCompletedInMainFrame() override;
+  void DidLoadResourceFromMemoryCache(
       const content::LoadFromMemoryCacheDetails& details) override;
 
  private:

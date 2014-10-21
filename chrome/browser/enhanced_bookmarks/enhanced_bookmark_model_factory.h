@@ -26,12 +26,12 @@ class EnhancedBookmarkModelFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<EnhancedBookmarkModelFactory>;
 
   EnhancedBookmarkModelFactory();
-  virtual ~EnhancedBookmarkModelFactory() {}
+  ~EnhancedBookmarkModelFactory() override {}
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarkModelFactory);

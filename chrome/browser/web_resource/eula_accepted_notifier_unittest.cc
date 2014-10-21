@@ -24,7 +24,7 @@ class EulaAcceptedNotifierTest : public testing::Test,
   }
 
   // EulaAcceptedNotifier::Observer overrides.
-  virtual void OnEulaAccepted() override {
+  void OnEulaAccepted() override {
     EXPECT_FALSE(eula_accepted_called_);
     eula_accepted_called_ = true;
   }

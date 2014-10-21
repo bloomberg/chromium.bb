@@ -57,7 +57,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   FeedbackSender(net::URLRequestContextGetter* request_context,
                  const std::string& language,
                  const std::string& country);
-  virtual ~FeedbackSender();
+  ~FeedbackSender() override;
 
   // Records that user selected suggestion |suggestion_index| for the
   // misspelling identified by |hash|.
@@ -114,7 +114,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   friend class FeedbackSenderTest;
 
   // net::URLFetcherDelegate implementation. Takes ownership of |source|.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Requests the document markers from all of the renderers to determine which
   // feedback can be finalized. Finalizes feedback for renderers that are gone.

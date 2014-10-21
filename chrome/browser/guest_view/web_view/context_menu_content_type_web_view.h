@@ -13,10 +13,10 @@
 // guests are: searching, printing, speech and instant.
 class ContextMenuContentTypeWebView : public ContextMenuContentType {
  public:
-  virtual ~ContextMenuContentTypeWebView();
+  ~ContextMenuContentTypeWebView() override;
 
   // ContextMenuContentType overrides.
-  virtual bool SupportsGroup(int group) override;
+  bool SupportsGroup(int group) override;
 
  protected:
   ContextMenuContentTypeWebView(content::WebContents* web_contents,

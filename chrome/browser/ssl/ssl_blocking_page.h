@@ -57,7 +57,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
     EXPIRED_BUT_PREVIOUSLY_ALLOWED = 1 << 2
   };
 
-  virtual ~SSLBlockingPage();
+  ~SSLBlockingPage() override;
 
   // Create an interstitial and show it.
   void Show();
@@ -82,13 +82,12 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
 
  protected:
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() override;
-  virtual void CommandReceived(const std::string& command) override;
-  virtual void OverrideEntry(content::NavigationEntry* entry) override;
-  virtual void OverrideRendererPrefs(
-      content::RendererPreferences* prefs) override;
-  virtual void OnProceed() override;
-  virtual void OnDontProceed() override;
+  std::string GetHTMLContents() override;
+  void CommandReceived(const std::string& command) override;
+  void OverrideEntry(content::NavigationEntry* entry) override;
+  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
+  void OnProceed() override;
+  void OnDontProceed() override;
 
  private:
   void NotifyDenyCertificate();

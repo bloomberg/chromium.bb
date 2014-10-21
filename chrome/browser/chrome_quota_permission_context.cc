@@ -46,18 +46,18 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
 
-  virtual ~QuotaPermissionRequest();
+  ~QuotaPermissionRequest() override;
 
   // PermissionBubbleRequest:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetMessageTextFragment() const override;
-  virtual bool HasUserGesture() const override;
-  virtual GURL GetRequestingHostname() const override;
-  virtual void PermissionGranted() override;
-  virtual void PermissionDenied() override;
-  virtual void Cancelled() override;
-  virtual void RequestFinished() override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetMessageTextFragment() const override;
+  bool HasUserGesture() const override;
+  GURL GetRequestingHostname() const override;
+  void PermissionGranted() override;
+  void PermissionDenied() override;
+  void Cancelled() override;
+  void RequestFinished() override;
 
  private:
   scoped_refptr<ChromeQuotaPermissionContext> context_;
@@ -164,12 +164,12 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
       int64 requested_quota,
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
-  virtual ~RequestQuotaInfoBarDelegate();
+  ~RequestQuotaInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual base::string16 GetMessageText() const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
+  base::string16 GetMessageText() const override;
+  bool Accept() override;
+  bool Cancel() override;
 
   scoped_refptr<ChromeQuotaPermissionContext> context_;
   GURL origin_url_;

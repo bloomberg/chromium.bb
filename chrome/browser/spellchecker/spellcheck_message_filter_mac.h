@@ -18,10 +18,9 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   explicit SpellCheckMessageFilterMac(int render_process_id);
 
   // BrowserMessageFilter implementation.
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Adjusts remote_results by examining local_results. Any result that's both
   // local and remote stays type SPELLING, all others are flagged GRAMMAR.
@@ -34,7 +33,7 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   friend class TestingSpellCheckMessageFilter;
   friend class SpellcheckMessageFilterMacTest;
 
-  virtual ~SpellCheckMessageFilterMac();
+  ~SpellCheckMessageFilterMac() override;
 
   void OnCheckSpelling(const base::string16& word, int route_id, bool* correct);
   void OnFillSuggestionList(const base::string16& word,

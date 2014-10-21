@@ -42,7 +42,7 @@ class GCMProfileService : public KeyedService {
   GCMProfileService(Profile* profile,
                     scoped_ptr<GCMClientFactory> gcm_client_factory);
 #endif
-  virtual ~GCMProfileService();
+  ~GCMProfileService() override;
 
   // TODO(jianli): obsolete methods that are going to be removed soon.
   void AddAppHandler(const std::string& app_id, GCMAppHandler* handler);
@@ -52,7 +52,7 @@ class GCMProfileService : public KeyedService {
                 const GCMDriver::RegisterCallback& callback);
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // Returns the user name if the profile is signed in or an empty string
   // otherwise.

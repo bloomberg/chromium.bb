@@ -22,7 +22,7 @@ class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
   BrandcodeConfigFetcher(const FetchCallback& callback,
                          const GURL& url,
                          const std::string& brandcode);
-  virtual ~BrandcodeConfigFetcher();
+  ~BrandcodeConfigFetcher() override;
 
   bool IsActive() const { return config_fetcher_; }
 
@@ -35,7 +35,7 @@ class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
 
  private:
   // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   void OnDownloadTimeout();
 

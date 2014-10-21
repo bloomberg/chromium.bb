@@ -39,48 +39,41 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   };
 
   MockRenderViewContextMenu() : observer_(NULL), profile_(new TestingProfile) {}
-  virtual ~MockRenderViewContextMenu() {}
+  ~MockRenderViewContextMenu() override {}
 
   // SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const override {
+  bool IsCommandIdChecked(int command_id) const override {
     return observer_->IsCommandIdChecked(command_id);
   }
-  virtual bool IsCommandIdEnabled(int command_id) const override {
+  bool IsCommandIdEnabled(int command_id) const override {
     return observer_->IsCommandIdEnabled(command_id);
   }
-  virtual void ExecuteCommand(int command_id, int event_flags) override {
+  void ExecuteCommand(int command_id, int event_flags) override {
     observer_->ExecuteCommand(command_id);
   }
-  virtual void MenuWillShow(ui::SimpleMenuModel* source) override {}
-  virtual void MenuClosed(ui::SimpleMenuModel* source) override {}
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override {
+  void MenuWillShow(ui::SimpleMenuModel* source) override {}
+  void MenuClosed(ui::SimpleMenuModel* source) override {}
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
     return false;
   }
 
   // RenderViewContextMenuProxy implementation.
-  virtual void AddMenuItem(int command_id,
-                           const base::string16& title) override {}
-  virtual void AddCheckItem(int command_id,
-                            const base::string16& title) override {}
-  virtual void AddSeparator() override {}
-  virtual void AddSubMenu(int command_id,
-                          const base::string16& label,
-                          ui::MenuModel* model) override {}
-  virtual void UpdateMenuItem(int command_id,
-                              bool enabled,
-                              bool hidden,
-                              const base::string16& title) override {}
-  virtual RenderViewHost* GetRenderViewHost() const override {
-    return NULL;
-  }
-  virtual content::BrowserContext* GetBrowserContext() const override {
+  void AddMenuItem(int command_id, const base::string16& title) override {}
+  void AddCheckItem(int command_id, const base::string16& title) override {}
+  void AddSeparator() override {}
+  void AddSubMenu(int command_id,
+                  const base::string16& label,
+                  ui::MenuModel* model) override {}
+  void UpdateMenuItem(int command_id,
+                      bool enabled,
+                      bool hidden,
+                      const base::string16& title) override {}
+  RenderViewHost* GetRenderViewHost() const override { return NULL; }
+  content::BrowserContext* GetBrowserContext() const override {
     return profile_.get();
   }
-  virtual content::WebContents* GetWebContents() const override {
-    return NULL;
-  }
+  content::WebContents* GetWebContents() const override { return NULL; }
 
   // Attaches a RenderViewContextMenuObserver to be tested.
   void SetObserver(RenderViewContextMenuObserver* observer) {

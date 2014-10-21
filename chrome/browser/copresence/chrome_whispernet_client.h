@@ -34,27 +34,26 @@ class ChromeWhispernetClient : public copresence::WhispernetClient {
  public:
   // The browser context needs to outlive this class.
   explicit ChromeWhispernetClient(content::BrowserContext* browser_context);
-  virtual ~ChromeWhispernetClient();
+  ~ChromeWhispernetClient() override;
 
   // WhispernetClient overrides:
-  virtual void Initialize(const SuccessCallback& init_callback) override;
-  virtual void Shutdown() override;
+  void Initialize(const SuccessCallback& init_callback) override;
+  void Shutdown() override;
 
-  virtual void EncodeToken(const std::string& token, bool audible) override;
-  virtual void DecodeSamples(const std::string& samples) override;
-  virtual void DetectBroadcast() override;
+  void EncodeToken(const std::string& token, bool audible) override;
+  void DecodeSamples(const std::string& samples) override;
+  void DetectBroadcast() override;
 
-  virtual void RegisterTokensCallback(
-      const TokensCallback& tokens_callback) override;
-  virtual void RegisterSamplesCallback(
+  void RegisterTokensCallback(const TokensCallback& tokens_callback) override;
+  void RegisterSamplesCallback(
       const SamplesCallback& samples_callback) override;
-  virtual void RegisterDetectBroadcastCallback(
+  void RegisterDetectBroadcastCallback(
       const SuccessCallback& db_callback) override;
 
-  virtual TokensCallback GetTokensCallback() override;
-  virtual SamplesCallback GetSamplesCallback() override;
-  virtual SuccessCallback GetDetectBroadcastCallback() override;
-  virtual SuccessCallback GetInitializedCallback() override;
+  TokensCallback GetTokensCallback() override;
+  SamplesCallback GetSamplesCallback() override;
+  SuccessCallback GetDetectBroadcastCallback() override;
+  SuccessCallback GetInitializedCallback() override;
 
   static const char kWhispernetProxyExtensionId[];
 

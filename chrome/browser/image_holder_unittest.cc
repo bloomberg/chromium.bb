@@ -15,9 +15,7 @@ const char kIconUrl2[] = "http://www.google.com/icon2.jpg";
 class TestDelegate : public chrome::ImageHolderDelegate {
  public:
   TestDelegate() : on_fetch_complete_called_(false) {}
-  virtual void OnFetchComplete() override {
-    on_fetch_complete_called_ = true;
-  }
+  void OnFetchComplete() override { on_fetch_complete_called_ = true; }
   bool on_fetch_complete_called_;
 };
 

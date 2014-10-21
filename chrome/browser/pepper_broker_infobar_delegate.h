@@ -39,16 +39,16 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
                               HostContentSettingsMap* content_settings,
                               TabSpecificContentSettings* tab_content_settings,
                               const base::Callback<void(bool)>& callback);
-  virtual ~PepperBrokerInfoBarDelegate();
+  ~PepperBrokerInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
-  virtual base::string16 GetLinkText() const override;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) override;
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   void DispatchCallback(bool result);
 

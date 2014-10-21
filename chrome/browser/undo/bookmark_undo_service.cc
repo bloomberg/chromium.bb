@@ -27,7 +27,7 @@ class BookmarkUndoOperation : public UndoOperation,
                               public BookmarkRenumberObserver {
  public:
   explicit BookmarkUndoOperation(Profile* profile);
-  virtual ~BookmarkUndoOperation() {}
+  ~BookmarkUndoOperation() override {}
 
   BookmarkModel* GetBookmarkModel() const;
   BookmarkRenumberObserver* GetUndoRenumberObserver() const;
@@ -55,15 +55,15 @@ BookmarkRenumberObserver* BookmarkUndoOperation::GetUndoRenumberObserver()
 class BookmarkAddOperation : public BookmarkUndoOperation {
  public:
   BookmarkAddOperation(Profile* profile, const BookmarkNode* parent, int index);
-  virtual ~BookmarkAddOperation() {}
+  ~BookmarkAddOperation() override {}
 
   // UndoOperation:
-  virtual void Undo() override;
-  virtual int GetUndoLabelId() const override;
-  virtual int GetRedoLabelId() const override;
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
+  void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 parent_id_;
@@ -114,15 +114,15 @@ class BookmarkRemoveOperation : public BookmarkUndoOperation {
                           const BookmarkNode* parent,
                           int old_index,
                           const BookmarkNode* node);
-  virtual ~BookmarkRemoveOperation() {}
+  ~BookmarkRemoveOperation() override {}
 
   // UndoOperation:
-  virtual void Undo() override;
-  virtual int GetUndoLabelId() const override;
-  virtual int GetRedoLabelId() const override;
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
+  void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   void UpdateBookmarkIds(const BookmarkNodeData::Element& element,
@@ -191,15 +191,15 @@ class BookmarkEditOperation : public BookmarkUndoOperation {
  public:
   BookmarkEditOperation(Profile* profile,
                         const BookmarkNode* node);
-  virtual ~BookmarkEditOperation() {}
+  ~BookmarkEditOperation() override {}
 
   // UndoOperation:
-  virtual void Undo() override;
-  virtual int GetUndoLabelId() const override;
-  virtual int GetRedoLabelId() const override;
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
+  void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 node_id_;
@@ -249,15 +249,15 @@ class BookmarkMoveOperation : public BookmarkUndoOperation {
                         int old_index,
                         const BookmarkNode* new_parent,
                         int new_index);
-  virtual ~BookmarkMoveOperation() {}
-  virtual int GetUndoLabelId() const override;
-  virtual int GetRedoLabelId() const override;
+  ~BookmarkMoveOperation() override {}
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
 
   // UndoOperation:
-  virtual void Undo() override;
+  void Undo() override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
+  void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 old_parent_id_;
@@ -326,15 +326,15 @@ class BookmarkReorderOperation : public BookmarkUndoOperation {
  public:
   BookmarkReorderOperation(Profile* profile,
                            const BookmarkNode* parent);
-  virtual ~BookmarkReorderOperation();
+  ~BookmarkReorderOperation() override;
 
   // UndoOperation:
-  virtual void Undo() override;
-  virtual int GetUndoLabelId() const override;
-  virtual int GetRedoLabelId() const override;
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
 
   // BookmarkRenumberObserver:
-  virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
+  void OnBookmarkRenumbered(int64 old_id, int64 new_id) override;
 
  private:
   int64 parent_id_;

@@ -52,7 +52,7 @@ class PermissionContextBase : public KeyedService {
  public:
   PermissionContextBase(Profile* profile,
                         const ContentSettingsType permission_type);
-  virtual ~PermissionContextBase();
+  ~PermissionContextBase() override;
 
   // The renderer is requesting permission to push messages.
   // When the answer to a permission request has been determined, |callback|

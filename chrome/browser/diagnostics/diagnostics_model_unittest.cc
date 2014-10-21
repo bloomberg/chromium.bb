@@ -45,7 +45,7 @@ class UTObserver: public DiagnosticsModel::Observer {
         num_recovered_(0) {
   }
 
-  virtual void OnTestFinished(int index, DiagnosticsModel* model) override {
+  void OnTestFinished(int index, DiagnosticsModel* model) override {
     EXPECT_TRUE(model != NULL);
     ++num_tested_;
     EXPECT_NE(DiagnosticsModel::TEST_FAIL_STOP,
@@ -53,12 +53,12 @@ class UTObserver: public DiagnosticsModel::Observer {
         << "Failed stop test: " << index;
   }
 
-  virtual void OnAllTestsDone(DiagnosticsModel* model) override {
+  void OnAllTestsDone(DiagnosticsModel* model) override {
     EXPECT_TRUE(model != NULL);
     tests_done_ = true;
   }
 
-  virtual void OnRecoveryFinished(int index, DiagnosticsModel* model) override {
+  void OnRecoveryFinished(int index, DiagnosticsModel* model) override {
     EXPECT_TRUE(model != NULL);
     ++num_recovered_;
     EXPECT_NE(DiagnosticsModel::RECOVERY_FAIL_STOP,
@@ -66,7 +66,7 @@ class UTObserver: public DiagnosticsModel::Observer {
         << "Failed stop recovery: " << index;
   }
 
-  virtual void OnAllRecoveryDone(DiagnosticsModel* model) override {
+  void OnAllRecoveryDone(DiagnosticsModel* model) override {
     EXPECT_TRUE(model != NULL);
     recovery_done_ = true;
   }

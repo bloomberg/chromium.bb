@@ -15,20 +15,20 @@ class ChromeGoogleURLTrackerClient : public GoogleURLTrackerClient,
                                      public content::NotificationObserver {
  public:
   explicit ChromeGoogleURLTrackerClient(Profile* profile);
-  virtual ~ChromeGoogleURLTrackerClient();
+  ~ChromeGoogleURLTrackerClient() override;
 
   // GoogleURLTrackerClient:
-  virtual void SetListeningForNavigationStart(bool listen) override;
-  virtual bool IsListeningForNavigationStart() override;
-  virtual bool IsBackgroundNetworkingEnabled() override;
-  virtual PrefService* GetPrefs() override;
-  virtual net::URLRequestContextGetter* GetRequestContext() override;
+  void SetListeningForNavigationStart(bool listen) override;
+  bool IsListeningForNavigationStart() override;
+  bool IsBackgroundNetworkingEnabled() override;
+  PrefService* GetPrefs() override;
+  net::URLRequestContextGetter* GetRequestContext() override;
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   Profile* profile_;
 

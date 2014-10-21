@@ -48,8 +48,7 @@ class FormStructureBrowserTest : public InProcessBrowserTest,
   virtual ~FormStructureBrowserTest();
 
   // DataDrivenTest:
-  virtual void GenerateResults(const std::string& input,
-                               std::string* output) override;
+  void GenerateResults(const std::string& input, std::string* output) override;
 
   // Serializes the given |forms| into a string.
   std::string FormStructuresToString(const std::vector<FormStructure*>& forms);

@@ -34,10 +34,10 @@ class ThumbnailServiceFactory
   friend struct DefaultSingletonTraits<ThumbnailServiceFactory>;
 
   ThumbnailServiceFactory();
-  virtual ~ThumbnailServiceFactory();
+  ~ThumbnailServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceFactory);

@@ -486,13 +486,11 @@ class ProcessSingleton::LinuxWatcher
                    this, &SocketReader::CleanupAndDeleteSelf);
     }
 
-    virtual ~SocketReader() {
-      CloseSocket(fd_);
-    }
+    ~SocketReader() override { CloseSocket(fd_); }
 
     // MessageLoopForIO::Watcher impl.
-    virtual void OnFileCanReadWithoutBlocking(int fd) override;
-    virtual void OnFileCanWriteWithoutBlocking(int fd) override {
+    void OnFileCanReadWithoutBlocking(int fd) override;
+    void OnFileCanWriteWithoutBlocking(int fd) override {
       // SocketReader only watches for accept (read) events.
       NOTREACHED();
     }
@@ -550,14 +548,14 @@ class ProcessSingleton::LinuxWatcher
                      SocketReader* reader);
 
   // MessageLoopForIO::Watcher impl.  These run on the IO thread.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override {
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override {
     // ProcessSingleton only watches for accept (read) events.
     NOTREACHED();
   }
 
   // MessageLoop::DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop() override {
+  void WillDestroyCurrentMessageLoop() override {
     fd_watcher_.StopWatchingFileDescriptor();
   }
 
@@ -565,7 +563,7 @@ class ProcessSingleton::LinuxWatcher
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<ProcessSingleton::LinuxWatcher>;
 
-  virtual ~LinuxWatcher() {
+  ~LinuxWatcher() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     STLDeleteElements(&readers_);
 

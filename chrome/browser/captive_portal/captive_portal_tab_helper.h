@@ -60,37 +60,33 @@ class CaptivePortalTabHelper
       public base::NonThreadSafe,
       public content::WebContentsUserData<CaptivePortalTabHelper> {
  public:
-  virtual ~CaptivePortalTabHelper();
+  ~CaptivePortalTabHelper() override;
 
   // content::WebContentsObserver:
-  virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
 
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
 
-  virtual void DidCommitProvisionalLoadForFrame(
+  void DidCommitProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
 
-  virtual void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description) override;
+  void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url,
+                              int error_code,
+                              const base::string16& error_description) override;
 
-  virtual void DidStopLoading(
-      content::RenderViewHost* render_view_host) override;
+  void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
   // content::NotificationObserver:
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Called when a certificate interstitial error page is about to be shown.
   void OnSSLCertError(const net::SSLInfo& ssl_info);

@@ -57,15 +57,14 @@ class TestProvider : public AutocompleteProvider {
         match_keyword_(match_keyword) {
   }
 
-  virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
   void set_listener(AutocompleteProviderListener* listener) {
     listener_ = listener;
   }
 
  private:
-  virtual ~TestProvider() {}
+  ~TestProvider() override {}
 
   void Run();
 
@@ -215,9 +214,9 @@ class AutocompleteProviderTest : public testing::Test,
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   base::MessageLoopForUI message_loop_;
   content::NotificationRegistrar registrar_;

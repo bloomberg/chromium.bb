@@ -74,11 +74,11 @@ class AutocompleteActionPredictorTable : public PredictorTableBase {
   friend class PredictorDatabaseInternal;
 
   AutocompleteActionPredictorTable();
-  virtual ~AutocompleteActionPredictorTable();
+  ~AutocompleteActionPredictorTable() override;
 
   // PredictorTableBase methods (DB thread).
-  virtual void CreateTableIfNonExistent() override;
-  virtual void LogDatabaseStats() override;
+  void CreateTableIfNonExistent() override;
+  void LogDatabaseStats() override;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictorTable);
 };

@@ -39,9 +39,7 @@ class StatusIconMenuModelTest : public testing::Test,
   }
 
  private:
-  virtual void OnMenuStateChanged() override {
-    ++changed_count_;
-  }
+  void OnMenuStateChanged() override { ++changed_count_; }
 
   scoped_ptr<StatusIconMenuModel> menu_;
   int changed_count_;

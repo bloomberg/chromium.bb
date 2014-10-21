@@ -21,10 +21,10 @@ class BitmapFetcherServiceFactory : BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<BitmapFetcherServiceFactory>;
 
   BitmapFetcherServiceFactory();
-  virtual ~BitmapFetcherServiceFactory();
+  ~BitmapFetcherServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapFetcherServiceFactory);

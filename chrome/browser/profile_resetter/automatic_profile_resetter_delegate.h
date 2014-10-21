@@ -124,7 +124,7 @@ class AutomaticProfileResetterDelegateImpl
   explicit AutomaticProfileResetterDelegateImpl(
       Profile* profile,
       ProfileResetter::ResettableFlags resettable_aspects);
-  virtual ~AutomaticProfileResetterDelegateImpl();
+  ~AutomaticProfileResetterDelegateImpl() override;
 
   // Returns the brandcoded default settings; empty defaults if this is not a
   // branded build; or NULL if FetchBrandcodedDefaultSettingsIfNeeded() has not
@@ -134,35 +134,33 @@ class AutomaticProfileResetterDelegateImpl
   }
 
   // AutomaticProfileResetterDelegate:
-  virtual void EnumerateLoadedModulesIfNeeded() override;
-  virtual void RequestCallbackWhenLoadedModulesAreEnumerated(
+  void EnumerateLoadedModulesIfNeeded() override;
+  void RequestCallbackWhenLoadedModulesAreEnumerated(
       const base::Closure& ready_callback) const override;
-  virtual void LoadTemplateURLServiceIfNeeded() override;
-  virtual void RequestCallbackWhenTemplateURLServiceIsLoaded(
+  void LoadTemplateURLServiceIfNeeded() override;
+  void RequestCallbackWhenTemplateURLServiceIsLoaded(
       const base::Closure& ready_callback) const override;
-  virtual void FetchBrandcodedDefaultSettingsIfNeeded() override;
-  virtual void RequestCallbackWhenBrandcodedDefaultsAreFetched(
+  void FetchBrandcodedDefaultSettingsIfNeeded() override;
+  void RequestCallbackWhenBrandcodedDefaultsAreFetched(
       const base::Closure& ready_callback) const override;
-  virtual scoped_ptr<base::ListValue>
-      GetLoadedModuleNameDigests() const override;
-  virtual scoped_ptr<base::DictionaryValue>
-      GetDefaultSearchProviderDetails() const override;
-  virtual bool IsDefaultSearchProviderManaged() const override;
-  virtual scoped_ptr<base::ListValue>
-      GetPrepopulatedSearchProvidersDetails() const override;
-  virtual bool TriggerPrompt() override;
-  virtual void TriggerProfileSettingsReset(
-      bool send_feedback,
-      const base::Closure& completion) override;
-  virtual void DismissPrompt() override;
+  scoped_ptr<base::ListValue> GetLoadedModuleNameDigests() const override;
+  scoped_ptr<base::DictionaryValue> GetDefaultSearchProviderDetails()
+      const override;
+  bool IsDefaultSearchProviderManaged() const override;
+  scoped_ptr<base::ListValue> GetPrepopulatedSearchProvidersDetails()
+      const override;
+  bool TriggerPrompt() override;
+  void TriggerProfileSettingsReset(bool send_feedback,
+                                   const base::Closure& completion) override;
+  void DismissPrompt() override;
 
   // TemplateURLServiceObserver:
-  virtual void OnTemplateURLServiceChanged() override;
+  void OnTemplateURLServiceChanged() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   // Sends a feedback |report|, where |report| is supposed to be result of

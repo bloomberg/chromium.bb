@@ -167,7 +167,7 @@ class HistoryURLProviderTest : public testing::Test,
   }
 
   // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) override;
+  void OnProviderUpdate(bool updated_matches) override;
 
  protected:
   static KeyedService* CreateTemplateURLService(

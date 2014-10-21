@@ -81,7 +81,7 @@ class TabSpecificContentSettings
     DISALLOW_COPY_AND_ASSIGN(SiteDataObserver);
   };
 
-  virtual ~TabSpecificContentSettings();
+  ~TabSpecificContentSettings() override;
 
   // Returns the object given a render view's id.
   static TabSpecificContentSettings* Get(int render_process_id,
@@ -302,21 +302,20 @@ class TabSpecificContentSettings
   void SetPepperBrokerAllowed(bool allowed);
 
   // content::WebContentsObserver overrides.
-  virtual void RenderFrameForInterstitialPageCreated(
+  void RenderFrameForInterstitialPageCreated(
       content::RenderFrameHost* render_frame_host) override;
-  virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      content::RenderFrameHost* render_frame_host) override;
-  virtual void DidNavigateMainFrame(
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidStartProvisionalLoadForFrame(
+  void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
-  virtual void AppCacheAccessed(const GURL& manifest_url,
-                                bool blocked_by_policy) override;
+  void AppCacheAccessed(const GURL& manifest_url,
+                        bool blocked_by_policy) override;
 
   // Message handlers. Public for testing.
   void OnContentBlocked(ContentSettingsType type);
@@ -376,11 +375,10 @@ class TabSpecificContentSettings
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 
   // content_settings::Observer implementation.
-  virtual void OnContentSettingChanged(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      std::string resource_identifier) override;
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override;
 
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();

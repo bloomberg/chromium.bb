@@ -95,13 +95,13 @@ class ExitHandler : public content::NotificationObserver {
   static void ExitWhenPossibleOnUIThread();
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   ExitHandler();
-  virtual ~ExitHandler();
+  ~ExitHandler() override;
 
   // Does the appropriate call to Exit.
   static void Exit();
@@ -158,7 +158,7 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   explicit ShutdownDetector(int shutdown_fd);
 
-  virtual void ThreadMain() override;
+  void ThreadMain() override;
 
  private:
   const int shutdown_fd_;

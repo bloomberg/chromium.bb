@@ -20,7 +20,7 @@ namespace {
 class CustomFakeGCMDriver : public FakeGCMDriver {
  public:
   explicit CustomFakeGCMDriver(FakeGCMProfileService* service);
-  virtual ~CustomFakeGCMDriver();
+  ~CustomFakeGCMDriver() override;
 
   void OnRegisterFinished(const std::string& app_id,
                           const std::string& registration_id,
@@ -33,13 +33,12 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
 
  protected:
   // FakeGCMDriver overrides:
-  virtual void RegisterImpl(
-      const std::string& app_id,
-      const std::vector<std::string>& sender_ids) override;
-  virtual void UnregisterImpl(const std::string& app_id) override;
-  virtual void SendImpl(const std::string& app_id,
-                        const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) override;
+  void RegisterImpl(const std::string& app_id,
+                    const std::vector<std::string>& sender_ids) override;
+  void UnregisterImpl(const std::string& app_id) override;
+  void SendImpl(const std::string& app_id,
+                const std::string& receiver_id,
+                const GCMClient::OutgoingMessage& message) override;
 
  private:
   FakeGCMProfileService* service_;

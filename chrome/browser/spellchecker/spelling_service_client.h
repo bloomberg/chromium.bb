@@ -76,7 +76,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
           TextCheckCompleteCallback;
 
   SpellingServiceClient();
-  virtual ~SpellingServiceClient();
+  ~SpellingServiceClient() override;
 
   // Sends a text-check request to the Spelling service. When we send a request
   // to the Spelling service successfully, this function returns true. (This
@@ -110,7 +110,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   };
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
   // function is overridden by unit tests to prevent them from actually sending

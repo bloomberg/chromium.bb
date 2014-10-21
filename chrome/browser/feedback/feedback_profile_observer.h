@@ -29,12 +29,12 @@ class FeedbackProfileObserver : public content::NotificationObserver {
   friend struct base::DefaultLazyInstanceTraits<FeedbackProfileObserver>;
 
   FeedbackProfileObserver();
-  virtual ~FeedbackProfileObserver();
+  ~FeedbackProfileObserver() override;
 
   // content::NotificationObserver override
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Loads any unsent reports from disk and queues them to be uploaded in
   // the given browser context.

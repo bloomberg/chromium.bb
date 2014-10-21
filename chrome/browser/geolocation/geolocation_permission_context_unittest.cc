@@ -56,12 +56,12 @@ using content::MockRenderProcessHost;
 class ClosedInfoBarTracker : public content::NotificationObserver {
  public:
   ClosedInfoBarTracker();
-  virtual ~ClosedInfoBarTracker();
+  ~ClosedInfoBarTracker() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   size_t size() const { return removed_infobars_.size(); }
 

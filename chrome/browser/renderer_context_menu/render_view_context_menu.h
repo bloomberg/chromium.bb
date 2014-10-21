@@ -51,12 +51,12 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                         const content::ContextMenuParams& params);
 
-  virtual ~RenderViewContextMenu();
+  ~RenderViewContextMenu() override;
 
   // SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  protected:
   Profile* GetProfile();
@@ -76,15 +76,15 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
                                     const extensions::MenuItem* item);
 
   // RenderViewContextMenuBase:
-  virtual void InitMenu() override;
-  virtual void RecordShownItem(int id) override;
-  virtual void RecordUsedItem(int id) override;
+  void InitMenu() override;
+  void RecordShownItem(int id) override;
+  void RecordUsedItem(int id) override;
 #if defined(ENABLE_PLUGINS)
-  virtual void HandleAuthorizeAllPlugins() override;
+  void HandleAuthorizeAllPlugins() override;
 #endif
-  virtual void NotifyMenuShown() override;
-  virtual void NotifyURLOpened(const GURL& url,
-                               content::WebContents* new_contents) override;
+  void NotifyMenuShown() override;
+  void NotifyURLOpened(const GURL& url,
+                       content::WebContents* new_contents) override;
 
   // Gets the extension (if any) associated with the WebContents that we're in.
   const extensions::Extension* GetExtension() const;

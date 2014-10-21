@@ -38,27 +38,23 @@ class TestIframeSource : public IframeSource {
   using IframeSource::SendJSWithOrigin;
 
  protected:
-  virtual std::string GetSource() const override {
-    return "test";
-  }
+  std::string GetSource() const override { return "test"; }
 
-  virtual bool ServesPath(const std::string& path) const override {
+  bool ServesPath(const std::string& path) const override {
     return path == "/valid.html" || path == "/valid.js";
   }
 
-  virtual void StartDataRequest(
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
-      const content::URLDataSource::GotDataCallback& callback) override {
-  }
+      const content::URLDataSource::GotDataCallback& callback) override {}
 
   // RenderFrameHost is hard to mock in concert with everything else, so stub
   // this method out for testing.
-  virtual bool GetOrigin(
-      int process_id,
-      int render_frame_id,
-      std::string* origin) const override {
+  bool GetOrigin(int process_id,
+                 int render_frame_id,
+                 std::string* origin) const override {
     if (process_id == kInstantRendererPID) {
       *origin = kInstantOrigin;
       return true;

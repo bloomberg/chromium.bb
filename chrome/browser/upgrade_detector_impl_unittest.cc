@@ -16,14 +16,14 @@
 class TestUpgradeDetectorImpl : public UpgradeDetectorImpl {
  public:
   TestUpgradeDetectorImpl() : trigger_critical_update_call_count_(0) {}
-  virtual ~TestUpgradeDetectorImpl() {}
+  ~TestUpgradeDetectorImpl() override {}
 
   // Methods exposed for testing.
   using UpgradeDetectorImpl::OnExperimentChangesDetected;
   using UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed;
 
   // UpgradeDetector:
-  virtual void TriggerCriticalUpdate() override {
+  void TriggerCriticalUpdate() override {
     trigger_critical_update_call_count_++;
   }
 
@@ -45,8 +45,7 @@ class TestUpgradeNotificationListener : public content::NotificationObserver {
     registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    content::NotificationService::AllSources());
   }
-  virtual ~TestUpgradeNotificationListener() {
-  }
+  ~TestUpgradeNotificationListener() override {}
 
   const std::vector<int>& notifications_received() const {
     return notifications_received_;
@@ -54,9 +53,9 @@ class TestUpgradeNotificationListener : public content::NotificationObserver {
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     notifications_received_.push_back(type);
   }
 

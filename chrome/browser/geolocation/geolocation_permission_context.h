@@ -19,26 +19,25 @@ class Profile;
 class GeolocationPermissionContext  : public PermissionContextBase {
  public:
   explicit GeolocationPermissionContext(Profile* profile);
-  virtual ~GeolocationPermissionContext();
-
+  ~GeolocationPermissionContext() override;
 
   // In addition to the base class flow the geolocation permission request
   // checks that it is only code from valid iframes.
   // It also adds special logic when called through an extension.
-  virtual void RequestPermission(content::WebContents* web_contents,
-      const PermissionRequestID& id,
-      const GURL& requesting_frame_origin,
-      bool user_gesture,
-      const BrowserPermissionCallback& callback) override;
+  void RequestPermission(content::WebContents* web_contents,
+                         const PermissionRequestID& id,
+                         const GURL& requesting_frame_origin,
+                         bool user_gesture,
+                         const BrowserPermissionCallback& callback) override;
 
   // Adds special logic when called through an extension.
-  virtual void CancelPermissionRequest(content::WebContents* web_contents,
-                                       const PermissionRequestID& id) override;
+  void CancelPermissionRequest(content::WebContents* web_contents,
+                               const PermissionRequestID& id) override;
 
  private:
-  virtual void UpdateTabContext(const PermissionRequestID& id,
-                                const GURL& requesting_frame,
-                                bool allowed) override;
+  void UpdateTabContext(const PermissionRequestID& id,
+                        const GURL& requesting_frame,
+                        bool allowed) override;
 
   // This must only be accessed from the UI thread.
   GeolocationPermissionContextExtensions extensions_context_;

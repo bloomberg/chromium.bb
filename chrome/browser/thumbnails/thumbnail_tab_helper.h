@@ -22,7 +22,7 @@ class ThumbnailTabHelper
       public content::WebContentsObserver,
       public content::WebContentsUserData<ThumbnailTabHelper> {
  public:
-  virtual ~ThumbnailTabHelper();
+  ~ThumbnailTabHelper() override;
 
   // Enables or disables the function of taking thumbnails.
   // A disabled ThumbnailTabHelper generates no thumbnails although it still
@@ -34,16 +34,14 @@ class ThumbnailTabHelper
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
 
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver overrides.
-  virtual void RenderViewDeleted(
-      content::RenderViewHost* render_view_host) override;
-  virtual void DidStartLoading(
-      content::RenderViewHost* render_view_host) override;
-  virtual void NavigationStopped() override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
+  void DidStartLoading(content::RenderViewHost* render_view_host) override;
+  void NavigationStopped() override;
 
   // Update the thumbnail of the given tab contents if necessary.
   void UpdateThumbnailIfNecessary(content::WebContents* web_contents);

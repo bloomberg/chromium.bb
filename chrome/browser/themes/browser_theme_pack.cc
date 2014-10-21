@@ -493,9 +493,9 @@ class ThemeImageSource: public gfx::ImageSkiaSource {
  public:
   explicit ThemeImageSource(const gfx::ImageSkia& source) : source_(source) {
   }
-  virtual ~ThemeImageSource() {}
+  ~ThemeImageSource() override {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
     if (source_.HasRepresentation(scale))
       return source_.GetRepresentation(scale);
     const gfx::ImageSkiaRep& rep_100p = source_.GetRepresentation(1.0f);
@@ -522,10 +522,10 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
 
   explicit ThemeImagePngSource(const PngMap& png_map) : png_map_(png_map) {}
 
-  virtual ~ThemeImagePngSource() {}
+  ~ThemeImagePngSource() override {}
 
  private:
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
     ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
     // Look up the bitmap for |scale factor| in the bitmap map. If found
     // return it.
@@ -611,11 +611,10 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
         vertical_offset_(vertical_offset) {
   }
 
-  virtual ~TabBackgroundImageSource() {
-  }
+  ~TabBackgroundImageSource() override {}
 
   // Overridden from CanvasImageSource:
-  virtual void Draw(gfx::Canvas* canvas) override {
+  void Draw(gfx::Canvas* canvas) override {
     gfx::ImageSkia bg_tint =
         gfx::ImageSkiaOperations::CreateHSLShiftedImage(image_to_tint_,
             hsl_shift_);

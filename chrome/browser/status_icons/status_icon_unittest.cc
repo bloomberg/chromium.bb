@@ -18,13 +18,12 @@ class MockStatusIconObserver : public StatusIconObserver {
 class TestStatusIcon : public StatusIcon {
  public:
   TestStatusIcon() {}
-  virtual void SetImage(const gfx::ImageSkia& image) override {}
-  virtual void SetToolTip(const base::string16& tool_tip) override {}
-  virtual void UpdatePlatformContextMenu(
-      StatusIconMenuModel* menu) override {}
-  virtual void DisplayBalloon(const gfx::ImageSkia& icon,
-                              const base::string16& title,
-                              const base::string16& contents) override {}
+  void SetImage(const gfx::ImageSkia& image) override {}
+  void SetToolTip(const base::string16& tool_tip) override {}
+  void UpdatePlatformContextMenu(StatusIconMenuModel* menu) override {}
+  void DisplayBalloon(const gfx::ImageSkia& icon,
+                      const base::string16& title,
+                      const base::string16& contents) override {}
 };
 
 TEST(StatusIconTest, ObserverAdd) {

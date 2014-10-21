@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
 class InfobarsShowFunction : public ChromeSyncExtensionFunction {
-  virtual ~InfobarsShowFunction() {}
-  virtual bool RunSync() override;
+  ~InfobarsShowFunction() override {}
+  bool RunSync() override;
   DECLARE_EXTENSION_FUNCTION("infobars.show", INFOBARS_SHOW)
 };
 

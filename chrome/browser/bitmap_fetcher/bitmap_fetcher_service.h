@@ -42,7 +42,7 @@ class BitmapFetcherService : public KeyedService,
   };
 
   explicit BitmapFetcherService(content::BrowserContext* context);
-  virtual ~BitmapFetcherService();
+  ~BitmapFetcherService() override;
 
   // Cancels a request, if it is still in-flight.
   void CancelRequest(RequestId requestId);
@@ -81,7 +81,7 @@ class BitmapFetcherService : public KeyedService,
   void RemoveFetcher(const chrome::BitmapFetcher* fetcher);
 
   // BitmapFetcherDelegate implementation.
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
   // Currently active image fetchers.
   BitmapFetchers active_fetchers_;

@@ -19,7 +19,7 @@
 class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
  public:
   TestRequestAllowedNotifier();
-  virtual ~TestRequestAllowedNotifier();
+  ~TestRequestAllowedNotifier() override;
 
   // A version of |Init()| that accepts a custom EulaAcceptedNotifier.
   void InitWithEulaAcceptNotifier(
@@ -34,8 +34,8 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   void NotifyObserver();
 
   // ResourceRequestAllowedNotifier overrides:
-  virtual State GetResourceRequestsAllowedState() override;
-  virtual EulaAcceptedNotifier* CreateEulaNotifier() override;
+  State GetResourceRequestsAllowedState() override;
+  EulaAcceptedNotifier* CreateEulaNotifier() override;
 
  private:
   scoped_ptr<EulaAcceptedNotifier> test_eula_notifier_;

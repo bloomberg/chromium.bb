@@ -46,15 +46,15 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
   BookmarkFaviconFetcher(Profile* profile,
                          const base::FilePath& path,
                          BookmarksExportObserver* observer);
-  virtual ~BookmarkFaviconFetcher();
+  ~BookmarkFaviconFetcher() override;
 
   // Executes bookmark export process.
   void ExportBookmarks();
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   // Recursively extracts URLs from bookmarks.

@@ -71,7 +71,7 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver {
 
  private:
   // ExternalProcessImporterHost deletes itself in OnImportEnded().
-  virtual ~ExternalProcessImporterHost();
+  ~ExternalProcessImporterHost() override;
 
   // Launches the utility process that starts the import task, unless bookmark
   // or template model are not yet loaded. If load is not detected, this method
@@ -80,10 +80,9 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver {
   virtual void LaunchImportIfReady();
 
   // BaseBookmarkModelObserver:
-  virtual void BookmarkModelLoaded(BookmarkModel* model,
-                                   bool ids_reassigned) override;
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) override;
-  virtual void BookmarkModelChanged() override;
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(BookmarkModel* model) override;
+  void BookmarkModelChanged() override;
 
   // Called when TemplateURLService has been loaded.
   void OnTemplateURLServiceLoaded();

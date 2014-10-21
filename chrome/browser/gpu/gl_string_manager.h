@@ -17,13 +17,13 @@ class GLStringManager : public content::GpuDataManagerObserver {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   GLStringManager();
-  virtual ~GLStringManager();
+  ~GLStringManager() override;
 
   // Get cached GL strings in local state and send them to GpuDataManager.
   void Initialize();
 
   // content::GpuDataManagerObserver
-  virtual void OnGpuInfoUpdate() override;
+  void OnGpuInfoUpdate() override;
 
  private:
   std::string gl_vendor_;

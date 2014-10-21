@@ -32,13 +32,10 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
                                                    success_(false),
                                                    async_(async) {}
 
-  virtual ~BitmapFetcherTestDelegate() {
-    EXPECT_TRUE(called_);
-  }
+  ~BitmapFetcherTestDelegate() override { EXPECT_TRUE(called_); }
 
   // Method inherited from BitmapFetcherDelegate.
-  virtual void OnFetchComplete(const GURL url,
-                               const SkBitmap* bitmap) override {
+  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override {
     called_ = true;
     url_ = url;
     if (bitmap) {

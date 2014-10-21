@@ -44,11 +44,11 @@ namespace gcm {
 class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
  public:
   IdentityObserver(Profile* profile, GCMDriver* driver);
-  virtual ~IdentityObserver();
+  ~IdentityObserver() override;
 
   // IdentityProvider::Observer:
-  virtual void OnActiveAccountLogin() override;
-  virtual void OnActiveAccountLogout() override;
+  void OnActiveAccountLogin() override;
+  void OnActiveAccountLogout() override;
 
   std::string SignedInUserName() const;
 

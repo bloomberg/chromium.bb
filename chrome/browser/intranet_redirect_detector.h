@@ -46,7 +46,7 @@ class IntranetRedirectDetector
   // since there aren't useful public functions on this object for consumers to
   // access anyway).
   IntranetRedirectDetector();
-  virtual ~IntranetRedirectDetector();
+  ~IntranetRedirectDetector() override;
 
   // Returns the current redirect origin.  This will be empty if no redirection
   // is in place.
@@ -62,10 +62,10 @@ class IntranetRedirectDetector
   void FinishSleep();
 
   // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeNotifier::IPAddressObserver
-  virtual void OnIPAddressChanged() override;
+  void OnIPAddressChanged() override;
 
   GURL redirect_origin_;
   Fetchers fetchers_;

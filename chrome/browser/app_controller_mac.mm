@@ -236,7 +236,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     profile_manager_->GetProfileInfoCache().AddObserver(this);
   }
 
-  virtual ~AppControllerProfileObserver() {
+  ~AppControllerProfileObserver() override {
     DCHECK(profile_manager_);
     profile_manager_->GetProfileInfoCache().RemoveObserver(this);
   }
@@ -244,29 +244,21 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
  private:
   // ProfileInfoCacheObserver implementation:
 
-  virtual void OnProfileAdded(const base::FilePath& profile_path) override {
-  }
+  void OnProfileAdded(const base::FilePath& profile_path) override {}
 
-  virtual void OnProfileWasRemoved(
-      const base::FilePath& profile_path,
-      const base::string16& profile_name) override {
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override {
     // When a profile is deleted we need to notify the AppController,
     // so it can correctly update its pointer to the last used profile.
     [app_controller_ profileWasRemoved:profile_path];
   }
 
-  virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) override {
-  }
+  void OnProfileWillBeRemoved(const base::FilePath& profile_path) override {}
 
-  virtual void OnProfileNameChanged(
-      const base::FilePath& profile_path,
-      const base::string16& old_profile_name) override {
-  }
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override {}
 
-  virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) override {
-  }
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override {}
 
   ProfileManager* profile_manager_;
 

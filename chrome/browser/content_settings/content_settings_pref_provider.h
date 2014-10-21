@@ -36,25 +36,22 @@ class PrefProvider : public ObservableProvider {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   PrefProvider(PrefService* prefs, bool incognito);
-  virtual ~PrefProvider();
+  ~PrefProvider() override;
 
   // ProviderInterface implementations.
-  virtual RuleIterator* GetRuleIterator(
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      bool incognito) const override;
+  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
+                                const ResourceIdentifier& resource_identifier,
+                                bool incognito) const override;
 
-  virtual bool SetWebsiteSetting(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      const ResourceIdentifier& resource_identifier,
-      base::Value* value) override;
+  bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
+                         const ContentSettingsPattern& secondary_pattern,
+                         ContentSettingsType content_type,
+                         const ResourceIdentifier& resource_identifier,
+                         base::Value* value) override;
 
-  virtual void ClearAllContentSettingsRules(
-      ContentSettingsType content_type) override;
+  void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
 
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
   // Records the last time the given pattern has used a certain content setting.
   void UpdateLastUsage(const ContentSettingsPattern& primary_pattern,

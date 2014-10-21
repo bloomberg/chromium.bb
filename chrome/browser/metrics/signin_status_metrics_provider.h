@@ -34,7 +34,7 @@ class SigninStatusMetricsProvider : public metrics::MetricsProvider,
                                     public SigninManagerBase::Observer,
                                     public SigninManagerFactory::Observer {
  public:
-  virtual ~SigninStatusMetricsProvider();
+  ~SigninStatusMetricsProvider() override;
 
   // metrics::MetricsProvider:
   void ProvideGeneralMetrics(
@@ -71,18 +71,18 @@ class SigninStatusMetricsProvider : public metrics::MetricsProvider,
 
   // chrome::BrowserListObserver:
   // This will never be called on Android.
-  virtual void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override;
 
   // SigninManagerFactory::Observer:
-  virtual void SigninManagerCreated(SigninManagerBase* manager) override;
-  virtual void SigninManagerShutdown(SigninManagerBase* manager) override;
+  void SigninManagerCreated(SigninManagerBase* manager) override;
+  void SigninManagerShutdown(SigninManagerBase* manager) override;
 
   // SigninManagerBase::Observer:
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
-  virtual void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // Obtain sign-in status and add observers.
   void Initialize();

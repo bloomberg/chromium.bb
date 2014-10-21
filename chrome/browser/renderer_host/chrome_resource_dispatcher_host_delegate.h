@@ -35,21 +35,20 @@ class ChromeResourceDispatcherHostDelegate
   // |prerender_tracker| must outlive |this|.
   explicit ChromeResourceDispatcherHostDelegate(
       prerender::PrerenderTracker* prerender_tracker);
-  virtual ~ChromeResourceDispatcherHostDelegate();
+  ~ChromeResourceDispatcherHostDelegate() override;
 
   // ResourceDispatcherHostDelegate implementation.
-  virtual bool ShouldBeginRequest(
-      const std::string& method,
-      const GURL& url,
-      content::ResourceType resource_type,
-      content::ResourceContext* resource_context) override;
-  virtual void RequestBeginning(
+  bool ShouldBeginRequest(const std::string& method,
+                          const GURL& url,
+                          content::ResourceType resource_type,
+                          content::ResourceContext* resource_context) override;
+  void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       content::ResourceType resource_type,
       ScopedVector<content::ResourceThrottle>* throttles) override;
-  virtual void DownloadStarting(
+  void DownloadStarting(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       int child_id,
@@ -58,32 +57,29 @@ class ChromeResourceDispatcherHostDelegate
       bool is_content_initiated,
       bool must_download,
       ScopedVector<content::ResourceThrottle>* throttles) override;
-  virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info, net::URLRequest* request) override;
-  virtual bool HandleExternalProtocol(const GURL& url,
-                                      int child_id,
-                                      int route_id) override;
-  virtual bool ShouldForceDownloadResource(
-      const GURL& url, const std::string& mime_type) override;
-  virtual bool ShouldInterceptResourceAsStream(
-      net::URLRequest* request,
-      const std::string& mime_type,
-      GURL* origin,
-      std::string* payload) override;
-  virtual void OnStreamCreated(
-      net::URLRequest* request,
-      scoped_ptr<content::StreamInfo> stream) override;
-  virtual void OnResponseStarted(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::ResourceResponse* response,
-      IPC::Sender* sender) override;
-  virtual void OnRequestRedirected(
-      const GURL& redirect_url,
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::ResourceResponse* response) override;
-  virtual void RequestComplete(net::URLRequest* url_request) override;
+  content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request) override;
+  bool HandleExternalProtocol(const GURL& url,
+                              int child_id,
+                              int route_id) override;
+  bool ShouldForceDownloadResource(const GURL& url,
+                                   const std::string& mime_type) override;
+  bool ShouldInterceptResourceAsStream(net::URLRequest* request,
+                                       const std::string& mime_type,
+                                       GURL* origin,
+                                       std::string* payload) override;
+  void OnStreamCreated(net::URLRequest* request,
+                       scoped_ptr<content::StreamInfo> stream) override;
+  void OnResponseStarted(net::URLRequest* request,
+                         content::ResourceContext* resource_context,
+                         content::ResourceResponse* response,
+                         IPC::Sender* sender) override;
+  void OnRequestRedirected(const GURL& redirect_url,
+                           net::URLRequest* request,
+                           content::ResourceContext* resource_context,
+                           content::ResourceResponse* response) override;
+  void RequestComplete(net::URLRequest* url_request) override;
 
   // Called on the UI thread. Allows switching out the
   // ExternalProtocolHandler::Delegate for testing code.

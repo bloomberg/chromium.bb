@@ -27,7 +27,7 @@ class DomDistillerContextKeyedService : public KeyedService,
       scoped_ptr<DistillerFactory> distiller_factory,
       scoped_ptr<DistillerPageFactory> distiller_page_factory,
       scoped_ptr<DistilledPagePrefs> distilled_page_prefs);
-  virtual ~DomDistillerContextKeyedService() {}
+  ~DomDistillerContextKeyedService() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DomDistillerContextKeyedService);
@@ -43,12 +43,12 @@ class DomDistillerServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<DomDistillerServiceFactory>;
 
   DomDistillerServiceFactory();
-  virtual ~DomDistillerServiceFactory();
+  ~DomDistillerServiceFactory() override;
 
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

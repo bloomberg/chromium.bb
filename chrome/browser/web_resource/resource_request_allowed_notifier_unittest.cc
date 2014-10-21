@@ -30,7 +30,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   }
 
  private:
-  virtual ConnectionType GetCurrentConnectionType() const override {
+  ConnectionType GetCurrentConnectionType() const override {
     return connection_type_to_return_;
   }
 
@@ -49,12 +49,9 @@ class TestEulaAcceptedNotifier : public EulaAcceptedNotifier {
       : EulaAcceptedNotifier(NULL),
         eula_accepted_(false) {
   }
-  virtual ~TestEulaAcceptedNotifier() {
-  }
+  ~TestEulaAcceptedNotifier() override {}
 
-  virtual bool IsEulaAccepted() override {
-    return eula_accepted_;
-  }
+  bool IsEulaAccepted() override { return eula_accepted_; }
 
   void SetEulaAcceptedForTesting(bool eula_accepted) {
     eula_accepted_ = eula_accepted;
@@ -89,9 +86,7 @@ class ResourceRequestAllowedNotifierTest
   bool was_notified() const { return was_notified_; }
 
   // ResourceRequestAllowedNotifier::Observer override:
-  virtual void OnResourceRequestsAllowed() override {
-    was_notified_ = true;
-  }
+  void OnResourceRequestsAllowed() override { was_notified_ = true; }
 
   // Network manipulation methods:
   void SetWaitingForNetwork(bool waiting) {

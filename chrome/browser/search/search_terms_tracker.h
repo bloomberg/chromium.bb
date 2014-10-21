@@ -28,7 +28,7 @@ namespace chrome {
 class SearchTermsTracker : public content::NotificationObserver {
  public:
   SearchTermsTracker();
-  virtual ~SearchTermsTracker();
+  ~SearchTermsTracker() override;
 
   // Returns the current search terms and navigation index of the corresponding
   // search results page for the specified WebContents. This function will
@@ -39,9 +39,9 @@ class SearchTermsTracker : public content::NotificationObserver {
                       int* navigation_index) const;
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   struct TabData {

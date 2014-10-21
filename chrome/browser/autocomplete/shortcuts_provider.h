@@ -28,10 +28,9 @@ class ShortcutsProvider
 
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.
-  virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) override;
+  void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
-  virtual void DeleteMatch(const AutocompleteMatch& match) override;
+  void DeleteMatch(const AutocompleteMatch& match) override;
 
  private:
   friend class ClassifyTest;
@@ -40,10 +39,10 @@ class ShortcutsProvider
 
   typedef std::multimap<base::char16, base::string16> WordMap;
 
-  virtual ~ShortcutsProvider();
+  ~ShortcutsProvider() override;
 
   // ShortcutsBackendObserver:
-  virtual void OnShortcutsLoaded() override;
+  void OnShortcutsLoaded() override;
 
   // Performs the autocomplete matching and scoring.
   void GetMatches(const AutocompleteInput& input);

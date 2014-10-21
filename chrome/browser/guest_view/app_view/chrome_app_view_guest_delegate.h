@@ -13,11 +13,10 @@ namespace extensions {
 class ChromeAppViewGuestDelegate : public AppViewGuestDelegate {
  public:
   ChromeAppViewGuestDelegate();
-  virtual ~ChromeAppViewGuestDelegate();
+  ~ChromeAppViewGuestDelegate() override;
 
-  virtual bool HandleContextMenu(
-      content::WebContents* web_contents,
-      const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::WebContents* web_contents,
+                         const content::ContextMenuParams& params) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeAppViewGuestDelegate);

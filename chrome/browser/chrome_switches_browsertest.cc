@@ -16,7 +16,7 @@ class HostRulesTest : public InProcessBrowserTest {
  protected:
   HostRulesTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     ASSERT_TRUE(test_server()->Start());
 
     // Map all hosts to our local server.

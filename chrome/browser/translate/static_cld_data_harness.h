@@ -12,8 +12,8 @@ namespace test {
 class StaticCldDataHarness : public CldDataHarness {
  public:
   StaticCldDataHarness();
-  virtual ~StaticCldDataHarness();
-  virtual void Init() override;
+  ~StaticCldDataHarness() override;
+  void Init() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StaticCldDataHarness);

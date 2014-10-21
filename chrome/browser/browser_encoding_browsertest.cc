@@ -81,17 +81,17 @@ class SavePackageFinishedObserver : public content::DownloadManager::Observer {
     download_manager_->AddObserver(this);
   }
 
-  virtual ~SavePackageFinishedObserver() {
+  ~SavePackageFinishedObserver() override {
     if (download_manager_)
       download_manager_->RemoveObserver(this);
   }
 
   // DownloadManager::Observer:
-  virtual void OnSavePackageSuccessfullyFinished(
-      content::DownloadManager* manager, content::DownloadItem* item) override {
+  void OnSavePackageSuccessfullyFinished(content::DownloadManager* manager,
+                                         content::DownloadItem* item) override {
     callback_.Run();
   }
-  virtual void ManagerGoingDown(content::DownloadManager* manager) override {
+  void ManagerGoingDown(content::DownloadManager* manager) override {
     download_manager_->RemoveObserver(this);
     download_manager_ = NULL;
   }
@@ -142,7 +142,7 @@ class BrowserEncodingTest
     EXPECT_TRUE(base::ContentsEqual(full_file_name, expected_file_name));
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     save_dir_ = temp_dir_.path();
     temp_sub_resource_dir_ = save_dir_.AppendASCII("sub_resource_files");

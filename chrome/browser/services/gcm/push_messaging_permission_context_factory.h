@@ -24,12 +24,12 @@ class PushMessagingPermissionContextFactory
   friend struct DefaultSingletonTraits<PushMessagingPermissionContextFactory>;
 
   PushMessagingPermissionContextFactory();
-  virtual ~PushMessagingPermissionContextFactory();
+  ~PushMessagingPermissionContextFactory() override;
 
   // BrowserContextKeyedBaseFactory methods:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingPermissionContextFactory);

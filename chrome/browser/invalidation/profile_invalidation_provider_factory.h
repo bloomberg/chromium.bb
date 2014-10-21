@@ -52,12 +52,12 @@ class ProfileInvalidationProviderFactory
   friend struct DefaultSingletonTraits<ProfileInvalidationProviderFactory>;
 
   ProfileInvalidationProviderFactory();
-  virtual ~ProfileInvalidationProviderFactory();
+  ~ProfileInvalidationProviderFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
   TestingFactoryFunction testing_factory_;

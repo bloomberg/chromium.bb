@@ -49,7 +49,7 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   // Create a new model associated with profile.
   explicit BackgroundApplicationListModel(Profile* profile);
 
-  virtual ~BackgroundApplicationListModel();
+  ~BackgroundApplicationListModel() override;
 
   // Associate observer with this model.
   void AddObserver(Observer* observer);
@@ -116,9 +116,9 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   Application* FindApplication(const extensions::Extension* extension);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Notifies observers that some of the data associated with this background
   // application, e. g. the Icon, has changed.

@@ -130,9 +130,7 @@ class BookmarksObserver : public BookmarksExportObserver {
     DCHECK(loop);
   }
 
-  virtual void OnExportFinished() override {
-    loop_->Quit();
-  }
+  void OnExportFinished() override { loop_->Quit(); }
 
  private:
   base::RunLoop* loop_;

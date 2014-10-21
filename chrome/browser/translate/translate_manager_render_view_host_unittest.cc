@@ -63,9 +63,9 @@ class NavEntryCommittedObserver : public content::NotificationObserver {
                        &web_contents->GetController()));
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
     details_ =
         *(content::Details<content::LoadCommittedDetails>(details).ptr());
@@ -369,7 +369,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
  public:
   MockTranslateBubbleFactory() {}
 
-  virtual void ShowImplementation(
+  void ShowImplementation(
       BrowserWindow* window,
       content::WebContents* web_contents,
       translate::TranslateStep step,

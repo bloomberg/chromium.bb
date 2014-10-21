@@ -25,28 +25,24 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate,
  public :
   explicit ChromeWebViewGuestDelegate(
       extensions::WebViewGuest* web_view_guest);
-  virtual ~ChromeWebViewGuestDelegate();
+  ~ChromeWebViewGuestDelegate() override;
 
   // WebViewGuestDelegate implementation.
-  virtual double GetZoom() override;
-  virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) override;
-  virtual void OnAttachWebViewHelpers(content::WebContents* contents) override;
-  virtual void OnDidAttachToEmbedder() override;
-  virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override;
-  virtual void OnDidInitialize() override;
-  virtual void OnDocumentLoadedInFrame(
+  double GetZoom() override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  void OnAttachWebViewHelpers(content::WebContents* contents) override;
+  void OnDidAttachToEmbedder() override;
+  void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override;
+  void OnDidInitialize() override;
+  void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-  virtual void OnGuestReady() override;
-  virtual void OnGuestDestroyed() override;
-  virtual void OnSetZoom(double zoom_factor) override;
-  virtual void OnShowContextMenu(
-      int request_id,
-      const MenuItemVector* items) override;
+  void OnGuestReady() override;
+  void OnGuestDestroyed() override;
+  void OnSetZoom(double zoom_factor) override;
+  void OnShowContextMenu(int request_id, const MenuItemVector* items) override;
 
   // ZoomObserver implementation.
-  virtual void OnZoomChanged(
-      const ZoomController::ZoomChangedEventData& data) override;
+  void OnZoomChanged(const ZoomController::ZoomChangedEventData& data) override;
 
   extensions::WebViewGuest* web_view_guest() const { return web_view_guest_; }
 

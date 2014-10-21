@@ -59,7 +59,7 @@ class BackgroundContentsService : private content::NotificationObserver,
  public:
   BackgroundContentsService(Profile* profile,
                             const base::CommandLine* command_line);
-  virtual ~BackgroundContentsService();
+  ~BackgroundContentsService() override;
 
   // Allows tests to reduce the time between a force-installed app/extension
   // crashing and when we reload it.
@@ -89,11 +89,11 @@ class BackgroundContentsService : private content::NotificationObserver,
   std::vector<BackgroundContents*> GetBackgroundContents() const;
 
   // BackgroundContents::Delegate implementation.
-  virtual void AddWebContents(content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture,
-                              bool* was_blocked) override;
+  void AddWebContents(content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_pos,
+                      bool user_gesture,
+                      bool* was_blocked) override;
 
   // Gets the parent application id for the passed BackgroundContents. Returns
   // an empty string if no parent application found (e.g. passed
@@ -140,22 +140,20 @@ class BackgroundContentsService : private content::NotificationObserver,
   void StartObserving(Profile* profile);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUnloaded(
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Restarts a force-installed app/extension after a crash.
   void RestartForceInstalledExtensionOnCrash(

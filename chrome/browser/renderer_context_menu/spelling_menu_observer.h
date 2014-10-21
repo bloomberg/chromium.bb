@@ -40,15 +40,15 @@ struct SpellCheckResult;
 class SpellingMenuObserver : public RenderViewContextMenuObserver {
  public:
   explicit SpellingMenuObserver(RenderViewContextMenuProxy* proxy);
-  virtual ~SpellingMenuObserver();
+  ~SpellingMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
-  virtual void InitMenu(const content::ContextMenuParams& params) override;
-  virtual bool IsCommandIdSupported(int command_id) override;
-  virtual bool IsCommandIdChecked(int command_id) override;
-  virtual bool IsCommandIdEnabled(int command_id) override;
-  virtual void ExecuteCommand(int command_id) override;
-  virtual void OnMenuCancel() override;
+  void InitMenu(const content::ContextMenuParams& params) override;
+  bool IsCommandIdSupported(int command_id) override;
+  bool IsCommandIdChecked(int command_id) override;
+  bool IsCommandIdEnabled(int command_id) override;
+  void ExecuteCommand(int command_id) override;
+  void OnMenuCancel() override;
 
   // A callback function called when the Spelling service finishes checking a
   // misspelled word.

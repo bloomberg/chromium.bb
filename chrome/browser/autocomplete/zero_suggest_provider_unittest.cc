@@ -34,7 +34,7 @@ class ZeroSuggestProviderTest : public testing::Test,
 
  protected:
   // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) override;
+  void OnProviderUpdate(bool updated_matches) override;
 
   void ResetFieldTrialList();
 

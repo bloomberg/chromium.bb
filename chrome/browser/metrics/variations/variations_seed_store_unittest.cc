@@ -22,13 +22,13 @@ class TestVariationsSeedStore : public VariationsSeedStore {
  public:
   explicit TestVariationsSeedStore(PrefService* local_state)
       : VariationsSeedStore(local_state) {}
-  virtual ~TestVariationsSeedStore() {}
+  ~TestVariationsSeedStore() override {}
 
   bool StoreSeedForTesting(const std::string& seed_data) {
     return StoreSeedData(seed_data, std::string(), base::Time::Now(), NULL);
   }
 
-  virtual VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
+  VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
       const std::string& seed_bytes,
       const std::string& base64_seed_signature) override {
     return VariationsSeedStore::VARIATIONS_SEED_SIGNATURE_ENUM_SIZE;

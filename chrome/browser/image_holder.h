@@ -30,7 +30,7 @@ class ImageHolder : public chrome::BitmapFetcherDelegate {
               const GURL& high_dpi_url,
               Profile* profile,
               ImageHolderDelegate* delegate);
-  virtual ~ImageHolder();
+  ~ImageHolder() override;
 
   // Begin fetching of the URLs we have.
   void StartFetch();
@@ -40,7 +40,7 @@ class ImageHolder : public chrome::BitmapFetcherDelegate {
   bool IsFetchingDone() const;
 
   // Inherited from BitmapFetcherDelegate
-  virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
+  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
   // Accessors:
   GURL low_dpi_url() const { return low_dpi_url_; }

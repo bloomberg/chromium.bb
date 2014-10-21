@@ -78,7 +78,7 @@ class OAuth2LoginManager : public KeyedService,
   };
 
   explicit OAuth2LoginManager(Profile* user_profile);
-  virtual ~OAuth2LoginManager();
+  ~OAuth2LoginManager() override;
 
   void AddObserver(OAuth2LoginManager::Observer* observer);
   void RemoveObserver(OAuth2LoginManager::Observer* observer);
@@ -145,28 +145,28 @@ class OAuth2LoginManager : public KeyedService,
   };
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // gaia::GaiaOAuthClient::Delegate overrides.
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) override;
-  virtual void OnGetUserEmailResponse(const std::string& user_email) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnGetUserEmailResponse(const std::string& user_email) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
   // OAuth2LoginVerifier::Delegate overrides.
-  virtual void OnSessionMergeSuccess() override;
-  virtual void OnSessionMergeFailure(bool connection_error) override;
-  virtual void OnListAccountsSuccess(const std::string& data) override;
-  virtual void OnListAccountsFailure(bool connection_error) override;
+  void OnSessionMergeSuccess() override;
+  void OnSessionMergeFailure(bool connection_error) override;
+  void OnListAccountsSuccess(const std::string& data) override;
+  void OnListAccountsFailure(bool connection_error) override;
 
   // OAuth2TokenFetcher::Delegate overrides.
-  virtual void OnOAuth2TokensAvailable(
+  void OnOAuth2TokensAvailable(
       const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) override;
-  virtual void OnOAuth2TokensFetchFailed() override;
+  void OnOAuth2TokensFetchFailed() override;
 
   // OAuth2TokenService::Observer implementation:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // Signals delegate that authentication is completed, kicks off token fetching
   // process.

@@ -30,10 +30,10 @@ class DomainReliabilityServiceFactory
   friend struct DefaultSingletonTraits<DomainReliabilityServiceFactory>;
 
   DomainReliabilityServiceFactory();
-  virtual ~DomainReliabilityServiceFactory();
+  ~DomainReliabilityServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityServiceFactory);

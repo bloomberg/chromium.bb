@@ -38,20 +38,18 @@ class SelfDeletingRequestDelegate : public ViewRequestDelegate,
                                     public content::WebContentsObserver {
  public:
   explicit SelfDeletingRequestDelegate(content::WebContents* web_contents);
-  virtual ~SelfDeletingRequestDelegate();
+  ~SelfDeletingRequestDelegate() override;
 
   // ViewRequestDelegate implementation.
-  virtual void OnArticleReady(
-      const DistilledArticleProto* article_proto) override;
-  virtual void OnArticleUpdated(
-      ArticleDistillationUpdate article_update) override;
+  void OnArticleReady(const DistilledArticleProto* article_proto) override;
+  void OnArticleUpdated(ArticleDistillationUpdate article_update) override;
 
   // content::WebContentsObserver implementation.
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
-  virtual void WebContentsDestroyed() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void WebContentsDestroyed() override;
 
   // Takes ownership of the ViewerHandle to keep distillation alive until |this|
   // is deleted.

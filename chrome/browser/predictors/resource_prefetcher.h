@@ -89,7 +89,7 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
                      const NavigationID& navigation_id,
                      PrefetchKeyType key_type,
                      scoped_ptr<RequestVector> requests);
-  virtual ~ResourcePrefetcher();
+  ~ResourcePrefetcher() override;
 
   void Start();  // Kicks off the prefetching. Can only be called once.
   void Stop();   // No additional prefetches will be queued after this.
@@ -123,20 +123,19 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   bool ShouldContinueReadingRequest(net::URLRequest* request, int bytes_read);
 
   // net::URLRequest::Delegate methods.
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override;
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) override;
-  virtual void OnCertificateRequested(
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* auth_info) override;
+  void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     const net::SSLInfo& ssl_info,
-                                     bool fatal) override;
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   enum PrefetcherState {
     INITIALIZED = 0,  // Prefetching hasn't started.

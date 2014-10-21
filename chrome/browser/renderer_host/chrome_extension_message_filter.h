@@ -35,17 +35,16 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   ChromeExtensionMessageFilter(int render_process_id, Profile* profile);
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) override;
-  virtual void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                content::BrowserThread::ID* thread) override;
+  void OnDestruct() const override;
 
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ChromeExtensionMessageFilter>;
 
-  virtual ~ChromeExtensionMessageFilter();
+  ~ChromeExtensionMessageFilter() override;
 
   // TODO(jamescook): Move these functions into the extensions module. Ideally
   // this would be in extensions::ExtensionMessageFilter but that will require
@@ -101,9 +100,9 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
       const ExtensionHostMsg_APIActionOrEvent_Params& params);
 
   // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   const int render_process_id_;
 

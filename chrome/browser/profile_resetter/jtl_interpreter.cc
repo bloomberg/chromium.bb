@@ -112,8 +112,8 @@ class NavigateOperation : public Operation {
  public:
   explicit NavigateOperation(const std::string& hashed_key)
       : hashed_key_(hashed_key) {}
-  virtual ~NavigateOperation() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~NavigateOperation() override {}
+  bool Execute(ExecutionContext* context) override {
     const base::DictionaryValue* dict = NULL;
     if (!context->current_node()->GetAsDictionary(&dict)) {
       // Just ignore this node gracefully as this navigation is a dead end.
@@ -142,8 +142,8 @@ class NavigateOperation : public Operation {
 class NavigateAnyOperation : public Operation {
  public:
   NavigateAnyOperation() {}
-  virtual ~NavigateAnyOperation() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~NavigateAnyOperation() override {}
+  bool Execute(ExecutionContext* context) override {
     const base::DictionaryValue* dict = NULL;
     const base::ListValue* list = NULL;
     if (context->current_node()->GetAsDictionary(&dict)) {
@@ -177,8 +177,8 @@ class NavigateAnyOperation : public Operation {
 class NavigateBackOperation : public Operation {
  public:
   NavigateBackOperation() {}
-  virtual ~NavigateBackOperation() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~NavigateBackOperation() override {}
+  bool Execute(ExecutionContext* context) override {
     const base::Value* current_node = context->current_node();
     context->stack()->pop_back();
     bool continue_traversal = context->ContinueExecution();
@@ -198,8 +198,8 @@ class StoreValue : public Operation {
     DCHECK(base::IsStringUTF8(hashed_name));
     DCHECK(value_);
   }
-  virtual ~StoreValue() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~StoreValue() override {}
+  bool Execute(ExecutionContext* context) override {
     context->working_memory()->Set(hashed_name_, value_->DeepCopy());
     return context->ContinueExecution();
   }
@@ -222,8 +222,8 @@ class CompareStoredValue : public Operation {
     DCHECK(value_);
     DCHECK(default_value_);
   }
-  virtual ~CompareStoredValue() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~CompareStoredValue() override {}
+  bool Execute(ExecutionContext* context) override {
     const base::Value* actual_value = NULL;
     if (!context->working_memory()->Get(hashed_name_, &actual_value))
       actual_value = default_value_.get();
@@ -277,8 +277,8 @@ class StoreNodeRegisterableDomain : public Operation {
       : hashed_name_(hashed_name) {
     DCHECK(base::IsStringUTF8(hashed_name));
   }
-  virtual ~StoreNodeRegisterableDomain() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~StoreNodeRegisterableDomain() override {}
+  bool Execute(ExecutionContext* context) override {
     std::string possibly_invalid_url;
     std::string domain;
     if (!context->current_node()->GetAsString(&possibly_invalid_url) ||
@@ -326,8 +326,8 @@ class StoreNodeRegisterableDomain : public Operation {
 class CompareNodeBool : public Operation {
  public:
   explicit CompareNodeBool(bool value) : value_(value) {}
-  virtual ~CompareNodeBool() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~CompareNodeBool() override {}
+  bool Execute(ExecutionContext* context) override {
     bool actual_value = false;
     if (!context->current_node()->GetAsBoolean(&actual_value))
       return true;
@@ -345,8 +345,8 @@ class CompareNodeHash : public Operation {
  public:
   explicit CompareNodeHash(const std::string& hashed_value)
       : hashed_value_(hashed_value) {}
-  virtual ~CompareNodeHash() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~CompareNodeHash() override {}
+  bool Execute(ExecutionContext* context) override {
     std::string actual_hash;
     if (!context->GetValueHash(*context->current_node(), &actual_hash) ||
         actual_hash != hashed_value_)
@@ -363,8 +363,8 @@ class CompareNodeHashNot : public Operation {
  public:
   explicit CompareNodeHashNot(const std::string& hashed_value)
       : hashed_value_(hashed_value) {}
-  virtual ~CompareNodeHashNot() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~CompareNodeHashNot() override {}
+  bool Execute(ExecutionContext* context) override {
     std::string actual_hash;
     if (context->GetValueHash(*context->current_node(), &actual_hash) &&
         actual_hash == hashed_value_)
@@ -417,8 +417,8 @@ class CompareNodeSubstring : public Operation {
         pattern_sum_(pattern_sum) {
     DCHECK(pattern_length_);
   }
-  virtual ~CompareNodeSubstring() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~CompareNodeSubstring() override {}
+  bool Execute(ExecutionContext* context) override {
     std::string value_as_string;
     if (!context->current_node()->GetAsString(&value_as_string) ||
         !pattern_length_ || value_as_string.size() < pattern_length_)
@@ -450,10 +450,8 @@ class CompareNodeSubstring : public Operation {
 class StopExecutingSentenceOperation : public Operation {
  public:
   StopExecutingSentenceOperation() {}
-  virtual ~StopExecutingSentenceOperation() {}
-  virtual bool Execute(ExecutionContext* context) override {
-    return false;
-  }
+  ~StopExecutingSentenceOperation() override {}
+  bool Execute(ExecutionContext* context) override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StopExecutingSentenceOperation);

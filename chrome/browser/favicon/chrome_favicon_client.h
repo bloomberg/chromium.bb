@@ -17,11 +17,11 @@ class Profile;
 class ChromeFaviconClient : public FaviconClient {
  public:
   explicit ChromeFaviconClient(Profile* profile);
-  virtual ~ChromeFaviconClient();
+  ~ChromeFaviconClient() override;
 
   // FaviconClient implementation:
-  virtual FaviconService* GetFaviconService() override;
-  virtual bool IsBookmarked(const GURL& url) override;
+  FaviconService* GetFaviconService() override;
+  bool IsBookmarked(const GURL& url) override;
 
  private:
   Profile* profile_;

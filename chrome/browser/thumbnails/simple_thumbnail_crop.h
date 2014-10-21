@@ -18,14 +18,14 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
  public:
   explicit SimpleThumbnailCrop(const gfx::Size& target_size);
 
-  virtual ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
-                                       ui::ScaleFactor scale_factor,
-                                       gfx::Rect* clipping_rect,
-                                       gfx::Size* target_size) const override;
+  ClipResult GetCanvasCopyInfo(const gfx::Size& source_size,
+                               ui::ScaleFactor scale_factor,
+                               gfx::Rect* clipping_rect,
+                               gfx::Size* target_size) const override;
 
-  virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
-                             const ConsumerCallback& callback,
-                             const SkBitmap& bitmap) override;
+  void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
+                     const ConsumerCallback& callback,
+                     const SkBitmap& bitmap) override;
 
   // Calculates how "boring" a thumbnail is. The boring score is the
   // 0,1 ranged percentage of pixels that are the most common
@@ -57,7 +57,7 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
   static gfx::Size ComputeTargetSizeAtMaximumScale(const gfx::Size& given_size);
 
  protected:
-  virtual ~SimpleThumbnailCrop();
+  ~SimpleThumbnailCrop() override;
 
  private:
   static SkBitmap CreateThumbnail(const SkBitmap& bitmap,

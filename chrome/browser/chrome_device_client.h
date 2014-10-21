@@ -18,8 +18,8 @@ class ChromeDeviceClient : device::DeviceClient {
   virtual ~ChromeDeviceClient();
 
   // device::DeviceClient implementation
-  virtual device::UsbService* GetUsbService() override;
-  virtual device::HidService* GetHidService() override;
+  device::UsbService* GetUsbService() override;
+  device::HidService* GetHidService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDeviceClient);

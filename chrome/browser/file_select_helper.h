@@ -51,7 +51,7 @@ class FileSelectHelper
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, IsAcceptTypeValid);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, ZipPackage);
   explicit FileSelectHelper(Profile* profile);
-  virtual ~FileSelectHelper();
+  ~FileSelectHelper() override;
 
   // Utility class which can listen for directory lister events and relay
   // them to the main object with the correct tracking id.
@@ -61,10 +61,11 @@ class FileSelectHelper
     DirectoryListerDispatchDelegate(FileSelectHelper* parent, int id)
         : parent_(parent),
           id_(id) {}
-    virtual ~DirectoryListerDispatchDelegate() {}
-    virtual void OnListFile(
+    ~DirectoryListerDispatchDelegate() override {}
+    void OnListFile(
         const net::DirectoryLister::DirectoryListerData& data) override;
-    virtual void OnListDone(int error) override;
+    void OnListDone(int error) override;
+
    private:
     // This FileSelectHelper owns this object.
     FileSelectHelper* parent_;
@@ -86,23 +87,23 @@ class FileSelectHelper
   void RunFileChooserEnd();
 
   // SelectFileDialog::Listener overrides.
-  virtual void FileSelected(
-      const base::FilePath& path, int index, void* params) override;
-  virtual void FileSelectedWithExtraInfo(
-      const ui::SelectedFileInfo& file,
-      int index,
-      void* params) override;
-  virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                                  void* params) override;
-  virtual void MultiFilesSelectedWithExtraInfo(
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
+                                 int index,
+                                 void* params) override;
+  void MultiFilesSelected(const std::vector<base::FilePath>& files,
+                          void* params) override;
+  void MultiFilesSelectedWithExtraInfo(
       const std::vector<ui::SelectedFileInfo>& files,
       void* params) override;
-  virtual void FileSelectionCanceled(void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   void EnumerateDirectory(int request_id,
                           content::RenderViewHost* render_view_host,

@@ -17,7 +17,7 @@ class UpgradeDetectorImpl :
     public UpgradeDetector,
     public chrome_variations::VariationsService::Observer {
  public:
-  virtual ~UpgradeDetectorImpl();
+  ~UpgradeDetectorImpl() override;
 
   // Returns the currently installed Chrome version, which may be newer than the
   // one currently running. Not supported on Android, iOS or ChromeOS. Must be
@@ -31,7 +31,7 @@ class UpgradeDetectorImpl :
   UpgradeDetectorImpl();
 
   // chrome_variations::VariationsService::Observer:
-  virtual void OnExperimentChangesDetected(Severity severity) override;
+  void OnExperimentChangesDetected(Severity severity) override;
 
   // Trigger an "on upgrade" notification based on the specified |time_passed|
   // interval. Exposed as protected for testing.

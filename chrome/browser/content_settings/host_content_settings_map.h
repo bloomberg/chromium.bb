@@ -193,11 +193,10 @@ class HostContentSettingsMap
   void ShutdownOnUIThread();
 
   // content_settings::Observer implementation.
-  virtual void OnContentSettingChanged(
-      const ContentSettingsPattern& primary_pattern,
-      const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
-      std::string resource_identifier) override;
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override;
 
   // Returns true if we should allow all content types for this URL.  This is
   // true for various internal objects like chrome:// URLs, so UI and other
@@ -293,7 +292,7 @@ class HostContentSettingsMap
   typedef ProviderMap::iterator ProviderIterator;
   typedef ProviderMap::const_iterator ConstProviderIterator;
 
-  virtual ~HostContentSettingsMap();
+  ~HostContentSettingsMap() override;
 
   ContentSetting GetDefaultContentSettingFromProvider(
       ContentSettingsType content_type,

@@ -31,10 +31,10 @@ class ExtensionsMetricsProvider : public metrics::MetricsProvider {
   // weak pointer.
   explicit ExtensionsMetricsProvider(
       metrics::MetricsStateManager* metrics_state_manager);
-  virtual ~ExtensionsMetricsProvider();
+  ~ExtensionsMetricsProvider() override;
 
   // metrics::MetricsProvider:
-  virtual void ProvideSystemProfileMetrics(
+  void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile) override;
 
  protected:

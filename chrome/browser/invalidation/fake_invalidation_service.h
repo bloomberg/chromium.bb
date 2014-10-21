@@ -29,22 +29,21 @@ class InvalidationLogger;
 class FakeInvalidationService : public InvalidationService {
  public:
   FakeInvalidationService();
-  virtual ~FakeInvalidationService();
+  ~FakeInvalidationService() override;
 
-  virtual void RegisterInvalidationHandler(
+  void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
-  virtual void UpdateRegisteredInvalidationIds(
-      syncer::InvalidationHandler* handler,
-      const syncer::ObjectIdSet& ids) override;
-  virtual void UnregisterInvalidationHandler(
+  void UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
+                                       const syncer::ObjectIdSet& ids) override;
+  void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
 
-  virtual syncer::InvalidatorState GetInvalidatorState() const override;
-  virtual std::string GetInvalidatorClientId() const override;
-  virtual InvalidationLogger* GetInvalidationLogger() override;
-  virtual void RequestDetailedStatus(
+  syncer::InvalidatorState GetInvalidatorState() const override;
+  std::string GetInvalidatorClientId() const override;
+  InvalidationLogger* GetInvalidationLogger() override;
+  void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
-  virtual IdentityProvider* GetIdentityProvider() override;
+  IdentityProvider* GetIdentityProvider() override;
 
   void SetInvalidatorState(syncer::InvalidatorState state);
 

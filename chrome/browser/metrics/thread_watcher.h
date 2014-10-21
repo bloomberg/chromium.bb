@@ -520,16 +520,16 @@ class ThreadWatcherObserver : public content::NotificationObserver {
   explicit ThreadWatcherObserver(const base::TimeDelta& wakeup_interval);
 
   // Destructor of |g_thread_watcher_observer_| singleton.
-  virtual ~ThreadWatcherObserver();
+  ~ThreadWatcherObserver() override;
 
   // This ensures all thread watchers are active because there is some user
   // activity. It will wake up all thread watchers every |wakeup_interval_|
   // seconds. This is the implementation of content::NotificationObserver. When
   // a matching notification is posted to the notification service, this method
   // is called.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // The singleton of this class.
   static ThreadWatcherObserver* g_thread_watcher_observer_;
@@ -554,7 +554,7 @@ class WatchDogThread : public base::Thread {
   WatchDogThread();
 
   // Destroys the thread and stops the thread.
-  virtual ~WatchDogThread();
+  ~WatchDogThread() override;
 
   // Callable on any thread.  Returns whether you're currently on a
   // WatchDogThread.
@@ -572,8 +572,8 @@ class WatchDogThread : public base::Thread {
                               base::TimeDelta delay);
 
  protected:
-  virtual void Init() override;
-  virtual void CleanUp() override;
+  void Init() override;
+  void CleanUp() override;
 
  private:
   static bool PostTaskHelper(

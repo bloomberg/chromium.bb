@@ -26,16 +26,16 @@ class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<BookmarkModelFactory>;
 
   BookmarkModelFactory();
-  virtual ~BookmarkModelFactory();
+  ~BookmarkModelFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelFactory);
 };

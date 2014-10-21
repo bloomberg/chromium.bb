@@ -51,7 +51,7 @@ class ConflictingDllsTest : public DiagnosticsTest {
   ConflictingDllsTest()
       : DiagnosticsTest(DIAGNOSTICS_CONFLICTING_DLLS_TEST) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
 #if defined(OS_WIN)
     EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
     model->set_limited_mode(true);
@@ -107,7 +107,7 @@ class DiskSpaceTest : public DiagnosticsTest {
  public:
   DiskSpaceTest() : DiagnosticsTest(DIAGNOSTICS_DISK_SPACE_TEST) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
     base::FilePath data_dir;
     if (!PathService::Get(chrome::DIR_USER_DATA, &data_dir))
       return false;
@@ -136,7 +136,7 @@ class InstallTypeTest : public DiagnosticsTest {
   InstallTypeTest()
       : DiagnosticsTest(DIAGNOSTICS_INSTALL_TYPE_TEST), user_level_(false) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
 #if defined(OS_WIN)
     base::FilePath chrome_exe;
     if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -178,7 +178,7 @@ class JSONTest : public DiagnosticsTest {
         max_file_size_(max_file_size),
         importance_(importance) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
     if (!base::PathExists(path_)) {
       if (importance_ == CRITICAL) {
         RecordOutcome(DIAG_RECON_FILE_NOT_FOUND,
@@ -240,7 +240,7 @@ class OperatingSystemTest : public DiagnosticsTest {
   OperatingSystemTest()
       : DiagnosticsTest(DIAGNOSTICS_OPERATING_SYSTEM_TEST) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
 #if defined(OS_WIN)
     base::win::Version version = base::win::GetVersion();
     if ((version < base::win::VERSION_XP) ||
@@ -293,7 +293,7 @@ class PathTest : public DiagnosticsTest {
       : DiagnosticsTest(path_info.test_id),
         path_info_(path_info) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
     if (!g_install_type) {
       RecordStopFailure(DIAG_RECON_DEPENDENCY, "Install dependency failure");
       return false;
@@ -357,7 +357,7 @@ class VersionTest : public DiagnosticsTest {
  public:
   VersionTest() : DiagnosticsTest(DIAGNOSTICS_VERSION_TEST) {}
 
-  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
+  bool ExecuteImpl(DiagnosticsModel::Observer* observer) override {
     chrome::VersionInfo version_info;
     std::string current_version = version_info.Version();
     if (current_version.empty()) {

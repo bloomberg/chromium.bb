@@ -26,7 +26,7 @@ class FastShutdown : public InProcessBrowserTest {
   FastShutdown() {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
   }
 

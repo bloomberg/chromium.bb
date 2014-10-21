@@ -24,21 +24,20 @@ class DictionaryValue;
 class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
  public:
   explicit ChromeSSLHostStateDelegate(Profile* profile);
-  virtual ~ChromeSSLHostStateDelegate();
+  ~ChromeSSLHostStateDelegate() override;
 
   // SSLHostStateDelegate:
-  virtual void AllowCert(const std::string& host,
-                         const net::X509Certificate& cert,
-                         net::CertStatus error) override;
-  virtual void Clear() override;
-  virtual CertJudgment QueryPolicy(const std::string& host,
-                                   const net::X509Certificate& cert,
-                                   net::CertStatus error,
-                                   bool* expired_previous_decision) override;
-  virtual void HostRanInsecureContent(const std::string& host,
-                                      int pid) override;
-  virtual bool DidHostRunInsecureContent(const std::string& host,
-                                         int pid) const override;
+  void AllowCert(const std::string& host,
+                 const net::X509Certificate& cert,
+                 net::CertStatus error) override;
+  void Clear() override;
+  CertJudgment QueryPolicy(const std::string& host,
+                           const net::X509Certificate& cert,
+                           net::CertStatus error,
+                           bool* expired_previous_decision) override;
+  void HostRanInsecureContent(const std::string& host, int pid) override;
+  bool DidHostRunInsecureContent(const std::string& host,
+                                 int pid) const override;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host| in the given Profile.

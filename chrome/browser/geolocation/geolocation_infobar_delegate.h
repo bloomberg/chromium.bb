@@ -29,11 +29,11 @@ class GeolocationInfoBarDelegate :  public PermissionInfobarDelegate {
                              const GURL& requesting_frame,
                              int contents_unique_id,
                              const std::string& display_languages);
-  virtual ~GeolocationInfoBarDelegate();
+  ~GeolocationInfoBarDelegate() override;
 
   // PermissionInfoBarDelegate:
-  virtual base::string16 GetMessageText() const override;
-  virtual int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  int GetIconID() const override;
 
   GURL requesting_frame_;
   std::string display_languages_;

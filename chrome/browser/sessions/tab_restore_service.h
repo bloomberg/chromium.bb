@@ -77,7 +77,7 @@ class TabRestoreService : public KeyedService {
   // Represents a previously open tab.
   struct Tab : public Entry {
     Tab();
-    virtual ~Tab();
+    ~Tab() override;
 
     bool has_browser() const { return browser_id > 0; }
 
@@ -110,7 +110,7 @@ class TabRestoreService : public KeyedService {
   // Represents a previously open window.
   struct Window : public Entry {
     Window();
-    virtual ~Window();
+    ~Window() override;
 
     // The tabs that comprised the window, in order.
     std::vector<Tab> tabs;
@@ -124,7 +124,7 @@ class TabRestoreService : public KeyedService {
 
   typedef std::list<Entry*> Entries;
 
-  virtual ~TabRestoreService();
+  ~TabRestoreService() override;
 
   // Adds/removes an observer. TabRestoreService does not take ownership of
   // the observer.

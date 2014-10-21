@@ -55,7 +55,7 @@
 class IconManager : public IconLoader::Delegate {
  public:
   IconManager();
-  virtual ~IconManager();
+  ~IconManager() override;
 
   // Synchronous call to examine the internal caches for the icon. Returns the
   // icon if we have already loaded it, NULL if we don't have it and must load
@@ -84,11 +84,10 @@ class IconManager : public IconLoader::Delegate {
       base::CancelableTaskTracker* tracker);
 
   // IconLoader::Delegate interface.
-  virtual bool OnGroupLoaded(IconLoader* loader,
-                             const IconGroupID& group) override;
-  virtual bool OnImageLoaded(IconLoader* loader,
-                             gfx::Image* result,
-                             const IconGroupID& group) override;
+  bool OnGroupLoaded(IconLoader* loader, const IconGroupID& group) override;
+  bool OnImageLoaded(IconLoader* loader,
+                     gfx::Image* result,
+                     const IconGroupID& group) override;
 
  private:
   struct CacheKey {

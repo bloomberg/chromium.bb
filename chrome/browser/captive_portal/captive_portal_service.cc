@@ -151,7 +151,7 @@ class CaptivePortalService::RecheckBackoffEntry : public net::BackoffEntry {
   }
 
  private:
-  virtual base::TimeTicks ImplGetTimeNow() const override {
+  base::TimeTicks ImplGetTimeNow() const override {
     return captive_portal_service_->GetCurrentTimeTicks();
   }
 

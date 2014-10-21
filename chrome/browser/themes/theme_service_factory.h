@@ -37,16 +37,16 @@ class ThemeServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<ThemeServiceFactory>;
 
   ThemeServiceFactory();
-  virtual ~ThemeServiceFactory();
+  ~ThemeServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-  virtual void RegisterProfilePrefs(
+  void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceFactory);
 };

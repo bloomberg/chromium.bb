@@ -91,18 +91,18 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   typedef std::map<std::string, ShortcutMap::iterator> GuidMap;
 
-  virtual ~ShortcutsBackend();
+  ~ShortcutsBackend() override;
 
   static history::ShortcutsDatabase::Shortcut::MatchCore MatchToMatchCore(
       const AutocompleteMatch& match, Profile* profile);
 
   // RefcountedKeyedService:
-  virtual void ShutdownOnUIThread() override;
+  void ShutdownOnUIThread() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
   // On completion posts InitCompleted() back to UI thread.

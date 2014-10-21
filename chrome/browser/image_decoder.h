@@ -56,10 +56,10 @@ class ImageDecoder : public content::UtilityProcessHostClient {
 
  private:
   // It's a reference counted object, so destructor is private.
-  virtual ~ImageDecoder();
+  ~ImageDecoder() override;
 
   // Overidden from UtilityProcessHostClient:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC message handlers.
   void OnDecodeImageSucceeded(const SkBitmap& decoded_image);

@@ -34,22 +34,22 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   PushMessagingServiceImpl(GCMProfileService* gcm_profile_service,
                            Profile* profile);
-  virtual ~PushMessagingServiceImpl();
+  ~PushMessagingServiceImpl() override;
 
   // GCMAppHandler implementation.
-  virtual void ShutdownHandler() override;
-  virtual void OnMessage(const std::string& app_id,
-                         const GCMClient::IncomingMessage& message) override;
-  virtual void OnMessagesDeleted(const std::string& app_id) override;
-  virtual void OnSendError(
+  void ShutdownHandler() override;
+  void OnMessage(const std::string& app_id,
+                 const GCMClient::IncomingMessage& message) override;
+  void OnMessagesDeleted(const std::string& app_id) override;
+  void OnSendError(
       const std::string& app_id,
       const GCMClient::SendErrorDetails& send_error_details) override;
-  virtual void OnSendAcknowledged(const std::string& app_id,
-                                  const std::string& message_id) override;
-  virtual bool CanHandle(const std::string& app_id) const override;
+  void OnSendAcknowledged(const std::string& app_id,
+                          const std::string& message_id) override;
+  bool CanHandle(const std::string& app_id) const override;
 
   // content::PushMessagingService implementation:
-  virtual void Register(
+  void Register(
       const GURL& origin,
       int64 service_worker_registration_id,
       const std::string& sender_id,

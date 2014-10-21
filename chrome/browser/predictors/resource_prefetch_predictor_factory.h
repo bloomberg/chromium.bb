@@ -24,10 +24,10 @@ class ResourcePrefetchPredictorFactory
   friend struct DefaultSingletonTraits<ResourcePrefetchPredictorFactory>;
 
   ResourcePrefetchPredictorFactory();
-  virtual ~ResourcePrefetchPredictorFactory();
+  ~ResourcePrefetchPredictorFactory() override;
 
   // RefcountedBrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorFactory);

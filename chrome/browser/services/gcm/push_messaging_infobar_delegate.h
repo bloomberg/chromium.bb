@@ -32,11 +32,11 @@ class PushMessagingInfoBarDelegate : public PermissionInfobarDelegate {
                                const GURL& requesting_frame,
                                const std::string& display_languages,
                                ContentSettingsType type);
-  virtual ~PushMessagingInfoBarDelegate();
+  ~PushMessagingInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
-  virtual base::string16 GetMessageText() const override;
-  virtual int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  int GetIconID() const override;
 
   const GURL requesting_origin_;
   const std::string display_languages_;

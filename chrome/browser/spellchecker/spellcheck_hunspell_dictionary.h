@@ -48,10 +48,10 @@ class SpellcheckHunspellDictionary
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter,
       SpellcheckService* spellcheck_service);
-  virtual ~SpellcheckHunspellDictionary();
+  ~SpellcheckHunspellDictionary() override;
 
   // SpellcheckDictionary implementation:
-  virtual void Load() override;
+  void Load() override;
 
   // Retry downloading |dictionary_file_|.
   void RetryDownloadDictionary(
@@ -104,7 +104,7 @@ class SpellcheckHunspellDictionary
 
   // net::URLFetcherDelegate implementation. Called when dictionary download
   // finishes.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Determine the correct url to download the dictionary.
   GURL GetDictionaryURL();

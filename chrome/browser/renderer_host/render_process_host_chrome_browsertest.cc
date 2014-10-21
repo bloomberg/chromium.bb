@@ -219,7 +219,7 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
 class ChromeRenderProcessHostTestWithCommandLine
     : public ChromeRenderProcessHostTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
   }
 };
@@ -462,7 +462,7 @@ class WindowDestroyer : public content::WebContentsObserver {
         tab_strip_model_(model) {
   }
 
-  virtual void RenderProcessGone(base::TerminationStatus status) override {
+  void RenderProcessGone(base::TerminationStatus status) override {
     // Wait for the window to be destroyed, which will ensure all other
     // RenderViewHost objects are deleted before we return and proceed with
     // the next iteration of notifications.

@@ -278,21 +278,18 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
 class SearchTermsDataSnapshot : public SearchTermsData {
  public:
   explicit SearchTermsDataSnapshot(const SearchTermsData& search_terms_data);
-  virtual ~SearchTermsDataSnapshot();
+  ~SearchTermsDataSnapshot() override;
 
-  virtual std::string GoogleBaseURLValue() const override;
-  virtual std::string GetApplicationLocale() const override;
-  virtual base::string16 GetRlzParameterValue(
-      bool from_app_list) const override;
-  virtual std::string GetSearchClient() const override;
-  virtual bool EnableAnswersInSuggest() const override;
-  virtual bool IsShowingSearchTermsOnSearchResultsPages() const override;
-  virtual std::string InstantExtendedEnabledParam(
-      bool for_search) const override;
-  virtual std::string ForceInstantResultsParam(
-      bool for_prerender) const override;
-  virtual std::string NTPIsThemedParam() const override;
-  virtual std::string GoogleImageSearchSource() const override;
+  std::string GoogleBaseURLValue() const override;
+  std::string GetApplicationLocale() const override;
+  base::string16 GetRlzParameterValue(bool from_app_list) const override;
+  std::string GetSearchClient() const override;
+  bool EnableAnswersInSuggest() const override;
+  bool IsShowingSearchTermsOnSearchResultsPages() const override;
+  std::string InstantExtendedEnabledParam(bool for_search) const override;
+  std::string ForceInstantResultsParam(bool for_prerender) const override;
+  std::string NTPIsThemedParam() const override;
+  std::string GoogleImageSearchSource() const override;
 
  private:
   std::string google_base_url_value_;
