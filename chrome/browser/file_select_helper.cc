@@ -32,6 +32,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "content/public/browser/site_instance.h"
+#endif
+
 using content::BrowserThread;
 using content::FileChooserParams;
 using content::RenderViewHost;
@@ -44,20 +49,6 @@ namespace {
 // so we allocate an enumeration ID for that purpose.  All IDs from
 // the renderer must start at 0 and increase.
 const int kFileSelectEnumerationId = -1;
-
-void NotifyRenderViewHost(
-    RenderViewHost* render_view_host,
-    const std::vector<ui::SelectedFileInfo>& files,
-    FileChooserParams::Mode dialog_mode) {
-  std::vector<content::FileChooserFileInfo> chooser_files;
-  for (size_t i = 0; i < files.size(); ++i) {
-    content::FileChooserFileInfo chooser_file;
-    chooser_file.file_path = files[i].local_path;
-    chooser_file.display_name = files[i].display_name;
-    chooser_files.push_back(chooser_file);
-  }
-  render_view_host->FilesSelectedInChooser(chooser_files, dialog_mode);
-}
 
 // Converts a list of FilePaths to a list of ui::SelectedFileInfo.
 std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
@@ -233,22 +224,63 @@ void FileSelectHelper::OnListDone(int id, int error) {
   std::vector<ui::SelectedFileInfo> selected_files =
       FilePathListToSelectedFileInfoList(entry->results_);
 
-  if (id == kFileSelectEnumerationId)
-    NotifyRenderViewHost(entry->rvh_, selected_files, dialog_mode_);
-  else
+  if (id == kFileSelectEnumerationId) {
+    NotifyRenderViewHostAndEnd(selected_files);
+  } else {
     entry->rvh_->DirectoryEnumerationFinished(id, entry->results_);
-
-  EnumerateDirectoryEnd();
+    EnumerateDirectoryEnd();
+  }
 }
 
 void FileSelectHelper::NotifyRenderViewHostAndEnd(
     const std::vector<ui::SelectedFileInfo>& files) {
-  if (render_view_host_)
-    NotifyRenderViewHost(render_view_host_, files, dialog_mode_);
+  if (!render_view_host_) {
+    RunFileChooserEnd();
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  if (!files.empty()) {
+    // Converts |files| into FileChooserFileInfo with handling of non-native
+    // files.
+    file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
+        file_manager::util::GetFileSystemContextForRenderViewHost(
+            profile_, render_view_host_),
+        web_contents_->GetSiteInstance()->GetSiteURL(),
+        files,
+        base::Bind(
+            &FileSelectHelper::ProcessSelectedFilesChromeOSAfterConversion,
+            this));
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  std::vector<content::FileChooserFileInfo> chooser_files;
+  for (const auto& file : files) {
+    content::FileChooserFileInfo chooser_file;
+    chooser_file.file_path = file.local_path;
+    chooser_file.display_name = file.display_name;
+    chooser_files.push_back(chooser_file);
+  }
+  render_view_host_->FilesSelectedInChooser(chooser_files, dialog_mode_);
 
   // No members should be accessed from here on.
   RunFileChooserEnd();
 }
+
+#if defined(OS_CHROMEOS)
+void FileSelectHelper::ProcessSelectedFilesChromeOSAfterConversion(
+    scoped_ptr<std::vector<content::FileChooserFileInfo>> list) {
+  if (render_view_host_) {
+    render_view_host_->FilesSelectedInChooser(
+        list ? *list : std::vector<content::FileChooserFileInfo>(),
+        dialog_mode_);
+  }
+
+  // No members should be accessed from here on.
+  RunFileChooserEnd();
+}
+#endif  // defined(OS_CHROMEOS)
 
 void FileSelectHelper::DeleteTemporaryFiles() {
   BrowserThread::PostTask(BrowserThread::FILE,

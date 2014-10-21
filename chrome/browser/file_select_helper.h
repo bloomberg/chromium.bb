@@ -19,6 +19,7 @@
 class Profile;
 
 namespace content {
+struct FileChooserFileInfo;
 class RenderViewHost;
 class WebContents;
 }
@@ -144,6 +145,11 @@ class FileSelectHelper
   // file chooser.
   void NotifyRenderViewHostAndEnd(
       const std::vector<ui::SelectedFileInfo>& files);
+#if defined(OS_CHROMEOS)
+  // Sends the result to the render process, and call |RunFileChooserEnd|.
+  void ProcessSelectedFilesChromeOSAfterConversion(
+      scoped_ptr<std::vector<content::FileChooserFileInfo>> list);
+#endif  // defined(OS_CHROMEOS)
 
   // Schedules the deletion of the files in |temporary_files_| and clears the
   // vector.
