@@ -228,12 +228,11 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down) {
   ui::KeyboardCode code = KeyboardCodeFromEvdevKey(key);
   int flags = modifiers_->GetModifierFlags();
 
-  KeyEvent key_event(
+  callback_.Run(make_scoped_ptr(new KeyEvent(
       down ? ET_KEY_PRESSED : ET_KEY_RELEASED,
       code,
       KeycodeConverter::NativeKeycodeToCode(key + kXkbKeycodeOffset),
-      flags);
-  callback_.Run(&key_event);
+      flags)));
 }
 
 }  // namespace ui

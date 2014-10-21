@@ -72,13 +72,14 @@ class KeyEventConverterEvdevTest : public testing::Test {
   unsigned size() { return dispatched_events_.size(); }
   ui::KeyEvent* dispatched_event(unsigned index) {
     DCHECK_GT(dispatched_events_.size(), index);
-    return dispatched_events_[index];
+    ui::Event* ev = dispatched_events_[index];
+    DCHECK(ev->IsKeyEvent());
+    return static_cast<ui::KeyEvent*>(ev);
   }
 
  private:
-  void DispatchEventForTest(ui::Event* event) {
-    dispatched_events_.push_back(
-        new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event)));
+  void DispatchEventForTest(scoped_ptr<ui::Event> event) {
+    dispatched_events_.push_back(event.release());
   }
 
   base::MessageLoopForUI ui_loop_;
@@ -87,7 +88,7 @@ class KeyEventConverterEvdevTest : public testing::Test {
   scoped_ptr<ui::KeyboardEvdev> keyboard_;
   scoped_ptr<ui::MockKeyEventConverterEvdev> device_;
 
-  ScopedVector<ui::KeyEvent> dispatched_events_;
+  ScopedVector<ui::Event> dispatched_events_;
 
   int events_out_;
   int events_in_;

@@ -46,7 +46,12 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
                          long queue_index);
 
   unsigned size() { return dispatched_events_.size(); }
-  TouchEvent* event(unsigned index) { return dispatched_events_[index]; }
+  TouchEvent* event(unsigned index) {
+    DCHECK_GT(dispatched_events_.size(), index);
+    Event* ev = dispatched_events_[index];
+    DCHECK(ev->IsTouchEvent());
+    return static_cast<TouchEvent*>(ev);
+  }
 
   // Actually dispatch the event reader code.
   void ReadNow() {
@@ -54,9 +59,8 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
     base::RunLoop().RunUntilIdle();
   }
 
-  void DispatchCallback(Event* event) {
-    dispatched_events_.push_back(
-        new TouchEvent(*static_cast<TouchEvent*>(event)));
+  void DispatchCallback(scoped_ptr<Event> event) {
+    dispatched_events_.push_back(event.release());
   }
 
   virtual bool Reinitialize() override { return true; }
@@ -65,7 +69,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
   int read_pipe_;
   int write_pipe_;
 
-  ScopedVector<TouchEvent> dispatched_events_;
+  ScopedVector<Event> dispatched_events_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTouchEventConverterEvdev);
 };

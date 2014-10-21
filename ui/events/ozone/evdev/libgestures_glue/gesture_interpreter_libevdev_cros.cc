@@ -250,12 +250,11 @@ void GestureInterpreterLibevdevCros::OnGestureMove(const Gesture* gesture,
   cursor_->MoveCursor(gfx::Vector2dF(move->dx, move->dy));
   // TODO(spang): Use move->ordinal_dx, move->ordinal_dy
   // TODO(spang): Use move->start_time, move->end_time
-  MouseEvent event(ET_MOUSE_MOVED,
-                   cursor_->location(),
-                   cursor_->location(),
-                   modifiers_->GetModifierFlags(),
-                   /* changed_button_flags */ 0);
-  Dispatch(&event);
+  Dispatch(make_scoped_ptr(new MouseEvent(ET_MOUSE_MOVED,
+                                          cursor_->location(),
+                                          cursor_->location(),
+                                          modifiers_->GetModifierFlags(),
+                                          /* changed_button_flags */ 0)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureScroll(
@@ -271,16 +270,15 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
 
   // TODO(spang): Support SetNaturalScroll
   // TODO(spang): Use scroll->start_time
-  ScrollEvent event(ET_SCROLL,
-                    cursor_->location(),
-                    StimeToTimedelta(gesture->end_time),
-                    modifiers_->GetModifierFlags(),
-                    scroll->dx,
-                    scroll->dy,
-                    scroll->ordinal_dx,
-                    scroll->ordinal_dy,
-                    kGestureScrollFingerCount);
-  Dispatch(&event);
+  Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL,
+                                           cursor_->location(),
+                                           StimeToTimedelta(gesture->end_time),
+                                           modifiers_->GetModifierFlags(),
+                                           scroll->dx,
+                                           scroll->dy,
+                                           scroll->ordinal_dx,
+                                           scroll->ordinal_dy,
+                                           kGestureScrollFingerCount)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureButtonsChange(
@@ -339,16 +337,15 @@ void GestureInterpreterLibevdevCros::OnGestureFling(const Gesture* gesture,
                                                   : ET_SCROLL_FLING_CANCEL);
 
   // Fling is like 2-finger scrolling but with velocity instead of displacement.
-  ScrollEvent event(type,
-                    cursor_->location(),
-                    StimeToTimedelta(gesture->end_time),
-                    modifiers_->GetModifierFlags(),
-                    fling->vx,
-                    fling->vy,
-                    fling->ordinal_vx,
-                    fling->ordinal_vy,
-                    kGestureScrollFingerCount);
-  Dispatch(&event);
+  Dispatch(make_scoped_ptr(new ScrollEvent(type,
+                                           cursor_->location(),
+                                           StimeToTimedelta(gesture->end_time),
+                                           modifiers_->GetModifierFlags(),
+                                           fling->vx,
+                                           fling->vy,
+                                           fling->ordinal_vx,
+                                           fling->ordinal_vy,
+                                           kGestureScrollFingerCount)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
@@ -363,16 +360,15 @@ void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
     return;  // No cursor!
 
   // Swipe is 3-finger scrolling.
-  ScrollEvent event(ET_SCROLL,
-                    cursor_->location(),
-                    StimeToTimedelta(gesture->end_time),
-                    modifiers_->GetModifierFlags(),
-                    swipe->dx,
-                    swipe->dy,
-                    swipe->ordinal_dx,
-                    swipe->ordinal_dy,
-                    kGestureSwipeFingerCount);
-  Dispatch(&event);
+  Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL,
+                                           cursor_->location(),
+                                           StimeToTimedelta(gesture->end_time),
+                                           modifiers_->GetModifierFlags(),
+                                           swipe->dx,
+                                           swipe->dy,
+                                           swipe->ordinal_dx,
+                                           swipe->ordinal_dy,
+                                           kGestureSwipeFingerCount)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
@@ -386,17 +382,15 @@ void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
   // Turn a swipe lift into a fling start.
   // TODO(spang): Figure out why and put it in this comment.
 
-  ScrollEvent event(ET_SCROLL_FLING_START,
-                    cursor_->location(),
-                    StimeToTimedelta(gesture->end_time),
-                    modifiers_->GetModifierFlags(),
-                    /* x_offset */ 0,
-                    /* y_offset */ 0,
-                    /* x_offset_ordinal */ 0,
-                    /* y_offset_ordinal */ 0,
-                    kGestureScrollFingerCount);
-  Dispatch(&event);
-
+  Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL_FLING_START,
+                                           cursor_->location(),
+                                           StimeToTimedelta(gesture->end_time),
+                                           modifiers_->GetModifierFlags(),
+                                           /* x_offset */ 0,
+                                           /* y_offset */ 0,
+                                           /* x_offset_ordinal */ 0,
+                                           /* y_offset_ordinal */ 0,
+                                           kGestureScrollFingerCount)));
 }
 
 void GestureInterpreterLibevdevCros::OnGesturePinch(const Gesture* gesture,
@@ -420,8 +414,8 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
   NOTIMPLEMENTED();
 }
 
-void GestureInterpreterLibevdevCros::Dispatch(Event* event) {
-  dispatch_callback_.Run(event);
+void GestureInterpreterLibevdevCros::Dispatch(scoped_ptr<Event> event) {
+  dispatch_callback_.Run(event.Pass());
 }
 
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int modifier,
@@ -430,8 +424,8 @@ void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int modifier,
   int flag = modifiers_->GetEventFlagFromModifier(modifier);
   EventType type = (down ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED);
   modifiers_->UpdateModifier(modifier, down);
-  MouseEvent event(type, loc, loc, modifiers_->GetModifierFlags() | flag, flag);
-  Dispatch(&event);
+  Dispatch(make_scoped_ptr(new MouseEvent(
+      type, loc, loc, modifiers_->GetModifierFlags() | flag, flag)));
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,

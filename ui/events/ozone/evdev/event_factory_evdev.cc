@@ -156,8 +156,7 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
     : last_device_id_(0),
       device_manager_(device_manager),
       dispatch_callback_(
-          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
-                     base::Unretained(this))),
+          base::Bind(&EventFactoryEvdev::PostUiEvent, base::Unretained(this))),
       keyboard_(&modifiers_, dispatch_callback_),
       cursor_(cursor),
 #if defined(USE_EVDEV_GESTURES)
@@ -169,8 +168,16 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
 
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
 
-void EventFactoryEvdev::DispatchUiEvent(Event* event) {
-  DispatchEvent(event);
+void EventFactoryEvdev::PostUiEvent(scoped_ptr<Event> event) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&EventFactoryEvdev::DispatchUiEventTask,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&event)));
+}
+
+void EventFactoryEvdev::DispatchUiEventTask(scoped_ptr<Event> event) {
+  DispatchEvent(event.get());
 }
 
 void EventFactoryEvdev::AttachInputDevice(
@@ -269,12 +276,11 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
                                      const gfx::PointF& location) {
   if (cursor_) {
     cursor_->MoveCursorTo(widget, location);
-    MouseEvent mouse_event(ET_MOUSE_MOVED,
-                           cursor_->location(),
-                           cursor_->location(),
-                           modifiers_.GetModifierFlags(),
-                           /* changed_button_flags */ 0);
-    DispatchEvent(&mouse_event);
+    PostUiEvent(make_scoped_ptr(new MouseEvent(ET_MOUSE_MOVED,
+                                               cursor_->location(),
+                                               cursor_->location(),
+                                               modifiers_.GetModifierFlags(),
+                                               /* changed_button_flags */ 0)));
   }
 }
 

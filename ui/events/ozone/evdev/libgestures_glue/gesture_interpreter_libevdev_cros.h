@@ -77,7 +77,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   void OnGesturePinch(const Gesture* gesture, const GesturePinch* pinch);
   void OnGestureMetrics(const Gesture* gesture, const GestureMetrics* metrics);
 
-  void Dispatch(Event* event);
+  void Dispatch(scoped_ptr<Event> event);
   void DispatchMouseButton(unsigned int modifier, bool down);
   void DispatchChangedKeys(Evdev* evdev, const timeval& time);
 
