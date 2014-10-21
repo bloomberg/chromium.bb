@@ -1,5 +1,8 @@
-darin@chromium.org
 ben@chromium.org
+brettw@chromium.org
+cpu@chromium.org
+darin@chromium.org
+jam@chromium.org
 per-file .gitignore=*
 per-file DEPS=*
 per-file AUTHORS=*
