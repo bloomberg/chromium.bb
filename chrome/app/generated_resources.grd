@@ -6821,9 +6821,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_NOT_SUPPORTED_METRO" desc="The placeholder text for a plug-in that can't run in Windows Metro mode.">
         This plug-in only works on the desktop.
       </message>
-      <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
-        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed.
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+          Control-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
+        </message>
+      </if>
+      <if expr="not is_macosx">
+        <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+          Right-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
+        </message>
+      </if>
       <if expr="chromeos">
         <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
           This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
@@ -7831,11 +7838,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
         Run automatically (recommended)
       </message>
-      <message name="IDS_PLUGIN_ASK_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
+      <message name="IDS_PLUGIN_ASK_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a mouse click (left button).">
         Click to play
       </message>
-      <message name="IDS_PLUGIN_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing plug-ins use on any site.">
-        Block all
+      <message name="IDS_PLUGIN_ASK_MENU_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a context menu activation.">
+        Block by default (You can manually run a blocked plug-in at any time.)
       </message>
       <message name="IDS_PLUGIN_SELECTIVE_DISABLE" desc="Link to selectively disable plug-ins">
         Disable individual plug-ins...
