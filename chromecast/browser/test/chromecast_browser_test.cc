@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -51,6 +52,7 @@ void ChromecastBrowserTest::RunTestOnMainThreadLoop() {
   }
 
   web_contents_.reset();
+  window_.reset();
 }
 
 void ChromecastBrowserTest::NavigateToURL(content::WebContents* window,
@@ -66,12 +68,10 @@ void ChromecastBrowserTest::NavigateToURL(content::WebContents* window,
 }
 
 content::WebContents* ChromecastBrowserTest::CreateBrowser() {
-  content::WebContents::CreateParams create_params(
-      CastBrowserProcess::GetInstance()->browser_context(),
-      NULL);
-  create_params.routing_id = MSG_ROUTING_NONE;
-  create_params.initial_size = gfx::Size(1280, 720);
-  web_contents_.reset(content::WebContents::Create(create_params));
+  window_.reset(new CastContentWindow);
+  gfx::Size initial_size(1280, 720);
+  web_contents_ = window_->Create(
+      initial_size, CastBrowserProcess::GetInstance()->browser_context());
   return web_contents_.get();
 }
 

@@ -15,6 +15,8 @@ class WebContents;
 }
 
 namespace chromecast {
+class CastContentWindow;
+
 namespace shell {
 
 // This test allows for running an entire browser-process lifecycle per unit
@@ -44,6 +46,7 @@ class ChromecastBrowserTest : public content::BrowserTestBase {
 
  private:
   scoped_ptr<content::WebContents> web_contents_;
+  scoped_ptr<CastContentWindow> window_;
 
   bool setup_called_;
 
