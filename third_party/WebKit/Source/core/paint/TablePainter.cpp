@@ -6,6 +6,7 @@
 #include "core/paint/TablePainter.h"
 
 #include "core/paint/BoxPainter.h"
+#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxClipper.h"
@@ -93,6 +94,7 @@ void TablePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layo
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
+    PaintCommandRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
     BoxPainter(m_renderTable).paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
 }
 
@@ -103,7 +105,7 @@ void TablePainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffse
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
-
+    PaintCommandRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
     BoxPainter(m_renderTable).paintMaskImages(paintInfo, rect);
 }
 
