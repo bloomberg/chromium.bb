@@ -498,10 +498,12 @@ void PictureLayerImpl::UpdateTilePriorities(
       (layer_tree_impl()->CurrentBeginFrameArgs().frame_time -
        base::TimeTicks()).InSecondsF();
 
+  gfx::Rect viewport_rect_in_layer_space =
+      GetViewportForTilePriorityInContentSpace();
   bool tiling_needs_update = false;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    if (tilings_->tiling_at(i)->NeedsUpdateForFrameAtTime(
-            current_frame_time_in_seconds)) {
+    if (tilings_->tiling_at(i)->NeedsUpdateForFrameAtTimeAndViewport(
+            current_frame_time_in_seconds, viewport_rect_in_layer_space)) {
       tiling_needs_update = true;
       break;
     }
@@ -509,8 +511,6 @@ void PictureLayerImpl::UpdateTilePriorities(
   if (!tiling_needs_update)
     return;
 
-  gfx::Rect viewport_rect_in_layer_space =
-      GetViewportForTilePriorityInContentSpace();
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   bool can_require_tiles_for_activation =

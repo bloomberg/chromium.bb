@@ -262,8 +262,11 @@ class CC_EXPORT PictureLayerTiling {
                                 double current_frame_time_in_seconds,
                                 const Occlusion& occlusion_in_layer_space);
 
-  bool NeedsUpdateForFrameAtTime(double frame_time_in_seconds) {
-    return frame_time_in_seconds != last_impl_frame_time_in_seconds_;
+  bool NeedsUpdateForFrameAtTimeAndViewport(
+      double frame_time_in_seconds,
+      const gfx::Rect& viewport_in_layer_space) {
+    return frame_time_in_seconds != last_impl_frame_time_in_seconds_ ||
+           viewport_in_layer_space != last_viewport_in_layer_space_;
   }
 
   void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
@@ -340,6 +343,7 @@ class CC_EXPORT PictureLayerTiling {
 
   // State saved for computing velocities based upon finite differences.
   double last_impl_frame_time_in_seconds_;
+  gfx::Rect last_viewport_in_layer_space_;
   gfx::Rect last_visible_rect_in_content_space_;
   float content_to_screen_scale_;
 
