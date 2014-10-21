@@ -1,0 +1,40 @@
+layer at (0,0) size 785x868
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x614
+  RenderBlock {HTML} at (0,0) size 785x614
+    RenderBody {BODY} at (8,16) size 769x590
+      RenderBlock {P} at (0,0) size 769x16
+        RenderText {#text} at (0,0) size 356x16
+          text run at (0,0) width 356: "Test overlay cast button rendering on light background."
+      RenderBlock {DIV} at (0,32) size 769x292
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,324) size 769x266
+        RenderText {#text} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,590) size 769x0
+layer at (8,48) size 352x288
+  RenderVideo {VIDEO} at (0,0) size 352x288
+layer at (8,340) size 320x262
+  RenderVideo {VIDEO} at (0,0) size 320x262
+layer at (8,48) size 352x288
+  RenderFlexibleBox {DIV} at (0,0) size 352x288
+    RenderBlock {DIV} at (0,253) size 352x35
+layer at (8,48) size 352x253
+  RenderFlexibleBox {DIV} at (0,0) size 352x253
+layer at (26,61) size 30x30
+  RenderButton {INPUT} at (17.59,12.64) size 30x30
+layer at (8,340) size 320x262
+  RenderFlexibleBox {DIV} at (0,0) size 320x262
+    RenderBlock {DIV} at (0,227) size 320x35
+layer at (8,340) size 320x227
+  RenderFlexibleBox {DIV} at (0,0) size 320x227
+layer at (24,351) size 30x30
+  RenderButton {INPUT} at (16,11.34) size 30x30
+layer at (8,606) size 320x262
+  RenderVideo {VIDEO} at (8,606) size 320x262
+layer at (8,606) size 320x262
+  RenderFlexibleBox {DIV} at (0,0) size 320x262
+    RenderBlock {DIV} at (0,227) size 320x35
+layer at (8,606) size 320x227
+  RenderFlexibleBox {DIV} at (0,0) size 320x227
+layer at (24,617) size 30x30
+  RenderButton {INPUT} at (16,11.34) size 30x30
