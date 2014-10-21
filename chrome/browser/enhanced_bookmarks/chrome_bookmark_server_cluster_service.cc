@@ -33,6 +33,15 @@ ChromeBookmarkServerClusterService::~ChromeBookmarkServerClusterService() {
     sync_service_->RemoveObserver(this);
 }
 
+void ChromeBookmarkServerClusterService::AddObserver(
+    BookmarkServerServiceObserver* observer) {
+  BookmarkServerClusterService::AddObserver(observer);
+  if (sync_refresh_skipped_) {
+    sync_refresh_skipped_ = false;
+    TriggerTokenRequest(false);
+  }
+}
+
 void ChromeBookmarkServerClusterService::OnStateChanged() {
   // Do nothing.
 }
@@ -41,11 +50,19 @@ void ChromeBookmarkServerClusterService::OnSyncCycleCompleted() {
   // The stars cluster API relies on the information in chrome-sync. Sending a
   // cluster request immediately after a bookmark is changed from the bookmark
   // observer notification will yield the wrong results. The request must be
-  // delayed until the sync cycle has completed.
-  // TODO(noyau): This might happen too often, need a way to coalesce and delay
-  // the notifications.
-  if (model_->loaded())
-    TriggerTokenRequest(false);
+  // delayed until the sync cycle has completed. In fact, the ideal signal would
+  // be "bookmark changed by sync", but we don't have that yet, and this is a
+  // compromise.
+  // Note that we will be skipping calling this cluster API if there is no
+  // observer attached, because calling that is meaningless without UI to show.
+  if (model_->loaded()) {
+    if (observers_.might_have_observers()) {
+      TriggerTokenRequest(false);
+      sync_refresh_skipped_ = false;
+    } else {
+      sync_refresh_skipped_ = true;
+    }
+  }
 }
 
 }  // namespace enhanced_bookmarks

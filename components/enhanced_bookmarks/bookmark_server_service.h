@@ -47,7 +47,7 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
       EnhancedBookmarkModel* enhanced_bookmark_model);
   virtual ~BookmarkServerService();
 
-  void AddObserver(BookmarkServerServiceObserver* observer);
+  virtual void AddObserver(BookmarkServerServiceObserver* observer);
   void RemoveObserver(BookmarkServerServiceObserver* observer);
 
  protected:
@@ -84,6 +84,10 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   // Cached pointer to the bookmarks model.
   EnhancedBookmarkModel* model_;  // weak
 
+ protected:
+  // The observers.
+  ObserverList<BookmarkServerServiceObserver> observers_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, SignOut);
@@ -100,8 +104,6 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) override;
 
-  // The observers.
-  ObserverList<BookmarkServerServiceObserver> observers_;
   // The Auth service is used to get a token for auth with the server.
   ProfileOAuth2TokenService* token_service_;  // Weak
   // The request to the token service.

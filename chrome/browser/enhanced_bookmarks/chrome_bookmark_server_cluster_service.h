@@ -26,6 +26,9 @@ class ChromeBookmarkServerClusterService : public BookmarkServerClusterService,
       ProfileSyncService* sync_service);
   virtual ~ChromeBookmarkServerClusterService();
 
+  // BookmarkServerClusterService
+  virtual void AddObserver(BookmarkServerServiceObserver* observer) override;
+
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() override;
   virtual void OnSyncCycleCompleted() override;
@@ -33,6 +36,7 @@ class ChromeBookmarkServerClusterService : public BookmarkServerClusterService,
  private:
   // This class observes the sync service for changes.
   ProfileSyncService* sync_service_;
+  bool sync_refresh_skipped_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBookmarkServerClusterService);
 };
