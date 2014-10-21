@@ -887,7 +887,6 @@ void NavigatorImpl::RecordNavigationMetrics(
                                     navigation_data_->start_time_ -
                                     navigation_data_->before_unload_delay_;
   if (navigation_data_->is_restoring_from_last_session_) {
-    DCHECK(!navigation_data_->before_unload_delay_.InMicroseconds());
     UMA_HISTOGRAM_TIMES(
         "Navigation.TimeToCommit_SessionRestored",
         time_to_commit);

@@ -14042,6 +14042,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
 
+<histogram name="Navigation.OnBeforeUnloadOverheadTime" units="milliseconds">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Overhead time spent handling the OnBeforeUnload event from the browser
+    standpoint. More precisely, it is the total time between dispatch and
+    acknowledgment of the BeforeUnload event on the browser side, minus the
+    actual time spent executing the BeforeUnload handlers on the renderer side.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.RedirectChainSize" units="characters">
   <owner>haitaol@chromium.org</owner>
   <owner>donnd@chromium.org</owner>

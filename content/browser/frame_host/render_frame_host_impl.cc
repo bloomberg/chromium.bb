@@ -707,8 +707,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   if (is_waiting_for_beforeunload_ack_ &&
       unload_ack_is_for_cross_site_transition_ &&
       ui::PageTransitionIsMainFrame(validated_params.transition)) {
-    OnBeforeUnloadACK(true, send_before_unload_start_time_,
-                      base::TimeTicks::Now());
+    base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
+    OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
     return;
   }
 
@@ -830,16 +830,7 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     const base::TimeTicks& renderer_before_unload_end_time) {
   TRACE_EVENT_ASYNC_END0(
       "navigation", "RenderFrameHostImpl::BeforeUnload", this);
-  // TODO(creis): Support beforeunload on subframes.  For now just pretend that
-  // the handler ran and allowed the navigation to proceed.
-  if (GetParent()) {
-    is_waiting_for_beforeunload_ack_ = false;
-    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
-        unload_ack_is_for_cross_site_transition_, proceed,
-        renderer_before_unload_end_time);
-    return;
-  }
-
+  DCHECK(!GetParent());
   render_view_host_->decrement_in_flight_event_count();
   render_view_host_->StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
@@ -853,20 +844,21 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   if (!is_waiting_for_beforeunload_ack_) {
     return;
   }
+  DCHECK(!send_before_unload_start_time_.is_null());
 
-  is_waiting_for_beforeunload_ack_ = false;
-
-  base::TimeTicks before_unload_end_time;
-  if (!send_before_unload_start_time_.is_null() &&
-      !renderer_before_unload_start_time.is_null() &&
+  // Sets a default value for before_unload_end_time so that the browser
+  // survives a hacked renderer.
+  base::TimeTicks before_unload_end_time = renderer_before_unload_end_time;
+  if (!renderer_before_unload_start_time.is_null() &&
       !renderer_before_unload_end_time.is_null()) {
     // When passing TimeTicks across process boundaries, we need to compensate
     // for any skew between the processes. Here we are converting the
     // renderer's notion of before_unload_end_time to TimeTicks in the browser
     // process. See comments in inter_process_time_ticks_converter.h for more.
+    base::TimeTicks receive_before_unload_ack_time = base::TimeTicks::Now();
     InterProcessTimeTicksConverter converter(
         LocalTimeTicks::FromTimeTicks(send_before_unload_start_time_),
-        LocalTimeTicks::FromTimeTicks(base::TimeTicks::Now()),
+        LocalTimeTicks::FromTimeTicks(receive_before_unload_ack_time),
         RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
         RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
     LocalTimeTicks browser_before_unload_end_time =
@@ -891,9 +883,19 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
         "InterProcessTimeTicks.IsSkewAdditive_RendererToBrowser",
         is_skew_additive);
 
+    base::TimeDelta on_before_unload_overhead_time =
+        (receive_before_unload_ack_time - send_before_unload_start_time_) -
+        (renderer_before_unload_end_time - renderer_before_unload_start_time);
+    UMA_HISTOGRAM_TIMES("Navigation.OnBeforeUnloadOverheadTime",
+                        on_before_unload_overhead_time);
+
     frame_tree_node_->navigator()->LogBeforeUnloadTime(
         renderer_before_unload_start_time, renderer_before_unload_end_time);
   }
+  // Resets beforeunload waiting state.
+  is_waiting_for_beforeunload_ack_ = false;
+  send_before_unload_start_time_ = base::TimeTicks();
+
   frame_tree_node_->render_manager()->OnBeforeUnloadACK(
       unload_ack_is_for_cross_site_transition_, proceed,
       before_unload_end_time);
@@ -1225,6 +1227,7 @@ void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
       rfh_state_ == STATE_DEFAULT ||
       rfh_state_ == STATE_SWAPPED_OUT) {
     is_waiting_for_beforeunload_ack_ = false;
+    send_before_unload_start_time_ = base::TimeTicks();
     render_view_host_->is_waiting_for_close_ack_ = false;
   }
   rfh_state_ = rfh_state;
@@ -1309,17 +1312,16 @@ void RenderFrameHostImpl::Stop() {
 }
 
 void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "navigation", "RenderFrameHostImpl::BeforeUnload", this);
-  // TODO(creis): Support subframes.
+  // TODO(creis): Support beforeunload on subframes.  For now just pretend that
+  // the handler ran and allowed the navigation to proceed.
   if (GetParent() || !IsRenderFrameLive()) {
     // We don't have a live renderer, so just skip running beforeunload.
-    is_waiting_for_beforeunload_ack_ = true;
-    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
-    base::TimeTicks now = base::TimeTicks::Now();
-    OnBeforeUnloadACK(true, now, now);
+    frame_tree_node_->render_manager()->OnBeforeUnloadACK(
+        for_cross_site_transition, true, base::TimeTicks::Now());
     return;
   }
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "navigation", "RenderFrameHostImpl::BeforeUnload", this);
 
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if she clicks the tab close button then the browser close
