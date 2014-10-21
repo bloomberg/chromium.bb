@@ -13,7 +13,9 @@
 #include "chromeos/login/auth/user_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 
@@ -25,9 +27,9 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
                     const UserContext& expected_user_context);
 
   // Authenticator:
-  virtual void CompleteLogin(Profile* profile,
+  virtual void CompleteLogin(content::BrowserContext* context,
                              const UserContext& user_context) override;
-  virtual void AuthenticateToLogin(Profile* profile,
+  virtual void AuthenticateToLogin(content::BrowserContext* context,
                                    const UserContext& user_context) override;
   virtual void AuthenticateToUnlock(const UserContext& user_context) override;
   virtual void LoginAsSupervisedUser(const UserContext& user_context) override;

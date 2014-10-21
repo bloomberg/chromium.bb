@@ -21,7 +21,10 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 class AuthFailure;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace chromeos {
 
@@ -93,7 +96,7 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
                           AuthStatusConsumer* consumer);
 
   // Authenticator overrides.
-  virtual void CompleteLogin(Profile* profile,
+  virtual void CompleteLogin(content::BrowserContext* context,
                              const UserContext& user_context) override;
 
   // Given |user_context|, this method attempts to authenticate to your
@@ -103,8 +106,8 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   // Upon failure to login consumer_->OnAuthFailure() is called
   // with an error message.
   //
-  // Uses |profile| when doing URL fetches.
-  virtual void AuthenticateToLogin(Profile* profile,
+  // Uses |context| when doing URL fetches.
+  virtual void AuthenticateToLogin(content::BrowserContext* context,
                                    const UserContext& user_context) override;
 
   // Given |user_context|, this method attempts to authenticate to the cached

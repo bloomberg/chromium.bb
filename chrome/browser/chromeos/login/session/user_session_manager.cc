@@ -780,14 +780,14 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     // transferred unconditionally. If the user authenticated via an auth
     // extension, authentication cookies and channel IDs will be transferred as
     // well when the user's cookie jar is empty. If the cookie jar is not empty,
-    // the authentication states in the login profile and the user's profile
+    // the authentication states in the browser context and the user's profile
     // must be merged using /MergeSession instead. Authentication cookies set by
     // a SAML IdP will also be transferred when the user's cookie jar is not
     // empty if |transfer_saml_auth_cookies_on_subsequent_login| is true.
     const bool transfer_auth_cookies_and_channel_ids_on_first_login =
         has_auth_cookies_;
     ProfileAuthData::Transfer(
-        authenticator_->authentication_profile(),
+        authenticator_->authentication_context(),
         profile,
         transfer_auth_cookies_and_channel_ids_on_first_login,
         transfer_saml_auth_cookies_on_subsequent_login,
@@ -901,9 +901,10 @@ void UserSessionManager::InitSessionRestoreStrategy() {
   }
 }
 
-void UserSessionManager::RestoreAuthSessionImpl(Profile* profile,
-                                            bool restore_from_auth_cookies) {
-  CHECK((authenticator_.get() && authenticator_->authentication_profile()) ||
+void UserSessionManager::RestoreAuthSessionImpl(
+    Profile* profile,
+    bool restore_from_auth_cookies) {
+  CHECK((authenticator_.get() && authenticator_->authentication_context()) ||
         !restore_from_auth_cookies);
 
   if (chrome::IsRunningInForcedAppMode() ||
@@ -921,8 +922,8 @@ void UserSessionManager::RestoreAuthSessionImpl(Profile* profile,
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
   login_manager->RestoreSession(
-      authenticator_.get() && authenticator_->authentication_profile()
-          ? authenticator_->authentication_profile()->GetRequestContext()
+      authenticator_.get() && authenticator_->authentication_context()
+          ? authenticator_->authentication_context()->GetRequestContext()
           : NULL,
       session_restore_strategy_,
       oauth2_refresh_token_,

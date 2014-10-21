@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -460,7 +461,7 @@ void ExistingUserController::PerformLogin(
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
     // Only one instance of LoginPerformer should exist at a time.
     login_performer_.reset(NULL);
-    login_performer_.reset(new LoginPerformer(this));
+    login_performer_.reset(new ChromeLoginPerformer(this));
   }
 
   is_login_in_progress_ = true;
@@ -485,7 +486,7 @@ void ExistingUserController::LoginAsRetailModeUser() {
 
   // Only one instance of LoginPerformer should exist at a time.
   login_performer_.reset(NULL);
-  login_performer_.reset(new LoginPerformer(this));
+  login_performer_.reset(new ChromeLoginPerformer(this));
   is_login_in_progress_ = true;
   login_performer_->LoginRetailMode();
   SendAccessibilityAlert(
@@ -540,7 +541,7 @@ void ExistingUserController::LoginAsGuest() {
 
   // Only one instance of LoginPerformer should exist at a time.
   login_performer_.reset(NULL);
-  login_performer_.reset(new LoginPerformer(this));
+  login_performer_.reset(new ChromeLoginPerformer(this));
   is_login_in_progress_ = true;
   login_performer_->LoginOffTheRecord();
   SendAccessibilityAlert(
@@ -1254,7 +1255,7 @@ void ExistingUserController::LoginAsPublicSessionInternal(
     const UserContext& user_context) {
   // Only one instance of LoginPerformer should exist at a time.
   login_performer_.reset(NULL);
-  login_performer_.reset(new LoginPerformer(this));
+  login_performer_.reset(new ChromeLoginPerformer(this));
   is_login_in_progress_ = true;
   login_performer_->LoginAsPublicSession(user_context);
   SendAccessibilityAlert(

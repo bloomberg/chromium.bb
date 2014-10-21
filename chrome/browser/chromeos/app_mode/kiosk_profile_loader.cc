@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -134,7 +135,7 @@ void KioskProfileLoader::Start() {
 }
 
 void KioskProfileLoader::LoginAsKioskAccount() {
-  login_performer_.reset(new LoginPerformer(this));
+  login_performer_.reset(new ChromeLoginPerformer(this));
   login_performer_->LoginAsKioskAccount(user_id_, use_guest_mount_);
 }
 

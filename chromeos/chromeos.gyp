@@ -254,6 +254,8 @@
       'login/auth/extended_authenticator_impl.h',
       'login/auth/key.cc',
       'login/auth/key.h',
+      'login/auth/login_performer.cc',
+      'login/auth/login_performer.h',
       'login/auth/online_attempt.cc',
       'login/auth/online_attempt.h',
       'login/auth/online_attempt_host.cc',

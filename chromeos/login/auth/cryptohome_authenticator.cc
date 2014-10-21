@@ -384,9 +384,9 @@ CryptohomeAuthenticator::CryptohomeAuthenticator(
 }
 
 void CryptohomeAuthenticator::AuthenticateToLogin(
-    Profile* profile,
+    content::BrowserContext* context,
     const UserContext& user_context) {
-  authentication_profile_ = profile;
+  authentication_context_ = context;
   current_state_.reset(new AuthAttemptState(user_context,
                                             user_manager::USER_TYPE_REGULAR,
                                             false,  // unlock
@@ -401,9 +401,9 @@ void CryptohomeAuthenticator::AuthenticateToLogin(
              false /* create_if_nonexistent */);
 }
 
-void CryptohomeAuthenticator::CompleteLogin(Profile* profile,
+void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
                                             const UserContext& user_context) {
-  authentication_profile_ = profile;
+  authentication_context_ = context;
   current_state_.reset(new AuthAttemptState(user_context,
                                             user_manager::USER_TYPE_REGULAR,
                                             true,   // unlock

@@ -17,14 +17,14 @@ MockAuthenticator::MockAuthenticator(AuthStatusConsumer* consumer,
       message_loop_(base::MessageLoopProxy::current()) {
 }
 
-void MockAuthenticator::CompleteLogin(Profile* profile,
+void MockAuthenticator::CompleteLogin(content::BrowserContext* ignored,
                                       const UserContext& user_context) {
   if (expected_user_context_ != user_context)
     NOTREACHED();
   OnAuthSuccess();
 }
 
-void MockAuthenticator::AuthenticateToLogin(Profile* profile,
+void MockAuthenticator::AuthenticateToLogin(content::BrowserContext* ignored,
                                             const UserContext& user_context) {
   if (user_context == expected_user_context_) {
     message_loop_->PostTask(

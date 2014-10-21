@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -171,7 +172,7 @@ void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
   if (guest_login_performer_)
     return;
 
-  guest_login_performer_.reset(new LoginPerformer(this));
+  guest_login_performer_.reset(new ChromeLoginPerformer(this));
   guest_login_performer_->LoginOffTheRecord();
 }
 
