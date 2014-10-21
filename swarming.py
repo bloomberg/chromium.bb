@@ -702,13 +702,13 @@ def trigger(
   return tasks, task_name
 
 
-def decorate_shard_output(swarming, shard_index, result, shard_exit_code):
+def decorate_shard_output(
+    swarming, shard_index, result, shard_exit_code, shard_duration):
   """Returns wrapped output for swarming task shard."""
   url = '%s/user/task/%s' % (swarming, result['id'])
-  duration = sum(i for i in result['durations'] if i)
   tag_header = 'Shard %d  %s' % (shard_index, url)
   tag_footer = 'End of shard %d  Duration: %.1fs  Bot: %s  Exit code %s' % (
-      shard_index, duration, result['bot_id'], shard_exit_code)
+      shard_index, shard_duration, result['bot_id'], shard_exit_code)
 
   tag_len = max(len(tag_header), len(tag_footer))
   dash_pad = '+-%s-+\n' % ('-' * tag_len)
@@ -731,6 +731,7 @@ def collect(
 
   seen_shards = set()
   exit_code = 0
+  total_duration = 0
   try:
     for index, output in yield_results(
         swarming, task_ids, timeout, None, print_status_updates,
@@ -746,8 +747,11 @@ def collect(
       if shard_exit_code:
         exit_code = shard_exit_code
 
+      shard_duration = sum(i for i in output['durations'] if i)
+      total_duration += shard_duration
       if decorate:
-        print(decorate_shard_output(swarming, index, output, shard_exit_code))
+        print(decorate_shard_output(
+            swarming, index, output, shard_exit_code, shard_duration))
         if len(seen_shards) < len(task_ids):
           print('')
       else:
@@ -762,6 +766,9 @@ def collect(
     summary = output_collector.finalize()
     if task_summary_json:
       tools.write_json(task_summary_json, summary, False)
+
+  if decorate and total_duration:
+    print('Total duration: %.1fs' % total_duration)
 
   if len(seen_shards) != len(task_ids):
     missing_shards = [x for x in range(len(task_ids)) if x not in seen_shards]

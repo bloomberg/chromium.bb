@@ -389,7 +389,8 @@ class TestGetResults(TestCase):
         'Foo\n'
         '+----------------------------------------------------------+\n'
         '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code 0 |\n'
-        '+----------------------------------------------------------+\n',
+        '+----------------------------------------------------------+\n'
+        'Total duration: 1.8s\n',
         '')
 
   def test_collect_fail(self):
@@ -404,7 +405,8 @@ class TestGetResults(TestCase):
         'Foo\n'
         '+-----------------------------------------------------------+\n'
         '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code -9 |\n'
-        '+-----------------------------------------------------------+\n',
+        '+-----------------------------------------------------------+\n'
+        'Total duration: 1.8s\n',
         '')
 
   def test_collect_one_missing(self):
@@ -421,7 +423,8 @@ class TestGetResults(TestCase):
         '+----------------------------------------------------------+\n'
         '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code 0 |\n'
         '+----------------------------------------------------------+\n'
-        '\n',
+        '\n'
+        'Total duration: 1.8s\n',
         'Results from some shards are missing: 1\n')
 
 
