@@ -215,7 +215,7 @@ private:
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventTripleClick(const MouseEventWithHitTestResults&);
-    bool handleMouseFocus(const PlatformMouseEvent&);
+    bool handleMouseFocus(const MouseEventWithHitTestResults&);
     bool handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 
@@ -245,8 +245,6 @@ private:
     void cancelFakeMouseMoveEvent();
     bool isCursorVisible() const;
     void updateCursor();
-
-    bool isInsideScrollbar(const IntPoint&) const;
 
     ScrollableArea* associatedScrollableArea(const RenderLayer*) const;
 

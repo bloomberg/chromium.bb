@@ -1285,7 +1285,8 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     // Because we can't give the user the chance to handle the selection by user action like dragging if we keep the selection in case of mousedown.
     // FireFox also has the same behavior and it's more compatible with other browsers.
     m_selectionInitiationState = HaveNotStartedSelection;
-    swallowEvent = swallowEvent || handleMouseFocus(mouseEvent);
+    HitTestResult hitTestResult = hitTestResultInFrame(m_frame, mouseEvent.position(), HitTestRequest::ReadOnly);
+    swallowEvent = swallowEvent || handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult));
     m_capturesDragging = !swallowEvent || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -1877,8 +1878,10 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
 }
 
 // The return value means 'swallow event' (was handled), as for other handle* functions.
-bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
+bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent)
 {
+    const PlatformMouseEvent& mouseEvent = targetedEvent.event();
+
     // If clicking on a frame scrollbar, do not mess up with content focus.
     if (FrameView* view = m_frame->view()) {
         if (view->scrollbarAtWindowPoint(mouseEvent.position()))
@@ -1912,7 +1915,7 @@ bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
 
     // Only change the focus when clicking scrollbars if it can transfered to a
     // mouse focusable node.
-    if (!element && isInsideScrollbar(mouseEvent.position()))
+    if (!element && targetedEvent.hitTestResult().scrollbar())
         return true;
 
     if (Page* page = m_frame->page()) {
@@ -1930,18 +1933,6 @@ bool EventHandler::handleMouseFocus(const PlatformMouseEvent& mouseEvent)
             if (!page->focusController().setFocusedElement(0, m_frame))
                 return true;
         }
-    }
-
-    return false;
-}
-
-bool EventHandler::isInsideScrollbar(const IntPoint& windowPoint) const
-{
-    if (RenderView* renderView = m_frame->contentRenderer()) {
-        HitTestRequest request(HitTestRequest::ReadOnly);
-        HitTestResult result(windowPoint);
-        renderView->hitTest(request, result);
-        return result.scrollbar();
     }
 
     return false;
@@ -2260,7 +2251,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
     if (!swallowMouseDownEvent)
-        swallowMouseDownEvent = handleMouseFocus(fakeMouseDown);
+        swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
 
