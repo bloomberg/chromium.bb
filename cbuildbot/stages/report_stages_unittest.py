@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import sync_stages
@@ -151,6 +152,20 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
                        update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, filename, False,
                         acl=mock.ANY) for filename in filenames]
+    # pylint: disable=E1101
+    self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
+
+  def testDoNotUpdateLATESTMarkersWhenBuildFailed(self):
+    """Check that we do not update the latest markers on failed build."""
+    self._SetupUpdateStreakCounter()
+    self.PatchObject(report_stages.ReportStage, '_UploadArchiveIndex',
+                     return_value={'any': 'dict'})
+    self.PatchObject(results_lib.Results, 'BuildSucceededSoFar',
+                     return_value=False)
+    stage = self.ConstructStage()
+    stage.Run()
+    calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
+                       update_list=True, acl=mock.ANY)]
     # pylint: disable=E1101
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
