@@ -22,7 +22,13 @@ namespace {
 const int kVersionPacketLen = 1;
 // # of bytes a tag packet consumes.
 const int kTagPacketLen = 1;
-// Max # of bytes a length packet consumes.
+// Max # of bytes a length packet consumes. A Varint32 can consume up to 5 bytes
+// (the MSB in each byte is reserved for denoting whether more bytes follow).
+// But, the protocol only allows for 4KiB payloads, and the socket stream buffer
+// is only of size 8KiB. As such we should never need more than 2 bytes (max
+// value of 16KiB). Anything higher than that will result in an error, either
+// because the socket stream buffer overflowed or too many bytes were required
+// in the size packet.
 const int kSizePacketLenMin = 1;
 const int kSizePacketLenMax = 2;
 
@@ -321,7 +327,7 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
   }
 
   bool need_another_byte = false;
-  int prev_byte_count = input_stream_->ByteCount();
+  int prev_byte_count = input_stream_->UnreadByteCount();
   {
     CodedInputStream coded_input_stream(input_stream_.get());
     if (!coded_input_stream.ReadVarint32(&message_size_))
@@ -332,12 +338,12 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
     DVLOG(1) << "Expecting another message size byte.";
     if (prev_byte_count >= kSizePacketLenMax) {
       // Already had enough bytes, something else went wrong.
-      LOG(ERROR) << "Failed to process message size.";
-      read_callback_.Run(scoped_ptr<google::protobuf::MessageLite>());
+      LOG(ERROR) << "Failed to process message size, too many bytes needed.";
+      connection_callback_.Run(net::ERR_FILE_TOO_BIG);
       return;
     }
     // Back up by the amount read (should always be 1 byte).
-    int bytes_read = prev_byte_count - input_stream_->ByteCount();
+    int bytes_read = prev_byte_count - input_stream_->UnreadByteCount();
     DCHECK_EQ(bytes_read, 1);
     input_stream_->BackUp(bytes_read);
     WaitForData(MCS_FULL_SIZE);
@@ -367,14 +373,20 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
     return;
   }
 
-  if (!protobuf.get() ||
-      input_stream_->GetState() != SocketInputStream::READY) {
+  if (input_stream_->GetState() != SocketInputStream::READY) {
     LOG(ERROR) << "Failed to extract protobuf bytes of type "
                << static_cast<unsigned int>(message_tag_);
     // Reset the connection.
     connection_callback_.Run(net::ERR_FAILED);
     return;
   }
+
+  if (!protobuf.get()) {
+     LOG(ERROR) << "Received message of invalid type "
+                << static_cast<unsigned int>(message_tag_);
+     connection_callback_.Run(net::ERR_INVALID_ARGUMENT);
+     return;
+   }
 
   {
     CodedInputStream coded_input_stream(input_stream_.get());

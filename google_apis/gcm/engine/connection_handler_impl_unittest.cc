@@ -41,6 +41,7 @@ const char kDataMsgFromLong2[] =
     "this is a second long from that will result in a message > 128 bytes";
 const char kDataMsgCategoryLong2[] =
     "this is a second long category that will result in a message > 128 bytes";
+const uint8 kInvalidTag = 100;  // An invalid tag.
 
 // ---- Helpers for building messages. ----
 
@@ -136,8 +137,6 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   ReadList mock_reads_;
   WriteList mock_writes_;
   scoped_ptr<net::DelayedSocketData> data_provider_;
-  scoped_ptr<SocketInputStream> socket_input_stream_;
-  scoped_ptr<SocketOutputStream> socket_output_stream_;
 
   // The connection handler being tested.
   scoped_ptr<ConnectionHandlerImpl> connection_handler_;
@@ -674,8 +673,8 @@ TEST_F(GCMConnectionHandlerImplTest, SendMsgSocketDisconnected) {
 }
 
 // Receive a message whose size field was corrupted and is larger than the
-// socket's buffer. Should fail gracefully.
-TEST_F(GCMConnectionHandlerImplTest, CorruptedSize) {
+// socket's buffer. Should fail gracefully with a size error.
+TEST_F(GCMConnectionHandlerImplTest, OutOfBuffer) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
@@ -703,6 +702,107 @@ TEST_F(GCMConnectionHandlerImplTest, CorruptedSize) {
   WaitForMessage();  // The data message.
   EXPECT_FALSE(received_message.get());
   EXPECT_EQ(net::ERR_FILE_TOO_BIG, last_error());
+}
+
+// Receive a message whose size field was corrupted and takes more than two
+// bytes to encode. Should fail gracefully with a size error.
+TEST_F(GCMConnectionHandlerImplTest, InvalidSizePacket) {
+  std::string handshake_request = EncodeHandshakeRequest();
+  WriteList write_list(1, net::MockWrite(net::ASYNC,
+                                         handshake_request.c_str(),
+                                         handshake_request.size()));
+  std::string handshake_response = EncodeHandshakeResponse();
+
+  // Fill a string with 20000 character zero (which uses more than 2 bytes to
+  // encode the size packet).
+  std::string data_message_proto(20000, '0');
+  std::string data_message_pkt =
+      EncodePacket(kDataMessageStanzaTag, data_message_proto);
+  ReadList read_list;
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    handshake_response.c_str(),
+                                    handshake_response.size()));
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    data_message_pkt.c_str(),
+                                    data_message_pkt.size()));
+  BuildSocket(read_list, write_list);
+
+  ScopedMessage received_message;
+  Connect(&received_message);
+  WaitForMessage();  // The login send.
+  WaitForMessage();  // The login response.
+  received_message.reset();
+  WaitForMessage();  // The data message.
+  EXPECT_FALSE(received_message.get());
+  EXPECT_EQ(net::ERR_FILE_TOO_BIG, last_error());
+}
+
+// Make sure a message with an invalid tag is handled gracefully and resets
+// the connection with an invalid argument error.
+TEST_F(GCMConnectionHandlerImplTest, InvalidTag) {
+  std::string handshake_request = EncodeHandshakeRequest();
+  WriteList write_list(1, net::MockWrite(net::ASYNC,
+                                         handshake_request.c_str(),
+                                         handshake_request.size()));
+  std::string handshake_response = EncodeHandshakeResponse();
+
+  std::string invalid_message = "0";
+  std::string invalid_message_pkt =
+      EncodePacket(kInvalidTag, invalid_message);
+  ReadList read_list;
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    handshake_response.c_str(),
+                                    handshake_response.size()));
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    invalid_message_pkt.c_str(),
+                                    invalid_message_pkt.size()));
+  BuildSocket(read_list, write_list);
+
+  ScopedMessage received_message;
+  Connect(&received_message);
+  WaitForMessage();  // The login send.
+  WaitForMessage();  // The login response.
+  received_message.reset();
+  WaitForMessage();  // The invalid message.
+  EXPECT_FALSE(received_message.get());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, last_error());
+}
+
+// Receive a message where the size field spans two socket reads.
+TEST_F(GCMConnectionHandlerImplTest, RecvMsgSplitSize) {
+  std::string handshake_request = EncodeHandshakeRequest();
+  WriteList write_list(1, net::MockWrite(net::ASYNC,
+                                         handshake_request.c_str(),
+                                         handshake_request.size()));
+  std::string handshake_response = EncodeHandshakeResponse();
+
+  std::string data_message_proto =
+      BuildDataMessage(kDataMsgFromLong, kDataMsgCategoryLong);
+  std::string data_message_pkt =
+      EncodePacket(kDataMessageStanzaTag, data_message_proto);
+  DCHECK_GT(data_message_pkt.size(), 128U);
+  ReadList read_list;
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    handshake_response.c_str(),
+                                    handshake_response.size()));
+  // The first two bytes are the tag byte and the first byte of the size packet.
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    data_message_pkt.c_str(),
+                                    2));
+  // Start from the second byte of the size packet.
+  read_list.push_back(net::MockRead(net::ASYNC,
+                                    data_message_pkt.c_str() + 2,
+                                    data_message_pkt.size() - 2));
+  BuildSocket(read_list, write_list);
+
+  ScopedMessage received_message;
+  Connect(&received_message);
+  WaitForMessage();  // The login send.
+  WaitForMessage();  // The login response.
+  WaitForMessage();  // The data message.
+  ASSERT_TRUE(received_message.get());
+  EXPECT_EQ(data_message_proto, received_message->SerializeAsString());
+  EXPECT_EQ(net::OK, last_error());
 }
 
 }  // namespace
