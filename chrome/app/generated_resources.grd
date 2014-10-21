@@ -4885,8 +4885,8 @@ Make sure you do not expose any sensitive information.
           <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (sentence case).">
             Hide button
           </message>
-          <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (sentence case).">
-            Manage
+          <message name="IDS_MANAGE_EXTENSION" desc="The 'Managed extensions' text in the context menu for when right-clicking on extension icons (sentence case).">
+            Managed extensions
           </message>
           <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (sentence case).">
             Inspect popup
@@ -4905,8 +4905,8 @@ Make sure you do not expose any sensitive information.
           <message name="IDS_EXTENSIONS_HIDE_BUTTON" desc="The text for the Hide context menu item (title case).">
             Hide Button
           </message>
-          <message name="IDS_MANAGE_EXTENSION" desc="The 'Manage' text in the context menu for when right-clicking on extension icons (title case).">
-            Manage
+          <message name="IDS_MANAGE_EXTENSION" desc="The 'Managed Extensions' text in the context menu for when right-clicking on extension icons (title case).">
+            Managed Extensions
           </message>
           <message name="IDS_EXTENSION_ACTION_INSPECT_POPUP" desc="The text for the right-click menu of page and browser actions which shows the popup and opens the developer tools (title case).">
             Inspect Popup
