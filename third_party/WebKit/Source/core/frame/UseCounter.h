@@ -542,6 +542,7 @@ public:
         SVGAnimatedTransformListBaseVal = 570,
         QuotedAnimationName = 571,
         QuotedKeyframesRule = 572,
+        SrcsetDroppedCandidate = 573,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -309,7 +309,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
         float effectiveSize = parser.length();
         m_effectiveSizeViewportDependant = parser.viewportDependant();
-        ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));
+        ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr), &document());
         if (candidate.isEmpty())
             continue;
         return candidate;
@@ -644,7 +644,7 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
             effectiveSize = parser.length();
             m_effectiveSizeViewportDependant = parser.viewportDependant();
         }
-        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
+        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }
     if (m_intrinsicSizingViewportDependant && m_effectiveSizeViewportDependant && !m_listener) {
