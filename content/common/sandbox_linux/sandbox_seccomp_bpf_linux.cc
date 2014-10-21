@@ -34,6 +34,10 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
+#if !defined(IN_NACL_HELPER)
+#include "ui/gl/gl_switches.h"
+#endif
+
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
@@ -167,7 +171,11 @@ scoped_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
     return scoped_ptr<SandboxBPFBasePolicy>(
         new CrosArmGpuProcessPolicy(allow_sysv_shm));
   } else {
-    return scoped_ptr<SandboxBPFBasePolicy>(new GpuProcessPolicy);
+    bool allow_mincore = command_line.HasSwitch(switches::kUseGL) &&
+                         command_line.GetSwitchValueASCII(switches::kUseGL) ==
+                             gfx::kGLImplementationEGLName;
+    return scoped_ptr<SandboxBPFBasePolicy>(
+        new GpuProcessPolicy(allow_mincore));
   }
 }
 

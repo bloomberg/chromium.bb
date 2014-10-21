@@ -20,6 +20,7 @@ namespace content {
 class GpuProcessPolicy : public SandboxBPFBasePolicy {
  public:
   GpuProcessPolicy();
+  explicit GpuProcessPolicy(bool allow_mincore);
   virtual ~GpuProcessPolicy();
 
   virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
@@ -51,6 +52,10 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   // This is allocated by InitGpuBrokerProcess, called from PreSandboxHook(),
   // which executes iff the sandbox is going to be enabled afterwards.
   sandbox::BrokerProcess* broker_process_;
+
+  // eglCreateWindowSurface() needs mincore().
+  bool allow_mincore_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuProcessPolicy);
 };
 
