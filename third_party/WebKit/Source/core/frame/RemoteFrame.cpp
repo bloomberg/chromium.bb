@@ -39,6 +39,8 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockB
 void RemoteFrame::detach()
 {
     detachChildren();
+    if (!client())
+        return;
     Frame::detach();
 }
 

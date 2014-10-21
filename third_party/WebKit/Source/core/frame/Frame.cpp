@@ -80,12 +80,7 @@ void Frame::trace(Visitor* visitor)
 
 void Frame::detach()
 {
-    // client() should never be null because that means we somehow re-entered
-    // the frame detach code... but it is sometimes.
-    // FIXME: Understand why this is happening so we can document this insanity.
-    // http://crbug.com/371084 is a probable explanation.
-    if (!client())
-        return;
+    ASSERT(m_client);
     disconnectOwnerElement();
     // After this, we must no longer talk to the client since this clears
     // its owning reference back to our owning LocalFrame.
