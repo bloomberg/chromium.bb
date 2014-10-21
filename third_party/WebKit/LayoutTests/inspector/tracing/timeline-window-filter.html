@@ -12,6 +12,7 @@ function test()
     var timeline = WebInspector.panels.timeline;
     var overviewPane = timeline._overviewPane;
     var model = timeline._model;
+    InspectorTest.switchTimelineToWaterfallMode();
 
     function createFileReader(file, delegate)
     {

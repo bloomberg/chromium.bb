@@ -51,8 +51,7 @@ function test()
     ];
 
     var panel = WebInspector.panels.timeline;
-    var view = panel._currentViews[0];
-    var model = view._presentationModel;
+    var model = InspectorTest.timelinePresentationModel();
 
     InspectorTest.timelineModel().setEventsForTest(testData);
 
