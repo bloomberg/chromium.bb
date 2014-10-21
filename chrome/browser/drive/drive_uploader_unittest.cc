@@ -75,7 +75,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
  private:
   // DriveServiceInterface overrides.
   // Handles a request for obtaining an upload location URL.
-  virtual CancelCallback InitiateUploadNewFile(
+  CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -94,7 +94,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     return CancelCallback();
   }
 
-  virtual CancelCallback InitiateUploadExistingFile(
+  CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -118,7 +118,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   }
 
   // Handles a request for uploading a chunk of bytes.
-  virtual CancelCallback ResumeUpload(
+  CancelCallback ResumeUpload(
       const GURL& upload_location,
       int64 start_position,
       int64 end_position,
@@ -162,10 +162,9 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   }
 
   // Handles a request to fetch the current upload status.
-  virtual CancelCallback GetUploadStatus(
-      const GURL& upload_location,
-      int64 content_length,
-      const UploadRangeCallback& callback) override {
+  CancelCallback GetUploadStatus(const GURL& upload_location,
+                                 int64 content_length,
+                                 const UploadRangeCallback& callback) override {
     EXPECT_EQ(expected_content_length_, content_length);
     // The upload URL returned by InitiateUpload() must be used.
     EXPECT_TRUE(GURL(kTestUploadNewFileURL) == upload_location ||
@@ -207,7 +206,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 // Mock DriveService that returns a failure at InitiateUpload().
 class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   // Returns error.
-  virtual CancelCallback InitiateUploadNewFile(
+  CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -219,7 +218,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
     return CancelCallback();
   }
 
-  virtual CancelCallback InitiateUploadExistingFile(
+  CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -231,7 +230,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   }
 
   // Should not be used.
-  virtual CancelCallback ResumeUpload(
+  CancelCallback ResumeUpload(
       const GURL& upload_url,
       int64 start_position,
       int64 end_position,
@@ -248,7 +247,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 // Mock DriveService that returns a failure at ResumeUpload().
 class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   // Succeeds and returns an upload location URL.
-  virtual CancelCallback InitiateUploadNewFile(
+  CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -260,7 +259,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
     return CancelCallback();
   }
 
-  virtual CancelCallback InitiateUploadExistingFile(
+  CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -272,7 +271,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   }
 
   // Returns error.
-  virtual CancelCallback ResumeUpload(
+  CancelCallback ResumeUpload(
       const GURL& upload_url,
       int64 start_position,
       int64 end_position,
@@ -292,10 +291,9 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
 // Mock DriveService that returns a failure at GetUploadStatus().
 class MockDriveServiceNoConnectionAtGetUploadStatus : public DummyDriveService {
   // Returns error.
-  virtual CancelCallback GetUploadStatus(
-      const GURL& upload_url,
-      int64 content_length,
-      const UploadRangeCallback& callback) override {
+  CancelCallback GetUploadStatus(const GURL& upload_url,
+                                 int64 content_length,
+                                 const UploadRangeCallback& callback) override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),

@@ -29,17 +29,16 @@ class DriveNotificationManager : public KeyedService,
  public:
   explicit DriveNotificationManager(
       invalidation::InvalidationService* invalidation_service);
-  virtual ~DriveNotificationManager();
+  ~DriveNotificationManager() override;
 
   // KeyedService override.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // syncer::InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) override;
-  virtual void OnIncomingInvalidation(
+  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
+  void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) override;
-  virtual std::string GetOwnerName() const override;
+  std::string GetOwnerName() const override;
 
   void AddObserver(DriveNotificationObserver* observer);
   void RemoveObserver(DriveNotificationObserver* observer);
