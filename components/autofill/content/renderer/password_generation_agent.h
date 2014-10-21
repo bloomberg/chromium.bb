@@ -38,6 +38,9 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   // Returns true if the newly focused node caused the generation UI to show.
   bool FocusedNodeHasChanged(const blink::WebNode& node);
 
+  // Called when new form controls are inserted.
+  void OnDynamicFormsSeen(blink::WebLocalFrame* frame);
+
   // The length that a password can be before the UI is hidden.
   static const size_t kMaximumOfferSize = 5;
 
@@ -62,6 +65,10 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   void OnPasswordAccepted(const base::string16& password);
   void OnAccountCreationFormsDetected(
       const std::vector<autofill::FormData>& forms);
+
+  // Helper function that will try and populate |password_elements_| and
+  // |possible_account_creation_form_|.
+  void FindPossibleGenerationForm(blink::WebLocalFrame* frame);
 
   // Helper function to decide if |passwords_| contains password fields for
   // an account creation form. Sets |generation_element_| to the field that

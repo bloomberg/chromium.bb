@@ -121,6 +121,15 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(
     generation_enabled_forms_.clear();
     generation_element_.reset();
     possible_account_creation_form_.reset(new PasswordForm());
+
+    // Log statistics after navigation so that we only log once per page.
+    if (password_elements_.empty()) {
+      password_generation::LogPasswordGenerationEvent(
+          password_generation::NO_SIGN_UP_DETECTED);
+    } else {
+      password_generation::LogPasswordGenerationEvent(
+          password_generation::SIGN_UP_DETECTED);
+    }
     password_elements_.clear();
     password_is_generated_ = false;
     if (password_edited_) {
@@ -143,13 +152,26 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(
   }
 }
 
+void PasswordGenerationAgent::OnDynamicFormsSeen(blink::WebLocalFrame* frame) {
+  FindPossibleGenerationForm(frame);
+}
+
 void PasswordGenerationAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
+  FindPossibleGenerationForm(frame);
+}
+
+void PasswordGenerationAgent::FindPossibleGenerationForm(
+    blink::WebLocalFrame* frame) {
   if (!enabled_)
     return;
 
   // We don't want to generate passwords if the browser won't store or sync
   // them.
   if (!ShouldAnalyzeDocument(frame->document()))
+    return;
+
+  // If we have already found a signup form for this page, no need to continue.
+  if (!password_elements_.empty())
     return;
 
   blink::WebVector<blink::WebFormElement> forms;
@@ -176,8 +198,6 @@ void PasswordGenerationAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
     std::vector<blink::WebInputElement> passwords;
     if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
       DVLOG(2) << "Account creation form detected";
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::SIGN_UP_DETECTED);
       password_elements_ = passwords;
       possible_account_creation_form_.swap(password_form);
       DetermineGenerationElement();
@@ -185,8 +205,6 @@ void PasswordGenerationAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
       return;
     }
   }
-  password_generation::LogPasswordGenerationEvent(
-      password_generation::NO_SIGN_UP_DETECTED);
 }
 
 bool PasswordGenerationAgent::ShouldAnalyzeDocument(

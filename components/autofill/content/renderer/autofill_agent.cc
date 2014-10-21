@@ -730,6 +730,8 @@ void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
     if (frame && !frame->parent() && !frame->isLoading()) {
       ProcessForms(*frame);
       password_autofill_agent_->OnDynamicFormsSeen(frame);
+      if (password_generation_agent_)
+        password_generation_agent_->OnDynamicFormsSeen(frame);
       return;
     }
   }

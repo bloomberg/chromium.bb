@@ -343,4 +343,34 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
       1);
 }
 
+TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
+  LoadHTML(kSigninFormHTML);
+  SetNotBlacklistedMessage(kSigninFormHTML);
+  SetAccountCreationFormsDetectedMessage(kSigninFormHTML);
+
+  ExecuteJavaScript(
+      "var form = document.createElement('form');"
+      "var username = document.createElement('input');"
+      "username.type = 'text';"
+      "username.id = 'dynamic_username';"
+      "var first_password = document.createElement('input');"
+      "first_password.type = 'password';"
+      "first_password.id = 'first_password';"
+      "first_password.name = 'first_password';"
+      "var second_password = document.createElement('input');"
+      "second_password.type = 'password';"
+      "second_password.id = 'second_password';"
+      "second_password.name = 'second_password';"
+      "form.appendChild(username);"
+      "form.appendChild(first_password);"
+      "form.appendChild(second_password);"
+      "document.body.appendChild(form);");
+  ProcessPendingMessages();
+  // TODO(gcasto): I'm slighty worried about flakes in this test where
+  // didAssociateFormControls() isn't called. If this turns out to be a problem
+  // adding a call to OnDynamicFormsSeen(GetMainFrame()) will fix it, though
+  // it will weaken the test.
+  ExpectPasswordGenerationAvailable("first_password", true);
+}
+
 }  // namespace autofill
