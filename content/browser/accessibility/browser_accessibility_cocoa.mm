@@ -582,6 +582,9 @@ NSDictionary* attributeToMethodNameMap = nil;
   case ui::AX_ROLE_FOOTER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FOOTER));
+  case ui::AX_ROLE_REGION:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_REGION));
   case ui::AX_ROLE_SPIN_BUTTON:
     // This control is similar to what VoiceOver calls a "stepper".
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(

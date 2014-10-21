@@ -3690,9 +3690,12 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_role_ = IA2_ROLE_SECTION;
       break;
     case ui::AX_ROLE_REGION:
-      ia_role_ = ROLE_SYSTEM_GROUPING;
-      ia2_role_ = IA2_ROLE_SECTION;
-      ia_state_ |= STATE_SYSTEM_READONLY;
+      if (html_tag == L"section") {
+        ia_role_ = ROLE_SYSTEM_GROUPING;
+        ia2_role_ = IA2_ROLE_SECTION;
+      } else {
+        ia_role_ = ROLE_SYSTEM_PANE;
+      }
       break;
     case ui::AX_ROLE_ROW:
       ia_role_ = ROLE_SYSTEM_ROW;

@@ -469,6 +469,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-readonly.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRegion) {
+  RunTest(FILE_PATH_LITERAL("aria-region.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaSort) {
   RunTest(FILE_PATH_LITERAL("aria-sort.html"));
 }
@@ -824,8 +828,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityQ) {
   RunTest(FILE_PATH_LITERAL("q.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityRegion) {
-  RunTest(FILE_PATH_LITERAL("region.html"));
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySection) {
+  RunTest(FILE_PATH_LITERAL("section.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySelect) {
