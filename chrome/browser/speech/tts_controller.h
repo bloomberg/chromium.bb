@@ -151,11 +151,6 @@ class Utterance {
   void set_options(const base::Value* options);
   const base::Value* options() const { return options_.get(); }
 
-  void set_src_extension_id(const std::string& src_extension_id) {
-    src_extension_id_ = src_extension_id;
-  }
-  const std::string& src_extension_id() { return src_extension_id_; }
-
   void set_src_id(int src_id) { src_id_ = src_id; }
   int src_id() { return src_id_; }
 
@@ -241,10 +236,6 @@ class Utterance {
   // The full options arg passed to tts.speak, which may include fields
   // other than the ones we explicitly parse, below.
   scoped_ptr<base::Value> options_;
-
-  // The extension ID of the extension that called speak() and should
-  // receive events.
-  std::string src_extension_id_;
 
   // The source extension's ID of this utterance, so that it can associate
   // events with the appropriate callback.
