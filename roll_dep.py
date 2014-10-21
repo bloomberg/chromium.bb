@@ -293,10 +293,9 @@ def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
   else:
     deps_lines[line_idx] = content.rstrip()
 
-def update_deps(soln_path, dep_path, dep_name, new_rev, comment):
+def update_deps(deps_file, dep_path, dep_name, new_rev, comment):
   """Update the DEPS file with the new git revision."""
   commit_msg = ''
-  deps_file = os.path.join(soln_path, 'DEPS')
   with open(deps_file) as fh:
     deps_content = fh.read()
   deps_locals = {}
@@ -333,7 +332,11 @@ def update_deps(soln_path, dep_path, dep_name, new_rev, comment):
     with open(deps_file, 'w') as fh:
       for line in deps_lines:
         print >> fh, line
-    with open(os.path.join(soln_path, '.git', 'MERGE_MSG'), 'a') as fh:
+    deps_file_dir = os.path.normpath(os.path.dirname(deps_file))
+    deps_file_root = Popen(
+        ['git', 'rev-parse', '--show-toplevel'],
+        cwd=deps_file_dir, stdout=PIPE).communicate()[0].strip()
+    with open(os.path.join(deps_file_root, '.git', 'MERGE_MSG'), 'w') as fh:
       fh.write(commit_msg)
   else:
     print 'Could not find an entry in %s to update.' % deps_file
@@ -341,20 +344,27 @@ def update_deps(soln_path, dep_path, dep_name, new_rev, comment):
 
 
 def main(argv):
-  if len(argv) != 2 :
-    print >> sys.stderr, 'Usage: roll_dep.py <dep path> <svn revision>'
+  if len(argv) not in (2, 3):
+    print >> sys.stderr, (
+        'Usage: roll_dep.py <dep path> <svn revision> [ <DEPS file> ]')
     return 1
-  (dep_path, revision) = argv[0:2]
-  dep_path = platform_path(dep_path)
-  assert os.path.isdir(dep_path), 'No such directory: %s' % dep_path
+  (arg_dep_path, revision) = argv[0:2]
   gclient_root = find_gclient_root()
-  soln = get_solution(gclient_root, dep_path)
-  soln_path = os.path.relpath(os.path.join(gclient_root, soln['name']))
+  dep_path = platform_path(arg_dep_path)
+  if not os.path.exists(dep_path):
+    dep_path = os.path.join(gclient_root, dep_path)
+  assert os.path.isdir(dep_path), 'No such directory: %s' % arg_dep_path
+  if len(argv) > 2:
+    deps_file = argv[2]
+  else:
+    soln = get_solution(gclient_root, dep_path)
+    soln_path = os.path.relpath(os.path.join(gclient_root, soln['name']))
+    deps_file = os.path.join(soln_path, 'DEPS')
   dep_name = posix_path(os.path.relpath(dep_path, gclient_root))
   (git_rev, svn_rev) = get_git_revision(dep_path, revision)
   comment = ('from svn revision %s' % svn_rev) if svn_rev else None
   assert git_rev, 'Could not find git revision matching %s.' % revision
-  return update_deps(soln_path, dep_path, dep_name, git_rev, comment)
+  return update_deps(deps_file, dep_path, dep_name, git_rev, comment)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
