@@ -42,7 +42,6 @@ public:
     };
 
     static PassRefPtrWillBeRawPtr<ClearButtonElement> create(Document&, ClearButtonOwner&);
-    void releaseCapture();
     void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
 
     virtual void trace(Visitor*) override;
@@ -55,7 +54,6 @@ private:
     virtual bool isClearButtonElement() const override;
 
     RawPtrWillBeMember<ClearButtonOwner> m_clearButtonOwner;
-    bool m_capturing;
 };
 
 DEFINE_TYPE_CASTS(ClearButtonElement, Element, element, element->isClearButtonElement(), element.isClearButtonElement());

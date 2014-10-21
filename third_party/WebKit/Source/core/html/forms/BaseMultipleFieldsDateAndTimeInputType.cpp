@@ -420,14 +420,12 @@ void BaseMultipleFieldsDateAndTimeInputType::forwardEvent(Event* event)
 void BaseMultipleFieldsDateAndTimeInputType::disabledAttributeChanged()
 {
     spinButtonElement()->releaseCapture();
-    clearButtonElement()->releaseCapture();
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->disabledStateChanged();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::requiredAttributeChanged()
 {
-    clearButtonElement()->releaseCapture();
     updateClearButtonVisibility();
 }
 
@@ -467,7 +465,6 @@ void BaseMultipleFieldsDateAndTimeInputType::minOrMaxAttributeChanged()
 void BaseMultipleFieldsDateAndTimeInputType::readonlyAttributeChanged()
 {
     spinButtonElement()->releaseCapture();
-    clearButtonElement()->releaseCapture();
     if (DateTimeEditElement* edit = dateTimeEditElement())
         edit->readOnlyStateChanged();
 }
