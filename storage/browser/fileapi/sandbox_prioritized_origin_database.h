@@ -30,7 +30,7 @@ class STORAGE_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
 
   SandboxPrioritizedOriginDatabase(const base::FilePath& file_system_directory,
                                    leveldb::Env* env_override);
-  virtual ~SandboxPrioritizedOriginDatabase();
+  ~SandboxPrioritizedOriginDatabase() override;
 
   // Sets |origin| as primary origin in this database (e.g. may
   // allow faster access).
@@ -40,12 +40,12 @@ class STORAGE_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
   std::string GetPrimaryOrigin();
 
   // SandboxOriginDatabaseInterface overrides.
-  virtual bool HasOriginPath(const std::string& origin) override;
-  virtual bool GetPathForOrigin(const std::string& origin,
-                                base::FilePath* directory) override;
-  virtual bool RemovePathForOrigin(const std::string& origin) override;
-  virtual bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
-  virtual void DropDatabase() override;
+  bool HasOriginPath(const std::string& origin) override;
+  bool GetPathForOrigin(const std::string& origin,
+                        base::FilePath* directory) override;
+  bool RemovePathForOrigin(const std::string& origin) override;
+  bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
+  void DropDatabase() override;
 
   const base::FilePath& primary_origin_file() const {
     return primary_origin_file_;

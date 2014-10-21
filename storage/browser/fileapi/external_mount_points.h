@@ -65,19 +65,18 @@ class STORAGE_EXPORT ExternalMountPoints
                           const base::FilePath& path);
 
   // MountPoints overrides.
-  virtual bool HandlesFileSystemMountType(FileSystemType type) const override;
-  virtual bool RevokeFileSystem(const std::string& mount_name) override;
-  virtual bool GetRegisteredPath(const std::string& mount_name,
-                                 base::FilePath* path) const override;
-  virtual bool CrackVirtualPath(
-      const base::FilePath& virtual_path,
-      std::string* mount_name,
-      FileSystemType* type,
-      std::string* cracked_id,
-      base::FilePath* path,
-      FileSystemMountOption* mount_option) const override;
-  virtual FileSystemURL CrackURL(const GURL& url) const override;
-  virtual FileSystemURL CreateCrackedFileSystemURL(
+  bool HandlesFileSystemMountType(FileSystemType type) const override;
+  bool RevokeFileSystem(const std::string& mount_name) override;
+  bool GetRegisteredPath(const std::string& mount_name,
+                         base::FilePath* path) const override;
+  bool CrackVirtualPath(const base::FilePath& virtual_path,
+                        std::string* mount_name,
+                        FileSystemType* type,
+                        std::string* cracked_id,
+                        base::FilePath* path,
+                        FileSystemMountOption* mount_option) const override;
+  FileSystemURL CrackURL(const GURL& url) const override;
+  FileSystemURL CreateCrackedFileSystemURL(
       const GURL& origin,
       FileSystemType type,
       const base::FilePath& path) const override;
@@ -126,11 +125,10 @@ class STORAGE_EXPORT ExternalMountPoints
 
   // Use |GetSystemInstance| of |CreateRefCounted| to get an instance.
   ExternalMountPoints();
-  virtual ~ExternalMountPoints();
+  ~ExternalMountPoints() override;
 
   // MountPoint overrides.
-  virtual FileSystemURL CrackFileSystemURL(
-      const FileSystemURL& url) const override;
+  FileSystemURL CrackFileSystemURL(const FileSystemURL& url) const override;
 
   // Performs sanity checks on the new mount point.
   // Checks the following:

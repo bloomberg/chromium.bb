@@ -32,22 +32,20 @@ class STORAGE_EXPORT_PRIVATE FileSystemDirURLRequestJob
       FileSystemContext* file_system_context);
 
   // URLRequestJob methods:
-  virtual void Start() override;
-  virtual void Kill() override;
-  virtual bool ReadRawData(net::IOBuffer* buf,
-                           int buf_size,
-                           int* bytes_read) override;
-  virtual bool GetCharset(std::string* charset) override;
+  void Start() override;
+  void Kill() override;
+  bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read) override;
+  bool GetCharset(std::string* charset) override;
 
   // FilterContext methods (via URLRequestJob):
-  virtual bool GetMimeType(std::string* mime_type) const override;
+  bool GetMimeType(std::string* mime_type) const override;
   // TODO(adamk): Implement GetResponseInfo and GetResponseCode to simulate
   // an HTTP response.
 
  private:
   class CallbackDispatcher;
 
-  virtual ~FileSystemDirURLRequestJob();
+  ~FileSystemDirURLRequestJob() override;
 
   void StartAsync();
   void DidAttemptAutoMount(base::File::Error result);

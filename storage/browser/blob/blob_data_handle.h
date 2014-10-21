@@ -29,7 +29,7 @@ class STORAGE_EXPORT BlobDataHandle
     : public base::SupportsUserData::Data {
  public:
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
-  virtual ~BlobDataHandle();  // Maybe be deleted on any thread.
+  ~BlobDataHandle() override;  // Maybe be deleted on any thread.
   BlobData* data() const;  // May only be accessed on the IO thread.
 
   std::string uuid() const;  // May be accessed on any thread.

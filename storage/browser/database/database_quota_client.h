@@ -27,23 +27,23 @@ class STORAGE_EXPORT_PRIVATE DatabaseQuotaClient
   DatabaseQuotaClient(
       base::MessageLoopProxy* tracker_thread,
       DatabaseTracker* tracker);
-  virtual ~DatabaseQuotaClient();
+  ~DatabaseQuotaClient() override;
 
   // QuotaClient method overrides
-  virtual ID id() const override;
-  virtual void OnQuotaManagerDestroyed() override;
-  virtual void GetOriginUsage(const GURL& origin_url,
-                              storage::StorageType type,
-                              const GetUsageCallback& callback) override;
-  virtual void GetOriginsForType(storage::StorageType type,
-                                 const GetOriginsCallback& callback) override;
-  virtual void GetOriginsForHost(storage::StorageType type,
-                                 const std::string& host,
-                                 const GetOriginsCallback& callback) override;
-  virtual void DeleteOriginData(const GURL& origin,
-                                storage::StorageType type,
-                                const DeletionCallback& callback) override;
-  virtual bool DoesSupport(storage::StorageType type) const override;
+  ID id() const override;
+  void OnQuotaManagerDestroyed() override;
+  void GetOriginUsage(const GURL& origin_url,
+                      storage::StorageType type,
+                      const GetUsageCallback& callback) override;
+  void GetOriginsForType(storage::StorageType type,
+                         const GetOriginsCallback& callback) override;
+  void GetOriginsForHost(storage::StorageType type,
+                         const std::string& host,
+                         const GetOriginsCallback& callback) override;
+  void DeleteOriginData(const GURL& origin,
+                        storage::StorageType type,
+                        const DeletionCallback& callback) override;
+  bool DoesSupport(storage::StorageType type) const override;
 
  private:
   scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;

@@ -36,7 +36,7 @@ class STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   FileSystemOperationContext(FileSystemContext* context,
                              base::SequencedTaskRunner* task_runner);
 
-  virtual ~FileSystemOperationContext();
+  ~FileSystemOperationContext() override;
 
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();

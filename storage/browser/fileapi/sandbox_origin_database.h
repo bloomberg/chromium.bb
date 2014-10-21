@@ -33,15 +33,15 @@ class STORAGE_EXPORT_PRIVATE SandboxOriginDatabase
   // at a given time.
   SandboxOriginDatabase(const base::FilePath& file_system_directory,
                         leveldb::Env* env_override);
-  virtual ~SandboxOriginDatabase();
+  ~SandboxOriginDatabase() override;
 
   // SandboxOriginDatabaseInterface overrides.
-  virtual bool HasOriginPath(const std::string& origin) override;
-  virtual bool GetPathForOrigin(const std::string& origin,
-                                base::FilePath* directory) override;
-  virtual bool RemovePathForOrigin(const std::string& origin) override;
-  virtual bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
-  virtual void DropDatabase() override;
+  bool HasOriginPath(const std::string& origin) override;
+  bool GetPathForOrigin(const std::string& origin,
+                        base::FilePath* directory) override;
+  bool RemovePathForOrigin(const std::string& origin) override;
+  bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
+  void DropDatabase() override;
 
   base::FilePath GetDatabasePath() const;
   void RemoveDatabase();

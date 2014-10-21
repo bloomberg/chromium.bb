@@ -32,12 +32,12 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
         virtual_root_path_(virtual_root_path) {
   }
 
-  virtual ~LocalFileEnumerator() {}
+  ~LocalFileEnumerator() override {}
 
-  virtual base::FilePath Next() override;
-  virtual int64 Size() override;
-  virtual base::Time LastModifiedTime() override;
-  virtual bool IsDirectory() override;
+  base::FilePath Next() override;
+  int64 Size() override;
+  base::Time LastModifiedTime() override;
+  bool IsDirectory() override;
 
  private:
   base::FileEnumerator file_enum_;

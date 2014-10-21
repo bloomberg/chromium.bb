@@ -41,15 +41,15 @@ class SandboxQuotaObserver
                        base::SequencedTaskRunner* update_notify_runner,
                        ObfuscatedFileUtil* sandbox_file_util,
                        FileSystemUsageCache* file_system_usage_cache_);
-  virtual ~SandboxQuotaObserver();
+  ~SandboxQuotaObserver() override;
 
   // FileUpdateObserver overrides.
-  virtual void OnStartUpdate(const FileSystemURL& url) override;
-  virtual void OnUpdate(const FileSystemURL& url, int64 delta) override;
-  virtual void OnEndUpdate(const FileSystemURL& url) override;
+  void OnStartUpdate(const FileSystemURL& url) override;
+  void OnUpdate(const FileSystemURL& url, int64 delta) override;
+  void OnEndUpdate(const FileSystemURL& url) override;
 
   // FileAccessObserver overrides.
-  virtual void OnAccess(const FileSystemURL& url) override;
+  void OnAccess(const FileSystemURL& url) override;
 
   void SetUsageCacheEnabled(const GURL& origin,
                             FileSystemType type,

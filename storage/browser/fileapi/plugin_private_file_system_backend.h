@@ -44,7 +44,7 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       const base::FilePath& profile_path,
       storage::SpecialStoragePolicy* special_storage_policy,
       const FileSystemOptions& file_system_options);
-  virtual ~PluginPrivateFileSystemBackend();
+  ~PluginPrivateFileSystemBackend() override;
 
   // This must be used to open 'private' filesystem instead of regular
   // OpenFileSystem.
@@ -61,62 +61,58 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       const StatusCallback& callback);
 
   // FileSystemBackend overrides.
-  virtual bool CanHandleType(FileSystemType type) const override;
-  virtual void Initialize(FileSystemContext* context) override;
-  virtual void ResolveURL(const FileSystemURL& url,
-                          OpenFileSystemMode mode,
-                          const OpenFileSystemCallback& callback) override;
-  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) override;
-  virtual WatcherManager* GetWatcherManager(FileSystemType type) override;
-  virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
+  bool CanHandleType(FileSystemType type) const override;
+  void Initialize(FileSystemContext* context) override;
+  void ResolveURL(const FileSystemURL& url,
+                  OpenFileSystemMode mode,
+                  const OpenFileSystemCallback& callback) override;
+  AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) override;
+  WatcherManager* GetWatcherManager(FileSystemType type) override;
+  CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
       base::File::Error* error_code) override;
-  virtual FileSystemOperation* CreateFileSystemOperation(
+  FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,
       base::File::Error* error_code) const override;
-  virtual bool SupportsStreaming(const FileSystemURL& url) const override;
-  virtual bool HasInplaceCopyImplementation(
+  bool SupportsStreaming(const FileSystemURL& url) const override;
+  bool HasInplaceCopyImplementation(
       storage::FileSystemType type) const override;
-  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
       int64 max_bytes_to_read,
       const base::Time& expected_modification_time,
       FileSystemContext* context) const override;
-  virtual scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
+  scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
       int64 offset,
       FileSystemContext* context) const override;
-  virtual FileSystemQuotaUtil* GetQuotaUtil() override;
-  virtual const UpdateObserverList* GetUpdateObservers(
+  FileSystemQuotaUtil* GetQuotaUtil() override;
+  const UpdateObserverList* GetUpdateObservers(
       FileSystemType type) const override;
-  virtual const ChangeObserverList* GetChangeObservers(
+  const ChangeObserverList* GetChangeObservers(
       FileSystemType type) const override;
-  virtual const AccessObserverList* GetAccessObservers(
+  const AccessObserverList* GetAccessObservers(
       FileSystemType type) const override;
 
   // FileSystemQuotaUtil overrides.
-  virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
+  base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) override;
-  virtual void GetOriginsForTypeOnFileTaskRunner(
-      FileSystemType type,
-      std::set<GURL>* origins) override;
-  virtual void GetOriginsForHostOnFileTaskRunner(
-      FileSystemType type,
-      const std::string& host,
-      std::set<GURL>* origins) override;
-  virtual int64 GetOriginUsageOnFileTaskRunner(
-      FileSystemContext* context,
+  void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
+                                         std::set<GURL>* origins) override;
+  void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
+                                         const std::string& host,
+                                         std::set<GURL>* origins) override;
+  int64 GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
+                                       const GURL& origin_url,
+                                       FileSystemType type) override;
+  scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
       FileSystemType type) override;
-  virtual scoped_refptr<QuotaReservation>
-      CreateQuotaReservationOnFileTaskRunner(
-          const GURL& origin_url,
-          FileSystemType type) override;
 
  private:
   friend class content::PluginPrivateFileSystemBackendTest;

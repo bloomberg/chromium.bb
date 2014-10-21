@@ -87,7 +87,7 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       storage::SpecialStoragePolicy* special_storage_policy,
       const FileSystemOptions& file_system_options);
 
-  virtual ~SandboxFileSystemBackendDelegate();
+  ~SandboxFileSystemBackendDelegate() override;
 
   // Returns an origin enumerator of sandbox filesystem.
   // This method can only be called on the file thread.
@@ -127,26 +127,22 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       FileSystemType type) const;
 
   // FileSystemQuotaUtil overrides.
-  virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
+  base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) override;
-  virtual void GetOriginsForTypeOnFileTaskRunner(
-      FileSystemType type,
-      std::set<GURL>* origins) override;
-  virtual void GetOriginsForHostOnFileTaskRunner(
-      FileSystemType type,
-      const std::string& host,
-      std::set<GURL>* origins) override;
-  virtual int64 GetOriginUsageOnFileTaskRunner(
-      FileSystemContext* context,
+  void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
+                                         std::set<GURL>* origins) override;
+  void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
+                                         const std::string& host,
+                                         std::set<GURL>* origins) override;
+  int64 GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
+                                       const GURL& origin_url,
+                                       FileSystemType type) override;
+  scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
       FileSystemType type) override;
-  virtual scoped_refptr<QuotaReservation>
-      CreateQuotaReservationOnFileTaskRunner(
-          const GURL& origin_url,
-          FileSystemType type) override;
 
   // Adds an observer for the secified |type| of a file system, bound to
   // |task_runner|.

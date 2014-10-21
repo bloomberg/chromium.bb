@@ -31,13 +31,14 @@ namespace storage {
 class STORAGE_EXPORT LocalFileStreamWriter
     : public NON_EXPORTED_BASE(FileStreamWriter) {
  public:
-  virtual ~LocalFileStreamWriter();
+  ~LocalFileStreamWriter() override;
 
   // FileStreamWriter overrides.
-  virtual int Write(net::IOBuffer* buf, int buf_len,
-                    const net::CompletionCallback& callback) override;
-  virtual int Cancel(const net::CompletionCallback& callback) override;
-  virtual int Flush(const net::CompletionCallback& callback) override;
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback) override;
+  int Cancel(const net::CompletionCallback& callback) override;
+  int Flush(const net::CompletionCallback& callback) override;
 
  private:
   friend class content::LocalFileStreamWriterTest;

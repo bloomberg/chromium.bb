@@ -27,15 +27,15 @@ class STORAGE_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
       const std::string& origin,
       const base::FilePath& file_system_directory,
       const base::FilePath& origin_directory);
-  virtual ~SandboxIsolatedOriginDatabase();
+  ~SandboxIsolatedOriginDatabase() override;
 
   // SandboxOriginDatabaseInterface overrides.
-  virtual bool HasOriginPath(const std::string& origin) override;
-  virtual bool GetPathForOrigin(const std::string& origin,
-                                base::FilePath* directory) override;
-  virtual bool RemovePathForOrigin(const std::string& origin) override;
-  virtual bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
-  virtual void DropDatabase() override;
+  bool HasOriginPath(const std::string& origin) override;
+  bool GetPathForOrigin(const std::string& origin,
+                        base::FilePath* directory) override;
+  bool RemovePathForOrigin(const std::string& origin) override;
+  bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
+  void DropDatabase() override;
 
   // TODO(kinuko): Deprecate this after a few release cycles, e.g. around M33.
   static void MigrateBackFromObsoleteOriginDatabase(

@@ -29,21 +29,19 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
       : files_(files) {
     file_iter_ = files_.begin();
   }
-  virtual ~SetFileEnumerator() {}
+  ~SetFileEnumerator() override {}
 
   // AbstractFileEnumerator overrides.
-  virtual base::FilePath Next() override {
+  base::FilePath Next() override {
     if (file_iter_ == files_.end())
       return base::FilePath();
     base::FilePath platform_file = (file_iter_++)->path;
     NativeFileUtil::GetFileInfo(platform_file, &file_info_);
     return platform_file;
   }
-  virtual int64 Size() override { return file_info_.size; }
-  virtual bool IsDirectory() override { return file_info_.is_directory; }
-  virtual base::Time LastModifiedTime() override {
-    return file_info_.last_modified;
-  }
+  int64 Size() override { return file_info_.size; }
+  bool IsDirectory() override { return file_info_.is_directory; }
+  base::Time LastModifiedTime() override { return file_info_.last_modified; }
 
  private:
   std::vector<FileInfo> files_;

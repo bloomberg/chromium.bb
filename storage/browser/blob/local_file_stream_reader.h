@@ -33,13 +33,13 @@ namespace storage {
 class STORAGE_EXPORT LocalFileStreamReader
     : public NON_EXPORTED_BASE(FileStreamReader) {
  public:
-  virtual ~LocalFileStreamReader();
+  ~LocalFileStreamReader() override;
 
   // FileStreamReader overrides.
-  virtual int Read(net::IOBuffer* buf, int buf_len,
-                   const net::CompletionCallback& callback) override;
-  virtual int64 GetLength(
-      const net::Int64CompletionCallback& callback) override;
+  int Read(net::IOBuffer* buf,
+           int buf_len,
+           const net::CompletionCallback& callback) override;
+  int64 GetLength(const net::Int64CompletionCallback& callback) override;
 
  private:
   friend class FileStreamReader;

@@ -81,12 +81,12 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
     : file_enum_(root_path, recursive, file_type) {
   }
 
-  virtual ~NativeFileEnumerator() {}
+  ~NativeFileEnumerator() override {}
 
-  virtual base::FilePath Next() override;
-  virtual int64 Size() override;
-  virtual base::Time LastModifiedTime() override;
-  virtual bool IsDirectory() override;
+  base::FilePath Next() override;
+  int64 Size() override;
+  base::Time LastModifiedTime() override;
+  bool IsDirectory() override;
 
  private:
   base::FileEnumerator file_enum_;

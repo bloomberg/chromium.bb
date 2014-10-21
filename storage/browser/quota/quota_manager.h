@@ -261,7 +261,7 @@ class STORAGE_EXPORT QuotaManager
   static int64 kSyncableStorageDefaultHostQuota;
 
  protected:
-  virtual ~QuotaManager();
+  ~QuotaManager() override;
 
  private:
   friend class base::DeleteHelper<QuotaManager>;
@@ -356,14 +356,12 @@ class STORAGE_EXPORT QuotaManager
                                                int64 unlimited_usage);
 
   // QuotaEvictionHandler.
-  virtual void GetLRUOrigin(
-      StorageType type,
-      const GetLRUOriginCallback& callback) override;
-  virtual void EvictOriginData(
-      const GURL& origin,
-      StorageType type,
-      const EvictOriginDataCallback& callback) override;
-  virtual void GetUsageAndQuotaForEviction(
+  void GetLRUOrigin(StorageType type,
+                    const GetLRUOriginCallback& callback) override;
+  void EvictOriginData(const GURL& origin,
+                       StorageType type,
+                       const EvictOriginDataCallback& callback) override;
+  void GetUsageAndQuotaForEviction(
       const UsageAndQuotaCallback& callback) override;
 
   void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,

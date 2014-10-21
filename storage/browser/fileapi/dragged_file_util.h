@@ -20,15 +20,14 @@ class STORAGE_EXPORT_PRIVATE DraggedFileUtil
     : public LocalFileUtil {
  public:
   DraggedFileUtil();
-  virtual ~DraggedFileUtil() {}
+  ~DraggedFileUtil() override {}
 
   // FileSystemFileUtil overrides.
-  virtual base::File::Error GetFileInfo(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
-      base::File::Info* file_info,
-      base::FilePath* platform_path) override;
-  virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+  base::File::Error GetFileInfo(FileSystemOperationContext* context,
+                                const FileSystemURL& url,
+                                base::File::Info* file_info,
+                                base::FilePath* platform_path) override;
+  scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) override;
 

@@ -21,9 +21,9 @@ class FileSystemProtocolHandler
  public:
   FileSystemProtocolHandler(const std::string& storage_domain,
                             FileSystemContext* context);
-  virtual ~FileSystemProtocolHandler();
+  ~FileSystemProtocolHandler() override;
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 

@@ -40,28 +40,21 @@ class STORAGE_EXPORT QuotaBackendImpl
                    ObfuscatedFileUtil* obfuscated_file_util,
                    FileSystemUsageCache* file_system_usage_cache,
                    storage::QuotaManagerProxy* quota_manager_proxy);
-  virtual ~QuotaBackendImpl();
+  ~QuotaBackendImpl() override;
 
   // QuotaReservationManager::QuotaBackend overrides.
-  virtual void ReserveQuota(
-      const GURL& origin,
-      FileSystemType type,
-      int64 delta,
-      const ReserveQuotaCallback& callback) override;
-  virtual void ReleaseReservedQuota(
-      const GURL& origin,
-      FileSystemType type,
-      int64 size) override;
-  virtual void CommitQuotaUsage(
-      const GURL& origin,
-      FileSystemType type,
-      int64 delta) override;
-  virtual void IncrementDirtyCount(
-      const GURL& origin,
-      FileSystemType type) override;
-  virtual void DecrementDirtyCount(
-      const GURL& origin,
-      FileSystemType type) override;
+  void ReserveQuota(const GURL& origin,
+                    FileSystemType type,
+                    int64 delta,
+                    const ReserveQuotaCallback& callback) override;
+  void ReleaseReservedQuota(const GURL& origin,
+                            FileSystemType type,
+                            int64 size) override;
+  void CommitQuotaUsage(const GURL& origin,
+                        FileSystemType type,
+                        int64 delta) override;
+  void IncrementDirtyCount(const GURL& origin, FileSystemType type) override;
+  void DecrementDirtyCount(const GURL& origin, FileSystemType type) override;
 
  private:
   friend class content::QuotaBackendImplTest;

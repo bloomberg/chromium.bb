@@ -35,7 +35,7 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   UsageTracker(const QuotaClientList& clients, StorageType type,
                SpecialStoragePolicy* special_storage_policy,
                StorageMonitor* storage_monitor);
-  virtual ~UsageTracker();
+  ~UsageTracker() override;
 
   StorageType type() const { return type_; }
   ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);
@@ -107,7 +107,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                      StorageType type,
                      SpecialStoragePolicy* special_storage_policy,
                      StorageMonitor* storage_monitor);
-  virtual ~ClientUsageTracker();
+  ~ClientUsageTracker() override;
 
   void GetGlobalLimitedUsage(const UsageCallback& callback);
   void GetGlobalUsage(const GlobalUsageCallback& callback);
@@ -169,9 +169,9 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   bool GetCachedOriginUsage(const GURL& origin, int64* usage) const;
 
   // SpecialStoragePolicy::Observer overrides
-  virtual void OnGranted(const GURL& origin, int change_flags) override;
-  virtual void OnRevoked(const GURL& origin, int change_flags) override;
-  virtual void OnCleared() override;
+  void OnGranted(const GURL& origin, int change_flags) override;
+  void OnRevoked(const GURL& origin, int change_flags) override;
+  void OnCleared() override;
 
   bool IsStorageUnlimited(const GURL& origin) const;
 

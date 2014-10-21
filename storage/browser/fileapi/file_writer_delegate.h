@@ -41,7 +41,7 @@ class STORAGE_EXPORT_PRIVATE FileWriterDelegate
 
   FileWriterDelegate(scoped_ptr<FileStreamWriter> file_writer,
                      FlushPolicy flush_policy);
-  virtual ~FileWriterDelegate();
+  ~FileWriterDelegate() override;
 
   void Start(scoped_ptr<net::URLRequest> request,
              const DelegateWriteCallback& write_callback);
@@ -51,20 +51,19 @@ class STORAGE_EXPORT_PRIVATE FileWriterDelegate
   // deleting this).
   void Cancel();
 
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override;
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) override;
-  virtual void OnCertificateRequested(
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* auth_info) override;
+  void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     const net::SSLInfo& ssl_info,
-                                     bool fatal) override;
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
  private:
   void OnGetFileInfoAndStartRequest(
