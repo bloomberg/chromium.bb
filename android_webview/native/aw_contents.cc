@@ -774,6 +774,11 @@ void AwContents::UpdateParentDrawConstraints() {
   browser_view_renderer_.UpdateParentDrawConstraints();
 }
 
+void AwContents::DidSkipCommitFrame() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  browser_view_renderer_.DidSkipCommitFrame();
+}
+
 void AwContents::OnNewPicture() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();

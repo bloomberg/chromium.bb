@@ -49,6 +49,7 @@ class SharedRendererState {
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void PostExternalDrawConstraintsToChildCompositor(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
+  void DidSkipCommitFrame();
 
   const ParentCompositorDrawConstraints ParentDrawConstraints() const;
 
@@ -67,6 +68,7 @@ class SharedRendererState {
   void ResetRequestDrawGLCallback();
   void ClientRequestDrawGLOnUIThread();
   void UpdateParentDrawConstraintsOnUIThread();
+  void DidSkipCommitFrameOnUIThread();
   void SetInsideHardwareRelease(bool inside);
 
   scoped_refptr<base::MessageLoopProxy> ui_loop_;

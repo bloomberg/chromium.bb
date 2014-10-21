@@ -144,6 +144,7 @@ void HardwareRenderer::CommitFrame() {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
+    shared_renderer_state_->DidSkipCommitFrame();
     return;
   }
 

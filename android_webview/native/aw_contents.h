@@ -192,6 +192,7 @@ class AwContents : public FindHelper::Listener,
   virtual bool RequestDrawGL(jobject canvas, bool wait_for_completion) override;
   virtual void PostInvalidate() override;
   virtual void UpdateParentDrawConstraints() override;
+  virtual void DidSkipCommitFrame() override;
   virtual void OnNewPicture() override;
   virtual gfx::Point GetLocationOnScreen() override;
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) override;

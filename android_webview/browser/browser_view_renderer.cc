@@ -85,6 +85,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       on_new_picture_enable_(false),
       clear_view_(false),
       compositor_needs_continuous_invalidate_(false),
+      invalidate_after_composite_(false),
       block_invalidates_(false),
       fallback_tick_pending_(false),
       width_(0),
@@ -211,13 +212,6 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
     return false;
 
   shared_renderer_state_->SetScrollOffset(last_on_draw_scroll_offset_);
-  if (last_on_draw_global_visible_rect_.IsEmpty()) {
-    TRACE_EVENT_INSTANT0("android_webview",
-                         "EarlyOut_EmptyVisibleRect",
-                         TRACE_EVENT_SCOPE_THREAD);
-    shared_renderer_state_->SetForceInvalidateOnNextDrawGL(true);
-    return client_->RequestDrawGL(java_canvas, false);
-  }
 
   if (!hardware_enabled_) {
     hardware_enabled_ = compositor_->InitializeHwDraw();
@@ -228,12 +222,21 @@ bool BrowserViewRenderer::OnDrawHardware(jobject java_canvas) {
   if (!hardware_enabled_)
     return false;
 
+  if (last_on_draw_global_visible_rect_.IsEmpty() &&
+      parent_draw_constraints_.surface_rect.IsEmpty()) {
+    TRACE_EVENT_INSTANT0("android_webview",
+                         "EarlyOut_EmptyVisibleRect",
+                         TRACE_EVENT_SCOPE_THREAD);
+    shared_renderer_state_->SetForceInvalidateOnNextDrawGL(true);
+    return client_->RequestDrawGL(java_canvas, false);
+  }
+
   ReturnResourceFromParent();
   if (shared_renderer_state_->HasCompositorFrame()) {
     TRACE_EVENT_INSTANT0("android_webview",
                          "EarlyOut_PreviousFrameUnconsumed",
                          TRACE_EVENT_SCOPE_THREAD);
-    SkippedCompositeInDraw();
+    DidSkipCompositeInDraw();
     return client_->RequestDrawGL(java_canvas, false);
   }
 
@@ -262,10 +265,12 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
   // applied onto the layer so global visible rect does not make sense here.
   // In this case, just use the surface rect for tiling.
   gfx::Rect viewport_rect_for_tile_priority;
-  if (parent_draw_constraints_.is_layer)
+  if (parent_draw_constraints_.is_layer ||
+      last_on_draw_global_visible_rect_.IsEmpty()) {
     viewport_rect_for_tile_priority = parent_draw_constraints_.surface_rect;
-  else
+  } else {
     viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
+  }
 
   scoped_ptr<cc::CompositorFrame> frame =
       compositor_->DemandDrawHw(surface_size,
@@ -282,11 +287,13 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
 void BrowserViewRenderer::UpdateParentDrawConstraints() {
   // Post an invalidate if the parent draw constraints are stale and there is
   // no pending invalidate.
-  if (shared_renderer_state_->NeedsForceInvalidateOnNextDrawGL() ||
+  bool needs_force_invalidate =
+      shared_renderer_state_->NeedsForceInvalidateOnNextDrawGL();
+  if (needs_force_invalidate ||
       !parent_draw_constraints_.Equals(
-        shared_renderer_state_->ParentDrawConstraints())) {
+          shared_renderer_state_->ParentDrawConstraints())) {
     shared_renderer_state_->SetForceInvalidateOnNextDrawGL(false);
-    EnsureContinuousInvalidation(true, false);
+    EnsureContinuousInvalidation(true, needs_force_invalidate);
   }
 }
 
@@ -308,6 +315,11 @@ void BrowserViewRenderer::ReturnResourceFromParent() {
   if (compositor_ && !frame_ack.resources.empty()) {
     compositor_->ReturnResources(frame_ack);
   }
+}
+
+void BrowserViewRenderer::DidSkipCommitFrame() {
+  // Treat it the same way as skipping onDraw.
+  DidSkipCompositeInDraw();
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(jobject java_canvas) {
@@ -656,11 +668,17 @@ void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
 void BrowserViewRenderer::EnsureContinuousInvalidation(
     bool force_invalidate,
     bool skip_reschedule_tick) {
+  if (force_invalidate)
+    invalidate_after_composite_ = true;
+
   // This method should be called again when any of these conditions change.
   bool need_invalidate =
-      compositor_needs_continuous_invalidate_ || force_invalidate;
+      compositor_needs_continuous_invalidate_ || invalidate_after_composite_;
   if (!need_invalidate || block_invalidates_)
     return;
+
+  if (!compositor_needs_continuous_invalidate_ && invalidate_after_composite_)
+    invalidate_after_composite_ = false;
 
   // Always call view invalidate. We rely the Android framework to ignore the
   // invalidate when it's not needed such as when view is not visible.
@@ -764,9 +782,9 @@ void BrowserViewRenderer::DidComposite() {
   EnsureContinuousInvalidation(false, false);
 }
 
-void BrowserViewRenderer::SkippedCompositeInDraw() {
+void BrowserViewRenderer::DidSkipCompositeInDraw() {
   block_invalidates_ = false;
-  EnsureContinuousInvalidation(false, true);
+  EnsureContinuousInvalidation(true, true);
 }
 
 std::string BrowserViewRenderer::ToString() const {

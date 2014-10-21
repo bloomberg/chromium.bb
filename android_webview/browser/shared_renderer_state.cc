@@ -186,6 +186,18 @@ void SharedRendererState::PostExternalDrawConstraintsToChildCompositor(
   }
 }
 
+void SharedRendererState::DidSkipCommitFrame() {
+  ui_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&SharedRendererState::DidSkipCommitFrameOnUIThread,
+                 ui_thread_weak_ptr_));
+}
+
+void SharedRendererState::DidSkipCommitFrameOnUIThread() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  client_on_ui_->DidSkipCommitFrame();
+}
+
 const ParentCompositorDrawConstraints
 SharedRendererState::ParentDrawConstraints() const {
   base::AutoLock lock(lock_);

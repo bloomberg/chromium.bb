@@ -31,6 +31,9 @@ class BrowserViewRendererClient {
   // Called to update the parent draw constraints in browser view renderer.
   virtual void UpdateParentDrawConstraints() = 0;
 
+  // Called if commit is skipped due to pipeline stall.
+  virtual void DidSkipCommitFrame() = 0;
+
   // Called to get view's absolute location on the screen.
   virtual gfx::Point GetLocationOnScreen() = 0;
 
