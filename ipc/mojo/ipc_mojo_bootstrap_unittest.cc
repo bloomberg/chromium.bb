@@ -23,8 +23,9 @@ class TestingDelegate : public IPC::MojoBootstrap::Delegate {
  public:
   TestingDelegate() : passed_(false) {}
 
-  void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
-  void OnBootstrapError() override;
+  virtual void OnPipeAvailable(
+      mojo::embedder::ScopedPlatformHandle handle) override;
+  virtual void OnBootstrapError() override;
 
   bool passed() const { return passed_; }
 

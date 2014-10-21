@@ -56,16 +56,16 @@ class IPC_EXPORT ChannelPosix : public Channel,
  public:
   ChannelPosix(const IPC::ChannelHandle& channel_handle, Mode mode,
                Listener* listener);
-  ~ChannelPosix() override;
+  virtual ~ChannelPosix();
 
   // Channel implementation
-  bool Connect() override;
-  void Close() override;
-  bool Send(Message* message) override;
-  base::ProcessId GetPeerPID() const override;
-  base::ProcessId GetSelfPID() const override;
-  int GetClientFileDescriptor() const override;
-  base::ScopedFD TakeClientFileDescriptor() override;
+  virtual bool Connect() override;
+  virtual void Close() override;
+  virtual bool Send(Message* message) override;
+  virtual base::ProcessId GetPeerPID() const override;
+  virtual base::ProcessId GetSelfPID() const override;
+  virtual int GetClientFileDescriptor() const override;
+  virtual base::ScopedFD TakeClientFileDescriptor() override;
 
   // Returns true if the channel supports listening for connections.
   bool AcceptsConnections() const;
@@ -102,10 +102,12 @@ class IPC_EXPORT ChannelPosix : public Channel,
   void QueueCloseFDMessage(int fd, int hops);
 
   // ChannelReader implementation.
-  ReadState ReadData(char* buffer, int buffer_len, int* bytes_read) override;
-  bool WillDispatchInputMessage(Message* msg) override;
-  bool DidEmptyInputBuffers() override;
-  void HandleInternalMessage(const Message& msg) override;
+  virtual ReadState ReadData(char* buffer,
+                             int buffer_len,
+                             int* bytes_read) override;
+  virtual bool WillDispatchInputMessage(Message* msg) override;
+  virtual bool DidEmptyInputBuffers() override;
+  virtual void HandleInternalMessage(const Message& msg) override;
 
 #if defined(IPC_USES_READWRITE)
   // Reads the next message from the fd_pipe_ and appends them to the
@@ -127,8 +129,8 @@ class IPC_EXPORT ChannelPosix : public Channel,
   void ClearInputFDs();
 
   // MessageLoopForIO::Watcher implementation.
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
+  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
 
   Mode mode_;
 

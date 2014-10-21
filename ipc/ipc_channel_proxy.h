@@ -76,7 +76,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
-  ~ChannelProxy() override;
+  virtual ~ChannelProxy();
 
   // Initializes the channel proxy. Only call this once to initialize a channel
   // proxy that was not initialized in its constructor. If create_pipe_now is
@@ -98,7 +98,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
   // Send a message asynchronously.  The message is routed to the background
   // thread where it is passed to the IPC::Channel's Send method.
-  bool Send(Message* message) override;
+  virtual bool Send(Message* message) override;
 
   // Used to intercept messages as they are received on the background thread.
   //
@@ -152,12 +152,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
    protected:
     friend class base::RefCountedThreadSafe<Context>;
-    ~Context() override;
+    virtual ~Context();
 
     // IPC::Listener methods:
-    bool OnMessageReceived(const Message& message) override;
-    void OnChannelConnected(int32 peer_pid) override;
-    void OnChannelError() override;
+    virtual bool OnMessageReceived(const Message& message) override;
+    virtual void OnChannelConnected(int32 peer_pid) override;
+    virtual void OnChannelError() override;
 
     // Like OnMessageReceived but doesn't try the filters.
     bool OnMessageReceivedNoFilter(const Message& message);

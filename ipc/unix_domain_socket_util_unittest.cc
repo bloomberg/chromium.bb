@@ -27,7 +27,9 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
         base::Bind(&SocketAcceptor::StartWatching, base::Unretained(this), fd));
   }
 
-  ~SocketAcceptor() override { Close(); }
+  virtual ~SocketAcceptor() {
+    Close();
+  }
 
   int server_fd() const { return server_fd_; }
 
@@ -58,13 +60,13 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
     watcher->StopWatchingFileDescriptor();
     delete watcher;
   }
-  void OnFileCanReadWithoutBlocking(int fd) override {
+  virtual void OnFileCanReadWithoutBlocking(int fd) override {
     ASSERT_EQ(-1, server_fd_);
     IPC::ServerAcceptConnection(fd, &server_fd_);
     watcher_->StopWatchingFileDescriptor();
     accepted_event_.Signal();
   }
-  void OnFileCanWriteWithoutBlocking(int fd) override {}
+  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
 
   int server_fd_;
   base::MessageLoopProxy* target_thread_;

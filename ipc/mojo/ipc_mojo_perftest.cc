@@ -29,7 +29,7 @@ public:
 
   MojoChannelPerfTest();
 
-  scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+  virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::TaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
@@ -37,7 +37,7 @@ public:
                                                  handle);
   }
 
-  bool DidStartClient() override {
+  virtual bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
     host_->OnClientLaunched(client_process());
@@ -73,7 +73,8 @@ class MojoTestClient : public IPC::test::PingPongTestClient {
 
   MojoTestClient();
 
-  scoped_ptr<IPC::Channel> CreateChannel(IPC::Listener* listener) override;
+  virtual scoped_ptr<IPC::Channel> CreateChannel(
+      IPC::Listener* listener) override;
 };
 
 MojoTestClient::MojoTestClient() {

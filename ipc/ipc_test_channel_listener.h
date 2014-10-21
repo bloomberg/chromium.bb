@@ -20,10 +20,10 @@ class TestChannelListener : public Listener {
   static void SendOneMessage(Sender* sender, const char* text);
 
   TestChannelListener() : sender_(NULL), messages_left_(50) {}
-  ~TestChannelListener() override {}
+  virtual ~TestChannelListener() {}
 
-  bool OnMessageReceived(const Message& message) override;
-  void OnChannelError() override;
+  virtual bool OnMessageReceived(const Message& message) override;
+  virtual void OnChannelError() override;
 
   void Init(Sender* s) {
     sender_ = s;

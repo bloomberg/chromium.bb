@@ -45,10 +45,10 @@ class IPC_EXPORT ForwardingMessageFilter : public MessageFilter {
   void RemoveRoute(int routing_id);
 
   // MessageFilter methods:
-  bool OnMessageReceived(const Message& message) override;
+  virtual bool OnMessageReceived(const Message& message) override;
 
  private:
-  ~ForwardingMessageFilter() override;
+  virtual ~ForwardingMessageFilter();
 
   std::set<int> message_ids_to_filter_;
 

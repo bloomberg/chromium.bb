@@ -25,7 +25,7 @@ class IPC_EXPORT SyncMessage : public Message {
  public:
   SyncMessage(int32 routing_id, uint32 type, PriorityValue priority,
               MessageReplyDeserializer* deserializer);
-  ~SyncMessage() override;
+  virtual ~SyncMessage();
 
   // Call this to get a deserializer for the output parameters.
   // Note that this can only be called once, and the caller is responsible

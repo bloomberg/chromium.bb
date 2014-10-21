@@ -73,19 +73,19 @@ class Message;
 class TestSink : public Channel {
  public:
   TestSink();
-  ~TestSink() override;
+  virtual ~TestSink();
 
   // Interface in IPC::Channel. This copies the message to the sink and then
   // deletes it.
-  bool Send(IPC::Message* message) override;
-  bool Connect() override WARN_UNUSED_RESULT;
-  void Close() override;
-  base::ProcessId GetPeerPID() const override;
-  base::ProcessId GetSelfPID() const override;
+  virtual bool Send(IPC::Message* message) override;
+  virtual bool Connect() override WARN_UNUSED_RESULT;
+  virtual void Close() override;
+  virtual base::ProcessId GetPeerPID() const override;
+  virtual base::ProcessId GetSelfPID() const override;
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
-  int GetClientFileDescriptor() const override;
-  base::ScopedFD TakeClientFileDescriptor() override;
+  virtual int GetClientFileDescriptor() const override;
+  virtual base::ScopedFD TakeClientFileDescriptor() override;
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Used by the source of the messages to send the message to the sink. This

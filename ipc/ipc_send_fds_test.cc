@@ -33,7 +33,7 @@ const char* kDevZeroPath = "/dev/zero";
 
 class MyChannelDescriptorListenerBase : public IPC::Listener {
  public:
-  bool OnMessageReceived(const IPC::Message& message) override {
+  virtual bool OnMessageReceived(const IPC::Message& message) override {
     PickleIterator iter(message);
 
     base::FileDescriptor descriptor;
@@ -60,10 +60,12 @@ class MyChannelDescriptorListener : public MyChannelDescriptorListenerBase {
     return num_fds_received_ == kNumFDsToSend;
   }
 
-  void OnChannelError() override { base::MessageLoop::current()->Quit(); }
+  virtual void OnChannelError() override {
+    base::MessageLoop::current()->Quit();
+  }
 
  protected:
-  void HandleFD(int fd) override {
+  virtual void HandleFD(int fd) override {
     // Check that we can read from the FD.
     char buf;
     ssize_t amt_read = read(fd, &buf, 1);
@@ -200,7 +202,9 @@ class MyCBListener : public MyChannelDescriptorListenerBase {
     }
 
  protected:
-  void HandleFD(int fd) override { cb_.Run(fd); }
+  virtual void HandleFD(int fd) override {
+    cb_.Run(fd);
+  }
  private:
   base::Callback<void(int)> cb_;
 };
