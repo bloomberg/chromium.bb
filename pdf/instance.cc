@@ -779,6 +779,14 @@ void Instance::StopFind() {
 
 void Instance::Zoom(double scale, bool text_only) {
   UserMetricsRecordAction("PDF.ZoomFromBrowser");
+
+  // If the zoom level doesn't change it means that this zoom change might have
+  // been initiated by the plugin. In that case, we don't want to change the
+  // zoom mode to ZOOM_SCALE as it may have been intentionally set to
+  // ZOOM_FIT_TO_PAGE or some other value when the zoom was last changed.
+  if (scale == zoom_)
+    return;
+
   SetZoom(ZOOM_SCALE, scale);
 }
 
