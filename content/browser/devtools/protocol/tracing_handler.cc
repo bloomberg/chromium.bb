@@ -20,12 +20,6 @@ void TracingHandler::SetClient(scoped_ptr<Client> client) {
   client_.swap(client);
 }
 
-Response TracingHandler::Start(const std::string& categories,
-                               const std::string& options,
-                               const double* buffer_usage_reporting_interval) {
-  return Response::FallThrough();
-}
-
 scoped_refptr<DevToolsProtocol::Response> TracingHandler::Start(
     const std::string& categories,
     const std::string& options,
@@ -34,8 +28,12 @@ scoped_refptr<DevToolsProtocol::Response> TracingHandler::Start(
   return NULL;
 }
 
-Response TracingHandler::End() {
-  return Response::FallThrough();
+scoped_refptr<DevToolsProtocol::Response> TracingHandler::Start(
+    const std::string* categories,
+    const std::string* options,
+    const double* buffer_usage_reporting_interval,
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  return NULL;
 }
 
 scoped_refptr<DevToolsProtocol::Response> TracingHandler::End(
