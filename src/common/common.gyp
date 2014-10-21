@@ -49,7 +49,6 @@
         'android/include/stab.h',
         'android/include/sys/procfs.h',
         'android/include/sys/signal.h',
-        'android/include/sys/ucontext.h',
         'android/include/sys/user.h',
         'android/include/ucontext.h',
         'android/testing/include/wchar.h',
