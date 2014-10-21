@@ -397,6 +397,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(articleTag))
         return ArticleRole;
 
+    if (node && node->hasTagName(blockquoteTag))
+        return BlockquoteRole;
+
     if (node && node->hasTagName(mainTag))
         return MainRole;
 
@@ -708,6 +711,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
     // List items play an important role in defining the structure of lists. They should not be ignored.
     if (roleValue() == ListItemRole)
+        return false;
+
+    if (roleValue() == BlockquoteRole)
         return false;
 
     if (roleValue() == DialogRole)

@@ -178,6 +178,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleAnnotation, AnnotationRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleApplication, ApplicationRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleArticle, ArticleRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleBanner, BannerRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleBlockquote, BlockquoteRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleBrowser, BrowserRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleBusyIndicator, BusyIndicatorRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleButton, ButtonRole);

@@ -58,6 +58,7 @@ enum AccessibilityRole {
     ApplicationRole,
     ArticleRole,
     BannerRole,
+    BlockquoteRole,
     BrowserRole,
     BusyIndicatorRole,
     ButtonRole,

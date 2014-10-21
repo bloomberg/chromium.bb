@@ -255,6 +255,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return LabelRole;
     if (isHTMLDListElement(*node()))
         return DescriptionListRole;
+    if (node()->isElementNode() && node()->hasTagName(blockquoteTag))
+        return BlockquoteRole;
     if (node()->isElementNode() && node()->hasTagName(figcaptionTag))
         return FigcaptionRole;
     if (node()->isElementNode() && node()->hasTagName(figureTag))

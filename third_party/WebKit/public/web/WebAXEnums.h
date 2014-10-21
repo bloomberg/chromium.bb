@@ -77,6 +77,7 @@ enum WebAXRole {
     WebAXRoleApplication,
     WebAXRoleArticle,
     WebAXRoleBanner,
+    WebAXRoleBlockquote,
     WebAXRoleBrowser,
     WebAXRoleBusyIndicator,
     WebAXRoleButton,
