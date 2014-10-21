@@ -32,14 +32,14 @@ const char kHomePage[] = "homepage";
 class InterceptingPrefFilter : public PrefFilter {
  public:
   InterceptingPrefFilter();
-  virtual ~InterceptingPrefFilter();
+  ~InterceptingPrefFilter() override;
 
   // PrefFilter implementation:
-  virtual void FilterOnLoad(
+  void FilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       scoped_ptr<base::DictionaryValue> pref_store_contents) override;
-  virtual void FilterUpdate(const std::string& path) override {}
-  virtual void FilterSerializeData(
+  void FilterUpdate(const std::string& path) override {}
+  void FilterSerializeData(
       base::DictionaryValue* pref_store_contents) override {}
 
   bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }

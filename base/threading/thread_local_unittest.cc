@@ -20,7 +20,7 @@ class ThreadLocalTesterBase : public base::DelegateSimpleThreadPool::Delegate {
       : tlp_(tlp),
         done_(done) {
   }
-  virtual ~ThreadLocalTesterBase() {}
+  ~ThreadLocalTesterBase() override {}
 
  protected:
   TLPType* tlp_;
@@ -33,11 +33,11 @@ class SetThreadLocal : public ThreadLocalTesterBase {
       : ThreadLocalTesterBase(tlp, done),
         val_(NULL) {
   }
-  virtual ~SetThreadLocal() {}
+  ~SetThreadLocal() override {}
 
   void set_value(ThreadLocalTesterBase* val) { val_ = val; }
 
-  virtual void Run() override {
+  void Run() override {
     DCHECK(!done_->IsSignaled());
     tlp_->Set(val_);
     done_->Signal();
@@ -53,11 +53,11 @@ class GetThreadLocal : public ThreadLocalTesterBase {
       : ThreadLocalTesterBase(tlp, done),
         ptr_(NULL) {
   }
-  virtual ~GetThreadLocal() {}
+  ~GetThreadLocal() override {}
 
   void set_ptr(ThreadLocalTesterBase** ptr) { ptr_ = ptr; }
 
-  virtual void Run() override {
+  void Run() override {
     DCHECK(!done_->IsSignaled());
     *ptr_ = tlp_->Get();
     done_->Signal();

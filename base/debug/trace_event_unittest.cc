@@ -995,11 +995,11 @@ class AfterStateChangeEnabledStateObserver
   virtual ~AfterStateChangeEnabledStateObserver() {}
 
   // TraceLog::EnabledStateObserver overrides:
-  virtual void OnTraceLogEnabled() override {
+  void OnTraceLogEnabled() override {
     EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
   }
 
-  virtual void OnTraceLogDisabled() override {
+  void OnTraceLogDisabled() override {
     EXPECT_FALSE(TraceLog::GetInstance()->IsEnabled());
   }
 };
@@ -1028,9 +1028,9 @@ class SelfRemovingEnabledStateObserver
   virtual ~SelfRemovingEnabledStateObserver() {}
 
   // TraceLog::EnabledStateObserver overrides:
-  virtual void OnTraceLogEnabled() override {}
+  void OnTraceLogEnabled() override {}
 
-  virtual void OnTraceLogDisabled() override {
+  void OnTraceLogDisabled() override {
     TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
   }
 };
@@ -1918,12 +1918,12 @@ class MyData : public ConvertableToTraceFormat {
  public:
   MyData() {}
 
-  virtual void AppendAsTraceFormat(std::string* out) const override {
+  void AppendAsTraceFormat(std::string* out) const override {
     out->append("{\"foo\":1}");
   }
 
  private:
-  virtual ~MyData() {}
+  ~MyData() override {}
   DISALLOW_COPY_AND_ASSIGN(MyData);
 };
 

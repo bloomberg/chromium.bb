@@ -66,29 +66,27 @@ class BASE_PREFS_EXPORT JsonPrefStore
       scoped_ptr<PrefFilter> pref_filter);
 
   // PrefStore overrides:
-  virtual bool GetValue(const std::string& key,
-                        const base::Value** result) const override;
-  virtual void AddObserver(PrefStore::Observer* observer) override;
-  virtual void RemoveObserver(PrefStore::Observer* observer) override;
-  virtual bool HasObservers() const override;
-  virtual bool IsInitializationComplete() const override;
+  bool GetValue(const std::string& key,
+                const base::Value** result) const override;
+  void AddObserver(PrefStore::Observer* observer) override;
+  void RemoveObserver(PrefStore::Observer* observer) override;
+  bool HasObservers() const override;
+  bool IsInitializationComplete() const override;
 
   // PersistentPrefStore overrides:
-  virtual bool GetMutableValue(const std::string& key,
-                               base::Value** result) override;
-  virtual void SetValue(const std::string& key, base::Value* value) override;
-  virtual void SetValueSilently(const std::string& key,
-                                base::Value* value) override;
-  virtual void RemoveValue(const std::string& key) override;
-  virtual bool ReadOnly() const override;
-  virtual PrefReadError GetReadError() const override;
+  bool GetMutableValue(const std::string& key, base::Value** result) override;
+  void SetValue(const std::string& key, base::Value* value) override;
+  void SetValueSilently(const std::string& key, base::Value* value) override;
+  void RemoveValue(const std::string& key) override;
+  bool ReadOnly() const override;
+  PrefReadError GetReadError() const override;
   // Note this method may be asynchronous if this instance has a |pref_filter_|
   // in which case it will return PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE.
   // See details in pref_filter.h.
-  virtual PrefReadError ReadPrefs() override;
-  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
-  virtual void CommitPendingWrite() override;
-  virtual void ReportValueChanged(const std::string& key) override;
+  PrefReadError ReadPrefs() override;
+  void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
+  void CommitPendingWrite() override;
+  void ReportValueChanged(const std::string& key) override;
 
   // Just like RemoveValue(), but doesn't notify observers. Used when doing some
   // cleanup that shouldn't otherwise alert observers.
@@ -100,7 +98,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
       const base::Closure& on_next_successful_write);
 
  private:
-  virtual ~JsonPrefStore();
+  ~JsonPrefStore() override;
 
   // This method is called after the JSON file has been read.  It then hands
   // |value| (or an empty dictionary in some read error cases) to the
@@ -111,7 +109,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
   void OnFileRead(scoped_ptr<ReadResult> read_result);
 
   // ImportantFileWriter::DataSerializer overrides:
-  virtual bool SerializeData(std::string* output) override;
+  bool SerializeData(std::string* output) override;
 
   // This method is called after the JSON file has been read and the result has
   // potentially been intercepted and modified by |pref_filter_|.

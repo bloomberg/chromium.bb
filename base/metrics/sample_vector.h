@@ -23,21 +23,20 @@ class BucketRanges;
 class BASE_EXPORT_PRIVATE SampleVector : public HistogramSamples {
  public:
   explicit SampleVector(const BucketRanges* bucket_ranges);
-  virtual ~SampleVector();
+  ~SampleVector() override;
 
   // HistogramSamples implementation:
-  virtual void Accumulate(HistogramBase::Sample value,
-                          HistogramBase::Count count) override;
-  virtual HistogramBase::Count GetCount(
-      HistogramBase::Sample value) const override;
-  virtual HistogramBase::Count TotalCount() const override;
-  virtual scoped_ptr<SampleCountIterator> Iterator() const override;
+  void Accumulate(HistogramBase::Sample value,
+                  HistogramBase::Count count) override;
+  HistogramBase::Count GetCount(HistogramBase::Sample value) const override;
+  HistogramBase::Count TotalCount() const override;
+  scoped_ptr<SampleCountIterator> Iterator() const override;
 
   // Get count of a specific bucket.
   HistogramBase::Count GetCountAtIndex(size_t bucket_index) const;
 
  protected:
-  virtual bool AddSubtractImpl(
+  bool AddSubtractImpl(
       SampleCountIterator* iter,
       HistogramSamples::Operator op) override;  // |op| is ADD or SUBTRACT.
 
@@ -58,17 +57,17 @@ class BASE_EXPORT_PRIVATE SampleVectorIterator : public SampleCountIterator {
  public:
   SampleVectorIterator(const std::vector<HistogramBase::AtomicCount>* counts,
                        const BucketRanges* bucket_ranges);
-  virtual ~SampleVectorIterator();
+  ~SampleVectorIterator() override;
 
   // SampleCountIterator implementation:
-  virtual bool Done() const override;
-  virtual void Next() override;
-  virtual void Get(HistogramBase::Sample* min,
-                   HistogramBase::Sample* max,
-                   HistogramBase::Count* count) const override;
+  bool Done() const override;
+  void Next() override;
+  void Get(HistogramBase::Sample* min,
+           HistogramBase::Sample* max,
+           HistogramBase::Count* count) const override;
 
   // SampleVector uses predefined buckets, so iterator can return bucket index.
-  virtual bool GetBucketIndex(size_t* index) const override;
+  bool GetBucketIndex(size_t* index) const override;
 
  private:
   void SkipEmptyBuckets();

@@ -62,11 +62,11 @@ namespace {
 // nothing useful.
 class StupidWatcher : public MessagePumpLibevent::Watcher {
  public:
-  virtual ~StupidWatcher() {}
+  ~StupidWatcher() override {}
 
   // base:MessagePumpLibevent::Watcher interface
-  virtual void OnFileCanReadWithoutBlocking(int fd) override {}
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override {}
+  void OnFileCanReadWithoutBlocking(int fd) override {}
+  void OnFileCanWriteWithoutBlocking(int fd) override {}
 };
 
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
@@ -97,16 +97,12 @@ class BaseWatcher : public MessagePumpLibevent::Watcher {
       : controller_(controller) {
     DCHECK(controller_);
   }
-  virtual ~BaseWatcher() {}
+  ~BaseWatcher() override {}
 
   // base:MessagePumpLibevent::Watcher interface
-  virtual void OnFileCanReadWithoutBlocking(int /* fd */) override {
-    NOTREACHED();
-  }
+  void OnFileCanReadWithoutBlocking(int /* fd */) override { NOTREACHED(); }
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {
-    NOTREACHED();
-  }
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override { NOTREACHED(); }
 
  protected:
   MessagePumpLibevent::FileDescriptorWatcher* controller_;
@@ -118,11 +114,9 @@ class DeleteWatcher : public BaseWatcher {
       MessagePumpLibevent::FileDescriptorWatcher* controller)
       : BaseWatcher(controller) {}
 
-  virtual ~DeleteWatcher() {
-    DCHECK(!controller_);
-  }
+  ~DeleteWatcher() override { DCHECK(!controller_); }
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override {
     DCHECK(controller_);
     delete controller_;
     controller_ = NULL;
@@ -147,9 +141,9 @@ class StopWatcher : public BaseWatcher {
       MessagePumpLibevent::FileDescriptorWatcher* controller)
       : BaseWatcher(controller) {}
 
-  virtual ~StopWatcher() {}
+  ~StopWatcher() override {}
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override {
     controller_->StopWatchingFileDescriptor();
   }
 };
@@ -177,16 +171,16 @@ void QuitMessageLoopAndStart(const Closure& quit_closure) {
 class NestedPumpWatcher : public MessagePumpLibevent::Watcher {
  public:
   NestedPumpWatcher() {}
-  virtual ~NestedPumpWatcher() {}
+  ~NestedPumpWatcher() override {}
 
-  virtual void OnFileCanReadWithoutBlocking(int /* fd */) override {
+  void OnFileCanReadWithoutBlocking(int /* fd */) override {
     RunLoop runloop;
     MessageLoop::current()->PostTask(FROM_HERE, Bind(&QuitMessageLoopAndStart,
                                                      runloop.QuitClosure()));
     runloop.Run();
   }
 
-  virtual void OnFileCanWriteWithoutBlocking(int /* fd */) override {}
+  void OnFileCanWriteWithoutBlocking(int /* fd */) override {}
 };
 
 TEST_F(MessagePumpLibeventTest, NestedPumpWatcher) {

@@ -40,10 +40,10 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void BeginArray();
   void BeginDictionary();
 
-  virtual void AppendAsTraceFormat(std::string* out) const override;
+  void AppendAsTraceFormat(std::string* out) const override;
 
  private:
-  virtual ~TracedValue();
+  ~TracedValue() override;
 
   DictionaryValue* GetCurrentDictionary();
   ListValue* GetCurrentArray();

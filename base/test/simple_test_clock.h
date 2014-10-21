@@ -19,9 +19,9 @@ class SimpleTestClock : public Clock {
  public:
   // Starts off with a clock set to Time().
   SimpleTestClock();
-  virtual ~SimpleTestClock();
+  ~SimpleTestClock() override;
 
-  virtual Time Now() override;
+  Time Now() override;
 
   // Advances the clock by |delta|.
   void Advance(TimeDelta delta);

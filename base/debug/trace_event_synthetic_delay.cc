@@ -23,7 +23,7 @@ class TraceEventSyntheticDelayRegistry : public TraceEventSyntheticDelayClock {
   void ResetAllDelays();
 
   // TraceEventSyntheticDelayClock implementation.
-  virtual base::TimeTicks Now() override;
+  base::TimeTicks Now() override;
 
  private:
   TraceEventSyntheticDelayRegistry();

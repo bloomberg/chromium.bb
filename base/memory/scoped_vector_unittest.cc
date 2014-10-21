@@ -62,11 +62,11 @@ enum LifeCycleState {
 class LifeCycleWatcher : public LifeCycleObject::Observer {
  public:
   LifeCycleWatcher() : life_cycle_state_(LC_INITIAL) {}
-  virtual ~LifeCycleWatcher() {}
+  ~LifeCycleWatcher() override {}
 
   // Assert INITIAL -> CONSTRUCTED and no LifeCycleObject associated with this
   // LifeCycleWatcher.
-  virtual void OnLifeCycleConstruct(LifeCycleObject* object) override {
+  void OnLifeCycleConstruct(LifeCycleObject* object) override {
     ASSERT_EQ(LC_INITIAL, life_cycle_state_);
     ASSERT_EQ(NULL, constructed_life_cycle_object_.get());
     life_cycle_state_ = LC_CONSTRUCTED;
@@ -75,7 +75,7 @@ class LifeCycleWatcher : public LifeCycleObject::Observer {
 
   // Assert CONSTRUCTED -> DESTROYED and the |object| being destroyed is the
   // same one we saw constructed.
-  virtual void OnLifeCycleDestroy(LifeCycleObject* object) override {
+  void OnLifeCycleDestroy(LifeCycleObject* object) override {
     ASSERT_EQ(LC_CONSTRUCTED, life_cycle_state_);
     LifeCycleObject* constructed_life_cycle_object =
         constructed_life_cycle_object_.release();

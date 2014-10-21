@@ -177,9 +177,7 @@ class DeletionTestValue : public Value {
     *deletion_flag_ = false;
   }
 
-  virtual ~DeletionTestValue() {
-    *deletion_flag_ = true;
-  }
+  ~DeletionTestValue() override { *deletion_flag_ = true; }
 
  private:
   bool* deletion_flag_;

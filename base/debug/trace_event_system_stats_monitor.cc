@@ -31,12 +31,12 @@ class SystemStatsHolder : public base::debug::ConvertableToTraceFormat {
   void GetSystemProfilingStats();
 
   // base::debug::ConvertableToTraceFormat overrides:
-  virtual void AppendAsTraceFormat(std::string* out) const override {
+  void AppendAsTraceFormat(std::string* out) const override {
     AppendSystemProfileAsTraceFormat(system_stats_, out);
   }
 
  private:
-  virtual ~SystemStatsHolder() { }
+  ~SystemStatsHolder() override {}
 
   SystemMetrics system_stats_;
 

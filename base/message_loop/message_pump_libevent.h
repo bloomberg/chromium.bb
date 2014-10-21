@@ -98,7 +98,7 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
   };
 
   MessagePumpLibevent();
-  virtual ~MessagePumpLibevent();
+  ~MessagePumpLibevent() override;
 
   // Have the current thread's message loop watch for a a situation in which
   // reading/writing to the FD can be performed without blocking.
@@ -122,10 +122,10 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
   void RemoveIOObserver(IOObserver* obs);
 
   // MessagePump methods:
-  virtual void Run(Delegate* delegate) override;
-  virtual void Quit() override;
-  virtual void ScheduleWork() override;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
+  void Run(Delegate* delegate) override;
+  void Quit() override;
+  void ScheduleWork() override;
+  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
   friend class MessagePumpLibeventTest;

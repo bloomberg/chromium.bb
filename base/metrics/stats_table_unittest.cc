@@ -70,7 +70,7 @@ class StatsTableThread : public SimpleThread {
       : SimpleThread(name),
         id_(id) {}
 
-  virtual void Run() override;
+  void Run() override;
 
  private:
   int id_;

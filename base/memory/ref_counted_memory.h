@@ -52,11 +52,11 @@ class BASE_EXPORT RefCountedStaticMemory : public RefCountedMemory {
         length_(length) {}
 
   // Overridden from RefCountedMemory:
-  virtual const unsigned char* front() const override;
-  virtual size_t size() const override;
+  const unsigned char* front() const override;
+  size_t size() const override;
 
  private:
-  virtual ~RefCountedStaticMemory();
+  ~RefCountedStaticMemory() override;
 
   const unsigned char* data_;
   size_t length_;
@@ -81,14 +81,14 @@ class BASE_EXPORT RefCountedBytes : public RefCountedMemory {
   static RefCountedBytes* TakeVector(std::vector<unsigned char>* to_destroy);
 
   // Overridden from RefCountedMemory:
-  virtual const unsigned char* front() const override;
-  virtual size_t size() const override;
+  const unsigned char* front() const override;
+  size_t size() const override;
 
   const std::vector<unsigned char>& data() const { return data_; }
   std::vector<unsigned char>& data() { return data_; }
 
  private:
-  virtual ~RefCountedBytes();
+  ~RefCountedBytes() override;
 
   std::vector<unsigned char> data_;
 
@@ -107,14 +107,14 @@ class BASE_EXPORT RefCountedString : public RefCountedMemory {
   static RefCountedString* TakeString(std::string* to_destroy);
 
   // Overridden from RefCountedMemory:
-  virtual const unsigned char* front() const override;
-  virtual size_t size() const override;
+  const unsigned char* front() const override;
+  size_t size() const override;
 
   const std::string& data() const { return data_; }
   std::string& data() { return data_; }
 
  private:
-  virtual ~RefCountedString();
+  ~RefCountedString() override;
 
   std::string data_;
 
@@ -129,11 +129,11 @@ class BASE_EXPORT RefCountedMallocedMemory : public base::RefCountedMemory {
   RefCountedMallocedMemory(void* data, size_t length);
 
   // Overridden from RefCountedMemory:
-  virtual const unsigned char* front() const override;
-  virtual size_t size() const override;
+  const unsigned char* front() const override;
+  size_t size() const override;
 
  private:
-  virtual ~RefCountedMallocedMemory();
+  ~RefCountedMallocedMemory() override;
 
   unsigned char* data_;
   size_t length_;

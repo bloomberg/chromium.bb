@@ -65,7 +65,8 @@ class BASE_EXPORT Watchdog {
    public:
     explicit ThreadDelegate(Watchdog* watchdog) : watchdog_(watchdog) {
     }
-    virtual void ThreadMain() override;
+    void ThreadMain() override;
+
    private:
     void SetThreadName() const;
 

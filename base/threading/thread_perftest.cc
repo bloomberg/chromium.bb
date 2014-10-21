@@ -123,7 +123,7 @@ class TaskPerfTest : public ThreadPerfTest {
     return threads_[count % threads_.size()];
   }
 
-  virtual void PingPong(int hops) override {
+  void PingPong(int hops) override {
     if (!hops) {
       FinishMeasurement();
       return;
@@ -149,16 +149,14 @@ TEST_F(TaskPerfTest, TaskPingPong) {
 // Same as above, but add observers to test their perf impact.
 class MessageLoopObserver : public base::MessageLoop::TaskObserver {
  public:
-  virtual void WillProcessTask(const base::PendingTask& pending_task) override {
-  }
-  virtual void DidProcessTask(const base::PendingTask& pending_task) override {
-  }
+  void WillProcessTask(const base::PendingTask& pending_task) override {}
+  void DidProcessTask(const base::PendingTask& pending_task) override {}
 };
 MessageLoopObserver message_loop_observer;
 
 class TaskObserverPerfTest : public TaskPerfTest {
  public:
-  virtual void Init() override {
+  void Init() override {
     TaskPerfTest::Init();
     for (size_t i = 0; i < threads_.size(); i++) {
       threads_[i]->message_loop()->AddTaskObserver(&message_loop_observer);

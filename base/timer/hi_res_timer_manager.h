@@ -16,10 +16,10 @@ namespace base {
 class BASE_EXPORT HighResolutionTimerManager : public base::PowerObserver {
  public:
   HighResolutionTimerManager();
-  virtual ~HighResolutionTimerManager();
+  ~HighResolutionTimerManager() override;
 
   // base::PowerObserver method.
-  virtual void OnPowerStateChange(bool on_battery_power) override;
+  void OnPowerStateChange(bool on_battery_power) override;
 
   // Returns true if the hi resolution clock could be used right now.
   bool hi_res_clock_available() const { return hi_res_clock_available_; }

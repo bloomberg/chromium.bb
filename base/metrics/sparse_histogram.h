@@ -34,24 +34,23 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
   // new one.
   static HistogramBase* FactoryGet(const std::string& name, int32 flags);
 
-  virtual ~SparseHistogram();
+  ~SparseHistogram() override;
 
   // HistogramBase implementation:
-  virtual HistogramType GetHistogramType() const override;
-  virtual bool HasConstructionArguments(
-      Sample expected_minimum,
-      Sample expected_maximum,
-      size_t expected_bucket_count) const override;
-  virtual void Add(Sample value) override;
-  virtual void AddSamples(const HistogramSamples& samples) override;
-  virtual bool AddSamplesFromPickle(PickleIterator* iter) override;
-  virtual scoped_ptr<HistogramSamples> SnapshotSamples() const override;
-  virtual void WriteHTMLGraph(std::string* output) const override;
-  virtual void WriteAscii(std::string* output) const override;
+  HistogramType GetHistogramType() const override;
+  bool HasConstructionArguments(Sample expected_minimum,
+                                Sample expected_maximum,
+                                size_t expected_bucket_count) const override;
+  void Add(Sample value) override;
+  void AddSamples(const HistogramSamples& samples) override;
+  bool AddSamplesFromPickle(PickleIterator* iter) override;
+  scoped_ptr<HistogramSamples> SnapshotSamples() const override;
+  void WriteHTMLGraph(std::string* output) const override;
+  void WriteAscii(std::string* output) const override;
 
  protected:
   // HistogramBase implementation:
-  virtual bool SerializeInfoImpl(Pickle* pickle) const override;
+  bool SerializeInfoImpl(Pickle* pickle) const override;
 
  private:
   // Clients should always use FactoryGet to create SparseHistogram.
@@ -61,10 +60,10 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
       PickleIterator* iter);
   static HistogramBase* DeserializeInfoImpl(PickleIterator* iter);
 
-  virtual void GetParameters(DictionaryValue* params) const override;
-  virtual void GetCountAndBucketData(Count* count,
-                                     int64* sum,
-                                     ListValue* buckets) const override;
+  void GetParameters(DictionaryValue* params) const override;
+  void GetCountAndBucketData(Count* count,
+                             int64* sum,
+                             ListValue* buckets) const override;
 
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
   void WriteAsciiImpl(bool graph_it,

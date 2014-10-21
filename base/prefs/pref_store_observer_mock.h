@@ -16,13 +16,13 @@
 class PrefStoreObserverMock : public PrefStore::Observer {
  public:
   PrefStoreObserverMock();
-  virtual ~PrefStoreObserverMock();
+  ~PrefStoreObserverMock() override;
 
   void VerifyAndResetChangedKey(const std::string& expected);
 
   // PrefStore::Observer implementation
-  virtual void OnPrefValueChanged(const std::string& key) override;
-  virtual void OnInitializationCompleted(bool success) override;
+  void OnPrefValueChanged(const std::string& key) override;
+  void OnInitializationCompleted(bool success) override;
 
   std::vector<std::string> changed_keys;
   bool initialized;

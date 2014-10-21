@@ -47,7 +47,7 @@ namespace {
 class MultipleThreadMain : public PlatformThread::Delegate {
  public:
   explicit MultipleThreadMain(int16 id) : id_(id) {}
-  virtual ~MultipleThreadMain() {}
+  ~MultipleThreadMain() override {}
 
   static void CleanUp() {
     SharedMemory memory;
@@ -55,7 +55,7 @@ class MultipleThreadMain : public PlatformThread::Delegate {
   }
 
   // PlatformThread::Delegate interface.
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
 #if defined(OS_MACOSX)
     mac::ScopedNSAutoreleasePool pool;
 #endif

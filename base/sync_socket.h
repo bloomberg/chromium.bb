@@ -106,7 +106,7 @@ class BASE_EXPORT CancelableSyncSocket : public SyncSocket {
  public:
   CancelableSyncSocket();
   explicit CancelableSyncSocket(Handle handle);
-  virtual ~CancelableSyncSocket() {}
+  ~CancelableSyncSocket() override {}
 
   // Initializes a pair of cancelable sockets.  See documentation for
   // SyncSocket::CreatePair for more details.
@@ -136,7 +136,7 @@ class BASE_EXPORT CancelableSyncSocket : public SyncSocket {
   // implementation of Send() will not block indefinitely as
   // SyncSocket::Send will, but instead return 0, as no bytes could be sent.
   // Note that the socket will not be closed in this case.
-  virtual size_t Send(const void* buffer, size_t length) override;
+  size_t Send(const void* buffer, size_t length) override;
 
  private:
 #if defined(OS_WIN)

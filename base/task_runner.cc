@@ -20,8 +20,8 @@ class PostTaskAndReplyTaskRunner : public internal::PostTaskAndReplyImpl {
   explicit PostTaskAndReplyTaskRunner(TaskRunner* destination);
 
  private:
-  virtual bool PostTask(const tracked_objects::Location& from_here,
-                        const Closure& task) override;
+  bool PostTask(const tracked_objects::Location& from_here,
+                const Closure& task) override;
 
   // Non-owning.
   TaskRunner* destination_;

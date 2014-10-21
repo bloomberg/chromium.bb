@@ -14,10 +14,10 @@ namespace base {
 // DefaultClock is a Clock implementation that uses Time::Now().
 class BASE_EXPORT DefaultClock : public Clock {
  public:
-  virtual ~DefaultClock();
+  ~DefaultClock() override;
 
   // Simply returns Time::Now().
-  virtual Time Now() override;
+  Time Now() override;
 };
 
 }  // namespace base

@@ -31,11 +31,9 @@ class SleepInsideInitThread : public Thread {
     ANNOTATE_BENIGN_RACE(
         this, "Benign test-only data race on vptr - http://crbug.com/98219");
   }
-  virtual ~SleepInsideInitThread() {
-    Stop();
-  }
+  ~SleepInsideInitThread() override { Stop(); }
 
-  virtual void Init() override {
+  void Init() override {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(500));
     init_called_ = true;
   }
@@ -70,17 +68,11 @@ class CaptureToEventList : public Thread {
         event_list_(event_list) {
   }
 
-  virtual ~CaptureToEventList() {
-    Stop();
-  }
+  ~CaptureToEventList() override { Stop(); }
 
-  virtual void Init() override {
-    event_list_->push_back(THREAD_EVENT_INIT);
-  }
+  void Init() override { event_list_->push_back(THREAD_EVENT_INIT); }
 
-  virtual void CleanUp() override {
-    event_list_->push_back(THREAD_EVENT_CLEANUP);
-  }
+  void CleanUp() override { event_list_->push_back(THREAD_EVENT_CLEANUP); }
 
  private:
   EventList* event_list_;
@@ -97,7 +89,7 @@ class CapturingDestructionObserver
   }
 
   // DestructionObserver implementation:
-  virtual void WillDestroyCurrentMessageLoop() override {
+  void WillDestroyCurrentMessageLoop() override {
     event_list_->push_back(THREAD_EVENT_MESSAGE_LOOP_DESTROYED);
     event_list_ = NULL;
   }

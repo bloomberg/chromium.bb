@@ -72,7 +72,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // vtable, and the thread's ThreadMain calling the virtual method Run().  It
   // also ensures that the CleanUp() virtual method is called on the subclass
   // before it is destructed.
-  virtual ~Thread();
+  ~Thread() override;
 
 #if defined(OS_WIN)
   // Causes the thread to initialize COM.  This must be called before calling
@@ -201,7 +201,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 #endif
 
   // PlatformThread::Delegate methods:
-  virtual void ThreadMain() override;
+  void ThreadMain() override;
 
 #if defined(OS_WIN)
   // Whether this thread needs to initialize COM, and if so, in what mode.

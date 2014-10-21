@@ -19,9 +19,9 @@ class SimpleTestTickClock : public TickClock {
  public:
   // Starts off with a clock set to TimeTicks().
   SimpleTestTickClock();
-  virtual ~SimpleTestTickClock();
+  ~SimpleTestTickClock() override;
 
-  virtual TimeTicks NowTicks() override;
+  TimeTicks NowTicks() override;
 
   // Advances the clock by |delta|, which must not be negative.
   void Advance(TimeDelta delta);

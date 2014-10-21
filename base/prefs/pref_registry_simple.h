@@ -36,7 +36,7 @@ class BASE_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
                          int64 default_value);
 
  private:
-  virtual ~PrefRegistrySimple();
+  ~PrefRegistrySimple() override;
 
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySimple);
 };

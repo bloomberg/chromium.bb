@@ -28,7 +28,7 @@ class FSEventsTaskRunner : public mac::LibDispatchTaskRunner {
    }
 
  protected:
-   virtual ~FSEventsTaskRunner() {}
+  ~FSEventsTaskRunner() override {}
 };
 
 static LazyInstance<FSEventsTaskRunner>::Leaky g_task_runner =

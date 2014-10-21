@@ -359,7 +359,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // produce a false-alarm if a race occurred in the reading of the data during
   // a SnapShot process, but should otherwise be false at all times (unless we
   // have memory over-writes, or DRAM failures).
-  virtual int FindCorruption(const HistogramSamples& samples) const override;
+  int FindCorruption(const HistogramSamples& samples) const override;
 
   //----------------------------------------------------------------------------
   // Accessors for factory construction, serialization and testing.
@@ -382,17 +382,16 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                            size_t* bucket_count);
 
   // HistogramBase implementation:
-  virtual HistogramType GetHistogramType() const override;
-  virtual bool HasConstructionArguments(
-      Sample expected_minimum,
-      Sample expected_maximum,
-      size_t expected_bucket_count) const override;
-  virtual void Add(Sample value) override;
-  virtual scoped_ptr<HistogramSamples> SnapshotSamples() const override;
-  virtual void AddSamples(const HistogramSamples& samples) override;
-  virtual bool AddSamplesFromPickle(PickleIterator* iter) override;
-  virtual void WriteHTMLGraph(std::string* output) const override;
-  virtual void WriteAscii(std::string* output) const override;
+  HistogramType GetHistogramType() const override;
+  bool HasConstructionArguments(Sample expected_minimum,
+                                Sample expected_maximum,
+                                size_t expected_bucket_count) const override;
+  void Add(Sample value) override;
+  scoped_ptr<HistogramSamples> SnapshotSamples() const override;
+  void AddSamples(const HistogramSamples& samples) override;
+  bool AddSamplesFromPickle(PickleIterator* iter) override;
+  void WriteHTMLGraph(std::string* output) const override;
+  void WriteAscii(std::string* output) const override;
 
  protected:
   // |ranges| should contain the underflow and overflow buckets. See top
@@ -402,10 +401,10 @@ class BASE_EXPORT Histogram : public HistogramBase {
             Sample maximum,
             const BucketRanges* ranges);
 
-  virtual ~Histogram();
+  ~Histogram() override;
 
   // HistogramBase implementation:
-  virtual bool SerializeInfoImpl(Pickle* pickle) const override;
+  bool SerializeInfoImpl(Pickle* pickle) const override;
 
   // Method to override to skip the display of the i'th bucket if it's empty.
   virtual bool PrintEmptyBucket(size_t index) const;
@@ -458,11 +457,11 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                std::string* output) const;
 
   // WriteJSON calls these.
-  virtual void GetParameters(DictionaryValue* params) const override;
+  void GetParameters(DictionaryValue* params) const override;
 
-  virtual void GetCountAndBucketData(Count* count,
-                                     int64* sum,
-                                     ListValue* buckets) const override;
+  void GetCountAndBucketData(Count* count,
+                             int64* sum,
+                             ListValue* buckets) const override;
 
   // Does not own this object. Should get from StatisticsRecorder.
   const BucketRanges* bucket_ranges_;
@@ -483,7 +482,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
 // buckets.
 class BASE_EXPORT LinearHistogram : public Histogram {
  public:
-  virtual ~LinearHistogram();
+  ~LinearHistogram() override;
 
   /* minimum should start from 1. 0 is as minimum is invalid. 0 is an implicit
      default underflow bucket. */
@@ -521,7 +520,7 @@ class BASE_EXPORT LinearHistogram : public Histogram {
                                      BucketRanges* ranges);
 
   // Overridden from Histogram:
-  virtual HistogramType GetHistogramType() const override;
+  HistogramType GetHistogramType() const override;
 
  protected:
   LinearHistogram(const std::string& name,
@@ -529,15 +528,15 @@ class BASE_EXPORT LinearHistogram : public Histogram {
                   Sample maximum,
                   const BucketRanges* ranges);
 
-  virtual double GetBucketSize(Count current, size_t i) const override;
+  double GetBucketSize(Count current, size_t i) const override;
 
   // If we have a description for a bucket, then return that.  Otherwise
   // let parent class provide a (numeric) description.
-  virtual const std::string GetAsciiBucketRange(size_t i) const override;
+  const std::string GetAsciiBucketRange(size_t i) const override;
 
   // Skip printing of name for numeric range if we have a name (and if this is
   // an empty bucket).
-  virtual bool PrintEmptyBucket(size_t index) const override;
+  bool PrintEmptyBucket(size_t index) const override;
 
  private:
   friend BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
@@ -560,7 +559,7 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
  public:
   static HistogramBase* FactoryGet(const std::string& name, int32 flags);
 
-  virtual HistogramType GetHistogramType() const override;
+  HistogramType GetHistogramType() const override;
 
  private:
   BooleanHistogram(const std::string& name, const BucketRanges* ranges);
@@ -586,7 +585,7 @@ class BASE_EXPORT CustomHistogram : public Histogram {
                                    int32 flags);
 
   // Overridden from Histogram:
-  virtual HistogramType GetHistogramType() const override;
+  HistogramType GetHistogramType() const override;
 
   // Helper method for transforming an array of valid enumeration values
   // to the std::vector<int> expected by UMA_HISTOGRAM_CUSTOM_ENUMERATION.
@@ -601,9 +600,9 @@ class BASE_EXPORT CustomHistogram : public Histogram {
                   const BucketRanges* ranges);
 
   // HistogramBase implementation:
-  virtual bool SerializeInfoImpl(Pickle* pickle) const override;
+  bool SerializeInfoImpl(Pickle* pickle) const override;
 
-  virtual double GetBucketSize(Count current, size_t i) const override;
+  double GetBucketSize(Count current, size_t i) const override;
 
  private:
   friend BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(

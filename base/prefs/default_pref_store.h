@@ -21,11 +21,11 @@ class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {
   DefaultPrefStore();
 
   // PrefStore implementation:
-  virtual bool GetValue(const std::string& key,
-                        const base::Value** result) const override;
-  virtual void AddObserver(PrefStore::Observer* observer) override;
-  virtual void RemoveObserver(PrefStore::Observer* observer) override;
-  virtual bool HasObservers() const override;
+  bool GetValue(const std::string& key,
+                const base::Value** result) const override;
+  void AddObserver(PrefStore::Observer* observer) override;
+  void RemoveObserver(PrefStore::Observer* observer) override;
+  bool HasObservers() const override;
 
   // Sets a |value| for |key|. Should only be called if a value has not been
   // set yet; otherwise call ReplaceDefaultValue().
@@ -40,7 +40,7 @@ class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {
   const_iterator end() const;
 
  private:
-  virtual ~DefaultPrefStore();
+  ~DefaultPrefStore() override;
 
   PrefValueMap prefs_;
 

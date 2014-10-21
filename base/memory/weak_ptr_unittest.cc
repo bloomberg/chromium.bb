@@ -62,9 +62,7 @@ class BackgroundThread : public Thread {
  public:
   BackgroundThread() : Thread("owner_thread") {}
 
-  virtual ~BackgroundThread() {
-    Stop();
-  }
+  ~BackgroundThread() override { Stop(); }
 
   void CreateArrowFromTarget(Arrow** arrow, Target* target) {
     WaitableEvent completion(true, false);

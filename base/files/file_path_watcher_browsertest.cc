@@ -111,9 +111,9 @@ class TestDelegate : public TestDelegateBase {
       : collector_(collector) {
     collector_->Register(this);
   }
-  virtual ~TestDelegate() {}
+  ~TestDelegate() override {}
 
-  virtual void OnFileChanged(const FilePath& path, bool error) override {
+  void OnFileChanged(const FilePath& path, bool error) override {
     if (error)
       ADD_FAILURE() << "Error " << path.value();
     else
@@ -272,9 +272,9 @@ class Deleter : public TestDelegateBase {
       : watcher_(watcher),
         loop_(loop) {
   }
-  virtual ~Deleter() {}
+  ~Deleter() override {}
 
-  virtual void OnFileChanged(const FilePath&, bool) override {
+  void OnFileChanged(const FilePath&, bool) override {
     watcher_.reset();
     loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
   }

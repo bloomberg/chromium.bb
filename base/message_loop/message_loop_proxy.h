@@ -30,7 +30,7 @@ class BASE_EXPORT MessageLoopProxy : public SingleThreadTaskRunner {
 
  protected:
   MessageLoopProxy();
-  virtual ~MessageLoopProxy();
+  ~MessageLoopProxy() override;
 };
 
 }  // namespace base

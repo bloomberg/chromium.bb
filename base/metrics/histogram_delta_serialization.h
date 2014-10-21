@@ -23,7 +23,7 @@ class BASE_EXPORT HistogramDeltaSerialization : public HistogramFlattener {
  public:
   // |caller_name| is string used in histograms for counting inconsistencies.
   explicit HistogramDeltaSerialization(const std::string& caller_name);
-  virtual ~HistogramDeltaSerialization();
+  ~HistogramDeltaSerialization() override;
 
   // Computes deltas in histogram bucket counts relative to the previous call to
   // this method. Stores the deltas in serialized form into |serialized_deltas|.
@@ -38,13 +38,12 @@ class BASE_EXPORT HistogramDeltaSerialization : public HistogramFlattener {
 
  private:
   // HistogramFlattener implementation.
-  virtual void RecordDelta(const HistogramBase& histogram,
-                           const HistogramSamples& snapshot) override;
-  virtual void InconsistencyDetected(
+  void RecordDelta(const HistogramBase& histogram,
+                   const HistogramSamples& snapshot) override;
+  void InconsistencyDetected(HistogramBase::Inconsistency problem) override;
+  void UniqueInconsistencyDetected(
       HistogramBase::Inconsistency problem) override;
-  virtual void UniqueInconsistencyDetected(
-      HistogramBase::Inconsistency problem) override;
-  virtual void InconsistencyDetectedInLoggedCount(int amount) override;
+  void InconsistencyDetectedInLoggedCount(int amount) override;
 
   // Calculates deltas in histogram counters.
   HistogramSnapshotManager histogram_snapshot_manager_;

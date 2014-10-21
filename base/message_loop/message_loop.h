@@ -115,7 +115,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Creates a TYPE_CUSTOM MessageLoop with the supplied MessagePump, which must
   // be non-NULL.
   explicit MessageLoop(scoped_ptr<base::MessagePump> pump);
-  virtual ~MessageLoop();
+  ~MessageLoop() override;
 
   // Returns the MessageLoop object for the current thread, or null if none.
   static MessageLoop* current();
@@ -442,9 +442,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   void HistogramEvent(int event);
 
   // MessagePump::Delegate methods:
-  virtual bool DoWork() override;
-  virtual bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
-  virtual bool DoIdleWork() override;
+  bool DoWork() override;
+  bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
+  bool DoIdleWork() override;
 
   const Type type_;
 

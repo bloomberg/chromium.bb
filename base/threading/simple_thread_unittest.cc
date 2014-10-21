@@ -15,11 +15,9 @@ namespace {
 class SetIntRunner : public DelegateSimpleThread::Delegate {
  public:
   SetIntRunner(int* ptr, int val) : ptr_(ptr), val_(val) { }
-  virtual ~SetIntRunner() { }
+  ~SetIntRunner() override {}
 
-  virtual void Run() override {
-    *ptr_ = val_;
-  }
+  void Run() override { *ptr_ = val_; }
 
  private:
   int* ptr_;
@@ -29,9 +27,9 @@ class SetIntRunner : public DelegateSimpleThread::Delegate {
 class WaitEventRunner : public DelegateSimpleThread::Delegate {
  public:
   explicit WaitEventRunner(WaitableEvent* event) : event_(event) { }
-  virtual ~WaitEventRunner() { }
+  ~WaitEventRunner() override {}
 
-  virtual void Run() override {
+  void Run() override {
     EXPECT_FALSE(event_->IsSignaled());
     event_->Signal();
     EXPECT_TRUE(event_->IsSignaled());
@@ -43,9 +41,7 @@ class WaitEventRunner : public DelegateSimpleThread::Delegate {
 class SeqRunner : public DelegateSimpleThread::Delegate {
  public:
   explicit SeqRunner(AtomicSequenceNumber* seq) : seq_(seq) { }
-  virtual void Run() override {
-    seq_->GetNext();
-  }
+  void Run() override { seq_->GetNext(); }
 
  private:
   AtomicSequenceNumber* seq_;
@@ -60,7 +56,7 @@ class VerifyPoolRunner : public DelegateSimpleThread::Delegate {
                    int total, WaitableEvent* event)
       : seq_(seq), total_(total), event_(event) { }
 
-  virtual void Run() override {
+  void Run() override {
     if (seq_->GetNext() == total_) {
       event_->Signal();
     } else {

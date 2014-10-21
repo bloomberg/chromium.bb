@@ -116,8 +116,8 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // PrefObserver
-  virtual void OnPreferenceChanged(PrefService* service,
-                                   const std::string& pref_name) override;
+  void OnPreferenceChanged(PrefService* service,
+                           const std::string& pref_name) override;
 
   void VerifyValuePrefName() const {
     DCHECK(!pref_name_.empty());

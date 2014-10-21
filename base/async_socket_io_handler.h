@@ -54,7 +54,7 @@ class BASE_EXPORT AsyncSocketIoHandler
 #endif
  public:
   AsyncSocketIoHandler();
-  virtual ~AsyncSocketIoHandler();
+  ~AsyncSocketIoHandler() override;
 
   // Type definition for the callback. The parameter tells how many
   // bytes were read and is 0 if an error occurred.
@@ -81,8 +81,8 @@ class BASE_EXPORT AsyncSocketIoHandler
                              DWORD error) override;
 #elif defined(OS_POSIX)
   // Implementation of base::MessageLoopForIO::Watcher.
-  virtual void OnFileCanWriteWithoutBlocking(int socket) override {}
-  virtual void OnFileCanReadWithoutBlocking(int socket) override;
+  void OnFileCanWriteWithoutBlocking(int socket) override {}
+  void OnFileCanReadWithoutBlocking(int socket) override;
 
   void EnsureWatchingSocket();
 #endif

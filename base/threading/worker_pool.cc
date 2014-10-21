@@ -23,8 +23,8 @@ class PostTaskAndReplyWorkerPool : public internal::PostTaskAndReplyImpl {
   }
 
  private:
-  virtual bool PostTask(const tracked_objects::Location& from_here,
-                        const Closure& task) override {
+  bool PostTask(const tracked_objects::Location& from_here,
+                const Closure& task) override {
     return WorkerPool::PostTask(from_here, task, task_is_slow_);
   }
 
@@ -41,13 +41,13 @@ class WorkerPoolTaskRunner : public TaskRunner {
   explicit WorkerPoolTaskRunner(bool tasks_are_slow);
 
   // TaskRunner implementation
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const Closure& task,
-                               TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const Closure& task,
+                       TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
  private:
-  virtual ~WorkerPoolTaskRunner();
+  ~WorkerPoolTaskRunner() override;
 
   // Helper function for posting a delayed task. Asserts that the delay is
   // zero because non-zero delays are not supported.

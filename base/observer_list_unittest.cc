@@ -26,10 +26,8 @@ class Foo {
 class Adder : public Foo {
  public:
   explicit Adder(int scaler) : total(0), scaler_(scaler) {}
-  virtual void Observe(int x) override {
-    total += x * scaler_;
-  }
-  virtual ~Adder() {}
+  void Observe(int x) override { total += x * scaler_; }
+  ~Adder() override {}
   int total;
 
  private:
@@ -42,10 +40,8 @@ class Disrupter : public Foo {
       : list_(list),
         doomed_(doomed) {
   }
-  virtual ~Disrupter() {}
-  virtual void Observe(int x) override {
-    list_->RemoveObserver(doomed_);
-  }
+  ~Disrupter() override {}
+  void Observe(int x) override { list_->RemoveObserver(doomed_); }
 
  private:
   ObserverList<Foo>* list_;
@@ -58,10 +54,8 @@ class ThreadSafeDisrupter : public Foo {
       : list_(list),
         doomed_(doomed) {
   }
-  virtual ~ThreadSafeDisrupter() {}
-  virtual void Observe(int x) override {
-    list_->RemoveObserver(doomed_);
-  }
+  ~ThreadSafeDisrupter() override {}
+  void Observe(int x) override { list_->RemoveObserver(doomed_); }
 
  private:
   ObserverListThreadSafe<Foo>* list_;
@@ -109,10 +103,9 @@ class AddRemoveThread : public PlatformThread::Delegate,
         weak_factory_(this) {
   }
 
-  virtual ~AddRemoveThread() {
-  }
+  ~AddRemoveThread() override {}
 
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     loop_ = new MessageLoop();  // Fire up a message loop.
     loop_->PostTask(
         FROM_HERE,
@@ -153,7 +146,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
     loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
   }
 
-  virtual void Observe(int x) override {
+  void Observe(int x) override {
     count_observes_++;
 
     // If we're getting called after we removed ourselves from
@@ -323,13 +316,13 @@ TEST(ObserverListThreadSafeTest, WithoutMessageLoop) {
 class FooRemover : public Foo {
  public:
   explicit FooRemover(ObserverListThreadSafe<Foo>* list) : list_(list) {}
-  virtual ~FooRemover() {}
+  ~FooRemover() override {}
 
   void AddFooToRemove(Foo* foo) {
     foos_.push_back(foo);
   }
 
-  virtual void Observe(int x) override {
+  void Observe(int x) override {
     std::vector<Foo*> tmp;
     tmp.swap(foos_);
     for (std::vector<Foo*>::iterator it = tmp.begin();
@@ -481,7 +474,7 @@ class AddInClearObserve : public Foo {
   explicit AddInClearObserve(ObserverList<Foo>* list)
       : list_(list), added_(false), adder_(1) {}
 
-  virtual void Observe(int /* x */) override {
+  void Observe(int /* x */) override {
     list_->Clear();
     list_->AddObserver(&adder_);
     added_ = true;
@@ -524,11 +517,9 @@ TEST(ObserverListTest, ClearNotifyExistingOnly) {
 class ListDestructor : public Foo {
  public:
   explicit ListDestructor(ObserverList<Foo>* list) : list_(list) {}
-  virtual ~ListDestructor() {}
+  ~ListDestructor() override {}
 
-  virtual void Observe(int x) override {
-    delete list_;
-  }
+  void Observe(int x) override { delete list_; }
 
  private:
   ObserverList<Foo>* list_;

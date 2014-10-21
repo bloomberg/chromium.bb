@@ -19,7 +19,7 @@ struct UsesItself : public SupportsUserData::Data {
         key_(key) {
   }
 
-  virtual ~UsesItself() {
+  ~UsesItself() override {
     EXPECT_EQ(NULL, supports_user_data_->GetUserData(key_));
   }
 

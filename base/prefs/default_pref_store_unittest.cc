@@ -13,15 +13,15 @@ namespace {
 class MockPrefStoreObserver : public PrefStore::Observer {
  public:
   explicit MockPrefStoreObserver(DefaultPrefStore* pref_store);
-  virtual ~MockPrefStoreObserver();
+  ~MockPrefStoreObserver() override;
 
   int change_count() {
     return change_count_;
   }
 
   // PrefStore::Observer implementation:
-  virtual void OnPrefValueChanged(const std::string& key) override;
-  virtual void OnInitializationCompleted(bool succeeded) override {}
+  void OnPrefValueChanged(const std::string& key) override;
+  void OnInitializationCompleted(bool succeeded) override {}
 
  private:
   DefaultPrefStore* pref_store_;

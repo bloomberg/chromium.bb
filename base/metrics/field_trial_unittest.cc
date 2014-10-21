@@ -44,12 +44,10 @@ class TestFieldTrialObserver : public FieldTrialList::Observer {
     FieldTrialList::AddObserver(this);
   }
 
-  virtual ~TestFieldTrialObserver() {
-    FieldTrialList::RemoveObserver(this);
-  }
+  ~TestFieldTrialObserver() override { FieldTrialList::RemoveObserver(this); }
 
-  virtual void OnFieldTrialGroupFinalized(const std::string& trial,
-                                          const std::string& group) override {
+  void OnFieldTrialGroupFinalized(const std::string& trial,
+                                  const std::string& group) override {
     trial_name_ = trial;
     group_name_ = group;
   }

@@ -133,7 +133,7 @@ class BASE_EXPORT StatsCounterTimer : protected StatsCounter {
  public:
   // Constructs and starts the timer.
   explicit StatsCounterTimer(const std::string& name);
-  virtual ~StatsCounterTimer();
+  ~StatsCounterTimer() override;
 
   // Start the timer.
   void Start();
@@ -162,9 +162,9 @@ class BASE_EXPORT StatsRate : public StatsCounterTimer {
  public:
   // Constructs and starts the timer.
   explicit StatsRate(const std::string& name);
-  virtual ~StatsRate();
+  ~StatsRate() override;
 
-  virtual void Add(int value) override;
+  void Add(int value) override;
 
  private:
   StatsCounter counter_;

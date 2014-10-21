@@ -15,16 +15,16 @@ using test_expectations::Parser;
 class TestExpectationParserTest : public testing::Test,
                                   public Parser::Delegate {
  public:
-  virtual void EmitExpectation(
+  void EmitExpectation(
       const test_expectations::Expectation& expectation) override {
     expectations_.push_back(expectation);
   }
 
-  virtual void OnSyntaxError(const std::string& message) override {
+  void OnSyntaxError(const std::string& message) override {
     syntax_error_ = message;
   }
 
-  virtual void OnDataError(const std::string& error) override {
+  void OnDataError(const std::string& error) override {
     data_errors_.push_back(error);
   }
 

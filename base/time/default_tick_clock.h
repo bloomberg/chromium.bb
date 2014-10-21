@@ -14,10 +14,10 @@ namespace base {
 // DefaultClock is a Clock implementation that uses TimeTicks::Now().
 class BASE_EXPORT DefaultTickClock : public TickClock {
  public:
-  virtual ~DefaultTickClock();
+  ~DefaultTickClock() override;
 
   // Simply returns TimeTicks::Now().
-  virtual TimeTicks NowTicks() override;
+  TimeTicks NowTicks() override;
 };
 
 }  // namespace base

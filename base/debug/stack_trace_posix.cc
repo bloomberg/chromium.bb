@@ -402,7 +402,7 @@ class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
  public:
   PrintBacktraceOutputHandler() {}
 
-  virtual void HandleOutput(const char* output) override {
+  void HandleOutput(const char* output) override {
     // NOTE: This code MUST be async-signal safe (it's used by in-process
     // stack dumping signal handler). NO malloc or stdio is allowed here.
     PrintToStderr(output);
@@ -417,9 +417,7 @@ class StreamBacktraceOutputHandler : public BacktraceOutputHandler {
   explicit StreamBacktraceOutputHandler(std::ostream* os) : os_(os) {
   }
 
-  virtual void HandleOutput(const char* output) override {
-    (*os_) << output;
-  }
+  void HandleOutput(const char* output) override { (*os_) << output; }
 
  private:
   std::ostream* os_;

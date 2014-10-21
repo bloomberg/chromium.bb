@@ -18,21 +18,21 @@ class DiscardableMemoryMach
       public internal::DiscardableMemoryManagerAllocation {
  public:
   explicit DiscardableMemoryMach(size_t bytes);
-  virtual ~DiscardableMemoryMach();
+  ~DiscardableMemoryMach() override;
 
   static void PurgeForTesting();
 
   bool Initialize();
 
   // Overridden from DiscardableMemory:
-  virtual DiscardableMemoryLockStatus Lock() override;
-  virtual void Unlock() override;
-  virtual void* Memory() const override;
+  DiscardableMemoryLockStatus Lock() override;
+  void Unlock() override;
+  void* Memory() const override;
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() override;
-  virtual void ReleaseLock() override;
-  virtual void Purge() override;
+  bool AllocateAndAcquireLock() override;
+  void ReleaseLock() override;
+  void Purge() override;
 
  private:
   mac::ScopedMachVM memory_;

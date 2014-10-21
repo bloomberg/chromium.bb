@@ -26,7 +26,7 @@ class TraceEventSyntheticDelayTest : public testing::Test,
   }
 
   // TraceEventSyntheticDelayClock implementation.
-  virtual base::TimeTicks Now() override {
+  base::TimeTicks Now() override {
     AdvanceTime(base::TimeDelta::FromMilliseconds(kShortDurationMs / 10));
     return now_;
   }

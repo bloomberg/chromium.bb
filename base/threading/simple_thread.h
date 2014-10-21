@@ -78,7 +78,7 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   explicit SimpleThread(const std::string& name_prefix);
   SimpleThread(const std::string& name_prefix, const Options& options);
 
-  virtual ~SimpleThread();
+  ~SimpleThread() override;
 
   virtual void Start();
   virtual void Join();
@@ -102,7 +102,7 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   bool HasBeenJoined() { return joined_; }
 
   // Overridden from PlatformThread::Delegate:
-  virtual void ThreadMain() override;
+  void ThreadMain() override;
 
   // Only set priorities with a careful understanding of the consequences.
   // This is meant for very limited use cases.
@@ -135,8 +135,9 @@ class BASE_EXPORT DelegateSimpleThread : public SimpleThread {
                        const std::string& name_prefix,
                        const Options& options);
 
-  virtual ~DelegateSimpleThread();
-  virtual void Run() override;
+  ~DelegateSimpleThread() override;
+  void Run() override;
+
  private:
   Delegate* delegate_;
 };
@@ -156,7 +157,7 @@ class BASE_EXPORT DelegateSimpleThreadPool
   typedef DelegateSimpleThread::Delegate Delegate;
 
   DelegateSimpleThreadPool(const std::string& name_prefix, int num_threads);
-  virtual ~DelegateSimpleThreadPool();
+  ~DelegateSimpleThreadPool() override;
 
   // Start up all of the underlying threads, and start processing work if we
   // have any.
@@ -174,7 +175,7 @@ class BASE_EXPORT DelegateSimpleThreadPool
   }
 
   // We implement the Delegate interface, for running our internal threads.
-  virtual void Run() override;
+  void Run() override;
 
  private:
   const std::string name_prefix_;

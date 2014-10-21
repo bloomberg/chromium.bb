@@ -142,7 +142,7 @@ class SignalFDWatcher : public MessageLoopForIO::Watcher {
   SignalFDWatcher() {
   }
 
-  virtual void OnFileCanReadWithoutBlocking(int fd) override {
+  void OnFileCanReadWithoutBlocking(int fd) override {
     fprintf(stdout, "\nCaught signal. Killing spawned test processes...\n");
     fflush(stdout);
 
@@ -152,9 +152,7 @@ class SignalFDWatcher : public MessageLoopForIO::Watcher {
     exit(1);
   }
 
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override {
-    NOTREACHED();
-  }
+  void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignalFDWatcher);

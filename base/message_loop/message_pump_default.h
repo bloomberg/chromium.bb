@@ -15,13 +15,13 @@ namespace base {
 class BASE_EXPORT MessagePumpDefault : public MessagePump {
  public:
   MessagePumpDefault();
-  virtual ~MessagePumpDefault();
+  ~MessagePumpDefault() override;
 
   // MessagePump methods:
-  virtual void Run(Delegate* delegate) override;
-  virtual void Quit() override;
-  virtual void ScheduleWork() override;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
+  void Run(Delegate* delegate) override;
+  void Quit() override;
+  void ScheduleWork() override;
+  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
  private:
   // This flag is set to false when Run should return.

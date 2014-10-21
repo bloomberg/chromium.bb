@@ -30,37 +30,35 @@ class BASE_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   virtual bool IsSetInOverlay(const std::string& key) const;
 
   // Methods of PrefStore.
-  virtual void AddObserver(PrefStore::Observer* observer) override;
-  virtual void RemoveObserver(PrefStore::Observer* observer) override;
-  virtual bool HasObservers() const override;
-  virtual bool IsInitializationComplete() const override;
-  virtual bool GetValue(const std::string& key,
-                        const base::Value** result) const override;
+  void AddObserver(PrefStore::Observer* observer) override;
+  void RemoveObserver(PrefStore::Observer* observer) override;
+  bool HasObservers() const override;
+  bool IsInitializationComplete() const override;
+  bool GetValue(const std::string& key,
+                const base::Value** result) const override;
 
   // Methods of PersistentPrefStore.
-  virtual bool GetMutableValue(const std::string& key,
-                               base::Value** result) override;
-  virtual void SetValue(const std::string& key, base::Value* value) override;
-  virtual void SetValueSilently(const std::string& key,
-                                base::Value* value) override;
-  virtual void RemoveValue(const std::string& key) override;
-  virtual bool ReadOnly() const override;
-  virtual PrefReadError GetReadError() const override;
-  virtual PrefReadError ReadPrefs() override;
-  virtual void ReadPrefsAsync(ReadErrorDelegate* delegate) override;
-  virtual void CommitPendingWrite() override;
-  virtual void ReportValueChanged(const std::string& key) override;
+  bool GetMutableValue(const std::string& key, base::Value** result) override;
+  void SetValue(const std::string& key, base::Value* value) override;
+  void SetValueSilently(const std::string& key, base::Value* value) override;
+  void RemoveValue(const std::string& key) override;
+  bool ReadOnly() const override;
+  PrefReadError GetReadError() const override;
+  PrefReadError ReadPrefs() override;
+  void ReadPrefsAsync(ReadErrorDelegate* delegate) override;
+  void CommitPendingWrite() override;
+  void ReportValueChanged(const std::string& key) override;
 
   // Methods of PrefStore::Observer.
-  virtual void OnPrefValueChanged(const std::string& key) override;
-  virtual void OnInitializationCompleted(bool succeeded) override;
+  void OnPrefValueChanged(const std::string& key) override;
+  void OnInitializationCompleted(bool succeeded) override;
 
   void RegisterOverlayPref(const std::string& key);
   void RegisterOverlayPref(const std::string& overlay_key,
                            const std::string& underlay_key);
 
  protected:
-  virtual ~OverlayUserPrefStore();
+  ~OverlayUserPrefStore() override;
 
  private:
   typedef std::map<std::string, std::string> NamesMap;

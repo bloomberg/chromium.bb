@@ -107,7 +107,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         use_job_objects_(use_job_objects) {
   }
 
-  virtual ~UnitTestLauncherDelegate() {
+  ~UnitTestLauncherDelegate() override {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 
@@ -118,16 +118,16 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     FilePath output_file;
   };
 
-  virtual bool ShouldRunTest(const testing::TestCase* test_case,
-                             const testing::TestInfo* test_info) override {
+  bool ShouldRunTest(const testing::TestCase* test_case,
+                     const testing::TestInfo* test_info) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // There is no additional logic to disable specific tests.
     return true;
   }
 
-  virtual size_t RunTests(TestLauncher* test_launcher,
-                          const std::vector<std::string>& test_names) override {
+  size_t RunTests(TestLauncher* test_launcher,
+                  const std::vector<std::string>& test_names) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     std::vector<std::string> batch;
@@ -145,9 +145,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     return test_names.size();
   }
 
-  virtual size_t RetryTests(
-      TestLauncher* test_launcher,
-      const std::vector<std::string>& test_names) override {
+  size_t RetryTests(TestLauncher* test_launcher,
+                    const std::vector<std::string>& test_names) override {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         Bind(&UnitTestLauncherDelegate::RunSerially,

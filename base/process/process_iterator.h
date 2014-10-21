@@ -163,10 +163,10 @@ class BASE_EXPORT NamedProcessIterator : public ProcessIterator {
  public:
   NamedProcessIterator(const FilePath::StringType& executable_name,
                        const ProcessFilter* filter);
-  virtual ~NamedProcessIterator();
+  ~NamedProcessIterator() override;
 
  protected:
-  virtual bool IncludeEntry() override;
+  bool IncludeEntry() override;
 
  private:
   FilePath::StringType executable_name_;

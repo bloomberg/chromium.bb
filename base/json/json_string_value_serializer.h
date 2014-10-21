@@ -33,12 +33,12 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
         allow_trailing_comma_(false) {
   }
 
-  virtual ~JSONStringValueSerializer();
+  ~JSONStringValueSerializer() override;
 
   // Attempt to serialize the data structure represented by Value into
   // JSON.  If the return value is true, the result will have been written
   // into the string passed into the constructor.
-  virtual bool Serialize(const base::Value& root) override;
+  bool Serialize(const base::Value& root) override;
 
   // Equivalent to Serialize(root) except binary values are omitted from the
   // output.
@@ -51,8 +51,8 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   // The caller takes ownership of the returned value.
-  virtual base::Value* Deserialize(int* error_code,
-                                   std::string* error_message) override;
+  base::Value* Deserialize(int* error_code,
+                           std::string* error_message) override;
 
   void set_pretty_print(bool new_value) { pretty_print_ = new_value; }
   bool pretty_print() { return pretty_print_; }

@@ -230,14 +230,13 @@ static void DoNothing() {
 class FakeMessagePump : public MessagePump {
  public:
   FakeMessagePump() {}
-  virtual ~FakeMessagePump() {}
+  ~FakeMessagePump() override {}
 
-  virtual void Run(Delegate* delegate) override {}
+  void Run(Delegate* delegate) override {}
 
-  virtual void Quit() override {}
-  virtual void ScheduleWork() override {}
-  virtual void ScheduleDelayedWork(
-      const TimeTicks& delayed_work_time) override {}
+  void Quit() override {}
+  void ScheduleWork() override {}
+  void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override {}
 };
 
 class PostTaskTest : public testing::Test {

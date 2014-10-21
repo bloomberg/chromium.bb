@@ -25,11 +25,14 @@ class ConDecLogger : public ConDecLoggerParent {
  public:
   ConDecLogger() : ptr_(NULL) { }
   explicit ConDecLogger(int* ptr) { SetPtr(ptr); }
-  virtual ~ConDecLogger() { --*ptr_; }
+  ~ConDecLogger() override { --*ptr_; }
 
-  virtual void SetPtr(int* ptr) override { ptr_ = ptr; ++*ptr_; }
+  void SetPtr(int* ptr) override {
+    ptr_ = ptr;
+    ++*ptr_;
+  }
 
-  virtual int SomeMeth(int x) const override { return x; }
+  int SomeMeth(int x) const override { return x; }
 
  private:
   int* ptr_;

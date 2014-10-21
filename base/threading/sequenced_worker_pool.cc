@@ -98,13 +98,13 @@ class SequencedWorkerPoolTaskRunner : public TaskRunner {
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
 
   // TaskRunner implementation
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const Closure& task,
-                               TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const Closure& task,
+                       TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
  private:
-  virtual ~SequencedWorkerPoolTaskRunner();
+  ~SequencedWorkerPoolTaskRunner() override;
 
   const scoped_refptr<SequencedWorkerPool> pool_;
 
@@ -151,19 +151,18 @@ class SequencedWorkerPoolSequencedTaskRunner : public SequencedTaskRunner {
       SequencedWorkerPool::WorkerShutdown shutdown_behavior);
 
   // TaskRunner implementation
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const Closure& task,
-                               TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const Closure& task,
+                       TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
   // SequencedTaskRunner implementation
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const Closure& task,
-      TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const Closure& task,
+                                  TimeDelta delay) override;
 
  private:
-  virtual ~SequencedWorkerPoolSequencedTaskRunner();
+  ~SequencedWorkerPoolSequencedTaskRunner() override;
 
   const scoped_refptr<SequencedWorkerPool> pool_;
 
@@ -235,10 +234,10 @@ class SequencedWorkerPool::Worker : public SimpleThread {
   Worker(const scoped_refptr<SequencedWorkerPool>& worker_pool,
          int thread_number,
          const std::string& thread_name_prefix);
-  virtual ~Worker();
+  ~Worker() override;
 
   // SimpleThread implementation. This actually runs the background thread.
-  virtual void Run() override;
+  void Run() override;
 
   void set_running_task_info(SequenceToken token,
                              WorkerShutdown shutdown_behavior) {

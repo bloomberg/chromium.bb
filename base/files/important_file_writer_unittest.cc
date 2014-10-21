@@ -33,7 +33,7 @@ class DataSerializer : public ImportantFileWriter::DataSerializer {
   explicit DataSerializer(const std::string& data) : data_(data) {
   }
 
-  virtual bool SerializeData(std::string* output) override {
+  bool SerializeData(std::string* output) override {
     output->assign(data_);
     return true;
   }

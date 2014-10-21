@@ -26,9 +26,9 @@ class WatchdogCounter : public Watchdog {
         alarm_counter_(0) {
   }
 
-  virtual ~WatchdogCounter() {}
+  ~WatchdogCounter() override {}
 
-  virtual void Alarm() override {
+  void Alarm() override {
     alarm_counter_++;
     Watchdog::Alarm();
   }

@@ -14,14 +14,14 @@ namespace base {
 class PowerMonitorTestSource : public PowerMonitorSource {
  public:
   PowerMonitorTestSource();
-  virtual ~PowerMonitorTestSource();
+  ~PowerMonitorTestSource() override;
 
   void GeneratePowerStateEvent(bool on_battery_power);
   void GenerateSuspendEvent();
   void GenerateResumeEvent();
 
  protected:
-  virtual bool IsOnBatteryPowerImpl() override;
+  bool IsOnBatteryPowerImpl() override;
 
   bool test_on_battery_power_;
   MessageLoop message_loop_;
@@ -30,12 +30,12 @@ class PowerMonitorTestSource : public PowerMonitorSource {
 class PowerMonitorTestObserver : public PowerObserver {
  public:
   PowerMonitorTestObserver();
-  virtual ~PowerMonitorTestObserver();
+  ~PowerMonitorTestObserver() override;
 
   // PowerObserver callbacks.
-  virtual void OnPowerStateChange(bool on_battery_power) override;
-  virtual void OnSuspend() override;
-  virtual void OnResume() override;
+  void OnPowerStateChange(bool on_battery_power) override;
+  void OnSuspend() override;
+  void OnResume() override;
 
   // Test status counts.
   bool last_power_state() { return last_power_state_; }

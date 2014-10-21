@@ -20,9 +20,9 @@ class HangingReceiveThread : public base::DelegateSimpleThread::Delegate {
     thread_.Start();
   }
 
-  virtual ~HangingReceiveThread() {}
+  ~HangingReceiveThread() override {}
 
-  virtual void Run() override {
+  void Run() override {
     int data = 0;
     ASSERT_EQ(socket_->Peek(), 0u);
 

@@ -52,9 +52,7 @@ class CallDoStuffOnThread : public SimpleThread {
         non_thread_safe_class_(non_thread_safe_class) {
   }
 
-  virtual void Run() override {
-    non_thread_safe_class_->DoStuff();
-  }
+  void Run() override { non_thread_safe_class_->DoStuff(); }
 
  private:
   NonThreadSafeClass* non_thread_safe_class_;
@@ -71,9 +69,7 @@ class DeleteNonThreadSafeClassOnThread : public SimpleThread {
         non_thread_safe_class_(non_thread_safe_class) {
   }
 
-  virtual void Run() override {
-    non_thread_safe_class_.reset();
-  }
+  void Run() override { non_thread_safe_class_.reset(); }
 
  private:
   scoped_ptr<NonThreadSafeClass> non_thread_safe_class_;

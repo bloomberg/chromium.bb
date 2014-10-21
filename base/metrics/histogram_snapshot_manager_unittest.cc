@@ -18,22 +18,21 @@ class HistogramFlattenerDeltaRecorder : public HistogramFlattener {
  public:
   HistogramFlattenerDeltaRecorder() {}
 
-  virtual void RecordDelta(const HistogramBase& histogram,
-                           const HistogramSamples& snapshot) override {
+  void RecordDelta(const HistogramBase& histogram,
+                   const HistogramSamples& snapshot) override {
     recorded_delta_histogram_names_.push_back(histogram.histogram_name());
   }
 
-  virtual void InconsistencyDetected(
+  void InconsistencyDetected(HistogramBase::Inconsistency problem) override {
+    ASSERT_TRUE(false);
+  }
+
+  void UniqueInconsistencyDetected(
       HistogramBase::Inconsistency problem) override {
     ASSERT_TRUE(false);
   }
 
-  virtual void UniqueInconsistencyDetected(
-      HistogramBase::Inconsistency problem) override {
-    ASSERT_TRUE(false);
-  }
-
-  virtual void InconsistencyDetectedInLoggedCount(int amount) override {
+  void InconsistencyDetectedInLoggedCount(int amount) override {
     ASSERT_TRUE(false);
   }
 

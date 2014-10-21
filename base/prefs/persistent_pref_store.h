@@ -68,7 +68,7 @@ class BASE_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
   virtual void CommitPendingWrite() = 0;
 
  protected:
-  virtual ~PersistentPrefStore() {}
+  ~PersistentPrefStore() override {}
 };
 
 #endif  // BASE_PREFS_PERSISTENT_PREF_STORE_H_

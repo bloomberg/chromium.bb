@@ -149,7 +149,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
   class PrefStoreKeeper : public PrefStore::Observer {
    public:
     PrefStoreKeeper();
-    virtual ~PrefStoreKeeper();
+    ~PrefStoreKeeper() override;
 
     // Takes ownership of |pref_store|.
     void Initialize(PrefValueStore* store,
@@ -161,8 +161,8 @@ class BASE_PREFS_EXPORT PrefValueStore {
 
    private:
     // PrefStore::Observer implementation.
-    virtual void OnPrefValueChanged(const std::string& key) override;
-    virtual void OnInitializationCompleted(bool succeeded) override;
+    void OnPrefValueChanged(const std::string& key) override;
+    void OnInitializationCompleted(bool succeeded) override;
 
     // PrefValueStore this keeper is part of.
     PrefValueStore* pref_value_store_;

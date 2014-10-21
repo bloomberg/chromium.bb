@@ -15,21 +15,21 @@ namespace {
 class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
  public:
   TestAllocationImpl() : is_allocated_(false), is_locked_(false) {}
-  virtual ~TestAllocationImpl() { DCHECK(!is_locked_); }
+  ~TestAllocationImpl() override { DCHECK(!is_locked_); }
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
-  virtual bool AllocateAndAcquireLock() override {
+  bool AllocateAndAcquireLock() override {
     bool was_allocated = is_allocated_;
     is_allocated_ = true;
     DCHECK(!is_locked_);
     is_locked_ = true;
     return was_allocated;
   }
-  virtual void ReleaseLock() override {
+  void ReleaseLock() override {
     DCHECK(is_locked_);
     is_locked_ = false;
   }
-  virtual void Purge() override {
+  void Purge() override {
     DCHECK(is_allocated_);
     is_allocated_ = false;
   }
@@ -58,7 +58,7 @@ class TestDiscardableMemoryManagerImpl
 
  private:
   // Overriden from internal::DiscardableMemoryManager:
-  virtual TimeTicks Now() const override { return now_; }
+  TimeTicks Now() const override { return now_; }
 
   TimeTicks now_;
 };

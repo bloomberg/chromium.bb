@@ -84,7 +84,7 @@ class TestingPrefServiceSimple
     : public TestingPrefServiceBase<PrefService, PrefRegistry> {
  public:
   TestingPrefServiceSimple();
-  virtual ~TestingPrefServiceSimple();
+  ~TestingPrefServiceSimple() override;
 
   // This is provided as a convenience for registering preferences on
   // an existing TestingPrefServiceSimple instance. On a production

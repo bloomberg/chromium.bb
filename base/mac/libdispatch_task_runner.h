@@ -38,16 +38,15 @@ class BASE_EXPORT LibDispatchTaskRunner : public base::SingleThreadTaskRunner {
   explicit LibDispatchTaskRunner(const char* name);
 
   // base::TaskRunner:
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const Closure& task,
-                               base::TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const Closure& task,
+                       base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
   // base::SequencedTaskRunner:
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const Closure& task,
-      base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const Closure& task,
+                                  base::TimeDelta delay) override;
 
   // This blocks the calling thread until all work on the dispatch queue has
   // been run and the queue has been destroyed. Destroying a queue requires
@@ -64,7 +63,7 @@ class BASE_EXPORT LibDispatchTaskRunner : public base::SingleThreadTaskRunner {
   dispatch_queue_t GetDispatchQueue() const;
 
  protected:
-  virtual ~LibDispatchTaskRunner();
+  ~LibDispatchTaskRunner() override;
 
  private:
   static void Finalizer(void* context);

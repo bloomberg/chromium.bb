@@ -15,11 +15,12 @@ class SampleCountPickleIterator : public SampleCountIterator {
  public:
   explicit SampleCountPickleIterator(PickleIterator* iter);
 
-  virtual bool Done() const override;
-  virtual void Next() override;
-  virtual void Get(HistogramBase::Sample* min,
-                   HistogramBase::Sample* max,
-                   HistogramBase::Count* count) const override;
+  bool Done() const override;
+  void Next() override;
+  void Get(HistogramBase::Sample* min,
+           HistogramBase::Sample* max,
+           HistogramBase::Count* count) const override;
+
  private:
   PickleIterator* const iter_;
 

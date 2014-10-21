@@ -25,18 +25,17 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
       scoped_refptr<IncomingTaskQueue> incoming_queue);
 
   // MessageLoopProxy implementation
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
 
  private:
   friend class RefCountedThreadSafe<MessageLoopProxyImpl>;
-  virtual ~MessageLoopProxyImpl();
+  ~MessageLoopProxyImpl() override;
 
   // THe incoming queue receiving all posted tasks.
   scoped_refptr<IncomingTaskQueue> incoming_queue_;

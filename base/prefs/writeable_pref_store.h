@@ -43,7 +43,7 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   virtual void SetValueSilently(const std::string& key, base::Value* value) = 0;
 
  protected:
-  virtual ~WriteablePrefStore() {}
+  ~WriteablePrefStore() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WriteablePrefStore);

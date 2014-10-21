@@ -47,15 +47,14 @@ class TestSimpleTaskRunner : public SingleThreadTaskRunner {
   TestSimpleTaskRunner();
 
   // SingleThreadTaskRunner implementation.
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const Closure& task,
-                               TimeDelta delay) override;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const Closure& task,
-      TimeDelta delay) override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const Closure& task,
+                       TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const Closure& task,
+                                  TimeDelta delay) override;
 
-  virtual bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksOnCurrentThread() const override;
 
   const std::deque<TestPendingTask>& GetPendingTasks() const;
   bool HasPendingTask() const;
@@ -72,7 +71,7 @@ class TestSimpleTaskRunner : public SingleThreadTaskRunner {
   void RunUntilIdle();
 
  protected:
-  virtual ~TestSimpleTaskRunner();
+  ~TestSimpleTaskRunner() override;
 
   std::deque<TestPendingTask> pending_tasks_;
   ThreadChecker thread_checker_;

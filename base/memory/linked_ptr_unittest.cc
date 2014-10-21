@@ -25,10 +25,8 @@ struct A {
 // Subclass
 struct B: public A {
   B() { history += base::StringPrintf("B%d ctor\n", mynum); }
-  virtual ~B() { history += base::StringPrintf("B%d dtor\n", mynum); }
-  virtual void Use() override {
-    history += base::StringPrintf("B%d use\n", mynum);
-  }
+  ~B() override { history += base::StringPrintf("B%d dtor\n", mynum); }
+  void Use() override { history += base::StringPrintf("B%d use\n", mynum); }
 };
 
 }  // namespace

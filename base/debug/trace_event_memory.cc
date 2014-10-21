@@ -33,12 +33,12 @@ class MemoryDumpHolder : public base::debug::ConvertableToTraceFormat {
   explicit MemoryDumpHolder(char* dump) : dump_(dump) {}
 
   // base::debug::ConvertableToTraceFormat overrides:
-  virtual void AppendAsTraceFormat(std::string* out) const override {
+  void AppendAsTraceFormat(std::string* out) const override {
     AppendHeapProfileAsTraceFormat(dump_, out);
   }
 
  private:
-  virtual ~MemoryDumpHolder() { free(dump_); }
+  ~MemoryDumpHolder() override { free(dump_); }
 
   char* dump_;
 
