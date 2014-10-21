@@ -41,19 +41,18 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
                     const gfx::Size& size,
                     gfx::GLShareGroup* share_group,
                     gpu::gles2::MailboxManager* mailbox_manager);
-  virtual ~CommandBufferImpl();
+  ~CommandBufferImpl() override;
 
-  virtual void Initialize(CommandBufferSyncClientPtr sync_client,
-                          mojo::ScopedSharedBufferHandle shared_state) override;
-  virtual void SetGetBuffer(int32_t buffer) override;
-  virtual void Flush(int32_t put_offset) override;
-  virtual void MakeProgress(int32_t last_get_offset) override;
-  virtual void RegisterTransferBuffer(
-      int32_t id,
-      mojo::ScopedSharedBufferHandle transfer_buffer,
-      uint32_t size) override;
-  virtual void DestroyTransferBuffer(int32_t id) override;
-  virtual void Echo(const Callback<void()>& callback) override;
+  void Initialize(CommandBufferSyncClientPtr sync_client,
+                  mojo::ScopedSharedBufferHandle shared_state) override;
+  void SetGetBuffer(int32_t buffer) override;
+  void Flush(int32_t put_offset) override;
+  void MakeProgress(int32_t last_get_offset) override;
+  void RegisterTransferBuffer(int32_t id,
+                              mojo::ScopedSharedBufferHandle transfer_buffer,
+                              uint32_t size) override;
+  void DestroyTransferBuffer(int32_t id) override;
+  void Echo(const Callback<void()>& callback) override;
 
  private:
   bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);

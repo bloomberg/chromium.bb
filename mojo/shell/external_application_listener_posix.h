@@ -56,26 +56,25 @@ class ExternalApplicationListenerPosix
   // Some of this class' internal state needs to be destroyed on io_runner_,
   // so the destructor will post a task to that thread to call StopListening()
   // and then wait for it to complete.
-  virtual ~ExternalApplicationListenerPosix();
+  ~ExternalApplicationListenerPosix() override;
 
   // Begin listening (on io_runner) to a socket at listen_socket_path.
   // Incoming registration requests will be forwarded to register_callback.
   // Errors are ignored.
-  virtual void ListenInBackground(
-      const base::FilePath& listen_socket_path,
-      const RegisterCallback& register_callback) override;
+  void ListenInBackground(const base::FilePath& listen_socket_path,
+                          const RegisterCallback& register_callback) override;
 
   // Begin listening (on io_runner) to a socket at listen_socket_path.
   // Incoming registration requests will be forwarded to register_callback.
   // Errors are reported via error_callback.
-  virtual void ListenInBackgroundWithErrorCallback(
+  void ListenInBackgroundWithErrorCallback(
       const base::FilePath& listen_socket_path,
       const RegisterCallback& register_callback,
       const ErrorCallback& error_callback) override;
 
   // Block the current thread until listening has started on io_runner.
   // If listening has already started, returns immediately.
-  virtual void WaitForListening() override;
+  void WaitForListening() override;
 
  private:
   class RegistrarImpl;
@@ -90,8 +89,8 @@ class ExternalApplicationListenerPosix
   void StopListening(base::WaitableEvent* event);
 
   // Implementation of IncomingConnectionListener::Delegate
-  virtual void OnListening(int rv) override;
-  virtual void OnConnection(net::SocketDescriptor incoming) override;
+  void OnListening(int rv) override;
+  void OnConnection(net::SocketDescriptor incoming) override;
 
   // If listener_ fails to start listening, this method is run on shell_runner_
   // to report the error.

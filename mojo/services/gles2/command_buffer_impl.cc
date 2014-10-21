@@ -28,17 +28,15 @@ class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
  public:
   MemoryTrackerStub() {}
 
-  virtual void TrackMemoryAllocatedChange(size_t old_size,
-                                          size_t new_size,
-                                          gpu::gles2::MemoryTracker::Pool pool)
-      override {}
+  void TrackMemoryAllocatedChange(
+      size_t old_size,
+      size_t new_size,
+      gpu::gles2::MemoryTracker::Pool pool) override {}
 
-  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) override {
-    return true;
-  };
+  bool EnsureGPUMemoryAvailable(size_t size_needed) override { return true; };
 
  private:
-  virtual ~MemoryTrackerStub() {}
+  ~MemoryTrackerStub() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MemoryTrackerStub);
 };

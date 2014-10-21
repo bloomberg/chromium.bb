@@ -19,11 +19,11 @@ class Shell;
 class ViewManagerClientFactory : public InterfaceFactory<ViewManagerClient> {
  public:
   ViewManagerClientFactory(Shell* shell, ViewManagerDelegate* delegate);
-  virtual ~ViewManagerClientFactory();
+  ~ViewManagerClientFactory() override;
 
   // InterfaceFactory<ViewManagerClient> implementation.
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ViewManagerClient> request) override;
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<ViewManagerClient> request) override;
 
  private:
   Shell* shell_;

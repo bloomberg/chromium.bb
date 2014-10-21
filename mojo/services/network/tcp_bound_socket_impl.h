@@ -15,7 +15,7 @@ namespace mojo {
 class TCPBoundSocketImpl : public InterfaceImpl<TCPBoundSocket> {
  public:
   TCPBoundSocketImpl();
-  virtual ~TCPBoundSocketImpl();
+  ~TCPBoundSocketImpl() override;
 
   // Does the actual binding. Returns a net error code. On net::OK, the bound
   // socket will be ready to use and send back to the client. On failure, this
@@ -27,15 +27,13 @@ class TCPBoundSocketImpl : public InterfaceImpl<TCPBoundSocket> {
   NetAddressPtr GetLocalAddress() const;
 
   // TCPBoundSocket.
-  virtual void StartListening(
-      InterfaceRequest<TCPServerSocket> server,
-      const Callback<void(NetworkErrorPtr)>& callback) override;
-  virtual void Connect(
-      NetAddressPtr remote_address,
-      ScopedDataPipeConsumerHandle send_stream,
-      ScopedDataPipeProducerHandle receive_stream,
-      InterfaceRequest<TCPConnectedSocket> client_socket,
-      const Callback<void(NetworkErrorPtr)>& callback) override;
+  void StartListening(InterfaceRequest<TCPServerSocket> server,
+                      const Callback<void(NetworkErrorPtr)>& callback) override;
+  void Connect(NetAddressPtr remote_address,
+               ScopedDataPipeConsumerHandle send_stream,
+               ScopedDataPipeProducerHandle receive_stream,
+               InterfaceRequest<TCPConnectedSocket> client_socket,
+               const Callback<void(NetworkErrorPtr)>& callback) override;
 
  private:
   void OnConnected(int result);

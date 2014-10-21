@@ -60,21 +60,21 @@ class MockSimpleDispatcher : public SimpleDispatcher {
     HandleSignalsStateChangedNoLock();
   }
 
-  virtual Type GetType() const override { return kTypeUnknown; }
+  Type GetType() const override { return kTypeUnknown; }
 
  private:
   friend class base::RefCountedThreadSafe<MockSimpleDispatcher>;
-  virtual ~MockSimpleDispatcher() {}
+  ~MockSimpleDispatcher() override {}
 
-  virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock() override {
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
+      override {
     scoped_refptr<MockSimpleDispatcher> rv(new MockSimpleDispatcher());
     rv->state_ = state_;
     return scoped_refptr<Dispatcher>(rv.get());
   }
 
   // |Dispatcher| override:
-  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const override {
+  HandleSignalsState GetHandleSignalsStateImplNoLock() const override {
     lock().AssertAcquired();
     return state_;
   }

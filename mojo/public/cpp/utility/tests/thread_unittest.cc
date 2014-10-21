@@ -22,10 +22,9 @@ class SetIntThread : public Thread {
         value_(value) {
   }
 
-  virtual ~SetIntThread() {
-  }
+  ~SetIntThread() override {}
 
-  virtual void Run() override { *int_to_set_ = value_; }
+  void Run() override { *int_to_set_ = value_; }
 
  private:
   int* const int_to_set_;

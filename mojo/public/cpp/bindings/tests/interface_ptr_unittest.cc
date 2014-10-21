@@ -19,7 +19,7 @@ class ErrorObserver : public ErrorHandler {
 
   bool encountered_error() const { return encountered_error_; }
 
-  virtual void OnConnectionError() override { encountered_error_ = true; }
+  void OnConnectionError() override { encountered_error_ = true; }
 
  private:
   bool encountered_error_;
@@ -27,20 +27,20 @@ class ErrorObserver : public ErrorHandler {
 
 class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
  public:
-  virtual ~MathCalculatorImpl() {}
+  ~MathCalculatorImpl() override {}
 
   MathCalculatorImpl() : total_(0.0), got_connection_(false) {}
 
-  virtual void OnConnectionEstablished() override { got_connection_ = true; }
+  void OnConnectionEstablished() override { got_connection_ = true; }
 
-  virtual void Clear() override { client()->Output(total_); }
+  void Clear() override { client()->Output(total_); }
 
-  virtual void Add(double value) override {
+  void Add(double value) override {
     total_ += value;
     client()->Output(total_);
   }
 
-  virtual void Multiply(double value) override {
+  void Multiply(double value) override {
     total_ *= value;
     client()->Output(total_);
   }
@@ -77,7 +77,7 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
 
  private:
   // math::CalculatorUI implementation:
-  virtual void Output(double value) override { output_ = value; }
+  void Output(double value) override { output_ = value; }
 
   math::CalculatorPtr calculator_;
   double output_;
@@ -99,9 +99,9 @@ class SelfDestructingMathCalculatorUIImpl : public math::CalculatorUI {
   static int num_instances() { return num_instances_; }
 
  private:
-  virtual ~SelfDestructingMathCalculatorUIImpl() { --num_instances_; }
+  ~SelfDestructingMathCalculatorUIImpl() override { --num_instances_; }
 
-  virtual void Output(double value) override {
+  void Output(double value) override {
     if (--nesting_level_ > 0) {
       // Add some more and wait for re-entrant call to Output!
       calculator_->Add(1.0);
@@ -121,20 +121,20 @@ int SelfDestructingMathCalculatorUIImpl::num_instances_ = 0;
 
 class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
  public:
-  virtual ~ReentrantServiceImpl() {}
+  ~ReentrantServiceImpl() override {}
 
   ReentrantServiceImpl()
       : got_connection_(false), call_depth_(0), max_call_depth_(0) {}
 
-  virtual void OnConnectionEstablished() override { got_connection_ = true; }
+  void OnConnectionEstablished() override { got_connection_ = true; }
 
   bool got_connection() const { return got_connection_; }
 
   int max_call_depth() { return max_call_depth_; }
 
-  virtual void Frobinate(sample::FooPtr foo,
-                         sample::Service::BazOptions baz,
-                         sample::PortPtr port) override {
+  void Frobinate(sample::FooPtr foo,
+                 sample::Service::BazOptions baz,
+                 sample::PortPtr port) override {
     max_call_depth_ = std::max(++call_depth_, max_call_depth_);
     if (call_depth_ == 1) {
       EXPECT_TRUE(WaitForIncomingMethodCall());
@@ -142,7 +142,7 @@ class ReentrantServiceImpl : public InterfaceImpl<sample::Service> {
     call_depth_--;
   }
 
-  virtual void GetPort(mojo::InterfaceRequest<sample::Port> port) override {}
+  void GetPort(mojo::InterfaceRequest<sample::Port> port) override {}
 
  private:
   bool got_connection_;

@@ -27,43 +27,40 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
 
  private:
   friend class base::RefCountedThreadSafe<LocalDataPipe>;
-  virtual ~LocalDataPipe();
+  ~LocalDataPipe() override;
 
   // |DataPipe| implementation:
-  virtual void ProducerCloseImplNoLock() override;
-  virtual MojoResult ProducerWriteDataImplNoLock(
+  void ProducerCloseImplNoLock() override;
+  MojoResult ProducerWriteDataImplNoLock(
       UserPointer<const void> elements,
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_write,
       uint32_t min_num_bytes_to_write) override;
-  virtual MojoResult ProducerBeginWriteDataImplNoLock(
+  MojoResult ProducerBeginWriteDataImplNoLock(
       UserPointer<void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
       uint32_t min_num_bytes_to_write) override;
-  virtual MojoResult ProducerEndWriteDataImplNoLock(
+  MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) override;
-  virtual HandleSignalsState ProducerGetHandleSignalsStateImplNoLock()
-      const override;
-  virtual void ConsumerCloseImplNoLock() override;
-  virtual MojoResult ConsumerReadDataImplNoLock(
+  HandleSignalsState ProducerGetHandleSignalsStateImplNoLock() const override;
+  void ConsumerCloseImplNoLock() override;
+  MojoResult ConsumerReadDataImplNoLock(
       UserPointer<void> elements,
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_read,
       uint32_t min_num_bytes_to_read) override;
-  virtual MojoResult ConsumerDiscardDataImplNoLock(
+  MojoResult ConsumerDiscardDataImplNoLock(
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_discard,
       uint32_t min_num_bytes_to_discard) override;
-  virtual MojoResult ConsumerQueryDataImplNoLock(
+  MojoResult ConsumerQueryDataImplNoLock(
       UserPointer<uint32_t> num_bytes) override;
-  virtual MojoResult ConsumerBeginReadDataImplNoLock(
+  MojoResult ConsumerBeginReadDataImplNoLock(
       UserPointer<const void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
       uint32_t min_num_bytes_to_read) override;
-  virtual MojoResult ConsumerEndReadDataImplNoLock(
-      uint32_t num_bytes_read) override;
-  virtual HandleSignalsState ConsumerGetHandleSignalsStateImplNoLock()
-      const override;
+  MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) override;
+  HandleSignalsState ConsumerGetHandleSignalsStateImplNoLock() const override;
 
   void EnsureBufferNoLock();
   void DestroyBufferNoLock();

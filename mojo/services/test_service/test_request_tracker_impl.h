@@ -28,13 +28,13 @@ struct TrackingContext {
 class TestRequestTrackerImpl : public InterfaceImpl<TestRequestTracker> {
  public:
   explicit TestRequestTrackerImpl(TrackingContext* context);
-  virtual ~TestRequestTrackerImpl();
+  ~TestRequestTrackerImpl() override;
 
   // TestRequestTracker.
-  virtual void RecordStats(uint64_t client_id, ServiceStatsPtr stats) override;
+  void RecordStats(uint64_t client_id, ServiceStatsPtr stats) override;
 
   // InterfaceImpl override.
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
  private:
   void UploaderNameCallback(uint64_t id, const mojo::String& name);
@@ -47,12 +47,11 @@ class TestTrackedRequestServiceImpl
     : public InterfaceImpl<TestTrackedRequestService> {
  public:
   explicit TestTrackedRequestServiceImpl(TrackingContext* context);
-  virtual ~TestTrackedRequestServiceImpl();
+  ~TestTrackedRequestServiceImpl() override;
 
   // |TestTrackedRequestService| implementation.
-  virtual void GetReport(
-      const mojo::Callback<void(mojo::Array<ServiceReportPtr>)>& callback)
-      override;
+  void GetReport(const mojo::Callback<void(mojo::Array<ServiceReportPtr>)>&
+                     callback) override;
 
  private:
   TrackingContext* context_;

@@ -131,9 +131,9 @@ class TestCallback : public TestCallbackBase<Callback<void(NetworkErrorPtr)>> {
 
  private:
   struct State: public StateBase {
-    virtual ~State() {}
+    ~State() override {}
 
-    virtual void Run(NetworkErrorPtr result) const override {
+    void Run(NetworkErrorPtr result) const override {
       if (test_callback_) {
         TestCallback* callback = static_cast<TestCallback*>(test_callback_);
         callback->result_ = result.Pass();
@@ -158,10 +158,9 @@ class TestCallbackWithAddress
 
  private:
   struct State : public StateBase {
-    virtual ~State() {}
+    ~State() override {}
 
-    virtual void Run(NetworkErrorPtr result,
-                     NetAddressPtr net_address) const override {
+    void Run(NetworkErrorPtr result, NetAddressPtr net_address) const override {
       if (test_callback_) {
         TestCallbackWithAddress* callback =
             static_cast<TestCallbackWithAddress*>(test_callback_);
@@ -188,9 +187,9 @@ class TestCallbackWithUint32
 
  private:
   struct State : public StateBase {
-    virtual ~State() {}
+    ~State() override {}
 
-    virtual void Run(uint32_t result) const override {
+    void Run(uint32_t result) const override {
       if (test_callback_) {
         TestCallbackWithUint32* callback =
             static_cast<TestCallbackWithUint32*>(test_callback_);
@@ -230,16 +229,16 @@ class UDPSocketTest : public testing::Test {
 
     UDPSocketClientImpl() : run_loop_(nullptr), expected_receive_count_(0) {}
 
-    virtual ~UDPSocketClientImpl() {
+    ~UDPSocketClientImpl() override {
       while (!results_.empty()) {
         delete results_.front();
         results_.pop();
       }
     }
 
-    virtual void OnReceived(NetworkErrorPtr result,
-                            NetAddressPtr src_addr,
-                            Array<uint8_t> data) override {
+    void OnReceived(NetworkErrorPtr result,
+                    NetAddressPtr src_addr,
+                    Array<uint8_t> data) override {
       ReceiveResult* entry = new ReceiveResult();
       entry->result = result.Pass();
       entry->addr = src_addr.Pass();

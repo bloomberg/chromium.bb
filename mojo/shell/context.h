@@ -29,12 +29,12 @@ class ExternalApplicationListener;
 class Context : ApplicationManager::Delegate {
  public:
   Context();
-  virtual ~Context();
+  ~Context() override;
 
   void Init();
 
   // ApplicationManager::Delegate override.
-  virtual void OnApplicationError(const GURL& gurl) override;
+  void OnApplicationError(const GURL& gurl) override;
 
   void Run(const GURL& url);
   ScopedMessagePipeHandle ConnectToServiceByName(

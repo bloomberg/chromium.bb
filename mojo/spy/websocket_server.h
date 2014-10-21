@@ -25,7 +25,7 @@ class WebSocketServer : public net::HttpServer::Delegate,
  public:
   // Pass 0 in |port| to listen in one available port.
   explicit WebSocketServer(int port, ScopedMessagePipeHandle server_pipe);
-  virtual ~WebSocketServer();
+  ~WebSocketServer() override;
   // Begin accepting HTTP requests. Must be called from an IO MessageLoop.
   bool Start();
   // Returns the listening port, useful if 0 was passed to the contructor.
@@ -39,26 +39,21 @@ class WebSocketServer : public net::HttpServer::Delegate,
 
  protected:
   // Overridden from net::HttpServer::Delegate.
-  virtual void OnConnect(int connection_id) override {}
-  virtual void OnHttpRequest(
-      int connection_id,
-      const net::HttpServerRequestInfo& info) override;
-  virtual void OnWebSocketRequest(
-      int connection_id,
-      const net::HttpServerRequestInfo& info) override;
-  virtual void OnWebSocketMessage(
-      int connection_id,
-      const std::string& data) override;
-  virtual void OnClose(int connection_id) override;
+  void OnConnect(int connection_id) override {}
+  void OnHttpRequest(int connection_id,
+                     const net::HttpServerRequestInfo& info) override;
+  void OnWebSocketRequest(int connection_id,
+                          const net::HttpServerRequestInfo& info) override;
+  void OnWebSocketMessage(int connection_id, const std::string& data) override;
+  void OnClose(int connection_id) override;
 
   // Overriden form spy_api::SpyClient.
-  virtual void OnFatalError(spy_api::Result result) override;
-  virtual void OnSessionEnd(spy_api::Result result) override;
-  virtual void OnClientConnection(
-      const mojo::String& name,
-      uint32_t id,
-      spy_api::ConnectionOptions options) override;
-  virtual void OnMessage(spy_api::MessagePtr message) override;
+  void OnFatalError(spy_api::Result result) override;
+  void OnSessionEnd(spy_api::Result result) override;
+  void OnClientConnection(const mojo::String& name,
+                          uint32_t id,
+                          spy_api::ConnectionOptions options) override;
+  void OnMessage(spy_api::MessagePtr message) override;
 
   // Callbacks from calling spy_api::SpyServer.
   void OnStartSession(spy_api::Result, mojo::String);

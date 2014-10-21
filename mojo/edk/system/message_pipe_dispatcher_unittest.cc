@@ -528,10 +528,10 @@ class WriterThread : public base::SimpleThread {
     *bytes_written_ = 0;
   }
 
-  virtual ~WriterThread() { Join(); }
+  ~WriterThread() override { Join(); }
 
  private:
-  virtual void Run() override {
+  void Run() override {
     // Make some data to write.
     unsigned char buffer[kMaxMessageSize];
     for (size_t i = 0; i < kMaxMessageSize; i++)
@@ -581,10 +581,10 @@ class ReaderThread : public base::SimpleThread {
     *bytes_read_ = 0;
   }
 
-  virtual ~ReaderThread() { Join(); }
+  ~ReaderThread() override { Join(); }
 
  private:
-  virtual void Run() override {
+  void Run() override {
     unsigned char buffer[kMaxMessageSize];
     Waiter w;
     HandleSignalsState hss;

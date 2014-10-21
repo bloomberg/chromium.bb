@@ -26,35 +26,31 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
   void Init(scoped_refptr<DataPipe> data_pipe);
 
   // |Dispatcher| public methods:
-  virtual Type GetType() const override;
+  Type GetType() const override;
 
  private:
-  virtual ~DataPipeProducerDispatcher();
+  ~DataPipeProducerDispatcher() override;
 
   // |Dispatcher| protected methods:
-  virtual void CancelAllWaitersNoLock() override;
-  virtual void CloseImplNoLock() override;
-  virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock() override;
-  virtual MojoResult WriteDataImplNoLock(UserPointer<const void> elements,
-                                         UserPointer<uint32_t> num_bytes,
-                                         MojoWriteDataFlags flags) override;
-  virtual MojoResult BeginWriteDataImplNoLock(
-      UserPointer<void*> buffer,
-      UserPointer<uint32_t> buffer_num_bytes,
-      MojoWriteDataFlags flags) override;
-  virtual MojoResult EndWriteDataImplNoLock(
-      uint32_t num_bytes_written) override;
-  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
-  virtual MojoResult AddWaiterImplNoLock(
-      Waiter* waiter,
-      MojoHandleSignals signals,
-      uint32_t context,
-      HandleSignalsState* signals_state) override;
-  virtual void RemoveWaiterImplNoLock(
-      Waiter* waiter,
-      HandleSignalsState* signals_state) override;
-  virtual bool IsBusyNoLock() const override;
+  void CancelAllWaitersNoLock() override;
+  void CloseImplNoLock() override;
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
+      override;
+  MojoResult WriteDataImplNoLock(UserPointer<const void> elements,
+                                 UserPointer<uint32_t> num_bytes,
+                                 MojoWriteDataFlags flags) override;
+  MojoResult BeginWriteDataImplNoLock(UserPointer<void*> buffer,
+                                      UserPointer<uint32_t> buffer_num_bytes,
+                                      MojoWriteDataFlags flags) override;
+  MojoResult EndWriteDataImplNoLock(uint32_t num_bytes_written) override;
+  HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
+  MojoResult AddWaiterImplNoLock(Waiter* waiter,
+                                 MojoHandleSignals signals,
+                                 uint32_t context,
+                                 HandleSignalsState* signals_state) override;
+  void RemoveWaiterImplNoLock(Waiter* waiter,
+                              HandleSignalsState* signals_state) override;
+  bool IsBusyNoLock() const override;
 
   // Protected by |lock()|:
   scoped_refptr<DataPipe> data_pipe_;  // This will be null if closed.

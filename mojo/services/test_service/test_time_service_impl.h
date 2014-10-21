@@ -20,13 +20,12 @@ class TestRequestTrackerClientImpl;
 class TestTimeServiceImpl : public InterfaceImpl<TestTimeService> {
  public:
   explicit TestTimeServiceImpl(ApplicationConnection* application);
-  virtual ~TestTimeServiceImpl();
+  ~TestTimeServiceImpl() override;
 
   // |TestTimeService| methods:
-  virtual void GetPartyTime(
+  void GetPartyTime(
       const mojo::Callback<void(int64_t time_usec)>& callback) override;
-  virtual void StartTrackingRequests(
-      const mojo::Callback<void()>& callback) override;
+  void StartTrackingRequests(const mojo::Callback<void()>& callback) override;
 
  private:
   ApplicationConnection* application_;

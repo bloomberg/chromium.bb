@@ -45,24 +45,24 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void set_view(View* view) { view_ = view; }
 
   // cc::LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame(int frame_id) override;
-  virtual void DidBeginMainFrame() override;
-  virtual void BeginMainFrame(const cc::BeginFrameArgs& args) override;
-  virtual void Layout() override;
-  virtual void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
-                                   const gfx::Vector2d& outer_delta,
-                                   float page_scale,
-                                   float top_controls_delta) override;
-  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                                   float page_scale,
-                                   float top_controls_delta) override;
-  virtual void RequestNewOutputSurface(bool fallback) override;
-  virtual void DidInitializeOutputSurface() override;
-  virtual void WillCommit() override;
-  virtual void DidCommit() override;
-  virtual void DidCommitAndDrawFrame() override;
-  virtual void DidCompleteSwapBuffers() override;
-  virtual void RateLimitSharedMainThreadContext() override {}
+  void WillBeginMainFrame(int frame_id) override;
+  void DidBeginMainFrame() override;
+  void BeginMainFrame(const cc::BeginFrameArgs& args) override;
+  void Layout() override;
+  void ApplyViewportDeltas(const gfx::Vector2d& inner_delta,
+                           const gfx::Vector2d& outer_delta,
+                           float page_scale,
+                           float top_controls_delta) override;
+  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override;
+  void RequestNewOutputSurface(bool fallback) override;
+  void DidInitializeOutputSurface() override;
+  void WillCommit() override;
+  void DidCommit() override;
+  void DidCommitAndDrawFrame() override;
+  void DidCompleteSwapBuffers() override;
+  void RateLimitSharedMainThreadContext() override {}
 
   // blink::WebLayerTreeView implementation.
   virtual void setSurfaceReady() override;
@@ -110,7 +110,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   virtual void setShowScrollBottleneckRects(bool) {}
 
   // OutputSurfaceMojoClient implementation.
-  virtual void DidCreateSurface(cc::SurfaceId id) override;
+  void DidCreateSurface(cc::SurfaceId id) override;
 
  private:
   void OnSurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);

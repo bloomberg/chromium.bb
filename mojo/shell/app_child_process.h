@@ -16,9 +16,9 @@ namespace shell {
 class AppChildProcess : public ChildProcess {
  public:
   AppChildProcess();
-  virtual ~AppChildProcess();
+  ~AppChildProcess() override;
 
-  virtual void Main() override;
+  void Main() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppChildProcess);

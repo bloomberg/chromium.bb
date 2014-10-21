@@ -38,7 +38,7 @@ class MessageAccumulator : public MessageReceiver {
  public:
   explicit MessageAccumulator(internal::MessageQueue* queue) : queue_(queue) {}
 
-  virtual bool Accept(Message* message) override {
+  bool Accept(Message* message) override {
     queue_->Push(message);
     return true;
   }
@@ -51,10 +51,10 @@ class ResponseGenerator : public MessageReceiverWithResponder {
  public:
   ResponseGenerator() {}
 
-  virtual bool Accept(Message* message) override { return false; }
+  bool Accept(Message* message) override { return false; }
 
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) override {
+  bool AcceptWithResponder(Message* message,
+                           MessageReceiver* responder) override {
     EXPECT_TRUE(message->has_flag(internal::kMessageExpectsResponse));
 
     return SendResponse(message->name(), message->request_id(), responder);
@@ -76,10 +76,10 @@ class LazyResponseGenerator : public ResponseGenerator {
  public:
   LazyResponseGenerator() : responder_(nullptr), name_(0), request_id_(0) {}
 
-  virtual ~LazyResponseGenerator() { delete responder_; }
+  ~LazyResponseGenerator() override { delete responder_; }
 
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) override {
+  bool AcceptWithResponder(Message* message,
+                           MessageReceiver* responder) override {
     name_ = message->name();
     request_id_ = message->request_id();
     responder_ = responder;

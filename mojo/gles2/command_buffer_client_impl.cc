@@ -64,10 +64,10 @@ class CommandBufferClientImpl::SyncClientImpl
 
  private:
   // CommandBufferSyncClient methods:
-  virtual void DidInitialize(bool success) override {
+  void DidInitialize(bool success) override {
     initialized_successfully_ = success;
   }
-  virtual void DidMakeProgress(CommandBufferStatePtr state) override {
+  void DidMakeProgress(CommandBufferStatePtr state) override {
     command_buffer_state_ = state.Pass();
   }
 

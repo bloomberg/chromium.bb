@@ -15,10 +15,9 @@ class TestConnector : public ServiceConnectorBase {
  public:
   TestConnector(const std::string& name, int* delete_count)
       : ServiceConnectorBase(name), delete_count_(delete_count) {}
-  virtual ~TestConnector() { (*delete_count_)++; }
-  virtual void ConnectToService(
-      const std::string& name,
-      ScopedMessagePipeHandle client_handle) override {}
+  ~TestConnector() override { (*delete_count_)++; }
+  void ConnectToService(const std::string& name,
+                        ScopedMessagePipeHandle client_handle) override {}
 
  private:
   int* delete_count_;

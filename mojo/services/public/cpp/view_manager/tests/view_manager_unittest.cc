@@ -49,19 +49,19 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
   explicit ConnectApplicationLoader(const LoadedCallback& callback)
       : callback_(callback) {}
-  virtual ~ConnectApplicationLoader() {}
+  ~ConnectApplicationLoader() override {}
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) override {
+  void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
   }
 
   // Overridden from ApplicationLoader:
-  virtual void Load(ApplicationManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) override {
+  void Load(ApplicationManager* manager,
+            const GURL& url,
+            scoped_refptr<LoadCallbacks> callbacks) override {
     ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
     if (!shell_handle.is_valid())
       return;
@@ -70,23 +70,22 @@ class ConnectApplicationLoader : public ApplicationLoader,
     apps_.push_back(app.release());
   }
 
-  virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) override {}
+  void OnApplicationError(ApplicationManager* manager,
+                          const GURL& url) override {}
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      override {
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
   // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) override {
+  void OnEmbed(ViewManager* view_manager,
+               View* root,
+               ServiceProviderImpl* exported_services,
+               scoped_ptr<ServiceProvider> imported_services) override {
     callback_.Run(view_manager, root);
   }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override {}
+  void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 
   ScopedVector<ApplicationImpl> apps_;
   LoadedCallback callback_;
@@ -98,13 +97,13 @@ class ConnectApplicationLoader : public ApplicationLoader,
 class BoundsChangeObserver : public ViewObserver {
  public:
   explicit BoundsChangeObserver(View* view) : view_(view) {}
-  virtual ~BoundsChangeObserver() {}
+  ~BoundsChangeObserver() override {}
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewBoundsChanged(View* view,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) override {
+  void OnViewBoundsChanged(View* view,
+                           const gfx::Rect& old_bounds,
+                           const gfx::Rect& new_bounds) override {
     DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
@@ -129,7 +128,7 @@ class TreeSizeMatchesObserver : public ViewObserver {
   TreeSizeMatchesObserver(View* tree, size_t tree_size)
       : tree_(tree),
         tree_size_(tree_size) {}
-  virtual ~TreeSizeMatchesObserver() {}
+  ~TreeSizeMatchesObserver() override {}
 
   bool IsTreeCorrectSize() {
     return CountViews(tree_) == tree_size_;
@@ -137,7 +136,7 @@ class TreeSizeMatchesObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnTreeChanged(const TreeChangeParams& params) override {
+  void OnTreeChanged(const TreeChangeParams& params) override {
     if (IsTreeCorrectSize())
       QuitRunLoop();
   }
@@ -174,7 +173,7 @@ class DestructionObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) override {
+  void OnViewDestroyed(View* view) override {
     std::set<Id>::iterator it = views_->find(view->id());
     if (it != views_->end())
       views_->erase(it);
@@ -208,15 +207,13 @@ class OrderChangeObserver : public ViewObserver {
   OrderChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~OrderChangeObserver() {
-    view_->RemoveObserver(this);
-  }
+  ~OrderChangeObserver() override { view_->RemoveObserver(this); }
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewReordered(View* view,
-                               View* relative_view,
-                               OrderDirection direction) override {
+  void OnViewReordered(View* view,
+                       View* relative_view,
+                       OrderDirection direction) override {
     DCHECK_EQ(view, view_);
     QuitRunLoop();
   }
@@ -237,7 +234,7 @@ class ViewTracker : public ViewObserver {
   explicit ViewTracker(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~ViewTracker() {
+  ~ViewTracker() override {
     if (view_)
       view_->RemoveObserver(this);
   }
@@ -246,7 +243,7 @@ class ViewTracker : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) override {
+  void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, view_);
     view_ = NULL;
   }
@@ -535,11 +532,11 @@ class VisibilityChangeObserver : public ViewObserver {
   explicit VisibilityChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~VisibilityChangeObserver() { view_->RemoveObserver(this); }
+  ~VisibilityChangeObserver() override { view_->RemoveObserver(this); }
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewVisibilityChanged(View* view) override {
+  void OnViewVisibilityChanged(View* view) override {
     EXPECT_EQ(view, view_);
     QuitRunLoop();
   }
@@ -597,11 +594,11 @@ class DrawnChangeObserver : public ViewObserver {
   explicit DrawnChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~DrawnChangeObserver() { view_->RemoveObserver(this); }
+  ~DrawnChangeObserver() override { view_->RemoveObserver(this); }
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDrawnChanged(View* view) override {
+  void OnViewDrawnChanged(View* view) override {
     EXPECT_EQ(view, view_);
     QuitRunLoop();
   }

@@ -18,14 +18,14 @@ class MojoBufferBacking : public gpu::BufferBacking {
   MojoBufferBacking(mojo::ScopedSharedBufferHandle handle,
                     void* memory,
                     size_t size);
-  virtual ~MojoBufferBacking();
+  ~MojoBufferBacking() override;
 
   static scoped_ptr<gpu::BufferBacking> Create(
       mojo::ScopedSharedBufferHandle handle,
       size_t size);
 
-  virtual void* GetMemory() const override;
-  virtual size_t GetSize() const override;
+  void* GetMemory() const override;
+  size_t GetSize() const override;
 
  private:
   mojo::ScopedSharedBufferHandle handle_;

@@ -37,7 +37,7 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback>,
   WaitingCallback(v8::Isolate* isolate,
                   v8::Handle<v8::Function> callback,
                   gin::Handle<HandleWrapper> handle_wrapper);
-  virtual ~WaitingCallback();
+  ~WaitingCallback() override;
 
   // Callback from MojoAsyncWaiter. |closure| is the WaitingCallback.
   static void CallOnHandleReady(void* closure, MojoResult result);
@@ -47,7 +47,7 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback>,
 
   // Invoked by the HandleWrapper if the handle is closed while this wait is
   // still in progress.
-  virtual void OnWillCloseHandle() override;
+  void OnWillCloseHandle() override;
 
   base::WeakPtr<gin::Runner> runner_;
   MojoAsyncWaitID wait_id_;

@@ -24,7 +24,7 @@ class CountingMojoHandler : public MessagePumpMojoHandler {
  public:
   CountingMojoHandler() : success_count_(0), error_count_(0) {}
 
-  virtual void OnHandleReady(const Handle& handle) override {
+  void OnHandleReady(const Handle& handle) override {
     ReadMessageRaw(static_cast<const MessagePipeHandle&>(handle),
                    NULL,
                    NULL,
@@ -33,7 +33,7 @@ class CountingMojoHandler : public MessagePumpMojoHandler {
                    MOJO_READ_MESSAGE_FLAG_NONE);
     ++success_count_;
   }
-  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
+  void OnHandleError(const Handle& handle, MojoResult result) override {
     ++error_count_;
   }
 
@@ -49,12 +49,8 @@ class CountingMojoHandler : public MessagePumpMojoHandler {
 
 class CountingObserver : public MessagePumpMojo::Observer {
  public:
-  virtual void WillSignalHandler() override {
-    will_signal_handler_count++;
-  }
-  virtual void DidSignalHandler() override {
-    did_signal_handler_count++;
-  }
+  void WillSignalHandler() override { will_signal_handler_count++; }
+  void DidSignalHandler() override { did_signal_handler_count++; }
 
   int will_signal_handler_count = 0;
   int did_signal_handler_count = 0;

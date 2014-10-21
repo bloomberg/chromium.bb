@@ -91,7 +91,7 @@ class MessageReceiver {
 
 class MessageReceiverWithResponder : public MessageReceiver {
  public:
-  virtual ~MessageReceiverWithResponder() {}
+  ~MessageReceiverWithResponder() override {}
 
   // A variant on Accept that registers a MessageReceiver (known as the
   // responder) to handle the response message generated from the given

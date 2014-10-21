@@ -20,7 +20,7 @@ class Router : public MessageReceiverWithResponder {
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
          const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
-  virtual ~Router();
+  ~Router() override;
 
   // Sets the receiver to handle messages read from the message pipe that do
   // not have the kMessageIsResponse flag set.
@@ -45,9 +45,9 @@ class Router : public MessageReceiverWithResponder {
   }
 
   // MessageReceiver implementation:
-  virtual bool Accept(Message* message) override;
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) override;
+  bool Accept(Message* message) override;
+  bool AcceptWithResponder(Message* message,
+                           MessageReceiver* responder) override;
 
   // Blocks the current thread for the first incoming method call, i.e., either
   // a call to a client method or a callback method.
@@ -66,10 +66,10 @@ class Router : public MessageReceiverWithResponder {
   class HandleIncomingMessageThunk : public MessageReceiver {
    public:
     HandleIncomingMessageThunk(Router* router);
-    virtual ~HandleIncomingMessageThunk();
+    ~HandleIncomingMessageThunk() override;
 
     // MessageReceiver implementation:
-    virtual bool Accept(Message* message) override;
+    bool Accept(Message* message) override;
 
    private:
     Router* router_;

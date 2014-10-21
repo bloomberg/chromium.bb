@@ -115,7 +115,7 @@ class DynamicApplicationLoader::LocalLoader : public Loader {
                    base::PathExists(path)));
   }
 
-  virtual ~LocalLoader() {}
+  ~LocalLoader() override {}
 
  private:
   base::WeakPtrFactory<LocalLoader> weak_ptr_factory_;
@@ -152,7 +152,7 @@ class DynamicApplicationLoader::NetworkLoader : public Loader {
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~NetworkLoader() {
+  ~NetworkLoader() override {
     if (!file_.empty())
       base::DeleteFile(file_, false);
   }

@@ -24,33 +24,33 @@ namespace mojo {
 class UDPSocketImpl : public InterfaceImpl<UDPSocket> {
  public:
   UDPSocketImpl();
-  virtual ~UDPSocketImpl();
+  ~UDPSocketImpl() override;
 
   // UDPSocket implementation.
-  virtual void AllowAddressReuse(
+  void AllowAddressReuse(
       const Callback<void(NetworkErrorPtr)>& callback) override;
 
-  virtual void Bind(
+  void Bind(
       NetAddressPtr addr,
       const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
 
-  virtual void SetSendBufferSize(
+  void SetSendBufferSize(
       uint32_t size,
       const Callback<void(NetworkErrorPtr)>& callback) override;
 
-  virtual void SetReceiveBufferSize(
+  void SetReceiveBufferSize(
       uint32_t size,
       const Callback<void(NetworkErrorPtr)>& callback) override;
 
-  virtual void NegotiateMaxPendingSendRequests(
+  void NegotiateMaxPendingSendRequests(
       uint32_t requested_size,
       const Callback<void(uint32_t)>& callback) override;
 
-  virtual void ReceiveMore(uint32_t datagram_number) override;
+  void ReceiveMore(uint32_t datagram_number) override;
 
-  virtual void SendTo(NetAddressPtr dest_addr,
-                      Array<uint8_t> data,
-                      const Callback<void(NetworkErrorPtr)>& callback) override;
+  void SendTo(NetAddressPtr dest_addr,
+              Array<uint8_t> data,
+              const Callback<void(NetworkErrorPtr)>& callback) override;
 
  private:
   struct PendingSendRequest {

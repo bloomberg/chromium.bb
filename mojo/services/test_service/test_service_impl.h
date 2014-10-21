@@ -20,17 +20,16 @@ class TestServiceImpl : public InterfaceImpl<TestService> {
  public:
   TestServiceImpl(ApplicationConnection* connection,
                   TestServiceApplication* application);
-  virtual ~TestServiceImpl();
+  ~TestServiceImpl() override;
 
   // |TestService| methods:
-  virtual void OnConnectionEstablished() override;
-  virtual void OnConnectionError() override;
-  virtual void Ping(const mojo::Callback<void()>& callback) override;
-  virtual void ConnectToAppAndGetTime(
+  void OnConnectionEstablished() override;
+  void OnConnectionError() override;
+  void Ping(const mojo::Callback<void()>& callback) override;
+  void ConnectToAppAndGetTime(
       const mojo::String& app_url,
       const mojo::Callback<void(int64_t)>& callback) override;
-  virtual void StartTrackingRequests(
-      const mojo::Callback<void()>& callback) override;
+  void StartTrackingRequests(const mojo::Callback<void()>& callback) override;
 
  private:
   TestServiceApplication* const application_;

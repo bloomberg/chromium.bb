@@ -27,7 +27,7 @@ class StringRecorder {
 class ImportedInterfaceImpl
     : public InterfaceImpl<imported::ImportedInterface> {
  public:
-  virtual void DoSomething() override { do_something_count_++; }
+  void DoSomething() override { do_something_count_++; }
 
   static int do_something_count() { return do_something_count_; }
 
@@ -38,10 +38,9 @@ int ImportedInterfaceImpl::do_something_count_ = 0;
 
 class SampleNamedObjectImpl : public InterfaceImpl<sample::NamedObject> {
  public:
-  virtual void SetName(const mojo::String& name) override { name_ = name; }
+  void SetName(const mojo::String& name) override { name_ = name; }
 
-  virtual void GetName(
-      const mojo::Callback<void(mojo::String)>& callback) override {
+  void GetName(const mojo::Callback<void(mojo::String)>& callback) override {
     callback.Run(name_);
   }
 
@@ -51,8 +50,8 @@ class SampleNamedObjectImpl : public InterfaceImpl<sample::NamedObject> {
 
 class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
  public:
-  virtual void DoStuff(sample::RequestPtr request,
-                       ScopedMessagePipeHandle pipe) override {
+  void DoStuff(sample::RequestPtr request,
+               ScopedMessagePipeHandle pipe) override {
     std::string text1;
     if (pipe.is_valid())
       EXPECT_TRUE(ReadTextMessage(pipe.get(), &text1));
@@ -80,7 +79,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
       request->obj->DoSomething();
   }
 
-  virtual void DoStuff2(ScopedDataPipeConsumerHandle pipe) override {
+  void DoStuff2(ScopedDataPipeConsumerHandle pipe) override {
     // Read the data from the pipe, writing the response (as a string) to
     // DidStuff2().
     ASSERT_TRUE(pipe.is_valid());
@@ -99,7 +98,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     client()->DidStuff2(data);
   }
 
-  virtual void CreateNamedObject(
+  void CreateNamedObject(
       InterfaceRequest<sample::NamedObject> object_request) override {
     EXPECT_TRUE(object_request.is_pending());
     BindToRequest(new SampleNamedObjectImpl(), &object_request);
@@ -108,11 +107,11 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
   // These aren't called or implemented, but exist here to test that the
   // methods are generated with the correct argument types for imported
   // interfaces.
-  virtual void RequestImportedInterface(
+  void RequestImportedInterface(
       InterfaceRequest<imported::ImportedInterface> imported,
       const mojo::Callback<void(InterfaceRequest<imported::ImportedInterface>)>&
           callback) override {}
-  virtual void TakeImportedInterface(
+  void TakeImportedInterface(
       imported::ImportedInterfacePtr imported,
       const mojo::Callback<void(imported::ImportedInterfacePtr)>& callback)
       override {}
@@ -131,8 +130,8 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
 
   bool got_response() const { return got_response_; }
 
-  virtual void DidStuff(sample::ResponsePtr response,
-                        const String& text_reply) override {
+  void DidStuff(sample::ResponsePtr response,
+                const String& text_reply) override {
     EXPECT_EQ(expected_text_reply_, text_reply);
 
     if (response->pipe.is_valid()) {
@@ -153,7 +152,7 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
     got_response_ = true;
   }
 
-  virtual void DidStuff2(const String& text_reply) override {
+  void DidStuff2(const String& text_reply) override {
     got_response_ = true;
     EXPECT_EQ(expected_text_reply_, text_reply);
   }

@@ -49,12 +49,12 @@ class SimpleWaiterThread : public base::SimpleThread {
   // For the duration of the lifetime of this object, |*result| belongs to it
   // (in the sense that it will write to it whenever it wants).
   SimpleWaiterThread(MojoResult* result, uint32_t* context);
-  virtual ~SimpleWaiterThread();  // Joins the thread.
+  ~SimpleWaiterThread() override;  // Joins the thread.
 
   Waiter* waiter() { return &waiter_; }
 
  private:
-  virtual void Run() override;
+  void Run() override;
 
   MojoResult* const result_;
   uint32_t* const context_;
@@ -79,10 +79,10 @@ class WaiterThread : public base::SimpleThread {
                MojoResult* result_out,
                uint32_t* context_out,
                HandleSignalsState* signals_state_out);
-  virtual ~WaiterThread();
+  ~WaiterThread() override;
 
  private:
-  virtual void Run() override;
+  void Run() override;
 
   const scoped_refptr<Dispatcher> dispatcher_;
   const MojoHandleSignals handle_signals_;

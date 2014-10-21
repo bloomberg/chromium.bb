@@ -36,7 +36,7 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   };
 
   MessagePumpMojo();
-  virtual ~MessagePumpMojo();
+  ~MessagePumpMojo() override;
 
   // Static factory function (for using with |base::Thread::Options|, wrapped
   // using |base::Bind()|).
@@ -61,11 +61,10 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   void RemoveObserver(Observer*);
 
   // MessagePump:
-  virtual void Run(Delegate* delegate) override;
-  virtual void Quit() override;
-  virtual void ScheduleWork() override;
-  virtual void ScheduleDelayedWork(
-      const base::TimeTicks& delayed_work_time) override;
+  void Run(Delegate* delegate) override;
+  void Quit() override;
+  void ScheduleWork() override;
+  void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override;
 
  private:
   struct RunState;

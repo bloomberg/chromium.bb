@@ -18,11 +18,10 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
   ContentHandlerImpl(ApplicationDelegateImpl* app_delegate_impl);
 
  private:
-  virtual ~ContentHandlerImpl();
-  virtual void OnConnect(
-      const mojo::String& url,
-      URLResponsePtr content,
-      InterfaceRequest<ServiceProvider> service_provider) override;
+  ~ContentHandlerImpl() override;
+  void OnConnect(const mojo::String& url,
+                 URLResponsePtr content,
+                 InterfaceRequest<ServiceProvider> service_provider) override;
 
   ApplicationDelegateImpl* app_delegate_impl_;
 };

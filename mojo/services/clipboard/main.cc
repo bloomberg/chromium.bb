@@ -20,19 +20,18 @@ class Delegate : public mojo::ApplicationDelegate,
                  public mojo::InterfaceFactory<mojo::Clipboard> {
  public:
   Delegate() {}
-  virtual ~Delegate() {}
+  ~Delegate() override {}
 
   // mojo::ApplicationDelegate implementation.
-  virtual bool ConfigureIncomingConnection(
+  bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
 
   // mojo::InterfaceFactory<mojo::Clipboard> implementation.
-  virtual void Create(
-      mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::Clipboard> request) override {
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojo::Clipboard> request) override {
     // TODO(erg): Write native implementations of the clipboard. For now, we
     // just build a clipboard which doesn't interact with the system.
     mojo::BindToRequest(new mojo::ClipboardStandaloneImpl(), &request);

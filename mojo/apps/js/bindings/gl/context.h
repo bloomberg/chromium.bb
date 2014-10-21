@@ -54,13 +54,13 @@ class Context : public gin::Wrappable<Context> {
                                   uint64_t offset);
 
  private:
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   explicit Context(v8::Isolate* isolate,
                    mojo::Handle handle,
                    v8::Handle<v8::Function> context_lost_callback);
-  virtual ~Context();
+  ~Context() override;
 
   void ContextLost();
   static void ContextLostThunk(void* closure);

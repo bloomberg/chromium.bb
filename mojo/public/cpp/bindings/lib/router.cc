@@ -15,10 +15,10 @@ class ResponderThunk : public MessageReceiver {
  public:
   explicit ResponderThunk(const SharedData<Router*>& router)
       : router_(router) {}
-  virtual ~ResponderThunk() {}
+  ~ResponderThunk() override {}
 
   // MessageReceiver implementation:
-  virtual bool Accept(Message* message) override {
+  bool Accept(Message* message) override {
     MOJO_DCHECK(message->has_flag(kMessageIsResponse));
 
     bool result = false;

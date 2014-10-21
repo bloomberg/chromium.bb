@@ -19,7 +19,7 @@ class ContentHandlerJSApp : public JSApp {
         content_(content.Pass()) {
   }
 
-  virtual bool Load(std::string* source, std::string* file_name) override {
+  bool Load(std::string* source, std::string* file_name) override {
     *file_name = content_->url;
     if (content_.is_null())
       return false;

@@ -20,10 +20,10 @@ namespace embedder {
 class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport : public PlatformSupport {
  public:
   SimplePlatformSupport() {}
-  virtual ~SimplePlatformSupport() {}
+  ~SimplePlatformSupport() override {}
 
-  virtual PlatformSharedBuffer* CreateSharedBuffer(size_t num_bytes) override;
-  virtual PlatformSharedBuffer* CreateSharedBufferFromHandle(
+  PlatformSharedBuffer* CreateSharedBuffer(size_t num_bytes) override;
+  PlatformSharedBuffer* CreateSharedBufferFromHandle(
       size_t num_bytes,
       ScopedPlatformHandle platform_handle) override;
 

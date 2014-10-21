@@ -20,14 +20,14 @@ class WeakServiceProvider : public ServiceProvider {
  public:
   WeakServiceProvider(ServiceProviderImpl* creator,
                       ServiceProvider* service_provider);
-  virtual ~WeakServiceProvider();
+  ~WeakServiceProvider() override;
 
   void Clear();
 
  private:
   // Overridden from ServiceProvider:
-  virtual void ConnectToService(const String& service_name,
-                                ScopedMessagePipeHandle client_handle) override;
+  void ConnectToService(const String& service_name,
+                        ScopedMessagePipeHandle client_handle) override;
 
   ServiceProviderImpl* creator_;
   ServiceProvider* service_provider_;

@@ -72,11 +72,11 @@ View* BuildViewTree(ViewManagerClientImpl* client,
 class RootObserver : public ViewObserver {
  public:
   explicit RootObserver(View* root) : root_(root) {}
-  virtual ~RootObserver() {}
+  ~RootObserver() override {}
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewDestroyed(View* view) override {
+  void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_);
     static_cast<ViewManagerClientImpl*>(
         ViewPrivate(root_).view_manager())->RemoveRoot(root_);

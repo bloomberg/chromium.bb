@@ -22,7 +22,7 @@ class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
   TCPConnectedSocketImpl(scoped_ptr<net::TCPSocket> socket,
                          ScopedDataPipeConsumerHandle send_stream,
                          ScopedDataPipeProducerHandle receive_stream);
-  virtual ~TCPConnectedSocketImpl();
+  ~TCPConnectedSocketImpl() override;
 
  private:
   // "Receiving" in this context means reading from TCPSocket and writing to

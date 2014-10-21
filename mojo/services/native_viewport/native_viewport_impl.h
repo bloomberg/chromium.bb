@@ -26,23 +26,21 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
                            public PlatformViewport::Delegate {
  public:
   NativeViewportImpl(ApplicationImpl* app, bool is_headless);
-  virtual ~NativeViewportImpl();
+  ~NativeViewportImpl() override;
 
   // InterfaceImpl<NativeViewport> implementation.
-  virtual void Create(SizePtr size,
-                      const Callback<void(uint64_t)>& callback) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Close() override;
-  virtual void SetSize(SizePtr size) override;
-  virtual void SubmittedFrame(SurfaceIdPtr surface_id) override;
+  void Create(SizePtr size, const Callback<void(uint64_t)>& callback) override;
+  void Show() override;
+  void Hide() override;
+  void Close() override;
+  void SetSize(SizePtr size) override;
+  void SubmittedFrame(SurfaceIdPtr surface_id) override;
 
   // PlatformViewport::Delegate implementation.
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) override;
-  virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) override;
-  virtual bool OnEvent(ui::Event* ui_event) override;
-  virtual void OnDestroyed() override;
+  void OnBoundsChanged(const gfx::Rect& bounds) override;
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
+  bool OnEvent(ui::Event* ui_event) override;
+  void OnDestroyed() override;
 
   void AckEvent();
 

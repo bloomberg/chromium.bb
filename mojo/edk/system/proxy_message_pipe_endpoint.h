@@ -31,13 +31,13 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
   explicit ProxyMessagePipeEndpoint(ChannelEndpoint* channel_endpoint);
-  virtual ~ProxyMessagePipeEndpoint();
+  ~ProxyMessagePipeEndpoint() override;
 
   // |MessagePipeEndpoint| implementation:
-  virtual Type GetType() const override;
-  virtual bool OnPeerClose() override;
-  virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) override;
-  virtual void Close() override;
+  Type GetType() const override;
+  bool OnPeerClose() override;
+  void EnqueueMessage(scoped_ptr<MessageInTransit> message) override;
+  void Close() override;
 
  private:
   void DetachIfNecessary();

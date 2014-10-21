@@ -29,7 +29,7 @@ class Connector : public MessageReceiver {
   explicit Connector(
       ScopedMessagePipeHandle message_pipe,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter());
-  virtual ~Connector();
+  ~Connector() override;
 
   // Sets the receiver to handle messages read from the message pipe.  The
   // Connector will read messages from the pipe regardless of whether or not an
@@ -69,7 +69,7 @@ class Connector : public MessageReceiver {
   bool WaitForIncomingMessage();
 
   // MessageReceiver implementation:
-  virtual bool Accept(Message* message) override;
+  bool Accept(Message* message) override;
 
  private:
   static void CallOnHandleReady(void* closure, MojoResult result);

@@ -19,14 +19,13 @@ class TCPServerSocketImpl : public InterfaceImpl<TCPServerSocket> {
 
   // Passed ownership of a socket already in listening mode.
   explicit TCPServerSocketImpl(scoped_ptr<net::TCPSocket> socket);
-  virtual ~TCPServerSocketImpl();
+  ~TCPServerSocketImpl() override;
 
   // TCPServerSocket.
-  virtual void Accept(
-      ScopedDataPipeConsumerHandle send_stream,
-      ScopedDataPipeProducerHandle receive_stream,
-      InterfaceRequest<TCPConnectedSocket> client_socket,
-      const AcceptCallback& callback) override;
+  void Accept(ScopedDataPipeConsumerHandle send_stream,
+              ScopedDataPipeProducerHandle receive_stream,
+              InterfaceRequest<TCPConnectedSocket> client_socket,
+              const AcceptCallback& callback) override;
 
  private:
   void OnAcceptCompleted(int result);

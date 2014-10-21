@@ -47,7 +47,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       scoped_refptr<SharedBufferDispatcher>* result);
 
   // |Dispatcher| public methods:
-  virtual Type GetType() const override;
+  Type GetType() const override;
 
   // The "opposite" of |SerializeAndClose()|. (Typically this is called by
   // |Dispatcher::Deserialize()|.)
@@ -60,7 +60,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
  private:
   explicit SharedBufferDispatcher(
       scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer_);
-  virtual ~SharedBufferDispatcher();
+  ~SharedBufferDispatcher() override;
 
   // Validates and/or sets default options for
   // |MojoDuplicateBufferHandleOptions|. If non-null, |in_options| must point to
@@ -72,21 +72,21 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       MojoDuplicateBufferHandleOptions* out_options);
 
   // |Dispatcher| protected methods:
-  virtual void CloseImplNoLock() override;
-  virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock() override;
-  virtual MojoResult DuplicateBufferHandleImplNoLock(
+  void CloseImplNoLock() override;
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
+      override;
+  MojoResult DuplicateBufferHandleImplNoLock(
       UserPointer<const MojoDuplicateBufferHandleOptions> options,
       scoped_refptr<Dispatcher>* new_dispatcher) override;
-  virtual MojoResult MapBufferImplNoLock(
+  MojoResult MapBufferImplNoLock(
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
       scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping) override;
-  virtual void StartSerializeImplNoLock(Channel* channel,
-                                        size_t* max_size,
-                                        size_t* max_platform_handles) override;
-  virtual bool EndSerializeAndCloseImplNoLock(
+  void StartSerializeImplNoLock(Channel* channel,
+                                size_t* max_size,
+                                size_t* max_platform_handles) override;
+  bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,

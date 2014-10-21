@@ -38,9 +38,9 @@ class NoInterfaceStub : public MessageReceiverWithResponder {
   NoInterfaceStub() {}
   void set_sink(NoInterface* sink) {}
   NoInterface* sink() { return nullptr; }
-  virtual bool Accept(Message* message) override;
-  virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiver* responder) override;
+  bool Accept(Message* message) override;
+  bool AcceptWithResponder(Message* message,
+                           MessageReceiver* responder) override;
 };
 
 // AnyInterface is for use in cases where any interface would do (e.g., see the

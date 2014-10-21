@@ -65,28 +65,27 @@ struct WebSocketEventHandler : public net::WebSocketEventInterface {
   WebSocketEventHandler(WebSocketClientPtr client)
       : client_(client.Pass()) {
   }
-  virtual ~WebSocketEventHandler() {}
+  ~WebSocketEventHandler() override {}
 
  private:
   // net::WebSocketEventInterface methods:
-  virtual ChannelState OnAddChannelResponse(
-      bool fail,
-      const std::string& selected_subprotocol,
-      const std::string& extensions) override;
-  virtual ChannelState OnDataFrame(bool fin,
-                                   WebSocketMessageType type,
-                                   const std::vector<char>& data) override;
-  virtual ChannelState OnClosingHandshake() override;
-  virtual ChannelState OnFlowControl(int64 quota) override;
-  virtual ChannelState OnDropChannel(bool was_clean,
-                                     uint16 code,
-                                     const std::string& reason) override;
-  virtual ChannelState OnFailChannel(const std::string& message) override;
-  virtual ChannelState OnStartOpeningHandshake(
+  ChannelState OnAddChannelResponse(bool fail,
+                                    const std::string& selected_subprotocol,
+                                    const std::string& extensions) override;
+  ChannelState OnDataFrame(bool fin,
+                           WebSocketMessageType type,
+                           const std::vector<char>& data) override;
+  ChannelState OnClosingHandshake() override;
+  ChannelState OnFlowControl(int64 quota) override;
+  ChannelState OnDropChannel(bool was_clean,
+                             uint16 code,
+                             const std::string& reason) override;
+  ChannelState OnFailChannel(const std::string& message) override;
+  ChannelState OnStartOpeningHandshake(
       scoped_ptr<net::WebSocketHandshakeRequestInfo> request) override;
-  virtual ChannelState OnFinishOpeningHandshake(
+  ChannelState OnFinishOpeningHandshake(
       scoped_ptr<net::WebSocketHandshakeResponseInfo> response) override;
-  virtual ChannelState OnSSLCertificateError(
+  ChannelState OnSSLCertificateError(
       scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
       const GURL& url,
       const net::SSLInfo& ssl_info,

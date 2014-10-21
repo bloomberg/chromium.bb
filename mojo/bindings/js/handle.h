@@ -35,7 +35,7 @@ class HandleWrapper : public gin::Wrappable<HandleWrapper> {
 
  protected:
   HandleWrapper(MojoHandle handle);
-  virtual ~HandleWrapper();
+  ~HandleWrapper() override;
   void NotifyCloseObservers();
 
   mojo::ScopedHandle handle_;

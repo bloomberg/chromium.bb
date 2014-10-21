@@ -18,7 +18,7 @@ class ServiceConnectorBase;
 class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
  public:
   ServiceProviderImpl();
-  virtual ~ServiceProviderImpl();
+  ~ServiceProviderImpl() override;
 
   template <typename Interface>
   void AddService(InterfaceFactory<Interface>* factory) {
@@ -42,11 +42,11 @@ class ServiceProviderImpl : public InterfaceImpl<ServiceProvider> {
   friend class internal::WeakServiceProvider;
 
   // Overridden from ServiceProvider:
-  virtual void ConnectToService(const String& service_name,
-                                ScopedMessagePipeHandle client_handle) override;
+  void ConnectToService(const String& service_name,
+                        ScopedMessagePipeHandle client_handle) override;
 
   // Overridden from InterfaceImpl:
-  virtual void OnConnectionError() override;
+  void OnConnectionError() override;
 
   void AddServiceConnector(internal::ServiceConnectorBase* service_connector);
   void RemoveServiceConnector(

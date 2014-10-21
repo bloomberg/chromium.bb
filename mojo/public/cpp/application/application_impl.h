@@ -55,7 +55,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   ApplicationImpl(ApplicationDelegate* delegate,
                   ScopedMessagePipeHandle shell_handle);
   ApplicationImpl(ApplicationDelegate* delegate, MojoHandle shell_handle);
-  virtual ~ApplicationImpl();
+  ~ApplicationImpl() override;
 
   Shell* shell() const { return shell_.get(); }
 
@@ -80,7 +80,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   ScopedMessagePipeHandle UnbindShell();
 
   // Application implementation.
-  virtual void Initialize(Array<String> args) override;
+  void Initialize(Array<String> args) override;
 
  private:
   class ShellPtrWatcher;
@@ -96,8 +96,8 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   static void Terminate();
 
   // Application implementation.
-  virtual void AcceptConnection(const String& requestor_url,
-                                ServiceProviderPtr provider) override;
+  void AcceptConnection(const String& requestor_url,
+                        ServiceProviderPtr provider) override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 

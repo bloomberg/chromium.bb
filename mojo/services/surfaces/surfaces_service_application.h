@@ -21,19 +21,18 @@ class SurfacesServiceApplication : public ApplicationDelegate,
                                    public SurfacesImpl::Client {
  public:
   SurfacesServiceApplication();
-  virtual ~SurfacesServiceApplication();
+  ~SurfacesServiceApplication() override;
 
   // ApplicationDelegate implementation.
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override;
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
 
   // InterfaceFactory<SurfacsServicee> implementation.
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<SurfacesService> request) override;
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<SurfacesService> request) override;
 
   // SurfacesImpl::Client implementation.
-  virtual void FrameSubmitted() override;
-  virtual void SetDisplay(cc::Display*) override;
+  void FrameSubmitted() override;
+  void SetDisplay(cc::Display*) override;
 
  private:
   cc::SurfaceManager manager_;

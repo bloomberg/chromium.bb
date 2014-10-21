@@ -43,7 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
   // |Dispatcher| public methods:
-  virtual Type GetType() const override;
+  Type GetType() const override;
 
   // Creates a |MessagePipe| with a local endpoint (at port 0) and a proxy
   // endpoint, and creates/initializes a |MessagePipeDispatcher| (attached to
@@ -62,7 +62,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
  private:
   friend class MessagePipeDispatcherTransport;
 
-  virtual ~MessagePipeDispatcher();
+  ~MessagePipeDispatcher() override;
 
   // Gets a dumb pointer to |message_pipe_|. This must be called under the
   // |Dispatcher| lock (that it's a dumb pointer is okay since it's under lock).
@@ -73,33 +73,31 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   unsigned GetPortNoLock() const;
 
   // |Dispatcher| protected methods:
-  virtual void CancelAllWaitersNoLock() override;
-  virtual void CloseImplNoLock() override;
-  virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock() override;
-  virtual MojoResult WriteMessageImplNoLock(
+  void CancelAllWaitersNoLock() override;
+  void CloseImplNoLock() override;
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
+      override;
+  MojoResult WriteMessageImplNoLock(
       UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags flags) override;
-  virtual MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
-                                           UserPointer<uint32_t> num_bytes,
-                                           DispatcherVector* dispatchers,
-                                           uint32_t* num_dispatchers,
-                                           MojoReadMessageFlags flags) override;
-  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
-  virtual MojoResult AddWaiterImplNoLock(
-      Waiter* waiter,
-      MojoHandleSignals signals,
-      uint32_t context,
-      HandleSignalsState* signals_state) override;
-  virtual void RemoveWaiterImplNoLock(
-      Waiter* waiter,
-      HandleSignalsState* signals_state) override;
-  virtual void StartSerializeImplNoLock(Channel* channel,
-                                        size_t* max_size,
-                                        size_t* max_platform_handles) override;
-  virtual bool EndSerializeAndCloseImplNoLock(
+  MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
+                                   UserPointer<uint32_t> num_bytes,
+                                   DispatcherVector* dispatchers,
+                                   uint32_t* num_dispatchers,
+                                   MojoReadMessageFlags flags) override;
+  HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
+  MojoResult AddWaiterImplNoLock(Waiter* waiter,
+                                 MojoHandleSignals signals,
+                                 uint32_t context,
+                                 HandleSignalsState* signals_state) override;
+  void RemoveWaiterImplNoLock(Waiter* waiter,
+                              HandleSignalsState* signals_state) override;
+  void StartSerializeImplNoLock(Channel* channel,
+                                size_t* max_size,
+                                size_t* max_platform_handles) override;
+  bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,

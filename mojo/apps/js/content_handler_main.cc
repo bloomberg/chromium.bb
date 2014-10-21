@@ -21,13 +21,12 @@ class ContentHandlerApplicationDelegateImpl : public ApplicationDelegateImpl {
   }
 
  private:
-  virtual void Initialize(ApplicationImpl* app) override {
+  void Initialize(ApplicationImpl* app) override {
     base::i18n::InitializeICU();
     ApplicationDelegateImpl::Initialize(app);
   }
 
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override {
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService(&content_handler_factory_);
     return true;
   }

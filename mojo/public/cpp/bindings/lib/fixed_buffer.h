@@ -38,12 +38,12 @@ namespace internal {
 class FixedBuffer : public Buffer {
  public:
   explicit FixedBuffer(size_t size);
-  virtual ~FixedBuffer();
+  ~FixedBuffer() override;
 
   // Grows the buffer by |num_bytes| and returns a pointer to the start of the
   // addition. The resulting address is 8-byte aligned, and the content of the
   // memory is zero-filled.
-  virtual void* Allocate(size_t num_bytes) override;
+  void* Allocate(size_t num_bytes) override;
 
   size_t size() const { return size_; }
 

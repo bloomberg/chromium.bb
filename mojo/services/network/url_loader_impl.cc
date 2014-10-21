@@ -55,26 +55,20 @@ class UploadDataPipeElementReader : public net::UploadElementReader {
  public:
   UploadDataPipeElementReader(ScopedDataPipeConsumerHandle pipe)
       : pipe_(pipe.Pass()), num_bytes_(0) {}
-  virtual ~UploadDataPipeElementReader() {}
+  ~UploadDataPipeElementReader() override {}
 
   // UploadElementReader overrides:
-  virtual int Init(const net::CompletionCallback& callback) override {
+  int Init(const net::CompletionCallback& callback) override {
     offset_ = 0;
     ReadDataRaw(pipe_.get(), NULL, &num_bytes_, MOJO_READ_DATA_FLAG_QUERY);
     return net::OK;
   }
-  virtual uint64 GetContentLength() const override {
-    return num_bytes_;
-  }
-  virtual uint64 BytesRemaining() const override {
-    return num_bytes_ - offset_;
-  }
-  virtual bool IsInMemory() const override {
-    return false;
-  }
-  virtual int Read(net::IOBuffer* buf,
-                   int buf_length,
-                   const net::CompletionCallback& callback) override {
+  uint64 GetContentLength() const override { return num_bytes_; }
+  uint64 BytesRemaining() const override { return num_bytes_ - offset_; }
+  bool IsInMemory() const override { return false; }
+  int Read(net::IOBuffer* buf,
+           int buf_length,
+           const net::CompletionCallback& callback) override {
     uint32_t bytes_read =
         std::min(static_cast<uint32_t>(BytesRemaining()),
                  static_cast<uint32_t>(buf_length));

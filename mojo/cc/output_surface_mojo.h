@@ -28,14 +28,14 @@ class OutputSurfaceMojo : public cc::OutputSurface, public SurfaceClient {
                     uint32_t id_namespace);
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
+  void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   // cc::OutputSurface implementation.
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
+  bool BindToClient(cc::OutputSurfaceClient* client) override;
 
  protected:
-  virtual ~OutputSurfaceMojo();
+  ~OutputSurfaceMojo() override;
 
  private:
   OutputSurfaceMojoClient* output_surface_mojo_client_;

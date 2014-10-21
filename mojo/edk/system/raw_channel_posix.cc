@@ -33,35 +33,34 @@ class RawChannelPosix : public RawChannel,
                         public base::MessageLoopForIO::Watcher {
  public:
   explicit RawChannelPosix(embedder::ScopedPlatformHandle handle);
-  virtual ~RawChannelPosix();
+  ~RawChannelPosix() override;
 
   // |RawChannel| public methods:
-  virtual size_t GetSerializedPlatformHandleSize() const override;
+  size_t GetSerializedPlatformHandleSize() const override;
 
  private:
   // |RawChannel| protected methods:
   // Actually override this so that we can send multiple messages with (only)
   // FDs if necessary.
-  virtual void EnqueueMessageNoLock(
-      scoped_ptr<MessageInTransit> message) override;
+  void EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) override;
   // Override this to handle those extra FD-only messages.
-  virtual bool OnReadMessageForRawChannel(
+  bool OnReadMessageForRawChannel(
       const MessageInTransit::View& message_view) override;
-  virtual IOResult Read(size_t* bytes_read) override;
-  virtual IOResult ScheduleRead() override;
-  virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
+  IOResult Read(size_t* bytes_read) override;
+  IOResult ScheduleRead() override;
+  embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) override;
-  virtual IOResult WriteNoLock(size_t* platform_handles_written,
-                               size_t* bytes_written) override;
-  virtual IOResult ScheduleWriteNoLock() override;
-  virtual bool OnInit() override;
-  virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
-                                scoped_ptr<WriteBuffer> write_buffer) override;
+  IOResult WriteNoLock(size_t* platform_handles_written,
+                       size_t* bytes_written) override;
+  IOResult ScheduleWriteNoLock() override;
+  bool OnInit() override;
+  void OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
+                        scoped_ptr<WriteBuffer> write_buffer) override;
 
   // |base::MessageLoopForIO::Watcher| implementation:
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // Implements most of |Read()| (except for a bit of clean-up):
   IOResult ReadImpl(size_t* bytes_read);

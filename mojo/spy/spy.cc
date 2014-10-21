@@ -239,8 +239,9 @@ class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
         websocket_delegate_(websocket_delegate) {}
 
  private:
-  virtual mojo::ServiceProviderPtr OnConnectToClient(
-    const GURL& url, mojo::ServiceProviderPtr real_client) override {
+  mojo::ServiceProviderPtr OnConnectToClient(
+      const GURL& url,
+      mojo::ServiceProviderPtr real_client) override {
       if (!MustIntercept(url))
         return real_client.Pass();
 

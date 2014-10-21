@@ -34,28 +34,27 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
   SurfacesImpl(cc::SurfaceManager* manager,
                uint32_t id_namespace,
                Client* client);
-  virtual ~SurfacesImpl();
+  ~SurfacesImpl() override;
 
   // Surface implementation.
-  virtual void CreateSurface(SurfaceIdPtr id, mojo::SizePtr size) override;
-  virtual void SubmitFrame(SurfaceIdPtr id, FramePtr frame) override;
-  virtual void DestroySurface(SurfaceIdPtr id) override;
-  virtual void CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
-                                       SurfaceIdPtr id,
-                                       mojo::SizePtr size) override;
+  void CreateSurface(SurfaceIdPtr id, mojo::SizePtr size) override;
+  void SubmitFrame(SurfaceIdPtr id, FramePtr frame) override;
+  void DestroySurface(SurfaceIdPtr id) override;
+  void CreateGLES2BoundSurface(CommandBufferPtr gles2_client,
+                               SurfaceIdPtr id,
+                               mojo::SizePtr size) override;
 
   // SurfaceFactoryClient implementation.
-  virtual void ReturnResources(
-      const cc::ReturnedResourceArray& resources) override;
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
   // DisplayClient implementation.
-  virtual void DisplayDamaged() override;
-  virtual void DidSwapBuffers() override;
-  virtual void DidSwapBuffersComplete() override;
-  virtual void CommitVSyncParameters(base::TimeTicks timebase,
-                                     base::TimeDelta interval) override;
-  virtual void OutputSurfaceLost() override;
-  virtual void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
+  void DisplayDamaged() override;
+  void DidSwapBuffers() override;
+  void DidSwapBuffersComplete() override;
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
+  void OutputSurfaceLost() override;
+  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
 
   cc::SurfaceFactory* factory() { return &factory_; }
 

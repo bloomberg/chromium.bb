@@ -27,7 +27,7 @@ class ViewportSurface : public SurfaceClient {
                   Gpu* gpu_service,
                   const gfx::Size& size,
                   cc::SurfaceId child_id);
-  virtual ~ViewportSurface();
+  ~ViewportSurface() override;
 
   void SetWidgetId(uint64_t widget_id);
   void SetSize(const gfx::Size& size);
@@ -39,7 +39,7 @@ class ViewportSurface : public SurfaceClient {
   void SubmitFrame();
 
   // SurfaceClient implementation.
-  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) override;
+  void ReturnResources(Array<ReturnedResourcePtr> resources) override;
 
   SurfacePtr surface_;
   Gpu* gpu_service_;

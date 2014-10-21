@@ -30,13 +30,13 @@ class TestDynamicServiceRunner : public DynamicServiceRunner {
   explicit TestDynamicServiceRunner(TestState* state) : state_(state) {
     state_->runner_was_created = true;
   }
-  virtual ~TestDynamicServiceRunner() {
+  ~TestDynamicServiceRunner() override {
     state_->runner_was_destroyed = true;
     base::MessageLoop::current()->Quit();
   }
-  virtual void Start(const base::FilePath& app_path,
-                     ScopedMessagePipeHandle service_handle,
-                     const base::Closure& app_completed_callback) override {
+  void Start(const base::FilePath& app_path,
+             ScopedMessagePipeHandle service_handle,
+             const base::Closure& app_completed_callback) override {
     state_->runner_was_started = true;
   }
 
@@ -47,8 +47,8 @@ class TestDynamicServiceRunner : public DynamicServiceRunner {
 class TestDynamicServiceRunnerFactory : public DynamicServiceRunnerFactory {
  public:
   explicit TestDynamicServiceRunnerFactory(TestState* state) : state_(state) {}
-  virtual ~TestDynamicServiceRunnerFactory() {}
-  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) override {
+  ~TestDynamicServiceRunnerFactory() override {}
+  scoped_ptr<DynamicServiceRunner> Create(Context* context) override {
     return scoped_ptr<DynamicServiceRunner>(
         new TestDynamicServiceRunner(state_));
   }

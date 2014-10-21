@@ -16,7 +16,7 @@ class HandleWrapperTest : public testing::Test,
  public:
   HandleWrapperTest() : closes_observed_(0) {}
 
-  virtual void OnWillCloseHandle() override { closes_observed_++; }
+  void OnWillCloseHandle() override { closes_observed_++; }
 
  protected:
   int closes_observed_;

@@ -61,7 +61,7 @@ struct WatchData {
 class WatcherBackend : public MessagePumpMojoHandler {
  public:
   WatcherBackend();
-  virtual ~WatcherBackend();
+  ~WatcherBackend() override;
 
   void StartWatching(const WatchData& data);
 
@@ -79,8 +79,8 @@ class WatcherBackend : public MessagePumpMojoHandler {
   bool GetMojoHandleByWatcherID(WatcherID watcher_id, Handle* handle) const;
 
   // MessagePumpMojoHandler overrides:
-  virtual void OnHandleReady(const Handle& handle) override;
-  virtual void OnHandleError(const Handle& handle, MojoResult result) override;
+  void OnHandleReady(const Handle& handle) override;
+  void OnHandleError(const Handle& handle, MojoResult result) override;
 
   // Maps from assigned id to WatchData.
   HandleToWatchDataMap handle_to_data_;
@@ -325,7 +325,7 @@ class HandleWatcher::StateBase : public base::MessageLoop::DestructionObserver {
     base::MessageLoop::current()->AddDestructionObserver(this);
   }
 
-  virtual ~StateBase() {
+  ~StateBase() override {
     base::MessageLoop::current()->RemoveDestructionObserver(this);
   }
 
@@ -338,7 +338,7 @@ class HandleWatcher::StateBase : public base::MessageLoop::DestructionObserver {
   bool got_ready() const { return got_ready_; }
 
  private:
-  virtual void WillDestroyCurrentMessageLoop() override {
+  void WillDestroyCurrentMessageLoop() override {
     // The current thread is exiting. Simulate a watch error.
     NotifyAndDestroy(MOJO_RESULT_ABORTED);
   }
@@ -378,18 +378,18 @@ class HandleWatcher::SameThreadWatchingState : public StateBase,
         this, handle, handle_signals, MojoDeadlineToTimeTicks(deadline));
   }
 
-  virtual ~SameThreadWatchingState() {
+  ~SameThreadWatchingState() override {
     if (!got_ready())
       MessagePumpMojo::current()->RemoveHandler(handle_);
   }
 
  private:
   // MessagePumpMojoHandler overrides:
-  virtual void OnHandleReady(const Handle& handle) override {
+  void OnHandleReady(const Handle& handle) override {
     StopWatchingAndNotifyReady(handle, MOJO_RESULT_OK);
   }
 
-  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
+  void OnHandleError(const Handle& handle, MojoResult result) override {
     StopWatchingAndNotifyReady(handle, result);
   }
 
@@ -424,7 +424,7 @@ class HandleWatcher::SecondaryThreadWatchingState : public StateBase {
                    weak_factory_.GetWeakPtr()));
   }
 
-  virtual ~SecondaryThreadWatchingState() {
+  ~SecondaryThreadWatchingState() override {
     // If we've been notified the handle is ready (|got_ready()| is true) then
     // the watch has been implicitly removed by
     // WatcherThreadManager/MessagePumpMojo and we don't have to call

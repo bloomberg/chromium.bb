@@ -14,13 +14,13 @@ namespace test {
 class TestSupportImpl : public TestSupport {
  public:
   TestSupportImpl();
-  virtual ~TestSupportImpl();
+  ~TestSupportImpl() override;
 
-  virtual void LogPerfResult(const char* test_name,
-                             double value,
-                             const char* units) override;
-  virtual FILE* OpenSourceRootRelativeFile(const char* relative_path) override;
-  virtual char** EnumerateSourceRootRelativeDirectory(
+  void LogPerfResult(const char* test_name,
+                     double value,
+                     const char* units) override;
+  FILE* OpenSourceRootRelativeFile(const char* relative_path) override;
+  char** EnumerateSourceRootRelativeDirectory(
       const char* relative_path) override;
 
  private:

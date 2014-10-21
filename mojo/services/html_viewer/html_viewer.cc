@@ -36,11 +36,11 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
       : shell_(shell),
         compositor_thread_(compositor_thread),
         web_media_player_factory_(web_media_player_factory) {}
-  virtual ~ContentHandlerImpl() {}
+  ~ContentHandlerImpl() override {}
 
  private:
   // Overridden from ContentHandler:
-  virtual void OnConnect(
+  void OnConnect(
       const mojo::String& requestor_url,
       URLResponsePtr response,
       InterfaceRequest<ServiceProvider> service_provider_request) override {
@@ -63,11 +63,11 @@ class HTMLViewer : public ApplicationDelegate,
  public:
   HTMLViewer() : compositor_thread_("compositor thread") {}
 
-  virtual ~HTMLViewer() { blink::shutdown(); }
+  ~HTMLViewer() override { blink::shutdown(); }
 
  private:
   // Overridden from ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) override {
+  void Initialize(ApplicationImpl* app) override {
     shell_ = app->shell();
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
@@ -86,15 +86,14 @@ class HTMLViewer : public ApplicationDelegate,
         compositor_thread_.message_loop_proxy()));
   }
 
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
-      override {
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }
 
   // Overridden from InterfaceFactory<ContentHandler>
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<ContentHandler> request) override {
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<ContentHandler> request) override {
     BindToRequest(
         new ContentHandlerImpl(shell_, compositor_thread_.message_loop_proxy(),
                                web_media_player_factory_.get()),

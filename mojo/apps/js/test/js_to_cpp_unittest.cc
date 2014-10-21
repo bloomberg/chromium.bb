@@ -212,7 +212,7 @@ class CppSideConnection : public js_to_cpp::CppSide {
       js_side_(NULL),
       mishandled_messages_(0) {
   }
-  virtual ~CppSideConnection() {}
+  ~CppSideConnection() override {}
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
   base::RunLoop* run_loop() { return run_loop_; }
@@ -221,28 +221,21 @@ class CppSideConnection : public js_to_cpp::CppSide {
   js_to_cpp::JsSide* js_side() { return js_side_; }
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() override {
-    NOTREACHED();
-  }
+  void StartTest() override { NOTREACHED(); }
 
-  virtual void TestFinished() override {
-    NOTREACHED();
-  }
+  void TestFinished() override { NOTREACHED(); }
 
-  virtual void PingResponse() override {
+  void PingResponse() override { mishandled_messages_ += 1; }
+
+  void EchoResponse(js_to_cpp::EchoArgsListPtr list) override {
     mishandled_messages_ += 1;
   }
 
-  virtual void EchoResponse(js_to_cpp::EchoArgsListPtr list) override {
+  void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
     mishandled_messages_ += 1;
   }
 
-  virtual void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
-    mishandled_messages_ += 1;
-  }
-
-  virtual void BackPointerResponse(
-      js_to_cpp::EchoArgsListPtr list) override {
+  void BackPointerResponse(js_to_cpp::EchoArgsListPtr list) override {
     mishandled_messages_ += 1;
   }
 
@@ -259,14 +252,12 @@ class CppSideConnection : public js_to_cpp::CppSide {
 class PingCppSideConnection : public CppSideConnection {
  public:
   PingCppSideConnection() : got_message_(false) {}
-  virtual ~PingCppSideConnection() {}
+  ~PingCppSideConnection() override {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() override {
-    js_side_->Ping();
-  }
+  void StartTest() override { js_side_->Ping(); }
 
-  virtual void PingResponse() override {
+  void PingResponse() override {
     got_message_ = true;
     run_loop()->Quit();
   }
@@ -287,14 +278,14 @@ class EchoCppSideConnection : public CppSideConnection {
       message_count_(0),
       termination_seen_(false) {
   }
-  virtual ~EchoCppSideConnection() {}
+  ~EchoCppSideConnection() override {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() override {
+  void StartTest() override {
     js_side_->Echo(kExpectedMessageCount, BuildSampleEchoArgs());
   }
 
-  virtual void EchoResponse(js_to_cpp::EchoArgsListPtr list) override {
+  void EchoResponse(js_to_cpp::EchoArgsListPtr list) override {
     const js_to_cpp::EchoArgsPtr& special_arg = list->item;
     message_count_ += 1;
     EXPECT_EQ(-1, special_arg->si64);
@@ -305,7 +296,7 @@ class EchoCppSideConnection : public CppSideConnection {
     CheckSampleEchoArgsList(list->next);
   }
 
-  virtual void TestFinished() override {
+  void TestFinished() override {
     termination_seen_ = true;
     run_loop()->Quit();
   }
@@ -327,18 +318,16 @@ class EchoCppSideConnection : public CppSideConnection {
 class BitFlipCppSideConnection : public CppSideConnection {
  public:
   BitFlipCppSideConnection() : termination_seen_(false) {}
-  virtual ~BitFlipCppSideConnection() {}
+  ~BitFlipCppSideConnection() override {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() override {
-    js_side_->BitFlip(BuildSampleEchoArgs());
-  }
+  void StartTest() override { js_side_->BitFlip(BuildSampleEchoArgs()); }
 
-  virtual void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
+  void BitFlipResponse(js_to_cpp::EchoArgsListPtr list) override {
     CheckCorruptedEchoArgsList(list);
   }
 
-  virtual void TestFinished() override {
+  void TestFinished() override {
     termination_seen_ = true;
     run_loop()->Quit();
   }
@@ -356,19 +345,16 @@ class BitFlipCppSideConnection : public CppSideConnection {
 class BackPointerCppSideConnection : public CppSideConnection {
  public:
   BackPointerCppSideConnection() : termination_seen_(false) {}
-  virtual ~BackPointerCppSideConnection() {}
+  ~BackPointerCppSideConnection() override {}
 
   // js_to_cpp::CppSide:
-  virtual void StartTest() override {
-    js_side_->BackPointer(BuildSampleEchoArgs());
-  }
+  void StartTest() override { js_side_->BackPointer(BuildSampleEchoArgs()); }
 
-  virtual void BackPointerResponse(
-      js_to_cpp::EchoArgsListPtr list) override {
+  void BackPointerResponse(js_to_cpp::EchoArgsListPtr list) override {
     CheckCorruptedEchoArgsList(list);
   }
 
-  virtual void TestFinished() override {
+  void TestFinished() override {
     termination_seen_ = true;
     run_loop()->Quit();
   }

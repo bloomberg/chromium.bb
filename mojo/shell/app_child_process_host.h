@@ -27,7 +27,7 @@ class AppChildProcessHost : public ChildProcessHost,
  public:
   AppChildProcessHost(Context* context,
                       AppChildControllerClient* controller_client);
-  virtual ~AppChildProcessHost();
+  ~AppChildProcessHost() override;
 
   AppChildController* controller() {
     return controller_.get();
@@ -35,8 +35,8 @@ class AppChildProcessHost : public ChildProcessHost,
 
  private:
   // |ChildProcessHost::Delegate| methods:
-  virtual void WillStart() override;
-  virtual void DidStart(bool success) override;
+  void WillStart() override;
+  void DidStart(bool success) override;
 
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info);

@@ -157,7 +157,7 @@ class AppContext {
 
 class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
  public:
-  virtual ~AppChildControllerImpl() {
+  ~AppChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // TODO(vtl): Pass in the result from |MainMain()|.
@@ -190,13 +190,13 @@ class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
     app_context->set_controller(impl.Pass());
   }
 
-  virtual void OnConnectionError() override {
+  void OnConnectionError() override {
     // TODO(darin): How should we handle a connection error here?
   }
 
   // |AppChildController| methods:
-  virtual void StartApp(const String& app_path,
-                        ScopedMessagePipeHandle service) override {
+  void StartApp(const String& app_path,
+                ScopedMessagePipeHandle service) override {
     DVLOG(2) << "AppChildControllerImpl::StartApp(" << app_path << ", ...)";
     DCHECK(thread_checker_.CalledOnValidThread());
 

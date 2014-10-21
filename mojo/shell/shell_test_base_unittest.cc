@@ -74,10 +74,10 @@ class ShellTestBaseTest : public ShellTestBase {
 class QuitMessageLoopErrorHandler : public ErrorHandler {
  public:
   QuitMessageLoopErrorHandler() {}
-  virtual ~QuitMessageLoopErrorHandler() {}
+  ~QuitMessageLoopErrorHandler() override {}
 
   // |ErrorHandler| implementation:
-  virtual void OnConnectionError() override {
+  void OnConnectionError() override {
     base::MessageLoop::current()->QuitWhenIdle();
   }
 

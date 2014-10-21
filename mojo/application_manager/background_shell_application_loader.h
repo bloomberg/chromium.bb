@@ -24,20 +24,20 @@ class MOJO_APPLICATION_MANAGER_EXPORT BackgroundShellApplicationLoader
   BackgroundShellApplicationLoader(scoped_ptr<ApplicationLoader> real_loader,
                                    const std::string& thread_name,
                                    base::MessageLoop::Type message_loop_type);
-  virtual ~BackgroundShellApplicationLoader();
+  ~BackgroundShellApplicationLoader() override;
 
   // ApplicationLoader overrides:
-  virtual void Load(ApplicationManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) override;
-  virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) override;
+  void Load(ApplicationManager* manager,
+            const GURL& url,
+            scoped_refptr<LoadCallbacks> callbacks) override;
+  void OnApplicationError(ApplicationManager* manager,
+                          const GURL& url) override;
 
  private:
   class BackgroundLoader;
 
   // |base::DelegateSimpleThread::Delegate| method:
-  virtual void Run() override;
+  void Run() override;
 
   // These functions are exected on the background thread. They call through
   // to |background_loader_| to do the actual loading.

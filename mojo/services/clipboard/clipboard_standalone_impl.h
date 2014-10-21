@@ -25,20 +25,20 @@ class ClipboardStandaloneImpl : public InterfaceImpl<mojo::Clipboard> {
   static const int kNumClipboards = 3;
 
   ClipboardStandaloneImpl();
-  virtual ~ClipboardStandaloneImpl();
+  ~ClipboardStandaloneImpl() override;
 
   // InterfaceImpl<mojo::Clipboard> implementation.
-  virtual void GetSequenceNumber(
+  void GetSequenceNumber(
       Clipboard::Type clipboard_type,
       const mojo::Callback<void(uint64_t)>& callback) override;
-  virtual void GetAvailableMimeTypes(
+  void GetAvailableMimeTypes(
       Clipboard::Type clipboard_types,
       const mojo::Callback<void(mojo::Array<mojo::String>)>& callback) override;
-  virtual void ReadMimeType(
+  void ReadMimeType(
       Clipboard::Type clipboard_type,
       const mojo::String& mime_type,
       const mojo::Callback<void(mojo::Array<uint8_t>)>& callback) override;
-  virtual void WriteClipboardData(
+  void WriteClipboardData(
       Clipboard::Type clipboard_type,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> data) override;
 

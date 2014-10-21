@@ -15,7 +15,7 @@ class MessageHeaderValidator : public MessageFilter {
  public:
   explicit MessageHeaderValidator(MessageReceiver* sink = nullptr);
 
-  virtual bool Accept(Message* message) override;
+  bool Accept(Message* message) override;
 };
 
 }  // namespace internal

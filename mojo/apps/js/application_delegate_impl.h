@@ -29,7 +29,7 @@ class JSApp;
 class ApplicationDelegateImpl : public ApplicationDelegate {
  public:
   ApplicationDelegateImpl();
-  virtual ~ApplicationDelegateImpl();
+  ~ApplicationDelegateImpl() override;
 
   // Add app to the AppVector and call its Start() method.
   void StartJSApp(scoped_ptr<JSApp> app);
@@ -43,7 +43,7 @@ class ApplicationDelegateImpl : public ApplicationDelegate {
 
  protected:
   // ApplicationDelegate:
-  virtual void Initialize(ApplicationImpl* app) override;
+  void Initialize(ApplicationImpl* app) override;
 
  private:
   typedef ScopedVector<JSApp> AppVector;

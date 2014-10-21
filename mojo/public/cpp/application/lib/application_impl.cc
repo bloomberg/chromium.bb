@@ -15,9 +15,9 @@ class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
  public:
   ShellPtrWatcher(ApplicationImpl* impl) : impl_(impl) {}
 
-  virtual ~ShellPtrWatcher() {}
+  ~ShellPtrWatcher() override {}
 
-  virtual void OnConnectionError() override { impl_->OnShellError(); }
+  void OnConnectionError() override { impl_->OnShellError(); }
 
  private:
   ApplicationImpl* impl_;

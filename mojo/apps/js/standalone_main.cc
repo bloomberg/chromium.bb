@@ -22,7 +22,7 @@ class StandaloneJSApp : public JSApp {
         path_(path) {
   }
 
-  virtual bool Load(std::string* source, std::string* file_name) override {
+  bool Load(std::string* source, std::string* file_name) override {
     *file_name = path_.AsUTF8Unsafe();
     return ReadFileToString(path_, source);
   }
@@ -33,7 +33,7 @@ class StandaloneJSApp : public JSApp {
 
 class StandaloneApplicationDelegateImpl : public ApplicationDelegateImpl {
  private:
-  virtual void Initialize(ApplicationImpl* app) override {
+  void Initialize(ApplicationImpl* app) override {
     base::i18n::InitializeICU();
     ApplicationDelegateImpl::Initialize(app);
 

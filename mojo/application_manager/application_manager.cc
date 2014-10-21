@@ -29,9 +29,8 @@ class StubServiceProvider : public InterfaceImpl<ServiceProvider> {
   ServiceProvider* GetRemoteServiceProvider() { return client(); }
 
  private:
-  virtual void ConnectToService(
-      const String& service_name,
-      ScopedMessagePipeHandle client_handle) override {}
+  void ConnectToService(const String& service_name,
+                        ScopedMessagePipeHandle client_handle) override {}
 };
 
 }  // namespace
@@ -51,10 +50,10 @@ class ApplicationManager::LoadCallbacksImpl
         service_provider_(service_provider.Pass()) {}
 
  private:
-  virtual ~LoadCallbacksImpl() {}
+  ~LoadCallbacksImpl() override {}
 
   // LoadCallbacks implementation
-  virtual ScopedMessagePipeHandle RegisterApplication() override {
+  ScopedMessagePipeHandle RegisterApplication() override {
     ScopedMessagePipeHandle shell_handle;
     if (manager_) {
       manager_->RegisterLoadedApplication(requested_url_,
@@ -65,8 +64,8 @@ class ApplicationManager::LoadCallbacksImpl
     return shell_handle.Pass();
   }
 
-  virtual void LoadWithContentHandler(const GURL& content_handler_url,
-                                      URLResponsePtr url_response) override {
+  void LoadWithContentHandler(const GURL& content_handler_url,
+                              URLResponsePtr url_response) override {
     if (manager_) {
       manager_->LoadWithContentHandler(requested_url_,
                                        requestor_url_,
@@ -87,7 +86,7 @@ class ApplicationManager::ShellImpl : public InterfaceImpl<Shell> {
   ShellImpl(ApplicationManager* manager, const GURL& url)
       : manager_(manager), url_(url) {}
 
-  virtual ~ShellImpl() {}
+  ~ShellImpl() override {}
 
   void ConnectToClient(const GURL& requestor_url,
                        ServiceProviderPtr service_provider) {
@@ -96,7 +95,7 @@ class ApplicationManager::ShellImpl : public InterfaceImpl<Shell> {
   }
 
   // ServiceProvider implementation:
-  virtual void ConnectToApplication(
+  void ConnectToApplication(
       const String& app_url,
       InterfaceRequest<ServiceProvider> in_service_provider) override {
     ServiceProviderPtr out_service_provider;
@@ -108,9 +107,7 @@ class ApplicationManager::ShellImpl : public InterfaceImpl<Shell> {
   const GURL& url() const { return url_; }
 
  private:
-  virtual void OnConnectionError() override {
-    manager_->OnShellImplError(this);
-  }
+  void OnConnectionError() override { manager_->OnShellImplError(this); }
 
   ApplicationManager* const manager_;
   const GURL url_;

@@ -86,19 +86,18 @@ class HTMLDocumentView : public blink::WebViewClient,
       blink::WebHistoryCommitType commit_type);
 
   // ViewManagerDelegate methods:
-  virtual void OnEmbed(
-      ViewManager* view_manager,
-      View* root,
-      ServiceProviderImpl* embedee_service_provider_impl,
-      scoped_ptr<ServiceProvider> embedder_service_provider) override;
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) override;
+  void OnEmbed(ViewManager* view_manager,
+               View* root,
+               ServiceProviderImpl* embedee_service_provider_impl,
+               scoped_ptr<ServiceProvider> embedder_service_provider) override;
+  void OnViewManagerDisconnected(ViewManager* view_manager) override;
 
   // ViewObserver methods:
-  virtual void OnViewBoundsChanged(View* view,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) override;
-  virtual void OnViewDestroyed(View* view) override;
-  virtual void OnViewInputEvent(View* view, const EventPtr& event) override;
+  void OnViewBoundsChanged(View* view,
+                           const gfx::Rect& old_bounds,
+                           const gfx::Rect& new_bounds) override;
+  void OnViewDestroyed(View* view) override;
+  void OnViewInputEvent(View* view, const EventPtr& event) override;
 
   void Load(URLResponsePtr response);
 

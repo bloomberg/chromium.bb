@@ -25,14 +25,14 @@ class RunLoopHandlerImpl : public RunLoopHandler {
                      void* closure)
       : handle_(handle), callback_(callback), closure_(closure) {}
 
-  virtual ~RunLoopHandlerImpl() { RunLoop::current()->RemoveHandler(handle_); }
+  ~RunLoopHandlerImpl() override { RunLoop::current()->RemoveHandler(handle_); }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) override {
+  void OnHandleReady(const Handle& handle) override {
     NotifyCallback(MOJO_RESULT_OK);
   }
 
-  virtual void OnHandleError(const Handle& handle, MojoResult result) override {
+  void OnHandleError(const Handle& handle, MojoResult result) override {
     NotifyCallback(result);
   }
 

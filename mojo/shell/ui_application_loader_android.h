@@ -24,14 +24,14 @@ class UIApplicationLoader : public ApplicationLoader {
  public:
   UIApplicationLoader(scoped_ptr<ApplicationLoader> real_loader,
                       shell::Context* context);
-  virtual ~UIApplicationLoader();
+  ~UIApplicationLoader() override;
 
   // ApplicationLoader overrides:
-  virtual void Load(ApplicationManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) override;
-  virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) override;
+  void Load(ApplicationManager* manager,
+            const GURL& url,
+            scoped_refptr<LoadCallbacks> callbacks) override;
+  void OnApplicationError(ApplicationManager* manager,
+                          const GURL& url) override;
 
  private:
   class UILoader;

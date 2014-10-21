@@ -22,11 +22,12 @@ class SurfacesServiceImpl : public InterfaceImpl<SurfacesService> {
   SurfacesServiceImpl(cc::SurfaceManager* manager,
                       uint32_t* next_id_namespace,
                       SurfacesImpl::Client* client);
-  virtual ~SurfacesServiceImpl();
+  ~SurfacesServiceImpl() override;
 
   // InterfaceImpl<SurfacesService> implementation.
-  virtual void CreateSurfaceConnection(const mojo::Callback<
-      void(mojo::SurfacePtr, uint32_t)>& callback) override;
+  void CreateSurfaceConnection(
+      const mojo::Callback<void(mojo::SurfacePtr, uint32_t)>& callback)
+      override;
 
  private:
   cc::SurfaceManager* manager_;

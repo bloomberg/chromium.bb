@@ -28,7 +28,7 @@ class NativeViewportAppDelegate
       : share_group_(new gfx::GLShareGroup),
         mailbox_manager_(new gpu::gles2::MailboxManager),
         is_headless_(false) {}
-  virtual ~NativeViewportAppDelegate() {}
+  ~NativeViewportAppDelegate() override {}
 
  private:
   bool HasArg(const std::string& arg) {
@@ -37,7 +37,7 @@ class NativeViewportAppDelegate
   }
 
   // ApplicationDelegate implementation.
-  virtual void Initialize(ApplicationImpl* application) override {
+  void Initialize(ApplicationImpl* application) override {
     app_ = application;
 
 #if !defined(COMPONENT_BUILD)
@@ -49,7 +49,7 @@ class NativeViewportAppDelegate
     is_headless_ = HasArg(kUseHeadlessConfig);
   }
 
-  virtual bool ConfigureIncomingConnection(
+  bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<NativeViewport>(this);
     connection->AddService<Gpu>(this);
@@ -57,14 +57,14 @@ class NativeViewportAppDelegate
   }
 
   // InterfaceFactory<NativeViewport> implementation.
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<NativeViewport> request) override {
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<NativeViewport> request) override {
     BindToRequest(new NativeViewportImpl(app_, is_headless_), &request);
   }
 
   // InterfaceFactory<Gpu> implementation.
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Gpu> request) override {
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<Gpu> request) override {
     BindToRequest(new GpuImpl(share_group_.get(), mailbox_manager_.get()),
                   &request);
   }

@@ -22,16 +22,16 @@ class InProcessDynamicServiceRunner
       public base::DelegateSimpleThread::Delegate {
  public:
   explicit InProcessDynamicServiceRunner(Context* context);
-  virtual ~InProcessDynamicServiceRunner();
+  ~InProcessDynamicServiceRunner() override;
 
   // |DynamicServiceRunner| method:
-  virtual void Start(const base::FilePath& app_path,
-                     ScopedMessagePipeHandle service_handle,
-                     const base::Closure& app_completed_callback) override;
+  void Start(const base::FilePath& app_path,
+             ScopedMessagePipeHandle service_handle,
+             const base::Closure& app_completed_callback) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:
-  virtual void Run() override;
+  void Run() override;
 
   base::FilePath app_path_;
   ScopedMessagePipeHandle service_handle_;

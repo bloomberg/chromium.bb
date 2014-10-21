@@ -19,15 +19,14 @@ class TestRequestTrackerApplication : public ApplicationDelegate,
                                       public InterfaceFactory<TestTimeService> {
  public:
   TestRequestTrackerApplication();
-  virtual ~TestRequestTrackerApplication();
+  ~TestRequestTrackerApplication() override;
 
   // ApplicationDelegate methods:
-  virtual bool ConfigureIncomingConnection(
-      ApplicationConnection* connection) override;
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
 
   // InterfaceFactory<TestTimeService> methods:
-  virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<TestTimeService> request) override;
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<TestTimeService> request) override;
 
  private:
   TrackingContext context_;

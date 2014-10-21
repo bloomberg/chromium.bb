@@ -31,18 +31,18 @@ class MockDispatcher : public Dispatcher {
   }
 
   // |Dispatcher| private methods:
-  virtual Type GetType() const override { return kTypeUnknown; }
+  Type GetType() const override { return kTypeUnknown; }
 
  private:
-  virtual ~MockDispatcher() { info_->IncrementDtorCallCount(); }
+  ~MockDispatcher() override { info_->IncrementDtorCallCount(); }
 
   // |Dispatcher| protected methods:
-  virtual void CloseImplNoLock() override {
+  void CloseImplNoLock() override {
     info_->IncrementCloseCallCount();
     lock().AssertAcquired();
   }
 
-  virtual MojoResult WriteMessageImplNoLock(
+  MojoResult WriteMessageImplNoLock(
       UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
@@ -59,12 +59,11 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_OK;
   }
 
-  virtual MojoResult ReadMessageImplNoLock(
-      UserPointer<void> bytes,
-      UserPointer<uint32_t> num_bytes,
-      DispatcherVector* dispatchers,
-      uint32_t* num_dispatchers,
-      MojoReadMessageFlags /*flags*/) override {
+  MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
+                                   UserPointer<uint32_t> num_bytes,
+                                   DispatcherVector* dispatchers,
+                                   uint32_t* num_dispatchers,
+                                   MojoReadMessageFlags /*flags*/) override {
     info_->IncrementReadMessageCallCount();
     lock().AssertAcquired();
 
@@ -79,16 +78,15 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_OK;
   }
 
-  virtual MojoResult WriteDataImplNoLock(
-      UserPointer<const void> /*elements*/,
-      UserPointer<uint32_t> /*num_bytes*/,
-      MojoWriteDataFlags /*flags*/) override {
+  MojoResult WriteDataImplNoLock(UserPointer<const void> /*elements*/,
+                                 UserPointer<uint32_t> /*num_bytes*/,
+                                 MojoWriteDataFlags /*flags*/) override {
     info_->IncrementWriteDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult BeginWriteDataImplNoLock(
+  MojoResult BeginWriteDataImplNoLock(
       UserPointer<void*> /*buffer*/,
       UserPointer<uint32_t> /*buffer_num_bytes*/,
       MojoWriteDataFlags /*flags*/) override {
@@ -97,42 +95,38 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult EndWriteDataImplNoLock(
-      uint32_t /*num_bytes_written*/) override {
+  MojoResult EndWriteDataImplNoLock(uint32_t /*num_bytes_written*/) override {
     info_->IncrementEndWriteDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult ReadDataImplNoLock(UserPointer<void> /*elements*/,
-                                        UserPointer<uint32_t> /*num_bytes*/,
-                                        MojoReadDataFlags /*flags*/) override {
+  MojoResult ReadDataImplNoLock(UserPointer<void> /*elements*/,
+                                UserPointer<uint32_t> /*num_bytes*/,
+                                MojoReadDataFlags /*flags*/) override {
     info_->IncrementReadDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult BeginReadDataImplNoLock(
-      UserPointer<const void*> /*buffer*/,
-      UserPointer<uint32_t> /*buffer_num_bytes*/,
-      MojoReadDataFlags /*flags*/) override {
+  MojoResult BeginReadDataImplNoLock(UserPointer<const void*> /*buffer*/,
+                                     UserPointer<uint32_t> /*buffer_num_bytes*/,
+                                     MojoReadDataFlags /*flags*/) override {
     info_->IncrementBeginReadDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult EndReadDataImplNoLock(
-      uint32_t /*num_bytes_read*/) override {
+  MojoResult EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) override {
     info_->IncrementEndReadDataCallCount();
     lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  virtual MojoResult AddWaiterImplNoLock(
-      Waiter* /*waiter*/,
-      MojoHandleSignals /*signals*/,
-      uint32_t /*context*/,
-      HandleSignalsState* signals_state) override {
+  MojoResult AddWaiterImplNoLock(Waiter* /*waiter*/,
+                                 MojoHandleSignals /*signals*/,
+                                 uint32_t /*context*/,
+                                 HandleSignalsState* signals_state) override {
     info_->IncrementAddWaiterCallCount();
     lock().AssertAcquired();
     if (signals_state)
@@ -140,22 +134,21 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  virtual void RemoveWaiterImplNoLock(
-      Waiter* /*waiter*/,
-      HandleSignalsState* signals_state) override {
+  void RemoveWaiterImplNoLock(Waiter* /*waiter*/,
+                              HandleSignalsState* signals_state) override {
     info_->IncrementRemoveWaiterCallCount();
     lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
   }
 
-  virtual void CancelAllWaitersNoLock() override {
+  void CancelAllWaitersNoLock() override {
     info_->IncrementCancelAllWaitersCallCount();
     lock().AssertAcquired();
   }
 
-  virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock() override {
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
+      override {
     return scoped_refptr<Dispatcher>(new MockDispatcher(info_));
   }
 

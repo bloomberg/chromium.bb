@@ -118,42 +118,42 @@ TEST_F(ChannelTest, InitShutdown) {
 class MockRawChannelOnInitFails : public RawChannel {
  public:
   MockRawChannelOnInitFails() : on_init_called_(false) {}
-  virtual ~MockRawChannelOnInitFails() {}
+  ~MockRawChannelOnInitFails() override {}
 
   // |RawChannel| public methods:
-  virtual size_t GetSerializedPlatformHandleSize() const override { return 0; }
+  size_t GetSerializedPlatformHandleSize() const override { return 0; }
 
  private:
   // |RawChannel| protected methods:
-  virtual IOResult Read(size_t*) override {
+  IOResult Read(size_t*) override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual IOResult ScheduleRead() override {
+  IOResult ScheduleRead() override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
+  embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t,
       const void*) override {
     CHECK(false);
     return embedder::ScopedPlatformHandleVectorPtr();
   }
-  virtual IOResult WriteNoLock(size_t*, size_t*) override {
+  IOResult WriteNoLock(size_t*, size_t*) override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual IOResult ScheduleWriteNoLock() override {
+  IOResult ScheduleWriteNoLock() override {
     CHECK(false);
     return IO_FAILED_UNKNOWN;
   }
-  virtual bool OnInit() override {
+  bool OnInit() override {
     EXPECT_FALSE(on_init_called_);
     on_init_called_ = true;
     return false;
   }
-  virtual void OnShutdownNoLock(scoped_ptr<ReadBuffer>,
-                                scoped_ptr<WriteBuffer>) override {
+  void OnShutdownNoLock(scoped_ptr<ReadBuffer>,
+                        scoped_ptr<WriteBuffer>) override {
     CHECK(false);
   }
 

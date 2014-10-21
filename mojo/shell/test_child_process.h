@@ -14,9 +14,9 @@ namespace shell {
 class TestChildProcess : public ChildProcess {
  public:
   TestChildProcess();
-  virtual ~TestChildProcess();
+  ~TestChildProcess() override;
 
-  virtual void Main() override;
+  void Main() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestChildProcess);

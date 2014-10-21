@@ -30,9 +30,9 @@ struct TestOverrideBaseClass {
 };
 
 struct TestOverrideSubclass : public TestOverrideBaseClass {
-  virtual ~TestOverrideSubclass() {}
-  virtual void ToBeOverridden() override {}
-  virtual void AlsoToBeOverridden() override {}
+  ~TestOverrideSubclass() override {}
+  void ToBeOverridden() override {}
+  void AlsoToBeOverridden() override {}
 };
 
 TEST(MacrosCppTest, Override) {

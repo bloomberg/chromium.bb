@@ -128,13 +128,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
  private:
   friend class base::RefCountedThreadSafe<Channel>;
-  virtual ~Channel();
+  ~Channel() override;
 
   // |RawChannel::Delegate| implementation (only called on the creation thread):
-  virtual void OnReadMessage(
+  void OnReadMessage(
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles) override;
-  virtual void OnError(Error error) override;
+  void OnError(Error error) override;
 
   // Helpers for |OnReadMessage| (only called on the creation thread):
   void OnReadMessageForDownstream(

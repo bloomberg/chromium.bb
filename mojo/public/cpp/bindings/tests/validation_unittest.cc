@@ -180,7 +180,7 @@ void RunValidationTests(const std::string& prefix,
 
 class DummyMessageReceiver : public MessageReceiver {
  public:
-  virtual bool Accept(Message* message) override {
+  bool Accept(Message* message) override {
     return true;  // Any message is OK.
   }
 };
@@ -226,9 +226,9 @@ class ValidationIntegrationTest : public ValidationTest {
     TestMessageReceiver(ValidationIntegrationTest* owner,
                         ScopedMessagePipeHandle handle)
         : owner_(owner), connector_(handle.Pass()) {}
-    virtual ~TestMessageReceiver() {}
+    ~TestMessageReceiver() override {}
 
-    virtual bool Accept(Message* message) override {
+    bool Accept(Message* message) override {
       bool rv = connector_.Accept(message);
       owner_->PumpMessages();
       return rv;
@@ -248,17 +248,17 @@ class ValidationIntegrationTest : public ValidationTest {
 
 class IntegrationTestInterface1Client : public IntegrationTestInterface1 {
  public:
-  virtual ~IntegrationTestInterface1Client() {}
+  ~IntegrationTestInterface1Client() override {}
 
-  virtual void Method0(BasicStructPtr param0) override {}
+  void Method0(BasicStructPtr param0) override {}
 };
 
 class IntegrationTestInterface1Impl
     : public InterfaceImpl<IntegrationTestInterface1> {
  public:
-  virtual ~IntegrationTestInterface1Impl() {}
+  ~IntegrationTestInterface1Impl() override {}
 
-  virtual void Method0(BasicStructPtr param0) override {}
+  void Method0(BasicStructPtr param0) override {}
 };
 
 TEST_F(ValidationTest, InputParser) {

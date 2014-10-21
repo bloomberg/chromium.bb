@@ -14,14 +14,14 @@ class NetworkContext;
 class CookieStoreImpl : public InterfaceImpl<CookieStore> {
  public:
   CookieStoreImpl(NetworkContext* context, const GURL& origin);
-  virtual ~CookieStoreImpl();
+  ~CookieStoreImpl() override;
 
  private:
   // CookieStore methods:
-  virtual void Get(const String& url,
-                   const Callback<void(String)>& callback) override;
-  virtual void Set(const String& url, const String& cookie,
-                   const Callback<void(bool)>& callback) override;
+  void Get(const String& url, const Callback<void(String)>& callback) override;
+  void Set(const String& url,
+           const String& cookie,
+           const Callback<void(bool)>& callback) override;
 
   NetworkContext* context_;
   GURL origin_;

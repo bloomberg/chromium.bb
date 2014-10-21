@@ -15,10 +15,10 @@ class DirectOutputSurface : public cc::OutputSurface {
  public:
   explicit DirectOutputSurface(
       const scoped_refptr<cc::ContextProvider>& context_provider);
-  virtual ~DirectOutputSurface() override;
+  ~DirectOutputSurface() override;
 
   // cc::OutputSurface implementation
-  virtual void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(cc::CompositorFrame* frame) override;
 
 private:
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;

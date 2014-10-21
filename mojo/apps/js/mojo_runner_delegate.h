@@ -15,14 +15,14 @@ namespace apps {
 class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
  public:
   MojoRunnerDelegate();
-  virtual ~MojoRunnerDelegate();
+  ~MojoRunnerDelegate() override;
 
   void Start(gin::Runner* runner, MojoHandle pipe, const std::string& module);
 
  private:
   // From ModuleRunnerDelegate:
-  virtual void UnhandledException(gin::ShellRunner* runner,
-                                  gin::TryCatch& try_catch) override;
+  void UnhandledException(gin::ShellRunner* runner,
+                          gin::TryCatch& try_catch) override;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRunnerDelegate);
 };

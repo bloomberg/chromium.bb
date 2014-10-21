@@ -22,25 +22,21 @@ class URLLoaderImpl : public InterfaceImpl<URLLoader>,
                       public net::URLRequest::Delegate {
  public:
   explicit URLLoaderImpl(NetworkContext* context);
-  virtual ~URLLoaderImpl();
+  ~URLLoaderImpl() override;
 
  private:
   // URLLoader methods:
-  virtual void Start(
-      URLRequestPtr request,
-      const Callback<void(URLResponsePtr)>& callback) override;
-  virtual void FollowRedirect(
-      const Callback<void(URLResponsePtr)>& callback) override;
-  virtual void QueryStatus(
-      const Callback<void(URLLoaderStatusPtr)>& callback) override;
+  void Start(URLRequestPtr request,
+             const Callback<void(URLResponsePtr)>& callback) override;
+  void FollowRedirect(const Callback<void(URLResponsePtr)>& callback) override;
+  void QueryStatus(const Callback<void(URLLoaderStatusPtr)>& callback) override;
 
   // net::URLRequest::Delegate methods:
-  virtual void OnReceivedRedirect(net::URLRequest* url_request,
-                                  const net::RedirectInfo& redirect_info,
-                                  bool* defer_redirect) override;
-  virtual void OnResponseStarted(net::URLRequest* url_request) override;
-  virtual void OnReadCompleted(net::URLRequest* url_request, int bytes_read)
-      override;
+  void OnReceivedRedirect(net::URLRequest* url_request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
+  void OnResponseStarted(net::URLRequest* url_request) override;
+  void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
 
   void SendError(
       int error,

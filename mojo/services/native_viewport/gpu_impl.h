@@ -27,14 +27,14 @@ class GpuImpl : public InterfaceImpl<Gpu> {
   GpuImpl(const scoped_refptr<gfx::GLShareGroup>& share_group,
           const scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager);
 
-  virtual ~GpuImpl();
+  ~GpuImpl() override;
 
-  virtual void CreateOnscreenGLES2Context(
+  void CreateOnscreenGLES2Context(
       uint64_t native_viewport_id,
       SizePtr size,
       InterfaceRequest<CommandBuffer> command_buffer_request) override;
 
-  virtual void CreateOffscreenGLES2Context(
+  void CreateOffscreenGLES2Context(
       InterfaceRequest<CommandBuffer> command_buffer_request) override;
 
  private:

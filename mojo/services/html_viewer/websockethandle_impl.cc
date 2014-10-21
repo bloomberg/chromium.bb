@@ -68,15 +68,14 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
   explicit WebSocketClientImpl(WebSocketHandleImpl* handle,
                                blink::WebSocketHandleClient* client)
       : handle_(handle), client_(client) {}
-  virtual ~WebSocketClientImpl() {}
+  ~WebSocketClientImpl() override {}
 
  private:
   // WebSocketClient methods:
-  virtual void DidConnect(bool fail,
-                          const String& selected_subprotocol,
-                          const String& extensions,
-                          ScopedDataPipeConsumerHandle receive_stream)
-      override {
+  void DidConnect(bool fail,
+                  const String& selected_subprotocol,
+                  const String& extensions,
+                  ScopedDataPipeConsumerHandle receive_stream) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     receive_stream_ = receive_stream.Pass();
@@ -90,21 +89,21 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
     // |handle| can be deleted here.
   }
 
-  virtual void DidReceiveData(bool fin,
-                              WebSocket::MessageType type,
-                              uint32_t num_bytes) override {
+  void DidReceiveData(bool fin,
+                      WebSocket::MessageType type,
+                      uint32_t num_bytes) override {
     read_queue_->Read(num_bytes,
                       base::Bind(&WebSocketClientImpl::DidReadFromReceiveStream,
                                  base::Unretained(this),
                                  fin, type, num_bytes));
   }
 
-  virtual void DidReceiveFlowControl(int64_t quota) override {
+  void DidReceiveFlowControl(int64_t quota) override {
     client_->didReceiveFlowControl(handle_, quota);
     // |handle| can be deleted here.
   }
 
-  virtual void DidFail(const String& message) override {
+  void DidFail(const String& message) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     handle->Disconnect();  // deletes |this|
@@ -112,9 +111,7 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
     // |handle| can be deleted here.
   }
 
-  virtual void DidClose(bool was_clean,
-                        uint16_t code,
-                        const String& reason) override {
+  void DidClose(bool was_clean, uint16_t code, const String& reason) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
     handle->Disconnect();  // deletes |this|

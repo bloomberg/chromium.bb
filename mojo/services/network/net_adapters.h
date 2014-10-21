@@ -67,7 +67,7 @@ class NetToMojoIOBuffer : public net::WrappedIOBuffer {
   explicit NetToMojoIOBuffer(NetToMojoPendingBuffer* pending_buffer);
 
  private:
-  virtual ~NetToMojoIOBuffer();
+  ~NetToMojoIOBuffer() override;
 
   scoped_refptr<NetToMojoPendingBuffer> pending_buffer_;
 };
@@ -118,7 +118,7 @@ class MojoToNetIOBuffer : public net::WrappedIOBuffer {
   explicit MojoToNetIOBuffer(MojoToNetPendingBuffer* pending_buffer);
 
  private:
-  virtual ~MojoToNetIOBuffer();
+  ~MojoToNetIOBuffer() override;
 
   scoped_refptr<MojoToNetPendingBuffer> pending_buffer_;
 };

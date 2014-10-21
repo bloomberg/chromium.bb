@@ -117,9 +117,7 @@ class TreeChangeObserver : public ViewObserver {
   explicit TreeChangeObserver(View* observee) : observee_(observee) {
     observee_->AddObserver(this);
   }
-  virtual ~TreeChangeObserver() {
-    observee_->RemoveObserver(this);
-  }
+  ~TreeChangeObserver() override { observee_->RemoveObserver(this); }
 
   void Reset() {
     received_params_.clear();
@@ -131,10 +129,10 @@ class TreeChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-   virtual void OnTreeChanging(const TreeChangeParams& params) override {
+  void OnTreeChanging(const TreeChangeParams& params) override {
      received_params_.push_back(params);
    }
-  virtual void OnTreeChanged(const TreeChangeParams& params) override {
+   void OnTreeChanged(const TreeChangeParams& params) override {
     received_params_.push_back(params);
   }
 
@@ -353,9 +351,7 @@ class OrderChangeObserver : public ViewObserver {
   explicit OrderChangeObserver(View* observee) : observee_(observee) {
     observee_->AddObserver(this);
   }
-  virtual ~OrderChangeObserver() {
-    observee_->RemoveObserver(this);
-  }
+  ~OrderChangeObserver() override { observee_->RemoveObserver(this); }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -365,15 +361,15 @@ class OrderChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewReordering(View* view,
-                                View* relative_view,
-                                OrderDirection direction) override {
+  void OnViewReordering(View* view,
+                        View* relative_view,
+                        OrderDirection direction) override {
     OnViewReordered(view, relative_view, direction);
   }
 
-  virtual void OnViewReordered(View* view,
-                               View* relative_view,
-                               OrderDirection direction) override {
+  void OnViewReordered(View* view,
+                       View* relative_view,
+                       OrderDirection direction) override {
     Change change;
     change.view = view;
     change.relative_view = relative_view;
@@ -500,9 +496,7 @@ class BoundsChangeObserver : public ViewObserver {
   explicit BoundsChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~BoundsChangeObserver() {
-    view_->RemoveObserver(this);
-  }
+  ~BoundsChangeObserver() override { view_->RemoveObserver(this); }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -512,9 +506,9 @@ class BoundsChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewBoundsChanging(View* view,
-                                    const gfx::Rect& old_bounds,
-                                    const gfx::Rect& new_bounds) override {
+  void OnViewBoundsChanging(View* view,
+                            const gfx::Rect& old_bounds,
+                            const gfx::Rect& new_bounds) override {
     changes_.push_back(
         base::StringPrintf(
             "view=%s old_bounds=%s new_bounds=%s phase=changing",
@@ -522,9 +516,9 @@ class BoundsChangeObserver : public ViewObserver {
             RectToString(old_bounds).c_str(),
             RectToString(new_bounds).c_str()));
   }
-  virtual void OnViewBoundsChanged(View* view,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) override {
+  void OnViewBoundsChanged(View* view,
+                           const gfx::Rect& old_bounds,
+                           const gfx::Rect& new_bounds) override {
     changes_.push_back(
         base::StringPrintf(
             "view=%s old_bounds=%s new_bounds=%s phase=changed",
@@ -565,7 +559,7 @@ class VisibilityChangeObserver : public ViewObserver {
   explicit VisibilityChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~VisibilityChangeObserver() { view_->RemoveObserver(this); }
+  ~VisibilityChangeObserver() override { view_->RemoveObserver(this); }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -575,13 +569,13 @@ class VisibilityChangeObserver : public ViewObserver {
 
  private:
   // Overridden from ViewObserver:
-  virtual void OnViewVisibilityChanging(View* view) override {
+  void OnViewVisibilityChanging(View* view) override {
     changes_.push_back(
         base::StringPrintf("view=%s phase=changing visibility=%s",
                            ViewIdToString(view->id()).c_str(),
                            view->visible() ? "true" : "false"));
   }
-  virtual void OnViewVisibilityChanged(View* view) override {
+  void OnViewVisibilityChanged(View* view) override {
     changes_.push_back(base::StringPrintf("view=%s phase=changed visibility=%s",
                                           ViewIdToString(view->id()).c_str(),
                                           view->visible() ? "true" : "false"));

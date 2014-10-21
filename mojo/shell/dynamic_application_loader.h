@@ -32,17 +32,17 @@ class DynamicApplicationLoader : public ApplicationLoader {
   DynamicApplicationLoader(
       Context* context,
       scoped_ptr<DynamicServiceRunnerFactory> runner_factory);
-  virtual ~DynamicApplicationLoader();
+  ~DynamicApplicationLoader() override;
 
   void RegisterContentHandler(const std::string& mime_type,
                               const GURL& content_handler_url);
 
   // ApplicationLoader methods:
-  virtual void Load(ApplicationManager* manager,
-                    const GURL& url,
-                    scoped_refptr<LoadCallbacks> callbacks) override;
-  virtual void OnApplicationError(ApplicationManager* manager,
-                                  const GURL& url) override;
+  void Load(ApplicationManager* manager,
+            const GURL& url,
+            scoped_refptr<LoadCallbacks> callbacks) override;
+  void OnApplicationError(ApplicationManager* manager,
+                          const GURL& url) override;
 
  private:
   class Loader;

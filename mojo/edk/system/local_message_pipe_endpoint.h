@@ -20,29 +20,28 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
     : public MessagePipeEndpoint {
  public:
   LocalMessagePipeEndpoint();
-  virtual ~LocalMessagePipeEndpoint();
+  ~LocalMessagePipeEndpoint() override;
 
   // |MessagePipeEndpoint| implementation:
-  virtual Type GetType() const override;
-  virtual bool OnPeerClose() override;
-  virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) override;
+  Type GetType() const override;
+  bool OnPeerClose() override;
+  void EnqueueMessage(scoped_ptr<MessageInTransit> message) override;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
-  virtual void Close() override;
-  virtual void CancelAllWaiters() override;
-  virtual MojoResult ReadMessage(UserPointer<void> bytes,
-                                 UserPointer<uint32_t> num_bytes,
-                                 DispatcherVector* dispatchers,
-                                 uint32_t* num_dispatchers,
-                                 MojoReadMessageFlags flags) override;
-  virtual HandleSignalsState GetHandleSignalsState() const override;
-  virtual MojoResult AddWaiter(Waiter* waiter,
-                               MojoHandleSignals signals,
-                               uint32_t context,
-                               HandleSignalsState* signals_state) override;
-  virtual void RemoveWaiter(Waiter* waiter,
-                            HandleSignalsState* signals_state) override;
+  void Close() override;
+  void CancelAllWaiters() override;
+  MojoResult ReadMessage(UserPointer<void> bytes,
+                         UserPointer<uint32_t> num_bytes,
+                         DispatcherVector* dispatchers,
+                         uint32_t* num_dispatchers,
+                         MojoReadMessageFlags flags) override;
+  HandleSignalsState GetHandleSignalsState() const override;
+  MojoResult AddWaiter(Waiter* waiter,
+                       MojoHandleSignals signals,
+                       uint32_t context,
+                       HandleSignalsState* signals_state) override;
+  void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state) override;
 
   // This is only to be used by |MessagePipe|:
   MessageInTransitQueue* message_queue() { return &message_queue_; }

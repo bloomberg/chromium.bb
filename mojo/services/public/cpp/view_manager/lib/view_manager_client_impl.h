@@ -28,7 +28,7 @@ class ViewManagerClientImpl : public ViewManager,
                               public WindowManagerClient2 {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate, Shell* shell);
-  virtual ~ViewManagerClientImpl();
+  ~ViewManagerClientImpl() override;
 
   bool connected() const { return connected_; }
   ConnectionSpecificId connection_id() const { return connection_id_; }
@@ -77,43 +77,42 @@ class ViewManagerClientImpl : public ViewManager,
   typedef std::map<Id, View*> IdToViewMap;
 
   // Overridden from ViewManager:
-  virtual const std::string& GetEmbedderURL() const override;
-  virtual const std::vector<View*>& GetRoots() const override;
-  virtual View* GetViewById(Id id) override;
+  const std::string& GetEmbedderURL() const override;
+  const std::vector<View*>& GetRoots() const override;
+  View* GetViewById(Id id) override;
 
   // Overridden from InterfaceImpl:
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
   // Overridden from ViewManagerClient:
-  virtual void OnEmbed(ConnectionSpecificId connection_id,
-                       const String& creator_url,
-                       ViewDataPtr root,
-                       InterfaceRequest<ServiceProvider> services) override;
-  virtual void OnViewBoundsChanged(Id view_id,
-                                   RectPtr old_bounds,
-                                   RectPtr new_bounds) override;
-  virtual void OnViewHierarchyChanged(Id view_id,
-                                      Id new_parent_id,
-                                      Id old_parent_id,
-                                      Array<ViewDataPtr> views) override;
-  virtual void OnViewReordered(Id view_id,
-                               Id relative_view_id,
-                               OrderDirection direction) override;
-  virtual void OnViewDeleted(Id view_id) override;
-  virtual void OnViewVisibilityChanged(Id view_id, bool visible) override;
-  virtual void OnViewDrawnStateChanged(Id view_id, bool drawn) override;
-  virtual void OnViewInputEvent(Id view_id,
-                                EventPtr event,
-                                const Callback<void()>& callback) override;
+  void OnEmbed(ConnectionSpecificId connection_id,
+               const String& creator_url,
+               ViewDataPtr root,
+               InterfaceRequest<ServiceProvider> services) override;
+  void OnViewBoundsChanged(Id view_id,
+                           RectPtr old_bounds,
+                           RectPtr new_bounds) override;
+  void OnViewHierarchyChanged(Id view_id,
+                              Id new_parent_id,
+                              Id old_parent_id,
+                              Array<ViewDataPtr> views) override;
+  void OnViewReordered(Id view_id,
+                       Id relative_view_id,
+                       OrderDirection direction) override;
+  void OnViewDeleted(Id view_id) override;
+  void OnViewVisibilityChanged(Id view_id, bool visible) override;
+  void OnViewDrawnStateChanged(Id view_id, bool drawn) override;
+  void OnViewInputEvent(Id view_id,
+                        EventPtr event,
+                        const Callback<void()>& callback) override;
 
     // Overridden from WindowManagerClient2:
-  virtual void OnWindowManagerReady() override;
-  virtual void OnCaptureChanged(Id old_capture_view_id,
-                                Id new_capture_view_id) override;
-  virtual void OnFocusChanged(Id old_focused_view_id,
-                              Id new_focused_view_id) override;
-  virtual void OnActiveWindowChanged(Id old_focused_window,
-                                     Id new_focused_window) override;
+  void OnWindowManagerReady() override;
+  void OnCaptureChanged(Id old_capture_view_id,
+                        Id new_capture_view_id) override;
+  void OnFocusChanged(Id old_focused_view_id, Id new_focused_view_id) override;
+  void OnActiveWindowChanged(Id old_focused_window,
+                             Id new_focused_window) override;
 
   void RemoveRoot(View* root);
 

@@ -22,20 +22,18 @@ class WebSocketReadQueue;
 class WebSocketImpl : public InterfaceImpl<WebSocket> {
  public:
   explicit WebSocketImpl(NetworkContext* context);
-  virtual ~WebSocketImpl();
+  ~WebSocketImpl() override;
 
  private:
   // WebSocket methods:
-  virtual void Connect(const String& url,
-                       Array<String> protocols,
-                       const String& origin,
-                       ScopedDataPipeConsumerHandle send_stream,
-                       WebSocketClientPtr client) override;
-  virtual void Send(bool fin,
-                    WebSocket::MessageType type,
-                    uint32_t num_bytes) override;
-  virtual void FlowControl(int64_t quota) override;
-  virtual void Close(uint16_t code, const String& reason) override;
+  void Connect(const String& url,
+               Array<String> protocols,
+               const String& origin,
+               ScopedDataPipeConsumerHandle send_stream,
+               WebSocketClientPtr client) override;
+  void Send(bool fin, WebSocket::MessageType type, uint32_t num_bytes) override;
+  void FlowControl(int64_t quota) override;
+  void Close(uint16_t code, const String& reason) override;
 
   // Called with the data to send once it has been read from |send_stream_|.
   void DidReadFromSendStream(bool fin,

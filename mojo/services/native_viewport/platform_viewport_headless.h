@@ -10,7 +10,7 @@ namespace mojo {
 
 class PlatformViewportHeadless : public PlatformViewport {
  public:
-  virtual ~PlatformViewportHeadless();
+  ~PlatformViewportHeadless() override;
 
   static scoped_ptr<PlatformViewport> Create(Delegate* delegate);
 
@@ -18,14 +18,14 @@ class PlatformViewportHeadless : public PlatformViewport {
   explicit PlatformViewportHeadless(Delegate* delegate);
 
   // Overridden from PlatformViewport:
-  virtual void Init(const gfx::Rect& bounds) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Close() override;
-  virtual gfx::Size GetSize() override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
+  void Init(const gfx::Rect& bounds) override;
+  void Show() override;
+  void Hide() override;
+  void Close() override;
+  gfx::Size GetSize() override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
 
   Delegate* delegate_;
   gfx::Rect bounds_;
