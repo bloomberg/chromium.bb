@@ -54,7 +54,7 @@ class KeyframeEffectModelBase : public AnimationEffect {
 public:
     // FIXME: Implement accumulation.
 
-    typedef WillBeHeapVector<OwnPtrWillBeMember<Keyframe::PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
+    using PropertySpecificKeyframeVector = WillBeHeapVector<OwnPtrWillBeMember<Keyframe::PropertySpecificKeyframe>>;
     class PropertySpecificKeyframeGroup : public NoBaseWillBeGarbageCollected<PropertySpecificKeyframeGroup> {
     public:
         void appendKeyframe(PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe>);
@@ -75,7 +75,7 @@ public:
 
     PropertySet properties() const;
 
-    typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
+    using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
     const KeyframeVector& getFrames() const { return m_keyframes; }
     // FIXME: Implement setFrames()
 
@@ -86,7 +86,7 @@ public:
     }
 
     // AnimationEffect implementation.
-    virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(int iteration, double fraction, double iterationDuration) const override;
+    virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample(int iteration, double fraction, double iterationDuration) const override;
 
     virtual bool isKeyframeEffectModel() const override { return true; }
 
@@ -108,13 +108,13 @@ protected:
 
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
-    void ensureInterpolationEffect(Element* = 0) const;
+    void ensureInterpolationEffect(Element* = nullptr) const;
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
-    typedef WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
+    using KeyframeGroupMap = WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup>>;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
     mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
 
@@ -130,8 +130,8 @@ protected:
 template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:
-    typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
-    static PassRefPtrWillBeRawPtr<KeyframeEffectModel<Keyframe> > create(const KeyframeVector& keyframes) { return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes)); }
+    using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
+    static PassRefPtrWillBeRawPtr<KeyframeEffectModel<Keyframe>> create(const KeyframeVector& keyframes) { return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes)); }
 
 private:
     KeyframeEffectModel(const KeyframeVector& keyframes)
@@ -144,16 +144,16 @@ private:
 
 };
 
-typedef KeyframeEffectModelBase::KeyframeVector KeyframeVector;
-typedef KeyframeEffectModelBase::PropertySpecificKeyframeVector PropertySpecificKeyframeVector;
+using KeyframeVector = KeyframeEffectModelBase::KeyframeVector;
+using PropertySpecificKeyframeVector = KeyframeEffectModelBase::PropertySpecificKeyframeVector;
 
-typedef KeyframeEffectModel<AnimatableValueKeyframe> AnimatableValueKeyframeEffectModel;
-typedef AnimatableValueKeyframeEffectModel::KeyframeVector AnimatableValueKeyframeVector;
-typedef AnimatableValueKeyframeEffectModel::PropertySpecificKeyframeVector AnimatableValuePropertySpecificKeyframeVector;
+using AnimatableValueKeyframeEffectModel = KeyframeEffectModel<AnimatableValueKeyframe>;
+using AnimatableValueKeyframeVector = AnimatableValueKeyframeEffectModel::KeyframeVector;
+using AnimatableValuePropertySpecificKeyframeVector = AnimatableValueKeyframeEffectModel::PropertySpecificKeyframeVector;
 
-typedef KeyframeEffectModel<StringKeyframe> StringKeyframeEffectModel;
-typedef StringKeyframeEffectModel::KeyframeVector StringKeyframeVector;
-typedef StringKeyframeEffectModel::PropertySpecificKeyframeVector StringPropertySpecificKeyframeVector;
+using StringKeyframeEffectModel = KeyframeEffectModel<StringKeyframe>;
+using StringKeyframeVector = StringKeyframeEffectModel::KeyframeVector;
+using StringPropertySpecificKeyframeVector = StringKeyframeEffectModel::PropertySpecificKeyframeVector;
 
 DEFINE_TYPE_CASTS(KeyframeEffectModelBase, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
 DEFINE_TYPE_CASTS(AnimatableValueKeyframeEffectModel, KeyframeEffectModelBase, value, value->isAnimatableValueKeyframeEffectModel(), value.isAnimatableValueKeyframeEffectModel());

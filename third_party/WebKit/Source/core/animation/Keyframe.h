@@ -12,7 +12,7 @@
 
 namespace blink {
 
-typedef HashSet<CSSPropertyID> PropertySet;
+using PropertySet = HashSet<CSSPropertyID>;
 
 class Element;
 

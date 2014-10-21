@@ -101,7 +101,7 @@ public:
     };
     const WillBeHeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
-    const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationPlayers; }
+    const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationPlayers; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
 
     struct NewTransition {
@@ -120,15 +120,15 @@ public:
         RawPtrWillBeMember<const AnimatableValue> to;
         RefPtrWillBeMember<InertAnimation> animation;
     };
-    typedef WillBeHeapHashMap<CSSPropertyID, NewTransition> NewTransitionMap;
+    using NewTransitionMap = WillBeHeapHashMap<CSSPropertyID, NewTransition>;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
 
-    void adoptActiveInterpolationsForAnimations(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
-    void adoptActiveInterpolationsForTransitions(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
-    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
-    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
+    void adoptActiveInterpolationsForAnimations(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
+    void adoptActiveInterpolationsForTransitions(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
+    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
+    const WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
 
     bool isEmpty() const
     {
@@ -151,14 +151,14 @@ private:
     // incomplete keyframes.
     WillBeHeapVector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
-    WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> > m_cancelledAnimationPlayers;
+    WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>> m_cancelledAnimationPlayers;
     Vector<AtomicString> m_animationsWithPauseToggled;
 
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForAnimations;
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_activeInterpolationsForTransitions;
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_activeInterpolationsForAnimations;
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_activeInterpolationsForTransitions;
 };
 
 class CSSAnimations final {
@@ -200,15 +200,15 @@ private:
         RawPtrWillBeMember<const AnimatableValue> to;
     };
 
-    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<AnimationPlayer> > AnimationMap;
+    using AnimationMap = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<AnimationPlayer>>;
     AnimationMap m_animations;
 
-    typedef WillBeHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
+    using TransitionMap = WillBeHeapHashMap<CSSPropertyID, RunningTransition>;
     TransitionMap m_transitions;
 
     OwnPtrWillBeMember<CSSAnimationUpdate> m_pendingUpdate;
 
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_previousActiveInterpolationsForAnimations;
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_previousActiveInterpolationsForAnimations;
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, const Element* animatingElement, Element&, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element* animatingElement, const RenderStyle&);

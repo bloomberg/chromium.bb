@@ -69,7 +69,7 @@ public:
     // Creates a player attached to this timeline, but without a start time.
     AnimationPlayer* createAnimationPlayer(AnimationNode*);
     AnimationPlayer* play(AnimationNode*);
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > getAnimationPlayers();
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> getAnimationPlayers();
 
 #if !ENABLE(OILPAN)
     void playerDestroyed(AnimationPlayer* player)
@@ -107,8 +107,8 @@ private:
     double m_zeroTime;
     // AnimationPlayers which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
-    WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> > m_playersNeedingUpdate;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer> > m_players;
+    WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer>> m_playersNeedingUpdate;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer>> m_players;
 
     friend class SMILTimeContainer;
     static const double s_minimumDelay;

@@ -63,11 +63,10 @@ namespace {
 void getKeyframeValuesForProperty(const KeyframeEffectModelBase* effect, CSSPropertyID id, double scale, PropertySpecificKeyframeVector& values)
 {
     ASSERT(values.isEmpty());
-    const PropertySpecificKeyframeVector& group = effect->getPropertySpecificKeyframes(id);
 
-    for (size_t i = 0; i < group.size(); ++i) {
-        double offset = group[i]->offset() * scale;
-        values.append(group[i]->cloneWithOffset(offset));
+    for (const auto& keyframe : effect->getPropertySpecificKeyframes(id)) {
+        double offset = keyframe->offset() * scale;
+        values.append(keyframe->cloneWithOffset(offset));
     }
 }
 
@@ -85,12 +84,12 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const Animation
     minValue = std::min(minValue, 0.0);
     maxValue = std::max(maxValue, 1.0);
 
-    for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
+    for (const auto& property : properties) {
         // TODO: Add the ability to get expanded bounds for filters as well.
-        if (*it != CSSPropertyTransform && *it != CSSPropertyWebkitTransform)
+        if (property != CSSPropertyTransform && property != CSSPropertyWebkitTransform)
             continue;
 
-        const PropertySpecificKeyframeVector& frames = keyframeEffect.getPropertySpecificKeyframes(*it);
+        const PropertySpecificKeyframeVector& frames = keyframeEffect.getPropertySpecificKeyframes(property);
         if (frames.isEmpty() || frames.size() < 2)
             continue;
 
@@ -143,24 +142,24 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (properties.isEmpty())
         return false;
 
-    for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
-        const PropertySpecificKeyframeVector& frames = keyframeEffect.getPropertySpecificKeyframes(*it);
-        ASSERT(frames.size() >= 2);
-        for (size_t i = 0; i < frames.size(); ++i) {
-            const Keyframe::PropertySpecificKeyframe *frame = frames[i].get();
+    for (const auto& property : properties) {
+        const PropertySpecificKeyframeVector& keyframes = keyframeEffect.getPropertySpecificKeyframes(property);
+        ASSERT(keyframes.size() >= 2);
+        auto* lastKeyframe = keyframes.last().get();
+        for (const auto& keyframe : keyframes) {
             // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
-            if (frame->composite() != AnimationEffect::CompositeReplace || !frame->getAnimatableValue())
+            if (keyframe->composite() != AnimationEffect::CompositeReplace || !keyframe->getAnimatableValue())
                 return false;
 
-            switch (*it) {
+            switch (property) {
             case CSSPropertyOpacity:
                 break;
             case CSSPropertyTransform:
-                if (toAnimatableTransform(frame->getAnimatableValue().get())->transformOperations().dependsOnBoxSize())
+                if (toAnimatableTransform(keyframe->getAnimatableValue().get())->transformOperations().dependsOnBoxSize())
                     return false;
                 break;
             case CSSPropertyWebkitFilter: {
-                const FilterOperations& operations = toAnimatableFilterOperations(frame->getAnimatableValue().get())->operations();
+                const FilterOperations& operations = toAnimatableFilterOperations(keyframe->getAnimatableValue().get())->operations();
                 if (operations.hasFilterThatMovesPixels())
                     return false;
                 break;
@@ -170,7 +169,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
             }
 
             // FIXME: Remove this check when crbug.com/229405 is resolved
-            if (i < frames.size() - 1 && frame->easing().type() == TimingFunction::StepsFunction)
+            if (keyframe != lastKeyframe && keyframe->easing().type() == TimingFunction::StepsFunction)
                 return false;
         }
     }
@@ -182,7 +181,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (timing.timingFunction->type() != TimingFunction::LinearFunction) {
         // Checks the of size of KeyframeVector instead of PropertySpecificKeyframeVector.
         const KeyframeVector& keyframes = keyframeEffect.getFrames();
-        if (keyframes.size() == 2 && keyframes[0]->easing().type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
+        if (keyframes.size() == 2 && keyframes.first()->easing().type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
             return true;
 
         // FIXME: Support non-linear timing functions in the compositor for
@@ -209,15 +208,15 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, do
     RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
     ASSERT(layer);
 
-    Vector<OwnPtr<WebCompositorAnimation> > animations;
+    Vector<OwnPtr<WebCompositorAnimation>> animations;
     CompositorAnimationsImpl::getAnimationOnCompositor(timing, startTime, timeOffset, keyframeEffect, animations, playerPlaybackRate);
     ASSERT(!animations.isEmpty());
-    for (size_t i = 0; i < animations.size(); ++i) {
-        int id = animations[i]->id();
-        if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animations[i].release())) {
+    for (auto& animation : animations) {
+        int id = animation->id();
+        if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animation.release())) {
             // FIXME: We should know ahead of time whether these animations can be started.
-            for (size_t j = 0; j < startedAnimationIds.size(); ++j)
-                cancelAnimationOnCompositor(element, startedAnimationIds[j]);
+            for (int startedAnimationId : startedAnimationIds)
+                cancelAnimationOnCompositor(element, startedAnimationId);
             startedAnimationIds.clear();
             return false;
         }
@@ -341,33 +340,33 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 
 void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, const Timing& timing)
 {
-    for (size_t i = 0; i < keyframes.size(); i++) {
+    auto* lastKeyframe = keyframes.last().get();
+    for (const auto& keyframe : keyframes) {
         const TimingFunction* keyframeTimingFunction = 0;
-        if (i < keyframes.size() - 1) { // Ignore timing function of last frame.
-            if (keyframes.size() == 2 && keyframes[0]->easing().type() == TimingFunction::LinearFunction) {
+        if (keyframe != lastKeyframe) { // Ignore timing function of last frame.
+            if (keyframes.size() == 2 && keyframes.first()->easing().type() == TimingFunction::LinearFunction)
                 keyframeTimingFunction = timing.timingFunction.get();
-            } else {
-                keyframeTimingFunction = &keyframes[i]->easing();
-            }
+            else
+                keyframeTimingFunction = &keyframe->easing();
         }
 
         // FIXME: This relies on StringKeyframes being eagerly evaluated, which will
         // not happen eventually. Instead we should extract the CSSValue here
         // and convert using another set of toAnimatableXXXOperations functions.
-        const AnimatableValue* value = keyframes[i]->getAnimatableValue().get();
+        const AnimatableValue* value = keyframe->getAnimatableValue().get();
 
         switch (curve.type()) {
         case WebCompositorAnimationCurve::AnimationCurveTypeFilter: {
             OwnPtr<WebFilterOperations> ops = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
             toWebFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
-            WebFilterKeyframe filterKeyframe(keyframes[i]->offset(), ops.release());
+            WebFilterKeyframe filterKeyframe(keyframe->offset(), ops.release());
             WebFilterAnimationCurve* filterCurve = static_cast<WebFilterAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*filterCurve, filterKeyframe, keyframeTimingFunction);
             break;
         }
         case WebCompositorAnimationCurve::AnimationCurveTypeFloat: {
-            WebFloatKeyframe floatKeyframe(keyframes[i]->offset(), toAnimatableDouble(value)->toDouble());
+            WebFloatKeyframe floatKeyframe(keyframe->offset(), toAnimatableDouble(value)->toDouble());
             WebFloatAnimationCurve* floatCurve = static_cast<WebFloatAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*floatCurve, floatKeyframe, keyframeTimingFunction);
             break;
@@ -376,7 +375,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
             OwnPtr<WebTransformOperations> ops = adoptPtr(Platform::current()->compositorSupport()->createTransformOperations());
             toWebTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
 
-            WebTransformKeyframe transformKeyframe(keyframes[i]->offset(), ops.release());
+            WebTransformKeyframe transformKeyframe(keyframe->offset(), ops.release());
             WebTransformAnimationCurve* transformCurve = static_cast<WebTransformAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*transformCurve, transformKeyframe, keyframeTimingFunction);
             break;
@@ -396,14 +395,13 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
 
     PropertySet properties = effect.properties();
     ASSERT(!properties.isEmpty());
-    for (PropertySet::iterator it = properties.begin(); it != properties.end(); ++it) {
-
+    for (const auto& property : properties) {
         PropertySpecificKeyframeVector values;
-        getKeyframeValuesForProperty(&effect, *it, compositorTiming.scaledDuration, values);
+        getKeyframeValuesForProperty(&effect, property, compositorTiming.scaledDuration, values);
 
         WebCompositorAnimation::TargetProperty targetProperty;
         OwnPtr<WebCompositorAnimationCurve> curve;
-        switch (*it) {
+        switch (property) {
         case CSSPropertyOpacity: {
             targetProperty = WebCompositorAnimation::TargetPropertyOpacity;
 

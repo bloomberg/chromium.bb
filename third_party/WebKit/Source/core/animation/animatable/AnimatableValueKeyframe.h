@@ -61,11 +61,11 @@ private:
 
     virtual bool isAnimatableValueKeyframe() const override { return true; }
 
-    typedef WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue> > PropertyValueMap;
+    using PropertyValueMap = WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue>>;
     PropertyValueMap m_propertyValues;
 };
 
-typedef AnimatableValueKeyframe::PropertySpecificKeyframe AnimatableValuePropertySpecificKeyframe;
+using AnimatableValuePropertySpecificKeyframe = AnimatableValueKeyframe::PropertySpecificKeyframe;
 
 DEFINE_TYPE_CASTS(AnimatableValueKeyframe, Keyframe, value, value->isAnimatableValueKeyframe(), value.isAnimatableValueKeyframe());
 DEFINE_TYPE_CASTS(AnimatableValuePropertySpecificKeyframe, Keyframe::PropertySpecificKeyframe, value, value->isAnimatableValuePropertySpecificKeyframe(), value.isAnimatableValuePropertySpecificKeyframe());

@@ -42,20 +42,14 @@ namespace blink {
 PropertySet KeyframeEffectModelBase::properties() const
 {
     PropertySet result;
-    if (!m_keyframes.size()) {
-        return result;
-    }
-    result = m_keyframes[0]->properties();
-    for (size_t i = 1; i < m_keyframes.size(); i++) {
-        PropertySet extras = m_keyframes[i]->properties();
-        for (PropertySet::const_iterator it = extras.begin(); it != extras.end(); ++it) {
-            result.add(*it);
-        }
+    for (const auto& keyframe : m_keyframes) {
+        for (const auto& property : keyframe->properties())
+            result.add(property);
     }
     return result;
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration) const
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
@@ -71,29 +65,28 @@ KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyfr
     KeyframeVector result;
     result.reserveCapacity(keyframes.size());
 
-    for (size_t i = 0; i < keyframes.size(); ++i) {
-        double offset = keyframes[i]->offset();
+    for (const auto& keyframe : keyframes) {
+        double offset = keyframe->offset();
         if (!isNull(offset)) {
             ASSERT(offset >= 0);
             ASSERT(offset <= 1);
             ASSERT(offset >= lastOffset);
             lastOffset = offset;
         }
-        result.append(keyframes[i]->clone());
+        result.append(keyframe->clone());
     }
 
-    if (result.isEmpty()) {
+    if (result.isEmpty())
         return result;
-    }
 
     if (isNull(result.last()->offset()))
         result.last()->setOffset(1);
 
     if (result.size() > 1 && isNull(result[0]->offset()))
-        result[0]->setOffset(0);
+        result.first()->setOffset(0);
 
     size_t lastIndex = 0;
-    lastOffset = result[0]->offset();
+    lastOffset = result.first()->offset();
     for (size_t i = 1; i < result.size(); ++i) {
         double offset = result[i]->offset();
         if (!isNull(offset)) {
@@ -114,12 +107,8 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
         return;
 
     m_keyframeGroups = adoptPtrWillBeNoop(new KeyframeGroupMap);
-    const KeyframeVector keyframes = normalizedKeyframes(getFrames());
-    for (KeyframeVector::const_iterator keyframeIter = keyframes.begin(); keyframeIter != keyframes.end(); ++keyframeIter) {
-        const Keyframe* keyframe = keyframeIter->get();
-        PropertySet keyframeProperties = keyframe->properties();
-        for (PropertySet::const_iterator propertyIter = keyframeProperties.begin(); propertyIter != keyframeProperties.end(); ++propertyIter) {
-            CSSPropertyID property = *propertyIter;
+    for (const auto& keyframe : normalizedKeyframes(getFrames())) {
+        for (CSSPropertyID property : keyframe->properties()) {
             ASSERT_WITH_MESSAGE(!isExpandedShorthand(property), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property);
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
             PropertySpecificKeyframeGroup* group;
@@ -133,9 +122,9 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 
     // Add synthetic keyframes.
-    for (KeyframeGroupMap::iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
-        iter->value->addSyntheticKeyframeIfRequired(this);
-        iter->value->removeRedundantKeyframes();
+    for (const auto& entry : *m_keyframeGroups) {
+        entry.value->addSyntheticKeyframeIfRequired(this);
+        entry.value->removeRedundantKeyframes();
     }
 }
 
@@ -145,8 +134,8 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
         return;
     m_interpolationEffect = InterpolationEffect::create();
 
-    for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
-        const PropertySpecificKeyframeVector& keyframes = iter->value->keyframes();
+    for (const auto& entry : *m_keyframeGroups) {
+        const PropertySpecificKeyframeVector& keyframes = entry.value->keyframes();
         ASSERT(keyframes[0]->composite() == AnimationEffect::CompositeReplace);
         for (size_t i = 0; i < keyframes.size() - 1; i++) {
             ASSERT(keyframes[i + 1]->composite() == AnimationEffect::CompositeReplace);
@@ -155,7 +144,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
 
-            m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(iter->key, keyframes[i + 1].get(), element),
+            m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(entry.key, keyframes[i + 1].get(), element),
                 &keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
         }
     }
@@ -164,10 +153,9 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
 bool KeyframeEffectModelBase::isReplaceOnly()
 {
     ensureKeyframeGroups();
-    for (KeyframeGroupMap::iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
-        const PropertySpecificKeyframeVector& keyframeVector = iter->value->keyframes();
-        for (size_t i = 0; i < keyframeVector.size(); ++i) {
-            if (keyframeVector[i]->composite() != AnimationEffect::CompositeReplace)
+    for (const auto& entry : *m_keyframeGroups) {
+        for (const auto& keyframe : entry.value->keyframes()) {
+            if (keyframe->composite() != AnimationEffect::CompositeReplace)
                 return false;
         }
     }

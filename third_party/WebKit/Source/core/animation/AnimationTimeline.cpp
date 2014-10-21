@@ -75,8 +75,8 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
 AnimationTimeline::~AnimationTimeline()
 {
 #if !ENABLE(OILPAN)
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer> >::iterator it = m_players.begin(); it != m_players.end(); ++it)
-        (*it)->timelineDestroyed();
+    for (const auto& player : m_players)
+        player->timelineDestroyed();
 #endif
 }
 
@@ -92,18 +92,17 @@ AnimationPlayer* AnimationTimeline::createAnimationPlayer(AnimationNode* child)
 AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
 {
     if (!m_document)
-        return 0;
+        return nullptr;
     AnimationPlayer* player = createAnimationPlayer(child);
     return player;
 }
 
-WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > AnimationTimeline::getAnimationPlayers()
+WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> AnimationTimeline::getAnimationPlayers()
 {
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers;
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer> >::iterator it = m_players.begin(); it != m_players.end(); ++it) {
-        if ((*it)->source() && (*it)->source()->isCurrent()) {
-            animationPlayers.append(*it);
-        }
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> animationPlayers;
+    for (const auto& player : m_players) {
+        if (player->source() && player->source()->isCurrent())
+            animationPlayers.append(player);
     }
     std::sort(animationPlayers.begin(), animationPlayers.end(), compareAnimationPlayers);
     return animationPlayers;
@@ -122,15 +121,14 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
 
-    WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer> > players;
+    WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> players;
     players.reserveInitialCapacity(m_playersNeedingUpdate.size());
-    for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
-        players.append(it->get());
+    for (const auto& player : m_playersNeedingUpdate)
+        players.append(player.get());
 
     std::sort(players.begin(), players.end(), AnimationPlayer::hasLowerPriority);
 
-    for (size_t i = 0; i < players.size(); ++i) {
-        AnimationPlayer* player = players[i];
+    for (AnimationPlayer* player : players) {
         if (player->update(reason))
             timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
         else
@@ -210,15 +208,15 @@ double AnimationTimeline::effectiveTime()
 
 void AnimationTimeline::pauseAnimationsForTesting(double pauseTime)
 {
-    for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
-        (*it)->pauseForTesting(pauseTime);
+    for (const auto& player : m_playersNeedingUpdate)
+        player->pauseForTesting(pauseTime);
     serviceAnimations(TimingUpdateOnDemand);
 }
 
 bool AnimationTimeline::hasOutdatedAnimationPlayer() const
 {
-    for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
-        if ((*it)->outdated())
+    for (const auto& player : m_playersNeedingUpdate) {
+        if (player->outdated())
             return true;
     }
     return false;

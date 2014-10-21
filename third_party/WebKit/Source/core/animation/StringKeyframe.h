@@ -67,7 +67,7 @@ private:
     RefPtrWillBeMember<MutableStylePropertySet> m_propertySet;
 };
 
-typedef StringKeyframe::PropertySpecificKeyframe StringPropertySpecificKeyframe;
+using StringPropertySpecificKeyframe = StringKeyframe::PropertySpecificKeyframe;
 
 DEFINE_TYPE_CASTS(StringKeyframe, Keyframe, value, value->isStringKeyframe(), value.isStringKeyframe());
 DEFINE_TYPE_CASTS(StringPropertySpecificKeyframe, Keyframe::PropertySpecificKeyframe, value, value->isStringPropertySpecificKeyframe(), value.isStringPropertySpecificKeyframe());

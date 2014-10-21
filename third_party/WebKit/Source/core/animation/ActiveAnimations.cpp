@@ -43,16 +43,16 @@ ActiveAnimations::ActiveAnimations()
 ActiveAnimations::~ActiveAnimations()
 {
 #if !ENABLE(OILPAN)
-    for (size_t i = 0; i < m_animations.size(); ++i)
-        m_animations[i]->notifyElementDestroyed();
+    for (Animation* animation : m_animations)
+        animation->notifyElementDestroyed();
     m_animations.clear();
 #endif
 }
 
 void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 {
-    for (AnimationPlayerCountedSet::const_iterator it = m_players.begin(); it != m_players.end(); ++it) {
-        const AnimationPlayer& player = *it->key;
+    for (const auto& entry : m_players) {
+        const AnimationPlayer& player = *entry.key;
         ASSERT(player.source());
         // FIXME: Needs to consider AnimationGroup once added.
         ASSERT(player.source()->isAnimation());
@@ -77,8 +77,8 @@ void ActiveAnimations::updateAnimationFlags(RenderStyle& style)
 
 void ActiveAnimations::cancelAnimationOnCompositor()
 {
-    for (AnimationPlayerCountedSet::iterator it = m_players.begin(); it != m_players.end(); ++it)
-        it->key->cancelAnimationOnCompositor();
+    for (const auto& entry : m_players)
+        entry.key->cancelAnimationOnCompositor();
 }
 
 void ActiveAnimations::trace(Visitor* visitor)
