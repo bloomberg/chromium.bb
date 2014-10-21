@@ -64,6 +64,7 @@ void PasswordModelWorker::CallDoWorkAndSignalTask(
 }
 
 void PasswordModelWorker::RegisterForPasswordLoopDestruction() {
+  base::MessageLoop::current()->AddDestructionObserver(this);
   SetWorkingLoopToCurrent();
 }
 
