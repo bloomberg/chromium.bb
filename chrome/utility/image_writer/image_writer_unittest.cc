@@ -67,7 +67,7 @@ class VerifyingHandler : public MockHandler {
  public:
   VerifyingHandler() : image_writer_(NULL), verified_(false) {}
 
-  virtual void SendSucceeded() override {
+  void SendSucceeded() override {
     MockHandler::SendSucceeded();
     if (!verified_) {
       image_writer_->Verify();

@@ -31,7 +31,7 @@ class JavaScriptBrowserTest : public InProcessBrowserTest {
   virtual ~JavaScriptBrowserTest();
 
   // InProcessBrowserTest overrides.
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   // Builds a vector of strings of all added javascript libraries suitable for
   // execution by subclasses.

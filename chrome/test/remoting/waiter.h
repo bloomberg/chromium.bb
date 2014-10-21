@@ -49,13 +49,13 @@ class ConditionalTimeoutWaiter : public TimeoutWaiter {
   ConditionalTimeoutWaiter(base::TimeDelta timeout,
                            base::TimeDelta interval,
                            const Predicate& callback);
-  virtual ~ConditionalTimeoutWaiter();
+  ~ConditionalTimeoutWaiter() override;
 
   // Returns true if |callback_| returned true and false in case of timeout.
-  virtual bool Wait() override;
+  bool Wait() override;
 
  protected:
-  virtual void CancelWait() override;
+  void CancelWait() override;
 
  private:
   // Callback used to cancel the ConditionalTimeoutWaiter::Wait.

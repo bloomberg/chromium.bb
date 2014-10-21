@@ -26,12 +26,12 @@ struct OmniboxInfo : public Extension::ManifestData {
 class OmniboxHandler : public ManifestHandler {
  public:
   OmniboxHandler();
-  virtual ~OmniboxHandler();
+  ~OmniboxHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 };
 
 }  // namespace extensions

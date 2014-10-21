@@ -27,10 +27,10 @@ class IconWithBadgeImageSource
       const SkColor& text_color,
       const SkColor& background_color,
       extensions::ActionInfo::Type action_type);
-  virtual ~IconWithBadgeImageSource();
+  ~IconWithBadgeImageSource() override;
 
  private:
-  virtual void Draw(gfx::Canvas* canvas) override;
+  void Draw(gfx::Canvas* canvas) override;
 
   // Browser action icon image.
   gfx::ImageSkia icon_;

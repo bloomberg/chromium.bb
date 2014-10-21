@@ -28,7 +28,7 @@ namespace ui_test_utils {
 class FindInPageNotificationObserver : public content::NotificationObserver {
  public:
   explicit FindInPageNotificationObserver(content::WebContents* parent_tab);
-  virtual ~FindInPageNotificationObserver();
+  ~FindInPageNotificationObserver() override;
 
   void Wait();
 
@@ -37,9 +37,9 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   gfx::Rect selection_rect() const { return selection_rect_; }
 
  private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
   // We will at some point (before final update) be notified of the ordinal and

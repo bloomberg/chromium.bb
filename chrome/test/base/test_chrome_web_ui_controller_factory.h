@@ -32,7 +32,7 @@ class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
   typedef std::map<std::string, WebUIProvider*> FactoryOverridesMap;
 
   TestChromeWebUIControllerFactory();
-  virtual ~TestChromeWebUIControllerFactory();
+  ~TestChromeWebUIControllerFactory() override;
 
   // Override the creation for urls having |host| with |provider|.
   void AddFactoryOverride(const std::string& host, WebUIProvider* provider);
@@ -41,11 +41,11 @@ class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
   void RemoveFactoryOverride(const std::string& host);
 
   // ChromeWebUIFactory overrides.
-  virtual content::WebUI::TypeID GetWebUIType(
-      content::BrowserContext* browser_context,
+  content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
+                                      const GURL& url) const override;
+  content::WebUIController* CreateWebUIControllerForURL(
+      content::WebUI* web_ui,
       const GURL& url) const override;
-  virtual content::WebUIController* CreateWebUIControllerForURL(
-      content::WebUI* web_ui, const GURL& url) const override;
 
  private:
   // Return the WebUIProvider for the |url|'s host if it exists, otherwise NULL.

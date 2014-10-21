@@ -12,7 +12,7 @@ class ViewEventTestPlatformPartMac : public ViewEventTestPlatformPart {
   ViewEventTestPlatformPartMac() {}
 
   // Overridden from ViewEventTestPlatformPart:
-  virtual gfx::NativeWindow GetContext() override { return NULL; }
+  gfx::NativeWindow GetContext() override { return NULL; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPartMac);

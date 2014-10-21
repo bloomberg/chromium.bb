@@ -26,13 +26,13 @@ namespace extensions {
 class ExtensionsHandler : public UtilityMessageHandler {
  public:
   ExtensionsHandler();
-  virtual ~ExtensionsHandler();
+  ~ExtensionsHandler() override;
 
   static void PreSandboxStartup();
   static void UtilityThreadStarted();
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // IPC message handlers.

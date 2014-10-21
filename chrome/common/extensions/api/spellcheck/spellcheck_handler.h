@@ -14,7 +14,7 @@ namespace extensions {
 // used in the SpellcheckAPI functions. It is stored on the extension.
 struct SpellcheckDictionaryInfo : public extensions::Extension::ManifestData {
   SpellcheckDictionaryInfo();
-  virtual ~SpellcheckDictionaryInfo();
+  ~SpellcheckDictionaryInfo() override;
 
   std::string language;
   std::string locale;
@@ -26,12 +26,12 @@ struct SpellcheckDictionaryInfo : public extensions::Extension::ManifestData {
 class SpellcheckHandler : public ManifestHandler {
  public:
   SpellcheckHandler();
-  virtual ~SpellcheckHandler();
+  ~SpellcheckHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckHandler);
 };

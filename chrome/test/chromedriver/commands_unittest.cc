@@ -273,7 +273,7 @@ class FindElementWebView : public StubWebView {
       }
     }
   }
-  virtual ~FindElementWebView() {}
+  ~FindElementWebView() override {}
 
   void Verify(const std::string& expected_frame,
               const base::ListValue* expected_args,
@@ -292,10 +292,10 @@ class FindElementWebView : public StubWebView {
   }
 
   // Overridden from WebView:
-  virtual Status CallFunction(const std::string& frame,
-                              const std::string& function,
-                              const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) override {
+  Status CallFunction(const std::string& frame,
+                      const std::string& function,
+                      const base::ListValue& args,
+                      scoped_ptr<base::Value>* result) override {
     ++current_count_;
     if (scenario_ == kElementExistsTimeout ||
         (scenario_ == kElementExistsQueryTwice && current_count_ == 1)) {
@@ -501,13 +501,13 @@ class ErrorCallFunctionWebView : public StubWebView {
  public:
   explicit ErrorCallFunctionWebView(StatusCode code)
       : StubWebView("1"), code_(code) {}
-  virtual ~ErrorCallFunctionWebView() {}
+  ~ErrorCallFunctionWebView() override {}
 
   // Overridden from WebView:
-  virtual Status CallFunction(const std::string& frame,
-                              const std::string& function,
-                              const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) override {
+  Status CallFunction(const std::string& frame,
+                      const std::string& function,
+                      const base::ListValue& args,
+                      scoped_ptr<base::Value>* result) override {
     return Status(code_);
   }
 
@@ -553,9 +553,9 @@ namespace {
 class MockCommandListener : public CommandListener {
  public:
   MockCommandListener() : called_(false) {}
-  virtual ~MockCommandListener() {}
+  ~MockCommandListener() override {}
 
-  virtual Status BeforeCommand(const std::string& command_name) override {
+  Status BeforeCommand(const std::string& command_name) override {
     called_ = true;
     EXPECT_STREQ("cmd", command_name.c_str());
     return Status(kOk);
@@ -660,9 +660,9 @@ namespace {
 class FailingCommandListener : public CommandListener {
  public:
   FailingCommandListener() {}
-  virtual ~FailingCommandListener() {}
+  ~FailingCommandListener() override {}
 
-  virtual Status BeforeCommand(const std::string& command_name) override {
+  Status BeforeCommand(const std::string& command_name) override {
     return Status(kUnknownError);
   }
 };

@@ -17,7 +17,7 @@ class URLPatternSet;
 
 struct ContentScriptsInfo : public Extension::ManifestData {
   ContentScriptsInfo();
-  virtual ~ContentScriptsInfo();
+  ~ContentScriptsInfo() override;
 
   // Paths to the content scripts the extension contains (possibly empty).
   UserScriptList content_scripts;
@@ -38,15 +38,15 @@ struct ContentScriptsInfo : public Extension::ManifestData {
 class ContentScriptsHandler : public ManifestHandler {
  public:
   ContentScriptsHandler();
-  virtual ~ContentScriptsHandler();
+  ~ContentScriptsHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ContentScriptsHandler);
 };

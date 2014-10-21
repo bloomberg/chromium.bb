@@ -83,25 +83,25 @@ class CloudPrintConnector
     ~PendingTask() {}
   };
 
-  virtual ~CloudPrintConnector();
+  ~CloudPrintConnector() override;
   // PrintServerWatcherDelegate implementation
-  virtual void OnPrinterAdded() override;
+  void OnPrinterAdded() override;
   // PrinterJobHandler::Delegate implementation
-  virtual void OnPrinterDeleted(const std::string& printer_name) override;
-  virtual void OnAuthError() override;
+  void OnPrinterDeleted(const std::string& printer_name) override;
+  void OnAuthError() override;
 
   // CloudPrintURLFetcher::Delegate implementation.
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
+  CloudPrintURLFetcher::ResponseAction HandleRawData(
       const net::URLFetcher* source,
       const GURL& url,
       const std::string& data) override;
-  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+  CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded) override;
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
-  virtual std::string GetAuthHeader() override;
+  CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
+  std::string GetAuthHeader() override;
 
   // Begin response handlers
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(

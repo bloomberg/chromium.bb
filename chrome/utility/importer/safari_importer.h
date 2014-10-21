@@ -40,9 +40,9 @@ class SafariImporter : public Importer {
   explicit SafariImporter(const base::FilePath& library_dir);
 
   // Importer:
-  virtual void StartImport(const importer::SourceProfile& source_profile,
-                           uint16 items,
-                           ImporterBridge* bridge) override;
+  void StartImport(const importer::SourceProfile& source_profile,
+                   uint16 items,
+                   ImporterBridge* bridge) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
@@ -51,7 +51,7 @@ class SafariImporter : public Importer {
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FaviconImport);
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, HistoryImport);
 
-  virtual ~SafariImporter();
+  ~SafariImporter() override;
 
   // Multiple URLs can share the same favicon; this is a map
   // of URLs -> IconIDs that we load as a temporary step before

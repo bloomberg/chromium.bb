@@ -7,7 +7,7 @@
 
 class ChromeBrowserTestSuiteRunner : public ChromeTestSuiteRunner {
  public:
-  virtual int RunTestSuite(int argc, char** argv) override {
+  int RunTestSuite(int argc, char** argv) override {
     return ChromeTestSuite(argc, argv).Run();
   }
 };

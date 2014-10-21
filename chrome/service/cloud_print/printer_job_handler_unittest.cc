@@ -251,11 +251,12 @@ class CloudPrintURLFetcherNoServiceProcess
       context_getter_(new net::TestURLRequestContextGetter(
           base::MessageLoopProxy::current())) {}
  protected:
-  virtual net::URLRequestContextGetter* GetRequestContextGetter() override {
+  net::URLRequestContextGetter* GetRequestContextGetter() override {
     return context_getter_.get();
   }
 
-  virtual ~CloudPrintURLFetcherNoServiceProcess() {}
+  ~CloudPrintURLFetcherNoServiceProcess() override {}
+
  private:
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
 };
@@ -264,11 +265,11 @@ class CloudPrintURLFetcherNoServiceProcess
 class CloudPrintURLFetcherNoServiceProcessFactory
     : public CloudPrintURLFetcherFactory {
  public:
-  virtual CloudPrintURLFetcher* CreateCloudPrintURLFetcher() override {
+  CloudPrintURLFetcher* CreateCloudPrintURLFetcher() override {
     return new CloudPrintURLFetcherNoServiceProcess;
   }
 
-  virtual ~CloudPrintURLFetcherNoServiceProcessFactory() {}
+  ~CloudPrintURLFetcherNoServiceProcessFactory() override {}
 };
 
 

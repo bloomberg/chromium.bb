@@ -15,16 +15,16 @@ namespace extensions {
 class ExtensionActionHandler : public ManifestHandler {
  public:
   ExtensionActionHandler();
-  virtual ~ExtensionActionHandler();
+  ~ExtensionActionHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual bool AlwaysParseForType(Manifest::Type type) const override;
-  virtual const std::vector<std::string> Keys() const override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionHandler);
 };

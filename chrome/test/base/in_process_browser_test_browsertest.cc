@@ -37,7 +37,7 @@ class LoadFailObserver : public content::WebContentsObserver {
         failed_load_(false),
         error_code_(net::OK) { }
 
-  virtual void DidFailProvisionalLoad(
+  void DidFailProvisionalLoad(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,

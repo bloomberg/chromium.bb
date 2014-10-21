@@ -88,7 +88,7 @@ class AppShimController;
 class AppShimController : public IPC::Listener {
  public:
   AppShimController();
-  virtual ~AppShimController();
+  ~AppShimController() override;
 
   // Called when the main Chrome process responds to the Apple Event ping that
   // was sent, or when the ping fails (if |success| is false).
@@ -119,8 +119,8 @@ class AppShimController : public IPC::Listener {
 
  private:
   // IPC::Listener implemetation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
 
   // If Chrome failed to launch the app, |success| will be false and the app
   // shim process should die.

@@ -15,11 +15,11 @@ namespace extensions {
 class ChromeChannelFeatureFilter : public SimpleFeatureFilter {
  public:
   explicit ChromeChannelFeatureFilter(SimpleFeature* feature);
-  virtual ~ChromeChannelFeatureFilter();
+  ~ChromeChannelFeatureFilter() override;
 
   // SimpleFeatureFilter implementation.
-  virtual std::string Parse(const base::DictionaryValue* value) override;
-  virtual Feature::Availability IsAvailableToManifest(
+  std::string Parse(const base::DictionaryValue* value) override;
+  Feature::Availability IsAvailableToManifest(
       const std::string& extension_id,
       Manifest::Type type,
       Manifest::Location location,

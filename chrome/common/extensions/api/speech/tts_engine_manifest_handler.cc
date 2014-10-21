@@ -22,7 +22,7 @@ namespace {
 
 struct TtsVoices : public Extension::ManifestData {
   TtsVoices() {}
-  virtual ~TtsVoices() {}
+  ~TtsVoices() override {}
 
   std::vector<extensions::TtsVoice> voices;
 };

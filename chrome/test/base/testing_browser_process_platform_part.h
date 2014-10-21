@@ -13,7 +13,7 @@
 class TestingBrowserProcessPlatformPart : public BrowserProcessPlatformPart {
  public:
   TestingBrowserProcessPlatformPart();
-  virtual ~TestingBrowserProcessPlatformPart();
+  ~TestingBrowserProcessPlatformPart() override;
 
 #if defined(OS_CHROMEOS)
   // Overridden from BrowserProcessPlatformPart:

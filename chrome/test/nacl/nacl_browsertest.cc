@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, RelativeManifest) {
 // Test with the NaCl debug flag turned on.
 class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     NaClBrowserTestPnacl::SetUpCommandLine(command_line);
     // Turn on debugging to influence the PNaCl URL loaded
     command_line->AppendSwitch(switches::kEnableNaClDebug);
@@ -278,7 +278,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
 // so that nothing is actually debugged.
 class NaClBrowserTestPnaclDebugMasked : public NaClBrowserTestPnaclDebug {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     NaClBrowserTestPnaclDebug::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kNaClDebugMask,
                                     "!<all_urls>");

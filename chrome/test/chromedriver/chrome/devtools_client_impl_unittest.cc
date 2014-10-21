@@ -29,19 +29,17 @@ Status CloserFunc() {
 class MockSyncWebSocket : public SyncWebSocket {
  public:
   MockSyncWebSocket() : connected_(false), id_(-1), queued_messages_(1) {}
-  virtual ~MockSyncWebSocket() {}
+  ~MockSyncWebSocket() override {}
 
-  virtual bool IsConnected() override {
-    return connected_;
-  }
+  bool IsConnected() override { return connected_; }
 
-  virtual bool Connect(const GURL& url) override {
+  bool Connect(const GURL& url) override {
     EXPECT_STREQ("http://url/", url.possibly_invalid_spec().c_str());
     connected_ = true;
     return true;
   }
 
-  virtual bool Send(const std::string& message) override {
+  bool Send(const std::string& message) override {
     EXPECT_TRUE(connected_);
     scoped_ptr<base::Value> value(base::JSONReader::Read(message));
     base::DictionaryValue* dict = NULL;
@@ -62,7 +60,7 @@ class MockSyncWebSocket : public SyncWebSocket {
     return true;
   }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     if (timeout <= base::TimeDelta())
@@ -77,9 +75,7 @@ class MockSyncWebSocket : public SyncWebSocket {
     return SyncWebSocket::kOk;
   }
 
-  virtual bool HasNextMessage() override {
-    return queued_messages_ > 0;
-  }
+  bool HasNextMessage() override { return queued_messages_ > 0; }
 
  protected:
   bool connected_;
@@ -133,31 +129,25 @@ namespace {
 class MockSyncWebSocket2 : public SyncWebSocket {
  public:
   MockSyncWebSocket2() {}
-  virtual ~MockSyncWebSocket2() {}
+  ~MockSyncWebSocket2() override {}
 
-  virtual bool IsConnected() override {
-    return false;
-  }
+  bool IsConnected() override { return false; }
 
-  virtual bool Connect(const GURL& url) override {
-    return false;
-  }
+  bool Connect(const GURL& url) override { return false; }
 
-  virtual bool Send(const std::string& message) override {
+  bool Send(const std::string& message) override {
     EXPECT_TRUE(false);
     return false;
   }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     EXPECT_TRUE(false);
     return SyncWebSocket::kDisconnected;
   }
 
-  virtual bool HasNextMessage() override {
-    return true;
-  }
+  bool HasNextMessage() override { return true; }
 };
 
 }  // namespace
@@ -175,31 +165,25 @@ namespace {
 class MockSyncWebSocket3 : public SyncWebSocket {
  public:
   MockSyncWebSocket3() : connected_(false) {}
-  virtual ~MockSyncWebSocket3() {}
+  ~MockSyncWebSocket3() override {}
 
-  virtual bool IsConnected() override {
-    return connected_;
-  }
+  bool IsConnected() override { return connected_; }
 
-  virtual bool Connect(const GURL& url) override {
+  bool Connect(const GURL& url) override {
     connected_ = true;
     return true;
   }
 
-  virtual bool Send(const std::string& message) override {
-    return false;
-  }
+  bool Send(const std::string& message) override { return false; }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     EXPECT_TRUE(false);
     return SyncWebSocket::kDisconnected;
   }
 
-  virtual bool HasNextMessage() override {
-    return true;
-  }
+  bool HasNextMessage() override { return true; }
 
  private:
   bool connected_;
@@ -222,30 +206,24 @@ namespace {
 class MockSyncWebSocket4 : public SyncWebSocket {
  public:
   MockSyncWebSocket4() : connected_(false) {}
-  virtual ~MockSyncWebSocket4() {}
+  ~MockSyncWebSocket4() override {}
 
-  virtual bool IsConnected() override {
-    return connected_;
-  }
+  bool IsConnected() override { return connected_; }
 
-  virtual bool Connect(const GURL& url) override {
+  bool Connect(const GURL& url) override {
     connected_ = true;
     return true;
   }
 
-  virtual bool Send(const std::string& message) override {
-    return true;
-  }
+  bool Send(const std::string& message) override { return true; }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     return SyncWebSocket::kDisconnected;
   }
 
-  virtual bool HasNextMessage() override {
-    return true;
-  }
+  bool HasNextMessage() override { return true; }
 
  private:
   bool connected_;
@@ -268,31 +246,25 @@ namespace {
 class FakeSyncWebSocket : public SyncWebSocket {
  public:
   FakeSyncWebSocket() : connected_(false) {}
-  virtual ~FakeSyncWebSocket() {}
+  ~FakeSyncWebSocket() override {}
 
-  virtual bool IsConnected() override {
-    return connected_;
-  }
+  bool IsConnected() override { return connected_; }
 
-  virtual bool Connect(const GURL& url) override {
+  bool Connect(const GURL& url) override {
     EXPECT_FALSE(connected_);
     connected_ = true;
     return true;
   }
 
-  virtual bool Send(const std::string& message) override {
-    return true;
-  }
+  bool Send(const std::string& message) override { return true; }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     return SyncWebSocket::kOk;
   }
 
-  virtual bool HasNextMessage() override {
-    return true;
-  }
+  bool HasNextMessage() override { return true; }
 
  private:
   bool connected_;
@@ -349,17 +321,13 @@ bool ReturnCommandError(
 class MockListener : public DevToolsEventListener {
  public:
   MockListener() : called_(false) {}
-  virtual ~MockListener() {
-    EXPECT_TRUE(called_);
-  }
+  ~MockListener() override { EXPECT_TRUE(called_); }
 
-  virtual Status OnConnected(DevToolsClient* client) override {
-    return Status(kOk);
-  }
+  Status OnConnected(DevToolsClient* client) override { return Status(kOk); }
 
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override {
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override {
     called_ = true;
     EXPECT_STREQ("method", method.c_str());
     EXPECT_TRUE(params.HasKey("key"));
@@ -695,14 +663,14 @@ class OnConnectedListener : public DevToolsEventListener {
         on_event_called_(false) {
     client_->AddListener(this);
   }
-  virtual ~OnConnectedListener() {}
+  ~OnConnectedListener() override {}
 
   void VerifyCalled() {
     EXPECT_TRUE(on_connected_called_);
     EXPECT_TRUE(on_event_called_);
   }
 
-  virtual Status OnConnected(DevToolsClient* client) override {
+  Status OnConnected(DevToolsClient* client) override {
     EXPECT_EQ(client_, client);
     EXPECT_STREQ("onconnected-id", client->GetId().c_str());
     EXPECT_FALSE(on_connected_called_);
@@ -712,9 +680,9 @@ class OnConnectedListener : public DevToolsEventListener {
     return client_->SendCommand(method_, params);
   }
 
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override {
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override {
     EXPECT_EQ(client_, client);
     EXPECT_STREQ("onconnected-id", client->GetId().c_str());
     EXPECT_TRUE(on_connected_called_);
@@ -732,18 +700,16 @@ class OnConnectedListener : public DevToolsEventListener {
 class OnConnectedSyncWebSocket : public SyncWebSocket {
  public:
   OnConnectedSyncWebSocket() : connected_(false) {}
-  virtual ~OnConnectedSyncWebSocket() {}
+  ~OnConnectedSyncWebSocket() override {}
 
-  virtual bool IsConnected() override {
-    return connected_;
-  }
+  bool IsConnected() override { return connected_; }
 
-  virtual bool Connect(const GURL& url) override {
+  bool Connect(const GURL& url) override {
     connected_ = true;
     return true;
   }
 
-  virtual bool Send(const std::string& message) override {
+  bool Send(const std::string& message) override {
     EXPECT_TRUE(connected_);
     scoped_ptr<base::Value> value(base::JSONReader::Read(message));
     base::DictionaryValue* dict = NULL;
@@ -773,7 +739,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     return true;
   }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     if (queued_response_.empty())
@@ -783,9 +749,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
     return SyncWebSocket::kOk;
   }
 
-  virtual bool HasNextMessage() override {
-    return !queued_response_.empty();
-  }
+  bool HasNextMessage() override { return !queued_response_.empty(); }
 
  private:
   bool connected_;
@@ -830,21 +794,15 @@ namespace {
 class MockSyncWebSocket5 : public SyncWebSocket {
  public:
   MockSyncWebSocket5() : request_no_(0) {}
-  virtual ~MockSyncWebSocket5() {}
+  ~MockSyncWebSocket5() override {}
 
-  virtual bool IsConnected() override {
-    return true;
-  }
+  bool IsConnected() override { return true; }
 
-  virtual bool Connect(const GURL& url) override {
-    return true;
-  }
+  bool Connect(const GURL& url) override { return true; }
 
-  virtual bool Send(const std::string& message) override {
-    return true;
-  }
+  bool Send(const std::string& message) override { return true; }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     if (request_no_ == 0) {
@@ -857,9 +815,7 @@ class MockSyncWebSocket5 : public SyncWebSocket {
     return SyncWebSocket::kOk;
   }
 
-  virtual bool HasNextMessage() override {
-    return false;
-  }
+  bool HasNextMessage() override { return false; }
 
  private:
   int request_no_;
@@ -868,14 +824,12 @@ class MockSyncWebSocket5 : public SyncWebSocket {
 class OtherEventListener : public DevToolsEventListener {
  public:
   OtherEventListener() : received_event_(false) {}
-  virtual ~OtherEventListener() {}
+  ~OtherEventListener() override {}
 
-  virtual Status OnConnected(DevToolsClient* client) override {
-    return Status(kOk);
-  }
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override {
+  Status OnConnected(DevToolsClient* client) override { return Status(kOk); }
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override {
     received_event_ = true;
     return Status(kOk);
   }
@@ -889,16 +843,16 @@ class OnEventListener : public DevToolsEventListener {
                   OtherEventListener* other_listener)
       : client_(client),
         other_listener_(other_listener) {}
-  virtual ~OnEventListener() {}
+  ~OnEventListener() override {}
 
-  virtual Status OnConnected(DevToolsClient* client) override {
+  Status OnConnected(DevToolsClient* client) override {
     EXPECT_EQ(client_, client);
     return Status(kOk);
   }
 
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override {
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override {
     EXPECT_EQ(client_, client);
     client_->SendCommand("method", params);
     EXPECT_TRUE(other_listener_->received_event_);
@@ -930,15 +884,15 @@ namespace {
 class DisconnectedSyncWebSocket : public MockSyncWebSocket {
  public:
   DisconnectedSyncWebSocket() : connection_count_(0), command_count_(0) {}
-  virtual ~DisconnectedSyncWebSocket() {}
+  ~DisconnectedSyncWebSocket() override {}
 
-  virtual bool Connect(const GURL& url) override {
+  bool Connect(const GURL& url) override {
     connection_count_++;
     connected_ = connection_count_ != 2;
     return connected_;
   }
 
-  virtual bool Send(const std::string& message) override {
+  bool Send(const std::string& message) override {
     command_count_++;
     if (command_count_ == 1) {
       connected_ = false;
@@ -990,15 +944,15 @@ class MockSyncWebSocket6 : public SyncWebSocket {
  public:
   explicit MockSyncWebSocket6(std::list<std::string>* messages)
       : messages_(messages) {}
-  virtual ~MockSyncWebSocket6() {}
+  ~MockSyncWebSocket6() override {}
 
-  virtual bool IsConnected() override { return true; }
+  bool IsConnected() override { return true; }
 
-  virtual bool Connect(const GURL& url) override { return true; }
+  bool Connect(const GURL& url) override { return true; }
 
-  virtual bool Send(const std::string& message) override { return true; }
+  bool Send(const std::string& message) override { return true; }
 
-  virtual SyncWebSocket::StatusCode ReceiveNextMessage(
+  SyncWebSocket::StatusCode ReceiveNextMessage(
       std::string* message,
       const base::TimeDelta& timeout) override {
     if (messages_->empty())
@@ -1008,7 +962,7 @@ class MockSyncWebSocket6 : public SyncWebSocket {
     return SyncWebSocket::kOk;
   }
 
-  virtual bool HasNextMessage() override { return messages_->size(); }
+  bool HasNextMessage() override { return messages_->size(); }
 
  private:
   std::list<std::string>* messages_;
@@ -1017,15 +971,13 @@ class MockSyncWebSocket6 : public SyncWebSocket {
 class MockDevToolsEventListener : public DevToolsEventListener {
  public:
   MockDevToolsEventListener() : id_(1) {}
-  virtual ~MockDevToolsEventListener() {}
+  ~MockDevToolsEventListener() override {}
 
-  virtual Status OnConnected(DevToolsClient* client) override {
-    return Status(kOk);
-  }
+  Status OnConnected(DevToolsClient* client) override { return Status(kOk); }
 
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override {
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override {
     id_++;
     Status status = client->SendCommand("hello", params);
     id_--;
@@ -1104,17 +1056,17 @@ namespace {
 class MockCommandListener : public DevToolsEventListener {
  public:
   MockCommandListener() {}
-  virtual ~MockCommandListener() {}
+  ~MockCommandListener() override {}
 
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override {
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override {
     msgs_.push_back(method);
     return Status(kOk);
   }
 
-  virtual Status OnCommandSuccess(DevToolsClient* client,
-                                  const std::string& method) override {
+  Status OnCommandSuccess(DevToolsClient* client,
+                          const std::string& method) override {
     msgs_.push_back(method);
     if (!callback_.is_null())
       callback_.Run(client);

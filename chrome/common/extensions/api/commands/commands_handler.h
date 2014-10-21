@@ -17,7 +17,7 @@ namespace extensions {
 
 struct CommandsInfo : public Extension::ManifestData {
   CommandsInfo();
-  virtual ~CommandsInfo();
+  ~CommandsInfo() override;
 
   // Optional list of commands (keyboard shortcuts).
   // These commands are the commands which the extension wants to use, which are
@@ -36,10 +36,10 @@ struct CommandsInfo : public Extension::ManifestData {
 class CommandsHandler : public ManifestHandler {
  public:
   CommandsHandler();
-  virtual ~CommandsHandler();
+  ~CommandsHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool AlwaysParseForType(Manifest::Type type) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
   // If the extension defines a browser action, but no command for it, then
@@ -48,7 +48,7 @@ class CommandsHandler : public ManifestHandler {
   void MaybeSetBrowserActionDefault(const Extension* extension,
                                     CommandsInfo* info);
 
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(CommandsHandler);
 };

@@ -27,10 +27,10 @@ struct SourceProfile;
 class ProfileImportHandler : public UtilityMessageHandler {
  public:
   ProfileImportHandler();
-  virtual ~ProfileImportHandler();
+  ~ProfileImportHandler() override;
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnImportStart(

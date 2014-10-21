@@ -57,13 +57,12 @@ class MimeTypesHandler {
 class MimeTypesHandlerParser : public extensions::ManifestHandler {
  public:
   MimeTypesHandlerParser();
-  virtual ~MimeTypesHandlerParser();
+  ~MimeTypesHandlerParser() override;
 
-  virtual bool Parse(extensions::Extension* extension,
-                     base::string16* error) override;
+  bool Parse(extensions::Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_MIME_TYPES_HANDLER_H_

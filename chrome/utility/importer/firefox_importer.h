@@ -30,14 +30,14 @@ class FirefoxImporter : public Importer {
   FirefoxImporter();
 
   // Importer:
-  virtual void StartImport(const importer::SourceProfile& source_profile,
-                           uint16 items,
-                           ImporterBridge* bridge) override;
+  void StartImport(const importer::SourceProfile& source_profile,
+                   uint16 items,
+                   ImporterBridge* bridge) override;
 
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;
 
-  virtual ~FirefoxImporter();
+  ~FirefoxImporter() override;
 
   void ImportBookmarks();
   void ImportPasswords();

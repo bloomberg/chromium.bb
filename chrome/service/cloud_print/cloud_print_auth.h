@@ -56,26 +56,26 @@ class CloudPrintAuth
   void RefreshAccessToken();
 
   // gaia::GaiaOAuthClient::Delegate implementation.
-  virtual void OnGetTokensResponse(const std::string& refresh_token,
-                                   const std::string& access_token,
-                                   int expires_in_seconds) override;
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) override;
-  virtual void OnOAuthError() override;
-  virtual void OnNetworkError(int response_code) override;
+  void OnGetTokensResponse(const std::string& refresh_token,
+                           const std::string& access_token,
+                           int expires_in_seconds) override;
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
 
   // CloudPrintURLFetcher::Delegate implementation.
-  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+  CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded) override;
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
-  virtual std::string GetAuthHeader() override;
+  CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
+  std::string GetAuthHeader() override;
 
  private:
   friend class base::RefCountedThreadSafe<CloudPrintAuth>;
-  virtual ~CloudPrintAuth();
+  ~CloudPrintAuth() override;
 
   Client* client_;
   gaia::OAuthClientInfo oauth_client_info_;

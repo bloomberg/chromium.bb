@@ -35,7 +35,7 @@ class NetworkChangeNotifier;
 class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
  public:
   ServiceProcess();
-  virtual ~ServiceProcess();
+  ~ServiceProcess() override;
 
   // Initialize the ServiceProcess with the message loop that it should run on.
   // ServiceProcess takes ownership of |state|.
@@ -90,8 +90,8 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   cloud_print::CloudPrintProxy* GetCloudPrintProxy();
 
   // CloudPrintProxy::Client implementation.
-  virtual void OnCloudPrintProxyEnabled(bool persist_state) override;
-  virtual void OnCloudPrintProxyDisabled(bool persist_state) override;
+  void OnCloudPrintProxyEnabled(bool persist_state) override;
+  void OnCloudPrintProxyDisabled(bool persist_state) override;
 
   ServiceURLRequestContextGetter* GetServiceURLRequestContextGetter();
 

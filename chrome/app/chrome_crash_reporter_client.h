@@ -14,10 +14,10 @@ namespace chrome {
 class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   ChromeCrashReporterClient();
-  virtual ~ChromeCrashReporterClient();
+  ~ChromeCrashReporterClient() override;
 
   // crash_reporter::CrashReporterClient implementation.
-  virtual void SetCrashReporterClientIdFromGUID(
+  void SetCrashReporterClientIdFromGUID(
       const std::string& client_guid) override;
 #if defined(OS_WIN)
   virtual bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir)
@@ -45,16 +45,16 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   virtual base::FilePath GetReporterLogFilename() override;
 #endif
 
-  virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
+  bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
-  virtual size_t RegisterCrashKeys() override;
+  size_t RegisterCrashKeys() override;
 
-  virtual bool IsRunningUnattended() override;
+  bool IsRunningUnattended() override;
 
-  virtual bool GetCollectStatsConsent() override;
+  bool GetCollectStatsConsent() override;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) override;
+  bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) override;
 #endif
 
 #if defined(OS_ANDROID)
@@ -62,11 +62,10 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 #endif
 
 #if defined(OS_MACOSX)
-  virtual void InstallAdditionalFilters(BreakpadRef breakpad) override;
+  void InstallAdditionalFilters(BreakpadRef breakpad) override;
 #endif
 
-  virtual bool EnableBreakpadForProcess(
-      const std::string& process_type) override;
+  bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeCrashReporterClient);

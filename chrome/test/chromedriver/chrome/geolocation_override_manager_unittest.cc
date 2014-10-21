@@ -39,10 +39,10 @@ struct Command {
 class RecorderDevToolsClient : public StubDevToolsClient {
  public:
   RecorderDevToolsClient() {}
-  virtual ~RecorderDevToolsClient() {}
+  ~RecorderDevToolsClient() override {}
 
   // Overridden from StubDevToolsClient:
-  virtual Status SendCommandAndGetResult(
+  Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) override {

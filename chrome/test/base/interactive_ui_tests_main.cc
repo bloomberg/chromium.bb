@@ -26,11 +26,11 @@
 class InteractiveUITestSuite : public ChromeTestSuite {
  public:
   InteractiveUITestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
-  virtual ~InteractiveUITestSuite() {}
+  ~InteractiveUITestSuite() override {}
 
  protected:
   // ChromeTestSuite overrides:
-  virtual void Initialize() override {
+  void Initialize() override {
     ChromeTestSuite::Initialize();
 
     // Only allow ui_controls to be used in interactive_ui_tests, since they
@@ -54,7 +54,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #endif
   }
 
-  virtual void Shutdown() override {
+  void Shutdown() override {
 #if defined(OS_WIN)
     com_initializer_.reset();
 #endif
@@ -68,7 +68,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 
 class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
  public:
-  virtual int RunTestSuite(int argc, char** argv) override {
+  int RunTestSuite(int argc, char** argv) override {
     return InteractiveUITestSuite(argc, argv).Run();
   }
 };

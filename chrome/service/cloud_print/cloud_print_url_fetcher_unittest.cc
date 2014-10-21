@@ -38,7 +38,7 @@ class TrackingTestURLRequestContextGetter
     g_request_context_getter_instances++;
   }
 
-  virtual net::TestURLRequestContext* GetURLRequestContext() override {
+  net::TestURLRequestContext* GetURLRequestContext() override {
     if (!context_.get()) {
       context_.reset(new net::TestURLRequestContext(true));
       context_->set_throttler_manager(throttler_manager_);
@@ -48,7 +48,7 @@ class TrackingTestURLRequestContextGetter
   }
 
  protected:
-  virtual ~TrackingTestURLRequestContextGetter() {
+  ~TrackingTestURLRequestContextGetter() override {
     g_request_context_getter_instances--;
   }
 
@@ -65,7 +65,7 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
       : io_message_loop_proxy_(io_message_loop_proxy) {
   }
 
-  virtual net::URLRequestContextGetter* GetRequestContextGetter() override {
+  net::URLRequestContextGetter* GetRequestContextGetter() override {
     return new TrackingTestURLRequestContextGetter(
         io_message_loop_proxy_.get(), throttler_manager());
   }
@@ -75,7 +75,7 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
   }
 
  private:
-  virtual ~TestCloudPrintURLFetcher() {}
+  ~TestCloudPrintURLFetcher() override {}
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
@@ -93,7 +93,7 @@ class CloudPrintURLFetcherTest : public testing::Test,
   virtual void CreateFetcher(const GURL& url, int max_retries);
 
   // CloudPrintURLFetcher::Delegate
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawResponse(
+  CloudPrintURLFetcher::ResponseAction HandleRawResponse(
       const net::URLFetcher* source,
       const GURL& url,
       const net::URLRequestStatus& status,
@@ -101,14 +101,12 @@ class CloudPrintURLFetcherTest : public testing::Test,
       const net::ResponseCookies& cookies,
       const std::string& data) override;
 
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override {
+  CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override {
     ADD_FAILURE();
     return CloudPrintURLFetcher::STOP_PROCESSING;
   }
 
-  virtual std::string GetAuthHeader() override {
-    return std::string();
-  }
+  std::string GetAuthHeader() override { return std::string(); }
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {
     return io_message_loop_proxy_;
@@ -146,7 +144,7 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
   CloudPrintURLFetcherBasicTest()
       : handle_raw_response_(false), handle_raw_data_(false) { }
   // CloudPrintURLFetcher::Delegate
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawResponse(
+  CloudPrintURLFetcher::ResponseAction HandleRawResponse(
       const net::URLFetcher* source,
       const GURL& url,
       const net::URLRequestStatus& status,
@@ -154,12 +152,12 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
       const net::ResponseCookies& cookies,
       const std::string& data) override;
 
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
+  CloudPrintURLFetcher::ResponseAction HandleRawData(
       const net::URLFetcher* source,
       const GURL& url,
       const std::string& data) override;
 
-  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+  CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
@@ -183,7 +181,7 @@ class CloudPrintURLFetcherOverloadTest : public CloudPrintURLFetcherTest {
   }
 
   // CloudPrintURLFetcher::Delegate
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
+  CloudPrintURLFetcher::ResponseAction HandleRawData(
       const net::URLFetcher* source,
       const GURL& url,
       const std::string& data) override;
@@ -199,12 +197,12 @@ class CloudPrintURLFetcherRetryBackoffTest : public CloudPrintURLFetcherTest {
   }
 
   // CloudPrintURLFetcher::Delegate
-  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
+  CloudPrintURLFetcher::ResponseAction HandleRawData(
       const net::URLFetcher* source,
       const GURL& url,
       const std::string& data) override;
 
-  virtual void OnRequestGiveUp() override;
+  void OnRequestGiveUp() override;
 
  private:
   int response_count_;

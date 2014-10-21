@@ -14,13 +14,13 @@ class MultiProcessLockMac : public MultiProcessLock {
  public:
   explicit MultiProcessLockMac(const std::string& name) : name_(name) { }
 
-  virtual ~MultiProcessLockMac() {
+  ~MultiProcessLockMac() override {
     if (port_ != NULL) {
       Unlock();
     }
   }
 
-  virtual bool TryLock() override {
+  bool TryLock() override {
     if (port_ != NULL) {
       DLOG(ERROR) << "MultiProcessLock is already locked - " << name_;
       return true;
@@ -38,7 +38,7 @@ class MultiProcessLockMac : public MultiProcessLock {
     return port_ != NULL;
   }
 
-  virtual void Unlock() override {
+  void Unlock() override {
     if (port_ == NULL) {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;

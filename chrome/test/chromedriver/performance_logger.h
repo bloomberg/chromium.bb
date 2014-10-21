@@ -39,19 +39,19 @@ class PerformanceLogger : public DevToolsEventListener, public CommandListener {
                     const PerfLoggingPrefs& prefs);
 
   // PerformanceLogger subscribes to browser-wide |DevToolsClient| for tracing.
-  virtual bool subscribes_to_browser() override;
+  bool subscribes_to_browser() override;
 
   // For browser-wide client: enables tracing if trace categories are specified,
   // sets |browser_client_|. For other clients: calls EnableInspectorDomains.
-  virtual Status OnConnected(DevToolsClient* client) override;
+  Status OnConnected(DevToolsClient* client) override;
 
   // Calls HandleInspectorEvents or HandleTraceEvents depending on client type.
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override;
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override;
 
   // Before whitelisted commands, if tracing enabled, calls CollectTraceEvents.
-  virtual Status BeforeCommand(const std::string& command_name) override;
+  Status BeforeCommand(const std::string& command_name) override;
 
  private:
   void AddLogEntry(Log::Level level,

@@ -14,12 +14,12 @@ class BookmarksFileImporter : public Importer {
  public:
   BookmarksFileImporter();
 
-  virtual void StartImport(const importer::SourceProfile& source_profile,
-                           uint16 items,
-                           ImporterBridge* bridge) override;
+  void StartImport(const importer::SourceProfile& source_profile,
+                   uint16 items,
+                   ImporterBridge* bridge) override;
 
  private:
-  virtual ~BookmarksFileImporter();
+  ~BookmarksFileImporter() override;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksFileImporter);
 };

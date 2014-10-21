@@ -65,29 +65,28 @@ class CloudPrintProxyBackend::Core
   void DoUnregisterPrinters();
 
   // CloudPrintAuth::Client implementation.
-  virtual void OnAuthenticationComplete(
-      const std::string& access_token,
-      const std::string& robot_oauth_refresh_token,
-      const std::string& robot_email,
-      const std::string& user_email) override;
-  virtual void OnInvalidCredentials() override;
+  void OnAuthenticationComplete(const std::string& access_token,
+                                const std::string& robot_oauth_refresh_token,
+                                const std::string& robot_email,
+                                const std::string& user_email) override;
+  void OnInvalidCredentials() override;
 
   // CloudPrintConnector::Client implementation.
-  virtual void OnAuthFailed() override;
-  virtual void OnXmppPingUpdated(int ping_timeout) override;
+  void OnAuthFailed() override;
+  void OnXmppPingUpdated(int ping_timeout) override;
 
   // notifier::PushClientObserver implementation.
-  virtual void OnNotificationsEnabled() override;
-  virtual void OnNotificationsDisabled(
+  void OnNotificationsEnabled() override;
+  void OnNotificationsDisabled(
       notifier::NotificationsDisabledReason reason) override;
-  virtual void OnIncomingNotification(
+  void OnIncomingNotification(
       const notifier::Notification& notification) override;
-  virtual void OnPingResponse() override;
+  void OnPingResponse() override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
 
-  virtual ~Core() {}
+  ~Core() override {}
 
   void CreateAuthAndConnector();
   void DestroyAuthAndConnector();

@@ -15,9 +15,9 @@ namespace {
 class MockCommandListener : public CommandListener {
  public:
   MockCommandListener() : called_(false) {}
-  virtual ~MockCommandListener() {}
+  ~MockCommandListener() override {}
 
-  virtual Status BeforeCommand(const std::string& command_name) override {
+  Status BeforeCommand(const std::string& command_name) override {
     called_ = true;
     EXPECT_STREQ("cmd", command_name.c_str());
     return Status(kOk);

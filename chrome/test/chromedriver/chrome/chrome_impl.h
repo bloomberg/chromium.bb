@@ -27,19 +27,18 @@ class WebViewImpl;
 
 class ChromeImpl : public Chrome {
  public:
-  virtual ~ChromeImpl();
+  ~ChromeImpl() override;
 
   // Overridden from Chrome:
-  virtual ChromeDesktopImpl* GetAsDesktop() override;
-  virtual const BrowserInfo* GetBrowserInfo() override;
-  virtual bool HasCrashedWebView() override;
-  virtual Status GetWebViewIds(std::list<std::string>* web_view_ids) override;
-  virtual Status GetWebViewById(const std::string& id,
-                                WebView** web_view) override;
-  virtual Status CloseWebView(const std::string& id) override;
-  virtual Status ActivateWebView(const std::string& id) override;
-  virtual bool IsMobileEmulationEnabled() const override;
-  virtual Status Quit() override;
+  ChromeDesktopImpl* GetAsDesktop() override;
+  const BrowserInfo* GetBrowserInfo() override;
+  bool HasCrashedWebView() override;
+  Status GetWebViewIds(std::list<std::string>* web_view_ids) override;
+  Status GetWebViewById(const std::string& id, WebView** web_view) override;
+  Status CloseWebView(const std::string& id) override;
+  Status ActivateWebView(const std::string& id) override;
+  bool IsMobileEmulationEnabled() const override;
+  Status Quit() override;
 
  protected:
   ChromeImpl(

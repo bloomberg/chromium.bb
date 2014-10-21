@@ -27,7 +27,7 @@ struct URLOverrides : public Extension::ManifestData {
   typedef std::map<const std::string, GURL> URLOverrideMap;
 
   URLOverrides();
-  virtual ~URLOverrides();
+  ~URLOverrides() override;
 
   static const URLOverrideMap& GetChromeURLOverrides(
       const Extension* extension);
@@ -41,12 +41,12 @@ struct URLOverrides : public Extension::ManifestData {
 class DevToolsPageHandler : public ManifestHandler {
  public:
   DevToolsPageHandler();
-  virtual ~DevToolsPageHandler();
+  ~DevToolsPageHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsPageHandler);
 };
@@ -55,12 +55,12 @@ class DevToolsPageHandler : public ManifestHandler {
 class URLOverridesHandler : public ManifestHandler {
  public:
   URLOverridesHandler();
-  virtual ~URLOverridesHandler();
+  ~URLOverridesHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(URLOverridesHandler);
 };

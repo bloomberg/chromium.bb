@@ -18,7 +18,7 @@ namespace extensions {
 class StorageSchemaManifestHandler : public ManifestHandler {
  public:
   StorageSchemaManifestHandler();
-  virtual ~StorageSchemaManifestHandler();
+  ~StorageSchemaManifestHandler() override;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // Returns the managed storage schema defined for |extension|.
@@ -31,11 +31,11 @@ class StorageSchemaManifestHandler : public ManifestHandler {
 
  private:
   // ManifestHandler implementation:
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
-  virtual const std::vector<std::string> Keys() const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(StorageSchemaManifestHandler);
 };

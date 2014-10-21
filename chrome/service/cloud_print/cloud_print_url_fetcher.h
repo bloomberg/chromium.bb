@@ -134,12 +134,12 @@ class CloudPrintURLFetcher
                         const std::string& additional_headers);
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  protected:
   CloudPrintURLFetcher();
   friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;
-  virtual ~CloudPrintURLFetcher();
+  ~CloudPrintURLFetcher() override;
 
   // Virtual for testing.
   virtual net::URLRequestContextGetter* GetRequestContextGetter();

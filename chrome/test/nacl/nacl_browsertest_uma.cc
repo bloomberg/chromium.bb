@@ -82,7 +82,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
 class NaClBrowserTestNewlibVcacheExtension:
       public NaClBrowserTestNewlibExtension {
  public:
-  virtual base::FilePath::StringType Variant() override {
+  base::FilePath::StringType Variant() override {
     return FILE_PATH_LITERAL("extension_vcache_test/newlib");
   }
 };
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibVcacheExtension,
 class NaClBrowserTestGLibcVcacheExtension:
       public NaClBrowserTestGLibcExtension {
  public:
-  virtual base::FilePath::StringType Variant() override {
+  base::FilePath::StringType Variant() override {
     return FILE_PATH_LITERAL("extension_vcache_test/glibc");
   }
 };

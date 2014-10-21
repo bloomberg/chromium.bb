@@ -30,7 +30,7 @@ struct MimeTypesHandlerInfo : public extensions::Extension::ManifestData {
   MimeTypesHandler handler_;
 
   MimeTypesHandlerInfo();
-  virtual ~MimeTypesHandlerInfo();
+  ~MimeTypesHandlerInfo() override;
 };
 
 MimeTypesHandlerInfo::MimeTypesHandlerInfo() {

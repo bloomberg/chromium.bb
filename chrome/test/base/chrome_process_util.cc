@@ -69,7 +69,7 @@ class ChildProcessFilter : public base::ProcessFilter {
   explicit ChildProcessFilter(const std::vector<base::ProcessId>& parent_pids)
       : parent_pids_(parent_pids.begin(), parent_pids.end()) {}
 
-  virtual bool Includes(const base::ProcessEntry& entry) const override {
+  bool Includes(const base::ProcessEntry& entry) const override {
     return parent_pids_.find(entry.parent_pid()) != parent_pids_.end();
   }
 

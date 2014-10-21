@@ -24,7 +24,7 @@ namespace {
 // PageActions and SystemIndicators.
 struct ActionInfoData : public Extension::ManifestData {
   explicit ActionInfoData(ActionInfo* action_info);
-  virtual ~ActionInfoData();
+  ~ActionInfoData() override;
 
   // The action associated with the BrowserAction.
   scoped_ptr<ActionInfo> action_info;

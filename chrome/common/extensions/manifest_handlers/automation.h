@@ -43,7 +43,7 @@ struct AutomationInfo : public Extension::ManifestData {
       base::string16* error);
 
   static scoped_ptr<base::Value> ToValue(const AutomationInfo& info);
-  virtual ~AutomationInfo();
+  ~AutomationInfo() override;
 
   // true if the extension has requested 'desktop' permission.
   const bool desktop;
@@ -72,16 +72,16 @@ struct AutomationInfo : public Extension::ManifestData {
 class AutomationHandler : public ManifestHandler {
  public:
   AutomationHandler();
-  virtual ~AutomationHandler();
+  ~AutomationHandler() override;
 
  private:
   // ManifestHandler implementation.
-  virtual bool Parse(Extension* extensions, base::string16* error) override;
+  bool Parse(Extension* extensions, base::string16* error) override;
 
-  virtual ManifestPermission* CreatePermission() override;
-  virtual ManifestPermission* CreateInitialRequiredPermission(
+  ManifestPermission* CreatePermission() override;
+  ManifestPermission* CreateInitialRequiredPermission(
       const Extension* extension) override;
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationHandler);
 };

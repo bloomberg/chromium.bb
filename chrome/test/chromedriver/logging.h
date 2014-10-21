@@ -33,7 +33,7 @@ class WebDriverLog : public Log {
 
   // Creates a WebDriverLog with the given type and minimum level.
   WebDriverLog(const std::string& type, Level min_level);
-  virtual ~WebDriverLog();
+  ~WebDriverLog() override;
 
   // Returns entries accumulated so far, as a ListValue ready for serialization
   // into the wire protocol response to the "/log" command.
@@ -46,10 +46,10 @@ class WebDriverLog : public Log {
   std::string GetFirstErrorMessage() const;
 
   // Translates a Log entry level into a WebDriver level and stores the entry.
-  virtual void AddEntryTimestamped(const base::Time& timestamp,
-                                   Level level,
-                                   const std::string& source,
-                                   const std::string& message) override;
+  void AddEntryTimestamped(const base::Time& timestamp,
+                           Level level,
+                           const std::string& source,
+                           const std::string& message) override;
 
   const std::string& type() const;
   void set_min_level(Level min_level);

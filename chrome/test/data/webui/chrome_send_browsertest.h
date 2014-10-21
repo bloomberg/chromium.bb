@@ -47,7 +47,7 @@ class ChromeSendPassthroughWebUITest : public ChromeSendWebUITest {
   virtual ~ChromeSendPassthroughWebUITest();
 
  private:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSendPassthroughWebUITest);
 };

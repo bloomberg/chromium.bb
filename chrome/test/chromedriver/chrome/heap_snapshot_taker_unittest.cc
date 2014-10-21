@@ -30,7 +30,7 @@ class DummyDevToolsClient : public StubDevToolsClient {
         error_after_events_(error_after_events),
         uid_(1),
         disabled_(false) {}
-  virtual ~DummyDevToolsClient() {}
+  ~DummyDevToolsClient() override {}
 
   bool IsDisabled() { return disabled_; }
 
@@ -48,8 +48,8 @@ class DummyDevToolsClient : public StubDevToolsClient {
   }
 
   // Overridden from DevToolsClient:
-  virtual Status SendCommand(const std::string& method,
-                             const base::DictionaryValue& params) override {
+  Status SendCommand(const std::string& method,
+                     const base::DictionaryValue& params) override {
     if (!disabled_)
       disabled_ = method == "Debugger.disable";
     if (method == method_ && !error_after_events_)

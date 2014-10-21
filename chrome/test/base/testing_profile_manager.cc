@@ -27,8 +27,7 @@ class ProfileManager : public ::ProfileManagerWithoutInit {
       : ::ProfileManagerWithoutInit(user_data_dir) {}
 
  protected:
-  virtual Profile* CreateProfileHelper(
-      const base::FilePath& file_path) override {
+  Profile* CreateProfileHelper(const base::FilePath& file_path) override {
     return new TestingProfile(file_path);
   }
 };

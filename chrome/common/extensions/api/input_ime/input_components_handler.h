@@ -45,7 +45,7 @@ struct InputComponentInfo {
 struct InputComponents : public Extension::ManifestData {
   // Define out of line constructor/destructor to please Clang.
   InputComponents();
-  virtual ~InputComponents();
+  ~InputComponents() override;
 
   std::vector<InputComponentInfo> input_components;
 
@@ -58,15 +58,15 @@ struct InputComponents : public Extension::ManifestData {
 class InputComponentsHandler : public ManifestHandler {
  public:
   InputComponentsHandler();
-  virtual ~InputComponentsHandler();
+  ~InputComponentsHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
   // Requires kOptionsPage is already parsed.
-  virtual const std::vector<std::string> PrerequisiteKeys() const override;
+  const std::vector<std::string> PrerequisiteKeys() const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(InputComponentsHandler);
 };

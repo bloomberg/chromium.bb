@@ -18,7 +18,7 @@ namespace extensions {
 
 struct SupervisedUserInfo : public Extension::ManifestData {
   SupervisedUserInfo();
-  virtual ~SupervisedUserInfo();
+  ~SupervisedUserInfo() override;
 
   static bool IsContentPack(const Extension* extension);
   static ExtensionResource GetContentPackSiteList(const Extension* extension);
@@ -31,12 +31,12 @@ struct SupervisedUserInfo : public Extension::ManifestData {
 class SupervisedUserHandler : public ManifestHandler {
  public:
   SupervisedUserHandler();
-  virtual ~SupervisedUserHandler();
+  ~SupervisedUserHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   bool LoadSites(SupervisedUserInfo* info,
                  const base::DictionaryValue* content_pack_value,

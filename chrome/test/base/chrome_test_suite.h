@@ -16,12 +16,12 @@
 class ChromeTestSuite : public content::ContentTestSuiteBase {
  public:
   ChromeTestSuite(int argc, char** argv);
-  virtual ~ChromeTestSuite();
+  ~ChromeTestSuite() override;
 
  protected:
   // base::TestSuite overrides:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
+  void Initialize() override;
+  void Shutdown() override;
 
   void SetBrowserDirectory(const base::FilePath& browser_dir) {
     browser_dir_ = browser_dir;

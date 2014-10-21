@@ -28,20 +28,22 @@ class IPCDataSource: public media::DataSource,
  public:
   // May only be called on the utility thread.
   explicit IPCDataSource(int64 total_size);
-  virtual ~IPCDataSource();
+  ~IPCDataSource() override;
 
   // Implementation of DataSource. These methods may be called on any single
   // thread. First usage of these methods attaches a thread checker.
-  virtual void Stop() override;
-  virtual void Read(int64 position, int size, uint8* data,
-                    const ReadCB& read_cb) override;
-  virtual bool GetSize(int64* size_out) override;
-  virtual bool IsStreaming() override;
-  virtual void SetBitrate(int bitrate) override;
+  void Stop() override;
+  void Read(int64 position,
+            int size,
+            uint8* data,
+            const ReadCB& read_cb) override;
+  bool GetSize(int64* size_out) override;
+  bool IsStreaming() override;
+  void SetBitrate(int bitrate) override;
 
   // Implementation of UtilityMessageHandler. May only be called on the utility
   // thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   struct Request {

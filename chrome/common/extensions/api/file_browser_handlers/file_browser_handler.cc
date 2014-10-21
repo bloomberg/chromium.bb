@@ -46,7 +46,7 @@ struct FileBrowserHandlerInfo : public extensions::Extension::ManifestData {
   FileBrowserHandler::List file_browser_handlers;
 
   FileBrowserHandlerInfo();
-  virtual ~FileBrowserHandlerInfo();
+  ~FileBrowserHandlerInfo() override;
 };
 
 FileBrowserHandlerInfo::FileBrowserHandlerInfo() {

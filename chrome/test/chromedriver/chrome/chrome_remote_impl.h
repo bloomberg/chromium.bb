@@ -20,13 +20,13 @@ class ChromeRemoteImpl : public ChromeImpl {
       scoped_ptr<DevToolsHttpClient> http_client,
       scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners);
-  virtual ~ChromeRemoteImpl();
+  ~ChromeRemoteImpl() override;
 
   // Overridden from Chrome.
-  virtual std::string GetOperatingSystemName() override;
+  std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl.
-  virtual Status QuitImpl() override;
+  Status QuitImpl() override;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_REMOTE_IMPL_H_

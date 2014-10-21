@@ -31,15 +31,16 @@ class TestINIParser : public INIParser {
       : expected_triplets_(expected_triplets),
         pair_i_(0) {
   }
-  virtual ~TestINIParser() {}
+  ~TestINIParser() override {}
 
   size_t pair_i() {
     return pair_i_;
   }
 
  private:
-  virtual void HandleTriplet(const std::string& section, const std::string& key,
-                             const std::string& value) override {
+  void HandleTriplet(const std::string& section,
+                     const std::string& key,
+                     const std::string& value) override {
     EXPECT_EQ(expected_triplets_[pair_i_].section, section);
     EXPECT_EQ(expected_triplets_[pair_i_].key, key);
     EXPECT_EQ(expected_triplets_[pair_i_].value, value);

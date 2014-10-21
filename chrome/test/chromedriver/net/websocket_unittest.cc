@@ -40,11 +40,9 @@ class Listener : public WebSocketListener {
   explicit Listener(const std::vector<std::string>& messages)
       : messages_(messages) {}
 
-  virtual ~Listener() {
-    EXPECT_TRUE(messages_.empty());
-  }
+  ~Listener() override { EXPECT_TRUE(messages_.empty()); }
 
-  virtual void OnMessageReceived(const std::string& message) override {
+  void OnMessageReceived(const std::string& message) override {
     ASSERT_TRUE(messages_.size());
     EXPECT_EQ(messages_[0], message);
     messages_.erase(messages_.begin());
@@ -52,9 +50,7 @@ class Listener : public WebSocketListener {
       base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnClose() override {
-    EXPECT_TRUE(false);
-  }
+  void OnClose() override { EXPECT_TRUE(false); }
 
  private:
   std::vector<std::string> messages_;
@@ -65,13 +61,11 @@ class CloseListener : public WebSocketListener {
   explicit CloseListener(base::RunLoop* run_loop)
       : run_loop_(run_loop) {}
 
-  virtual ~CloseListener() {
-    EXPECT_FALSE(run_loop_);
-  }
+  ~CloseListener() override { EXPECT_FALSE(run_loop_); }
 
-  virtual void OnMessageReceived(const std::string& message) override {}
+  void OnMessageReceived(const std::string& message) override {}
 
-  virtual void OnClose() override {
+  void OnClose() override {
     EXPECT_TRUE(run_loop_);
     if (run_loop_)
       run_loop_->Quit();

@@ -20,26 +20,25 @@ class ChromeContentClient : public content::ContentClient {
   static const char* const kPDFPluginName;
   static const char* const kRemotingViewerPluginPath;
 
-  virtual void SetActiveURL(const GURL& url) override;
-  virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
-  virtual void AddPepperPlugins(
+  void SetActiveURL(const GURL& url) override;
+  void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
+  void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) override;
-  virtual void AddAdditionalSchemes(
-      std::vector<std::string>* standard_schemes,
-      std::vector<std::string>* saveable_shemes) override;
-  virtual std::string GetProduct() const override;
-  virtual std::string GetUserAgent() const override;
-  virtual base::string16 GetLocalizedString(int message_id) const override;
-  virtual base::StringPiece GetDataResource(
+  void AddAdditionalSchemes(std::vector<std::string>* standard_schemes,
+                            std::vector<std::string>* saveable_shemes) override;
+  std::string GetProduct() const override;
+  std::string GetUserAgent() const override;
+  base::string16 GetLocalizedString(int message_id) const override;
+  base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
-  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+  base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const override;
-  virtual gfx::Image& GetNativeImageNamed(int resource_id) const override;
-  virtual std::string GetProcessTypeNameInEnglish(int type) override;
+  gfx::Image& GetNativeImageNamed(int resource_id) const override;
+  std::string GetProcessTypeNameInEnglish(int type) override;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  virtual bool GetSandboxProfileForSandboxType(
+  bool GetSandboxProfileForSandboxType(
       int sandbox_type,
       int* sandbox_profile_resource_id) const override;
 #endif

@@ -177,9 +177,9 @@ class WindowedTabAddedNotificationObserver
   // Returns the added tab, or NULL if no notification was observed yet.
   content::WebContents* GetTab() { return added_tab_; }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   content::WebContents* added_tab_;
@@ -233,12 +233,12 @@ class UrlLoadObserver : public content::WindowedNotificationObserver {
   // specific source, or from all sources if |source| is
   // NotificationService::AllSources().
   UrlLoadObserver(const GURL& url, const content::NotificationSource& source);
-  virtual ~UrlLoadObserver();
+  ~UrlLoadObserver() override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   GURL url_;

@@ -20,7 +20,7 @@ namespace extensions {
 class AppLaunchInfo : public Extension::ManifestData {
  public:
   AppLaunchInfo();
-  virtual ~AppLaunchInfo();
+  ~AppLaunchInfo() override;
 
   // Get the local path inside the extension to use with the launcher.
   static const std::string& GetLaunchLocalPath(const Extension* extension);
@@ -67,13 +67,13 @@ class AppLaunchInfo : public Extension::ManifestData {
 class AppLaunchManifestHandler : public ManifestHandler {
  public:
   AppLaunchManifestHandler();
-  virtual ~AppLaunchManifestHandler();
+  ~AppLaunchManifestHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool AlwaysParseForType(Manifest::Type type) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchManifestHandler);
 };

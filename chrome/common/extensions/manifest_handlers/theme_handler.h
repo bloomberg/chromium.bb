@@ -18,7 +18,7 @@ namespace extensions {
 struct ThemeInfo : public Extension::ManifestData {
   // Define out of line constructor/destructor to please Clang.
   ThemeInfo();
-  virtual ~ThemeInfo();
+  ~ThemeInfo() override;
 
   static const base::DictionaryValue* GetImages(const Extension* extension);
   static const base::DictionaryValue* GetColors(const Extension* extension);
@@ -43,15 +43,15 @@ struct ThemeInfo : public Extension::ManifestData {
 class ThemeHandler : public ManifestHandler {
  public:
   ThemeHandler();
-  virtual ~ThemeHandler();
+  ~ThemeHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Parse(Extension* extension, base::string16* error) override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeHandler);
 };

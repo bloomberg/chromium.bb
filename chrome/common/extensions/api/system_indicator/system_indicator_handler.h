@@ -15,12 +15,12 @@ namespace extensions {
 class SystemIndicatorHandler : public ManifestHandler {
  public:
   SystemIndicatorHandler();
-  virtual ~SystemIndicatorHandler();
+  ~SystemIndicatorHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(SystemIndicatorHandler);
 };

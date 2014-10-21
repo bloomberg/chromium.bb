@@ -30,7 +30,7 @@ struct UrlHandlerInfo {
 
 struct UrlHandlers : public Extension::ManifestData {
   UrlHandlers();
-  virtual ~UrlHandlers();
+  ~UrlHandlers() override;
 
   // Returns an array of URL handlers |extension| has defined in its manifest.
   static const std::vector<UrlHandlerInfo>* GetUrlHandlers(
@@ -55,13 +55,13 @@ struct UrlHandlers : public Extension::ManifestData {
 class UrlHandlersParser : public ManifestHandler {
  public:
   UrlHandlersParser();
-  virtual ~UrlHandlersParser();
+  ~UrlHandlersParser() override;
 
   // ManifestHandler API
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(UrlHandlersParser);
 };

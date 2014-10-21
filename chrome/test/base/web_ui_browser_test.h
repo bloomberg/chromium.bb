@@ -112,8 +112,8 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   void set_preload_test_name(const std::string& preload_test_name);
 
   // Set up & tear down console error catching.
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Set a WebUI instance to run tests on.
   void SetWebUIInstance(content::WebUI* web_ui);

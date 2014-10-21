@@ -46,11 +46,11 @@ class ServiceProcessTerminateMonitor : public base::MessageLoopForIO::Watcher {
   };
 
   explicit ServiceProcessTerminateMonitor(const base::Closure& terminate_task);
-  virtual ~ServiceProcessTerminateMonitor();
+  ~ServiceProcessTerminateMonitor() override;
 
   // MessageLoopForIO::Watcher overrides
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
  private:
   base::Closure terminate_task_;

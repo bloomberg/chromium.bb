@@ -56,10 +56,10 @@ const char kDefaultServiceProcessLocale[] = "en-US";
 class ServiceIOThread : public base::Thread {
  public:
   explicit ServiceIOThread(const char* name);
-  virtual ~ServiceIOThread();
+  ~ServiceIOThread() override;
 
  protected:
-  virtual void CleanUp() override;
+  void CleanUp() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceIOThread);

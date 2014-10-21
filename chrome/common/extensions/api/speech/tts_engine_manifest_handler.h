@@ -31,12 +31,12 @@ struct TtsVoice {
 class TtsEngineManifestHandler : public ManifestHandler {
  public:
   TtsEngineManifestHandler();
-  virtual ~TtsEngineManifestHandler();
+  ~TtsEngineManifestHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(TtsEngineManifestHandler);
 };

@@ -71,7 +71,7 @@ class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
         preload_test_fixture_(preload_test_fixture),
         preload_test_name_(preload_test_name) {}
 
-  virtual void RenderViewCreated(content::RenderViewHost* rvh) override {
+  void RenderViewCreated(content::RenderViewHost* rvh) override {
     browser_test_->PreLoadJavascriptLibraries(
         preload_test_fixture_, preload_test_name_, rvh);
   }
@@ -242,7 +242,7 @@ class PrintContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
  private:
   // ChromeContentBrowserClient implementation:
-  virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
+  content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override {
     preview_dialog_ = web_contents;
     observer_.reset(new WebUIJsInjectionReadyObserver(preview_dialog_,
@@ -317,11 +317,11 @@ class MockWebUIDataSource : public content::URLDataSource {
   MockWebUIDataSource() {}
 
  private:
-  virtual ~MockWebUIDataSource() {}
+  ~MockWebUIDataSource() override {}
 
-  virtual std::string GetSource() const override { return "dummyurl"; }
+  std::string GetSource() const override { return "dummyurl"; }
 
-  virtual void StartDataRequest(
+  void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
@@ -332,7 +332,7 @@ class MockWebUIDataSource : public content::URLDataSource {
     callback.Run(response.get());
   }
 
-  virtual std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) const override {
     return "text/html";
   }
 
@@ -347,8 +347,7 @@ class MockWebUIProvider
   MockWebUIProvider() {}
 
   // Returns a new WebUI
-  virtual WebUIController* NewWebUI(content::WebUI* web_ui,
-                                    const GURL& url) override {
+  WebUIController* NewWebUI(content::WebUI* web_ui, const GURL& url) override {
     WebUIController* controller = new content::WebUIController(web_ui);
     Profile* profile = Profile::FromWebUI(web_ui);
     content::URLDataSource::Add(profile, new MockWebUIDataSource());

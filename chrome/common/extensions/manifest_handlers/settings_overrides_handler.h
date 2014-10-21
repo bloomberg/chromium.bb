@@ -24,7 +24,7 @@ class ManifestPermission;
 // homepage and append a startup page to the list.
 struct SettingsOverrides : public Extension::ManifestData {
   SettingsOverrides();
-  virtual ~SettingsOverrides();
+  ~SettingsOverrides() override;
 
   static const SettingsOverrides* Get(const Extension* extension);
 
@@ -40,12 +40,12 @@ struct SettingsOverrides : public Extension::ManifestData {
 class SettingsOverridesHandler : public ManifestHandler {
  public:
   SettingsOverridesHandler();
-  virtual ~SettingsOverridesHandler();
+  ~SettingsOverridesHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsOverridesHandler);
 };

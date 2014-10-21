@@ -65,24 +65,23 @@ class HttpServer : public net::HttpServer::Delegate {
   }
 
   // Overridden from net::HttpServer::Delegate:
-  virtual void OnConnect(int connection_id) override {
+  void OnConnect(int connection_id) override {
     server_->SetSendBufferSize(connection_id, kBufferSize);
     server_->SetReceiveBufferSize(connection_id, kBufferSize);
   }
-  virtual void OnHttpRequest(int connection_id,
-                             const net::HttpServerRequestInfo& info) override {
+  void OnHttpRequest(int connection_id,
+                     const net::HttpServerRequestInfo& info) override {
     handle_request_func_.Run(
         info,
         base::Bind(&HttpServer::OnResponse,
                    weak_factory_.GetWeakPtr(),
                    connection_id));
   }
-  virtual void OnWebSocketRequest(
-      int connection_id,
-      const net::HttpServerRequestInfo& info) override {}
-  virtual void OnWebSocketMessage(int connection_id,
-                                  const std::string& data) override {}
-  virtual void OnClose(int connection_id) override {}
+  void OnWebSocketRequest(int connection_id,
+                          const net::HttpServerRequestInfo& info) override {}
+  void OnWebSocketMessage(int connection_id, const std::string& data) override {
+  }
+  void OnClose(int connection_id) override {}
 
  private:
   void OnResponse(int connection_id,

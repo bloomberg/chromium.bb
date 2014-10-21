@@ -47,10 +47,10 @@ namespace {
 class DetachChrome : public StubChrome {
  public:
   DetachChrome() : quit_called_(false) {}
-  virtual ~DetachChrome() {}
+  ~DetachChrome() override {}
 
   // Overridden from Chrome:
-  virtual Status Quit() override {
+  Status Quit() override {
     quit_called_ = true;
     return Status(kOk);
   }
@@ -95,12 +95,10 @@ namespace {
 class FailsToQuitChrome : public StubChrome {
  public:
   FailsToQuitChrome() {}
-  virtual ~FailsToQuitChrome() {}
+  ~FailsToQuitChrome() override {}
 
   // Overridden from Chrome:
-  virtual Status Quit() override {
-    return Status(kUnknownError);
-  }
+  Status Quit() override { return Status(kUnknownError); }
 };
 
 }  // namespace

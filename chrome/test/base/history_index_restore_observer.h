@@ -17,12 +17,12 @@ class HistoryIndexRestoreObserver
     : public history::InMemoryURLIndex::RestoreCacheObserver {
  public:
   explicit HistoryIndexRestoreObserver(const base::Closure& task);
-  virtual ~HistoryIndexRestoreObserver();
+  ~HistoryIndexRestoreObserver() override;
 
   bool succeeded() const { return succeeded_; }
 
   // RestoreCacheObserver implementation.
-  virtual void OnCacheRestoreFinished(bool success) override;
+  void OnCacheRestoreFinished(bool success) override;
 
  private:
   base::Closure task_;

@@ -14,7 +14,7 @@ namespace cloud_print {
 
 class TimeProviderImpl : public PrinterJobQueueHandler::TimeProvider {
  public:
-    virtual base::Time GetNow() override;
+  base::Time GetNow() override;
 };
 
 base::Time TimeProviderImpl::GetNow() {

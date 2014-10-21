@@ -30,28 +30,24 @@ class MockLaunchd : public Launchd {
 
   MockLaunchd(const base::FilePath& file, base::MessageLoop* loop,
               bool create_socket, bool as_service);
-  virtual ~MockLaunchd();
+  ~MockLaunchd() override;
 
-  virtual CFDictionaryRef CopyExports() override;
-  virtual CFDictionaryRef CopyJobDictionary(CFStringRef label) override;
-  virtual CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error)
-      override;
-  virtual bool RemoveJob(CFStringRef label, CFErrorRef* error) override;
-  virtual bool RestartJob(Domain domain,
-                          Type type,
-                          CFStringRef name,
-                          CFStringRef session_type) override;
-  virtual CFMutableDictionaryRef CreatePlistFromFile(
-      Domain domain,
-      Type type,
-      CFStringRef name) override;
-  virtual bool WritePlistToFile(Domain domain,
-                                Type type,
-                                CFStringRef name,
-                                CFDictionaryRef dict) override;
-  virtual bool DeletePlist(Domain domain,
-                           Type type,
-                           CFStringRef name) override;
+  CFDictionaryRef CopyExports() override;
+  CFDictionaryRef CopyJobDictionary(CFStringRef label) override;
+  CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error) override;
+  bool RemoveJob(CFStringRef label, CFErrorRef* error) override;
+  bool RestartJob(Domain domain,
+                  Type type,
+                  CFStringRef name,
+                  CFStringRef session_type) override;
+  CFMutableDictionaryRef CreatePlistFromFile(Domain domain,
+                                             Type type,
+                                             CFStringRef name) override;
+  bool WritePlistToFile(Domain domain,
+                        Type type,
+                        CFStringRef name,
+                        CFDictionaryRef dict) override;
+  bool DeletePlist(Domain domain, Type type, CFStringRef name) override;
 
   void SignalReady();
 

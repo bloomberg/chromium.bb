@@ -24,11 +24,11 @@ class ConsoleLogger : public DevToolsEventListener {
   explicit ConsoleLogger(Log* log);
 
   // Enables Console events for the client, which must not be null.
-  virtual Status OnConnected(DevToolsClient* client) override;
+  Status OnConnected(DevToolsClient* client) override;
   // Translates an event into a log entry.
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) override;
+  Status OnEvent(DevToolsClient* client,
+                 const std::string& method,
+                 const base::DictionaryValue& params) override;
 
  private:
   Log* log_;  // The log where to create entries.

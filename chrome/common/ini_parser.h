@@ -46,15 +46,15 @@ class INIParser {
 class DictionaryValueINIParser : public INIParser {
  public:
   DictionaryValueINIParser();
-  virtual ~DictionaryValueINIParser();
+  ~DictionaryValueINIParser() override;
 
   const base::DictionaryValue& root() const { return root_; }
 
  private:
   // INIParser implementation.
-  virtual void HandleTriplet(const std::string& section,
-                             const std::string& key,
-                             const std::string& value) override;
+  void HandleTriplet(const std::string& section,
+                     const std::string& key,
+                     const std::string& value) override;
 
   base::DictionaryValue root_;
 

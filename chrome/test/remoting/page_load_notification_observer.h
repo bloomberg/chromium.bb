@@ -21,7 +21,7 @@ class PageLoadNotificationObserver
  public:
   explicit PageLoadNotificationObserver(const GURL& target);
 
-  virtual ~PageLoadNotificationObserver();
+  ~PageLoadNotificationObserver() override;
 
  private:
   bool IsTargetLoaded();

@@ -50,14 +50,15 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
   explicit ChromeTestLauncherDelegate(ChromeTestSuiteRunner* runner)
       : runner_(runner) {}
-  virtual ~ChromeTestLauncherDelegate() {}
+  ~ChromeTestLauncherDelegate() override {}
 
-  virtual int RunTestSuite(int argc, char** argv) override {
+  int RunTestSuite(int argc, char** argv) override {
     return runner_->RunTestSuite(argc, argv);
   }
 
-  virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line, const base::FilePath& temp_data_dir) override {
+  bool AdjustChildProcessCommandLine(
+      CommandLine* command_line,
+      const base::FilePath& temp_data_dir) override {
     CommandLine new_command_line(command_line->GetProgram());
     CommandLine::SwitchMap switches = command_line->GetSwitches();
 
@@ -79,11 +80,11 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
  protected:
-  virtual content::ContentMainDelegate* CreateContentMainDelegate() override {
+  content::ContentMainDelegate* CreateContentMainDelegate() override {
     return new ChromeMainDelegate();
   }
 
-  virtual void AdjustDefaultParallelJobs(int* default_jobs) override {
+  void AdjustDefaultParallelJobs(int* default_jobs) override {
 #if defined(OS_WIN)
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAshBrowserTests)) {

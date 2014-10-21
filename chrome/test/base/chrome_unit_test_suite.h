@@ -15,11 +15,11 @@
 class ChromeUnitTestSuite : public ChromeTestSuite {
  public:
   ChromeUnitTestSuite(int argc, char** argv);
-  virtual ~ChromeUnitTestSuite();
+  ~ChromeUnitTestSuite() override;
 
   // base::TestSuite overrides:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
+  void Initialize() override;
+  void Shutdown() override;
 
   // These methods allow unit tests which run in the browser_test binary, and so
   // which don't exercise the initialization in this test suite, to do basic

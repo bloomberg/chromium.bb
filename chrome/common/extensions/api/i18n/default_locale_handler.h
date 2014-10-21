@@ -24,19 +24,19 @@ struct LocaleInfo : public Extension::ManifestData {
 class DefaultLocaleHandler : public ManifestHandler {
  public:
   DefaultLocaleHandler();
-  virtual ~DefaultLocaleHandler();
+  ~DefaultLocaleHandler() override;
 
-  virtual bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, base::string16* error) override;
 
   // Validates locale info. Doesn't check if messages.json files are valid.
-  virtual bool Validate(const Extension* extension,
-                        std::string* error,
-                        std::vector<InstallWarning>* warnings) const override;
+  bool Validate(const Extension* extension,
+                std::string* error,
+                std::vector<InstallWarning>* warnings) const override;
 
-  virtual bool AlwaysValidateForType(Manifest::Type type) const override;
+  bool AlwaysValidateForType(Manifest::Type type) const override;
 
  private:
-  virtual const std::vector<std::string> Keys() const override;
+  const std::vector<std::string> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultLocaleHandler);
 };

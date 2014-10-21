@@ -14,7 +14,7 @@
 // {"type": type_name, ...}
 class StructuredMessageHandler : public content::TestMessageHandler {
  public:
-  virtual MessageResponse HandleMessage(const std::string& json) override;
+  MessageResponse HandleMessage(const std::string& json) override;
 
   // This method provides a higher-level interface for handling JSON messages
   // from the DOM automation controler.  Instead of handling a string
@@ -43,9 +43,8 @@ class LoadTestMessageHandler : public StructuredMessageHandler {
 
   void Log(const std::string& type, const std::string& message);
 
-  virtual MessageResponse HandleStructuredMessage(
-      const std::string& type,
-      base::DictionaryValue* msg) override;
+  MessageResponse HandleStructuredMessage(const std::string& type,
+                                          base::DictionaryValue* msg) override;
 
   bool test_passed() const {
     return test_passed_;
@@ -62,9 +61,9 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   NaClBrowserTestBase();
   virtual ~NaClBrowserTestBase();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   // What variant are we running - newlib, glibc, pnacl, etc?
   // This is used to compute what directory we're pulling data from, but it can
@@ -109,38 +108,38 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
 
 class NaClBrowserTestNewlib : public NaClBrowserTestBase {
  public:
-  virtual base::FilePath::StringType Variant() override;
+  base::FilePath::StringType Variant() override;
 };
 
 class NaClBrowserTestGLibc : public NaClBrowserTestBase {
  public:
-  virtual base::FilePath::StringType Variant() override;
+  base::FilePath::StringType Variant() override;
 };
 
 class NaClBrowserTestPnacl : public NaClBrowserTestBase {
  public:
-  virtual base::FilePath::StringType Variant() override;
+  base::FilePath::StringType Variant() override;
 
-  virtual bool IsAPnaclTest() override;
+  bool IsAPnaclTest() override;
 };
 
 class NaClBrowserTestPnaclNonSfi : public NaClBrowserTestBase {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual base::FilePath::StringType Variant() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  base::FilePath::StringType Variant() override;
 };
 
 class NaClBrowserTestNonSfiMode : public NaClBrowserTestBase {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual base::FilePath::StringType Variant() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  base::FilePath::StringType Variant() override;
 };
 
 // A NaCl browser test only using static files.
 class NaClBrowserTestStatic : public NaClBrowserTestBase {
  public:
-  virtual base::FilePath::StringType Variant() override;
-  virtual bool GetDocumentRoot(base::FilePath* document_root) override;
+  base::FilePath::StringType Variant() override;
+  bool GetDocumentRoot(base::FilePath* document_root) override;
 };
 
 // A NaCl browser test that loads from an unpacked chrome extension.
@@ -148,12 +147,12 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
 // the tester's document root.
 class NaClBrowserTestNewlibExtension : public NaClBrowserTestNewlib {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // PNaCl tests take a long time on windows debug builds

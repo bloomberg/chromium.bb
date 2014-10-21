@@ -28,12 +28,12 @@ class PicasaINIParser : public INIParser {
       : folder_path_(folder_path),
         albums_images_(albums_images) {
   }
-  virtual ~PicasaINIParser() {}
+  ~PicasaINIParser() override {}
 
  private:
-  virtual void HandleTriplet(const std::string& section,
-                             const std::string& key,
-                             const std::string& value) override {
+  void HandleTriplet(const std::string& section,
+                     const std::string& key,
+                     const std::string& value) override {
     if (key != kAlbumsKey)
       return;
 

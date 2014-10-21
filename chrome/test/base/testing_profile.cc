@@ -112,10 +112,10 @@ class WaitTopSitesLoadedObserver : public history::TopSitesObserver {
  public:
   explicit WaitTopSitesLoadedObserver(content::MessageLoopRunner* runner)
       : runner_(runner) {}
-  virtual void TopSitesLoaded(history::TopSites* top_sites) override {
+  void TopSitesLoaded(history::TopSites* top_sites) override {
     runner_->Quit();
   }
-  virtual void TopSitesChanged(history::TopSites* top_sites) override {}
+  void TopSitesChanged(history::TopSites* top_sites) override {}
 
  private:
   // weak
@@ -129,17 +129,15 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
  public:
   QuittingHistoryDBTask() {}
 
-  virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) override {
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
     return true;
   }
 
-  virtual void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->Quit();
-  }
+  void DoneRunOnMainThread() override { base::MessageLoop::current()->Quit(); }
 
  private:
-  virtual ~QuittingHistoryDBTask() {}
+  ~QuittingHistoryDBTask() override {}
 
   DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
 };
@@ -155,26 +153,24 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     set_cookie_store(cookie_monster);
   }
 
-  virtual ~TestExtensionURLRequestContext() {
-    AssertNoURLRequests();
-  }
+  ~TestExtensionURLRequestContext() override { AssertNoURLRequests(); }
 };
 
 class TestExtensionURLRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
-  virtual net::URLRequestContext* GetURLRequestContext() override {
+  net::URLRequestContext* GetURLRequestContext() override {
     if (!context_.get())
       context_.reset(new TestExtensionURLRequestContext());
     return context_.get();
   }
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-      GetNetworkTaskRunner() const override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 
  protected:
-  virtual ~TestExtensionURLRequestContextGetter() {}
+  ~TestExtensionURLRequestContextGetter() override {}
 
  private:
   scoped_ptr<net::URLRequestContext> context_;

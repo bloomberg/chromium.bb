@@ -22,7 +22,7 @@ namespace image_writer {
 class ImageWriterHandler : public UtilityMessageHandler {
  public:
   ImageWriterHandler();
-  virtual ~ImageWriterHandler();
+  ~ImageWriterHandler() override;
 
   // Methods for sending the different messages back to the browser process.
   // Generally should be called by chrome::image_writer::ImageWriter.
@@ -32,7 +32,7 @@ class ImageWriterHandler : public UtilityMessageHandler {
   virtual void SendProgress(int64 progress);
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Small wrapper for sending on the UtilityProcess.
   void Send(IPC::Message* msg);

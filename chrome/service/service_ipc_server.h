@@ -26,12 +26,12 @@ class HistogramDeltaSerialization;
 class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
  public:
   explicit ServiceIPCServer(const IPC::ChannelHandle& handle);
-  virtual ~ServiceIPCServer();
+  ~ServiceIPCServer() override;
 
   bool Init();
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -48,9 +48,9 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   friend class MockServiceIPCServer;
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
   // IPC message handlers.
   void OnEnableCloudPrintProxyWithRobot(

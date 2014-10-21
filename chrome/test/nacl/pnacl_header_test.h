@@ -29,9 +29,9 @@ class TestDispatcherHostDelegate : public ResourceDispatcherHostDelegate {
   explicit TestDispatcherHostDelegate()
       : ResourceDispatcherHostDelegate(), found_pnacl_header_(false) {}
 
-  virtual ~TestDispatcherHostDelegate() {}
+  ~TestDispatcherHostDelegate() override {}
 
-  virtual void RequestBeginning(
+  void RequestBeginning(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,

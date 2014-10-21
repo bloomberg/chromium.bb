@@ -45,13 +45,13 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   void Stop();
 
   // CloudPrintURLFetcher::Delegate implementation.
-  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+  CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded) override;
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
-  virtual std::string GetAuthHeader() override;
+  CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
+  std::string GetAuthHeader() override;
 
   base::Time start_time() const {
     return start_time_;
@@ -59,7 +59,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
 
  private:
   friend class base::RefCountedThreadSafe<JobStatusUpdater>;
-  virtual ~JobStatusUpdater();
+  ~JobStatusUpdater() override;
 
   base::Time start_time_;
   std::string printer_name_;
