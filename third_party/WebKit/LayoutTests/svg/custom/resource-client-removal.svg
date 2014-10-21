@@ -6,16 +6,18 @@ window.testIsAsync = true;
 function repaintTest() {
     container = document.getElementById("inneruse");
     stop = document.getElementById("offset");
-    setTimeout(offset, 0);
+    // FIXME: we need a better way of waiting for layout/repainting to happen
+    setTimeout(offset, 1);
 }
 var turns = 5;
 function offset(){
     container.setAttribute ("transform", "");
     stop.setAttribute ("offset", "1.0");
     turns--;
-    if (turns > 0)
-        window.setTimeout("offset()", 0)
-    else
+    if (turns > 0) {
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        window.setTimeout("offset()", 1)
+    } else
         finishRepaintTest();
 }
 ]]>

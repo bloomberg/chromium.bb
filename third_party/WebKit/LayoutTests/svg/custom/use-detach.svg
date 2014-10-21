@@ -8,12 +8,14 @@
     function repaintTest() {
       var elem = document.getElementById('use');
       elem.setAttributeNS(null,'display','inline');
-      window.setTimeout("step2()", 0);
+      // FIXME: we need a better way of waiting for layout/repainting to happen
+      window.setTimeout("step2()", 1);
     }
     function step2() {
       var elem = document.getElementById('use');
       elem.setAttributeNS(null,'display','none');
-      window.setTimeout("step3()", 0);
+      // FIXME: we need a better way of waiting for layout/repainting to happen
+      window.setTimeout("step3()", 1);
     }
     function step3() {
       var elem = document.getElementById('use');

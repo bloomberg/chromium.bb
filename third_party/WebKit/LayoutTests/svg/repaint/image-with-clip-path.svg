@@ -31,12 +31,14 @@
     }
 
     function nextStep() {
-        i.onload = function() { setTimeout(finishTest, 0); };
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        i.onload = function() { setTimeout(finishTest, 1); };
         update(200, 50, green);
     }
 
     function repaintTest() {
-        i.onload = function() { setTimeout(nextStep, 0); };
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        i.onload = function() { setTimeout(nextStep, 1); };
         update(50, 100, red);
     }
 </script>

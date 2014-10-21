@@ -28,11 +28,12 @@ onload = function() {
         ++scrollsSinceLastFrame;
     };
 
+    // FIXME: we need a better way of waiting for layout/repainting to happen
     var timerId = setInterval(function() {
         scrollable.scrollTop += 1;
         if (!--remainingTicks)
             clearInterval(timerId);
-    }, 0);
+    }, 1);
 
     function raf() {
         if (scrollsSinceLastFrame > 1) {

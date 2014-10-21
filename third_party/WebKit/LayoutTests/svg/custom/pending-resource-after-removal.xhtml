@@ -48,7 +48,8 @@ function updateFill() {
 
 function repaintTest() {
     updateFill();
-    setTimeout("updateFill()", 0);
+    // FIXME: we need a better way of waiting for layout/repainting to happen
+    setTimeout("updateFill()", 1);
 }
 </script>
 <body onload="runRepaintAndPixelTest()">

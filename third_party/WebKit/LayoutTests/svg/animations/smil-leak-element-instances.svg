@@ -61,7 +61,8 @@ function startTest() {
     for (var i = 0; i < 100; i++)
         g.appendChild(createAnimatedRectInstance());
 
-    setTimeout(cleanup, 0);
+    // FIXME: we need a better way of waiting for chromium events to happen
+    setTimeout(cleanup, 1);
 }
 
 function load() {
@@ -73,7 +74,8 @@ function load() {
         return;
     }
 
-    setTimeout(startTest, 0);
+    // FIXME: we need a better way of waiting for chromium events to happen
+    setTimeout(startTest, 1);
 }
 ]]>
 </script>

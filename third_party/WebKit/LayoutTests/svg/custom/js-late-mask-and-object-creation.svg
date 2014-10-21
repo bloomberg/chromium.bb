@@ -10,7 +10,8 @@
     var content = document.getElementById("content");
 
     function repaintTest() {
-        setTimeout(createObject, 0);
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        setTimeout(createObject, 1);
     }
 
     function createObject()
@@ -23,7 +24,8 @@
         rect.setAttribute("mask", "url(#dynMask)");
 
         content.appendChild(rect);
-        setTimeout(createMask, 0);
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        setTimeout(createMask, 1);
     }
 
     function createMask()

@@ -19,7 +19,8 @@
     var content = document.getElementById("content");
 
     function repaintTest() {
-        setTimeout(createObject, 0);
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        setTimeout(createObject, 1);
     }
 
     function createObject()
@@ -34,7 +35,8 @@
         path.setAttribute("d", "M 130 135 L 180 135 L 180 185");
 
         content.appendChild(path);
-        setTimeout(createMarker, 0);
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        setTimeout(createMarker, 1);
     }
 
     function createMarker()

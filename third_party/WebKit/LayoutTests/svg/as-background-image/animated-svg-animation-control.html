@@ -9,13 +9,14 @@ var imgurl = "url('../as-image/resources/animated-rect-color.svg')";
 div.style.background = imgurl;
 setTimeout(function() {
     div.style.background = "";
+    // FIXME: we need a better way of waiting for chromium events to happen
     setTimeout(function() {
         div.style.background = imgurl;
         setTimeout(function() {
             if (window.testRunner)
                 testRunner.notifyDone();
         }, 10);
-    }, 0);
+    }, 1);
 }, 100);
 </script>
 

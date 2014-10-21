@@ -36,13 +36,14 @@ window.testIsAsync = true;
 window.onload = runRepaintTest;
 
 function repaintTest() {
+    // FIXME: we need a better way of waiting for layout/repainting to happen
     setTimeout(function() {
         setFlex(4.6);
         setTimeout(function() {
             setFlex(5);
             finishRepaintTest();
-        })
-    })
+        }, 1)
+    }, 1)
 };
 </script>
 <div style="height: 60px"></div>

@@ -9,7 +9,8 @@
     var content = document.getElementById("content");
 
     function repaintTest() {
-        setTimeout(createPatterns, 0);
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        setTimeout(createPatterns, 1);
     }
 
     function createPatterns()
@@ -70,7 +71,8 @@
 
         content.appendChild(pattern2);
 
-        setTimeout(setupPatternUsers, 0);
+        // FIXME: we need a better way of waiting for layout/repainting to happen
+        setTimeout(setupPatternUsers, 1);
     }
 
     function setupPatternUsers()

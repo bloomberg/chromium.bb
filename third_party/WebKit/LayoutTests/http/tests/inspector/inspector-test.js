@@ -49,7 +49,8 @@ InspectorTest.evaluateInPage = function(code, callback)
 
 InspectorTest.evaluateInPageWithTimeout = function(code)
 {
-    InspectorTest.evaluateInPage("setTimeout(unescape('" + escape(code) + "'))");
+    // FIXME: we need a better way of waiting for chromium events to happen
+    InspectorTest.evaluateInPage("setTimeout(unescape('" + escape(code) + "'), 1)");
 }
 
 var lastEvalId = 0;
@@ -448,7 +449,7 @@ InspectorTest.TempFileMock = function(dirPath, name, callback)
 {
     this._chunks = [];
     this._name = name;
-    setTimeout(callback.bind(this, this), 0);
+    setTimeout(callback.bind(this, this), 1);
 }
 
 InspectorTest.TempFileMock.prototype = {
@@ -459,7 +460,7 @@ InspectorTest.TempFileMock.prototype = {
     write: function(strings, callback)
     {
         this._chunks.push.apply(this._chunks, strings);
-        setTimeout(callback.bind(this, true), 0);
+        setTimeout(callback.bind(this, true), 1);
     },
 
     finishWriting: function() { },
@@ -603,17 +604,18 @@ function closeFrontend(callback)
 {
     // Do this asynchronously to allow InspectorBackendDispatcher to send response
     // back to the frontend before it's destroyed.
+    // FIXME: we need a better way of waiting for chromium events to happen
     setTimeout(function() {
         testRunner.closeWebInspector();
         callback();
-    }, 0);
+    }, 1);
 }
 
 function openFrontendAndIncrement()
 {
     frontendReopeningCount++;
     testRunner.showWebInspector();
-    setTimeout(runTest, 0);
+    setTimeout(runTest, 1);
 }
 
 function runAfterIframeIsLoaded()
