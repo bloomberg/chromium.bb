@@ -104,10 +104,6 @@ ui::EventTarget* WindowTargeter::FindTargetForLocatedEvent(
 Window* WindowTargeter::FindTargetForKeyEvent(Window* window,
                                               const ui::KeyEvent& key) {
   Window* root_window = window->GetRootWindow();
-  if (key.key_code() == ui::VKEY_UNKNOWN &&
-      (key.flags() & ui::EF_IME_FABRICATED_KEY) == 0 &&
-      key.GetCharacter() == 0)
-    return NULL;
   client::FocusClient* focus_client = client::GetFocusClient(root_window);
   Window* focused_window = focus_client->GetFocusedWindow();
   if (!focused_window)

@@ -342,14 +342,14 @@ TEST_F(WindowEventDispatcherTest, CanProcessEventsWithinSubtree) {
   w3->parent()->RemoveChild(w3.get());
 }
 
-TEST_F(WindowEventDispatcherTest, IgnoreUnknownKeys) {
+TEST_F(WindowEventDispatcherTest, DontIgnoreUnknownKeys) {
   ConsumeKeyHandler handler;
   root_window()->AddPreTargetHandler(&handler);
 
   ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&unknown_event);
-  EXPECT_FALSE(unknown_event.handled());
-  EXPECT_EQ(0, handler.num_key_events());
+  EXPECT_TRUE(unknown_event.handled());
+  EXPECT_EQ(1, handler.num_key_events());
 
   handler.Reset();
   ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
