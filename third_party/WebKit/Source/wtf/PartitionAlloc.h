@@ -115,12 +115,6 @@
 
 namespace WTF {
 
-// Maximum size of a partition's mappings. 2046MB. Note that the total amount of
-// bytes allocatable at the API will be smaller. This is because things like
-// guard pages, metadata, page headers and wasted space come out of the total.
-// The 2GB is not necessarily contiguous in virtual address space.
-static const size_t kMaxPartitionSize = 2046u * 1024u * 1024u;
-
 // Allocation granularity of sizeof(void*) bytes.
 static const size_t kAllocationGranularity = sizeof(void*);
 static const size_t kAllocationGranularityMask = kAllocationGranularity - 1;

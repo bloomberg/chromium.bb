@@ -253,23 +253,20 @@ static void partitionAllocBaseShutdown(PartitionRootBase* root)
     root->initialized = false;
 
     // Now that we've examined all partition pages in all buckets, it's safe
-    // to free all our super pages. We first collect the super page pointers
-    // on the stack because some of them are themselves store in super pages.
-    char* superPages[kMaxPartitionSize / kSuperPageSize];
-    size_t numSuperPages = 0;
+    // to free all our super pages. Since the super page extent entries are
+    // stored in the super pages, we need to be careful not to access them
+    // after we've released the corresponding super page.
     PartitionSuperPageExtentEntry* entry = root->firstExtent;
     while (entry) {
+        PartitionSuperPageExtentEntry* nextEntry = entry->next;
         char* superPage = entry->superPageBase;
-        while (superPage != entry->superPagesEnd) {
-            superPages[numSuperPages] = superPage;
-            numSuperPages++;
+        char* superPagesEnd = entry->superPagesEnd;
+        while (superPage < superPagesEnd) {
+            freePages(superPage, kSuperPageSize);
             superPage += kSuperPageSize;
         }
-        entry = entry->next;
+        entry = nextEntry;
     }
-    ASSERT(numSuperPages == root->totalSizeOfSuperPages / kSuperPageSize);
-    for (size_t i = 0; i < numSuperPages; ++i)
-        freePages(superPages[i], kSuperPageSize);
 }
 
 bool partitionAllocShutdown(PartitionRoot* root)
@@ -300,11 +297,6 @@ bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
 }
 
 static NEVER_INLINE void partitionOutOfMemory()
-{
-    IMMEDIATE_CRASH();
-}
-
-static NEVER_INLINE void partitionFull()
 {
     IMMEDIATE_CRASH();
 }
@@ -340,8 +332,6 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
 
     // Need a new super page.
     root->totalSizeOfSuperPages += kSuperPageSize;
-    if (root->totalSizeOfSuperPages > kMaxPartitionSize)
-        partitionFull();
     char* requestedAddress = root->nextSuperPage;
     char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
     if (UNLIKELY(!superPage)) {
