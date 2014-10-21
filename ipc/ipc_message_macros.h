@@ -600,66 +600,63 @@
     typedef Schema::Param Param;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
     msg_class(IPC_TYPE_IN_##in_cnt in_list);                                  \
-    virtual ~msg_class();                                                     \
+    ~msg_class() override;                                                    \
     static bool Read(const Message* msg, Schema::Param* p);                   \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
     IPC_ASYNC_MESSAGE_METHODS_##in_cnt                                        \
   };
 
-#define IPC_ASYNC_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                  \
-   public:                                                                    \
-    typedef IPC::MessageSchema<IPC_TUPLE_IN_##in_cnt in_list> Schema;         \
-    typedef Schema::Param Param;                                              \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32 routing_id IPC_COMMA_##in_cnt                             \
-              IPC_TYPE_IN_##in_cnt in_list);                                  \
-    virtual ~msg_class();                                                     \
-    static bool Read(const Message* msg, Schema::Param* p);                   \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_ASYNC_MESSAGE_METHODS_##in_cnt                                        \
+#define IPC_ASYNC_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list) \
+  class IPC_MESSAGE_EXPORT msg_class : public IPC::Message {                 \
+   public:                                                                   \
+    typedef IPC::MessageSchema<IPC_TUPLE_IN_##in_cnt in_list> Schema;        \
+    typedef Schema::Param Param;                                             \
+    enum { ID = IPC_MESSAGE_ID() };                                          \
+    msg_class(int32 routing_id                                               \
+                  IPC_COMMA_##in_cnt IPC_TYPE_IN_##in_cnt in_list);          \
+    ~msg_class() override;                                                   \
+    static bool Read(const Message* msg, Schema::Param* p);                  \
+    static void Log(std::string* name, const Message* msg, std::string* l);  \
+    IPC_ASYNC_MESSAGE_METHODS_##in_cnt                                       \
   };
 
-#define IPC_SYNC_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::SyncMessage {              \
-   public:                                                                    \
-    typedef IPC::SyncMessageSchema<IPC_TUPLE_IN_##in_cnt in_list,             \
-                                   IPC_TUPLE_OUT_##out_cnt out_list> Schema;  \
-    typedef Schema::ReplyParam ReplyParam;                                    \
-    typedef Schema::SendParam SendParam;                                      \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(IPC_TYPE_IN_##in_cnt in_list                                    \
-              IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
-              IPC_TYPE_OUT_##out_cnt out_list);                               \
-    virtual ~msg_class();                                                     \
-    static bool ReadSendParam(const Message* msg, Schema::SendParam* p);      \
-    static bool ReadReplyParam(                                               \
-        const Message* msg,                                                   \
-        TupleTypes<ReplyParam>::ValueTuple* p);                               \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_SYNC_MESSAGE_METHODS_##out_cnt                                        \
+#define IPC_SYNC_CONTROL_DECL(msg_class, in_cnt, out_cnt, in_list, out_list) \
+  class IPC_MESSAGE_EXPORT msg_class : public IPC::SyncMessage {             \
+   public:                                                                   \
+    typedef IPC::SyncMessageSchema<IPC_TUPLE_IN_##in_cnt in_list,            \
+                                   IPC_TUPLE_OUT_##out_cnt out_list> Schema; \
+    typedef Schema::ReplyParam ReplyParam;                                   \
+    typedef Schema::SendParam SendParam;                                     \
+    enum { ID = IPC_MESSAGE_ID() };                                          \
+    msg_class(IPC_TYPE_IN_##in_cnt in_list                                   \
+                  IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                \
+                      IPC_TYPE_OUT_##out_cnt out_list);                      \
+    ~msg_class() override;                                                   \
+    static bool ReadSendParam(const Message* msg, Schema::SendParam* p);     \
+    static bool ReadReplyParam(const Message* msg,                           \
+                               TupleTypes<ReplyParam>::ValueTuple* p);       \
+    static void Log(std::string* name, const Message* msg, std::string* l);  \
+    IPC_SYNC_MESSAGE_METHODS_##out_cnt                                       \
   };
 
-#define IPC_SYNC_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)   \
-  class IPC_MESSAGE_EXPORT msg_class : public IPC::SyncMessage {              \
-   public:                                                                    \
-    typedef IPC::SyncMessageSchema<IPC_TUPLE_IN_##in_cnt in_list,             \
-                                   IPC_TUPLE_OUT_##out_cnt out_list> Schema;  \
-    typedef Schema::ReplyParam ReplyParam;                                    \
-    typedef Schema::SendParam SendParam;                                      \
-    enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class(int32 routing_id                                                \
-              IPC_COMMA_OR_##in_cnt(IPC_COMMA_##out_cnt)                      \
-              IPC_TYPE_IN_##in_cnt in_list                                    \
-              IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)                     \
-              IPC_TYPE_OUT_##out_cnt out_list);                               \
-    virtual ~msg_class();                                                     \
-    static bool ReadSendParam(const Message* msg, Schema::SendParam* p);      \
-    static bool ReadReplyParam(                                               \
-        const Message* msg,                                                   \
-        TupleTypes<ReplyParam>::ValueTuple* p);                               \
-    static void Log(std::string* name, const Message* msg, std::string* l);   \
-    IPC_SYNC_MESSAGE_METHODS_##out_cnt                                        \
+#define IPC_SYNC_ROUTED_DECL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
+  class IPC_MESSAGE_EXPORT msg_class : public IPC::SyncMessage {             \
+   public:                                                                   \
+    typedef IPC::SyncMessageSchema<IPC_TUPLE_IN_##in_cnt in_list,            \
+                                   IPC_TUPLE_OUT_##out_cnt out_list> Schema; \
+    typedef Schema::ReplyParam ReplyParam;                                   \
+    typedef Schema::SendParam SendParam;                                     \
+    enum { ID = IPC_MESSAGE_ID() };                                          \
+    msg_class(int32 routing_id IPC_COMMA_OR_##in_cnt(IPC_COMMA_##out_cnt)    \
+                  IPC_TYPE_IN_##in_cnt in_list                               \
+                      IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)            \
+                          IPC_TYPE_OUT_##out_cnt out_list);                  \
+    ~msg_class() override;                                                   \
+    static bool ReadSendParam(const Message* msg, Schema::SendParam* p);     \
+    static bool ReadReplyParam(const Message* msg,                           \
+                               TupleTypes<ReplyParam>::ValueTuple* p);       \
+    static void Log(std::string* name, const Message* msg, std::string* l);  \
+    IPC_SYNC_MESSAGE_METHODS_##out_cnt                                       \
   };
 
 #if defined(IPC_MESSAGE_IMPL)

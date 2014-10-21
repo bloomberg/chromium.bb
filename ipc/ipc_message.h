@@ -50,7 +50,7 @@ class IPC_EXPORT Message : public Pickle {
     HAS_SENT_TIME_BIT = 0x80,
   };
 
-  virtual ~Message();
+  ~Message() override;
 
   Message();
 

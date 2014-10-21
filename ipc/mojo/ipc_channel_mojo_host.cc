@@ -17,12 +17,12 @@ namespace IPC {
 class ChannelMojoHost::ChannelDelegate : public ChannelMojo::Delegate {
  public:
   explicit ChannelDelegate(scoped_refptr<base::TaskRunner> io_task_runner);
-  virtual ~ChannelDelegate();
+  ~ChannelDelegate() override;
 
   // ChannelMojo::Delegate
-  virtual base::WeakPtr<Delegate> ToWeakPtr() override;
-  virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) override;
-  virtual scoped_refptr<base::TaskRunner> GetIOTaskRunner() override;
+  base::WeakPtr<Delegate> ToWeakPtr() override;
+  void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) override;
+  scoped_refptr<base::TaskRunner> GetIOTaskRunner() override;
 
   // Returns an weak ptr of ChannelDelegate instead of Delegate
   base::WeakPtr<ChannelDelegate> GetWeakPtr();

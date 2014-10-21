@@ -143,8 +143,7 @@ class IPC_EXPORT Channel : public Sender {
   static scoped_ptr<Channel> CreateServer(
       const IPC::ChannelHandle &channel_handle, Listener* listener);
 
-
-  virtual ~Channel();
+  ~Channel() override;
 
   // Connect the pipe.  On the server side, this will initiate
   // waiting for connections.  On the client, it attempts to
