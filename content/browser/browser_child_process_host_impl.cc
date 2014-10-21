@@ -265,6 +265,11 @@ bool BrowserChildProcessHostImpl::CanShutdown() {
 
 void BrowserChildProcessHostImpl::OnChildDisconnected() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+#if defined(OS_WIN)
+  // OnChildDisconnected may be called without OnChannelConnected, so stop the
+  // early exit watcher so GetTerminationStatus can close the process handle.
+  early_exit_watcher_.StopWatching();
+#endif
   if (child_process_.get() || data_.handle) {
     DCHECK(data_.handle != base::kNullProcessHandle);
     int exit_code;
