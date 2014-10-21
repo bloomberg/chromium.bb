@@ -52,6 +52,7 @@
   display: inline-block;
   height: 14px;
   opacity: 0.33;
+  vertical-align: bottom;
   width: 14px;
 }
 
