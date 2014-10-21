@@ -197,6 +197,11 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_athena_sources,
                            ".", "//chrome")
   } else {  # Not athena.
+    if (!is_android) {
+      sources += rebase_path(
+          gypi_values.chrome_browser_ui_non_athena_non_android_sources,
+          ".", "//chrome")   
+    }
     if (use_ash) {
       sources += rebase_path(
           gypi_values.chrome_browser_ui_ash_non_athena_sources,

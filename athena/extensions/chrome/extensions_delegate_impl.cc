@@ -6,6 +6,7 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/extensions/chrome/athena_chrome_app_window_client.h"
+#include "athena/extensions/chrome/athena_extension_install_ui.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -87,6 +88,12 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
   virtual bool UnloadApp(const std::string& app_id) override {
     // TODO(skuhne): Implement using extension service.
     return false;
+  }
+
+  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+      override {
+    return scoped_ptr<extensions::ExtensionInstallUI>(
+        new AthenaExtensionInstallUI());
   }
 
   void LaunchV1App(const AppLaunchParams& params,

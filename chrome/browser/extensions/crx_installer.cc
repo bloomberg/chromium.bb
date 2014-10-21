@@ -23,10 +23,8 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/convert_web_app.h"
-#include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -43,6 +41,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install/crx_installer_error.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_icon_set.h"
@@ -139,8 +139,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
   if (client_) {
     client_->install_ui()->SetUseAppInstalledBubble(
         approval->use_app_installed_bubble);
-    client_->install_ui()->set_skip_post_install_ui(
-        approval->skip_post_install_ui);
+    client_->install_ui()->SetSkipPostInstallUI(approval->skip_post_install_ui);
   }
 
   if (approval->skip_install_dialog) {
@@ -571,7 +570,7 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
     // because the WebStore already shows an error dialog itself.
     // Note: |client_| can be NULL in unit_tests!
     if (extension()->from_webstore() && client_)
-      client_->install_ui()->set_skip_post_install_ui(true);
+      client_->install_ui()->SetSkipPostInstallUI(true);
     ReportFailureFromUIThread(
         CrxInstallerError(base::UTF8ToUTF16(install_checker_.policy_error())));
     return;

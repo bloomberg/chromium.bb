@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/install/crx_installer_error.h"
 #include "extensions/common/extension.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,8 +48,6 @@ using content::WebContents;
 using extensions::Extension;
 
 namespace {
-
-// Helpers --------------------------------------------------------------------
 
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   // TODO(mpcomplete): remove this workaround for http://crbug.com/244246
@@ -71,9 +69,6 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
   if (browser)
     chrome::ShowExtensionInstalledBubble(extension, browser, icon);
 }
-
-
-// ErrorInfoBarDelegate -------------------------------------------------------
 
 // Helper class to put up an infobar when installation fails.
 class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -139,75 +134,21 @@ bool ErrorInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 
 }  // namespace
 
-
-// ExtensionInstallUI ---------------------------------------------------------
-
-// static
-ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
-  return new ExtensionInstallUIDefault(profile);
-}
-
-// static
-void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
-                                            const std::string& app_id) {
-#if defined(OS_CHROMEOS)
-  // App Launcher always enabled on ChromeOS, so always handled in
-  // OnInstallSuccess.
-  NOTREACHED();
-#else
-  Browser* browser = FindOrCreateVisibleBrowser(profile);
-  if (browser) {
-    GURL url(chrome::IsInstantExtendedAPIEnabled() ?
-             chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
-    chrome::NavigateParams params(
-        chrome::GetSingletonTabNavigateParams(browser, url));
-    chrome::Navigate(&params);
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-        content::Source<WebContents>(params.target_contents),
-        content::Details<const std::string>(&app_id));
-  }
-#endif
-}
-
-// static
-ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
-    Browser* browser) {
-  content::WebContents* web_contents = NULL;
-  if (browser)
-    web_contents = browser->tab_strip_model()->GetActiveWebContents();
-  return new ExtensionInstallPrompt(web_contents);
-}
-
-// static
-ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
-    Profile* profile) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile,
-      chrome::GetActiveDesktop());
-  if (browser)
-    return CreateInstallPromptWithBrowser(browser);
-  // No browser window is open yet. Create a free-standing dialog associated
-  // with |profile|.
-  return new ExtensionInstallPrompt(profile, NULL, NULL);
-}
-
-
-// ExtensionInstallUIDefault --------------------------------------------------
-
-ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
-    : ExtensionInstallUI(profile),
+ExtensionInstallUIDefault::ExtensionInstallUIDefault(
+    content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)),
+      skip_post_install_ui_(false),
       previous_using_system_theme_(false),
       use_app_installed_bubble_(false) {
   // |profile| can be NULL during tests.
-  if (profile) {
+  if (profile_) {
     // Remember the current theme in case the user presses undo.
     const Extension* previous_theme =
-        ThemeServiceFactory::GetThemeForProfile(profile);
+        ThemeServiceFactory::GetThemeForProfile(profile_);
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
     previous_using_system_theme_ =
-        ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme();
+        ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme();
   }
 }
 
@@ -215,10 +156,10 @@ ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
 void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                                                  const SkBitmap* icon) {
-  if (skip_post_install_ui())
+  if (skip_post_install_ui_)
     return;
 
-  if (!profile()) {
+  if (!profile_) {
     // TODO(zelidrag): Figure out what exact conditions cause crash
     // http://crbug.com/159437 and write browser test to cover it.
     NOTREACHED();
@@ -227,13 +168,13 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 
   if (extension->is_theme()) {
     ThemeInstalledInfoBarDelegate::Create(
-        extension, profile(), previous_theme_id_, previous_using_system_theme_);
+        extension, profile_, previous_theme_id_, previous_using_system_theme_);
     return;
   }
 
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
-  Profile* current_profile = profile()->GetOriginalProfile();
+  Profile* current_profile = profile_->GetOriginalProfile();
   if (extension->is_app()) {
     bool use_bubble = false;
 
@@ -254,7 +195,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
       return;
     }
 
-    ExtensionInstallUI::OpenAppInstalledUI(current_profile, extension->id());
+    OpenAppInstalledUI(extension->id());
     return;
   }
 
@@ -264,11 +205,11 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 void ExtensionInstallUIDefault::OnInstallFailure(
     const extensions::CrxInstallerError& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (disable_failure_ui_for_tests() || skip_post_install_ui())
+  if (disable_failure_ui_for_tests() || skip_post_install_ui_)
     return;
 
   Browser* browser =
-      chrome::FindLastActiveWithProfile(profile(), chrome::GetActiveDesktop());
+      chrome::FindLastActiveWithProfile(profile_, chrome::GetActiveDesktop());
   if (!browser)  // Can be NULL in unittests.
     return;
   WebContents* web_contents =
@@ -279,6 +220,45 @@ void ExtensionInstallUIDefault::OnInstallFailure(
                                error);
 }
 
+void ExtensionInstallUIDefault::OpenAppInstalledUI(const std::string& app_id) {
+#if defined(OS_CHROMEOS)
+  // App Launcher always enabled on ChromeOS, so always handled in
+  // OnInstallSuccess.
+  NOTREACHED();
+#else
+  Profile* current_profile = profile_->GetOriginalProfile();
+  Browser* browser = FindOrCreateVisibleBrowser(current_profile);
+  if (browser) {
+    GURL url(chrome::IsInstantExtendedAPIEnabled()
+                 ? chrome::kChromeUIAppsURL
+                 : chrome::kChromeUINewTabURL);
+    chrome::NavigateParams params(
+        chrome::GetSingletonTabNavigateParams(browser, url));
+    chrome::Navigate(&params);
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+        content::Source<WebContents>(params.target_contents),
+        content::Details<const std::string>(&app_id));
+  }
+#endif
+}
+
 void ExtensionInstallUIDefault::SetUseAppInstalledBubble(bool use_bubble) {
   use_app_installed_bubble_ = use_bubble;
+}
+
+void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {
+  skip_post_install_ui_ = skip_ui;
+}
+
+gfx::NativeWindow ExtensionInstallUIDefault::GetDefaultInstallDialogParent() {
+  Browser* browser =
+      chrome::FindLastActiveWithProfile(profile_, chrome::GetActiveDesktop());
+  if (browser) {
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    return contents->GetTopLevelNativeWindow();
+  }
+  return NULL;
 }

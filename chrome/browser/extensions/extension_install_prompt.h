@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/extension_install_prompt_experiment.h"
 #include "extensions/common/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -23,7 +22,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-class ExtensionInstallUI;
 class Profile;
 
 namespace base {
@@ -38,7 +36,9 @@ class WebContents;
 
 namespace extensions {
 class BundleInstaller;
+class CrxInstallerError;
 class Extension;
+class ExtensionInstallUI;
 class ExtensionWebstorePrivateApiTest;
 class MockGetAuthTokenFunction;
 class PermissionSet;
@@ -325,7 +325,9 @@ class ExtensionInstallPrompt
 
   virtual ~ExtensionInstallPrompt();
 
-  ExtensionInstallUI* install_ui() const { return install_ui_.get(); }
+  extensions::ExtensionInstallUI* install_ui() const {
+    return install_ui_.get();
+  }
 
   content::WebContents* parent_web_contents() const {
     return show_params_.parent_web_contents;
@@ -439,6 +441,8 @@ class ExtensionInstallPrompt
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
+  Profile* profile_;
+
   base::MessageLoop* ui_loop_;
 
   // The extensions installation icon.
@@ -456,7 +460,7 @@ class ExtensionInstallPrompt
   scoped_refptr<const extensions::PermissionSet> custom_permissions_;
 
   // The object responsible for doing the UI specific actions.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<extensions::ExtensionInstallUI> install_ui_;
 
   // Parameters to show the confirmation UI.
   ShowParams show_params_;

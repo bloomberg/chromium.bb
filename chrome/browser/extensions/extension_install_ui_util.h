@@ -7,7 +7,9 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 namespace install_ui {
@@ -15,7 +17,7 @@ namespace install_ui {
 // Creates an ExtensionInstallUI and copies properties from an approval. Calls
 // ExtensionInstallUI::OnInstallSuccess() to show the post-install UI for an
 // extension.
-void ShowPostInstallUIForApproval(Profile* profile,
+void ShowPostInstallUIForApproval(content::BrowserContext* context,
                                   const WebstoreInstaller::Approval& approval,
                                   const Extension* extension);
 

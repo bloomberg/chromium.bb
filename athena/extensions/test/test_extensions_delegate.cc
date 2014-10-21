@@ -4,6 +4,7 @@
 
 #include "athena/extensions/public/extensions_delegate.h"
 #include "base/macros.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension_set.h"
 
 namespace athena {
@@ -25,6 +26,11 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
   }
   virtual bool LaunchApp(const std::string& app_id) override { return true; }
   virtual bool UnloadApp(const std::string& app_id) override { return false; }
+
+  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+      override {
+    return scoped_ptr<extensions::ExtensionInstallUI>();
+  }
 
   extensions::ExtensionSet shell_extensions_;
 

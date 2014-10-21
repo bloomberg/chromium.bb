@@ -1425,6 +1425,7 @@
       'browser/ui/extensions/application_launch.h',
       'browser/ui/extensions/extension_install_ui_default.cc',
       'browser/ui/extensions/extension_install_ui_default.h',
+      'browser/ui/extensions/extension_install_ui_factory.h',
       'browser/ui/fast_unload_controller.cc',
       'browser/ui/fast_unload_controller.h',
       'browser/ui/find_bar/find_bar_controller.cc',
@@ -2464,11 +2465,16 @@
       'browser/ui/ash/session_state_delegate_views.cc',
       'browser/ui/ash/session_state_delegate_views.h',
     ],
+    # Used when not using android and not using Athena.
+    'chrome_browser_ui_non_athena_non_android_sources': [
+      'browser/ui/extensions/extension_install_ui_factory.cc', 
+    ],
     # Used when athena is enabled.
     'chrome_browser_ui_athena_sources': [
       #TODO(mukai): Port AppListService to Athena (crbug.com/417571)
       'browser/ui/app_list/app_list_service_disabled.cc',
 
+      'browser/ui/athena/extensions/extension_install_ui_factory_athena.cc', 
       'browser/ui/views/athena/athena_util.cc',
       'browser/ui/views/athena/athena_util.h',
       'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.cc',
@@ -2740,6 +2746,9 @@
           ],
         }, { # use_athena==0
           'conditions': [
+            ['OS!="android"', {
+              'sources': [ '<@(chrome_browser_ui_non_athena_non_android_sources)' ],
+            }],
             ['use_ash==1', {
               'sources': [ '<@(chrome_browser_ui_ash_non_athena_sources)' ],
             }],

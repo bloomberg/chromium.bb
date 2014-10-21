@@ -6,7 +6,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
@@ -28,6 +27,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "net/dns/mock_host_resolver.h"
@@ -223,7 +223,7 @@ class WebstoreStartupInstallUnpackFailureTest
 
   virtual void SetUpInProcessBrowserTestFixture() override {
     WebstoreStartupInstallerTest::SetUpInProcessBrowserTestFixture();
-    ExtensionInstallUI::set_disable_failure_ui_for_tests();
+    extensions::ExtensionInstallUI::set_disable_failure_ui_for_tests();
   }
 };
 

@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/cocoa/new_tab_button.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -694,7 +696,9 @@ class ExtensionLoadedNotificationObserver
 }
 
 - (IBAction)onAppShortcutClicked:(id)sender {
-  ExtensionInstallUI::OpenAppInstalledUI(browser_->profile(), extension_->id());
+  scoped_ptr<extensions::ExtensionInstallUI> install_ui(
+      extensions::CreateExtensionInstallUI(browser_->profile()));
+  install_ui->OpenAppInstalledUI(extension_->id());
 }
 
 - (void)awakeFromNib {

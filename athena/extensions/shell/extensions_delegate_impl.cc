@@ -6,6 +6,7 @@
 
 #include "athena/extensions/shell/athena_shell_app_window_client.h"
 #include "base/macros.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 
@@ -40,6 +41,11 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
   }
 
   virtual bool UnloadApp(const std::string& app_id) override { return false; }
+
+  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+      override {
+    return scoped_ptr<extensions::ExtensionInstallUI>();
+  }
 
   content::BrowserContext* context_;
   extensions::ShellExtensionSystem* extension_system_;

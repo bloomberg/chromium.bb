@@ -208,6 +208,8 @@
         'extensions/chrome/athena_chrome_app_delegate.h',
         'extensions/chrome/athena_chrome_app_window_client.cc',
         'extensions/chrome/athena_chrome_app_window_client.h',
+        'extensions/chrome/athena_extension_install_ui.cc',
+        'extensions/chrome/athena_extension_install_ui.h',
         'extensions/chrome/chrome_search_controller_factory.cc',
         'extensions/chrome/chrome_search_controller_factory.h',
         'extensions/chrome/extensions_delegate_impl.cc',

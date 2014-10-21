@@ -10,6 +10,7 @@
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/test/base/athena_test_base.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension_set.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
@@ -122,6 +123,10 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
   virtual bool LaunchApp(const std::string& app_id) override {
     restart_called_++;
     return true;
+  }
+  virtual scoped_ptr<extensions::ExtensionInstallUI> CreateExtensionInstallUI()
+      override {
+    return scoped_ptr<extensions::ExtensionInstallUI>();
   }
 
  private:

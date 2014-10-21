@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_controller.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"

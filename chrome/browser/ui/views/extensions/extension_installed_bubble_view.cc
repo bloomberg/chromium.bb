@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"

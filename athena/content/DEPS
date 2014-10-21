@@ -26,7 +26,7 @@ include_rules = [
 
 specific_include_rules = {
   "app_activity_unittest.cc": [
-    "+extensions/common",
+    "+extensions",
   ],
   "content_proxy_browsertest.cc": [
     "+athena/test",

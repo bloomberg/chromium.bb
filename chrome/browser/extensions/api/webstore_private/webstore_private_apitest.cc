@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "net/dns/mock_host_resolver.h"
@@ -109,7 +109,7 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // API functions.
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(StartSpawnedTestServer());
-    ExtensionInstallUI::set_disable_failure_ui_for_tests();
+    extensions::ExtensionInstallUI::set_disable_failure_ui_for_tests();
   }
 
   virtual void SetUpOnMainThread() override {

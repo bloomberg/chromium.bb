@@ -1,5 +1,7 @@
 include_rules = [
   "+chrome/browser",
   "+chrome/common/extensions",
+  "+chrome/grit/chromium_strings.h",
   "+net/base",
+  "+ui",
 ]

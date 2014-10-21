@@ -11,16 +11,17 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -67,10 +68,11 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
     const Extension* extension,
     Profile* profile,
     const base::Closure& callback)
-    : install_ui_(ExtensionInstallUI::CreateInstallPromptWithProfile(
-          profile)),
-      extension_(extension),
-      callback_(callback) {
+    : extension_(extension), callback_(callback) {
+  scoped_ptr<extensions::ExtensionInstallUI> ui(
+      extensions::CreateExtensionInstallUI(profile));
+  install_ui_.reset(new ExtensionInstallPrompt(
+      profile, ui->GetDefaultInstallDialogParent(), NULL));
 }
 
 SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {

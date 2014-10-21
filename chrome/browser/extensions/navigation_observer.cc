@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/navigation_observer.h"
 
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_controller.h"
