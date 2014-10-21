@@ -123,7 +123,7 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 
     WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> players;
     players.reserveInitialCapacity(m_playersNeedingUpdate.size());
-    for (const auto& player : m_playersNeedingUpdate)
+    for (RefPtrWillBeMember<AnimationPlayer> player : m_playersNeedingUpdate)
         players.append(player.get());
 
     std::sort(players.begin(), players.end(), AnimationPlayer::hasLowerPriority);
