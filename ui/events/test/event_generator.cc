@@ -301,9 +301,9 @@ void EventGenerator::GestureScrollSequenceWithCallback(
 
   callback.Run(ui::ET_GESTURE_SCROLL_BEGIN, gfx::Vector2dF());
 
-  int dx = (end.x() - start.x()) / steps;
-  int dy = (end.y() - start.y()) / steps;
-  gfx::Point location = start;
+  float dx = static_cast<float>(end.x() - start.x()) / steps;
+  float dy = static_cast<float>(end.y() - start.y()) / steps;
+  gfx::PointF location = start;
   for (int i = 0; i < steps; ++i) {
     location.Offset(dx, dy);
     timestamp += step_delay;
@@ -436,7 +436,7 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
 
 void EventGenerator::ScrollSequence(const gfx::Point& start,
                                     const base::TimeDelta& step_delay,
-                                    const std::vector<gfx::Point>& offsets,
+                                    const std::vector<gfx::PointF>& offsets,
                                     int num_fingers) {
   size_t steps = offsets.size();
   base::TimeDelta timestamp = Now();

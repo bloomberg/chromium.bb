@@ -192,7 +192,7 @@ Clipboard::FormatType::FormatType() : data_() {}
 Clipboard::FormatType::FormatType(UINT native_format) : data_() {
   // There's no good way to actually initialize this in the constructor in
   // C++03.
-  data_.cfFormat = native_format;
+  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
   data_.dwAspect = DVASPECT_CONTENT;
   data_.lindex = -1;
   data_.tymed = TYMED_HGLOBAL;
@@ -201,7 +201,7 @@ Clipboard::FormatType::FormatType(UINT native_format) : data_() {
 Clipboard::FormatType::FormatType(UINT native_format, LONG index) : data_() {
   // There's no good way to actually initialize this in the constructor in
   // C++03.
-  data_.cfFormat = native_format;
+  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
   data_.dwAspect = DVASPECT_CONTENT;
   data_.lindex = index;
   data_.tymed = TYMED_HGLOBAL;

@@ -64,15 +64,16 @@ class TabScrubberTest : public InProcessBrowserTest,
     return BrowserView::GetBrowserViewForNativeWindow(window)->tabstrip();
   }
 
-  int GetStartX(Browser* browser,
-                int index,
-                TabScrubber::Direction direction) {
-    return TabScrubber::GetStartPoint(
-        GetTabStrip(browser), index, direction).x();
+  float GetStartX(Browser* browser,
+                  int index,
+                  TabScrubber::Direction direction) {
+    return static_cast<float>(TabScrubber::GetStartPoint(
+        GetTabStrip(browser), index, direction).x());
   }
 
-  int GetTabCenter(Browser* browser, int index) {
-    return GetTabStrip(browser)->tab_at(index)->bounds().CenterPoint().x();
+  float GetTabCenter(Browser* browser, int index) {
+    return static_cast<float>(
+        GetTabStrip(browser)->tab_at(index)->bounds().CenterPoint().x());
   }
 
   // Sends one scroll event synchronously without initial or final
@@ -84,10 +85,10 @@ class TabScrubberTest : public InProcessBrowserTest,
     int active_index = browser->tab_strip_model()->active_index();
     TabScrubber::Direction direction = index < active_index ?
         TabScrubber::LEFT : TabScrubber::RIGHT;
-    int offset = GetTabCenter(browser, index) -
+    float offset = GetTabCenter(browser, index) -
         GetStartX(browser, active_index, direction);
     ui::ScrollEvent scroll_event(ui::ET_SCROLL,
-                                 gfx::Point(0, 0),
+                                 gfx::PointF(0, 0),
                                  ui::EventTimeForNow(),
                                  0,
                                  offset, 0,
@@ -124,15 +125,15 @@ class TabScrubberTest : public InProcessBrowserTest,
     }
     if (scrub_type == SKIP_TABS)
       increment *= 2;
-    int last = GetStartX(browser, active_index, direction);
-    std::vector<gfx::Point> offsets;
+    float last = GetStartX(browser, active_index, direction);
+    std::vector<gfx::PointF> offsets;
     for (int i = active_index + increment; i != (index + increment);
-        i += increment) {
-      int tab_center = GetTabCenter(browser, i);
-      offsets.push_back(gfx::Point(tab_center - last, 0));
+         i += increment) {
+      float tab_center = GetTabCenter(browser, i);
+      offsets.push_back(gfx::PointF(tab_center - last, 0));
       last = GetStartX(browser, i, direction);
       if (scrub_type == REPEAT_TABS) {
-        offsets.push_back(gfx::Point(increment, 0));
+        offsets.push_back(gfx::PointF(static_cast<float>(increment), 0));
         last += increment;
       }
     }
@@ -147,7 +148,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   // if it's different from the currently active tab.
   // If the active tab is expected to stay the same, send events
   // synchronously (as we don't have anything to wait for).
-  void SendScrubSequence(Browser* browser, int x_offset, int index) {
+  void SendScrubSequence(Browser* browser, float x_offset, int index) {
     aura::Window* window = browser->window()->GetNativeWindow();
     aura::Window* root = window->GetRootWindow();
     ui::test::EventGenerator event_generator(root, window);

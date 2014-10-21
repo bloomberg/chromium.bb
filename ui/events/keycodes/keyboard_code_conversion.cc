@@ -14,8 +14,10 @@ uint16 GetCharacterFromKeyCode(KeyboardCode key_code, int flags) {
   const bool upper = shift ^ ((flags & EF_CAPS_LOCK_DOWN) != 0);
 
   // Following Windows behavior to map ctrl-a ~ ctrl-z to \x01 ~ \x1A.
-  if (key_code >= VKEY_A && key_code <= VKEY_Z)
-    return key_code - VKEY_A + (ctrl ? 1 : (upper ? 'A' : 'a'));
+  if (key_code >= VKEY_A && key_code <= VKEY_Z) {
+    return static_cast<uint16>
+        (key_code - VKEY_A + (ctrl ? 1 : (upper ? 'A' : 'a')));
+  }
 
   // Other ctrl characters
   if (ctrl) {
@@ -65,7 +67,7 @@ uint16 GetCharacterFromKeyCode(KeyboardCode key_code, int flags) {
     return shift ? ")!@#$%^&*("[key_code - VKEY_0] :
         static_cast<uint16>(key_code);
   } else if (key_code >= VKEY_NUMPAD0 && key_code <= VKEY_NUMPAD9) {
-    return key_code - VKEY_NUMPAD0 + '0';
+    return static_cast<uint16>(key_code - VKEY_NUMPAD0 + '0');
   }
 
   switch (key_code) {

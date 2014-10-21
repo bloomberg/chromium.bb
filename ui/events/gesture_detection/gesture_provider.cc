@@ -281,12 +281,12 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     if (!scroll_event_sent_) {
       // Remove the touch slop region from the first scroll event to avoid a
       // jump.
-      double distance =
+      float distance =
           std::sqrt(distance_x * distance_x + distance_y * distance_y);
-      double epsilon = 1e-3;
+      float epsilon = 1e-3f;
       if (distance > epsilon) {
-        double ratio =
-            std::max(0.,
+        float ratio =
+            std::max(0.f,
                      distance - config_.gesture_detector_config.touch_slop) /
             distance;
         distance_x *= ratio;

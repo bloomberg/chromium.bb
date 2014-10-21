@@ -569,8 +569,9 @@ bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
 bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   if (event.is_char()) {
     if (GetTextInputClient()) {
-      GetTextInputClient()->InsertChar(event.key_code(),
-                                       ui::GetModifiersFromKeyState());
+      GetTextInputClient()->InsertChar(
+          static_cast<base::char16>(event.key_code()),
+          ui::GetModifiersFromKeyState());
       return true;
     }
   }

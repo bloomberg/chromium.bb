@@ -462,7 +462,8 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   if (scale_factor != ui::SCALE_FACTOR_100P) {
     for (size_t i = 0; i < data_packs_.size(); i++) {
       if (data_packs_[i]->GetScaleFactor() == scale_factor &&
-          data_packs_[i]->GetStringPiece(resource_id, &data))
+          data_packs_[i]->GetStringPiece(static_cast<uint16>(resource_id),
+                                         &data))
         return data;
     }
   }
@@ -470,7 +471,8 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     if ((data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_200P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
-        data_packs_[i]->GetStringPiece(resource_id, &data))
+        data_packs_[i]->GetStringPiece(static_cast<uint16>(resource_id),
+                                       &data))
       return data;
   }
 
@@ -499,7 +501,8 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   }
 
   base::StringPiece data;
-  if (!locale_resources_data_->GetStringPiece(message_id, &data)) {
+  if (!locale_resources_data_->GetStringPiece(static_cast<uint16>(message_id),
+                                              &data)) {
     // Fall back on the main data pack (shouldn't be any strings here except in
     // unittests).
     data = GetRawDataResource(message_id);
@@ -763,7 +766,7 @@ bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
                                 bool* fell_back_to_1x) const {
   DCHECK(fell_back_to_1x);
   scoped_refptr<base::RefCountedMemory> memory(
-      data_handle.GetStaticMemory(resource_id));
+      data_handle.GetStaticMemory(static_cast<uint16>(resource_id)));
   if (!memory.get())
     return false;
 

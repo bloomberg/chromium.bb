@@ -252,7 +252,7 @@ gfx::Point EventSystemLocationFromNative(
 }
 
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
-  return KeyboardCodeForWindowsKeyCode(native_event.wParam);
+  return KeyboardCodeForWindowsKeyCode(static_cast<WORD>(native_event.wParam));
 }
 
 const char* CodeFromNative(const base::NativeEvent& native_event) {

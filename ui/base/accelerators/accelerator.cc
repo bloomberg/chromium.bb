@@ -189,7 +189,7 @@ base::string16 Accelerator::GetShortcutText() const {
     // default zoom level), we leave VK_[0-9] alone without translation.
     wchar_t key;
     if (key_code_ >= '0' && key_code_ <= '9')
-      key = key_code_;
+      key = static_cast<wchar_t>(key_code_);
     else
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;

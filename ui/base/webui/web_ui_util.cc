@@ -95,7 +95,7 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
     LOG(WARNING) << "Invalid scale factor format: " << identifier;
     return false;
   }
-  *scale_factor = scale;
+  *scale_factor = static_cast<float>(scale);
   return true;
 }
 

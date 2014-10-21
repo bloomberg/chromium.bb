@@ -467,7 +467,7 @@ GLvoid StubGLTexSubImage2D(GLenum target, GLint level, GLint xoffset,
 }
 
 GLvoid StubGLUniform1f(GLint location, GLfloat v) {
-  glUniform1i(location, v);
+  glUniform1f(location, v);
 }
 
 GLvoid StubGLUniform1i(GLint location, GLint v) {
@@ -483,7 +483,7 @@ GLvoid StubGLUniform1iv(GLint location, GLsizei count, const GLint* v) {
 }
 
 GLvoid StubGLUniform2f(GLint location, GLfloat v0, GLfloat v1) {
-  glUniform2i(location, v0, v1);
+  glUniform2f(location, v0, v1);
 }
 
 GLvoid StubGLUniform2i(GLint location, GLint v0, GLint v1) {
@@ -499,7 +499,7 @@ GLvoid StubGLUniform2iv(GLint location, GLsizei count, const GLint* v) {
 }
 
 GLvoid StubGLUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) {
-  glUniform3i(location, v0, v1, v2);
+  glUniform3f(location, v0, v1, v2);
 }
 
 GLvoid StubGLUniform3i(GLint location, GLint v0, GLint v1, GLint v2) {
@@ -516,7 +516,7 @@ GLvoid StubGLUniform3iv(GLint location, GLsizei count, const GLint* v) {
 
 GLvoid StubGLUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2,
                        GLfloat v3) {
-  glUniform4i(location, v0, v1, v2, v3);
+  glUniform4f(location, v0, v1, v2, v3);
 }
 
 GLvoid StubGLUniform4i(GLint location, GLint v0, GLint v1, GLint v2,

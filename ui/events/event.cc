@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/transform.h"
@@ -214,8 +215,10 @@ Event::Event(const base::NativeEvent& native_event,
   base::TimeDelta delta = EventTimeForNow() - time_stamp_;
   if (type_ < ET_LAST)
     name_ = EventTypeName(type_);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser",
-                              delta.InMicroseconds(), 1, 1000000, 100);
+  base::HistogramBase::Sample delta_sample =
+      static_cast<base::HistogramBase::Sample>(delta.InMicroseconds());
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser", delta_sample, 1, 1000000,
+                              100);
   std::string name_for_event =
       base::StringPrintf("Event.Latency.Browser.%s", name_.c_str());
   base::HistogramBase* counter_for_type =
@@ -225,7 +228,7 @@ Event::Event(const base::NativeEvent& native_event,
           1000000,
           100,
           base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter_for_type->Add(delta.InMicroseconds());
+  counter_for_type->Add(delta_sample);
 
 #if defined(USE_X11)
   if (native_event->type == GenericEvent) {
@@ -450,7 +453,8 @@ MouseWheelEvent::MouseWheelEvent(const base::NativeEvent& native_event)
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
     : MouseEvent(scroll_event),
-      offset_(scroll_event.x_offset(), scroll_event.y_offset()){
+      offset_(gfx::ToRoundedInt(scroll_event.x_offset()),
+              gfx::ToRoundedInt(scroll_event.y_offset())) {
   SetType(ET_MOUSEWHEEL);
 }
 
@@ -492,10 +496,14 @@ void MouseWheelEvent::UpdateForRootTransform(
   gfx::DecomposedTransform decomp;
   bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
   DCHECK(success);
-  if (decomp.scale[0])
-    offset_.set_x(offset_.x() * decomp.scale[0]);
-  if (decomp.scale[1])
-    offset_.set_y(offset_.y() * decomp.scale[1]);
+  if (decomp.scale[0]) {
+    offset_.set_x(
+        gfx::ToRoundedInt(SkMScalarToFloat(offset_.x() * decomp.scale[0])));
+  }
+  if (decomp.scale[1]) {
+    offset_.set_y(
+        gfx::ToRoundedInt(SkMScalarToFloat(offset_.y() * decomp.scale[1])));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

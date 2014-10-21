@@ -77,7 +77,7 @@ uint16_t KeycodeConverter::CodeToNativeKeycode(const char* code) {
 
 // static
 uint16_t KeycodeConverter::InvalidUsbKeycode() {
-  return usb_keycode_map[0].usb_keycode;
+  return static_cast<uint16_t>(usb_keycode_map[0].usb_keycode);
 }
 
 // static

@@ -60,8 +60,8 @@ float GetScaleFactor(const gfx::Size& physical_size_in_mm,
   if (IsDisplaySizeBlackListed(physical_size_in_mm))
     return 1.0f;
 
-  const unsigned int dpi = (kInchInMm * screen_size_in_pixels.width() /
-                            physical_size_in_mm.width());
+  const unsigned int dpi = static_cast<unsigned int>(
+      kInchInMm * screen_size_in_pixels.width() / physical_size_in_mm.width());
   const unsigned int threshold =
       (physical_size_in_mm.width() >= kLargeDisplayWidthThresholdMM) ?
       kHighDensityDPIThresholdLarge : kHighDensityDPIThresholdSmall;

@@ -315,7 +315,7 @@ class EventGenerator {
   // scrolls of each of the values in |offsets|.
   void ScrollSequence(const gfx::Point& start,
                       const base::TimeDelta& step_delay,
-                      const std::vector<gfx::Point>& offsets,
+                      const std::vector<gfx::PointF>& offsets,
                       int num_fingers);
 
   // Generates a key press event. On platforms except Windows and X11, a key

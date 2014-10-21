@@ -593,7 +593,7 @@ bool LeastSquaresVelocityTrackerStrategy::GetEstimator(
     x[m] = position.x;
     y[m] = position.y;
     w[m] = ChooseWeight(index);
-    time[m] = -age.InSecondsF();
+    time[m] = -static_cast<float>(age.InSecondsF());
     index = (index == 0 ? kHistorySize : index) - 1;
   } while (++m < kHistorySize);
 
@@ -644,7 +644,7 @@ float LeastSquaresVelocityTrackerStrategy::ChooseWeight(uint32_t index) const {
       if (delta_millis < 0)
         return 0.5f;
       if (delta_millis < 10)
-        return 0.5f + delta_millis * 0.05;
+        return 0.5f + delta_millis * 0.05f;
 
       return 1.0f;
     }
@@ -662,11 +662,11 @@ float LeastSquaresVelocityTrackerStrategy::ChooseWeight(uint32_t index) const {
       if (age_millis < 0)
         return 0.5f;
       if (age_millis < 10)
-        return 0.5f + age_millis * 0.05;
+        return 0.5f + age_millis * 0.05f;
       if (age_millis < 50)
         return 1.0f;
       if (age_millis < 60)
-        return 0.5f + (60 - age_millis) * 0.05;
+        return 0.5f + (60 - age_millis) * 0.05f;
 
       return 0.5f;
     }
