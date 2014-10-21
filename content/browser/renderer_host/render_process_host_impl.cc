@@ -902,6 +902,11 @@ ServiceRegistry* RenderProcessHostImpl::GetServiceRegistry() {
   return mojo_application_host_->service_registry();
 }
 
+const base::TimeTicks& RenderProcessHostImpl::GetInitTimeForNavigationMetrics()
+    const {
+  return init_time_;
+}
+
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {

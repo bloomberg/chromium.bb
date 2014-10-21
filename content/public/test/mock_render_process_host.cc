@@ -223,6 +223,12 @@ ServiceRegistry* MockRenderProcessHost::GetServiceRegistry() {
   return NULL;
 }
 
+const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()
+    const {
+  static base::TimeTicks dummy_time = base::TimeTicks::Now();
+  return dummy_time;
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

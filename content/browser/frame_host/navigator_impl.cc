@@ -896,10 +896,9 @@ void NavigatorImpl::RecordNavigationMetrics(
     navigation_data_.reset();
     return;
   }
-  RenderProcessHostImpl* process_host =
-      static_cast<RenderProcessHostImpl*>(site_instance->GetProcess());
   bool navigation_created_new_renderer_process =
-      process_host->init_time() > navigation_data_->start_time_;
+      site_instance->GetProcess()->GetInitTimeForNavigationMetrics() >
+      navigation_data_->start_time_;
   if (navigation_created_new_renderer_process) {
     UMA_HISTOGRAM_TIMES(
         "Navigation.TimeToCommit_NewRenderer_BeforeUnloadDiscounted",

@@ -137,6 +137,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
   void NotifyTimezoneChange() override;
   ServiceRegistry* GetServiceRegistry() override;
+  const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -253,13 +254,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Call this function to resume the navigation when it was deferred
   // immediately after receiving response headers.
   void ResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
-
-  // PlzNavigate
-  // Returns the time the first call to Init completed successfully (after a new
-  // renderer process was created); further calls to Init won't change this
-  // value.
-  // Note: Will disappear after PlzNavitate is completed.
-  const base::TimeTicks& init_time() const { return init_time_; }
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see

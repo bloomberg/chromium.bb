@@ -229,6 +229,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the ServiceRegistry for this process.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
 
+  // PlzNavigate
+  // Returns the time the first call to Init completed successfully (after a new
+  // renderer process was created); further calls to Init won't change this
+  // value.
+  // Note: Do not use! Will disappear after PlzNavitate is completed.
+  virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() const = 0;
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily
