@@ -324,7 +324,6 @@ private:
     void applyFillPattern();
 
     void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
-    void drawVideo(HTMLVideoElement*, FloatRect srcRect, FloatRect dstRect);
 
     void fillInternal(const Path&, const String& windingRuleString);
     void strokeInternal(const Path&);
@@ -345,8 +344,7 @@ private:
 
     void inflateStrokeRect(FloatRect&) const;
 
-    enum DrawingType { Fill, Stroke };
-    template<DrawingType drawingType, class T> void fullCanvasCompositedDraw(const T&);
+    void fullCanvasCompositedDraw(const Closure& draw);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);

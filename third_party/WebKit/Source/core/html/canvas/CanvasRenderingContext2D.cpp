@@ -1029,7 +1029,7 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
     c->setFillRule(parseWinding(windingRuleString));
 
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedDraw<Fill>(path);
+        fullCanvasCompositedDraw(bind(&GraphicsContext::fillPath, c, path));
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1079,7 +1079,7 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
     }
 
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedDraw<Stroke>(path);
+        fullCanvasCompositedDraw(bind(&GraphicsContext::strokePath, c, path));
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1272,6 +1272,17 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
     didDraw(dirtyRect);
 }
 
+// FIXME(crbug.com/425531): Funtional.h cannot handle override function signature.
+static void fillRectOnContext(GraphicsContext* context, const FloatRect& rect)
+{
+    context->fillRect(rect);
+}
+
+static void strokeRectOnContext(GraphicsContext* context, const FloatRect& rect)
+{
+    context->strokeRect(rect);
+}
+
 void CanvasRenderingContext2D::fillRect(float x, float y, float width, float height)
 {
     if (!validateRectForCanvas(x, y, width, height))
@@ -1298,7 +1309,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         c->fillRect(rect);
         didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedDraw<Fill>(rect);
+        fullCanvasCompositedDraw(bind(&fillRectOnContext, c, rect));
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1337,7 +1348,7 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
 
     FloatRect rect(x, y, width, height);
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        fullCanvasCompositedDraw<Stroke>(rect);
+        fullCanvasCompositedDraw(bind(&strokeRectOnContext, c, rect));
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
@@ -1481,6 +1492,27 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     drawImageInternal(imageSource, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
 }
 
+static void drawVideo(GraphicsContext* c, CanvasImageSource* imageSource, FloatRect srcRect, FloatRect dstRect)
+{
+    HTMLVideoElement* video = static_cast<HTMLVideoElement*>(imageSource);
+    GraphicsContextStateSaver stateSaver(*c);
+    c->clip(dstRect);
+    c->translate(dstRect.x(), dstRect.y());
+    c->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
+    c->translate(-srcRect.x(), -srcRect.y());
+    video->paintCurrentFrameInContext(c, IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())));
+    stateSaver.restore();
+}
+
+static void drawImageOnContext(GraphicsContext* c, CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect)
+{
+    if (!imageSource->isVideoElement()) {
+        c->drawImage(image, dstRect, srcRect, c->compositeOperation(), c->blendModeOperation());
+    } else {
+        drawVideo(c, static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
+    }
+}
+
 void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     float sx, float sy, float sw, float sh,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
@@ -1523,64 +1555,30 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
         return;
 
     CompositeOperator op = state().m_globalComposite;
-    WebBlendMode blendMode = state().m_globalBlend;
     if (rectContainsTransformedRect(dstRect, clipBounds)) {
-        if (!imageSource->isVideoElement()) {
-            c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
-        } else {
-            drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
-        }
+        drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);
         didDraw(clipBounds);
     } else if (isFullCanvasCompositeMode(op)) {
-        // TODO(dshwang): this code is unnecessarily complicated because beginLayer() uses current blendMode slightly.
-        c->beginLayer(1, op);
-        if (!imageSource->isVideoElement()) {
-            c->drawImage(image.get(), dstRect, srcRect, CompositeSourceOver, WebBlendModeNormal);
-        } else {
-            c->setCompositeOperation(CompositeSourceOver, WebBlendModeNormal);
-            drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
-        }
-        c->setCompositeOperation(op, blendMode);
-        c->endLayer();
+        fullCanvasCompositedDraw(bind(&drawImageOnContext, c, imageSource, image.get(), srcRect, dstRect));
         didDraw(clipBounds);
     } else if (op == CompositeCopy) {
         clearCanvas();
-        if (!imageSource->isVideoElement()) {
-            c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
-        } else {
-            drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
-        }
+        drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);
         didDraw(clipBounds);
     } else {
         FloatRect dirtyRect;
         if (computeDirtyRect(dstRect, clipBounds, &dirtyRect)) {
-            if (!imageSource->isVideoElement()) {
-                c->drawImage(image.get(), dstRect, srcRect, op, blendMode);
-            } else {
-                drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
-            }
+            drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);
             didDraw(dirtyRect);
         }
     }
+    validateStateStack();
 
     if (sourceImageStatus == ExternalSourceImageStatus && isAccelerated() && canvas()->buffer())
         canvas()->buffer()->flush();
 
     if (canvas()->originClean() && wouldTaintOrigin(imageSource))
         canvas()->setOriginTainted();
-}
-
-void CanvasRenderingContext2D::drawVideo(HTMLVideoElement* video, FloatRect srcRect, FloatRect dstRect)
-{
-    GraphicsContext* c = drawingContext();
-    GraphicsContextStateSaver stateSaver(*c);
-    c->clip(dstRect);
-    c->translate(dstRect.x(), dstRect.y());
-    c->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
-    c->translate(-srcRect.x(), -srcRect.y());
-    video->paintCurrentFrameInContext(c, IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())));
-    stateSaver.restore();
-    validateStateStack();
 }
 
 void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
@@ -1626,27 +1624,7 @@ bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect
     return state().m_transform.mapQuad(quad).containsQuad(transformedQuad);
 }
 
-static void fillPrimitive(const FloatRect& rect, GraphicsContext* context)
-{
-    context->fillRect(rect);
-}
-
-static void fillPrimitive(const Path& path, GraphicsContext* context)
-{
-    context->fillPath(path);
-}
-
-static void strokePrimitive(const FloatRect& rect, GraphicsContext* context)
-{
-    context->strokeRect(rect);
-}
-
-static void strokePrimitive(const Path& path, GraphicsContext* context)
-{
-    context->strokePath(path);
-}
-
-template<CanvasRenderingContext2D::DrawingType drawingType, class T> void CanvasRenderingContext2D::fullCanvasCompositedDraw(const T& area)
+void CanvasRenderingContext2D::fullCanvasCompositedDraw(const Closure& draw)
 {
     ASSERT(isFullCanvasCompositeMode(state().m_globalComposite));
 
@@ -1659,11 +1637,7 @@ template<CanvasRenderingContext2D::DrawingType drawingType, class T> void Canvas
         c->beginLayer(1, state().m_globalComposite);
         c->setCompositeOperation(CompositeSourceOver);
         applyShadow(DrawShadowOnly);
-        if (drawingType == Fill) {
-            fillPrimitive(area, c);
-        } else {
-            strokePrimitive(area, c);
-        }
+        draw();
         c->setCompositeOperation(previousOperator);
         c->endLayer();
     }
@@ -1671,11 +1645,7 @@ template<CanvasRenderingContext2D::DrawingType drawingType, class T> void Canvas
     c->beginLayer(1, state().m_globalComposite);
     c->clearShadow();
     c->setCompositeOperation(CompositeSourceOver);
-    if (drawingType == Fill) {
-        fillPrimitive(area, c);
-    } else {
-        strokePrimitive(area, c);
-    }
+    draw();
     c->setCompositeOperation(previousOperator);
     c->endLayer();
     applyShadow(DrawShadowAndForeground); // go back to normal shadows mode
@@ -2238,12 +2208,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     }
 
     if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-        c->beginLayer(1, state().m_globalComposite);
-        CompositeOperator previousOperator = c->compositeOperation();
-        c->setCompositeOperation(CompositeSourceOver);
-        c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
-        c->setCompositeOperation(previousOperator);
-        c->endLayer();
+        fullCanvasCompositedDraw(bind(&GraphicsContext::drawBidiText, c, font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady));
         didDraw(clipBounds);
     } else if (state().m_globalComposite == CompositeCopy) {
         clearCanvas();
